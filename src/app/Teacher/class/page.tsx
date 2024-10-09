@@ -1,5 +1,4 @@
 import React from 'react'
-import Image from 'next/image';
 import { FaMicrophone, FaImage, FaVideo, FaPowerOff, FaPaperPlane } from 'react-icons/fa';
 import { FiMoreVertical } from 'react-icons/fi';
 import BaseLayout from '@/components/BaseLayout';

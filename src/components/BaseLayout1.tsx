@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import Sidebar from "./Sidebar";
 import Sidebar1 from "./Sidebar1";
 
 interface Props {

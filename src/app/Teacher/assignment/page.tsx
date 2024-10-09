@@ -1,6 +1,5 @@
 import React from 'react';
 import { FiMoreVertical } from 'react-icons/fi';
-import { FaChartPie, FaChartLine, FaUsers, FaEnvelopeOpenText, FaQuestionCircle } from 'react-icons/fa';
 import BaseLayout from '@/components/BaseLayout';
 
 export default function Assignment() {

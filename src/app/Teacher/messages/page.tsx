@@ -90,7 +90,7 @@ export default function Messages() {
                 <p className="text-gray-500 text-xs mt-1">12:45 PM</p>
               </div>
               <div className="text-right">
-                <p className="bg-green-500 text-white p-4 rounded-lg inline-block">Okay, I'll arrange it soon. I'll notify you when it's done</p>
+                <p className="bg-green-500 text-white p-4 rounded-lg inline-block">Okay, I will arrange it soon. I will notify you when it is done</p>
                 <p className="text-gray-500 text-xs mt-1">12:45 PM</p>
               </div>
             </div>

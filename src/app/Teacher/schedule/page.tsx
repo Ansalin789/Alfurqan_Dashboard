@@ -1,5 +1,4 @@
 import React from 'react'
-import Image from 'next/image';
 import { FiMoreVertical } from 'react-icons/fi';
 import BaseLayout from '@/components/BaseLayout';
 
@@ -54,7 +53,7 @@ export default function Schedule() {
             <aside className="col-span-1 space-y-8">
                 {/* Today's Schedules */}
                 <section className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-xl font-semibold mb-4">Today's Schedules</h3>
+                <h3 className="text-xl font-semibold mb-4">Today Schedules</h3>
                 <div className="space-y-2">
                     {scheduleData.map((item, index) => (
                     <div key={index} className="bg-gray-100 p-2 rounded-lg flex justify-between items-center">
@@ -73,7 +72,7 @@ export default function Schedule() {
 
                 {/* Today's Todo Task */}
                 <section className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-xl font-semibold mb-4">Today's Todo Task</h3>
+                <h3 className="text-xl font-semibold mb-4">Today Todo Task</h3>
                 <div className="bg-gray-100 p-2 rounded-lg flex justify-between items-center">
                     <div>
                     <p className="font-medium">Jan 5th, 2024</p>

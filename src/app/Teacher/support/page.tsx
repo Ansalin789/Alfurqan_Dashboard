@@ -19,7 +19,7 @@ export default function Support() {
             {/* Blog Entries */}
             {[1, 2, 3].map((_, i) => (
               <div key={i} className="bg-white shadow-md p-6 rounded-lg">
-                <img src="/alf/public/assets/images/alf.png" alt="" />
+                <Image src="/public/assets/images/alf.png" alt="" />
                 <h2 className="text-xl font-bold mb-2">
                   Here 10 Tips to become better in UI/UX Design.
                 </h2>
