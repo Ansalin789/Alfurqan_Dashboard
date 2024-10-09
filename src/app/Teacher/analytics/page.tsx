@@ -8,19 +8,19 @@ export default function Analytics() {
           title: 'Total Students',
           value: '12,345',
           growth: '5.4% from last year',
-          chart: '📊', // Placeholder for chart graphic
+          chart: '📊',
         },
         {
           title: 'Classes',
           value: '100',
           growth: '+15% than last month',
-          chart: '📈', // Placeholder for chart graphic
+          chart: '📈',
         },
         {
           title: 'Earnings',
           value: '$45,741',
           growth: '+15%',
-          chart: '💵', // Placeholder for chart graphic
+          chart: '💵',
         },
       ];
 
@@ -33,7 +33,7 @@ export default function Analytics() {
   return (
     <>
     <BaseLayout>
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen">
 
       {/* Main Content */}
       <div className="flex-1 p-8">
