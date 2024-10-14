@@ -144,6 +144,7 @@ export default function Home() {
                                 plugins={[dayGridPlugin]}
                                 initialView="dayGridMonth"
                                 events={events}
+                                
                             />
                         </div>
 
