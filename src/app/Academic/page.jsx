@@ -316,7 +316,7 @@ export default function Academic() {
                     </thead>
                     <tbody>
                       {[
-                        { name: 'Abdullah Sulaiman', students: 20 },
+                        { name: 'Abdullah Sulaima', students: 20 },
                         { name: 'Iman Gabel', students: 10 },
                         { name: 'Hassan Ibrahim', students: 40 },
                         { name: 'Maryam Hosain', students: 11 },
