@@ -18,8 +18,8 @@ const SidebarItems = [
         icon: RiDashboardFill,    
     },
     {
-        name: 'Live Classes',
-        href: '/Academic/class',
+        name: 'Trail Management',
+        href: '/Academic/trailManagement',
         icon: IoIosCellular,
     },
     {
