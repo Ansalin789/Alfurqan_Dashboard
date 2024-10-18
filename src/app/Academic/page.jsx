@@ -319,7 +319,7 @@ export default function Academic() {
                         { name: 'Abdullah Sulaiman', students: 20 },
                         { name: 'Iman Gabel', students: 10 },
                         { name: 'Hassan Ibrahim', students: 40 },
-                        { name: 'Maryam Hossain', students: 11 },
+                        { name: 'Maryam Hosain', students: 11 },
                         { name: 'Ayesha Islam', students: 1 },
                       ].map((item, index) => (
                         <tr key={index} className="border-b">
