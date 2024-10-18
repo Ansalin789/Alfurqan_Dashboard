@@ -37,6 +37,7 @@ export default function Form() {
                 alert(response.message)
             }
         } catch (error) {
+            console.error("POST Error:", error); 
             alert("could not save user try again later !")
         }
     }

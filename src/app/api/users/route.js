@@ -31,6 +31,7 @@ export async function POST(request) {
       message: "New user saved in the database!",
     });
   } catch (error) {
+    console.error("POST Error:", error);
     return NextResponse.json({
       success: false,
       message: "internal server error please try again!",
@@ -43,6 +44,7 @@ export async function GET() {
     const allUsers = await User.find()
     return NextResponse.json({ success: true, data: allUsers });
   } catch (error) {
+    console.error("GET Error:", error); 
     return NextResponse.json({ success: false, message: "No data found !" });
   }
 }

@@ -3,7 +3,6 @@
 import React from 'react'
 import 'react-calendar/dist/Calendar.css'
 import BaseLayout1 from '@/components/BaseLayout1'
-import Image from 'next/image'
 
 import { FaUser } from 'react-icons/fa';
 import { FaCalendarAlt } from 'react-icons/fa';
@@ -22,7 +21,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Academic() {
 
-  const ClassCard = ({ title, name, date, time }) => (
+  const ClassCard = ({}) => (
     <div className="bg-blue-500 p-6 rounded-lg shadow text-white mb-4">
       {classes.map((classInfo, index) => (
         <div key={index} className="flex justify-between items-center mb-4">
@@ -310,7 +309,7 @@ export default function Academic() {
                   <table className="w-full mt-4">
                     <thead>
                       <tr className="text-left border-b">
-                        <th className="p-2">Teacher's Name</th>
+                        <th className="p-2">Teacher Name</th>
                         <th className="p-2">No. of Students</th>
                       </tr>
                     </thead>
