@@ -129,7 +129,7 @@ export default function Academic() {
                       height={200}
                     />
                     <div className=" flex flex-col items-center justify-center">
-                      <p className="absolute -mt-[124px] text-lg font-bold bg-slate-300 rounded-full p-2">450</p>
+                      <p className="absolute -mt-[124px] text-lg font-bold p-2" style={{borderRadius:'100%'}}>451</p>
                     </div>
                   </div>
 

@@ -57,25 +57,25 @@ export default function Support() {
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-lg font-bold mb-4">FAQs</h3>
               <div className="space-y-4">
-                <details className="bg-gray-100 p-4 rounded-lg hover:cursor-pointer">
+                <details className="bg-gray-100 p-4 rounded-lg">
                   <summary className="font-medium">Is there a free trial?</summary>
                   <p className="text-gray-500 mt-2">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   </p>
                 </details>
-                <details className="bg-gray-100 p-4 rounded-lg hover:cursor-pointer">
+                <details className="bg-gray-100 p-4 rounded-lg">
                   <summary className="font-medium">How do I get payment?</summary>
                   <p className="text-gray-500 mt-2">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   </p>
                 </details>
-                <details className="bg-gray-100 p-4 rounded-lg hover:cursor-pointer">
+                <details className="bg-gray-100 p-4 rounded-lg">
                   <summary className="font-medium">Can I rewatch the live courses?</summary>
                   <p className="text-gray-500 mt-2">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   </p>
                 </details>
-                <details className="bg-gray-100 p-4 rounded-lg hover:cursor-pointer">
+                <details className="bg-gray-100 p-4 rounded-lg">
                   <summary className="font-medium">What’s different between Free and Premium accounts?</summary>
                   <p className="text-gray-500 mt-2">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit.

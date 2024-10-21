@@ -22,7 +22,7 @@ export default function Academic() {
                     <Doughnut
                       data={data}
                       options={{
-                        cutoutPercentage: 70,
+                        cutoutPercentage: 120,
                         responsive: true,
                         maintainAspectRatio: false,
                       }}
@@ -30,13 +30,13 @@ export default function Academic() {
                       height={200}
                     />
                     <div className=" flex flex-col items-center justify-center">
-                      <p className="absolute -mt-[124px] text-lg font-bold  bg-slate-300 rounded-full p-2">450</p>
+                      <p className="absolute -mt-[124px] text-lg font-bold rounded-full p-2">451</p>
                     </div>
                   </div>
 
                 {/* Right: Stats and Legend */}
                 <div className="flex flex-col ml-8 space-y-4">
-                  <h3 className="text-xl font-semibold text-gray-800">Total Students</h3>
+                  <h3 className="text-xl font-semibold text-gray-800">Total Teachers</h3>
                   <div className="flex flex-col items-center" size={30}>
                     {/* Icons of Boys and Girls */}
                     <div className="flex items-center space-x-2 mb-4">

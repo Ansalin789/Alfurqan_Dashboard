@@ -8,6 +8,16 @@ import { IoIosCellular } from "react-icons/io";
 import { GrSchedules } from "react-icons/gr";
 import { MdAssignment, MdAnalytics, MdContactSupport } from "react-icons/md";
 import { LuMessagesSquare } from "react-icons/lu";
+import { IoBookmarks } from "react-icons/io5";
+import { IoPeopleSharp } from "react-icons/io5";
+import { MdLocalLibrary } from "react-icons/md";
+import { MdDateRange } from "react-icons/md";
+import { MdQuestionAnswer } from "react-icons/md";
+
+
+
+
+
 
 import "/public/assets/css/globals.css";
 
@@ -20,27 +30,27 @@ const SidebarItems = [
     {
         name: 'Trail Management',
         href: '/Academic/trailManagement',
-        icon: IoIosCellular,
+        icon: IoBookmarks,
+    },
+    {
+        name: 'Manage Students',
+        href: '/Academic/manageStudents',
+        icon: IoPeopleSharp,
+    },
+    {
+        name: 'Manage Teachers',
+        href: '/Academic/manageTeachers',
+        icon: MdLocalLibrary,
     },
     {
         name: 'Schedule',
         href: '/Academic/schedule',
-        icon: GrSchedules,
-    },
-    {
-        name: 'Assignments',
-        href: '/Academic/assignment',
-        icon: MdAssignment,
+        icon: MdDateRange,
     },
     {
         name: 'Messages',
         href: '/Academic/messages',
-        icon: LuMessagesSquare,
-    },
-    {
-        name: 'Analytics',
-        href: '/Academic/analytics',
-        icon: MdAnalytics,
+        icon: MdQuestionAnswer,
     },
     {
         name: 'Support',
