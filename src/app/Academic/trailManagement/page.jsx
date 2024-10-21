@@ -100,7 +100,7 @@
 import BaseLayout1 from '@/components/BaseLayout1';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
-import { FaFilter, FaPlus } from 'react-icons/fa';
+// import { FaFilter, FaPlus } from 'react-icons/fa';
 
 async function fetchUsers() {
     let response = await fetch('http://localhost:3000/api/users', {

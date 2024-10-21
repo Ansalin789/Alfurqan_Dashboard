@@ -28,7 +28,7 @@ export default function ManageStudents() {
                     <th className="w-1/12 px-4 py-2">ID</th>
                     <th className="w-2/12 px-4 py-2">Date Join</th>
                     <th className="w-2/12 px-4 py-2">Name</th>
-                    <th className="w-2/12 px-4 py-2">Teacher's Name</th>
+                    <th className="w-2/12 px-4 py-2">Teacher Name</th>
                     <th className="w-2/12 px-4 py-2">City</th>
                     <th className="w-1/12 px-4 py-2">Contact</th>
                     <th className="w-1/12 px-4 py-2">Schedule Classes</th>

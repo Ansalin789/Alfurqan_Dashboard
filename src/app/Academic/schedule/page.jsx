@@ -1,21 +1,19 @@
-import Image from 'next/image';
-import { RiDashboardFill } from 'react-icons/ri';
-import { IoIosCellular } from 'react-icons/io';
-import { GrSchedules } from 'react-icons/gr';
-import { MdAssignment, MdAnalytics, MdContactSupport } from 'react-icons/md';
-import { LuMessagesSquare } from 'react-icons/lu';
+// import { RiDashboardFill } from 'react-icons/ri';
+// import { IoIosCellular } from 'react-icons/io';
+// import { GrSchedules } from 'react-icons/gr';
+// import { MdAssignment, MdAnalytics, MdContactSupport } from 'react-icons/md';
+// import { LuMessagesSquare } from 'react-icons/lu';
 import BaseLayout1 from '@/components/BaseLayout1';
-import Sidebar from '@/components/Sidebar';
 
-const SidebarItems = [
-  { name: 'Dashboard', href: '/Academic', icon: RiDashboardFill },
-  { name: 'Trail Management', href: '/Academic/trailManagement', icon: IoIosCellular },
-  { name: 'Manage Students', href: '/Academic/manageStudents', icon: GrSchedules },
-  { name: 'Manage Teachers', href: '/Academic/manageTeachers', icon: MdAssignment },
-  { name: 'Messages', href: '/Academic/messages', icon: LuMessagesSquare },
-  { name: 'Analytics', href: '/Academic/analytics', icon: MdAnalytics },
-  { name: 'Support', href: '/Academic/support', icon: MdContactSupport },
-];
+// const SidebarItems = [
+//   { name: 'Dashboard', href: '/Academic', icon: RiDashboardFill },
+//   { name: 'Trail Management', href: '/Academic/trailManagement', icon: IoIosCellular },
+//   { name: 'Manage Students', href: '/Academic/manageStudents', icon: GrSchedules },
+//   { name: 'Manage Teachers', href: '/Academic/manageTeachers', icon: MdAssignment },
+//   { name: 'Messages', href: '/Academic/messages', icon: LuMessagesSquare },
+//   { name: 'Analytics', href: '/Academic/analytics', icon: MdAnalytics },
+//   { name: 'Support', href: '/Academic/support', icon: MdContactSupport },
+// ];
 
 export default function Schedule() {
   return (<>
