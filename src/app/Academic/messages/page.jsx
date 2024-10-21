@@ -1,4 +1,4 @@
-import BaseLayout from '@/components/BaseLayout';
+import BaseLayout1 from '@/components/BaseLayout1';
 import React from 'react'
 
 export default function Messages() {
@@ -13,7 +13,7 @@ export default function Messages() {
 
   return (
     <>
-    <BaseLayout>
+    <BaseLayout1>
     <div className="flex h-screen">
 
       {/* Main Content */}
@@ -102,7 +102,7 @@ export default function Messages() {
         </main>
       </div>
     </div>
-    </BaseLayout></>
+    </BaseLayout1></>
     
   )
 }

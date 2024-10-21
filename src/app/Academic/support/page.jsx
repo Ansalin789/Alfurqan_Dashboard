@@ -1,11 +1,11 @@
-import BaseLayout from '@/components/BaseLayout'
 import React from 'react'
 import Image from 'next/image'
+import BaseLayout1 from '@/components/BaseLayout1'
 
 export default function Support() {
   return (
     <>
-    <BaseLayout>
+    <BaseLayout1>
     <div className="flex h-screen">
 
       {/* Main Content */}
@@ -87,7 +87,7 @@ export default function Support() {
         </div>
       </main>
     </div>
-    </BaseLayout>
+    </BaseLayout1>
     </>
   )
 }
