@@ -10,7 +10,6 @@ import { FaClock } from "react-icons/fa";
 import { FaUserAlt } from "react-icons/fa";
 import { AiOutlineClockCircle } from "react-icons/ai";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import TotalList from "../../components/Academic/TotalList";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -43,13 +42,15 @@ export default function Student() {
 
   const classes = [
     {
-      title: "Evaluation Class",
-      name: "Abinesh",
+      count : 1,
+      title: "Tajweed MasterClass",
+      name: "Abineddshr",
       date: "06 May 2024",
       time: "9:00 AM - 10:00 AM",
     },
-    {
-      title: "Evaluation Class",
+    { 
+      count : 2,
+      title: "Tajweed MasterClass",
       name: "sagarps",
       date: "08 May 2024",
       time: "10:00 AM - 11:00 AM",
@@ -59,7 +60,7 @@ export default function Student() {
     <>
       <BaseLayout2>
         <div className="flex flex-col lg:flex-row p-4 w-full">
-          <div className="flex-1 overflow-y-scroll scrollbar-hide h-[93vh] pr-4">
+          <div className="flex-1 overflow-y-scroll scrollbar-hide h-[110vh] pr-4">
             <header className="flex justify-between mb-8">
               <div className="flex space-x-4">
                 <div className="flex items-center space-x-4">
@@ -83,22 +84,22 @@ export default function Student() {
             </header>
 
             <main className="grid grid-cols-12 gap-4">
-              <h1 className="text-2xl font-bold">Your Next Classes</h1>
+              <h1 className="text-2xl font-bold col-span-12">Your Next Classes</h1>
               <div className="col-span-12 bg-red-500 p-4 rounded-lg shadow flex items-center justify-between text-white">
                 <div className="items-center space-x-4">
                   <h3 className="text-lg font-medium p-2">
-                    Next Evaluation Class Starts in
+                  Tajweed Masterclass Session - 12
                   </h3>
                   <div className="flex items-center space-x-8">
                     <div className="flex items-center space-x-2">
                       {/* User Icon */}
                       <FaUserAlt className="w-4 h-4" />
-                      <p className="text-sm">Abinesh</p>
+                      <p className="text-sm">prof smith</p>
                     </div>
                     <div className="flex items-center space-x-2">
                       {/* Clock Icon */}
                       <AiOutlineClockCircle className="w-4 h-4" />
-                      <p className="text-sm">9:00 AM</p>
+                      <p className="text-sm">10:00 AM</p>
                     </div>
                   </div>
                 </div>
@@ -163,11 +164,11 @@ export default function Student() {
             </main>
           </div>
           {/* calender sidebar */}
-          <div className="  mt-6 lg:mt-0 bg-[#1c3557] p-6 rounded-[20px] h-[600px]">
+          <div className="mt-6 lg:mt-0 lg:mb-10 lg:pb-20  bg-[#1c3557] p-6 rounded-[20px] h-[600px]">
             <div className="col-span-4 bg-white p-4 rounded-lg shadow">
               <h3 className="text-lg font-medium">Sidesh</h3>
             </div>
-            <div className="mt-4 bg-white p-4 rounded shadow md:w-1/4 mx-auto md:mx-0 md:ml-4">
+            <div className="mt-4 bg-white p-4 rounded shadow">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold">Upcoming Classes</h3>
                 <button className="text-gray-500">•••</button>
@@ -179,12 +180,12 @@ export default function Student() {
                 <div className="bg-gray-400 p-2 rounded">Session 7</div>
               </div>
               <div className="mt-4 p-4 bg-gray-100 rounded">
-                <p className="text-lg font-bold">Your Total 10hr</p>
-                <p className="text-center text-2xl">Left 0hrs</p>
+                <p className="text-sm font-semibold">Your Total 10hr</p>
+                <p className="text-center text-lg">Left 0hrs</p>
               </div>
               <div className="mt-4 p-4 bg-gray-200 rounded">
-                <p className="text-lg font-bold">Pending Fee</p>
-                <p className="text-center text-2xl">Pay Now</p>
+                <p className="text-sm font-semibold">Pending Fee</p>
+                <p className="text-center text-lg">Pay Now</p>
               </div>
             </div>
           </div>
