@@ -1,4 +1,5 @@
 import BaseLayout2 from '@/components/BaseLayout2';
+import Image from 'next/image';
 import React from 'react';
 
 export default function Payments() {
@@ -17,7 +18,7 @@ export default function Payments() {
     <div className="flex justify-between">
       <div className="flex items-center space-x-4">
         <div className="bg-gray-100 p-4 rounded-md">
-          <img src="/assets/images/alf1.png" alt="Order" className="h-12 w-12" />
+          <Image src="/assets/images/alf1.png" alt="Order" className="h-12 w-12" />
         </div>
         <div>
           <p className="text-lg font-semibold">Tajweed Masterclass</p>

@@ -1,4 +1,5 @@
 import BaseLayout2 from '@/components/BaseLayout2';
+import Image from 'next/image';
 import React from 'react';
 
 export default function Knowledge() {
@@ -13,22 +14,22 @@ export default function Knowledge() {
   <h1 className="text-4xl font-bold text-gray-800 mb-6">Knowledge Base</h1>
   <div className="grid grid-cols-4 gap-6 mb-10">
     <div className="bg-white p-4 rounded-lg shadow-md text-center">
-      <img src="/doc-icon.png" alt="Doc" className="h-16 w-16 mx-auto mb-4" />
+      <Image src="/doc-icon.png" alt="Doc" className="h-16 w-16 mx-auto mb-4" />
       <p className="text-lg font-semibold">Doc</p>
       <button className="text-blue-500 mt-2">Download</button>
     </div>
     <div className="bg-white p-4 rounded-lg shadow-md text-center">
-      <img src="/pdf-icon.png" alt="PDF" className="h-16 w-16 mx-auto mb-4" />
+      <Image src="/pdf-icon.png" alt="PDF" className="h-16 w-16 mx-auto mb-4" />
       <p className="text-lg font-semibold">PDF</p>
       <button className="text-blue-500 mt-2">Download</button>
     </div>
     <div className="bg-white p-4 rounded-lg shadow-md text-center">
-      <img src="/doc-icon.png" alt="Doc" className="h-16 w-16 mx-auto mb-4" />
+      <Image src="/doc-icon.png" alt="Doc" className="h-16 w-16 mx-auto mb-4" />
       <p className="text-lg font-semibold">Doc</p>
       <button className="text-blue-500 mt-2">Download</button>
     </div>
     <div className="bg-white p-4 rounded-lg shadow-md text-center">
-      <img src="/pdf-icon.png" alt="PDF" className="h-16 w-16 mx-auto mb-4" />
+      <Image src="/pdf-icon.png" alt="PDF" className="h-16 w-16 mx-auto mb-4" />
       <p className="text-lg font-semibold">PDF</p>
       <button className="text-blue-500 mt-2">Download</button>
     </div>
