@@ -101,6 +101,14 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 // import { FaFilter, FaPlus } from 'react-icons/fa';
+interface User {
+    fname: string;
+    lname: string;
+    email: string;
+    number: string;
+    country: string;
+    createdAt: any;
+}
 
 async function fetchUsers() {
     let response = await fetch('http://localhost:3000/api/users', {
@@ -119,7 +127,7 @@ export default function TrailManagement() {
 
     useEffect(() => {
         const getAllUsers = async () => {
-            const allData = await fetchUsers();
+            const allData :any = await fetchUsers();
             console.log(allData);
 
             if (allData.success) {
@@ -133,7 +141,7 @@ export default function TrailManagement() {
 
     useEffect(() => {
         setFilteredUsers(
-            users.filter(user =>
+            users.filter((user: User) =>
                 user.fname.toLowerCase().includes(searchInput.toLowerCase()) ||
                 user.lname.toLowerCase().includes(searchInput.toLowerCase()) ||
                 user.email.toLowerCase().includes(searchInput.toLowerCase()) ||
@@ -151,15 +159,15 @@ export default function TrailManagement() {
             if (duration === 'Last week') {
                 const oneWeekAgo = new Date();
                 oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-                filtered = users.filter(user => new Date(user.createdAt) >= oneWeekAgo);
+                filtered = users.filter((user : User)=> new Date(user.createdAt) >= oneWeekAgo);
             } else if (duration === 'Last month') {
                 const oneMonthAgo = new Date();
                 oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-                filtered = users.filter(user => new Date(user.createdAt) >= oneMonthAgo);
+                filtered = users.filter((user : User) => new Date(user.createdAt) >= oneMonthAgo);
             } else if (duration === 'Last year') {
                 const oneYearAgo = new Date();
                 oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-                filtered = users.filter(user => new Date(user.createdAt) >= oneYearAgo);
+                filtered = users.filter((user : User) => new Date(user.createdAt) >= oneYearAgo);
             }
 
             setFilteredUsers(filtered);
@@ -206,7 +214,7 @@ export default function TrailManagement() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredUsers.map((item, index) => (
+                        {filteredUsers.map((item:any, index) => (
                             <tr key={index} className="border-t">
                                 <td className="p-4">{item.fname}</td>
                                 <td className="p-4">{item.lname}</td>

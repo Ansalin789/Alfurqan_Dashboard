@@ -29,7 +29,7 @@
 }
 
 body {
-  background: #e5e5e5;
+  background: #fff;
   font-family: "Poppins", system-ui;
 }
 
@@ -198,4 +198,12 @@ body {
 /* App.css */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+.letter {
+  backgroundimage: `url("/assets/images/Dewatermark.png") `;
+  backgroundrepeat: "no-repeat";
+  backgroundposition: "center";
+  objectfit: "cover";
+  background: "#000";
 }
