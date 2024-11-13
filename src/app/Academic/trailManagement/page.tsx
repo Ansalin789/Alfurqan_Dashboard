@@ -111,7 +111,7 @@ interface User {
 }
 
 async function fetchUsers() {
-    let response = await fetch('http://localhost:3000/api/users', {
+    let response = await fetch('', {
         cache: 'no-store',
     });
 
