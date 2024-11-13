@@ -1,7 +1,7 @@
 // Import necessary components and icons
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
-import { FiHome, FiUsers, FiCalendar, FiMessageCircle, FiHelpCircle } from 'react-icons/fi';
+// import { FiHome, FiUsers, FiCalendar, FiMessageCircle, FiHelpCircle } from 'react-icons/fi';
 import { FaSun, FaMoon, FaUserCircle } from 'react-icons/fa';
 import dynamic from 'next/dynamic';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
@@ -107,7 +107,7 @@ export default function Academic() {
 
             {/* Teacher's Chart */}
             <div className="bg-white p-4 rounded-lg shadow">
-              <h3 className="text-xl font-semibold mb-4">Teacher's</h3>
+              <h3 className="text-xl font-semibold mb-4">Teachers</h3>
               <Bar data={teachersChartData} options={teachersChartOptions} />
             </div>
 
