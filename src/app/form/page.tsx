@@ -1,317 +1,300 @@
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
-import DatePicker from 'react-date-picker'; // Import the date picker component
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
+import countries from '@/components/form/countries';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
-export default function MultiStepForm() {
+const MultiStepForm = () => {
     const [step, setStep] = useState(1);
-    const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
-        fname: "",
-        lname: "",
-        email: "",
-        number: "",
-        country: "",
-        useFor: "",
-        students: 0,
-        teacherPreference: "",
-        learnedFrom: "",
-        date: new Date(), // Default to current date
-        time: ""
+        firstName: '',
+        lastName: '',
+        email: '',
+        number: '',
+        country: '',
+        iqraUsage: [],
+        studentsCount: '',
+        teacherPreference: '',
+        referralSource: '',
+        trialDate: new Date(),
+        trialTime: '',
     });
+    const [availableTimes, setAvailableTimes] = useState([]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
+    };
+
+    const handlePhoneChange = (value) => {
+        setFormData({
+            ...formData,
+            number: value,
+        });
+    };
+
+    const handleDateChange = (date) => {
+        setFormData({
+            ...formData,
+            trialDate: date,
+        });
+        loadAvailableTimes(date); // Load available times for the selected date
+    };
+
+    const loadAvailableTimes = (date) => {
+        const times = ["2:45 AM", "3:00 AM", "3:15 AM", "3:30 AM", "3:45 AM", "4:00 AM"];
+        setAvailableTimes(times);
+    };
+
+    const handleTimeSelect = (time) => {
+        setFormData({
+            ...formData,
+            trialTime: time,
+        });
+    };
 
     const nextStep = () => {
-        const validationErrors = validateFields();
-        if (Object.keys(validationErrors).length === 0) {
-            setStep(prev => prev + 1);
-        } else {
-            setErrors(validationErrors);
-        }
-    };
-    const prevStep = () => setStep(prev => prev - 1);
-
-    const handleChange = (input: string) => (e: { target: { value: any; }; }) => {
-        setFormData({ ...formData, [input]: e.target.value });
+        setStep(step + 1);
     };
 
-    const handleDateChange = (date: any) => {
-        setFormData({ ...formData, date });
+    const prevStep = () => {
+        setStep(step - 1);
     };
 
-    const handleTimeSelect = (time: string) => {
-        setFormData({ ...formData, time });
-    };
-
-    const handleSubmit = async (e: { preventDefault: () => void; }) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        // Submit form logic
+        console.log(formData);
     };
 
-    const validateFields = () => {
-        const errors: any = {};
-        if (step === 1) {
-            if (!formData.fname) errors.fname = "First Name is required";
-            if (!formData.lname) errors.lname = "Last Name is required";
-            if (!formData.email) errors.email = "Email is required";
-            if (!formData.number) errors.number = "Number is required";
-            if (!formData.country) errors.country = "Country is required";
-        } else if (step === 2) {
-            if (!formData.useFor) errors.useFor = "Usage is required";
-            if (formData.students === 0) errors.students = "Students number is required";
-            if (!formData.teacherPreference) errors.teacherPreference = "Teacher preference is required";
-            if (!formData.learnedFrom) errors.learnedFrom = "Information source is required";
-        }
-        return errors;
+    const handleMultiSelectOptionChange = (field, value) => {
+        setFormData((prev) => {
+            const currentSelection = prev[field];
+
+            // If value is already selected, remove it; otherwise, add it to the selection
+            if (currentSelection.includes(value)) {
+                return {
+                    ...prev,
+                    [field]: currentSelection.filter((option) => option !== value),
+                };
+            }
+
+            return {
+                ...prev,
+                [field]: [...currentSelection, value],
+            };
+        });
+    };
+
+    const handleSingleSelectOptionChange = (field, value) => {
+        setFormData({
+            ...formData,
+            [field]: value,
+        });
     };
 
     return (
-        <div className="flex flex-col items-center">
-            <h2 className="text-2xl font-bold mt-8">Let's get your Journey Started</h2>
-            <form
-                className="p-10 bg-[#fff] w-[100%] max-w-3xl border rounded-lg mt-4"
-                onSubmit={handleSubmit}
-                autoComplete="off"
-            >
-                {/* Step Indicator */}
-                <div className="flex justify-around items-center mb-8">
-                    {['Step 1', 'Step 2', 'Step 3'].map((label, index) => {
-                        const isActive = step === index + 1;
-                        const isCompleted = step > index + 1;
-                        return (
-                            <div key={label} className="flex items-center">
-                                {/* Step circle */}
-                                <div
-                                    className={`w-8 h-8 flex justify-center items-center rounded-full ${
-                                        isActive ? 'bg-green-500 text-white' : isCompleted ? 'bg-green-300 text-white' : 'bg-gray-300'
-                                    }`}
-                                >
-                                    {isCompleted ? '✔' : index + 1}
-                                </div>
-
-                                {/* Step label */}
-                                <span
-                                    className={`ml-2 ${isActive ? 'font-semibold text-green-600' : 'text-gray-500'}`}
-                                >
-                                    {label}
-                                </span>
-
-                                {/* Connector line */}
-                                {index < 2 && (
-                                    <div className={`flex-1 h-1 mx-2 ${step > index + 1 ? 'bg-green-500' : 'bg-gray-300'}`} />
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
+        <div className="max-w-[40%] mx-auto mt-10 p-6 bg-white shadow-lg rounded-br-[50px] rounded-tl-[50px] rounded-bl-[8px] rounded-tr-[8px]">
+            <div className="flex justify-between items-center mb-4">
+                <div className="text-sm font-medium">Contact</div>
+                <div className="text-sm font-medium">{step * 33}%</div>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: `${step * 33}%` }}></div>
+            </div>
+            <div className="flex items-center justify-center mb-4 p-6">
+                <img src="/assets/images/alf2.png" alt="Your Logo" className="w-40 mr-10" />
                 <div>
-                <div className='flex p-5'>
-                    <div className='align-middle'>
-                    <Image src="/assets/images/alf2.png" className='pr-5' width={130} height={50} alt='logo'/>
-                    </div>
-                    <div className='grid align-middle'>
-                        <h1 className="text-lg font-semibold mb-4 text-center">Start Your Journey</h1>
-                        {/* <p className='text-start'>Start Your Journey</p> */}
-                    </div>
+                    <h2 className="text-2xl font-bold">أهلا ومرحبا</h2>
                 </div>
-                
-                </div>
+            </div>
 
-                {/* Step 1 */}
+            <form onSubmit={handleSubmit}>
                 {step === 1 && (
                     <div>
-                        <h4>Name</h4>
-
-                        <div className='flex gap-2'>
-                        <div className="mb-4">
+                        <label className="block mb-2 font-semibold">First / Last name</label>
+                        <div className="flex gap-4 mb-4">
                             <input
                                 type="text"
-                                placeholder="First Name"
-                                className="w-full p-3 border-b-2 border-b-[#4b93fa] bg-[#4992fa1a] rounded"
-                                value={formData.fname}
-                                onChange={handleChange('fname')}
+                                name="firstName"
+                                placeholder="First"
+                                value={formData.firstName}
+                                onChange={handleChange}
+                                required
+                                className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                            {errors.fname && <p className="text-red-500 text-sm">{errors.fname}</p>}
-                        </div>
-                        <div className="mb-4">
                             <input
                                 type="text"
-                                placeholder="Last Name"
-                                className="w-full p-3 border-b-2 border-b-[#4b93fa] bg-[#4992fa1a] rounded"
-                                value={formData.lname}
-                                onChange={handleChange('lname')}
+                                name="lastName"
+                                placeholder="Last"
+                                value={formData.lastName}
+                                onChange={handleChange}
+                                className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                            {errors.lname && <p className="text-red-500 text-sm">{errors.lname}</p>}
                         </div>
-                        </div>
-                        
-                        <div className="mb-4">
+                        <div className="flex gap-4 mb-4">
                             <input
                                 type="email"
+                                name="email"
                                 placeholder="Email"
-                                className="w-full p-3 border-b-2 border-b-[#4b93fa] bg-[#4992fa1a] rounded"
                                 value={formData.email}
-                                onChange={handleChange('email')}
+                                onChange={handleChange}
+                                className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
                         </div>
-                        <div className="mb-4">
-                            <input
-                                type="number"
-                                placeholder="Number"
-                                className="w-full p-3 border-b-2 border-b-[#4b93fa] bg-[#4992fa1a] rounded"
+                        <div className="flex gap-4 mb-4">
+                            <PhoneInput
+                                country={'us'}
                                 value={formData.number}
-                                onChange={handleChange('number')}
+                                onChange={handlePhoneChange}
+                                inputClass="w-full p-3 py-6 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                containerClass="w-full"
                             />
-                            {errors.number && <p className="text-red-500 text-sm">{errors.number}</p>}
                         </div>
-                        <div className="mb-4">
+
+                        <div className="relative mb-4">
                             <select
-                                className="w-full p-3 border-b-2 border-b-[#4b93fa] bg-[#4992fa1a] rounded"
+                                className="w-full p-3 border rounded appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                name="country"
                                 value={formData.country}
-                                onChange={handleChange('country')}
+                                onChange={handleChange}
                             >
                                 <option value="">Please Select Your Country</option>
-                                <option value="India">India</option>
-                                <option value="USA">USA</option>
-                                <option value="Germany">Germany</option>
-                                <option value="Qatar">Qatar</option>
+                                {countries.map((country) => (
+                                    <option key={country.code} value={country.name}>{country.name}</option>
+                                ))}
                             </select>
-                            {errors.country && <p className="text-red-500 text-sm">{errors.country}</p>}
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.5 7h9l-4.5 4.5L5.5 7z" /></svg>
+                            </div>
                         </div>
-                        <button type="button" className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600" onClick={nextStep}>
+                        <button
+                            type="button"
+                            onClick={nextStep}
+                            className="justify-end ml-[240px] text-[20px] p-10 align-middle py-4 bg-[#293552] text-white font-semibold rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-2xl transition-all"
+                        >
                             Next
                         </button>
                     </div>
                 )}
 
-                {/* Step 2 */}
                 {step === 2 && (
-                    <div className='justify-center align-middle'>
-                        <h3 className="text-lg font-semibold mb-4">Why Alfurqan</h3>
-                        
-                        <div className="mb-6">
-                            <p className="font-semibold mb-2">What will you use IQRA for?</p>
-                            <div className="flex gap-2">
-                                {['Quran', 'Islamic Studies', 'Arabic', 'Other'].map(option => (
-                                    <button
-                                        type="button"
-                                        key={option}
-                                        className={`py-2 px-4 rounded border ${formData.useFor === option ? 'bg-green-100 border-green-500 text-green-700' : 'bg-gray-100 border-gray-300'}`}
-                                        onClick={() => setFormData({...formData, useFor: option})}
-                                    >
-                                        {option}
-                                    </button>
-                                ))}
-                            </div>
-                            {errors.useFor && <p className="text-red-500 text-sm">{errors.useFor}</p>}
+                    <div>
+                        <button type="button" onClick={prevStep} className="text-gray-500 mb-4">Back</button>
+                        <h2 className="text-lg font-bold mb-4 text-[#293552]">What will you use IQRA for?</h2>
+                        <div className="grid grid-cols-4 gap-4 mb-6">
+                            {['Quran', 'Islamic Studies', 'Arabic', 'Other'].map((option) => (
+                                <button
+                                    key={option}
+                                    type="button"
+                                    onClick={() => handleMultiSelectOptionChange('iqraUsage', option)}
+                                    className={`p-4 rounded-br-[25px] rounded-tl-[25px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-lg ${formData.iqraUsage.includes(option) ? 'bg-[#3c85fa2e]' : 'bg-gray-100'}`}
+                                >
+                                    {option}
+                                </button>
+                            ))}
                         </div>
 
-                        <div className="mb-6">
-                            <p className="font-semibold mb-2">How many students will join?</p>
-                            <div className="flex gap-2">
-                                {[1, 2, 3, 4, 5].map(number => (
-                                    <button
-                                        type="button"
-                                        key={number}
-                                        className={`py-2 px-4 rounded-full border ${formData.students === number ? 'bg-green-100 border-green-500 text-green-700' : 'bg-gray-100 border-gray-300'}`}
-                                        onClick={() => setFormData({...formData, students: number})}
-                                    >
-                                        {number}
-                                    </button>
-                                ))}
-                            </div>
-                            {errors.students && <p className="text-red-500 text-sm">{errors.students}</p>}
+                        <h2 className="text-lg font-bold mb-4 text-[#293552]">How many students will join?</h2>
+                        <div className="grid grid-cols-5 gap-4 mb-6">
+                            {[1, 2, 3, 4, 5].map((count) => (
+                                <button
+                                    key={count}
+                                    type="button"
+                                    onClick={() => handleSingleSelectOptionChange('studentsCount', count)}
+                                    className={`p-4 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[5px] rounded-tr-[5px] hover:shadow-inner shadow-lg ${formData.studentsCount === count ? 'bg-[#3c85fa2e]' : 'bg-gray-100'}`}
+                                >
+                                    {count}
+                                </button>
+                            ))}
                         </div>
 
-                        <div className="mb-6">
-                            <p className="font-semibold mb-2">For your evaluation, do you prefer?</p>
-                            <div className="flex gap-2">
-                                {['Male Teacher', 'Female Teacher', 'Either Teacher'].map(preference => (
-                                    <button
-                                        type="button"
-                                        key={preference}
-                                        className={`py-2 px-4 rounded border ${formData.teacherPreference === preference ? 'bg-green-100 border-green-500 text-green-700' : 'bg-gray-100 border-gray-300'}`}
-                                        onClick={() => setFormData({...formData, teacherPreference: preference})}
-                                    >
-                                        {preference}
-                                    </button>
-                                ))}
-                            </div>
-                            {errors.teacherPreference && <p className="text-red-500 text-sm">{errors.teacherPreference}</p>}
+                        <h2 className="text-lg font-bold mb-4 text-[#293552]">For your evaluation, do you prefer</h2>
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                            {['Male Teacher', 'Female Teacher', 'Either'].map((preference) => (
+                                <button
+                                    key={preference}
+                                    type="button"
+                                    onClick={() => handleSingleSelectOptionChange('teacherPreference', preference)}
+                                    className={`p-4 rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-lg ${formData.teacherPreference === preference ? 'bg-[#3c85fa2e]' : 'bg-gray-100'}`}
+                                >
+                                    {preference}
+                                </button>
+                            ))}
                         </div>
 
-                        <div className="mb-6">
-                            <p className="font-semibold mb-2">How did you hear about us?</p>
-                            <div className="flex gap-2">
-                                {['Google', 'Instagram', 'Facebook', 'Friend', 'Relative', 'Other'].map(source => (
-                                    <button
-                                        type="button"
-                                        key={source}
-                                        className={`py-2 px-4 rounded border ${formData.learnedFrom === source ? 'bg-green-100 border-green-500 text-green-700' : 'bg-gray-100 border-gray-300'}`}
-                                        onClick={() => setFormData({...formData, learnedFrom: source})}
-                                    >
-                                        {source}
-                                    </button>
-                                ))}
-                            </div>
-                            {errors.learnedFrom && <p className="text-red-500 text-sm">{errors.learnedFrom}</p>}
+                        <h2 className="text-lg font-bold mb-4 text-[#293552]">How did you learn about IQRA?</h2>
+                        <div className="grid grid-cols-4 gap-4 mb-6">
+                            {['A Friend', 'Social Media', 'E-Mail', 'Other'].map((source) => (
+                                <button
+                                    key={source}
+                                    type="button"
+                                    onClick={() => handleSingleSelectOptionChange('referralSource', source)}
+                                    className={`p-4 rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-lg transition-all ${formData.referralSource === source ? 'bg-[#3c85fa2e]' : 'bg-gray-100'}`}
+                                >
+                                    {source}
+                                </button>
+                            ))}
                         </div>
 
-                        <div className="flex justify-between">
-                            <button type="button" className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600" onClick={prevStep}>
-                                Previous
-                            </button>
-                            <button type="button" className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600" onClick={nextStep}>
-                                Next
-                            </button>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={nextStep}
+                            className="justify-end ml-[240px] text-[20px] p-10 align-middle py-4 bg-[#293552] text-white font-semibold rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-2xl transition-all"
+                        >
+                            Next
+                        </button>
                     </div>
                 )}
 
-                {/* Step 3 */}
                 {step === 3 && (
                     <div>
-                        <h3 className="text-lg font-semibold mb-4">Schedule your class</h3>
-                        
-                        <div className="mb-6">
-                            <label className="block mb-2 font-semibold">Choose a Date:</label>
-                            <DatePicker
+                        <button onClick={prevStep} className="text-gray-500 mb-4">Back</button>
+                        <h2 className="text-xl font-bold mb-4 text-[#293552]">
+                            Pick a date and time for your free trial lesson
+                        </h2>
+                        <div className="flex justify-center mb-6 p-6 border-none">
+                            <Calendar
                                 onChange={handleDateChange}
-                                value={formData.date}
-                                className="w-full p-3 border rounded"
+                                value={formData.trialDate}
+                                minDate={new Date()}
                             />
                         </div>
 
-                        {formData.date && (
-                            <div className="mb-6">
-                                <label className="block mb-2 font-semibold">Choose a Time:</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM'].map(time => (
-                                        <button
-                                            type="button"
-                                            key={time}
-                                            className={`py-2 px-4 rounded border ${formData.time === time ? 'bg-green-100 border-green-500 text-green-700' : 'bg-gray-100 border-gray-300'}`}
-                                            onClick={() => handleTimeSelect(time)}
-                                        >
-                                            {time}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="flex justify-between">
-                            <button type="button" className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600" onClick={prevStep}>
-                                Previous
-                            </button>
-                            <button type="submit" className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-                                Submit
-                            </button>
+                        <div className="flex flex-col items-center mb-6">
+                        <h3 className="text-lg font-semibold mb-2">{formData.trialDate.toDateString()}</h3>
+                        <div className="flex flex-wrap gap-2 justify-center max-h-40 overflow-x-auto scrollbar-thin scrollbar-thumb-blue-500">
+                            {availableTimes.map((time) => (
+                                <button
+                                    key={time}
+                                    type="button"
+                                    onClick={() => handleTimeSelect(time)}
+                                    className={`px-4 py-2 rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-2xl ${formData.trialTime === time ? 'bg-blue-400 text-white' : 'bg-white text-blue-500 border-blue-500'} hover:bg-blue-500 hover:text-white overflow-y-auto transition-all`}
+                                >
+                                    {time}
+                                </button>
+                            ))}
                         </div>
+                    </div>
+
+
+                        <button
+                            type="submit"
+                            className="justify-end ml-[400px] text-[20px] p-10 align-middle py-4 bg-[#293552] text-white font-semibold rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-2xl"
+                            disabled={!formData.trialTime}
+                        >
+                            Confirm
+                        </button>
                     </div>
                 )}
             </form>
         </div>
     );
-}
+};
+
+export default MultiStepForm;
