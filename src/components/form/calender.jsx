@@ -38,7 +38,7 @@ function renderCell(date) {
   return null;
 }
 
-const Apps = () => {
+const App = () => {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const handleSelect = date => {
