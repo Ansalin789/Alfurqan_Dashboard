@@ -21,31 +21,31 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Academic() {
 
-  const ClassCard = ({}) => (
-    <div className="bg-blue-500 p-6 rounded-lg shadow text-white mb-4">
-      {classes.map((classInfo, index) => (
-        <div key={index} className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <div className="mr-8 flex gap-28">
-              <h3 className="text-lg font-medium">{classInfo.title}</h3>
-              <div className="flex items-center">
-                <FaUser className="mr-2 w-4 h-4" />
-                <p>{classInfo.name}</p>
-              </div>
-            </div>
-            <div className="flex items-center ml-40">
-              <FaCalendarAlt className="mr-2 w-4 h-4" />
-              <p>{classInfo.date}</p>
-            </div>
-          </div>
-          <div className="flex items-center font-bold bg-white text-[#0e3c50] p-2 rounded-lg shadow">
-            <FaClock className="mr-2" />
-            <p>{classInfo.time}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  // const ClassCard = ({}) => (
+  //   <div className="bg-blue-500 p-6 rounded-lg shadow text-white mb-4">
+  //     {classes.map((classInfo, index) => (
+  //       <div key={index} className="flex justify-between items-center mb-4">
+  //         <div className="flex items-center">
+  //           <div className="mr-8 flex gap-28">
+  //             <h3 className="text-lg font-medium">{classInfo.title}</h3>
+  //             <div className="flex items-center">
+  //               <FaUser className="mr-2 w-4 h-4" />
+  //               <p>{classInfo.name}</p>
+  //             </div>
+  //           </div>
+  //           <div className="flex items-center ml-40">
+  //             <FaCalendarAlt className="mr-2 w-4 h-4" />
+  //             <p>{classInfo.date}</p>
+  //           </div>
+  //         </div>
+  //         <div className="flex items-center font-bold bg-white text-[#0e3c50] p-2 rounded-lg shadow">
+  //           <FaClock className="mr-2" />
+  //           <p>{classInfo.time}</p>
+  //         </div>
+  //       </div>
+  //     ))}
+  //   </div>
+  // );
 
   const data = {
     labels: ['Active', 'Not Active', 'On Leave', 'Left'],
@@ -58,20 +58,20 @@ export default function Academic() {
     ],
   };
 
-  const classes = [
-    {
-      title: 'Evaluation Class',
-      name: 'Abinesh',
-      date: '06 May 2024',
-      time: '9:00 AM - 10:00 AM',
-    },
-    {
-      title: 'Evaluation Class',
-      name: 'sagarps',
-      date: '08 May 2024',
-      time: '10:00 AM - 11:00 AM',
-    },
-  ];
+  // const classes = [
+  //   {
+  //     title: 'Evaluation Class',
+  //     name: 'Abinesh',
+  //     date: '06 May 2024',
+  //     time: '9:00 AM - 10:00 AM',
+  //   },
+  //   {
+  //     title: 'Evaluation Class',
+  //     name: 'sagarps',
+  //     date: '08 May 2024',
+  //     time: '10:00 AM - 11:00 AM',
+  //   },
+  // ];
 
 
 
@@ -238,9 +238,9 @@ export default function Academic() {
               </div>
 
 
-              <div className="col-span-12">
+              {/* <div className="col-span-12">
                 <ClassCard classes={classes} />
-              </div>
+              </div> */}
 
               <div className="col-span-12 bg-white p-4 rounded-lg shadow">
                 <h3 className="text-lg font-medium">Trail Request List</h3>
