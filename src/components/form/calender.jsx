@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client'; // Import createRoot
 import { Calendar, Badge, List } from 'rsuite';
 import { HStack } from '@chakra-ui/react'; // Assuming you're using Chakra UI for HStack
 
@@ -64,4 +64,7 @@ const App = () => {
   );
 };
 
-ReactDOM.render(<App />, document.getElementById('root'));
+// Use createRoot to render your application
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(<App />);
