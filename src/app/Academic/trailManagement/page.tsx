@@ -1,239 +1,128 @@
-// import BaseLayout1 from '@/components/BaseLayout1';
-// import Link from 'next/link';
-// import React from 'react';
-// import { FaFilter, FaPlus } from 'react-icons/fa';
-
-
-// async function getAllUsers() {
-//     let response = await fetch('http://localhost:3000/api/users', {
-//         cache: 'no-store',
-//     })
-
-//     response = await response.json()
-//     return response
-// }
-
-// export default async function TrailManagement  () {
-//     const allData = await getAllUsers()
-//     console.log(allData)
-
-//     if (allData.success){
-//         const users = allData.data
-
-//         return(
-//             <>
-//             <BaseLayout1>
-//                 <div className="bg-white p-6 rounded-lg shadow-lg mt-10">
-//                         <div className="flex justify-between items-center mb-4">
-//                         <h2 className="text-2xl font-semibold p-4">Student List for Evaluation Session</h2>
-//                         <div className="flex space-x-4">
-//                             {/* <button className="flex items-center bg-gray-200 p-2 rounded-lg shadow">
-//                             <FaFilter className="mr-2" /> Filter
-//                             </button> */}
-//                             <input
-//                             type="text"
-//                             placeholder="Search Student"
-//                             className="border rounded-lg p-2 shadow"
-//                             />
-//                             <button className="bg-pink-500 text-white p-2 rounded-lg shadow flex items-center">
-//                             <FaPlus className="mr-2" /> Add new
-//                             </button>
-//                             <select className="border rounded-lg p-2 shadow">
-//                             <option>Duration: Last month</option>
-//                             <option>Duration: Last week</option>
-//                             <option>Duration: Last year</option>
-//                             </select>
-//                         </div>
-//                         </div>
-//                         <table className="min-w-full bg-white rounded-lg shadow">
-//                         <thead>
-//                             <tr>
-//                                 <th className="p-4 text-left">First Name</th>
-//                                 <th className="p-4 text-left">Last Name</th>
-//                                 <th className="p-4 text-left">Email Address</th>
-//                                 <th className="p-4 text-left">Mobile Number</th>
-//                                 <th className="p-4 text-left">Country</th>
-//                             </tr>
-//                         </thead>
-//                         <tbody>
-//                             {users.map((item, index) => (
-//                             <tr key={index} className="border-t">
-//                                 <td className="p-4">{item.fname}</td>
-//                                 <td className="p-4">{item.lname}</td>
-//                                 <td className="p-4">{item.email}</td>
-//                                 <td className="p-4">{item.number}</td>
-//                                 <td className="p-4">{item.country}</td>
-//                                 <td className="p-4">
-//                                     <Link href={'/evalue'}><button className="bg-green-500 text-white p-2 rounded-lg shadow">
-//                                     Start Evaluation
-//                                 </button></Link>
-                                
-//                                 </td>
-//                             </tr>
-//                             ))}
-//                         </tbody>
-//                         </table>
-//                 </div>
-//             </BaseLayout1>
-//             </>
-//         )
-//     } else {
-//         return (
-//             <BaseLayout1>
-//                 <div className="min-h-screen p-4">
-//                     {allData.message}
-//                 </div>
-//             </BaseLayout1>
-//           );
-//     }
-
-
-// };
-
-
-
-
-
-
-"use client"; // Add this directive at the top
+'use client';
 
 import BaseLayout1 from '@/components/BaseLayout1';
-import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
-// import { FaFilter, FaPlus } from 'react-icons/fa';
-interface User {
-    fname: string;
-    lname: string;
-    email: string;
-    number: string;
-    country: string;
-    createdAt: any;
-}
+import { FaFilter, FaPlus, FaEdit, FaSyncAlt, FaChevronDown, FaUserCircle, FaBell } from 'react-icons/fa';
+import ToggleSwitch from '@/components/ToggleSwitch';
 
-async function fetchUsers() {
-    let response = await fetch('', {
-        cache: 'no-store',
-    });
-
-    response = await response.json();
-    return response;
-}
-
-export default function TrailManagement() {
-    const [users, setUsers] = useState([]);
-    const [searchInput, setSearchInput] = useState('');
-    const [filteredUsers, setFilteredUsers] = useState([]);
-    const [duration, setDuration] = useState('Last month');
+const TrailManagement: React.FC = () => {
+    const [users, setUsers] = useState<User[]>([]);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [darkMode, setDarkMode] = useState(false);
 
     useEffect(() => {
-        const getAllUsers = async () => {
-            const allData :any = await fetchUsers();
-            console.log(allData);
-
-            if (allData.success) {
+        const fetchData = async () => {
+            const allData = await getAllUsers();
+            if (allData.success && allData.data) {
                 setUsers(allData.data);
-                setFilteredUsers(allData.data);
+            } else {
+                setErrorMessage(allData.message || 'Failed to fetch users');
             }
         };
 
-        getAllUsers();
+        fetchData();
     }, []);
 
-    useEffect(() => {
-        setFilteredUsers(
-            users.filter((user: User) =>
-                user.fname.toLowerCase().includes(searchInput.toLowerCase()) ||
-                user.lname.toLowerCase().includes(searchInput.toLowerCase()) ||
-                user.email.toLowerCase().includes(searchInput.toLowerCase()) ||
-                user.number.toLowerCase().includes(searchInput.toLowerCase()) ||
-                user.country.toLowerCase().includes(searchInput.toLowerCase())
-            )
+    const toggleDarkMode = () => {
+        setDarkMode(!darkMode);
+    };
+
+    if (errorMessage) {
+        return (
+            <BaseLayout1>
+                <div className="min-h-screen p-4">{errorMessage}</div>
+            </BaseLayout1>
         );
-    }, [searchInput, users]);
-
-    useEffect(() => {
-        // Add logic to filter users based on the selected duration
-        const filterByDuration = () => {
-            let filtered = users;
-
-            if (duration === 'Last week') {
-                const oneWeekAgo = new Date();
-                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-                filtered = users.filter((user : User)=> new Date(user.createdAt) >= oneWeekAgo);
-            } else if (duration === 'Last month') {
-                const oneMonthAgo = new Date();
-                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-                filtered = users.filter((user : User) => new Date(user.createdAt) >= oneMonthAgo);
-            } else if (duration === 'Last year') {
-                const oneYearAgo = new Date();
-                oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-                filtered = users.filter((user : User) => new Date(user.createdAt) >= oneYearAgo);
-            }
-
-            setFilteredUsers(filtered);
-        };
-
-        filterByDuration();
-    }, [duration, users]);
+    }
 
     return (
         <BaseLayout1>
-            <div className="bg-white p-6 rounded-lg shadow-lg mt-10">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-semibold p-4">Student List for Evaluation Session</h2>
-                    <div className="flex space-x-4">
-                        <input
-                            type="text"
-                            placeholder="Search Student"
-                            className="border rounded-lg p-2 shadow"
-                            value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
-                        />
-                        {/* <button className="bg-pink-500 text-white p-2 rounded-lg shadow flex items-center">
-                            <FaPlus className="mr-2" /> Add new
-                        </button> */}
-                        <select
-                            className="border rounded-lg p-2 shadow"
-                            value={duration}
-                            onChange={(e) => setDuration(e.target.value)}
-                        >
-                            <option>Last month</option>
-                            <option>Last week</option>
-                            <option>Last year</option>
-                        </select>
+            <div className={`min-h-screen p-4 rounded-lg shadow mt-5 ${darkMode ? 'bg-[#000] text-[#ffffff]' : 'bg-gray-100 text-gray-800'}`}>
+                <div className="flex justify-between items-center mb-6">
+                    <div className='flex items-center space-x-2'>
+                        <h2 className="text-2xl font-semibold">Scheduled Evaluation Session</h2>
+                        <button className="bg-gray-800 text-white p-2 rounded-full shadow">
+                            <FaSyncAlt />
+                        </button>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        <ToggleSwitch darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                        <button className={`bg-gray-200 p-2 rounded-full shadow ${darkMode ? 'bg-[#1f222a] text-[#fff]' : 'bg-white text-gray-800'}`}>
+                            <FaBell />
+                        </button>
+                        <div className="flex items-center space-x-2">
+                            <FaUserCircle className="text-2xl" />
+                            <span>Harsh</span>
+                            <button className={`bg-gray-200 p-2 rounded-full shadow ${darkMode ? 'bg-[#1f222a] text-[#fff]' : 'bg-white text-gray-800'}`}>
+                                <FaChevronDown />
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <table className="min-w-full bg-white rounded-lg shadow">
-                    <thead>
-                        <tr>
-                            <th className="p-4 text-left">First Name</th>
-                            <th className="p-4 text-left">Last Name</th>
-                            <th className="p-4 text-left">Email Address</th>
-                            <th className="p-4 text-left">Mobile Number</th>
-                            <th className="p-4 text-left">Country</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredUsers.map((item:any, index) => (
-                            <tr key={index} className="border-t">
-                                <td className="p-4">{item.fname}</td>
-                                <td className="p-4">{item.lname}</td>
-                                <td className="p-4">{item.email}</td>
-                                <td className="p-4">{item.number}</td>
-                                <td className="p-4">{item.country}</td>
-                                <td className="p-4">
-                                    <Link href={'/evalue'}>
-                                        <button className="bg-green-500 text-white p-2 rounded-lg shadow">
-                                            Start Evaluation
-                                        </button>
-                                    </Link>
-                                </td>
+                <div className={`p-6 rounded-lg shadow-lg ${darkMode ? 'bg-[#111317] text-[#000]' : 'bg-white text-gray-800'}`}>
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="flex flex-1 space-x-4 items-center justify-between">
+                            <div className='flex'>
+                                <input
+                                    type="text"
+                                    placeholder="Search here..."
+                                    className={`border rounded-lg p-2 mx-4 shadow ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
+                                />
+                                <button className="flex items-center bg-gray-200 p-2 rounded-lg shadow">
+                                    <FaFilter className="mr-2" /> Filter
+                                </button>
+                            </div>
+                            <div className='flex'>
+                                <button className={`border p-2 rounded-lg shadow flex items-center mx-4 ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}>
+                                    <FaPlus className="mr-2" /> Add new
+                                </button>
+                                <select className={`border rounded-lg p-2 shadow ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}>
+                                    <option>Duration: Last month</option>
+                                    <option>Duration: Last week</option>
+                                    <option>Duration: Last year</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <table className={`min-w-full rounded-lg shadow ${darkMode ? 'bg-[#1f222a] text-white' : 'bg-gray-100 text-gray-800'}`}>
+                        <thead>
+                            <tr>
+                                <th className="p-4 text-left">Trail ID</th>
+                                <th className="p-4 text-left">Student Name</th>
+                                <th className="p-4 text-left">Mobile</th>
+                                <th className="p-4 text-left">Country</th>
+                                <th className="p-4 text-left">Course</th>
+                                <th className="p-4 text-left">Preferred Teacher</th>
+                                <th className="p-4 text-left">Date</th>
+                                <th className="p-4 text-left">Time</th>
+                                <th className="p-4 text-left">Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {users.map((item, index) => (
+                                <tr key={index} className={`border-t ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                                    <td className="p-4">{item.trailId}</td>
+                                    <td className="p-4">{item.fname} {item.lname}</td>
+                                    <td className="p-4">{item.number}</td>
+                                    <td className="p-4">{item.country}</td>
+                                    <td className="p-4">{item.course}</td>
+                                    <td className="p-4">{item.preferredTeacher}</td>
+                                    <td className="p-4">{item.date}</td>
+                                    <td className="p-4">{item.time}</td>
+                                    <td className="p-4">
+                                        <button className="bg-blue-500 text-white p-2 rounded-lg shadow">
+                                            <FaEdit />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </BaseLayout1>
     );
-}
+};
+
+export default TrailManagement;
 

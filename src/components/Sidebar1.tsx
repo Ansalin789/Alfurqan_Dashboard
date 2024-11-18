@@ -68,14 +68,14 @@ export default function Sidebar1() {
                 </div>
                 <ul className="sidebar__list">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (
-                        <li className="sidebar__item" key={name}>
-                            <Link href={href} className='sidebar__link'>
+                        <Link href={href} className="sidebar__item" key={name}>
+                            <li  className='sidebar__link'>
                                 <span className="sidebar__icon">
                                     <Icon />
                                 </span>
                                 <span className="sidebar__name">{name}</span>
-                            </Link>
-                        </li>
+                            </li>
+                        </Link>
                     ))}
                 </ul>
             </aside>

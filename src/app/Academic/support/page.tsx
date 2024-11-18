@@ -4,7 +4,6 @@ import BaseLayout1 from '@/components/BaseLayout1'
 
 export default function Support() {
   return (
-    <>
     <BaseLayout1>
     <div className="flex h-screen">
 
@@ -88,6 +87,5 @@ export default function Support() {
       </main>
     </div>
     </BaseLayout1>
-    </>
   )
 }

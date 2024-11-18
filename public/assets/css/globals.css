@@ -49,7 +49,7 @@ body {
   padding: 1rem;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border-radius: 10px;
-  margin-top: 40px;
+  margin-top: 25px;
   margin-left: 20px;
 }
 
@@ -72,13 +72,14 @@ body {
 
 .sidebar__list {
   list-style: none;
+  font-weight: 20px;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .sidebar__list :hover {
-  background-color: #2a295b;
-  color: #fff;
+  background-color: #ccc;
+  /* color: #fff; */
   border-radius: 10px;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .sidebar__icon {
@@ -178,7 +179,6 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
-  color: #fff;
 }
 
 .sidebar__icon {
@@ -210,4 +210,24 @@ body {
   backgroundposition: "center";
   objectfit: "cover";
   background: "#000";
+}
+
+/* dark theme */
+
+/* Tailwind CSS Custom Classes */
+.custom-checkbox {
+  appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: white;
+  border-radius: 9999px;
+  border-width: 4px;
+  transition: right 0.2s;
+  right: 0;
+  position: relative;
+}
+
+.custom-checkbox:checked {
+  right: 0;
+  background-color: #000;
 }

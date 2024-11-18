@@ -33,7 +33,7 @@ export default function BasicExample(): JSX.Element {
   const handleAppleSignIn = (response: any) => {
     console.log("Apple login success:", response);
     // Handle Apple login success here (e.g., redirect to dashboard)
-    router.push("/dashboard"); // Example redirect
+    router.push("/"); // Example redirect
   };
 
   return (

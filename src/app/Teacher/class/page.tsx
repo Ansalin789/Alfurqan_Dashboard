@@ -5,7 +5,6 @@ import BaseLayout from '@/components/BaseLayout';
 
 export default function Class() {
   return (
-    <>
     <BaseLayout>
         <div className="flex">
         <div className="flex-1 p-6">
@@ -104,6 +103,5 @@ export default function Class() {
         </div>
         </div>
     </BaseLayout>
-    </>
   )
 }

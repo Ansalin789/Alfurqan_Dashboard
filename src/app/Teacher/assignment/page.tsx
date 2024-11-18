@@ -10,7 +10,6 @@ export default function Assignment() {
       ];
 
   return (
-    <>
     <BaseLayout>
       <div className="flex h-screen bg-gray-200">
 
@@ -83,7 +82,6 @@ export default function Assignment() {
         </div>
       </div>
     </BaseLayout>
-    </>
     
   )
 }

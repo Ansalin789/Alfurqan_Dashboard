@@ -12,7 +12,6 @@ export default function Messages() {
 
 
   return (
-    <>
     <BaseLayout>
     <div className="flex h-screen">
 
@@ -102,7 +101,7 @@ export default function Messages() {
         </main>
       </div>
     </div>
-    </BaseLayout></>
+    </BaseLayout>
     
   )
 }
