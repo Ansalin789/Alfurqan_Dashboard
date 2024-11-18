@@ -4,9 +4,9 @@ import React from 'react'
 import 'react-calendar/dist/Calendar.css'
 import BaseLayout1 from '@/components/BaseLayout1'
 
-import { FaUser } from 'react-icons/fa';
-import { FaCalendarAlt } from 'react-icons/fa';
-import { FaClock } from 'react-icons/fa';
+// import { FaUser } from 'react-icons/fa';
+// import { FaCalendarAlt } from 'react-icons/fa';
+// import { FaClock } from 'react-icons/fa';
 import { FaUserAlt } from 'react-icons/fa';
 import { AiOutlineClockCircle } from 'react-icons/ai';
 import { Doughnut } from 'react-chartjs-2';
