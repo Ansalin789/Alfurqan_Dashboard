@@ -121,7 +121,7 @@ export default function Academic() {
                     <Doughnut
                       data={data}
                       options={{
-                        cutoutPercentage: 70,
+                        cutout: 70,
                         responsive: true,
                         maintainAspectRatio: false,
                       }}
