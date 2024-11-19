@@ -1,11 +1,11 @@
-'use client';
+'use client'
 
+import { useState, useEffect } from 'react';
+import { FaSyncAlt, FaBell, FaUserCircle, FaChevronDown, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
 import BaseLayout1 from '@/components/BaseLayout1';
-import React, { useState, useEffect } from 'react';
-import { FaFilter, FaPlus, FaEdit, FaSyncAlt, FaChevronDown, FaUserCircle, FaBell } from 'react-icons/fa';
 import ToggleSwitch from '@/components/ToggleSwitch';
 
-// Define the User type
+// Define the return type of the getAllUsers function
 interface User {
   trailId: string;
   fname: string;
@@ -18,7 +18,36 @@ interface User {
   time: string;
 }
 
-const TrailManagement: React.FC = () => {
+interface GetAllUsersResponse {
+  success: boolean;
+  data: User[];
+  message?: string; // Make message optional
+}
+
+// Mock implementation of getAllUsers function
+const getAllUsers = async (): Promise<GetAllUsersResponse> => {
+  // Replace with actual API call
+  return {
+    success: true,
+    data: [
+      {
+        trailId: '1',
+        fname: 'John',
+        lname: 'Doe',
+        number: '1234567890',
+        country: 'USA',
+        course: 'Math',
+        preferredTeacher: 'Mr. Smith',
+        date: '2024-12-01',
+        time: '10:00 AM',
+      },
+      // Add more user objects as needed
+    ],
+    message: 'Users fetched successfully', // Example message
+  };
+};
+
+const TrailManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
@@ -29,7 +58,7 @@ const TrailManagement: React.FC = () => {
       if (allData.success && allData.data) {
         setUsers(allData.data);
       } else {
-        setErrorMessage(allData.message || 'Failed to fetch users');
+        setErrorMessage(allData.message ?? 'Failed to fetch users');
       }
     };
 
