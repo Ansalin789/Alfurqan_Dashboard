@@ -63,15 +63,15 @@ const MultiStepForm = () => {
                 ...formData,
                 trialDate: value,
             });
-            loadAvailableTimes(value);
+            //loadAvailableTimes(value);
         }
     };
     
 
-    const loadAvailableTimes = (_date: Date) => {
-        const times = ["2:45 AM", "3:00 AM", "3:15 AM", "3:30 AM", "3:45 AM", "4:00 AM"];
-        setAvailableTimes(times);
-    };
+    // const loadAvailableTimes = (date: Date) => {
+    //     const times = ["2:45 AM", "3:00 AM", "3:15 AM", "3:30 AM", "3:45 AM", "4:00 AM"];
+    //     setAvailableTimes(times);
+    // };
 
     const handleTimeSelect = (time: string) => {
         setFormData({
