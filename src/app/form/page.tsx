@@ -8,7 +8,6 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Image from 'next/image';
 
-
 interface FormData {
     firstName: string;
     lastName: string;
@@ -38,9 +37,9 @@ const MultiStepForm = () => {
         trialDate: new Date(),
         trialTime: '',
     });
-    // const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+    const [availableTimes, setAvailableTimes] = useState<string[]>([]);
 
-    const handleChange = (e: { target: { name: string; value: string } }) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData({
             ...formData,
@@ -55,23 +54,20 @@ const MultiStepForm = () => {
         });
     };
 
-    type Value = Date | [Date, Date] | null; // Adjust based on the library documentation
-
-    const handleDateChange = (value: Value) => {
-        if (value && !Array.isArray(value)) {
+    const handleDateChange = (value: Date | null) => {
+        if (value) {
             setFormData({
                 ...formData,
                 trialDate: value,
             });
-            //loadAvailableTimes(value);
+            loadAvailableTimes(value);
         }
     };
-    
 
-    // const loadAvailableTimes = (date: Date) => {
-    //     const times = ["2:45 AM", "3:00 AM", "3:15 AM", "3:30 AM", "3:45 AM", "4:00 AM"];
-    //     setAvailableTimes(times);
-    // };
+    const loadAvailableTimes = (date: Date) => {
+        const times = ["2:45 AM", "3:00 AM", "3:15 AM", "3:30 AM", "3:45 AM", "4:00 AM"];
+        setAvailableTimes(times);
+    };
 
     const handleTimeSelect = (time: string) => {
         setFormData({
@@ -80,9 +76,9 @@ const MultiStepForm = () => {
         });
     };
 
-    const handleMultiSelectOptionChange = (field: keyof FormData, value: string) => {
-        setFormData((prev) => { 
-            const currentSelection = Array.isArray(prev[field]) ? (prev[field] as string[]) : [];
+    const handleMultiSelectOptionChange = (field: keyof Pick<FormData, 'iqraUsage'>, value: string) => {
+        setFormData((prev) => {
+            const currentSelection = prev[field];
             if (currentSelection.includes(value)) {
                 return {
                     ...prev,
@@ -116,6 +112,10 @@ const MultiStepForm = () => {
         console.log(formData);
     };
 
+    const isTileDisabled = ({ date }: { date: Date }): boolean => {
+        return date < new Date();
+    };
+
     return (
         <div className="max-w-[40%] mx-auto mt-10 p-6 bg-white shadow-lg rounded-br-[50px] rounded-tl-[50px] rounded-bl-[8px] rounded-tr-[8px]">
             <div className="flex justify-between items-center mb-4">
@@ -126,7 +126,7 @@ const MultiStepForm = () => {
                 <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: `${step * 33}%` }}></div>
             </div>
             <div className="flex items-center justify-center mb-4 p-6">
-                <Image src="/assets/images/alf2.png" alt=" Logo" width={160} height={160} className="mr-10" />
+                <Image src="/assets/images/alf2.png" alt="Logo" width={160} height={160} className="mr-10" />
                 <div>
                     <h2 className="text-2xl font-bold">أهلا ومرحبا</h2>
                 </div>
@@ -247,71 +247,48 @@ const MultiStepForm = () => {
                                 </button>
                             ))}
                         </div>
-                        <h2 className="text-lg font-bold mb-4 text-[#293552]">How did you hear about us?</h2>
-                         <div className="grid grid-cols-3 gap-4 mb-6">
-                             {['Google', 'Facebook', 'Instagram', 'Friend', 'Other'].map((source) => (
-                                 <button
-                                     key={source}
-                                     type="button"
-                                     onClick={() => handleSingleSelectOptionChange('referralSource', source)}
-                                     className={`p-4 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[5px] rounded-tr-[5px] hover:shadow-inner shadow-lg ${formData.referralSource === source ? 'bg-[#3c85fa2e]' : 'bg-gray-100'}`}
-                                 >
-                                     {source}
-                                 </button>
-                             ))}
-                         </div>
-
-                         <button
-                             type="button"
-                             onClick={nextStep}
-                             className="justify-end ml-[240px] text-[20px] p-10 align-middle py-4 bg-[#293552] text-white font-semibold rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-2xl transition-all"
-                         >
-                             Next
-                         </button>
+                        <button
+                            type="button"
+                            onClick={nextStep}
+                            className="justify-end ml-[240px] text-[20px] p-10 align-middle py-4 bg-[#293552] text-white font-semibold rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-2xl transition-all"
+                        >
+                            Next
+                        </button>
                     </div>
                 )}
+
                 {step === 3 && (
-                     <div>
-                         <button type="button" onClick={prevStep} className="text-gray-500 mb-4">Back</button>
-                         <h2 className="text-lg font-bold mb-4">Select a date and time for your trial class</h2>
-                         <div className="flex justify-center mb-4">
-                         <Calendar
-                            onChange={(value) => handleDateChange(value as Date | null)} // Cast to expected type
+                    <div>
+                        <button type="button" onClick={prevStep} className="text-gray-500 mb-4">Back</button>
+                        <h2 className="text-lg font-bold mb-4 text-[#293552]">Select Trial Date</h2>
+                        <Calendar
+                            onChange={handleDateChange}
                             value={formData.trialDate}
-                            tileDisabled={({ date }) => {
-                                return date < new Date(); // Explicitly return the condition
-                            }}
-                            
+                            tileDisabled={isTileDisabled}
                         />
-
-
-
-                         </div>
-                         {formData.trialDate && (
-                             <div>
-                                 <h3 className="text-lg font-semibold mb-2">Available times on {formData.trialDate.toDateString()}:</h3>
-                                 <div className="grid grid-cols-3 gap-4">
-                                     {/* {availableTimes.map((time) => (
-                                         <button
-                                             key={time}
-                                             type="button"
-                                             onClick={() => handleTimeSelect(time)}
-                                             className={`p-4 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[5px] rounded-tr-[5px] hover:shadow-inner shadow-lg ${formData.trialTime === time ? 'bg-[#3c85fa2e]' : 'bg-gray-100'}`}
-                                         >
-                                             {time}
-                                         </button>
-                                     ))} */}
-                                 </div>
-                             </div>
-                         )}
-                         <button
-                             type="submit"
-                             className="justify-end ml-[240px] text-[20px] p-10 align-middle py-4 bg-[#293552] text-white font-semibold rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-2xl transition-all"
-                         >
-                             Submit
-                         </button>
-                     </div>
-                 )}
+                        <h2 className="text-lg font-bold mt-6 mb-4 text-[#293552]">Available Times</h2>
+                        <div className="grid grid-cols-3 gap-4">
+                            {availableTimes.map((time) => (
+                                <button
+                                    key={time}
+                                    type="button"
+                                    onClick={() => handleTimeSelect(time)}
+                                    className={`p-4 rounded hover:shadow-inner shadow-lg ${
+                                        formData.trialTime === time ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
+                                    }`}
+                                >
+                                    {time}
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            type="submit"
+                            className="justify-end ml-[240px] text-[20px] p-10 align-middle py-4 bg-[#293552] text-white font-semibold rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px] hover:shadow-inner shadow-2xl transition-all"
+                        >
+                            Submit
+                        </button>
+                    </div>
+                )}
             </form>
         </div>
     );
