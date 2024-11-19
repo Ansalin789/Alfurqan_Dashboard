@@ -81,7 +81,7 @@ const MultiStepForm = () => {
     };
 
     const handleMultiSelectOptionChange = (field: keyof FormData, value: string) => {
-        setFormData((prev) => {
+        setFormData((prev) => { 
             const currentSelection = Array.isArray(prev[field]) ? (prev[field] as string[]) : [];
             if (currentSelection.includes(value)) {
                 return {
@@ -278,9 +278,12 @@ const MultiStepForm = () => {
                          <Calendar
                             onChange={(value) => handleDateChange(value as Date | null)} // Cast to expected type
                             value={formData.trialDate}
-                            tileDisabled={({ date }) => date < new Date()} // This will disable past dates
-
+                            tileDisabled={({ date }) => {
+                                return date < new Date(); // Explicitly return the condition
+                            }}
+                            
                         />
+
 
 
                          </div>
