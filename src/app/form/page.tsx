@@ -38,7 +38,7 @@ const MultiStepForm = () => {
         trialDate: new Date(),
         trialTime: '',
     });
-    const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+    // const [availableTimes, setAvailableTimes] = useState<string[]>([]);
 
     const handleChange = (e: { target: { name: string; value: string } }) => {
         const { name, value } = e.target;
@@ -291,7 +291,7 @@ const MultiStepForm = () => {
                              <div>
                                  <h3 className="text-lg font-semibold mb-2">Available times on {formData.trialDate.toDateString()}:</h3>
                                  <div className="grid grid-cols-3 gap-4">
-                                     {availableTimes.map((time) => (
+                                     {/* {availableTimes.map((time) => (
                                          <button
                                              key={time}
                                              type="button"
@@ -300,7 +300,7 @@ const MultiStepForm = () => {
                                          >
                                              {time}
                                          </button>
-                                     ))}
+                                     ))} */}
                                  </div>
                              </div>
                          )}
