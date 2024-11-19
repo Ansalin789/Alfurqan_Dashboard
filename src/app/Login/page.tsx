@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { useRouter } from "next/navigation"; 
 import { FaApple } from "react-icons/fa";
+import Image from 'next/image';
 
 export default function BasicExample(): JSX.Element {
   const router = useRouter(); // Ensure useRouter is called unconditionally
@@ -41,11 +42,13 @@ export default function BasicExample(): JSX.Element {
     <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:p-8">
       <div className="bg-[#ffffffee] p-10 w-1/2 align-middle justify-center ml-[350px] rounded-[20px] shadow">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <img
-            alt="Your Company"
-            src="/assets/images/alf.png"
-            className="mx-auto w-[190px]"
-          />
+        <Image
+          alt="Your Company"
+          src="/assets/images/alf.png"
+          width={190}  
+          height={190}  
+          className="mx-auto"
+        />
           <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
             أهلا ومرحبا
           </h2>
