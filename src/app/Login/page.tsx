@@ -18,7 +18,7 @@ export default function BasicExample(): JSX.Element {
 
   // Use the router only when it's mounted (client-side)
   if (!isClient) {
-    return null; // Return null or a loading spinner while the component is mounting
+    return <div>Loading...</div>; // Return a loading spinner or a simple div while the component is mounting
   }
 
   const handleGoogleSuccess = (response: CredentialResponse) => {
@@ -27,8 +27,8 @@ export default function BasicExample(): JSX.Element {
     router.push("/"); // Example redirect
   };
 
-  const handleGoogleFailure = (error: unknown) => {
-    console.error("Google login error:", error);
+  const handleGoogleFailure = () => {
+    console.error("Google login error:");
   };
 
   const handleAppleSignIn = (response: unknown) => {
