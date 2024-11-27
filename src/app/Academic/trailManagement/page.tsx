@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { FaSyncAlt, FaBell, FaUserCircle, FaChevronDown, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
+import Modal from 'react-modal';
+import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
 import BaseLayout1 from '@/components/BaseLayout1';
-import ToggleSwitch from '@/components/ToggleSwitch';
+import AddStudentModal from '@/components/Academic/AddStudentModel';
+
 
 // Define the return type of the getAllUsers function
 interface User {
@@ -51,6 +53,8 @@ const TrailManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,8 +69,19 @@ const TrailManagement = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    Modal.setAppElement('body');
+  }, []);
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
+  };
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
   };
 
   if (errorMessage) {
@@ -79,7 +94,7 @@ const TrailManagement = () => {
 
   return (
     <BaseLayout1>
-      <div className={`min-h-screen p-4 rounded-lg shadow mt-5 ${darkMode ? 'bg-[#000] text-[#ffffff]' : 'bg-gray-100 text-gray-800'}`}>
+      <div className={`min-h-screen p-4 rounded-lg shadow mt-5 ${darkMode ? 'bg-[#111317] text-[#ffffff]' : 'bg-gray-100 text-gray-800'}`}>
         <div className="flex justify-between items-center mb-6">
           <div className='flex items-center space-x-2'>
             <h2 className="text-2xl font-semibold">Scheduled Evaluation Session</h2>
@@ -87,7 +102,7 @@ const TrailManagement = () => {
               <FaSyncAlt />
             </button>
           </div>
-          <div className="flex items-center space-x-4">
+          {/* <div className="flex items-center space-x-4">
             <ToggleSwitch darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
             <button className={`bg-gray-200 p-2 rounded-full shadow ${darkMode ? 'bg-[#1f222a] text-[#fff]' : 'bg-white text-gray-800'}`}>
               <FaBell />
@@ -99,9 +114,9 @@ const TrailManagement = () => {
                 <FaChevronDown />
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
-        <div className={`p-6 rounded-lg shadow-lg ${darkMode ? 'bg-[#111317] text-[#000]' : 'bg-white text-gray-800'}`}>
+        <div className={`p-6 rounded-lg shadow-lg ${darkMode ? 'bg-[#24282D] text-[#000]' : 'bg-white text-gray-800'}`}>
           <div className="flex justify-between items-center mb-4">
             <div className="flex flex-1 space-x-4 items-center justify-between">
               <div className='flex'>
@@ -115,7 +130,7 @@ const TrailManagement = () => {
                 </button>
               </div>
               <div className='flex'>
-                <button className={`border p-2 rounded-lg shadow flex items-center mx-4 ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}>
+                <button onClick={openModal} className={`border p-2 rounded-lg shadow flex items-center mx-4 ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}>
                   <FaPlus className="mr-2" /> Add new
                 </button>
                 <select className={`border rounded-lg p-2 shadow ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}>
@@ -140,7 +155,7 @@ const TrailManagement = () => {
                 <th className="p-4 text-left">Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody> 
               {users.map((item, index) => (
                 <tr key={index} className={`border-t ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
                   <td className="p-4">{item.trailId}</td>
@@ -162,6 +177,7 @@ const TrailManagement = () => {
           </table>
         </div>
       </div>
+      <AddStudentModal isOpen={isModalOpen} onRequestClose={closeModal} />
     </BaseLayout1>
   );
 };

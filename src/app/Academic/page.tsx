@@ -10,6 +10,9 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { FaMale, FaFemale } from 'react-icons/fa';
 import TeachersList from '../../components/Academic/TeachersList';
 import TotalList from '../../components/Academic/TotalList';
+import { FaSearch } from "react-icons/fa";
+import NextEvaluationClass from '../../components/Academic/NextEvaluationClass'
+
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -76,167 +79,32 @@ export default function Academic() {
       <BaseLayout1>
         <div className="flex flex-col lg:flex-row p-4 w-full">
           <div className="flex-1 overflow-y-scroll scrollbar-hide h-[93vh] pr-4">
-            <header className="flex justify-between mb-8">
+            <header className="flex justify-between mb-8 p-4">
               <div className="flex space-x-4">
                 <div className="flex items-center space-x-4">
-                  <input
-                    type="text"
-                    placeholder="Search here..."
-                    className="p-2 w-80 rounded-md border border-gray-300"
-                  />
-                </div>
-                <div className="flex items-center space-x-4">
-                  <input
-                    type="text"
-                    placeholder="Search here..."
-                    className="p-2 w-80 rounded-md border border-gray-300"
-                  />
+                  <div className="relative">
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                    <input
+                      type="text"
+                      placeholder="Search here..."
+                      className="p-2 pl-10 w-80 rounded-xl bg-[#CED4DC] text-white border border-gray-300"
+                    />
+                  </div>
                 </div>
               </div>
             </header>
 
             <main className="grid grid-cols-12 gap-4">
-              <div className="col-span-12 grid grid-cols-1 gap-4">
-                {/* {['Trail Assigned', 'Evaluation Completed', 'Evaluation Pending', 'Total Dropped'].map(
-                  (title, index) => (
-                    <div
-                      key={index}
-                      className="bg-white p-4 rounded-lg shadow flex flex-col items-center"
-                    >
-                      <span className="text-2xl font-semibold">{index * 20 + 20}</span>
-                      <span className="text-gray-500">{title}</span>
-                    </div>
-                  )
-                )} */}
+              <div className="col-span-12 grid grid-cols-1 gap-4 p-4">
                 <TotalList />
               </div>
-
-              <div className="col-span-6 bg-white p-6 rounded-lg shadow-lg flex justify-between items-center">
-                  {/* Left: Chart and Total Students */}
-                  <div className="relative flex flex-col items-center">
-                    <Doughnut
-                      data={data}
-                      options={{
-                        cutout: 70,
-                        responsive: true,
-                        maintainAspectRatio: false,
-                      }}
-                      width={200}
-                      height={200}
-                    />
-                    <div className=" flex flex-col items-center justify-center">
-                      <p className="absolute -mt-[124px] text-lg font-bold p-2" style={{borderRadius:'100%'}}>451</p>
-                    </div>
-                  </div>
-
-                {/* Right: Stats and Legend */}
-                <div className="flex flex-col ml-8 space-y-4">
-                  <h3 className="text-xl font-semibold text-gray-800">Total Students</h3>
-                  <div className="flex flex-col items-center">
-                    {/* Icons of Boys and Girls */}
-                    <div className="flex items-center space-x-2 mb-4">
-                        <FaMale className="text-blue-400" size={30} />
-                        <FaFemale className="text-pink-500" size={30} />
-                    </div>
-
-                    {/* Boys and Girls Counts */}
-                    <div className="flex justify-between space-x-10">
-                        {/* Boys */}
-                        <div className="flex flex-col items-center">
-                            <span className="w-2 h-2 bg-blue-400 rounded-full mb-2"></span>
-                            <p className="text-[15px] font-bold text-gray-700">200</p>
-                            <p className="text-gray-600 text-[10px]">Boys (47%)</p>
-                        </div>
-
-                        {/* Girls */}
-                        <div className="flex flex-col items-center">
-                            <span className="w-2 h-2 bg-pink-500 rounded-full mb-2"></span>
-                            <p className="text-[15px] font-bold text-gray-700">250</p>
-                            <p className="text-gray-600 text-[10px]">Girls (53%)</p>
-                        </div>
-                    </div>
-                </div>
-
-                  {/* Legend */}
-                  <div className="grid grid-cols-2 gap-1 text-sm">
-                    <div className="flex items-center">
-                      <span className="w-3 h-3 bg-yellow-400 rounded-full mr-2"></span>
-                      <span className="text-gray-700 text-[12px]">Active (27%)</span>
-                    </div>
-                    <p className="text-gray-700 font-semibold text-[12px]">763</p>
-
-                    <div className="flex items-center">
-                      <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                      <span className="text-gray-700 text-[12px]">Not Active (50%)</span>
-                    </div>
-                    <p className="text-gray-700 font-semibold text-[12px]">321</p>
-
-                    <div className="flex items-center">
-                      <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                      <span className="text-gray-700 text-[12px]">On Leave (23%)</span>
-                    </div>
-                    <p className="text-gray-700 font-semibold text-[12px]">69</p>
-
-                    <div className="flex items-center">
-                      <span className="w-3 h-3 bg-gray-300 rounded-full mr-2"></span>
-                      <span className="text-gray-700 text-[12px]">Left (23%)</span>
-                    </div>
-                    <p className="text-gray-700 font-semibold text-[12px]">69</p>
-                  </div>
-                </div>
+              <div className="col-span-12 grid grid-cols-1 gap-4 p-4">
+                <NextEvaluationClass />
               </div>
 
-             <TeachersList />
+              <TeachersList />
 
-              <div className="col-span-12 bg-red-500 p-4 rounded-lg shadow flex items-center justify-between text-white">
-                
-                <div className="items-center space-x-4">
-                  <h3 className="text-lg font-medium p-2">Next Evaluation Class Starts in</h3>
-                  <div className="flex items-center space-x-8">
-                    <div className="flex items-center space-x-2">
-                      {/* User Icon */}
-                      <FaUserAlt className="w-4 h-4" />
-                      <p className="text-sm">Abinesh</p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {/* Clock Icon */}
-                      <AiOutlineClockCircle className="w-4 h-4" />
-                      <p className="text-sm">9:00 AM</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-8">
-                  <p className="text-lg font-medium text-[#fff0f0]">Starts in</p>
-                  {/* Timer box styling */}
-                  <div className="bg-white p-3 rounded-xl shadow-lg flex items-center justify-center space-x-4">
-                    {/* Hours */}
-                    <div className="bg-[#0e3c50] text-white text-center px-2 py-2 rounded-md">
-                      <p className="text-base font-bold">20</p>
-                      <p className="text-[10px] tracking-widest">HOURS</p>
-                    </div>
-                    {/* Separator */}
-                    <span className="text-2xl text-[#0e3c50]">:</span>
-                    {/* Minutes */}
-                    <div className="bg-[#0e3c50] text-white text-center px-2 py-2 rounded-md">
-                      <p className="text-base font-bold">12</p>
-                      <p className="text-[10px] tracking-widest">MINUTES</p>
-                    </div>
-                    {/* Separator */}
-                    <span className="text-lg text-[#0e3c50]">:</span>
-                    {/* Seconds */}
-                    <div className="bg-[#0e3c50] text-white text-center px-2 py-2 rounded-md">
-                      <p className="text-base font-bold">19</p>
-                      <p className="text-[10px]">SECONDS</p>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-
-              {/* <div className="col-span-12">
-                <ClassCard classes={classes} />
-              </div> */}
+            
 
               <div className="col-span-12 bg-white p-4 rounded-lg shadow">
                 <h3 className="text-lg font-medium">Trail Request List</h3>

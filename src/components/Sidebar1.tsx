@@ -10,12 +10,6 @@ import { IoPeopleSharp } from "react-icons/io5";
 import { MdLocalLibrary } from "react-icons/md";
 import { MdDateRange } from "react-icons/md";
 import { MdQuestionAnswer } from "react-icons/md";
-
-
-
-
-
-
 import "/public/assets/css/globals.css";
 
 const SidebarItems = [

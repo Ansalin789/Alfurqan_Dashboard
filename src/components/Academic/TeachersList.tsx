@@ -16,7 +16,7 @@ export default function Academic() {
     };
 
     return (
-        <div className="col-span-6 bg-white p-6 rounded-lg shadow-lg flex justify-between items-center">
+        <div className="col-span-5 bg-white p-6 rounded-lg shadow-lg flex justify-between items-center">
                   {/* Left: Chart and Total Students */}
                   <div className="relative flex flex-col items-center">
                     <Doughnut
