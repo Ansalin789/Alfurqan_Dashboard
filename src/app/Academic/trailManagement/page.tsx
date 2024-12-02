@@ -54,6 +54,7 @@ const TrailManagement = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
 
   useEffect(() => {
@@ -76,7 +77,9 @@ const TrailManagement = () => {
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
-  const openModal = () => {
+
+  const openModal = (user: User) => {
+    setSelectedUser(user);
     setIsModalOpen(true);
   };
 
@@ -130,7 +133,12 @@ const TrailManagement = () => {
                 </button>
               </div>
               <div className='flex'>
-                <button onClick={openModal} className={`border p-2 rounded-lg shadow flex items-center mx-4 ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}>
+                <button 
+                  onClick={() => setIsModalOpen(true)} 
+                  className={`border p-2 rounded-lg shadow flex items-center mx-4 ${
+                    darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'
+                  }`}
+                >
                   <FaPlus className="mr-2" /> Add new
                 </button>
                 <select className={`border rounded-lg p-2 shadow ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}>
@@ -167,7 +175,10 @@ const TrailManagement = () => {
                   <td className="p-4">{item.date}</td>
                   <td className="p-4">{item.time}</td>
                   <td className="p-4">
-                    <button className="bg-blue-500 text-white p-2 rounded-lg shadow">
+                    <button 
+                      onClick={() => openModal(item)} 
+                      className="bg-blue-500 text-white p-2 rounded-lg shadow"
+                    >
                       <FaEdit />
                     </button>
                   </td>
@@ -177,7 +188,11 @@ const TrailManagement = () => {
           </table>
         </div>
       </div>
-      <AddStudentModal isOpen={isModalOpen} onRequestClose={closeModal} />
+      <AddStudentModal 
+        isOpen={isModalOpen} 
+        onRequestClose={closeModal} 
+        userData={selectedUser}
+      />
     </BaseLayout1>
   );
 };

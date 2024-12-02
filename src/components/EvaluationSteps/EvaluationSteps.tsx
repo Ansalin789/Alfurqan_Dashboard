@@ -495,6 +495,22 @@ const Step4 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
 // Step 5 Component
 const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+  // Add state for selected hours
+  const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
+
+  // Calculate prices based on selected hours
+  const calculatePrice = (rate: number) => {
+    return `$${(selectedHours * rate).toFixed(2)}`;
+  };
+
+  // Pricing plans data
+  const pricingPlans = [
+    { label: "Simple", rate: 8, basePrice: "$8/h", features: ["Basic Support", "Core Materials"] },
+    { label: "Essential", rate: 9, basePrice: "$9/h", features: ["Priority Support", "Extra Materials"] },
+    { label: "Pro", rate: 11, basePrice: "$11/h", features: ["24/7 Support", "All Materials", "1-on-1 Sessions"] },
+    { label: "Elite", rate: 16, basePrice: "$16/h", features: ["VIP Support", "Custom Materials", "Flexible Schedule"] },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
       {/* Background Effects */}
@@ -541,10 +557,10 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
             </div>
             <select className="bg-white/10 text-white border border-white/20 rounded-lg px-4 py-2
                            focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200">
-              <option>Level: A1</option>
-              <option>Level: A2</option>
-              <option>Level: B1</option>
-              <option>Level: B2</option>
+              <option className="bg-gray-900">Level: A1</option>
+              <option className="bg-gray-900">Level: A2</option>
+              <option className="bg-gray-900">Level: B1</option>
+              <option className="bg-gray-900">Level: B2</option>
             </select>
           </div>
 
@@ -555,8 +571,9 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
               {[1, 1.5, 2, 2.5, 3, 4, 5].map((hour) => (
                 <button
                   key={hour}
+                  onClick={() => setSelectedHours(hour)}
                   className={`px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105
-                           ${hour === 3
+                           ${hour === selectedHours
                     ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
                     : "bg-white/10 text-white/80 hover:bg-white/20"
                   }`}
@@ -571,12 +588,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-white/90 mb-4">Select Preferred Pricing</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[
-                { label: "Simple", rate: "$8/h", price: "$32", features: ["Basic Support", "Core Materials"] },
-                { label: "Essential", rate: "$9/h", price: "$36", features: ["Priority Support", "Extra Materials"] },
-                { label: "Pro", rate: "$11/h", price: "$44", features: ["24/7 Support", "All Materials", "1-on-1 Sessions"] },
-                { label: "Elite", rate: "$16/h", price: "$64", features: ["VIP Support", "Custom Materials", "Flexible Schedule"] },
-              ].map((plan, index) => (
+              {pricingPlans.map((plan) => (
                 <div
                   key={plan.label}
                   className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105"
@@ -588,9 +600,11 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                     <h3 className="text-lg font-bold text-white mb-2">{plan.label}</h3>
                     <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r 
                                 from-blue-400 to-purple-400 mb-1">
-                      {plan.rate}
+                      {plan.basePrice}
                     </div>
-                    <div className="text-sm text-white/60 mb-4">{plan.price}</div>
+                    <div className="text-sm text-white/60 mb-4">
+                      Total: {calculatePrice(plan.rate)}
+                    </div>
                     <ul className="text-sm text-white/80">
                       {plan.features.map((feature, idx) => (
                         <li key={idx} className="flex items-center mb-1">
