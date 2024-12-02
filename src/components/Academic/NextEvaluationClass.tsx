@@ -33,7 +33,7 @@ const NextEvaluationClass = () => {
         <h3 className="text-lg font-medium py-2">Your Next Evaluation Class</h3>
         <div className="flex items-center space-x-8 py-3">
           <div className="flex items-center space-x-2">
-            <FaUserAlt className="w-4 h-4" />
+            <FaUserAlt className="w-4 h-4"/>
             <p className="text-sm">Abinesh</p>
           </div>
           <div className="flex items-center space-x-2">

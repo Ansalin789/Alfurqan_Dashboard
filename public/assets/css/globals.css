@@ -48,9 +48,9 @@ body {
   background-color: #223857;
   padding: 1rem;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-radius: 10px;
-  margin-top: 25px;
-  margin-left: 20px;
+  border-radius: 0 20px 20px 0;
+  /* margin-top: 25px;
+  margin-left: 20px; */
 }
 
 .sidebar__top {
@@ -68,7 +68,6 @@ body {
 
 .sidebar__logo {
   width: 30px;
-  /* height: 3.5rem; */
   object-fit: cover;
   border-radius: 1rem;
 }
@@ -90,6 +89,7 @@ body {
 .sidebar__icon {
   font-size: 1.2rem;
   display: inline-block;
+  margin-right: 10px;
 }
 .sidebar__name {
   margin-left: 0.5rem;
@@ -119,36 +119,32 @@ body {
   font-size: 1.1rem;
 } */
 
-[data-collapse="true"] {
+/* [data-collapse="true"] {
   width: 5.3rem;
-}
+} */
 
-[data-collapse="true"] .sidebar__name,
+/* [data-collapse="true"] .sidebar__name,
 [data-collapse="true"] .sidebar__logo-name {
   display: none;
-}
+} */
 
 .sidebar__wrapper {
   display: flex;
 }
 
 .sidebar {
-  width: 85px;
+  width: 240px;
   transition: width 0.3s;
   overflow: hidden;
 }
 
-.sidebar:hover {
+/* .sidebar:hover {
   width: 240px;
-}
+} */
 
 .sidebar__logo {
   display: block;
   margin: 0 auto;
-}
-
-.sidebar__logo-name {
-  display: none;
 }
 
 .sidebar__item {
@@ -164,8 +160,9 @@ body {
   align-items: center;
   width: 100%;
   color: #fff;
-  margin: 10px;
-  font-size: 1rem;
+  margin: 1px;
+  padding: 20px 0px;
+  font-size: 17px;
   border-radius: 10px;
 }
 
@@ -178,16 +175,12 @@ body {
   width: 100%;
 }
 
-.sidebar__icon {
-  margin-right: 10px;
-}
-
-.sidebar__name {
+/* .sidebar__name {
   display: none;
   transition: opacity 0.3s;
-}
+} */
 
-.sidebar:hover .sidebar__name {
+/* .sidebar:hover .sidebar__name {
   display: inline;
   opacity: 1;
 }
@@ -196,17 +189,16 @@ body {
   display: block;
 }
 
-/* App.css */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
-}
+} */
 
 .letter {
-  backgroundimage: `url("/assets/images/Dewatermark.png") `;
-  backgroundrepeat: "no-repeat";
-  backgroundposition: "center";
-  objectfit: "cover";
-  background: "#000";
+  background-image: `url("/assets/images/Dewatermark.png") `;
+  background-repeat: "no-repeat";
+  background-position: "center";
+  object-fit: "cover";
+  background-color: "#000";
 }
 
 /* dark theme */
@@ -234,7 +226,6 @@ body {
   border-radius: 30px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
   position: relative;
-  /* justify-content: center; */
   overflow: hidden;
   width: 768px;
   max-width: 100%;
@@ -579,11 +570,119 @@ body {
   font-weight: 500;
 }
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
+
+.calendar-container {
+  width: 300px;
+  font-family: "Arial", sans-serif;
+}
+
+.react-calendar {
+  border: none;
+  font-size: 16px;
+  border-radius: 10px;
+}
+
+.react-calendar__navigation {
+  background-color: #edf2f7;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.react-calendar__navigation button {
+  color: #2d3748;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  color: #718096;
+  font-weight: bold;
+}
+
+.react-calendar__tile {
+  padding: 10px;
+  text-align: center;
+  border-radius: 6px;
+  position: relative;
+}
+
+.react-calendar__tile--active {
+  background-color: #2d3748;
+  color: white;
+  border-radius: 6px;
+}
+
+.react-calendar__tile--active:hover {
+  background-color: #4a5568;
+}
+
+.react-calendar__tile--now {
+  background: none;
+  border: 1px solid #2d3748;
+}
+
+.dot {
+  background-color: #2b6cb0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* .sidebar__logo {
+  margin-bottom: 10px;
+}
+
+.sidebar__logo-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.sidebar__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar__item {
+  text-decoration: none;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  padding: 10px 1px;
+  transition: background-color 0.3s ease;
+  position: relative;
+}
+
+.sidebar__name {
+  font-size: 1rem;
+}
+
+.sidebar__item:hover {
+  background-color: #1a202c;
+  color: #ffffff;
+  border-radius: 20px;
+}
+
+.sidebar__item:hover::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #1a202c;
+  border-radius: 0 10px 10px 0;
+} */

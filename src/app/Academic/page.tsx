@@ -8,10 +8,14 @@ import { AiOutlineClockCircle } from 'react-icons/ai';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { FaMale, FaFemale } from 'react-icons/fa';
-import TeachersList from '../../components/Academic/TeachersList';
 import TotalList from '../../components/Academic/TotalList';
 import { FaSearch } from "react-icons/fa";
 import NextEvaluationClass from '../../components/Academic/NextEvaluationClass'
+import TeachersStudent from '../../components/Academic/TeachersStudent'
+import Countries from '@/components/Academic/Countries';
+import Teachers from '@/components/Academic/Teachers';
+import Calender from '@/components/Academic/Calender';
+import UpcomingClasses from '@/components/Academic/UpcommingClasses';
 
 
 // Register Chart.js components
@@ -94,7 +98,7 @@ export default function Academic() {
               </div>
             </header>
 
-            <main className="grid grid-cols-12 gap-4">
+            <main className="grid grid-cols-12 gap-4 -mt-8">
               <div className="col-span-12 grid grid-cols-1 gap-4 p-4">
                 <TotalList />
               </div>
@@ -102,11 +106,18 @@ export default function Academic() {
                 <NextEvaluationClass />
               </div>
 
-              <TeachersList />
-
+              <div className="col-span-5 grid grid-cols-3 gap-4 p-4">
+                <TeachersStudent />
+              </div>
+              <div className="col-span-3 grid grid-cols-3 gap-4 p-4">
+                <Countries />
+              </div>
+              <div className="col-span-4 grid grid-cols-3 gap-4 p-4">
+                <Teachers />
+              </div>
             
 
-              <div className="col-span-12 bg-white p-4 rounded-lg shadow">
+              <div className="col-span-12 bg-[#CED4DC] p-6 rounded-[30px] shadow">
                 <h3 className="text-lg font-medium">Trail Request List</h3>
                 <table className="w-full mt-4">
                   <thead>
@@ -164,35 +175,13 @@ export default function Academic() {
             </main>
           </div>
       {/* calender sidebar */}
-          <div className="w-full lg:w-[300px] mt-6 lg:mt-0 bg-[#1c3557] p-6 rounded-[20px] h-[600px]">
-                <div className="col-span-4 bg-white p-4 rounded-lg shadow">
-                  <h3 className="text-lg font-medium">Calendar</h3>
-                </div>
-                <div className="col-span-4 bg-white p-4 rounded-lg shadow">
-                  <h3 className="text-lg font-medium">Students/Teacher</h3>
-                  <table className="w-full mt-4">
-                    <thead>
-                      <tr className="text-left border-b">
-                        <th className="p-2">Teacher Name</th>
-                        <th className="p-2">No. of Students</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[
-                        { name: 'Abdullah Sulaima', students: 20 },
-                        { name: 'Iman Gabel', students: 10 },
-                        { name: 'Hassan Ibrahim', students: 40 },
-                        { name: 'Maryam Hosain', students: 11 },
-                        { name: 'Ayesha Islam', students: 1 },
-                      ].map((item, index) => (
-                        <tr key={index} className="border-b">
-                          <td className="p-2">{item.name}</td>
-                          <td className="p-2">{item.students}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+          <div className="w-full lg:w-[300px] mt-6 lg:mt-0 p-0 rounded-[20px] h-[600px]">
+            <div className="col-span-4 p-4 rounded-lg shadow">
+              <Calender />
+            </div>
+            <div className="col-span-4 bg-white p-0 rounded-lg shadow">
+              <UpcomingClasses />
+            </div>
           </div>
         </div>
       </BaseLayout1>

@@ -23,16 +23,11 @@ export default function RootLayout({
 }>) { 
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <ThemeProvider>
-        <html lang="en">
-        <body className={inter.className}>
-          {/* Wrap children with GoogleOAuthProvider */}
-          <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
+          <GoogleOAuthProvider clientId="1095351282036-anf4nldkvcn2q9a9osrhuj6oqb11to05.apps.googleusercontent.com">
             {children}
           </GoogleOAuthProvider>
-        </body>
-      </html>
         </ThemeProvider>
       </body>
     </html>

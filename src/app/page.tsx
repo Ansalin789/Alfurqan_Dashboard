@@ -17,9 +17,36 @@ export default function SignInSignUp(): JSX.Element {
   const [error, setError] = useState<string>('');
 
   // Define the handler functions first
-  const handleGoogleSuccess = (response: CredentialResponse) => {
-    console.log('Google login success:', response);
-    router.push('/');
+  const handleGoogleSuccess = async (tokenResponse: any) => {
+    try {
+      // Get user info using the access token
+      const userInfo = await axios.get(
+        'https://www.googleapis.com/oauth2/v3/userinfo',
+        {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+        }
+      );
+
+      // Send the Google token to your backend
+      const response = await axios.post('http://localhost:5001/google-signin', {
+        googleToken: tokenResponse.access_token,
+        email: userInfo.data.email
+      });
+
+      // Handle the response from your backend
+      const { token, role } = response.data;
+      localStorage.setItem('authToken', token);
+      
+      // Redirect based on role
+      if (role?.includes('ACADEMIC COACH')) {
+        router.push('/Academic');
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+      setError('Google login failed. Please try again.');
+    }
   };
 
   const handleGoogleFailure = () => {
@@ -30,6 +57,7 @@ export default function SignInSignUp(): JSX.Element {
   const googleLogin = useGoogleLogin({
     onSuccess: handleGoogleSuccess,
     onError: handleGoogleFailure,
+    flow: 'implicit'
   });
 
   useEffect(() => {
@@ -70,7 +98,7 @@ export default function SignInSignUp(): JSX.Element {
       console.error('Login error:', error);
       setError(error.response?.data?.message || 'Login failed. Please try again.');
     }
-  };
+  }; 
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">

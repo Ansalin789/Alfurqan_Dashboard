@@ -6,114 +6,119 @@ import 'react-phone-input-2/lib/style.css';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Image from 'next/image';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import TimePicker from 'react-time-picker';
-import 'react-time-picker/dist/TimePicker.css';
-import 'react-clock/dist/Clock.css';
 import { getCountries } from 'react-phone-number-input/input'
 import en from 'react-phone-number-input/locale/en.json'
+import { useRouter } from 'next/navigation';
+import { v4 as uuidv4 } from 'uuid';
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
-
-interface FormData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    number: string;
-    country: string;
-    iqraUsage: string[]; // Explicitly typed as an array of strings
-    studentsCount: string | number; // Mixed type to handle different states
-    teacherPreference: string;
-    referralSource: string;
-    referralSourceOther: string;
-    trialDate: Date;
-    trialTime: string;
-    iqraUsageOther: string; // Add this new field
+interface ApiResponse {
+    success: boolean;
+    message: string;
 }
 
 const MultiStepForm = () => {
+    const router = useRouter();
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState<FormData>({
-        firstName: '',
-        lastName: '',
-        email: '',
-        number: '',
-        country: '',
-        iqraUsage: [], // Default empty array
-        studentsCount: '',
-        teacherPreference: '',
-        referralSource: '',
-        referralSourceOther: '',
-        trialDate: new Date(),
-        trialTime: '',
-        iqraUsageOther: '', // Add this new field
-    });
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Basic Information States
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [referral, setReferral] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [country, setCountry] = useState("");
+    const [countryCode, setCountryCode] = useState("");
+
+    // Learning Interest States
+    const [learningInterest, setLearningInterest] = useState<string[]>([]);
+    const [iqraUsageOther, setIqraUsageOther] = useState("");
+    const [numberOfStudents, setNumberOfStudents] = useState("");
+    const [preferredTeacher, setPreferredTeacher] = useState("");
+    const [referralSource, setReferralSource] = useState("");
+    const [referralSourceOther, setReferralSourceOther] = useState("");
+
+    // Schedule States
+    const [startDate, setStartDate] = useState(new Date());
+    const [toDate, setToDate] = useState(new Date());
+    const [preferredFromTime, setPreferredFromTime] = useState("");
+    const [preferredToTime, setPreferredToTime] = useState("");
     const [availableTimes, setAvailableTimes] = useState<string[]>([]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
+    // Academic Coach States
+    const [academicCoachId, setAcademicCoachId] = useState("");
+    const [academicCoachName, setAcademicCoachName] = useState("");
+    const [academicCoachRole, setAcademicCoachRole] = useState("");
+
+    const handlePhoneChange = (value: string, data: { countryCode: string }) => {
+        setPhoneNumber(value ? value.replace(/\D/g, '') : '');
+        setCountryCode(data.countryCode || '');
     };
 
-    const handlePhoneChange = (value: string) => {
-        setFormData({
-            ...formData,
-            number: value,
-        });
-    };
-
-    const handleDateChange = (value: Value) => {
-        if (value instanceof Date) {
-            setFormData({
-                ...formData,
-                trialDate: value,
-            });
+    const handleDateChange = async (value: Value) => {
+        if (Array.isArray(value) && value[0] && value[1]) {
+            setStartDate(value[0]);
+            setToDate(value[1]);
             loadAvailableTimes();
         }
     };
 
     const loadAvailableTimes = () => {
-        const times = ["2:45 AM", "3:00 AM", "3:15 AM", "3:30 AM", "3:45 AM", "4:00 AM"];
-        setAvailableTimes(times);
+        const defaultTimes = [
+            "02:45 AM", "03:00 AM", "03:15 AM", "03:30 AM", 
+            "03:45 AM", "04:00 AM", "04:30 AM", "05:15 AM", 
+            "06:00 AM"
+        ];
+        setAvailableTimes(defaultTimes);
     };
 
-    const handleTimeSelect = (time: string) => {
-        setFormData({
-            ...formData,
-            trialTime: time,
-        });
-    };
-
-    const handleMultiSelectOptionChange = (field: keyof Pick<FormData, 'iqraUsage'>, value: string) => {
-        setFormData((prev) => {
-            const currentSelection = prev[field];
-            if (currentSelection.includes(value)) {
-                return {
-                    ...prev,
-                    [field]: currentSelection.filter((option) => option !== value),
-                };
+    const handleMultiSelectOptionChange = (value: string) => {
+        setLearningInterest(prev => {
+            if (prev.includes(value)) {
+                return prev.filter(item => item !== value);
             }
-            return {
-                ...prev,
-                [field]: [...currentSelection, value],
-            };
+            return [...prev, value];
         });
     };
 
-    const handleSingleSelectOptionChange = (field: keyof FormData, value: string | number) => {
-        setFormData({
-            ...formData,
-            [field]: value,
-        });
+    const validateStep1 = () => {
+        if (!firstName.trim()) return { isValid: false, field: 'First Name' };
+        if (!lastName.trim()) return { isValid: false, field: 'Last Name' };
+        if (!email.trim()) return { isValid: false, field: 'Email' };
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) return { isValid: false, field: 'Email Format' };
+        
+        if (!countryCode) return { isValid: false, field: 'Country Code' };
+        if (!phoneNumber) return { isValid: false, field: 'Phone Number' };
+        if (!country) return { isValid: false, field: 'Country' };
+
+        return { isValid: true, field: null };
+    };
+
+    const validateStep2 = () => {
+        if (learningInterest.length !== 1) return false;
+        if (!numberOfStudents) return false;
+        if (!preferredTeacher) return false;
+        if (!referralSource) return false;
+        return true;
+    };
+
+    const validateStep3 = () => {
+        if (!startDate || !toDate) return false;
+        if (!preferredFromTime || !preferredToTime) return false;
+        return true;
     };
 
     const nextStep = () => {
+        const validation = validateStep1();
+        if (!validation.isValid) {
+            alert(`Please fill in the ${validation.field} field correctly.`);
+            return;
+        }
         setStep(step + 1);
     };
 
@@ -121,19 +126,117 @@ const MultiStepForm = () => {
         setStep(step - 1);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log(formData);
+        setIsLoading(true);
+        
+        try {
+            // Validate required fields before submission
+            if (!validateStep1().isValid || !validateStep2() || !validateStep3()) {
+                alert('Please fill in all required fields');
+                setIsLoading(false);
+                return;
+            }
+
+            // Updated mapping function to NOT convert to uppercase
+            const mapLearningInterest = (interests: string[]) => {
+                // Return the exact string value without transformation
+                return interests[0] || 'Quran';
+            };
+
+            // Updated country code mapping
+            const getFullCountryName = (code: string): string => {
+                const countryMapping: { [key: string]: string } = {
+                    'in': 'IND',
+                    'us': 'USA',
+                    'gb': 'GBR',
+                    // Add more mappings as needed
+                };
+                return countryMapping[code.toLowerCase()] || code.toUpperCase();
+            };
+
+            const formattedData = {
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
+                email: email.trim(),
+                phoneNumber: Number(phoneNumber),
+                country: getFullCountryName(country), // Use the full country code
+                countryCode: countryCode.toLowerCase(),
+                learningInterest: mapLearningInterest(learningInterest), // Will return exact string value
+                numberOfStudents: Number(numberOfStudents),
+                preferredTeacher: preferredTeacher, // Already matches backend enum
+                preferredFromTime: preferredFromTime,
+                preferredToTime: preferredToTime,
+                referralSource: referralSource, // Already matches backend enum
+                startDate: startDate.toISOString().split('T')[0],
+                evaluationStatus: 'PENDING',
+                status: 'Active',
+                createdBy: 'SYSTEM',
+                lastUpdatedBy: 'SYSTEM',
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                createdDate: new Date().toISOString(),
+                lastUpdatedDate: new Date().toISOString()
+            };
+
+            console.log('Submitting data:', formattedData); // Debug log
+
+            const response = await fetch('http://localhost:5001/student', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formattedData),
+            });
+
+            const data: ApiResponse = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || `Server returned ${response.status}`);
+            }
+
+            // Reset form and redirect on success
+            alert('Form submitted successfully!');
+            router.push('/thank-you');
+
+        } catch (error) {
+            console.error('Submission error:', error);
+            alert(`Failed to submit form: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const isTileDisabled = ({ date }: { date: Date }): boolean => {
         return date < new Date();
     };
-    const [startDate, setStartDate] = useState(new Date());
-    const [time, setTime] = useState('12:00');
+
+    // Function to get country code based on selected country
+    const getCountryCode = (country: string): string => {
+        const countryCodes: { [key: string]: string } = {
+            'us': '1',
+            'ca': '1',
+            'gb': '44',
+            // Add other countries and their codes as needed
+        };
+        return countryCodes[country] || ''; // Return the country code or an empty string
+    };
+
+    // Update the country handler
+    const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedCountry = e.target.value;
+        const selectedCountryCode = getCountryCode(selectedCountry);
+        
+        console.log('Country Change:', {
+            country: selectedCountry,
+            countryCode: selectedCountryCode
+        });
+
+        setCountry(selectedCountry);
+        setCountryCode(selectedCountryCode);
+    };
 
     return (
-        <div className="max-w-[40%] mx-auto justify-center mt-10 p-6 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] bg-gray-100">
+        <div className="max-w-[40%] mx-auto justify-center mt-10 p-6 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] bg-gradient-to-r from-[#d6e1fb] via-[#b4bacf79] to-[#d6e1fb]">
             <div className="flex justify-between items-center mb-4">
                 <div className="text-sm font-medium">Contact</div>
                 <div className="text-sm font-medium">{step * 33}%</div>
@@ -142,65 +245,69 @@ const MultiStepForm = () => {
                 <div className="bg-[#293552] h-2.5 rounded-full" style={{ width: `${step * 33}%` }}></div>
             </div>
 
-
             <form onSubmit={handleSubmit}>
                 {step === 1 && (
                     <div>
-                                    <div className="flex items-center justify-center mb-4 p-6">
-                <Image src="/assets/images/alf.png" alt="Logo" width={160} height={160} className="mr-10" />
-                {/* <div>
-                    <h2 className="text-2xl font-bold">أهلا ومرحبا</h2>
-                </div> */}
-            </div>
-                        <label className="block mb-2 font-semibold">First / Last name</label>
-                        <div className="flex gap-4 mb-4">
+                        <div className="flex items-center justify-center mb-4 p-6">
+                            <Image src="/assets/images/alf.png" alt="Logo" width={160} height={160} className="mr-10" />
+                        </div>
+                        <div className="flex gap-6 mb-6">
                             <input
                                 type="text"
-                                name="firstName"
-                                placeholder="First Name"
-                                value={formData.firstName}
-                                onChange={handleChange}
+                                placeholder="First Name *"
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
                                 required
-                                className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
+                                className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 ${
+                                    !firstName.trim() ? 'border-red-500' : ''
+                                }`}
                             />
                             <input
                                 type="text"
-                                name="lastName"
-                                placeholder="Last Name"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
+                                placeholder="Last Name *"
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                                required
+                                className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 ${
+                                    !lastName.trim() ? 'border-red-500' : ''
+                                }`}
                             />
                         </div>
-                        <div className="flex gap-4 mb-4">
+                        <div className="flex gap-6 mb-6">
                             <input
                                 type="email"
-                                name="email"
                                 placeholder="Email Address"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 w-1/2"
+                            />
+                            <input
+                                type="text"
+                                placeholder="Referral Code"
+                                value={referral}
+                                onChange={(e) => setReferral(e.target.value)}
+                                className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 w-1/2"
                             />
                         </div>
-                        <div className="flex gap-4 mb-4">
-                            <div className="w-1/2">  {/* Phone input wrapper */}
+                        <div className="flex gap-6 mb-6">
+                            <div className="w-1/2">
                                 <PhoneInput
-                                    country={'us'}
-                                    value={formData.number}
+                                    country={countryCode.toLowerCase()}
+                                    value={phoneNumber}
                                     onChange={handlePhoneChange}
                                     inputClass="w-full p-3 py-6 rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
                                     containerClass="w-full"
                                     buttonStyle={{ backgroundColor: 'rgb(243 244 246)', borderColor: '#e5e7eb' }}
-                                    inputStyle={{ backgroundColor: 'rgb(243 244 246)', width: '100%', borderColor: '#e5e7eb'  }}
+                                    inputStyle={{ backgroundColor: 'rgb(243 244 246)', width: '100%', borderColor: '#e5e7eb' }}
                                     placeholder="Phone Number"
                                 />
                             </div>
-                            <div className="w-1/2">  {/* Country select wrapper */}
+                            <div className="w-1/2">
                                 <select
                                     className="w-full p-3 border rounded appearance-none focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
-                                    name="country"
-                                    value={formData.country}
-                                    onChange={handleChange}
+                                    value={country}
+                                    onChange={(e) => setCountry(e.target.value)}
                                 >
                                     <option value="">Please Select Your Country</option>
                                     {getCountries().map((country) => (
@@ -214,7 +321,7 @@ const MultiStepForm = () => {
                         <button
                             type="button"
                             onClick={nextStep}
-                            className="justify-end ml-[240px] text-[20px] p-10 align-middle py-4 bg-[#293552] text-white font-semibold hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)]"
+                            className="justify-end mt-10 ml-[240px] text-[20px] p-10 align-middle py-4 bg-[#293552] text-white font-semibold hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)]"
                         >
                             Next
                         </button>
@@ -223,16 +330,25 @@ const MultiStepForm = () => {
 
                 {step === 2 && (
                     <div>
-                        <button type="button" onClick={prevStep} className="text-gray-500 mb-4">←Back</button>
-                        <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">What will you use IQRA for?</h2>
-                        <div className="grid grid-cols-4 gap-4 mb-6">
-                            {['Quran', 'Islamic Studies', 'Arabic', 'Other'].map((option) => (
+                        <button
+                            type="button"
+                            onClick={prevStep}
+                            aria-label="Go back to previous step"
+                            className="text-gray-500 mb-4"
+                        >
+                            ←Back
+                        </button>
+                        <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">
+                            What will you use AL Furquan for?
+                        </h2>
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                            {['Quran', 'Islamic Studies', 'Arabic'].map((option) => (
                                 <button
                                     key={option}
                                     type="button"
-                                    onClick={() => handleMultiSelectOptionChange('iqraUsage', option)}
-                                    className={`p-4 rounded hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] ${
-                                        formData.iqraUsage.includes(option) ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
+                                    onClick={() => setLearningInterest([option])}
+                                    className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[15px] rounded-tl-[15px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
+                                        learningInterest[0] === option ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
                                     }`}
                                 >
                                     {option}
@@ -240,28 +356,29 @@ const MultiStepForm = () => {
                             ))}
                         </div>
                         
-                        {formData.iqraUsage.includes('Other') && (
+                        {learningInterest.includes('Other') && (
                             <div className="mb-6">
                                 <input
                                     type="text"
-                                    name="iqraUsageOther"
                                     placeholder="Please specify your course"
-                                    value={formData.iqraUsageOther}
-                                    onChange={handleChange}
+                                    value={iqraUsageOther}
+                                    onChange={(e) => setIqraUsageOther(e.target.value)}
                                     className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
                                 />
                             </div>
                         )}
 
-                        <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">How many students will join?</h2>
+                        <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">
+                            How many students will join?
+                        </h2>
                         <div className="grid grid-cols-5 gap-4 mb-6 rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px]">
                             {[1, 2, 3, 4, 5].map((count) => (
                                 <button
                                     key={count}
                                     type="button"
-                                    onClick={() => handleSingleSelectOptionChange('studentsCount', count)}
-                                    className={`p-4 rounded hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] ${
-                                        formData.studentsCount === count ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
+                                    onClick={() => setNumberOfStudents(count.toString())}
+                                    className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[15px] rounded-tl-[15px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
+                                        numberOfStudents === count.toString() ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
                                     }`}
                                 >
                                     {count}
@@ -269,60 +386,36 @@ const MultiStepForm = () => {
                             ))}
                         </div>
 
-                        <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">Which teacher would you like?</h2>
+                        <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">
+                            Which teacher would you like?
+                        </h2>
                         <div className="grid grid-cols-3 gap-4 mb-6">
-                            {['Male', 'Female', 'No Preference'].map((preference) => (
+                            {['Male', 'Female', 'Either'].map((preference) => (
                                 <button
                                     key={preference}
                                     type="button"
-                                    onClick={() => handleSingleSelectOptionChange('teacherPreference', preference)}
-                                    className={`p-4 rounded hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] ${
-                                        formData.teacherPreference === preference ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
+                                    onClick={() => setPreferredTeacher(preference)}
+                                    className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[15px] rounded-tl-[15px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
+                                        preferredTeacher === preference ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
                                     }`}
                                 >
                                     {preference}
                                 </button>
                             ))}
                         </div>
-                        <div className='flex gap-10 justify-center mt-8'>
-                            <div className='p-4 ml-4 rounded hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] bg-gray-100'>
-                                <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">When do you want to start <br />  the classes?</h2>
-                                <div className=" gap-4 mb-6 mt-6 align-middle justify-center text-center">
-                                    <DatePicker
-                                        selected={startDate}
-                                        onChange={(date) => setStartDate(date)}
-                                        className="p-2 align-middle text-center text-[#fff] justify-center border border-gray-300 rounded-md bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#293552] w-1/2"
-                                        dateFormat="yyyy/MM/dd"
-                                    />
-                                </div>
-                            </div>
-                            
-                            <div className='p-4 rounded hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] bg-gray-100'>
-                                <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">Preferred Time to start <br />  the classes?</h2>
-                                <div className="flex items-center mt-6 justify-center mb-6">
-                                    <TimePicker
-                                        onChange={setTime}
-                                        value={time}
-                                        clockIcon={null}
-                                        clearIcon={null}
-                                        className="react-time-picker-custom bg-[#293552] rounded-sm border-none text-[#b4b1b1]"
-                                        format="h:mm a"
-                                        hourPlaceholder="hh"
-                                        minutePlaceholder="mm"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+
                         <div className='mt-6'>
-                            <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">Where did you hear about IQRA?</h2>
-                            <div className="grid grid-cols-4 gap-4 mb-6">
-                                {['Google', 'Facebook', 'Friend', 'Other'].map((source) => (
+                            <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">
+                                Where did you hear about AL Furquan?
+                            </h2>
+                            <div className="grid grid-cols-5 gap-4 mb-6">
+                                {['Friend', 'Social Media', 'E-Mail', 'Google', 'Other'].map((source) => (
                                     <button
                                         key={source}
                                         type="button"
-                                        onClick={() => handleSingleSelectOptionChange('referralSource', source)}
-                                        className={`p-4 rounded hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] ${
-                                            formData.referralSource === source ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
+                                        onClick={() => setReferralSource(source)}
+                                        className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[15px] rounded-tl-[15px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
+                                            referralSource === source ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
                                         }`}
                                     >
                                         {source}
@@ -330,28 +423,23 @@ const MultiStepForm = () => {
                                 ))}
                             </div>
                             
-                            {formData.referralSource === 'Other' && (
+                            {referralSource === 'Other' && (
                                 <div className="mb-6">
                                     <input
                                         type="text"
-                                        name="referralSourceOther"
                                         placeholder="Please specify where you heard about us"
-                                        value={formData.referralSourceOther}
-                                        onChange={handleChange}
+                                        value={referralSourceOther}
+                                        onChange={(e) => setReferralSourceOther(e.target.value)}
                                         className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
                                     />
                                 </div>
                             )}
                         </div>
 
-                        
-                        
-                        
-
                         <button
                             type="button"
                             onClick={nextStep}
-                            className="justify-center mt-10 text-center ml-[240px] text-[20px] p-8 align-middle py-4 bg-[#293552] text-white font-semibold  transition-all rounded hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)]"
+                            className="justify-center mt-10 text-center ml-[240px] text-[20px] p-8 align-middle py-4 bg-[#293552] text-white font-semibold transition-all rounded hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)]"
                         >
                             Next
                         </button>
@@ -359,7 +447,7 @@ const MultiStepForm = () => {
                 )}
 
                 {step === 3 && (
-                    <div className='p-6 bg-white rounded-3xl'>
+                    <div className='p-6 rounded-3xl'>
                         <button 
                             type="button" 
                             onClick={prevStep} 
@@ -373,16 +461,45 @@ const MultiStepForm = () => {
                             <p className="text-gray-600 mt-2">Choose your preferred schedule</p>
                         </div>
 
-                        <div className="grid md:grid-cols-1 gap-8">
+                        <div className="flex md:flex-cols-1 gap-8">
                             {/* Calendar Section */}
                             <div className="p-6 rounded-[20px] shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]">
+                                <style dangerouslySetInnerHTML={{ __html: `
+                                    /* Base calendar styles */
+                                    .react-calendar {
+                                        width: 100% !important;
+                                        background-color: rgb(229 231 235) !important;
+                                        border: none !important;
+                                    }
+                                    
+                                    /* Sunday dates only */
+                                    .react-calendar__month-view__days__day--weekend:nth-child(7n + 1) {
+                                        color: #ef4444 !important;
+                                    }
+                                    
+                                    /* Selected date (including Sundays) */
+                                    .react-calendar__tile--active,
+                                    .selected-date {
+                                        background-color: #293552 !important;
+                                        color: white !important;
+                                    }
+                                    
+                                    /* Selected Sunday */
+                                    .react-calendar__tile--active.react-calendar__month-view__days__day--weekend:nth-child(7n + 1),
+                                    .selected-date.react-calendar__month-view__days__day--weekend:nth-child(7n + 1) {
+                                        color: white !important;
+                                    }
+                                `}} />
                                 <Calendar
                                     onChange={handleDateChange}
-                                    value={formData.trialDate}
+                                    value={[startDate, toDate]}
                                     tileDisabled={isTileDisabled}
-                                    className="mx-auto custom-calendar" // We'll add custom CSS for this
+                                    className="mx-auto custom-calendar"
+                                    selectRange={true}
                                     tileClassName={({ date, view }) => 
-                                        view === 'month' && date.toDateString() === formData.trialDate.toDateString() 
+                                        view === 'month' && 
+                                        date >= startDate && 
+                                        date <= toDate
                                         ? 'selected-date'
                                         : null
                                     }
@@ -391,31 +508,74 @@ const MultiStepForm = () => {
 
                             {/* Available Times Section */}
                             <div className="p-6 rounded-[20px] shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]">
-                                <h3 className="text-lg font-semibold mb-4 text-[#293552]">Available Time Slots</h3>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {availableTimes.map((time) => (
-                                        <button
-                                            key={time}
-                                            type="button"
-                                            onClick={() => handleTimeSelect(time)}
-                                            className={`p-3 rounded-lg transition-all duration-200 ${
-                                                formData.trialTime === time 
-                                                ? 'bg-[#293552] text-white shadow-lg transform scale-105' 
-                                                : 'bg-gray-100 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            {time}
-                                        </button>
-                                    ))}
+                                <h3 className="text-[15px] text-center align-middle font-semibold mb-4 text-[#293552]">
+                                    Available Time Slots
+                                </h3>
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <p className="text-sm font-medium mb-2">From</p>
+                                        <div className="max-h-[300px] overflow-y-auto scrollbar-hide">
+                                            <div className="grid grid-cols-1 gap-3 text-[10px]">
+                                                {availableTimes.map((time) => (
+                                                    <button
+                                                        key={time}
+                                                        type="button"
+                                                        onClick={() => setPreferredFromTime(time)}
+                                                        className={`p-3 rounded-lg transition-all duration-200 ${
+                                                            preferredFromTime === time 
+                                                            ? 'bg-[#293552] text-white shadow-lg transform scale-100' 
+                                                            : 'bg-gray-200 hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                        {time}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium mb-2">To</p>
+                                        <div className="max-h-[300px] overflow-y-auto scrollbar-hide">
+                                            <div className="grid grid-cols-1 gap-3 text-[10px]">
+                                                {availableTimes.map((time) => (
+                                                    <button
+                                                        key={time}
+                                                        type="button"
+                                                        onClick={() => setPreferredToTime(time)}
+                                                        className={`p-3 rounded-lg transition-all duration-200 ${
+                                                            preferredToTime === time 
+                                                            ? 'bg-[#293552] text-white shadow-lg transform scale-100' 
+                                                            : 'bg-gray-200 hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                        {time}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <button
                             type="submit"
-                            className="mt-8 ml-48 justify-center align-middle text-center w-full md:w-auto px-8 py-4 bg-[#293552] text-white font-semibold transition-all duration-300 transform hover:-translate-y-1 rounded hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)]"
+                            disabled={isLoading}
+                            className={`mt-8 ml-48 justify-center align-middle text-center w-full md:w-auto px-8 py-4 bg-[#293552] text-white font-semibold transition-all duration-300 transform hover:-translate-y-1 rounded hover:shadow-inner rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] ${
+                                isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
                         >
-                            Submit
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Submitting...
+                                </div>
+                            ) : (
+                                'Submit'
+                            )}
                         </button>
                     </div>
                 )}

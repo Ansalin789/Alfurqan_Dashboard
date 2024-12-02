@@ -7,6 +7,8 @@ import Sidebar1 from "./Sidebar1";
 import {FaBell, FaUserCircle, FaChevronDown} from 'react-icons/fa';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import { useTheme } from '@/context/ThemeContext';
+import { FaSignOutAlt } from "react-icons/fa";
+
 
 
 
@@ -43,7 +45,7 @@ export default function BaseLayout1({ children }: Props) {
         <Sidebar1 />
         
         {children}
-        <div className="flex items-center justify-end -mt-[720px] -ml-[300px]">
+        <div className="flex items-center justify-end -mt-[800px] -ml-[300px]">
             <ToggleSwitch darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
             <button className={`bg-gray-200 p-2 rounded-full shadow ${darkMode ? 'bg-[#1f222a] text-white' : 'bg-white text-gray-800'}`}>
               <FaBell />
@@ -56,10 +58,10 @@ export default function BaseLayout1({ children }: Props) {
               </button>
               <button
               type="submit"
-              className="w-full py-3 bg-[#293552] text-white rounded-lg hover:bg-[#1a2133] transition"
+              className="w-full py-3 rounded-lg hover:bg-[#1a2133] transition"
               onClick={handleSignOut}
             >
-              Sign Out
+              <FaSignOutAlt />
             </button>
             </div>
         </div>
