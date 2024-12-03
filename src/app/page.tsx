@@ -89,7 +89,7 @@ export default function SignInSignUp(): JSX.Element {
       localStorage.setItem('tokenExpiry', tokenExpiry.toString());
 
       // Redirect based on role
-      if (role?.includes('ACADEMIC COACH')) {
+      if (role?.includes('ACADEMICCOACH')) {
         router.push('/Academic');
       } else {
         router.push('/');

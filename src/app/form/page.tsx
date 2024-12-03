@@ -85,16 +85,30 @@ const MultiStepForm = () => {
     };
 
     const validateStep1 = () => {
-        if (!firstName.trim()) return { isValid: false, field: 'First Name' };
-        if (!lastName.trim()) return { isValid: false, field: 'Last Name' };
-        if (!email.trim()) return { isValid: false, field: 'Email' };
+        if (!firstName.trim() || firstName.length < 3) {
+            return { isValid: false, field: 'First Name (minimum 3 characters)' };
+        }
+        if (!lastName.trim() || lastName.length < 3) {
+            return { isValid: false, field: 'Last Name (minimum 3 characters)' };
+        }
+        if (!email.trim()) {
+            return { isValid: false, field: 'Email' };
+        }
         
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) return { isValid: false, field: 'Email Format' };
+        if (!emailRegex.test(email)) {
+            return { isValid: false, field: 'Email Format' };
+        }
         
-        if (!countryCode) return { isValid: false, field: 'Country Code' };
-        if (!phoneNumber) return { isValid: false, field: 'Phone Number' };
-        if (!country) return { isValid: false, field: 'Country' };
+        if (!countryCode) {
+            return { isValid: false, field: 'Country Code' };
+        }
+        if (!phoneNumber) {
+            return { isValid: false, field: 'Phone Number' };
+        }
+        if (!country) {
+            return { isValid: false, field: 'Country' };
+        }
 
         return { isValid: true, field: null };
     };
@@ -138,37 +152,26 @@ const MultiStepForm = () => {
                 return;
             }
 
-            // Updated mapping function to NOT convert to uppercase
-            const mapLearningInterest = (interests: string[]) => {
-                // Return the exact string value without transformation
-                return interests[0] || 'Quran';
-            };
-
-            // Updated country code mapping
-            const getFullCountryName = (code: string): string => {
-                const countryMapping: { [key: string]: string } = {
-                    'in': 'IND',
-                    'us': 'USA',
-                    'gb': 'GBR',
-                    // Add more mappings as needed
-                };
-                return countryMapping[code.toLowerCase()] || code.toUpperCase();
-            };
+            // Clean and format the phone number - remove any non-numeric characters
+            const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
 
             const formattedData = {
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
-                email: email.trim(),
-                phoneNumber: Number(phoneNumber),
-                country: getFullCountryName(country), // Use the full country code
+                id: uuidv4(),
+                firstName: firstName.trim().padEnd(3),
+                lastName: lastName.trim().padEnd(3),
+                email: email.trim().toLowerCase(),
+                phoneNumber: Number(cleanPhoneNumber), // Ensure it's a number
+                country: country.length >= 3 ? country : country.padEnd(3, ' '),
                 countryCode: countryCode.toLowerCase(),
-                learningInterest: mapLearningInterest(learningInterest), // Will return exact string value
-                numberOfStudents: Number(numberOfStudents),
-                preferredTeacher: preferredTeacher, // Already matches backend enum
+                learningInterest: learningInterest[0],
+                numberOfStudents: Number(numberOfStudents), // Ensure it's a number
+                preferredTeacher: preferredTeacher,
                 preferredFromTime: preferredFromTime,
                 preferredToTime: preferredToTime,
-                referralSource: referralSource, // Already matches backend enum
-                startDate: startDate.toISOString().split('T')[0],
+                referralSource: referralSource,
+                referralDetails: referralSourceOther || referral || '',
+                startDate: startDate.toISOString(),
+                endDate: toDate.toISOString(),
                 evaluationStatus: 'PENDING',
                 status: 'Active',
                 createdBy: 'SYSTEM',
@@ -178,21 +181,32 @@ const MultiStepForm = () => {
                 lastUpdatedDate: new Date().toISOString()
             };
 
-            console.log('Submitting data:', formattedData); // Debug log
+            // Debug log to check the data being sent
+            console.log('Sending data:', formattedData);
 
             const response = await fetch('http://localhost:5001/student', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify(formattedData),
+                // Add these options if needed for CORS
+                credentials: 'include',
+                mode: 'cors',
             });
 
-            const data: ApiResponse = await response.json();
+            // Log the raw response
+            console.log('Raw response:', response);
 
             if (!response.ok) {
-                throw new Error(data.message || `Server returned ${response.status}`);
+                const errorData = await response.json();
+                console.error('Error response:', errorData);
+                throw new Error(errorData.message || `Server returned ${response.status}`);
             }
+
+            const data: ApiResponse = await response.json();
+            console.log('Success response:', data);
 
             // Reset form and redirect on success
             alert('Form submitted successfully!');
@@ -213,12 +227,47 @@ const MultiStepForm = () => {
     // Function to get country code based on selected country
     const getCountryCode = (country: string): string => {
         const countryCodes: { [key: string]: string } = {
-            'us': '1',
-            'ca': '1',
-            'gb': '44',
-            // Add other countries and their codes as needed
+            'us': '1',    // United States
+            'ca': '1',    // Canada
+            'gb': '44',   // United Kingdom
+            'ae': '971',  // UAE
+            'sa': '966',  // Saudi Arabia
+            'qa': '974',  // Qatar
+            'kw': '965',  // Kuwait
+            'bh': '973',  // Bahrain
+            'om': '968',  // Oman
+            'pk': '92',   // Pakistan
+            'in': '91',   // India
+            'bd': '880',  // Bangladesh
+            'my': '60',   // Malaysia
+            'id': '62',   // Indonesia
+            'au': '61',   // Australia
+            'nz': '64',   // New Zealand
+            'sg': '65',   // Singapore
+            'de': '49',   // Germany
+            'fr': '33',   // France
+            'it': '39',   // Italy
+            'es': '34',   // Spain
+            'nl': '31',   // Netherlands
+            'be': '32',   // Belgium
+            'ch': '41',   // Switzerland
+            'se': '46',   // Sweden
+            'no': '47',   // Norway
+            'dk': '45',   // Denmark
+            'ie': '353',  // Ireland
+            'za': '27',   // South Africa
+            'eg': '20',   // Egypt
+            'ma': '212',  // Morocco
+            'ng': '234',  // Nigeria
+            'ke': '254',  // Kenya
+            'jp': '81',   // Japan
+            'kr': '82',   // South Korea
+            'cn': '86',   // China
+            'br': '55',   // Brazil
+            'mx': '52',   // Mexico
+            'ar': '54',   // Argentina
         };
-        return countryCodes[country] || ''; // Return the country code or an empty string
+        return countryCodes[country.toLowerCase()] || '';
     };
 
     // Update the country handler
@@ -254,22 +303,24 @@ const MultiStepForm = () => {
                         <div className="flex gap-6 mb-6">
                             <input
                                 type="text"
-                                placeholder="First Name *"
+                                placeholder="First Name * (min. 3 characters)"
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
                                 required
+                                minLength={3}
                                 className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 ${
-                                    !firstName.trim() ? 'border-red-500' : ''
+                                    firstName.trim().length < 3 ? 'border-red-500' : ''
                                 }`}
                             />
                             <input
                                 type="text"
-                                placeholder="Last Name *"
+                                placeholder="Last Name * (min. 3 characters)"
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
                                 required
+                                minLength={3}
                                 className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 ${
-                                    !lastName.trim() ? 'border-red-500' : ''
+                                    lastName.trim().length < 3 ? 'border-red-500' : ''
                                 }`}
                             />
                         </div>
@@ -453,7 +504,7 @@ const MultiStepForm = () => {
                             onClick={prevStep} 
                             className="text-gray-500 mb-4 hover:text-gray-700 transition-colors"
                         >
-                            ← Back
+                             Back
                         </button>
                         
                         <div className="text-center mb-8">

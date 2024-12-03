@@ -41,11 +41,11 @@ export default function BaseLayout1({ children }: Props) {
   };
 
     return (
-    <div className={`layout ${darkMode ? 'bg-[#1f222a] text-white' : 'bg-white text-gray-800'}`}>
+    <div className={`layout bg-[#EDEDED] ${darkMode ? 'bg-[#1f222a] text-white' : 'bg-white text-gray-800'}`}>
         <Sidebar1 />
         
         {children}
-        <div className="flex items-center justify-end -mt-[800px] -ml-[300px]">
+        {/* <div className="flex items-center justify-end -mt-[800px]">
             <ToggleSwitch darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
             <button className={`bg-gray-200 p-2 rounded-full shadow ${darkMode ? 'bg-[#1f222a] text-white' : 'bg-white text-gray-800'}`}>
               <FaBell />
@@ -58,13 +58,13 @@ export default function BaseLayout1({ children }: Props) {
               </button>
               <button
               type="submit"
-              className="w-full py-3 rounded-lg hover:bg-[#1a2133] transition"
+              className="w-full py-3"
               onClick={handleSignOut}
             >
               <FaSignOutAlt />
             </button>
             </div>
-        </div>
+        </div> */}
     </div>
     ) ;
 }
