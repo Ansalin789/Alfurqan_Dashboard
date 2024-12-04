@@ -270,7 +270,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
+              <label className="block mb-1 text-xs font-medium text-gray-700">How Many Students</label>
               <input
                 type="number"
                 name="students"

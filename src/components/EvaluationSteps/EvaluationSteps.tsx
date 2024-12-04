@@ -505,10 +505,10 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
   // Pricing plans data
   const pricingPlans = [
-    { label: "Simple", rate: 8, basePrice: "$8/h", features: ["Basic Support", "Core Materials"] },
-    { label: "Essential", rate: 9, basePrice: "$9/h", features: ["Priority Support", "Extra Materials"] },
-    { label: "Pro", rate: 11, basePrice: "$11/h", features: ["24/7 Support", "All Materials", "1-on-1 Sessions"] },
-    { label: "Elite", rate: 16, basePrice: "$16/h", features: ["VIP Support", "Custom Materials", "Flexible Schedule"] },
+    { label: "Simple", rate: 8, basePrice: "$8/h"},
+    { label: "Essential", rate: 9, basePrice: "$9/h"},
+    { label: "Pro", rate: 11, basePrice: "$11/h"},
+    { label: "Elite", rate: 16, basePrice: "$16/h"},
   ];
 
   return (
@@ -537,6 +537,8 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
             Arabic Language Course Selection
           </h1>
 
+          <h2 className="text-white/90 font-semibold hover:text-white transition-colors mb-4">Level</h2>
+
           {/* Level Section */}
           <div className="flex items-center justify-between mb-8 bg-white/5 p-4 rounded-xl">
             <div className="flex items-center space-x-3">
@@ -544,7 +546,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <input 
                   type="checkbox" 
                   id="my-beautiful-language" 
-                  className="w-5 h-5 rounded border-white/20 bg-white/10
+                  className="w-5 h-5 border-white/20 bg-white/10
                            checked:bg-gradient-to-r checked:from-blue-500 checked:to-purple-500
                            focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
                 />
@@ -555,14 +557,47 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 My Beautiful Language
               </label>
             </div>
-            <select className="bg-white/10 text-white border border-white/20 rounded-lg px-4 py-2
+            <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-4 py-2
                            focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200">
               <option className="bg-gray-900">Level: A1</option>
               <option className="bg-gray-900">Level: A2</option>
               <option className="bg-gray-900">Level: B1</option>
               <option className="bg-gray-900">Level: B2</option>
             </select>
-          </div>
+
+            <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="reading"
+                  className="h-5 w-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="reading" className="text-white font-semibold">
+                  Reading
+                </label>
+                <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-4 py-2
+                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200">
+                  <option className="bg-gray-900">1</option>
+                  <option className="bg-gray-900">2</option>
+                  <option className="bg-gray-900">3</option>
+                </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="grammar"
+                  className="h-5 w-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="grammar" className="text-white font-semibold">
+                  Grammar
+                </label>
+                <select className="bg-white/10 text-white border border-white/20 rounded-lg px-4 py-2
+                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200">
+                  <option className="bg-gray-900">0</option>
+                  <option className="bg-gray-900">1</option>
+                  <option className="bg-gray-900">2</option>
+                </select>
+              </div>
+          </div> 
 
           {/* Hours Section */}
           <div className="mb-8">
@@ -605,14 +640,6 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                     <div className="text-sm text-white/60 mb-4">
                       Total: {calculatePrice(plan.rate)}
                     </div>
-                    <ul className="text-sm text-white/80">
-                      {plan.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center mb-1">
-                          <span className="mr-2">✓</span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                 </div>
               ))}
@@ -625,17 +652,11 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
               Accomplishment Time: <span className="font-semibold text-white">150 hours</span>
             </div>
             <div className="text-white/80">
+              Your Rate: <span className="font-semibold text-white">0 hr/week</span>
+            </div>
+            <div className="text-white/80">
               Expected Finishing Date: <span className="font-semibold text-white">37.5 months</span>
             </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex justify-end mt-8">
-            <button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-xl
-                           hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 
-                           transition-all duration-300 shadow-lg">
-              Confirm Selection
-            </button>
           </div>
         </div>
 
