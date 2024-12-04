@@ -41,7 +41,7 @@ export default function BaseLayout1({ children }: Props) {
   };
 
     return (
-    <div className={`layout bg-[#EDEDED] ${darkMode ? 'bg-[#1f222a] text-white' : 'bg-white text-gray-800'}`}>
+    <div className={`layout bg-gray-100 ${darkMode ? 'bg-[#1f222a] text-white' : 'bg-white text-gray-800'}`}>
         <Sidebar1 />
         
         {children}

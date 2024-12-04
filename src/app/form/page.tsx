@@ -191,8 +191,6 @@ const MultiStepForm = () => {
                     'Accept': 'application/json',
                 },
                 body: JSON.stringify(formattedData),
-                // Add these options if needed for CORS
-                credentials: 'include',
                 mode: 'cors',
             });
 

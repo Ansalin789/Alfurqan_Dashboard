@@ -13,7 +13,9 @@ interface PopupProps {
   isOpen: boolean;
   onRequestClose: () => void;
   user: any; // Update this type based on your user object structure
-  onSave: (formData: any) => void; // Update this type based on your save function
+  onSave: (formData: any) => void;
+  userData?: User | null; // Allow userData to be null
+  isEditMode: boolean;
 }
 
 interface User {
@@ -28,6 +30,9 @@ interface User {
   date: string;
   time: string;
   evaluationStatus?: string;
+  city?: string;
+  students?: number;
+  comment?: string;
 }
 
 interface GetAllUsersResponse {

@@ -23,6 +23,9 @@ interface User {
   date: string;
   time: string;
   evaluationStatus?: string;
+  city?: string;
+  students?: number;
+  comment?: string;
 }
 
 interface GetAllUsersResponse {
@@ -295,7 +298,12 @@ const TrailManagement = () => {
   };
 
   const handleEditClick = (user: User) => {
-    setSelectedUserData(user);
+    setSelectedUserData({
+      ...user,
+      city: user.city || '',
+      students: user.students || 0,
+      comment: user.comment || '',
+    });
     setModalIsOpen(true);
   };
 
@@ -542,14 +550,21 @@ const TrailManagement = () => {
         overlayClassName="fixed inset-0 bg-black bg-opacity-50"
       >
         <h2>Edit User</h2>
-        {selectedUserData && (
+        {selectedUserData ? (
           <div>
-            <Popup isOpen={modalIsOpen} onRequestClose={closeModal} userData={selectedUserData} isEditMode={isEditMode} 
-            onSave={() => {
-              fetchStudents();
-              closeModal();
-            }} />
+            <Popup 
+              isOpen={modalIsOpen} 
+              onRequestClose={closeModal} 
+              user={selectedUser} 
+              isEditMode={isEditMode} 
+              onSave={() => {
+                fetchStudents();
+                closeModal();
+              }} 
+            />
           </div>
+        ) : (
+          <div>No user data available for editing.</div>
         )}
       </Modal>
       <AddStudentModal

@@ -15,29 +15,32 @@ interface User {
   lname: string;
   email: string;
   number: string;
-  city: string;
+  city?: string;
+  students?: number;
+  comment?: string;
   country: string;
   trailId: string;
-  students: string;
   preferredTeacher: string;
   course: string;
   date: string;
   time: string;
-  evaluationStatus: string;
-  comment: string;
+  evaluationStatus?: string;
 }
+
 
 interface AddStudentModalProps {
   isOpen: boolean;
   onRequestClose: () => void;
-  user?: User | null;
-  onSave?: (user: User) => void;
+  userData?: User | null;
+  isEditMode: boolean;
+  onSave: () => void;
 }
 
 const AddStudentModal: React.FC<AddStudentModalProps> = ({
   isOpen,
   onRequestClose,
-  user,
+  userData,
+  isEditMode,
   onSave,
 }) => {
   const [formData, setFormData] = useState<User>({
@@ -48,7 +51,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
     city: '',
     country: '',
     trailId: '',
-    students: '',
+    students: 0,
     preferredTeacher: '',
     course: '',
     date: '',
@@ -58,10 +61,10 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
   });
 
   useEffect(() => {
-    if (user) {
-      setFormData(user);
+    if (userData) {
+      setFormData(userData);
     }
-  }, [user]);
+  }, [userData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +85,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
         country: formData.country.trim(),
         countryCode: "+1",
         learningInterest: formData.course as "Quran" | "Islamic Studies" | "Arabic",
-        numberOfStudents: parseInt(formData.students),
+        numberOfStudents: formData.students !== undefined ? formData.students : 0,
         preferredTeacher: formData.preferredTeacher as "Male" | "Female" | "Either",
         preferredFromTime: formatTime(formData.time),
         preferredToTime: formatTime(formData.time),
@@ -128,9 +131,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
         throw new Error(`Server error: ${responseData.message || 'Unknown error'}`);
       }
 
-      if (onSave) {
-        onSave(formData);
-      }
+      onSave();
       onRequestClose();
       alert('Student saved successfully!');
     } catch (error) {
@@ -164,7 +165,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
           <div>
             <h2 className="text-2xl font-bold bg-gradient-to-r from-[#293552] to-[#1e273c] text-transparent bg-clip-text">
-              {user ? 'Edit Student' : 'Add Student'}
+              {isEditMode ? 'Edit Student' : 'Add Student'}
             </h2>
           </div>
           <div className="flex items-center gap-4">
@@ -366,7 +367,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
               type="submit"
               className="px-4 py-1.5 bg-[#293552] text-white rounded-lg hover:bg-[#1e273c] text-sm"
             >
-              {user ? 'Save Changes' : 'Save'}
+              {isEditMode ? 'Save Changes' : 'Save'}
             </button>
           </div>
         </form>
