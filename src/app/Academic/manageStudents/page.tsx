@@ -2,12 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
-import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
+import { FaFilter, FaPlus } from 'react-icons/fa';
 import BaseLayout1 from '@/components/BaseLayout1';
 import AddStudentModal from '@/components/Academic/AddStudentModel';
-import Popup from '@/components/Academic/Popup';
-import { createPortal } from 'react-dom';
-import EditUserForm from '@/components/Academic/Popup';
 
 
 // Define the return type of the getAllUsers function
@@ -73,7 +70,15 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   }
 };
 
-// Add new FilterModal component
+// Define a type for filters
+interface Filters {
+  country: string;
+  course: string;
+  teacher: string;
+  status: string;
+}
+
+// Update the FilterModal component
 const FilterModal = ({ 
   isOpen, 
   onClose,
@@ -82,10 +87,10 @@ const FilterModal = ({
 }: { 
   isOpen: boolean;  
   onClose: () => void; 
-  onApplyFilters: (filters: any) => void;
+  onApplyFilters: (filters: Filters) => void; // Updated type
   users: User[];
 }) => {
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     country: '',
     course: '',
     teacher: '',
@@ -218,8 +223,6 @@ const TrailManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -233,10 +236,6 @@ const TrailManagement = () => {
   const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
-  const togglePopup = (user: User) => {
-    setSelectedUser(user);
-    setIsPopupOpen(!isPopupOpen);
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -260,9 +259,6 @@ const TrailManagement = () => {
     Modal.setAppElement('body');
   }, []);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
 
   const openModal = (user: User | null = null) => {
     setSelectedUser(user);
@@ -295,8 +291,8 @@ const TrailManagement = () => {
     }
   };
 
-  // Add filter handling function
-  const handleApplyFilters = (filters: any) => {
+  // Update the handleApplyFilters function
+  const handleApplyFilters = (filters: Filters) => { // Updated type
     let filtered = [...users];
     
     if (filters.country) {

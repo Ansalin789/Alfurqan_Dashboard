@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "/public/assets/css/globals.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-// import { DarkModeProvider } from '@/components/DarkMode/DarkModeContext';
 import { ThemeProvider } from '@/context/ThemeContext';
-import AuthForm from './page';
 
 
 

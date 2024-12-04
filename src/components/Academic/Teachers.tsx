@@ -68,7 +68,7 @@ export default function Teachers() {
 
     return (
         <div className="col-span-3 bg-[#3e68a1] p-6 rounded-[25px] shadow-lg">
-            <h3 className="text-xl font-semibold text-white mb-4">Teacher's</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">Teacher`&apos;`s</h3>
             <div className="relative h-52">
                 <Bar data={data} options={options} />
             </div>

@@ -6,8 +6,6 @@ import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
 import BaseLayout1 from '@/components/BaseLayout1';
 import AddStudentModal from '@/components/Academic/AddStudentModel';
 import Popup from '@/components/Academic/Popup';
-import { createPortal } from 'react-dom';
-import EditUserForm from '@/components/Academic/Popup';
 
 
 // Define the return type of the getAllUsers function
@@ -221,7 +219,6 @@ const TrailManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -235,10 +232,7 @@ const TrailManagement = () => {
   const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
-  const togglePopup = (user: User) => {
-    setSelectedUser(user);
-    setIsPopupOpen(!isPopupOpen);
-  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -262,9 +256,7 @@ const TrailManagement = () => {
     Modal.setAppElement('body');
   }, []);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+
 
   const openModal = (user: User | null = null) => {
     setSelectedUser(user);

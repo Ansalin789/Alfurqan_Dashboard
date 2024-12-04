@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useGoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
 import { FaApple } from 'react-icons/fa';
 import { FcGoogle } from "react-icons/fc";
@@ -175,7 +175,7 @@ export default function SignInSignUp(): JSX.Element {
         <Image src="/assets/images/alf.png" alt="logo" width={200} height={200} className='justify-center mb-8 p-4 rounded-bl-[35px] rounded-md bg-[#fff] '/>
           <h2 className="text-3xl font-bold mb-4">Welcome to AL Furqan</h2>
           <i className="mb-4 text-center">
-           "And do good; indeed, Allāh loves the doers of good"
+          `&quot;` And do good`&ldquo;` indeed`&#34;` Allāh loves the doers of good`&rdquo;`
           </i>
           <p>Quran 2:195:</p>
         </div>

@@ -1,12 +1,12 @@
 import BaseLayout1 from '@/components/BaseLayout1';
+import Image from 'next/image';
 import React from 'react';
-import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
+import { FaFilter, FaPlus } from 'react-icons/fa';
 import { LiaStarSolid } from "react-icons/lia";
 
 
 export default function ManageTeacher() {
   return (
-    <>
       <BaseLayout1>
         <div className="flex h-screen">
           {/* Main Content */}
@@ -44,8 +44,8 @@ export default function ManageTeacher() {
               {Array.from({ length: 14 }).map((_, index) => (
                 <div key={index} className="bg-white shadow-md rounded-lg p-4">
                   <div className="flex justify-between items-center">
-                    <img
-                      src={`../../../../public/assets/images/proff.jpg${index}.jpg`}
+                    <Image
+                      src={`/assets/images/proff.jpg${index}.jpg`}
                       alt="Teacher"
                       className="w-16 h-16 rounded-full"
                     />
@@ -78,6 +78,5 @@ export default function ManageTeacher() {
           </div>
         </div>
       </BaseLayout1>
-    </>
   );
 }

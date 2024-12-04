@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 import { FaUserGraduate, FaCheckCircle, FaClock, FaHourglassHalf } from "react-icons/fa";
 
@@ -16,7 +17,7 @@ const Card = ({ title, value, color, icon, iconBg }) => (
           {icon}
         </div>
       ) : (
-        <img src={icon} alt={`${title} icon`} className="w-8 h-8 opacity-60" />
+        <Image src={icon} alt={`${title} icon`} className="w-8 h-8 opacity-60" />
       )}
     </div>
     <div className="flex flex-col justify-between h-full">

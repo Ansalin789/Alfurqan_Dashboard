@@ -3,11 +3,7 @@
 import React from 'react'
 import 'react-calendar/dist/Calendar.css'
 import BaseLayout1 from '@/components/BaseLayout1'
-import { FaUserAlt } from 'react-icons/fa';
-import { AiOutlineClockCircle } from 'react-icons/ai';
-import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { FaMale, FaFemale } from 'react-icons/fa';
 import TotalList from '../../components/Academic/TotalList';
 import { FaSearch } from "react-icons/fa";
 import NextEvaluationClass from '../../components/Academic/NextEvaluationClass'
@@ -23,59 +19,6 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 
 export default function Academic() {
-
-  // const ClassCard = ({}) => (
-  //   <div className="bg-blue-500 p-6 rounded-lg shadow text-white mb-4">
-  //     {classes.map((classInfo, index) => (
-  //       <div key={index} className="flex justify-between items-center mb-4">
-  //         <div className="flex items-center">
-  //           <div className="mr-8 flex gap-28">
-  //             <h3 className="text-lg font-medium">{classInfo.title}</h3>
-  //             <div className="flex items-center">
-  //               <FaUser className="mr-2 w-4 h-4" />
-  //               <p>{classInfo.name}</p>
-  //             </div>
-  //           </div>
-  //           <div className="flex items-center ml-40">
-  //             <FaCalendarAlt className="mr-2 w-4 h-4" />
-  //             <p>{classInfo.date}</p>
-  //           </div>
-  //         </div>
-  //         <div className="flex items-center font-bold bg-white text-[#0e3c50] p-2 rounded-lg shadow">
-  //           <FaClock className="mr-2" />
-  //           <p>{classInfo.time}</p>
-  //         </div>
-  //       </div>
-  //     ))}
-  //   </div>
-  // );
-
-  const data = {
-    labels: ['Active', 'Not Active', 'On Leave', 'Left'],
-    datasets: [
-      {
-        data: [27, 50, 23, 23], // Corresponding percentages
-        backgroundColor: ['#FFC107', '#F44336', '#4CAF50', '#E0E0E0'],
-        hoverBackgroundColor: ['#FFB300', '#D32F2F', '#388E3C', '#BDBDBD'],
-      },
-    ],
-  };
-
-  // const classes = [
-  //   {
-  //     title: 'Evaluation Class',
-  //     name: 'Abinesh',
-  //     date: '06 May 2024',
-  //     time: '9:00 AM - 10:00 AM',
-  //   },
-  //   {
-  //     title: 'Evaluation Class',
-  //     name: 'sagarps',
-  //     date: '08 May 2024',
-  //     time: '10:00 AM - 11:00 AM',
-  //   },
-  // ];
-
 
 
   return (
@@ -132,6 +75,7 @@ export default function Academic() {
                   <tbody>
                     {[
                       {
+                        id: 1,
                         name: 'Emily Peterson',
                         topic: 'World War II',
                         task: 'Essay on the Impact of WWII on Modern Europe',
@@ -139,6 +83,7 @@ export default function Academic() {
                         action: 'Active',
                       },
                       {
+                        id: 2,
                         name: 'Jacob Lee',
                         topic: 'The Cold War',
                         task: 'Research Paper on the Cuban Missile Crisis',
@@ -146,6 +91,7 @@ export default function Academic() {
                         action: 'Not Viewed',
                       },
                       {
+                        id: 3,
                         name: 'Sarah Martin',
                         topic: 'European Colonization',
                         task: 'Prepare Arguments for Class Debate',
@@ -153,14 +99,15 @@ export default function Academic() {
                         action: 'Reviewing',
                       },
                       {
+                        id: 4,
                         name: 'Liam Johnson',
                         topic: 'American History',
                         task: 'Presentation on the Civil Rights Movement',
                         date: 'May 10, 2024',
                         action: 'Not Viewed',
                       },
-                    ].map((item, index) => (
-                      <tr key={index} className="border-b">
+                    ].map((item) => (
+                      <tr key={item.id} className="border-b">
                         <td className="p-2">{item.name}</td>
                         <td className="p-2">{item.topic}</td>
                         <td className="p-2">{item.task}</td>

@@ -48,10 +48,6 @@ const MultiStepForm = () => {
     const [preferredToTime, setPreferredToTime] = useState("");
     const [availableTimes, setAvailableTimes] = useState<string[]>([]);
 
-    // Academic Coach States
-    const [academicCoachId, setAcademicCoachId] = useState("");
-    const [academicCoachName, setAcademicCoachName] = useState("");
-    const [academicCoachRole, setAcademicCoachRole] = useState("");
 
     const handlePhoneChange = (value: string, data: { countryCode: string }) => {
         setPhoneNumber(value ? value.replace(/\D/g, '') : '');
@@ -75,14 +71,14 @@ const MultiStepForm = () => {
         setAvailableTimes(defaultTimes);
     };
 
-    const handleMultiSelectOptionChange = (value: string) => {
-        setLearningInterest(prev => {
-            if (prev.includes(value)) {
-                return prev.filter(item => item !== value);
-            }
-            return [...prev, value];
-        });
-    };
+    // const handleMultiSelectOptionChange = (value: string) => {
+    //     setLearningInterest(prev => {
+    //         if (prev.includes(value)) {
+    //             return prev.filter(item => item !== value);
+    //         }
+    //         return [...prev, value];
+    //     });
+    // };
 
     const validateStep1 = () => {
         if (!firstName.trim() || firstName.length < 3) {
@@ -269,18 +265,18 @@ const MultiStepForm = () => {
     };
 
     // Update the country handler
-    const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedCountry = e.target.value;
-        const selectedCountryCode = getCountryCode(selectedCountry);
+    // const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    //     const selectedCountry = e.target.value;
+    //     const selectedCountryCode = getCountryCode(selectedCountry);
         
-        console.log('Country Change:', {
-            country: selectedCountry,
-            countryCode: selectedCountryCode
-        });
+    //     console.log('Country Change:', {
+    //         country: selectedCountry,
+    //         countryCode: selectedCountryCode
+    //     });
 
-        setCountry(selectedCountry);
-        setCountryCode(selectedCountryCode);
-    };
+    //     setCountry(selectedCountry);
+    //     setCountryCode(selectedCountryCode);
+    // };
 
     return (
         <div className="max-w-[40%] mx-auto justify-center mt-10 p-6 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] bg-gradient-to-r from-[#d6e1fb] via-[#b4bacf79] to-[#d6e1fb]">

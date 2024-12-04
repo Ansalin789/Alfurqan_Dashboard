@@ -92,7 +92,7 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
 
         <div className="text-center mt-12">
           <p className="text-gray-400 text-sm mb-6">
-            Unlocking Knowledge Anywhere, Anytime: Let's Learn Together!
+            Unlocking Knowledge Anywhere Anytime Lets Learn Together
           </p>
           <button
             className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-full
@@ -740,7 +740,7 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>👤</span>
-                    Guardian's Name
+                    Guardian &apos; s Name
                   </span>
                 </label>
                 <input
@@ -757,7 +757,7 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>📧</span>
-                    Guardian's Email
+                    Guardian Email
                   </span>
                 </label>
                 <input
