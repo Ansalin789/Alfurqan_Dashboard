@@ -7,7 +7,7 @@ import { FaApple } from 'react-icons/fa';
 import { FcGoogle } from "react-icons/fc";
 
 import Image from 'next/image';
-import axios, { AxiosError } from 'axios'; // Using axios for HTTP requests
+import axios from 'axios'; // Using axios for HTTP requests
 
 export default function SignInSignUp(): JSX.Element {
   const router = useRouter();
@@ -96,7 +96,12 @@ export default function SignInSignUp(): JSX.Element {
       }
     } catch (error: unknown) {
       console.error('Login error:', error);
-      setError((error as AxiosError)?.response?.data?.message || 'Login failed. Please try again.');
+      // Type guard to check if error is an AxiosError
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || 'Login failed. Please try again.');
+      } else {
+        setError('Login failed. Please try again.');
+      }
     }
   }; 
 

@@ -295,12 +295,7 @@ const TrailManagement = () => {
   };
 
   const handleEditClick = (user: User) => {
-    setSelectedUserData({
-      ...user,
-      city: user.city || '',
-      students: user.students || 0,
-      comment: user.comment || '',
-    });
+    setSelectedUserData(user);
     setModalIsOpen(true);
   };
 
@@ -539,7 +534,7 @@ const TrailManagement = () => {
             <Popup 
               isOpen={modalIsOpen} 
               onRequestClose={closeModal} 
-              user={selectedUser} 
+              user={selectedUserData} 
               isEditMode={isEditMode} 
               onSave={() => {
                 fetchStudents();

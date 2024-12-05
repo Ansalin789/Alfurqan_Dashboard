@@ -29,7 +29,7 @@ const MultiStepForm = () => {
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [referral, setReferral] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState<number>(0);
     const [country, setCountry] = useState("");
     const [countryCode, setCountryCode] = useState("");
 
@@ -50,7 +50,8 @@ const MultiStepForm = () => {
 
 
     const handlePhoneChange = (value: string, data: { countryCode: string }) => {
-        setPhoneNumber(value ? value.replace(/\D/g, '') : '');
+        const numericValue = Number(value.replace(/\D/g, ''));
+        setPhoneNumber(numericValue);
         setCountryCode(data.countryCode || '');
     };
 
@@ -147,20 +148,19 @@ const MultiStepForm = () => {
                 setIsLoading(false);
                 return;
             }
-
             // Clean and format the phone number - remove any non-numeric characters
-            const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
+            const cleanPhoneNumber = phoneNumber.toString().replace(/\D/g, '');
 
             const formattedData = {
                 id: uuidv4(),
                 firstName: firstName.trim().padEnd(3),
                 lastName: lastName.trim().padEnd(3),
                 email: email.trim().toLowerCase(),
-                phoneNumber: Number(cleanPhoneNumber), // Ensure it's a number
+                phoneNumber: cleanPhoneNumber ? Number(cleanPhoneNumber) : null,
                 country: country.length >= 3 ? country : country.padEnd(3, ' '),
                 countryCode: countryCode.toLowerCase(),
                 learningInterest: learningInterest[0],
-                numberOfStudents: Number(numberOfStudents), // Ensure it's a number
+                numberOfStudents: Number(numberOfStudents),
                 preferredTeacher: preferredTeacher,
                 preferredFromTime: preferredFromTime,
                 preferredToTime: preferredToTime,

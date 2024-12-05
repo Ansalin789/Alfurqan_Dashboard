@@ -9,7 +9,7 @@ const data = [
   { title: 'Total Pending', value: 10, color: 'bg-[#0BF4C8]', icon: <FaHourglassHalf size={32} color="#0BF4C8" />, iconBg: 'bg-[#fff]' },
 ];
 
-const Card = ({ title, value, color, icon, iconBg }) => (
+const Card: React.FC<{ title: string; value: number; color: string; icon: React.ReactNode; iconBg: string }> = ({ title, value, color, icon, iconBg }) => (
   <div className={`p-8 rounded-3xl py-14 shadow-lg flex flex-col items-start ${color} relative bg-pattern`}>
     <div className={`absolute top-6 right-2 ${iconBg} p-3 rounded-[100%] shadow-md`}>
       {React.isValidElement(icon) ? (
@@ -17,7 +17,7 @@ const Card = ({ title, value, color, icon, iconBg }) => (
           {icon}
         </div>
       ) : (
-        <Image src={icon} alt={`${title} icon`} className="w-8 h-8 opacity-60" />
+        <Image src={icon as string} alt={`${title} icon`} className="w-8 h-8 opacity-60" />
       )}
     </div>
     <div className="flex flex-col justify-between h-full">

@@ -12,9 +12,8 @@ if (typeof window !== 'undefined') {
 interface PopupProps {
   isOpen: boolean;
   onRequestClose: () => void;
-  user: User;
-  onSave: (formData: User) => void;
-  userData?: User | null;
+  user: User | null;
+  onSave: () => void;
   isEditMode: boolean;
 }
 
@@ -149,7 +148,7 @@ const Popup: React.FC<PopupProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    onSave();
   };
 
   const router = useRouter();
@@ -200,7 +199,7 @@ const Popup: React.FC<PopupProps> = ({
                 <input
                   type="text"
                   name="fname"
-                  value={user.fname}
+                  value={formData.fname}
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm
