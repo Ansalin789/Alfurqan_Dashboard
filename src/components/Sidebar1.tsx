@@ -55,10 +55,10 @@ export default function Sidebar1() {
         <div className="sidebar__wrapper">
             <aside className='sidebar shadow-xl'>
                 <div className='sidebar__top'>
-                    {/* <Image src="/assets/images/whitelogo.png" width={100} height={100} className='sidebar__logo text-center bg-cover bg-center' alt='logo'/> */}
-                    <p className='sidebar__logo-name'>
-                        <Image src="/assets/images/whitelogo.png" className="w-[250px]" width={100} height={70} alt='logo'/>
-                    </p>
+                    <Image src="/assets/images/whitelogo.png" width={100} height={100} className='sidebar__logo text-center bg-cover bg-center' alt='logo'/>
+                    {/* <p className='sidebar__logo-name'>
+                        <Image src="/assets/images/whitelogo.png" className="w-[300px]" width={150} height={150} alt='logo'/>
+                    </p> */}
                 </div>
                 <ul className="sidebar__list">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (

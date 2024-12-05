@@ -37,7 +37,7 @@ export default function BaseLayout1({ children }: Props) {
   // };
 
     return (
-    <div className={`layout bg-gray-100`}>
+    <div className={`layout bg-[#EDEDED]`}>
         <Sidebar1 />
         
         {children}
