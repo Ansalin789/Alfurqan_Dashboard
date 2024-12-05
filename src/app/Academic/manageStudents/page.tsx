@@ -219,7 +219,6 @@ const FilterModal = ({
 const TrailManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -286,7 +285,7 @@ const TrailManagement = () => {
       } else {
         setErrorMessage(allData.message ?? 'Failed to fetch users');
       }
-    } catch (error) {
+    } catch {
       setErrorMessage('An unexpected error occurred');
     }
   };
@@ -428,7 +427,7 @@ const TrailManagement = () => {
 
   return (
     <BaseLayout1>
-      <div className={`min-h-screen p-4 bg-[#EDEDED] mt-5 ${darkMode ? 'bg-[#111317] text-[#ffffff]' : 'bg-gray-100 text-gray-800'}`}>
+      <div className={`min-h-screen p-4 bg-[#EDEDED] mt-5`}>
         <div className="flex justify-between items-center mb-6">
           <div className='flex items-center space-x-2'>
             <h2 className="text-2xl font-semibold">Student List</h2>
@@ -447,14 +446,14 @@ const TrailManagement = () => {
             </div>
           </div> */}
         </div>
-        <div className={`p-6 rounded-lg bg-[#EDEDED] overflow-y-scroll h-[600px] ${darkMode ? 'bg-[#24282D] text-[#000]' : 'bg-white text-gray-800'}`}>
+        <div className={`p-6 rounded-lg bg-[#EDEDED] overflow-y-scroll h-[600px]`}>
           <div className="flex justify-between items-center mb-4">
             <div className="flex flex-1 space-x-4 items-center justify-between">
               <div className='flex'>
                 <input
                   type="text"
                   placeholder="Search here..."
-                  className={`border rounded-lg p-2 mx-4 shadow ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
+                  className={`border rounded-lg p-2 mx-4 shadow`}
                 />
                 <button 
                   onClick={() => setIsFilterModalOpen(true)}
@@ -466,13 +465,11 @@ const TrailManagement = () => {
               <div className='flex'>
                 <button 
                   onClick={() => openModal(null)}
-                  className={`border p-2 rounded-lg shadow flex items-center mx-4 ${
-                    darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-gray-800 text-white border-gray-300'
-                  }`}
+                  className={`border p-2 rounded-lg shadow flex items-center mx-4`}
                 >
                   <FaPlus className="mr-2" /> Add new
                 </button>
-                <select className={`border rounded-lg p-2 shadow ${darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}>
+                <select className={`border rounded-lg p-2 shadow`}>
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
                   <option>Duration: Last year</option>
@@ -480,7 +477,7 @@ const TrailManagement = () => {
               </div>
             </div>
           </div>
-          <table className={`min-w-full rounded-lg shadow ${darkMode ? 'bg-[#1f222a] text-white' : 'bg-[#fff] p-4 text-gray-800'}`}>
+          <table className={`min-w-full rounded-lg shadow`}>
             <thead>
               <tr>
                 <th className="p-4 text-[13px] text-center">
@@ -499,7 +496,7 @@ const TrailManagement = () => {
             <tbody>
               {currentItems.length > 0 ? (
                 currentItems.map((item, index) => (
-                  <tr key={item.trailId || index} className={`border-t ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                  <tr key={item.trailId || index} className={`border-t`}>
                     <td className="p-2 text-center">
                       <input type="checkbox" onChange={() => handleSelectUser(item.trailId)} />
                     </td>

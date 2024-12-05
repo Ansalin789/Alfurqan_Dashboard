@@ -265,21 +265,21 @@ const MultiStepForm = () => {
     };
 
     // Update the country handler
-    // const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    //     const selectedCountry = e.target.value;
-    //     const selectedCountryCode = getCountryCode(selectedCountry);
+    const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedCountry = e.target.value;
+        const selectedCountryCode = getCountryCode(selectedCountry);
         
-    //     console.log('Country Change:', {
-    //         country: selectedCountry,
-    //         countryCode: selectedCountryCode
-    //     });
+        console.log('Country Change:', {
+            country: selectedCountry,
+            countryCode: selectedCountryCode
+        });
 
-    //     setCountry(selectedCountry);
-    //     setCountryCode(selectedCountryCode);
-    // };
+        setCountry(selectedCountry);
+        setCountryCode(selectedCountryCode);
+    };
 
     return (
-        <div className="max-w-[40%] mx-auto justify-center mt-10 p-6 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] bg-gradient-to-r from-[#d6e1fb] via-[#b4bacf79] to-[#d6e1fb]">
+        <div className="max-w-[40%] mx-auto justify-center mt-10 p-6 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] bg-gradient-to-r from-[#dce5f9] via-[#fbfcff79] to-[#dce5f9]">
             <div className="flex justify-between items-center mb-4">
                 <div className="text-sm font-medium">Contact</div>
                 <div className="text-sm font-medium">{step * 33}%</div>
@@ -303,7 +303,7 @@ const MultiStepForm = () => {
                                 required
                                 minLength={3}
                                 className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 ${
-                                    firstName.trim().length < 3 ? 'border-red-500' : ''
+                                    firstName.trim().length < 3 ? 'border-blue-500' : ''
                                 }`}
                             />
                             <input
@@ -314,7 +314,7 @@ const MultiStepForm = () => {
                                 required
                                 minLength={3}
                                 className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 ${
-                                    lastName.trim().length < 3 ? 'border-red-500' : ''
+                                    lastName.trim().length < 3 ? 'border-blue-500' : ''
                                 }`}
                             />
                         </div>
@@ -352,7 +352,7 @@ const MultiStepForm = () => {
                                 <select
                                     className="w-full p-3 border rounded appearance-none focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
                                     value={country}
-                                    onChange={(e) => setCountry(e.target.value)}
+                                    onChange={handleCountryChange}
                                 >
                                     <option value="">Please Select Your Country</option>
                                     {getCountries().map((country) => (
