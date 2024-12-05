@@ -1,8 +1,13 @@
 import React from 'react';
-import CustomCalendar from '@/components/Academic/ScheduleCalender';
 import BaseLayout1 from '@/components/BaseLayout1';
+import ScheduleCalender from '@/components/Academic/ScheduleCalender';
 
-const Page = () => {
+export const metadata = {
+  title: 'Schedule',
+  description: 'Academic Schedule Page',
+};
+
+export default function SchedulePage() {
   return (
     <BaseLayout1>
       <div className="flex flex-col h-screen bg-gray-100">
@@ -15,13 +20,13 @@ const Page = () => {
               <button className="px-4 py-2 bg-blue-600 text-white rounded">+ Add Schedule</button>
             </div>
           </div>
-
+          
           <div className="grid grid-cols-4 gap-6">
             {/* Calendar */}
             <div className="col-span-3">
-              <CustomCalendar />
+              <ScheduleCalender />
             </div>
-
+            
             {/* List Schedule */}
             <div className="col-span-1 bg-white p-6 rounded shadow">
               <h2 className="text-xl font-bold mb-4">List Schedule</h2>
@@ -31,7 +36,9 @@ const Page = () => {
                     <h3 className="font-bold">Activity Name</h3>
                     <p className="text-gray-600">14 Feb 2023</p>
                     <p className="text-gray-600">10:00 AM</p>
-                    <p className="text-gray-500 text-sm mt-2">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce fermentum vehicula commodo. Quisque semper nibh et egestas.</p>
+                    <p className="text-gray-500 text-sm mt-2">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce fermentum vehicula commodo. Quisque semper nibh et egestas.
+                    </p>
                   </li>
                 ))}
               </ul>
@@ -39,8 +46,6 @@ const Page = () => {
           </div>
         </div>
       </div>
-    </ BaseLayout1>
+    </BaseLayout1>
   );
-};
-
-export default Page;
+}

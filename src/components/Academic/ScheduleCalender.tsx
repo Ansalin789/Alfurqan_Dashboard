@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
@@ -25,7 +27,7 @@ const events = [
   // Add more events here
 ];
 
-const CustomCalendar: React.FC = () => {
+const ScheduleCalender: React.FC = () => {
   return (
     <div className="bg-white p-6 rounded shadow-lg">
       <Calendar
@@ -42,4 +44,4 @@ const CustomCalendar: React.FC = () => {
   );
 };
 
-export default CustomCalendar;
+export default ScheduleCalender;

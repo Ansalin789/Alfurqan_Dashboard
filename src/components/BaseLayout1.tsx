@@ -2,7 +2,7 @@
 
 // import { useRouter } from 'next/navigation';
 import { ReactNode } from "react";
-import Sidebar1 from "./Sidebar1";
+import Sidebar1 from "@/components/Sidebar1";
 // import { useTheme } from '@/context/ThemeContext';
 
 
