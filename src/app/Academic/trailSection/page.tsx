@@ -8,7 +8,7 @@ import { FaSyncAlt, FaEdit, FaFilter} from 'react-icons/fa';
 
 
 
-const page = () => {
+function Page() {
 
     const router = useRouter();
     const handleSyncClick = () => {
@@ -129,4 +129,4 @@ const page = () => {
       );
 }
 
-export default page
+export default Page

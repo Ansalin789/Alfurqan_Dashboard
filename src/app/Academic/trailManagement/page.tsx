@@ -45,7 +45,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     }
 
     // Transform API data to match User interface
-    const transformedData = rawData.students.map((item: any) => ({
+    const transformedData = rawData.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; }) => ({
       trailId: item._id,
       fname: item.firstName,
       lname: item.lastName,
@@ -243,7 +243,7 @@ const TrailManagement = () => {
         } else {
           setErrorMessage(allData.message ?? 'Failed to fetch users');
         }
-      } catch (error) {
+      } catch {
         setErrorMessage('An unexpected error occurred');
       }
     };
@@ -279,7 +279,7 @@ const TrailManagement = () => {
       } else {
         setErrorMessage(allData.message ?? 'Failed to fetch users');
       }
-    } catch (error) {
+    } catch {
       setErrorMessage('An unexpected error occurred');
     }
   };
@@ -403,15 +403,6 @@ const TrailManagement = () => {
     );
   };
 
-  // Check if router is available before using it
-  const handleSyncClick = () => {
-    if (router) {
-      router.push('trailSection');
-    } else {
-      console.error('Router is not available');
-    }
-  };
-
   if (errorMessage) {
     return (
       <BaseLayout1>
@@ -507,7 +498,7 @@ const TrailManagement = () => {
                     <td className="p-4">
                       <button
                         onClick={() => handleEditClick(item)}
-                        className="bg-[#223857] hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
+                        className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
                       >
                         <FaEdit size={13}/>
                       </button>
