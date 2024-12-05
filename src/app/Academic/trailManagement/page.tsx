@@ -243,8 +243,10 @@ const TrailManagement = () => {
         } else {
           setErrorMessage(allData.message ?? 'Failed to fetch users');
         }
-      } catch {
+      } catch (error) {
         setErrorMessage('An unexpected error occurred');
+        console.error('An unexpected error occurred', error);
+        
       }
     };
 
@@ -279,8 +281,9 @@ const TrailManagement = () => {
       } else {
         setErrorMessage(allData.message ?? 'Failed to fetch users');
       }
-    } catch {
+    } catch (error) {
       setErrorMessage('An unexpected error occurred');
+      console.error('An unexpected error occurred', error);
     }
   };
 
