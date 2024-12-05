@@ -94,9 +94,9 @@ const FilterModal = ({
   });
 
   // Get unique values for each filter
-  const uniqueCountries = [...new Set(users.map(user => user.country))];
-  const uniqueCourses = [...new Set(users.map(user => user.course))];
-  const uniqueTeachers = [...new Set(users.map(user => user.preferredTeacher))];
+  const uniqueCountries = Array.from(new Set(users.map(user => user.country)));
+  const uniqueCourses = Array.from(new Set(users.map(user => user.course)));
+  const uniqueTeachers = Array.from(new Set(users.map(user => user.preferredTeacher)));
 
   const handleApply = () => {
     onApplyFilters(filters);
