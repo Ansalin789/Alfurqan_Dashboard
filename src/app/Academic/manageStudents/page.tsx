@@ -41,7 +41,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     }
 
     // Transform API data to match User interface
-    const transformedData = rawData.students.map((item: any) => ({
+    const transformedData = rawData.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; }) => ({
       trailId: item._id,
       fname: item.firstName,
       lname: item.lastName,
@@ -247,8 +247,8 @@ const TrailManagement = () => {
         } else {
           setErrorMessage(allData.message ?? 'Failed to fetch users');
         }
-      } catch (error) {
-        setErrorMessage('An unexpected error occurred');
+      } catch {
+        setErrorMessage('An unexpected error occurred'); // Set error message for UI
       }
     };
 

@@ -55,9 +55,9 @@ export default function Sidebar1() {
         <div className="sidebar__wrapper">
             <aside className='sidebar shadow-xl'>
                 <div className='sidebar__top'>
-                    <Image src="/assets/images/alf1.png" width={100} height={100} className='sidebar__logo text-center bg-cover bg-center' alt='logo'/>
+                    {/* <Image src="/assets/images/whitelogo.png" width={100} height={100} className='sidebar__logo text-center bg-cover bg-center' alt='logo'/> */}
                     <p className='sidebar__logo-name'>
-                        <Image src="/assets/images/alf2.png" width={130} height={50} alt='logo'/>
+                        <Image src="/assets/images/whitelogo.png" className="w-[250px]" width={100} height={70} alt='logo'/>
                     </p>
                 </div>
                 <ul className="sidebar__list">

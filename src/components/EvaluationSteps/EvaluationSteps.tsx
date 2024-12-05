@@ -1041,6 +1041,16 @@ const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
             <span>Back</span>
           </button>
 
+          <button
+            onClick={nextStep}
+            className="items-center gap-2 px-6 py-3 text-white transition-all duration-300 
+                     bg-gradient-to-r from-blue-500 to-purple-500 
+                     hover:from-blue-600 hover:to-purple-600 rounded-lg group hidden"
+          >
+            <span>Next</span>
+            <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
+          </button>
+
           {/* <div className="flex space-x-2">
             {Array.from({ length: 7 }, (_, index) => (
               <div

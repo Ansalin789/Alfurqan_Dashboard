@@ -12,9 +12,9 @@ if (typeof window !== 'undefined') {
 interface PopupProps {
   isOpen: boolean;
   onRequestClose: () => void;
-  user: any; // Update this type based on your user object structure
-  onSave: (formData: any) => void;
-  userData?: User | null; // Allow userData to be null
+  user: User;
+  onSave: (formData: User) => void;
+  userData?: User | null;
   isEditMode: boolean;
 }
 
@@ -39,6 +39,21 @@ interface GetAllUsersResponse {
   success: boolean;
   data: User[];
   message?: string; // Make message optional
+}
+
+interface ApiResponseUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  country: string;
+  learningInterest: string;
+  preferredTeacher: string;
+  startDate: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  evaluationStatus?: string;
 }
 
 const Popup: React.FC<PopupProps> = ({
@@ -75,19 +90,21 @@ const Popup: React.FC<PopupProps> = ({
       }
 
       // Transform API data to match User interface
-      const transformedData = rawData.students.map((item: any) => ({
-        trailId: item._id,
-        fname: item.firstName,
-        lname: item.lastName,
-        email: item.email,
-        number: item.phoneNumber.toString(),
-        country: item.country,
-        course: item.learningInterest,
-        preferredTeacher: item.preferredTeacher,
-        date: new Date(item.startDate).toLocaleDateString(),
-        time: `${item.preferredFromTime} - ${item.preferredToTime}`,
-        evaluationStatus: item.evaluationStatus
-      }));
+      const transformedData = rawData.students.map((item: ApiResponseUser) => (
+        {
+          trailId: item._id,
+          fname: item.firstName,
+          lname: item.lastName,
+          email: item.email,
+          number: item.phoneNumber.toString(),
+          country: item.country,
+          course: item.learningInterest,
+          preferredTeacher: item.preferredTeacher,
+          date: new Date(item.startDate).toLocaleDateString(),
+          time: `${item.preferredFromTime} - ${item.preferredToTime}`,
+          evaluationStatus: item.evaluationStatus
+        }
+      ));
 
       return {
         success: true,

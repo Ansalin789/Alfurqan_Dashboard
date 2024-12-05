@@ -54,20 +54,17 @@ body {
 }
 
 .sidebar__top {
-  width: max-content;
+  /* width: max-content; */
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #fff;
   text-align: center;
-  margin: 20px 25px 20px 25px;
+  margin: 20px;
 }
 
 .sidebar__logo {
-  width: 30px;
+  width: 150px;
   object-fit: cover;
   border-radius: 1rem;
 }
@@ -77,13 +74,12 @@ body {
   font-weight: 20px;
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   list-style: none;
-  padding: 0;
 }
 
 .sidebar__list :hover {
   background-color: #476a9b;
   color: #fff;
-  border-radius: 10px;
+  border-radius: 15px;
 }
 
 .sidebar__icon {
@@ -666,6 +662,38 @@ body {
   bottom: 0;
   background: rgba(0, 0, 0, 0.75);
 }
+
+
+/* Custom styles for react-big-calendar */
+.rbc-calendar {
+  background-color: #fff;
+}
+
+.rbc-toolbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #f8f9fa;
+}
+
+.rbc-toolbar button {
+  background-color: #1d4ed8;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+}
+
+.rbc-month-view, .rbc-time-view {
+  padding: 1rem;
+}
+
+.rbc-event {
+  background-color: #2563eb;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
 
 /* .sidebar__logo {
   margin-bottom: 10px;

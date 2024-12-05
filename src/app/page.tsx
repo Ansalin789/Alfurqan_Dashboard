@@ -7,7 +7,7 @@ import { FaApple } from 'react-icons/fa';
 import { FcGoogle } from "react-icons/fc";
 
 import Image from 'next/image';
-import axios from 'axios'; // Using axios for HTTP requests
+import axios, { AxiosError } from 'axios'; // Using axios for HTTP requests
 
 export default function SignInSignUp(): JSX.Element {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function SignInSignUp(): JSX.Element {
   const [error, setError] = useState<string>('');
 
   // Define the handler functions first
-  const handleGoogleSuccess = async (tokenResponse: any) => {
+  const handleGoogleSuccess = async (tokenResponse: { access_token: string }) => {
     try {
       // Get user info using the access token
       const userInfo = await axios.get(
@@ -94,9 +94,9 @@ export default function SignInSignUp(): JSX.Element {
       } else {
         router.push('/');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      setError(error.response?.data?.message || 'Login failed. Please try again.');
+      setError((error as AxiosError)?.response?.data?.message || 'Login failed. Please try again.');
     }
   }; 
 
