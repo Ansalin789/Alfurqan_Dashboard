@@ -242,7 +242,6 @@ const TrailManagement = () => {
         }
       } catch (error) {
         setErrorMessage('An unexpected error occurred');
-        console.log(error) 
       }
     };
 
