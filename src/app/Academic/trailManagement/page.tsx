@@ -226,6 +226,13 @@ const TrailManagement = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const router = useRouter();
+  const handleSyncClick = () => {
+    if (router) {
+    router.push('trailSection');
+    } else {
+    console.error('Router is not available');
+    }
+};
 
   // Add pagination calculation
   const indexOfLastItem = currentPage * itemsPerPage;
