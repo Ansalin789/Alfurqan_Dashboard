@@ -6,7 +6,7 @@ const data = [
   { title: 'Trail Assigned', value: 100, color: 'bg-[#0BF4C8]', icon: <FaUserGraduate size={32} color="#0BF4C8" />, iconBg: 'bg-[#fff]' },
   { title: 'Evaluation Done', value: 80, color: 'bg-[#F2A0FF]', icon: <FaCheckCircle size={32} color="#F2A0FF" />, iconBg: 'bg-[#fff]' },
   { title: 'Evaluation Pending', value: 20, color: 'bg-[#FAD85D]', icon: <FaClock size={32} color="#FAD85D" />, iconBg: 'bg-[#fff]' },
-  { title: 'Total Pending', value: 10, color: 'bg-[#0BF4C8]', icon: <FaHourglassHalf size={32} color="#0BF4C8" />, iconBg: 'bg-[#fff]' },
+  { title: 'Total Pendings', value: 10, color: 'bg-[#0BF4C8]', icon: <FaHourglassHalf size={32} color="#0BF4C8" />, iconBg: 'bg-[#fff]' },
 ];
 
 const Card: React.FC<{ title: string; value: number; color: string; icon: React.ReactNode; iconBg: string }> = ({ title, value, color, icon, iconBg }) => (
