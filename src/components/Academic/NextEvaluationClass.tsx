@@ -28,9 +28,9 @@ const NextEvaluationClass = () => {
   const progress = ((time.minutes * 60 + time.seconds) / (5 * 60)) * 100;
 
   return (
-    <div className="bg-[#234878] p-2 rounded-[50px] shadow flex items-center justify-between text-white">
+    <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] p-2 rounded-2xl shadow flex items-center justify-between text-white">
       <div className="items-center p-2 px-10">
-        <h3 className="text-lg font-medium py-2">Your Next Evaluation Class</h3>
+        <h3 className="text-lg font-medium py-0">Your Next Evaluation Class</h3>
         <div className="flex items-center space-x-8 py-3">
           <div className="flex items-center space-x-2">
             <FaUserAlt className="w-4 h-4"/>
@@ -44,8 +44,8 @@ const NextEvaluationClass = () => {
       </div>
       <div className="flex items-center space-x-2 px-14">
         <p className="text-lg font-bold">Starts in</p>
-        <div className="relative flex items-center justify-center p-8">
-          <svg className="absolute w-20 h-20" viewBox="0 0 36 36">
+        <div className="relative flex items-center justify-center p-10">
+          <svg className="absolute w-[10px] h-20" viewBox="0 0 36 36">
             <path
               className="circle-bg"
               d="M18 2.0845
@@ -66,7 +66,7 @@ const NextEvaluationClass = () => {
               strokeWidth="3"
             />
           </svg>
-          <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-[#234878] text-center">
+          <div className="relative flex items-center justify-center rounded-full bg-[#234878] text-center">
             <div className="absolute flex items-center justify-center w-14 h-14 rounded-full bg-white">
               <div className="text-[#234878]">
                 <p className="text-[6px] font-normal">SESSION 13</p>

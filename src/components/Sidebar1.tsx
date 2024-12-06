@@ -45,7 +45,7 @@ const SidebarItems = [
     },
     {
         name: 'Support',
-        href: '/Academic/support',
+        href: '#',
         icon: MdContactSupport,
     }
 ];

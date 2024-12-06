@@ -56,7 +56,6 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-400 rounded-full"></span>
           Robert Baratheon
         </div>
       </div>

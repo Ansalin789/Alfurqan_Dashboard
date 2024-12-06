@@ -25,7 +25,7 @@ export default function Academic() {
     <div>
       <BaseLayout1>
         <div className="flex flex-col lg:flex-row p-4 w-full">
-          <div className="flex-1 overflow-y-scroll scrollbar-hide h-[93vh] pr-4">
+          <div className="flex-1 overflow-y-scroll scrollbar-hide h-[100vh] pr-4">
             <header className="flex justify-between mb-8 p-4">
               <div className="flex space-x-4">
                 <div className="flex items-center space-x-4">
@@ -123,7 +123,7 @@ export default function Academic() {
           </div>
       {/* calender sidebar */}
           <div className="w-full lg:w-[300px] mt-6 lg:mt-0 p-0 rounded-[20px] h-[600px]">
-            <div className="col-span-4 p-4 rounded-lg shadow">
+            <div className="col-span-4 p-4">
               <Calender />
             </div>
             <div className="col-span-4 bg-white p-0 rounded-lg shadow">

@@ -35,7 +35,7 @@ const ScheduleCalender: React.FC = () => {
         events={events}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: 500 }}
+        style={{ height: 600 }}
         views={['month', 'week', 'day']}
         defaultView="month"
         toolbar

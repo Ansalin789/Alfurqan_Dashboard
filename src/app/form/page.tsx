@@ -72,15 +72,6 @@ const MultiStepForm = () => {
         setAvailableTimes(defaultTimes);
     };
 
-    // const handleMultiSelectOptionChange = (value: string) => {
-    //     setLearningInterest(prev => {
-    //         if (prev.includes(value)) {
-    //             return prev.filter(item => item !== value);
-    //         }
-    //         return [...prev, value];
-    //     });
-    // };
-
     const validateStep1 = () => {
         if (!firstName.trim() || firstName.length < 3) {
             return { isValid: false, field: 'First Name (minimum 3 characters)' };
