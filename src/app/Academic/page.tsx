@@ -60,7 +60,7 @@ export default function Academic() {
               </div>
             
 
-              <div className="col-span-12 bg-[#CED4DC] p-6 rounded-[30px] shadow">
+              <div className="col-span-12 bg-[#CED4DC] p-6 rounded-[30px] shadow mb-10">
                 <h3 className="text-lg font-medium">Trail Request List</h3>
                 <table className="w-full mt-4">
                   <thead>

@@ -55,7 +55,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
       course: item.learningInterest,
       preferredTeacher: item.preferredTeacher,
       date: new Date(item.startDate).toLocaleDateString(),
-      time: `${item.preferredFromTime} - ${item.preferredToTime}`,
+      time: item.preferredFromTime,
       evaluationStatus: item.evaluationStatus
     }));
 
@@ -74,7 +74,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   }
 };
 
-// Add new FilterModal component
+// Move FilterModal outside of the TrailManagement component
 const FilterModal = ({ 
   isOpen, 
   onClose,
@@ -427,7 +427,7 @@ const TrailManagement = () => {
               </button>
             </div>
           </div>
-        <div className={`p-6 rounded-lg bg-[#EDEDED] overflow-y-scroll h-[650px]`}>
+        <div className={`p-6 rounded-lg bg-[#EDEDED] overflow-y-scroll h-[600px]`}>
           <div className="flex justify-between items-center mb-4">
             <div className="flex flex-1 space-x-4 items-center justify-between">
               <div className='flex'>
@@ -468,7 +468,7 @@ const TrailManagement = () => {
                 <th className="p-4 text-[13px] text-center">Country</th>
                 <th className="p-4 text-[13px] text-center">Course</th>
                 <th className="p-4 text-[13px] text-center">Preferred Teacher</th>
-                <th className="p-4 text-[13px] text-center">Time Slot</th>
+                <th className="p-4 text-[13px] text-center">Time</th>
                 <th className="p-4 text-[13px] text-center">Status</th>
                 <th className="p-4 text-[13px] text-center">Action</th>
                 <th

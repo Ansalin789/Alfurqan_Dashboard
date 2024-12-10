@@ -45,7 +45,7 @@ const NextEvaluationClass = () => {
       <div className="flex items-center space-x-2 px-14">
         <p className="text-lg font-bold">Starts in</p>
         <div className="relative flex items-center justify-center p-10">
-          <svg className="absolute w-[10px] h-20" viewBox="0 0 36 36">
+          <svg className="absolute w-24 h-20" viewBox="0 0 36 36">
             <path
               className="circle-bg"
               d="M18 2.0845

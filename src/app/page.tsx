@@ -121,7 +121,7 @@ export default function SignInSignUp(): JSX.Element {
             )}
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Email
+                User Name
               </label>
               <input
                 id="username"

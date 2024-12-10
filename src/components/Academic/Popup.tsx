@@ -13,8 +13,7 @@ interface PopupProps {
   isOpen: boolean;
   onRequestClose: () => void;
   user: User | null;
-  onSave: () => void;
-  isEditMode: boolean;
+  onSave: (user: User) => void;
 }
 
 interface User {
@@ -30,14 +29,15 @@ interface User {
   time: string;
   evaluationStatus?: string;
   city?: string;
-  students?: number;
+  numberofstudents: string;
   comment?: string;
+  [key: string]: any;
 }
 
 interface GetAllUsersResponse {
   success: boolean;
   data: User[];
-  message?: string; // Make message optional
+  message?: string;
 }
 
 interface ApiResponseUser {
@@ -48,19 +48,16 @@ interface ApiResponseUser {
   phoneNumber: string;
   country: string;
   learningInterest: string;
+  numberOfStudents: string;
   preferredTeacher: string;
   startDate: string;
   preferredFromTime: string;
   preferredToTime: string;
-  evaluationStatus?: string;
+  evaluationStatus?: string;  
+  city?: string;    
 }
 
-const Popup: React.FC<PopupProps> = ({
-  isOpen,
-  onRequestClose,
-  user,
-  onSave,
-}) => {
+const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) => {
   const [formData, setFormData] = useState<User>({
     trailId: '',
     fname: '',
@@ -73,6 +70,7 @@ const Popup: React.FC<PopupProps> = ({
     date: '',
     time: '',
     evaluationStatus: 'PENDING',
+    numberofstudents: '',
   });
 
   const [users, setUsers] = useState<User[]>([]);
@@ -81,7 +79,8 @@ const Popup: React.FC<PopupProps> = ({
     try {
       const response = await fetch('http://localhost:5001/studentlist');
       const rawData = await response.json();
-      console.log('Raw API Response:', rawData); // Debug log
+      console.log('Raw API Response:', rawData);
+      // console.log(response) 
 
       // Check if rawData.students exists and is an array
       if (!rawData.students || !Array.isArray(rawData.students)) {
@@ -89,21 +88,20 @@ const Popup: React.FC<PopupProps> = ({
       }
 
       // Transform API data to match User interface
-      const transformedData = rawData.students.map((item: ApiResponseUser) => (
-        {
-          trailId: item._id,
-          fname: item.firstName,
-          lname: item.lastName,
-          email: item.email,
-          number: item.phoneNumber.toString(),
-          country: item.country,
-          course: item.learningInterest,
-          preferredTeacher: item.preferredTeacher,
-          date: new Date(item.startDate).toLocaleDateString(),
-          time: `${item.preferredFromTime} - ${item.preferredToTime}`,
-          evaluationStatus: item.evaluationStatus
-        }
-      ));
+      const transformedData = rawData.students.map((item: ApiResponseUser) => ({
+        trailId: item._id,
+        fname: item.firstName,
+        lname: item.lastName,
+        email: item.email,
+        number: item.phoneNumber.toString(),
+        country: item.country,
+        course: item.learningInterest,
+        numberofstudents: item.numberOfStudents,
+        preferredTeacher: item.preferredTeacher,
+        date: new Date(item.startDate).toLocaleDateString(),
+        time: `${item.preferredFromTime}`,
+        evaluationStatus: item.evaluationStatus,
+      }));
 
       return {
         success: true,
@@ -140,21 +138,37 @@ const Popup: React.FC<PopupProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    if (name === 'student.studentFirstName') {
+      setFormData((prev) => ({
+        ...prev,
+        student: {
+          ...prev.student,
+          studentFirstName: value,
+        },
+      }));
+    } else if (name === 'student.studentLastName') {
+      setFormData((prev) => ({
+        ...prev,
+        student: {
+          ...prev.student,
+          studentLastName: value,
+        },
+      }));
+    }
+    // Add similar checks for other properties as needed
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave();
+    onSave(formData);
   };
 
   const router = useRouter();
-  
+
   const handleStart = () => {
-    router.push('/evaluation');
+    // router.push('/evaluation');
+    router.push(`/evaluation?user=${encodeURIComponent(JSON.stringify(formData))}`);
   };
 
   return (
@@ -190,8 +204,7 @@ const Popup: React.FC<PopupProps> = ({
             </button>
           </div>
         </div>
-        {users.map((user) => (
-        <form onSubmit={handleSubmit} key={user.trailId} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-3 gap-5">
             <div className="form-group">
               <label className="block text-xs font-medium text-gray-700 mb-1.5">First Name</label>
@@ -217,7 +230,7 @@ const Popup: React.FC<PopupProps> = ({
               <input
                 type="text"
                 name="lname"
-                value={user.lname}
+                value={formData.lname}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
@@ -227,7 +240,7 @@ const Popup: React.FC<PopupProps> = ({
               <input
                 type="email"
                 name="email"
-                value={user.email}
+                value={formData.email}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
@@ -237,7 +250,7 @@ const Popup: React.FC<PopupProps> = ({
               <input
                 type="text"
                 name="number"
-                value={user.number}
+                value={formData.number}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
@@ -247,7 +260,7 @@ const Popup: React.FC<PopupProps> = ({
               <input
                 type="text"
                 name="city"
-                value={user.city}
+                value={formData.city}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
@@ -257,27 +270,27 @@ const Popup: React.FC<PopupProps> = ({
               <input
                 type="text"
                 name="country"
-                value={user.country}
+                value={formData.country}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Trial ID</label>
+              <label className="block mb-1 text-xs font-medium text-gray-700">Course</label>
               <input
                 type="text"
-                name="trailId"
-                value={user.trailId}
+                name="course"
+                value={formData.course}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">How Many Students</label>
+              <label className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
               <input
-                type="number"
-                name="students"
-                value={user.students}
+                type="text"
+                name="numberofstudents"
+                value={formData.numberofstudents}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
@@ -287,32 +300,17 @@ const Popup: React.FC<PopupProps> = ({
               <input
                 type="text"
                 name="preferredTeacher"
-                value={user.preferredTeacher}
+                value={formData.preferredTeacher}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
-            </div>
-            <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Course</label>
-              <select
-                name="course"
-                value={user.course}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
-                required
-              >
-                <option value="">Select Course</option>
-                <option value="Quran">Quran</option>
-                <option value="Islamic Studies">Islamic Studies</option>
-                <option value="Arabic">Arabic</option>
-              </select>
             </div>
             <div className="form-group">
               <label className="block mb-1 text-xs font-medium text-gray-700">Date</label>
               <input
                 type="date"
                 name="date"
-                value={user.date}
+                value={formData.date}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
@@ -322,54 +320,30 @@ const Popup: React.FC<PopupProps> = ({
               <input
                 type="text"
                 name="time"
-                value={user.time}
+                value={formData.time}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
             </div>
-            <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Evaluation Status</label>
-              <select
-                name="evaluationStatus"
-                value={user.evaluationStatus}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
-              >
-                <option value="PENDING">PENDING</option>
-                <option value="IN PROGRESS">IN PROGRESS</option>
-                <option value="COMPLETED">COMPLETED</option>
-              </select>
-            </div>
           </div>
-
+          <div className="form-group">
+            <label className="block mb-1 text-xs font-medium text-gray-700">Comment</label>
+            <textarea
+              name="comment"
+              value={formData.comment}
+              onChange={handleChange}
+              rows={3}
+              className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+            />
+          </div>
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#293552] to-[#1e273c] text-white px-5 py-3 rounded-lg
-                       hover:shadow-lg transition-all duration-300 text-sm font-medium
-                       flex items-center justify-center gap-2 transform hover:translate-y-[-1px]"
+            className="w-full bg-gradient-to-r from-[#293552] to-[#1e273c] text-white p-2 rounded-lg
+                       hover:shadow-lg transition-all duration-300 text-sm font-medium"
           >
-            <span>Save Changes</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
+            Save
           </button>
         </form>
-        ))}
-
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold">Users</h3>
-          <ul className="mt-4 space-y-2">
-            {users.map((user) => (
-              <li key={user.trailId} className="flex justify-between items-center p-3 bg-white shadow rounded-lg">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{user.fname} {user.lname}</p>
-                  <p className="text-sm text-gray-500">{user.email}</p>
-                </div>
-                <p className="text-sm text-gray-600">{user.course}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </Modal>
   );

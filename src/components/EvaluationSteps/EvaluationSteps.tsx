@@ -1,10 +1,105 @@
 'use client';
 
-import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+
+// Interface for Student Data from APIL
+interface StudentData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: number;
+  country: string;
+  countryCode: string;
+  learningInterest: "Quran" | "Islamic Studies" | "Arabic";
+  numberOfStudents: number;
+  preferredTeacher: "Male" | "Female" | "Either";
+  preferredFromTime: string;
+  preferredToTime: string;
+  timeZone: string;
+  referralSource: string;
+  startDate: Date;
+  evaluationStatus: "PENDING" | "INPROGRESS" | "COMPLETED";
+  status: "Active" | "Inactive" | "Deleted";
+  academicCoach?: {
+    academicCoachId: string;
+    name: string;
+    role: string;
+    email: string;
+  };
+}
+
+// Interface for Evaluation Request
+interface EvaluationRequest {
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    studentPhone: number;
+    studentCountry: string;
+    studentCountryCode: string;
+    learningInterest: string;
+    numberOfStudents: number;
+    preferredTeacher: string;
+    preferredFromTime: string;
+    preferredToTime: string;
+    timeZone: string;
+    referralSource: string;
+    preferredDate: Date;
+    evaluationStatus: string;
+    status: string;
+    createdDate: Date;
+    createdBy: string;
+  };
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  subscription: {
+    subscriptionName: string;
+  };
+  classStartDate: Date;
+  classEndDate: Date;
+  classStartTime: string;
+  classEndTime: string;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+}
+
+// Interface for Evaluation Data
+interface EvaluationData {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  studentPhone: number;
+  studentCountry: string;
+  studentCountryCode: string;
+  learningInterest: string;
+  numberOfStudents: number;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  timeZone: string;
+  referralSource: string;
+  preferredDate: Date;
+  evaluationStatus: string;
+  status: string;
+  createdDate: Date;
+  createdBy: string;
+}
 
 // Step 1 Component
-const Step1 = ({ nextStep }: { nextStep: () => void }) => {
+const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
   const steps = [
     {
       step: '1',
@@ -36,6 +131,11 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
     },
   ];
 
+  const handleStartEvaluations = () => {
+    const validData = { /* your valid data here */ };
+    nextStep(validData);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col items-center justify-center relative overflow-hidden p-6">
       {/* Background Effects */}
@@ -45,11 +145,11 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image 
-          src="/assets/images/alf1.png" 
+          src="/assets/images/whitelogo.png" 
           alt="Logo" 
-          className="w-28 drop-shadow-2xl" 
-          width={50} 
-          height={50} 
+          className="w-40 drop-shadow-2xl" 
+          width={100} 
+          height={100} 
         />
       </div>
 
@@ -98,9 +198,9 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
                      font-semibold hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 
                      transition-all duration-200 focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 
                      focus:ring-offset-gray-900"
-            onClick={nextStep}
+            onClick={handleStartEvaluations}
           >
-            Start Evaluation →
+            Start Evaluations →
           </button>
         </div>
       </div>
@@ -109,7 +209,67 @@ const Step1 = ({ nextStep }: { nextStep: () => void }) => {
 };
 
 // Step 2 Component
-const Step2 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationData: EvaluationData }> = ({ prevStep, nextStep, evaluationData }) => {
+  const [studentData, setStudentData] = useState<StudentData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("http://localhost:5001/studentlist");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Fetched student data:', data);
+        
+        if (!Array.isArray(data.data)) {
+          throw new Error('Expected array of students');
+        }
+
+        setStudentData(data.data);
+        localStorage.setItem('studentData', JSON.stringify(data.data));
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentData();
+  }, []);
+
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+        <div className="text-white text-xl">Loading student data...</div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+        <div className="text-red-500 text-xl">Error: {error}</div>
+      </div>
+    );
+  }
+
+  if (studentData.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+        <div className="text-white text-xl">No student data available</div>
+      </div>
+    );
+  }
+
+  console.log('Evaluation Data:', evaluationData);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
       {/* Background Effects */}
@@ -118,93 +278,79 @@ const Step2 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
-        <Image src="/assets/images/alf1.png" alt="Logo" className="w-28 drop-shadow-2xl" width={50} height={50} />
-      </div>
-
-      {/* User Info */}
-      <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
-        <div className="text-sm font-semibold text-white flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-          Robert Baratheon
-        </div>
+        <Image src="/assets/images/whitelogo.png" alt="Logo" className="w-40 drop-shadow-2xl" width={100} height={100} />
       </div>
 
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-4xl">
         <h1 className="text-4xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-          Student Details Verification
+          Student Details
         </h1>
 
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { label: 'First Name', icon: '👤' },
-              { label: 'Last Name', icon: '👤' },
-              { label: 'Email', icon: '📧' },
-              { label: 'Phone Number', icon: '📱' },
-              { label: 'City', icon: '🏙️' },
-              { label: 'Country', icon: '🌍' },
-              { label: 'How many Students', icon: '👥' },
-              { label: 'Preferred Teacher', icon: '👨‍🏫' },
-              { label: 'Course', icon: '📚' },
-              { label: 'Preferred Date', icon: '📅' },
-              { label: 'Preferred Time', icon: '⏰' },
-              { label: 'Comments', icon: '💭' },
-            ].map((field, idx) => (
-              <div key={idx} className="group">
-                <div className="flex items-center space-x-2 mb-1">
-                  <span className="text-white/60 group-hover:text-white/90 transition-colors">
-                    {field.icon}
-                  </span>
-                  <label className="text-sm font-semibold text-white/60 group-hover:text-white/90 transition-colors">
-                    {field.label}
-                  </label>
-                </div>
-                <input
-                  type="text"
-                  placeholder={`Enter ${field.label.toLowerCase()}`}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white placeholder-white/30
-                           focus:bg-white/10 focus:border-white/20 focus:ring-2 focus:ring-purple-500/20
-                           transition-all duration-200"
-                />
+          {studentData.map((student, studentIndex) => (
+            <div key={studentIndex} className="mb-8 last:mb-0">
+              <h2 className="text-2xl font-semibold text-white mb-4">
+                {student.firstName} {student.lastName}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[
+                  { label: 'Email', value: student.email || '', icon: '📧' },
+                  { label: 'Phone Number', value: student.phoneNumber?.toString() || '', icon: '📞' },
+                  { label: 'Country', value: student.country || '', icon: '🌍' },
+                  { label: 'Country Code', value: student.countryCode || '', icon: '🌍' },
+                  { label: 'Learning Interest', value: student.learningInterest || '', icon: '📚' },
+                  { label: 'Number of Students', value: student.numberOfStudents?.toString() || '', icon: '👥' },
+                  { label: 'Preferred Teacher', value: student.preferredTeacher || '', icon: '👨‍🏫' },
+                  { label: 'Preferred From Time', value: student.preferredFromTime || '', icon: '⏰' },
+                  { label: 'Preferred To Time', value: student.preferredToTime || '', icon: '⏰' },
+                  { label: 'Time Zone', value: student.timeZone || '', icon: '🌐' },
+                  { label: 'Referral Source', value: student.referralSource || '', icon: '📢' },
+                  { label: 'Evaluation Status', value: student.evaluationStatus || '', icon: '📋' },
+                ].map((field, idx) => (
+                  <div key={idx} className="group">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="text-white/60 group-hover:text-white/90 transition-colors">
+                        {field.icon}
+                      </span>
+                      <label className="text-sm font-semibold text-white/60 group-hover:text-white/90 transition-colors">
+                        {field.label}
+                      </label>
+                    </div>
+                    <input
+                      type="text"
+                      value={field.value}
+                      readOnly
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white
+                               focus:bg-white/10 focus:border-white/20 focus:ring-2 focus:ring-purple-500/20
+                               transition-all duration-200"
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
 
-        {/* Navigation Buttons - Add this at the bottom of the main content div */}
+        {/* Navigation Buttons */}
         <div className="flex items-center justify-between mt-8">
           <button
             onClick={prevStep}
             className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
-                       bg-white/10 hover:bg-white/20 rounded-lg group"
+                     bg-white/10 hover:bg-white/20 rounded-lg group"
           >
             <span className="transform group-hover:-translate-x-1 transition-transform duration-300">←</span>
             <span>Back</span>
           </button>
 
-          {/* Progress Indicators */}
-          <div className="flex space-x-2">
-            {Array.from({length: 5}, (_, index) => (
-              <div
-                key={index}
-                className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
-                  index === 0 
-                    ? 'bg-gradient-to-r from-blue-400 to-purple-400 w-8' 
-                    : 'bg-white/20'
-                }`}
-              />
-            ))}
-          </div>
-
           <button
-            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg
-                     hover:from-blue-600 hover:to-purple-600 transition-all duration-200
-                     flex items-center space-x-2"
             onClick={nextStep}
+            className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
+                     bg-gradient-to-r from-blue-500 to-purple-500 
+                     hover:from-blue-600 hover:to-purple-600 rounded-lg group"
           >
             <span>Next</span>
-            <span>→</span>
+            <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
           </button>
         </div>
       </div>
@@ -222,13 +368,12 @@ const Step3 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
-        <Image src="/assets/images/alf1.png" alt="Logo" className="w-28 drop-shadow-2xl" width={50} height={50} />
+        <Image src="/assets/images/whitelogo.png" alt="Logo" className="w-40 drop-shadow-2xl" width={100} height={100} />
       </div>
 
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-400 rounded-full"></span>
           Robert Baratheon
         </div>
       </div>
@@ -369,13 +514,12 @@ const Step4 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
-        <Image src="/assets/images/alf1.png" alt="Logo" className="w-28 drop-shadow-2xl" width={50} height={50} />
+        <Image src="/assets/images/whitelogo.png" alt="Logo" className="w-40 drop-shadow-2xl" width={100} height={100} />
       </div>
 
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-400 rounded-full"></span>
           Robert Baratheon
         </div>
       </div>
@@ -494,12 +638,31 @@ const Step4 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
 // Step 5 Component
 const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+  const [evaluationData, setEvaluationData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchEvaluationData = async () => {
+      try {
+        const response = await fetch('http://localhost:5001/evaluation');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setEvaluationData(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchEvaluationData();
+  }, []);
+
   // Add state for selected hours
   const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
 
   // Calculate prices based on selected hours
   const calculatePrice = (rate: number) => {
-    return `$${(selectedHours * rate).toFixed(2)}`;
+    return `$${((selectedHours * rate) * 4).toFixed(2)}`;
   };
 
   // Pricing plans data
@@ -518,21 +681,20 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
-        <Image src="/assets/images/alf1.png" alt="Logo" className="w-28 drop-shadow-2xl" width={50} height={50} />
+        <Image src="/assets/images/whitelogo.png" alt="Logo" className="w-40 drop-shadow-2xl" width={100} height={100} />
       </div>
 
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-400 rounded-full"></span>
           Robert Baratheon
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 w-full max-w-4xl">
+      <div className="relative z-10 w-full max-w-2xl">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
-          <h1 className="text-3xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+          <h1 className="text-2xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
             Arabic Language Course Selection
           </h1>
 
@@ -545,19 +707,19 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <input 
                   type="checkbox" 
                   id="my-beautiful-language" 
-                  className="w-5 h-5 border-white/20 bg-white/10
+                  className="w-3 h-3 border-white/20 bg-white/10
                            checked:bg-gradient-to-r checked:from-blue-500 checked:to-purple-500
                            focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded opacity-0 
                               group-hover:opacity-20 transition-opacity duration-200"></div>
               </div>
-              <label htmlFor="my-beautiful-language" className="text-white/90 font-semibold hover:text-white transition-colors">
+              <label htmlFor="my-beautiful-language" className="text-white/90 font-normal text-[12px] hover:text-white transition-colors">
                 My Beautiful Language
               </label>
             </div>
             <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-4 py-2
-                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200">
+                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
               <option className="bg-gray-900">Level: A1</option>
               <option className="bg-gray-900">Level: A2</option>
               <option className="bg-gray-900">Level: B1</option>
@@ -568,13 +730,13 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <input
                   type="checkbox"
                   id="reading"
-                  className="h-5 w-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-3 w-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="reading" className="text-white font-semibold">
+                <label htmlFor="reading" className="text-white font-normal text-[12px]">
                   Reading
                 </label>
                 <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-4 py-2
-                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200">
+                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
                   <option className="bg-gray-900">1</option>
                   <option className="bg-gray-900">2</option>
                   <option className="bg-gray-900">3</option>
@@ -584,13 +746,13 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <input
                   type="checkbox"
                   id="grammar"
-                  className="h-5 w-5 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-3 w-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="grammar" className="text-white font-semibold">
+                <label htmlFor="grammar" className="text-white font-normal text-[12px]">
                   Grammar
                 </label>
                 <select className="bg-white/10 text-white border border-white/20 rounded-lg px-4 py-2
-                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200">
+                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
                   <option className="bg-gray-900">0</option>
                   <option className="bg-gray-900">1</option>
                   <option className="bg-gray-900">2</option>
@@ -600,7 +762,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
           {/* Hours Section */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-white/90 mb-4">Select Preferred Hours</h2>
+            <h2 className="text-base font-semibold text-white/90 mb-4">Select Preferred Hours</h2>
             <div className="flex flex-wrap gap-3">
               {[1, 1.5, 2, 2.5, 3, 4, 5].map((hour) => (
                 <button
@@ -620,7 +782,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
           {/* Pricing Section */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-white/90 mb-4">Select Preferred Pricing</h2>
+            <h2 className="text-base font-semibold text-white/90 mb-4">Select Preferred Pricing</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {pricingPlans.map((plan) => (
                 <div
@@ -648,13 +810,13 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
           {/* Completion Section */}
           <div className="flex flex-wrap items-center justify-between mt-8 bg-white/5 p-4 rounded-xl">
             <div className="text-white/80">
-              Accomplishment Time: <span className="font-semibold text-white">150 hours</span>
+              Accomplishment Time: <span className="font-semibold text-white text-base">150 hours</span>
             </div>
             <div className="text-white/80">
-              Your Rate: <span className="font-semibold text-white">0 hr/week</span>
+              Your Rate: <span className="font-semibold text-white text-base">0 hr/week</span>
             </div>
-            <div className="text-white/80">
-              Expected Finishing Date: <span className="font-semibold text-white">37.5 months</span>
+            <div className="text-white/80 ">
+              Expected Finishing Date: <span className="font-semibold text-base text-white">37.5 months</span>
             </div>
           </div>
         </div>
@@ -705,6 +867,25 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
 // Step 6 Component
 const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+  const [evaluationData, setEvaluationData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchEvaluationData = async () => {
+      try {
+        const response = await fetch('http://localhost:5001/evaluation');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setEvaluationData(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchEvaluationData();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
       {/* Background Effects */}
@@ -713,13 +894,12 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
-        <Image src="/assets/images/alf1.png" alt="Logo" className="w-28 drop-shadow-2xl" width={50} height={50} />
+        <Image src="/assets/images/whitelogo.png" alt="Logo" className="w-40 drop-shadow-2xl" width={100} height={100} />
       </div>
 
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-400 rounded-full"></span>
           Robert Baratheon
         </div>
       </div>
@@ -739,7 +919,8 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>👤</span>
-                    Guardian &apos; s Name
+                    <span>Guardian &apos; s Name</span>
+                    
                   </span>
                 </label>
                 <input
@@ -756,7 +937,8 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>📧</span>
-                    Guardian Email
+                    <span>Guardian Email</span>
+                    
                   </span>
                 </label>
                 <input
@@ -773,7 +955,8 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>📱</span>
-                    Phone Number
+                    <span>Phone Number</span>
+                    
                   </span>
                 </label>
                 <input
@@ -790,7 +973,8 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>🌍</span>
-                    Country
+                    <span>Country</span>
+                    
                   </span>
                 </label>
                 <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
@@ -811,7 +995,7 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>🏙️</span>
-                    City
+                    <span>City</span>
                   </span>
                 </label>
                 <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
@@ -829,7 +1013,8 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>🗣️</span>
-                    Preferred Language
+                    <span>Preferred Language</span>
+                    
                   </span>
                 </label>
                 <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
@@ -848,7 +1033,8 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
               <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                 <span className="flex items-center gap-2">
                   <span>🕒</span>
-                  Time Zone
+                  <span>Time Zone</span>
+                  
                 </span>
               </label>
               <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
@@ -921,7 +1107,6 @@ const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
   );
 };
 
-
 // Step 7 Component (Thank You Page)
 const Step7 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
   return (
@@ -950,13 +1135,12 @@ const Step7 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
-        <Image src="/assets/images/alf1.png" alt="Logo" className="w-28 drop-shadow-2xl" width={50} height={50} />
+        <Image src="/assets/images/whitelogo.png" alt="Logo" className="w-28 drop-shadow-2xl" width={100} height={100} />
       </div>
 
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-400 rounded-full"></span>
           Robert Baratheon
         </div>
       </div>
@@ -1008,6 +1192,25 @@ const Step7 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
 // Step 8 Component - Add Next button and fix layout
 const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+  const [evaluationData, setEvaluationData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchEvaluationData = async () => {
+      try {
+        const response = await fetch('http://localhost:5001/evaluation');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setEvaluationData(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchEvaluationData();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
       {/* Background Effects */}
@@ -1016,13 +1219,12 @@ const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
-        <Image src="/assets/images/alf1.png" alt="Logo" className="w-28 drop-shadow-2xl" width={50} height={50} />
+        <Image src="/assets/images/whitelogo.png" alt="Logo" className="w-40 drop-shadow-2xl" width={100} height={100} />
       </div>
 
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          <span className="w-2 h-2 bg-green-400 rounded-full"></span>
           Robert Baratheon
         </div>
       </div>
@@ -1049,29 +1251,6 @@ const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
             <span>Next</span>
             <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
           </button>
-
-          {/* <div className="flex space-x-2">
-            {Array.from({ length: 7 }, (_, index) => (
-              <div
-                key={index}
-                className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
-                  index === 6 
-                    ? 'bg-gradient-to-r from-blue-400 to-purple-400 w-8' 
-                    : 'bg-white/20'
-                }`}
-              />
-            ))}
-          </div>
-
-          <button
-            onClick={nextStep}
-            className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
-                     bg-gradient-to-r from-blue-500 to-purple-500 
-                     hover:from-blue-600 hover:to-purple-600 rounded-lg group"
-          >
-            <span>Next</span>
-            <span className="transform group-hover:translate-x-1 transition-transform duration-300">→</span>
-          </button> */}
         </div>
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
           <h1 className="text-3xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
@@ -1137,30 +1316,32 @@ const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 };
 
 // Main EvaluationSteps component - Update total number of steps
-const EvaluationSteps: React.FC = () => {
+const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
   const [step, setStep] = useState(1);
-  const totalSteps = 8; // Update to match total number of steps
+  const [evaluationData, setEvaluationData] = useState<any>(null);
+  const totalSteps = 8;
 
-  const nextStep = () => {
-    console.log('Current step:', step); // Add logging
+  const nextStep = (data: any) => {
+    console.log('Current step:', step);
     if (step < totalSteps) {
+      setEvaluationData(data);
       setStep((prev) => prev + 1);
     }
   };
   
   const prevStep = () => {
-    console.log('Current step:', step); // Add logging
+    console.log('Current step:', step);
     if (step > 1) {
       setStep((prev) => prev - 1);
     }
   };
 
-  console.log('Rendering step:', step); // Add logging
+  console.log('Rendering step:', step);
 
   return (
     <>
       {step === 1 && <Step1 nextStep={nextStep} />}
-      {step === 2 && <Step2 prevStep={prevStep} nextStep={nextStep} />}
+      {step === 2 && <Step2 prevStep={prevStep} nextStep={nextStep} evaluationData={evaluationData} />}
       {step === 3 && <Step3 prevStep={prevStep} nextStep={nextStep} />}
       {step === 4 && <Step4 prevStep={prevStep} nextStep={nextStep} />}
       {step === 5 && <Step5 prevStep={prevStep} nextStep={nextStep} />}

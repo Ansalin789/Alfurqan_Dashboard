@@ -1,14 +1,72 @@
 'use client'
 
 import BaseLayout1 from '@/components/BaseLayout1';
-import React from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation';
 import { FaSyncAlt, FaEdit, FaFilter} from 'react-icons/fa';
+import AddEvaluationModel from '@/components/Academic/AddEvaluationModel';
 
-
+// Define the return type of the getAllUsers function
+interface User {
+    student: {
+      studentFirstName: string;
+      studentLastName: string;
+      studentEmail: string;
+      studentPhone: number;
+      studentCountry: string;
+      studentCity?: string;
+      studentLanguage?: string;
+      studentCountryCode: string;
+      learningInterest: "Quran" | "Islamic Studies" | "Arabic";
+      numberOfStudents: number;
+      preferredTeacher: "Male" | "Female" | "Either";
+      preferredFromTime: string;
+      preferredToTime: string;
+      timeZone: string;
+      referralSource: "Friend" | "Social Media" | "E-Mail" | "Google" | "Other";
+      preferredDate: Date;
+      evaluationStatus: "PENDING" | "INPROGRESS" | "COMPLETED";
+      status: "Active" | "Inactive" | "Deleted";
+    };
+    isLanguageLevel: boolean;
+    languageLevel: string;
+    isReadingLevel: boolean;
+    readingLevel?: string;
+    isGrammarLevel: boolean;
+    grammarLevel: string;
+    hours: number;
+    subscription: {
+      subscriptionName: string;
+      subscriptionPricePerHr: number;
+      subscriptionDays: number;
+      subscriptionStartDate: Date;
+      subscriptionEndDate: Date;
+    };
+    planTotalPrice: number;
+    classStartDate: Date;
+    classEndDate?: Date;
+    classStartTime: string;
+    classEndTime: string;
+    gardianName: string;
+    gardianEmail: string;
+    gardianPhone: string;
+    gardianCity: string;
+    gardianCountry: string;
+    gardianTimeZone: string;
+    gardianLanguage: string;
+    studentStatus?: string;
+    classStatus?: string;
+    comment?: string;
+  }
 
 
 function Page() {
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+
 
     const router = useRouter();
     const handleSyncClick = () => {
@@ -17,6 +75,18 @@ function Page() {
         } else {
         console.error('Router is not available');
         }
+    };
+
+    const openModal = (user: User | null = null) => {
+        setSelectedUser(user);
+        setIsEditMode(!!user);
+        setIsModalOpen(true);
+        setModalIsOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setModalIsOpen(false);
     };
     return (
         <BaseLayout1>
@@ -28,20 +98,6 @@ function Page() {
                         <button className="bg-gray-800 text-white p-2 rounded-full shadow" onClick={handleSyncClick}>
                         <FaSyncAlt />
                         </button>
-                        {/* <div className="flex items-center space-x-2">
-                            <button className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
-                            <span className="text-xl">🔄</span>
-                            </button>
-                            <div className="flex items-center space-x-2">
-                            <button className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
-                                🌞
-                            </button>
-                            <span className="font-medium">Harsh</span>
-                            <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                                🤖
-                            </div>
-                            </div>
-                        </div> */}
                     </div>
     
                     {/* Search and Filter */}
@@ -56,7 +112,7 @@ function Page() {
                             <FaFilter className="mr-2" /> Filter
                         </button>
                     </div>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4"onClick={() => openModal(null)}>
                         <button className="px-4 py-2 rounded-md bg-[#223857] text-white hover:bg-[#1c2f49]">
                         + Add new
                         </button>
@@ -77,7 +133,7 @@ function Page() {
                             scrollbarColor: '#4A5568 #E2E8F0', // Thumb color and track color for Firefox
                         }}
                     >
-                    <table className="w-full  text-sm">
+                    <table className="w-full text-sm">
                         <thead>
                         <tr className="">
                             {[
@@ -125,6 +181,16 @@ function Page() {
                     </div>
                 </div>
             </div>
+            <AddEvaluationModel
+        isOpen={isModalOpen}
+        onRequestClose={closeModal} 
+        userData={selectedUser}
+        isEditMode={isEditMode}
+        onSave={() => {
+        //   fetchStudents();
+          closeModal();
+        }}
+      />
         </BaseLayout1>
       );
 }

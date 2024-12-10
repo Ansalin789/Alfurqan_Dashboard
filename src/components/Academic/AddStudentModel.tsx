@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
+
 
 
 if (typeof window !== 'undefined') {
@@ -85,7 +86,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
         country: formData.country.trim(),
         countryCode: "+1",
         learningInterest: formData.course as "Quran" | "Islamic Studies" | "Arabic",
-        numberOfStudents: formData.students !== undefined ? formData.students : 0,
+        numberOfStudents: formData.students !== undefined ? Number(formData.students) : 0,
         preferredTeacher: formData.preferredTeacher as "Male" | "Female" | "Either",
         preferredFromTime: formatTime(formData.time),
         preferredToTime: formatTime(formData.time),
@@ -149,11 +150,6 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
       [name]: value,
     }));
   };
-  const router = useRouter();
-  
-  const handleStart = () => {
-    router.push('/evaluation');
-  };
 
   return (
     <Modal
@@ -169,7 +165,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
             </h2>
           </div>
           <div className="flex items-center gap-4">
-            <button 
+            {/* <button 
               className="bg-gradient-to-r from-[#293552] to-[#1e273c] text-white px-5 py-2 rounded-lg
                          hover:shadow-lg transition-all duration-300 text-sm font-medium
                          flex items-center gap-2 transform hover:translate-y-[-1px]" 
@@ -179,7 +175,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
               </svg>
-            </button>
+            </button> */}
             <button 
               onClick={onRequestClose} 
               className="text-gray-400 hover:text-gray-600 hover:rotate-90 transition-all duration-300"

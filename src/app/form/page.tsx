@@ -29,7 +29,7 @@ const MultiStepForm = () => {
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [referral, setReferral] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState<number>(0);
+    const [phoneNumber, setPhoneNumber] = useState(0);
     const [country, setCountry] = useState("");
     const [countryCode, setCountryCode] = useState("");
 
@@ -49,27 +49,45 @@ const MultiStepForm = () => {
     const [availableTimes, setAvailableTimes] = useState<string[]>([]);
 
 
-    const handlePhoneChange = (value: string, data: { countryCode: string }) => {
-        const numericValue = Number(value.replace(/\D/g, ''));
+
+
+
+
+    const handlePhoneChange = (value: any, data: { countryCode: string }) => {
+        // Log the value to understand what is being passed
+        console.log('Phone input value:', value);
+    
+        // Remove non-numeric characters and convert to number
+      const numericValue = value ;
+    
         setPhoneNumber(numericValue);
         setCountryCode(data.countryCode || '');
     };
 
-    const handleDateChange = async (value: Value) => {
-        if (Array.isArray(value) && value[0] && value[1]) {
-            setStartDate(value[0]);
-            setToDate(value[1]);
+    const handleDateChange = (value: Value) => {
+        if (value instanceof Date) {
+            setStartDate(value);
+            setToDate(value);  // Set toDate to the same as startDate
             loadAvailableTimes();
         }
     };
 
     const loadAvailableTimes = () => {
         const defaultTimes = [
-            "02:45 AM", "03:00 AM", "03:15 AM", "03:30 AM", 
-            "03:45 AM", "04:00 AM", "04:30 AM", "05:15 AM", 
-            "06:00 AM"
+            "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", 
+            "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", 
+            "01:00 PM", "01:30 PM", "02:00 PM"
         ];
         setAvailableTimes(defaultTimes);
+        setPreferredFromTime("");
+        
+        // Automatically set preferredToTime when a from time is selected
+        const handleFromTimeSelection = (fromTime: string) => {
+            const fromTimeIndex = defaultTimes.indexOf(fromTime);
+            if (fromTimeIndex !== -1 && fromTimeIndex + 1 < defaultTimes.length) {
+                setPreferredToTime(defaultTimes[fromTimeIndex + 1]);
+            }
+        };
     };
 
     const validateStep1 = () => {
@@ -112,7 +130,7 @@ const MultiStepForm = () => {
     const validateStep3 = () => {
         if (!startDate || !toDate) return false;
         if (!preferredFromTime || !preferredToTime) return false;
-        return true;
+        return !!preferredFromTime;
     };
 
     const nextStep = () => {
@@ -140,14 +158,14 @@ const MultiStepForm = () => {
                 return;
             }
             // Clean and format the phone number - remove any non-numeric characters
-            const cleanPhoneNumber = phoneNumber.toString().replace(/\D/g, '');
+            // const cleanPhoneNumber = phoneNumber.toString().replace(/\D/g, '');
 
             const formattedData = {
                 id: uuidv4(),
                 firstName: firstName.trim().padEnd(3),
                 lastName: lastName.trim().padEnd(3),
                 email: email.trim().toLowerCase(),
-                phoneNumber: cleanPhoneNumber ? Number(cleanPhoneNumber) : null,
+                phoneNumber:  Number(phoneNumber),
                 country: country.length >= 3 ? country : country.padEnd(3, ' '),
                 countryCode: countryCode.toLowerCase(),
                 learningInterest: learningInterest[0],
@@ -383,7 +401,7 @@ const MultiStepForm = () => {
                                     key={option}
                                     type="button"
                                     onClick={() => setLearningInterest([option])}
-                                    className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[15px] rounded-tl-[15px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
+                                    className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[10px] rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.1)] ${
                                         learningInterest[0] === option ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
                                     }`}
                                 >
@@ -407,13 +425,13 @@ const MultiStepForm = () => {
                         <h2 className="text-lg text-center font-bold mb-4 text-[#293552]">
                             How many students will join?
                         </h2>
-                        <div className="grid grid-cols-5 gap-4 mb-6 rounded-br-[30px] rounded-tl-[30px] rounded-bl-[8px] rounded-tr-[8px]">
+                        <div className="grid grid-cols-5 gap-4 mb-6 rounded-br-[30px] rounded-tl-[30px] rounded-bl-[25px] rounded-tr-[25px]">
                             {[1, 2, 3, 4, 5].map((count) => (
                                 <button
                                     key={count}
                                     type="button"
                                     onClick={() => setNumberOfStudents(count.toString())}
-                                    className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[15px] rounded-tl-[15px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
+                                    className={`p-4 hover:transition-all duration-500 ease-in-out  hover:shadow-inner rounded-full shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
                                         numberOfStudents === count.toString() ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
                                     }`}
                                 >
@@ -431,7 +449,7 @@ const MultiStepForm = () => {
                                     key={preference}
                                     type="button"
                                     onClick={() => setPreferredTeacher(preference)}
-                                    className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[15px] rounded-tl-[15px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
+                                    className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[10px] rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
                                         preferredTeacher === preference ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
                                     }`}
                                 >
@@ -450,7 +468,7 @@ const MultiStepForm = () => {
                                         key={source}
                                         type="button"
                                         onClick={() => setReferralSource(source)}
-                                        className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[15px] rounded-tl-[15px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
+                                        className={`p-4 hover:transition-all duration-500 ease-in-out rounded hover:shadow-inner rounded-br-[10px] rounded-tl-[10px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.2)] ${
                                             referralSource === source ? 'bg-[#3c85fa2e]' : 'bg-gray-100'
                                         }`}
                                     >
@@ -499,13 +517,14 @@ const MultiStepForm = () => {
 
                         <div className="flex md:flex-cols-1 gap-8">
                             {/* Calendar Section */}
-                            <div className="p-6 rounded-[20px] shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]">
+                            <div className="p-2 rounded-[20px] shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]">
                                 <style dangerouslySetInnerHTML={{ __html: `
                                     /* Base calendar styles */
                                     .react-calendar {
                                         width: 100% !important;
                                         background-color: rgb(229 231 235) !important;
                                         border: none !important;
+                                        border-radius: 20px !important;
                                     }
                                     
                                     /* Sunday dates only */
@@ -528,48 +547,48 @@ const MultiStepForm = () => {
                                 `}} />
                                 <Calendar
                                     onChange={handleDateChange}
-                                    value={[startDate, toDate]}
+                                    value={startDate}
                                     tileDisabled={isTileDisabled}
                                     className="mx-auto custom-calendar"
-                                    selectRange={true}
+                                    selectRange={false}
+                                    minDate={new Date()}
                                     tileClassName={({ date, view }) => 
                                         view === 'month' && 
-                                        date >= startDate && 
-                                        date <= toDate
-                                        ? 'selected-date'
-                                        : null
+                                        date.toDateString() === startDate.toDateString()
+                                            ? 'selected-date'
+                                            : null
                                     }
                                 />
                             </div>
 
                             {/* Available Times Section */}
-                            <div className="p-6 rounded-[20px] shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]">
-                                <h3 className="text-[15px] text-center align-middle font-semibold mb-4 text-[#293552]">
+                            <div className="p-2 rounded-[20px] shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]">
+                                <h3 className="text-[15px] text-center align-middle font-semibold mb-4 text-[#293552] p-2">
                                     Available Time Slots
                                 </h3>
-                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="grid grid-cols-1 text-center gap-4 mb-4">
                                     <div>
-                                        <p className="text-sm font-medium mb-2">From</p>
-                                        <div className="max-h-[300px] overflow-y-auto scrollbar-hide">
+                                        {/* <p className="text-sm font-medium mb-2">From</p> */}
+                                        <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-[#293552] scrollbar-track-gray-100">
                                             <div className="grid grid-cols-1 gap-3 text-[10px]">
                                                 {availableTimes.map((time) => (
-                                                    <button
-                                                        key={time}
-                                                        type="button"
-                                                        onClick={() => setPreferredFromTime(time)}
-                                                        className={`p-3 rounded-lg transition-all duration-200 ${
-                                                            preferredFromTime === time 
-                                                            ? 'bg-[#293552] text-white shadow-lg transform scale-100' 
-                                                            : 'bg-gray-200 hover:bg-gray-100'
-                                                        }`}
-                                                    >
-                                                        {time}
-                                                    </button>
+                                                <button
+                                                    key={time}
+                                                    type="button"
+                                                    onClick={() => setPreferredFromTime(time)}
+                                                    className={`p-1 rounded-lg transition-all duration-200 ${
+                                                    preferredFromTime === time 
+                                                        ? 'bg-[#293552] text-white shadow-lg transform scale-100 p-4 text-[10px]' 
+                                                        : 'bg-gray-200 hover:bg-gray-100 p-4'
+                                                    }`}
+                                                >
+                                                    {time}
+                                                </button>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
-                                    <div>
+                                    <div className=''>
                                         <p className="text-sm font-medium mb-2">To</p>
                                         <div className="max-h-[300px] overflow-y-auto scrollbar-hide">
                                             <div className="grid grid-cols-1 gap-3 text-[10px]">

@@ -5,6 +5,8 @@ import Modal from 'react-modal';
 import { FaFilter, FaPlus } from 'react-icons/fa';
 import BaseLayout1 from '@/components/BaseLayout1';
 import AddStudentModal from '@/components/Academic/AddStudentModel';
+import { useRouter } from 'next/navigation';
+
 
 
 // Define the return type of the getAllUsers function
@@ -228,6 +230,15 @@ const TrailManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+  const router = useRouter();
+  const handleSyncClick = () => {
+    if (router) {
+    router.push('managestudentview');
+    } else {
+    console.error('Router is not available');
+    }
+};
 
   // Add pagination calculation
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -465,7 +476,7 @@ const TrailManagement = () => {
               <div className='flex'>
                 <button 
                   onClick={() => openModal(null)}
-                  className={`border p-2 rounded-lg shadow flex items-center mx-4`}
+                  className={`border p-2 rounded-lg bg-gray-800 text-white shadow flex items-center mx-4`}
                 >
                   <FaPlus className="mr-2" /> Add new
                 </button>
@@ -477,7 +488,7 @@ const TrailManagement = () => {
               </div>
             </div>
           </div>
-          <table className={`min-w-full rounded-lg shadow`}>
+          <table className={`min-w-full rounded-lg shadow bg-[#fff]`}>
             <thead>
               <tr>
                 <th className="p-4 text-[13px] text-center">
@@ -511,9 +522,8 @@ const TrailManagement = () => {
                     <td className="p-2 text-[13px] text-center"></td>
                     <td className="p-4">
                       <button
-                        className="bg-gray-800 hover:cursor-pointer text-center text-white px-3 py-1 rounded-full shadow hover:bg-blue-600"
+                        className="bg-gray-800 hover:cursor-pointer text-center text-white px-3 py-1 rounded-full shadow hover:bg-gray-900"onClick={handleSyncClick}
                       >
-                        {/* <FaEdit size={13}/> */}
                         view
                       </button>
                     </td>
