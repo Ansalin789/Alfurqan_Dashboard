@@ -17,7 +17,7 @@ interface PopupProps {
 }
 
 interface User {
-  trailId: string;
+studentId: string;
   fname: string;
   lname: string;
   email: string;
@@ -59,7 +59,7 @@ interface ApiResponseUser {
 
 const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) => {
   const [formData, setFormData] = useState<User>({
-    trailId: '',
+    studentId: '',
     fname: '',
     lname: '',
     email: '',
@@ -89,7 +89,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
 
       // Transform API data to match User interface
       const transformedData = rawData.students.map((item: ApiResponseUser) => ({
-        trailId: item._id,
+        studentId: item._id,
         fname: item.firstName,
         lname: item.lastName,
         email: item.email,
@@ -168,7 +168,8 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
 
   const handleStart = () => {
     // router.push('/evaluation');
-    router.push(`/evaluation?user=${encodeURIComponent(JSON.stringify(formData))}`);
+    console.log("Navigating with Student ID:", formData.studentId);
+    router.push(`/evaluation?studentId=${formData.studentId}`);
   };
 
   return (

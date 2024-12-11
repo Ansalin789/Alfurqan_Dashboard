@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 
 // Define the return type of the getAllUsers function
 interface User {
-  trailId: string;
+  studentId: string;
   fname: string;
   lname: string;
   email: string;
@@ -46,7 +46,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
 
     // Transform API data to match User interface
     const transformedData = rawData.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; }) => ({
-      trailId: item._id,
+      studentId: item._id,
       fname: item.firstName,
       lname: item.lastName,
       email: item.email,
@@ -294,8 +294,8 @@ const TrailManagement = () => {
     }
   };
 
-  const handleEditClick = (user: User) => {
-    setSelectedUserData(user);
+  const handleEditClick = (studentId: User) => {
+    setSelectedUserData(studentId);
     setModalIsOpen(true);
   };
 
@@ -480,8 +480,8 @@ const TrailManagement = () => {
             <tbody>
               {currentItems.length > 0 ? (
                 currentItems.map((item, index) => (
-                  <tr key={item.trailId || index} className={`border-t`}>
-                    <td className="p-2 text-[13px] text-center">{item.trailId}</td>
+                  <tr key={item.studentId || index} className={`border-t`}>
+                    <td className="p-2 text-[13px] text-center">{item.studentId}</td>
                     <td className="p-2 text-[13px] text-center">
                       {item.fname} {item.lname}
                     </td>

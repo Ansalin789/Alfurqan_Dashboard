@@ -2,6 +2,27 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import axios from 'axios';
+
+import { useParams } from 'next/navigation';
+
+// Define the return type of the getAllUsers function
+interface User {
+  trailId: string;
+  fname: string;
+  lname: string;
+  email: string;
+  number: string;
+  country: string;
+  course: string;
+  preferredTeacher: string;
+  date: string;
+  time: string;
+  evaluationStatus?: string;
+  city?: string;
+  students?: number;
+  comment?: string;
+}
 
 // Interface for Student Data from APIL
 interface StudentData {
@@ -132,6 +153,7 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
   ];
 
   const handleStartEvaluations = () => {
+    console.log("1>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>...");
     const validData = { /* your valid data here */ };
     nextStep(validData);
   };
@@ -213,21 +235,27 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationDa
   const [studentData, setStudentData] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const id = window.location.href
+  const queryString = id.split('?')[1]; // Extract the query string
+  const params = new URLSearchParams(queryString);
+  const studentId = params.get('studentId');
 
   useEffect(() => {
+  
     const fetchStudentData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5001/studentlist");
+        const response = await fetch(`http://localhost:5001/studentlist/${studentId}`);
+        console.log("response>>>",response)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
         console.log('Fetched student data:', data);
         
-        if (!Array.isArray(data.data)) {
-          throw new Error('Expected array of students');
-        }
+        // if (!Array.isArray(data.data)) {
+        //   throw new Error('Expected array of students');
+        // }
 
         setStudentData(data.data);
         localStorage.setItem('studentData', JSON.stringify(data.data));
@@ -260,7 +288,7 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationDa
     );
   }
 
-  if (studentData.length === 0) {
+  if (!studentData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
         <div className="text-white text-xl">No student data available</div>
@@ -360,6 +388,7 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationDa
 
 // Step 3 Component
 const Step3 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
       {/* Background Effects */}
