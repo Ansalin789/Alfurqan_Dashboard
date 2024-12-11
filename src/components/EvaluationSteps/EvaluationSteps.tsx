@@ -24,6 +24,7 @@ interface User {
   comment?: string;
 }
 
+
 // Interface for Student Data from APIL
 interface StudentData {
   firstName: string;
@@ -151,6 +152,9 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
       icon: '❓',
     },
   ];
+
+const [trialId, setTrialId] = useState<string | null>(null); // Assuming you have a state for trialId
+
 
   const handleStartEvaluations = () => {
     console.log("1>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>...");
