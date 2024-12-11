@@ -168,7 +168,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
 
   const handleStart = () => {
     // router.push('/evaluation');
-    router.push(`/evaluation?user=${encodeURIComponent(JSON.stringify(formData))}`);
+    router.push(`/evaluation?${encodeURIComponent(JSON.stringify(formData.trailId))}`);
   };
 
   return (

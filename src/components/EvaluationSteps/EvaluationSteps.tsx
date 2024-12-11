@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
+
 // Interface for Student Data from APIL
 interface StudentData {
   firstName: string;
@@ -131,8 +132,11 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
     },
   ];
 
+const [trialId, setTrialId] = useState<string | null>(null); // Assuming you have a state for trialId
+
+
   const handleStartEvaluations = () => {
-    const validData = { /* your valid data here */ };
+    const validData = { trialId };
     nextStep(validData);
   };
 
