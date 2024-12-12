@@ -26,29 +26,67 @@ interface User {
 
 
 // Interface for Student Data from APIL
-interface StudentData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: number;
-  country: string;
-  countryCode: string;
-  learningInterest: "Quran" | "Islamic Studies" | "Arabic";
-  numberOfStudents: number;
-  preferredTeacher: "Male" | "Female" | "Either";
-  preferredFromTime: string;
-  preferredToTime: string;
-  timeZone: string;
-  referralSource: string;
-  startDate: Date;
-  evaluationStatus: "PENDING" | "INPROGRESS" | "COMPLETED";
-  status: "Active" | "Inactive" | "Deleted";
-  academicCoach?: {
-    academicCoachId: string;
-    name: string;
-    role: string;
-    email: string;
-  };
+// interface StudentData {
+//   academicCoach?: {
+//     academicCoachId: string;
+//     email: string;
+//     role: string;
+//     name: string;
+//   };
+//   country: string;
+//   countryCode: string;
+//   createdBy: string;
+//   createdDate: Date;
+//   email: string;
+//   evaluationStatus: "PENDING" | "INPROGRESS" | "COMPLETED";
+//   firstName: string;
+//   lastName: string;
+//   lastUpdatedBy: string;
+//   lastUpdatedDate: Date;
+//   learningInterest: "Quran" | "Islamic Studies" | "Arabic";
+//   numberOfStudents: number;
+//   phoneNumber: number;
+//   preferredFromTime: string;
+//   preferredToTime: string;
+//   preferredTeacher: "Male" | "Female" | "Either";
+//   referralSource: string;
+//   startDate: Date;
+//   status: "Active" | "Inactive" | "Deleted";
+//   timeZone: string;
+//   _id: string;
+  
+// }
+
+
+interface StudentData{
+  _id: any,
+  firstName: any,
+  lastName: any,
+  cademicCoach: {
+      academicCoachId: any,
+      name: any,
+      role: any,
+      email: any
+  },
+  email: any,
+  phoneNumber: any,
+  country: any,
+  countryCode: any,
+  learningInterest: any,
+  numberOfStudents: any,
+  preferredTeacher: any,
+  preferredFromTime: any,
+  preferredToTime: any,
+  timeZone: any,
+  referralSource: any,
+  startDate: any,
+  evaluationStatus: any,
+  status: any,
+  createdDate: any,
+  createdBy: any,
+  lastUpdatedBy: any,
+  lastUpdatedDate: any
+ 
 }
 
 // Interface for Evaluation Request
@@ -236,7 +274,7 @@ const [trialId, setTrialId] = useState<string | null>(null); // Assuming you hav
 
 // Step 2 Component
 const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationData: EvaluationData }> = ({ prevStep, nextStep, evaluationData }) => {
-  const [studentData, setStudentData] = useState<StudentData[]>([]);
+  const [studentData, setStudentData] = useState<StudentData>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const id = window.location.href
@@ -261,8 +299,13 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationDa
         //   throw new Error('Expected array of students');
         // }
 
-        setStudentData(data.data);
-        localStorage.setItem('studentData', JSON.stringify(data.data));
+        const  studentArray = data;
+console.log("response data", studentArray); 
+
+        setStudentData(studentArray);
+       localStorage.setItem('studentData', data[0]);
+      console.log(">>>>",  studentData);
+
       } catch (error) {
         console.error('Error fetching student data:', error);
         setError(error instanceof Error ? error.message : 'An error occurred');
@@ -320,49 +363,50 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationDa
         </h1>
 
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
-          {studentData.map((student, studentIndex) => (
-            <div key={studentIndex} className="mb-8 last:mb-0">
-              <h2 className="text-2xl font-semibold text-white mb-4">
-                {student.firstName} {student.lastName}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[
-                  { label: 'Email', value: student.email || '', icon: '📧' },
-                  { label: 'Phone Number', value: student.phoneNumber?.toString() || '', icon: '📞' },
-                  { label: 'Country', value: student.country || '', icon: '🌍' },
-                  { label: 'Country Code', value: student.countryCode || '', icon: '🌍' },
-                  { label: 'Learning Interest', value: student.learningInterest || '', icon: '📚' },
-                  { label: 'Number of Students', value: student.numberOfStudents?.toString() || '', icon: '👥' },
-                  { label: 'Preferred Teacher', value: student.preferredTeacher || '', icon: '👨‍🏫' },
-                  { label: 'Preferred From Time', value: student.preferredFromTime || '', icon: '⏰' },
-                  { label: 'Preferred To Time', value: student.preferredToTime || '', icon: '⏰' },
-                  { label: 'Time Zone', value: student.timeZone || '', icon: '🌐' },
-                  { label: 'Referral Source', value: student.referralSource || '', icon: '📢' },
-                  { label: 'Evaluation Status', value: student.evaluationStatus || '', icon: '📋' },
-                ].map((field, idx) => (
-                  <div key={idx} className="group">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-white/60 group-hover:text-white/90 transition-colors">
-                        {field.icon}
-                      </span>
-                      <label className="text-sm font-semibold text-white/60 group-hover:text-white/90 transition-colors">
-                        {field.label}
-                      </label>
-                    </div>
-                    <input
-                      type="text"
-                      value={field.value}
-                      readOnly
-                      className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white
-                               focus:bg-white/10 focus:border-white/20 focus:ring-2 focus:ring-purple-500/20
-                               transition-all duration-200"
-                    />
-                  </div>
-                ))}
-              </div>
+        
+            <div key={studentData.email || studentData.phoneNumber?.toString()} className="mb-8 last:mb-0">
+          <h2 className="text-2xl font-semibold text-white mb-4">
+        {studentData.firstName || 'N/A'} {studentData.lastName || 'N/A'}
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[
+          { label: 'Email', value: studentData.email || 'N/A', icon: '📧' },
+          { label: 'Phone Number', value: studentData.phoneNumber?.toString() || 'N/A', icon: '📞' },
+          { label: 'Country', value: studentData.country || 'N/A', icon: '🌍' },
+          { label: 'Country Code', value: studentData.countryCode || 'N/A', icon: '🌍' },
+          { label: 'Learning Interest', value: studentData.learningInterest || 'N/A', icon: '📚' },
+          { label: 'Number of Students', value: studentData.numberOfStudents?.toString() || 'N/A', icon: '👥' },
+          { label: 'Preferred Teacher', value: studentData.preferredTeacher || 'N/A', icon: '👨‍🏫' },
+          { label: 'Preferred From Time', value: studentData.preferredFromTime || 'N/A', icon: '⏰' },
+          { label: 'Preferred To Time', value: studentData.preferredToTime || 'N/A', icon: '⏰' },
+          { label: 'Time Zone', value: studentData.timeZone || 'N/A', icon: '🌐' },
+          { label: 'Referral Source', value: studentData.referralSource || 'N/A', icon: '📢' },
+          { label: 'Evaluation Status', value: studentData.evaluationStatus || 'N/A', icon: '📋' },
+        ].map((field) => (
+          <div key={field.label} className="group">
+            <div className="flex items-center space-x-2 mb-1">
+              <span className="text-white/60 group-hover:text-white/90 transition-colors">
+                {field.icon}
+              </span>
+              <label className="text-sm font-semibold text-white/60 group-hover:text-white/90 transition-colors">
+                {field.label}
+              </label>
             </div>
-          ))}
-        </div>
+            <input
+              type="text"
+              value={field.value}
+              readOnly
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-2.5 text-white
+                       focus:bg-white/10 focus:border-white/20 focus:ring-2 focus:ring-purple-500/20
+                       transition-all duration-200"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+
+</div>
+
 
         {/* Navigation Buttons */}
         <div className="flex items-center justify-between mt-8">
