@@ -300,7 +300,7 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationDa
         // }
 
         const  studentArray = data;
-console.log("response data", studentArray); 
+        console.log("response data", studentArray); 
 
         setStudentData(studentArray);
        localStorage.setItem('studentData', data[0]);

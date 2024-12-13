@@ -142,7 +142,7 @@ const ManageStudentView = () => {
           <div className='grid grid-cols-2'>
             <div className="grid grid-cols-3 gap-4 p-10">
                 <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">S</label>
+                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Monday</label>
                     <input type="checkbox" className="form-checkbox text-[12px]" />
                 </div>
                 <div className='flex'>
