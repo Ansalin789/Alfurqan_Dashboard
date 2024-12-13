@@ -714,8 +714,13 @@ const Step4 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 };
 
 // Step 5 Component
-const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+const Step5 = ({ prevStep, nextStep: nextStepFunction }: { prevStep: () => void; nextStep: () => void }) => {
   const [evaluationData, setEvaluationData] = useState<any>(null);
+  const [selectedLanguageLevel, setSelectedLanguageLevel] = useState<string | null>(null);
+  const [selectedReadingLevel, setSelectedReadingLevel] = useState<number | null>(null);
+  const [selectedGrammarLevel, setSelectedGrammarLevel] = useState<number | null>(null);
+  const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null); // Selected plan
 
   useEffect(() => {
     const fetchEvaluationData = async () => {
@@ -724,6 +729,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
+        console.log("response>>>",response);
         const data = await response.json();
         setEvaluationData(data);
       } catch (error) {
@@ -735,12 +741,47 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
   }, []);
 
   // Add state for selected hours
-  const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
+
+  // Function to handle POST request
+  const nextStep = async () => {
+    if (!selectedPlan) {
+      alert('Please select a plan before proceeding.');
+      return;
+    }
+
+    const postData = {
+      selectedLanguageLevel,
+      selectedReadingLevel,
+      selectedGrammarLevel,
+      selectedPlan,
+      selectedHours,
+    };
+
+    try {
+      const response = await fetch('http://localhost:5001/evaluation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Data successfully sent:', result);
+      nextStep(); // Proceed to the next step after successful submission
+    } catch (error) {
+      console.error('Error sending data:', error);
+    }
+  };
 
   // Calculate prices based on selected hours
-  const calculatePrice = (rate: number) => {
-    return `$${((selectedHours * rate) * 4).toFixed(2)}`;
-  };
+  // const calculatePrice = (rate: number) => {
+  //   return `$${((selectedHours * rate) * 4).toFixed(2)}`;
+  // };
 
   // Pricing plans data
   const pricingPlans = [
@@ -750,8 +791,10 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
     { label: "Elite", rate: 16, basePrice: "$16/h"},
   ];
 
+  // const [selectedPlan, setSelectedPlan] = useState<string | null>(null); // State to track selected plan
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-6 relative">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[url('/assets/images/grid.svg')] opacity-10"></div>
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
@@ -795,7 +838,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 My Beautiful Language
               </label>
             </div>
-            <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-4 py-2
+            <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-2 py-1
                            focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
               <option className="bg-gray-900">Level: A1</option>
               <option className="bg-gray-900">Level: A2</option>
@@ -812,7 +855,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <label htmlFor="reading" className="text-white font-normal text-[12px]">
                   Reading
                 </label>
-                <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-4 py-2
+                <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-2 py-1
                            focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
                   <option className="bg-gray-900">1</option>
                   <option className="bg-gray-900">2</option>
@@ -828,7 +871,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <label htmlFor="grammar" className="text-white font-normal text-[12px]">
                   Grammar
                 </label>
-                <select className="bg-white/10 text-white border border-white/20 rounded-lg px-4 py-2
+                <select className="bg-white/10 text-white border border-white/20 rounded-lg px-2 py-1
                            focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
                   <option className="bg-gray-900">0</option>
                   <option className="bg-gray-900">1</option>
@@ -839,19 +882,19 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
           {/* Hours Section */}
           <div className="mb-8">
-            <h2 className="text-base font-semibold text-white/90 mb-4">Select Preferred Hours</h2>
+            <h2 className="text-base font-semibold text-white/90 mb-4">Select Preferred Hours / Week</h2>
             <div className="flex flex-wrap gap-3">
               {[1, 1.5, 2, 2.5, 3, 4, 5].map((hour) => (
                 <button
                   key={hour}
                   onClick={() => setSelectedHours(hour)}
-                  className={`px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105
+                  className={`px-6 text-[12px] py-3 rounded-xl transition-all duration-300 transform hover:scale-105
                            ${hour === selectedHours
                     ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
                     : "bg-white/10 text-white/80 hover:bg-white/20"
                   }`}
                 >
-                  {hour}h
+                  {hour} hr
                 </button>
               ))}
             </div>
@@ -859,24 +902,26 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
           {/* Pricing Section */}
           <div className="mb-8">
-            <h2 className="text-base font-semibold text-white/90 mb-4">Select Preferred Pricing</h2>
+            <h2 className="text-base font-semibold text-white/90 mb-4">Select Preferred Package</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {pricingPlans.map((plan) => (
                 <div
                   key={plan.label}
-                  className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105"
+                  onClick={() => setSelectedPlan(plan.label)}
+                  className={`group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105 ${selectedPlan === plan.label ? 'border-2 border-blue-500' : ''}`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 
                                group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/10
                                group-hover:border-white/20 transition-all duration-300">
-                    <h3 className="text-lg font-bold text-white mb-2">{plan.label}</h3>
-                    <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r 
+                    <h3 className="text-[14px] text-center font-bold text-white mb-2">{plan.label}</h3>
+                    <div className="text-[17px] text-center font-bold text-transparent bg-clip-text bg-gradient-to-r 
                                 from-blue-400 to-purple-400 mb-1">
                       {plan.basePrice}
                     </div>
-                    <div className="text-sm text-white/60 mb-4">
-                      Total: {calculatePrice(plan.rate)}
+                    <div className="text-[10px] text-center text-white/60 mb-4">
+                      Total: 
+                      {/* {calculatePrice(plan.rate)} */}
                     </div>
                   </div>
                 </div>
@@ -886,14 +931,14 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
           {/* Completion Section */}
           <div className="flex flex-wrap items-center justify-between mt-8 bg-white/5 p-4 rounded-xl">
-            <div className="text-white/80">
-              Accomplishment Time: <span className="font-semibold text-white text-base">150 hours</span>
+            <div className="text-white/80 text-[12px]">
+              Accomplishment Time: <span className="font-semibold text-white text-[12px]">150 hours</span>
             </div>
-            <div className="text-white/80">
-              Your Rate: <span className="font-semibold text-white text-base">0 hr/week</span>
+            <div className="text-white/80 text-[12px]">
+              Your Rate: <span className="font-semibold text-white text-[12px]">0 hr/week</span>
             </div>
-            <div className="text-white/80 ">
-              Expected Finishing Date: <span className="font-semibold text-base text-white">37.5 months</span>
+            <div className="text-white/80 text-[12px]">
+              Expected Finishing Date: <span className="font-semibold text-[12px] text-white">37.5 months</span>
             </div>
           </div>
         </div>
@@ -902,8 +947,8 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
         <div className="flex items-center justify-between mt-8">
           <button
             onClick={prevStep}
-            className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
-                       bg-white/10 hover:bg-white/20 rounded-lg group"
+            className="flex items-center gap-2 px-4 py-2 text-white transition-all duration-300 
+                       bg-white/10 hover:bg-white/20 rounded-lg group text-[14px]"
           >
             <span className="transform group-hover:-translate-x-1 transition-transform duration-300">←</span>
             <span>Back</span>
@@ -924,9 +969,9 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
           </div>
 
           <button
-            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg
                      hover:from-blue-600 hover:to-purple-600 transition-all duration-200
-                     flex items-center space-x-2"
+                     flex items-center space-x-2 text-[14px]"
             onClick={nextStep}
           >
             <span>Next</span>
@@ -941,6 +986,20 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
     </div>
   );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Step 6 Component
 const Step6 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
