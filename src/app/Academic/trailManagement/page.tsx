@@ -20,6 +20,7 @@ interface User {
   preferredTeacher: string;
   date: string;
   time: string;
+  status?: string;
   evaluationStatus?: string;
   city?: string;
   students?: number;
@@ -469,6 +470,7 @@ const TrailManagement = () => {
                 <th className="p-4 text-[13px] text-center">Course</th>
                 <th className="p-4 text-[13px] text-center">Preferred Teacher</th>
                 <th className="p-4 text-[13px] text-center">Time</th>
+                <th className="p-4 text-[13px] text-center">Evaluation Status</th>
                 <th className="p-4 text-[13px] text-center">Status</th>
                 <th className="p-4 text-[13px] text-center">Action</th>
                 <th
@@ -497,7 +499,16 @@ const TrailManagement = () => {
                           ? 'bg-yellow-100 text-yellow-800' 
                           : 'bg-green-100 text-green-800'
                       }`}>
-                        {item.evaluationStatus || 'PENDING'}
+                        {item.evaluationStatus ?? 'PENDING'}
+                      </span>
+                    </td>
+                    <td className="p-2 text-[13px] text-center">
+                    <span className={`px-2 text-[13px] text-center py-1 rounded-full ${
+                        item.status === 'Active' 
+                          ? 'bg-yellow-100 text-yellow-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {item.status ?? 'Active'}
                       </span>
                     </td>
                     <td className="p-4">
