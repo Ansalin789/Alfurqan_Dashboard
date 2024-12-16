@@ -777,106 +777,43 @@ interface IEvaluation {
 
 // Step 5 Component
 const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
-  const [evaluationData, setEvaluationData] = useState<IEvaluation>({
-    student: {
-      studentId: '', // This should be set when the student is created
-      studentFirstName: '',
-      studentLastName: '',
-      studentEmail: '',
-      studentPhone: 0,
-      studentCity: '',
-      studentCountry: '',
-      studentCountryCode: '', // Add this if needed
-      learningInterest: '',
-      numberOfStudents: 1,
-      preferredTeacher: '',
-      preferredFromTime: '',
-      preferredToTime: '',
-      timeZone: '',
-      referralSource: '',
-      preferredDate: new Date(),
-      evaluationStatus: '',
-      status: '',
-      createdDate: new Date(),
-      createdBy: '',
-    },
-    isLanguageLevel: false,
-    languageLevel: '',
-    isReadingLevel: false,
-    readingLevel: '',
-    isGrammarLevel: false,
-    grammarLevel: '',
-    hours: 3,
-    accomplishmentTime: '',
-    studentRate: 0,
-    expectedFinishingDate: 0,
-    subscription: {
-      subscriptionName: '',
-      subscriptionPricePerHr: 0,
-    },
-    classStartDate: new Date(),
-    classEndDate: new Date(),
-    classStartTime: '',
-    classEndTime: '',
-    gardianName: '',
-    gardianEmail: '',
-    gardianPhone: '',
-    gardianCity: '',
-    gardianCountry: '',
-    gardianTimeZone: '',
-    gardianLanguage: '',
-    assignedTeacher: '',
-    studentStatus: '',
-    classStatus: '',
-    comments: '',
-    trialClassStatus: '',
-    status: '',
-    createdDate: new Date(),
-    createdBy: '',
-    updatedDate: new Date(),
-    updatedBy: '',
-  });
+  const [evaluationData, setEvaluationData] = useState<any>(null);
 
-  // Update evaluationData based on user input
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setEvaluationData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch('http://localhost:5001/evaluation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(evaluationData),
-      });
-      
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  useEffect(() => {
+    const fetchEvaluationData = async () => {
+      try {
+        const response = await fetch('http://localhost:5001/evaluation');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setEvaluationData(data);
+      } catch (error) {
+        console.error('Error:', error);
       }
+    };
 
-      const result = await response.json();
-      console.log('Data successfully sent:', result);
-      
-      // Assuming the API returns the accomplishment time, rate, and expected finishing date
-      // setAccomplishmentTime(result.accomplishmentTime); // Bind accomplishment time from API response
-      // setYourRate(result.yourRate); // Bind your rate from API response
-      // setExpectedFinishingDate(result.expectedFinishingDate); // Bind expected finishing date from API response
+    fetchEvaluationData();
+  }, []);
 
-      // handleNextStep(); 
-    } catch (error) {
-      console.error('Error:', error);
-    }
+  // Add state for selected hours
+  const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
+
+  // Calculate prices based on selected hours
+  const calculatePrice = (rate: number) => {
+    return `$${(selectedHours * rate).toFixed(2)}`;
   };
+
+  // Pricing plans data
+  const pricingPlans = [
+    { label: "Simple", rate: 8, basePrice: "$8/h"},
+    { label: "Essential", rate: 9, basePrice: "$9/h"},
+    { label: "Pro", rate: 11, basePrice: "$11/h"},
+    { label: "Elite", rate: 16, basePrice: "$16/h"},
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-6 relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[url('/assets/images/grid.svg')] opacity-10"></div>
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
@@ -903,67 +840,80 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
           <h2 className="text-white/90 font-semibold hover:text-white transition-colors mb-4">Level</h2>
 
           {/* Level Section */}
-          <div className='flex gap-6'>
-            <div className="flex items-center justify-between mb-8 bg-white/5 p-4 rounded-xl">
-              <h4 className='text-white p-2 text-[13px]'>Language</h4>
-              <select
-                name="languageLevel"
-                className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-2 py-1
-                  focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]"
-                value={evaluationData.languageLevel}
-                onChange={handleInputChange}
-              >
-                <option className="bg-gray-900">Level: A1</option>
-                <option className="bg-gray-900">Level: A2</option>
-                <option className="bg-gray-900">Level: B1</option>
-                <option className="bg-gray-900">Level: B2</option>
-              </select>
+          <div className="flex items-center justify-between mb-8 bg-white/5 p-4 rounded-xl">
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <input 
+                  type="checkbox" 
+                  id="my-beautiful-language" 
+                  className="w-3 h-3 border-white/20 bg-white/10
+                           checked:bg-gradient-to-r checked:from-blue-500 checked:to-purple-500
+                           focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded opacity-0 
+                              group-hover:opacity-20 transition-opacity duration-200"></div>
+              </div>
+              <label htmlFor="my-beautiful-language" className="text-white/90 font-normal text-[12px] hover:text-white transition-colors">
+                My Beautiful Language
+              </label>
             </div>
-            <div className="flex items-center justify-between mb-8 bg-white/5 p-4 rounded-xl">
-              <h4 className='text-white p-2 text-[13px]'>Reading</h4>
-              <select
-                className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-2 py-1
-                  focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]"
-                value={evaluationData.grammarLevel}
-                onChange={handleInputChange}
-              >
-                <option className="bg-gray-900">1</option>
-                <option className="bg-gray-900">2</option>
-                <option className="bg-gray-900">3</option>
-                <option className="bg-gray-900">4</option>
-              </select>
-            </div>
-            <div className="flex items-center justify-between mb-8 bg-white/5 p-4 rounded-xl">
-              <h4 className='text-white p-2 text-[13px]'>Grammar</h4>
-              <select
-                className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-2 py-1
-                  focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]"
-                value={evaluationData.grammarLevel}
-                onChange={handleInputChange}
-              >
-                <option className="bg-gray-900">01</option>
-                <option className="bg-gray-900">02</option>
-                <option className="bg-gray-900">03</option>
-                <option className="bg-gray-900">04</option>
-              </select>
-            </div>
-          </div>
+            <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-4 py-2
+                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
+              <option className="bg-gray-900">Level: A1</option>
+              <option className="bg-gray-900">Level: A2</option>
+              <option className="bg-gray-900">Level: B1</option>
+              <option className="bg-gray-900">Level: B2</option>
+            </select>
+
+            <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="reading"
+                  className="h-3 w-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="reading" className="text-white font-normal text-[12px]">
+                  Reading
+                </label>
+                <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-4 py-2
+                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
+                  <option className="bg-gray-900">1</option>
+                  <option className="bg-gray-900">2</option>
+                  <option className="bg-gray-900">3</option>
+                </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="grammar"
+                  className="h-3 w-3 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="grammar" className="text-white font-normal text-[12px]">
+                  Grammar
+                </label>
+                <select className="bg-white/10 text-white border border-white/20 rounded-lg px-4 py-2
+                           focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
+                  <option className="bg-gray-900">0</option>
+                  <option className="bg-gray-900">1</option>
+                  <option className="bg-gray-900">2</option>
+                </select>
+              </div>
+          </div> 
 
           {/* Hours Section */}
           <div className="mb-8">
-            <h2 className="text-base font-semibold text-white/90 mb-4">Select Preferred Hours / Week</h2>
+            <h2 className="text-xl font-semibold text-white/90 mb-4">Select Preferred Hours</h2>
             <div className="flex flex-wrap gap-3">
               {[1, 1.5, 2, 2.5, 3, 4, 5].map((hour) => (
                 <button
                   key={hour}
-                  onClick={() => setEvaluationData((prev) => ({ ...prev, hours: hour }))}
-                  className={`px-6 text-[12px] py-3 rounded-xl transition-all duration-300 transform hover:scale-105
-                    ${hour === evaluationData.hours
-                      ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                      : "bg-white/10 text-white/80 hover:bg-white/20"
-                    }`}
+                  onClick={() => setSelectedHours(hour)}
+                  className={`px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105
+                           ${hour === selectedHours
+                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
+                    : "bg-white/10 text-white/80 hover:bg-white/20"
+                  }`}
                 >
-                  {hour} hr
+                  {hour}h
                 </button>
               ))}
             </div>
@@ -971,67 +921,51 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
           {/* Pricing Section */}
           <div className="mb-8">
-            <h2 className="text-base font-semibold text-white/90 mb-4">Select Preferred Package</h2>
+            <h2 className="text-xl font-semibold text-white/90 mb-4">Select Preferred Pricing</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[
-                { name: "Simple", price: "$9/hr" },
-                { name: "Essential", price: "$11/hr" },
-                { name: "Pro", price: "$15/hr" },
-                { name: "Elite", price: "$19/hr" }
-              ].map((plan) => (
+              {pricingPlans.map((plan) => (
                 <div
-                  key={plan.name}
-                  onClick={() => setEvaluationData(prev => ({
-                    ...prev,
-                    subscription: {
-                      ...prev.subscription,
-                      subscriptionName: plan.name,
-                    }
-                  }))}
-                  className={`group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105 
-                    ${evaluationData.subscription.subscriptionName === plan.name ? 'border-2 border-blue-500' : ''}`}
+                  key={plan.label}
+                  className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 
-                    group-hover:opacity-100 transition-opacity duration-300"></div>
+                               group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/10
-                    group-hover:border-white/20 transition-all duration-300">
-                    <h3 className="text-[14px] text-center font-bold text-white mb-2">{plan.name}</h3>
-                    <div className="text-[17px] text-center font-bold text-transparent bg-clip-text bg-gradient-to-r 
-                        from-blue-400 to-purple-400 mb-1">
-                      {plan.price}
+                               group-hover:border-white/20 transition-all duration-300">
+                    <h3 className="text-lg font-bold text-white mb-2">{plan.label}</h3>
+                    <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r 
+                                from-blue-400 to-purple-400 mb-1">
+                      {plan.basePrice}
+                    </div>
+                    <div className="text-sm text-white/60 mb-4">
+                      Total: {calculatePrice(plan.rate)}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </div>  
 
           {/* Completion Section */}
           <div className="flex flex-wrap items-center justify-between mt-8 bg-white/5 p-4 rounded-xl">
-            <div className="text-white/80 text-[12px]">
-              Accomplishment Time: <span className="font-semibold text-white text-[12px]">
-                {evaluationData.accomplishmentTime || 'Not set'}
-              </span>
+            <div className="text-white/80">
+              Accomplishment Time: <span className="font-semibold text-white">150 hours</span>
             </div>
-            <div className="text-white/80 text-[12px]">
-              Your Rate: <span className="font-semibold text-white text-[12px]">
-                {evaluationData.hours} hr/week
-              </span>
+            <div className="text-white/80">
+              Your Rate: <span className="font-semibold text-white">0 hr/week</span>
             </div>
-            <div className="text-white/80 text-[12px]">
-              Expected Finishing Date: <span className="font-semibold text-[12px] text-white">
-                {evaluationData.expectedFinishingDate || 'Not set'}
-              </span>
+            <div className="text-white/80">
+              Expected Finishing Date: <span className="font-semibold text-white">37.5 months</span>
             </div>
           </div>
         </div>
 
-        {/* Navigation Buttons */}
+        {/* Navigation Buttons - Add this at the bottom of the main content div */}
         <div className="flex items-center justify-between mt-8">
           <button
             onClick={prevStep}
-            className="flex items-center gap-2 px-4 py-2 text-white transition-all duration-300 
-                       bg-white/10 hover:bg-white/20 rounded-lg group text-[14px]"
+            className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
+                       bg-white/10 hover:bg-white/20 rounded-lg group"
           >
             <span className="transform group-hover:-translate-x-1 transition-transform duration-300">←</span>
             <span>Back</span>
@@ -1039,7 +973,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
           {/* Progress Indicators */}
           <div className="flex space-x-2">
-            {Array.from({ length: 5 }, (_, index) => (
+            {Array.from({length: 5}, (_, index) => (
               <div
                 key={index}
                 className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
@@ -1052,7 +986,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
           </div>
 
           <button
-            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg
                      hover:from-blue-600 hover:to-purple-600 transition-all duration-200
                      flex items-center space-x-2"
             onClick={nextStep}
