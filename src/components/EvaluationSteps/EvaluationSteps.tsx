@@ -490,7 +490,7 @@ const Step3 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
             <div className="relative bg-gray-900 rounded-lg p-8">
               <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r 
                            from-blue-400 to-purple-400 arabic-text">
-                ا��سلها
+                ارسلها
               </div>
             </div>
           </div>
@@ -869,7 +869,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
       // setYourRate(result.yourRate); // Bind your rate from API response
       // setExpectedFinishingDate(result.expectedFinishingDate); // Bind expected finishing date from API response
 
-      // handleNextStep();
+      // handleNextStep(); 
     } catch (error) {
       console.error('Error:', error);
     }
