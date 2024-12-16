@@ -1260,9 +1260,9 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
                                focus:bg-white/10 focus:border-white/20 focus:ring-2 
                                focus:ring-purple-500/20 transition-all duration-200">
                   <option value="" className="bg-gray-900">Select language</option>
-                  <option value="en" className="bg-gray-900">English</option>
-                  <option value="ar" className="bg-gray-900">Arabic</option>
-                  <option value="fr" className="bg-gray-900">French</option>
+                  <option value="en" className="bg-gray-900">Arabic</option>
+                  <option value="ar" className="bg-gray-900">Quran</option>
+                  <option value="fr" className="bg-gray-900">Islamic Studies</option>
                 </select>
               </div>
             </div>

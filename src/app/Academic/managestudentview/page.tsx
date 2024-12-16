@@ -1,12 +1,10 @@
-'use client'
-
+'use client';
 
 import BaseLayout1 from '@/components/BaseLayout1';
 import Image from 'next/image';
 import React, { useState } from 'react';
 import Modal from 'react-modal';
-import { IoArrowBackCircleSharp } from "react-icons/io5";
-
+import { IoArrowBackCircleSharp } from 'react-icons/io5';
 
 const ManageStudentView = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -22,8 +20,8 @@ const ManageStudentView = () => {
   return (
     <BaseLayout1>
       <div className="flex flex-col md:flex-row pt-14 pl-4 min-h-screen">
-        <div className='p-2'>
-            <IoArrowBackCircleSharp className='size-[25px] bg-[#fff] rounded-full text-[#012a4a]'/>
+        <div className="p-2">
+          <IoArrowBackCircleSharp className="text-[25px] bg-[#fff] rounded-full text-[#012a4a]" />
         </div>
         <div className="flex flex-col items-center bg-[#fff] shadow-lg rounded-2xl md:w-[300px] h-[600px]">
           <div className="bg-[#012a4a] align-middle p-6 w-full h-1/4 rounded-t-2xl">
@@ -137,135 +135,67 @@ const ManageStudentView = () => {
         className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
         overlayClassName="fixed inset-0 bg-black bg-opacity-50"
       >
-        <div className="bg-white rounded-lg p-6 w-[800px] h-[500px] overflow-auto">
+        <div className="bg-white rounded-lg p-6 w-[900px] h-[500px] overflow-auto">
           <h2 className="text-xl font-semibold mb-4">Schedule Classes</h2>
-          <div className='grid grid-cols-2'>
-            <div className="grid grid-cols-3 gap-4 p-10">
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Monday</label>
-                    <input type="checkbox" className="form-checkbox text-[12px]"/>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                <div key={day} className="flex items-center mb-2">
+                  <div className='border-1 p-2 rounded-xl border-gray-950 bg-[#D4D6D9] flex'>
+                    <input type="checkbox" className="form-checkbox mr-2 rounded-xl text-[11px]" />
+                    <label className="block font-medium text-gray-700 rounded-xl text-[11px]">{day}</label>
+                  </div>
+                  
+                  <input type="time" className="form-input p-2 bg-[#D4D6D9] rounded-xl text-[11px] ml-4" />
+                  <input type="text" className="form-input ml-4 text-[11px] p-2 bg-[#D4D6D9] rounded-xl" placeholder="Duration" />
                 </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Time</label>
-                    <input type="time" className="form-input w-full" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Duration</label>
-                    <input type="text" className="form-input w-full" placeholder="Duration" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Monday</label>
-                    <input type="checkbox" className="form-checkbox" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Time</label>
-                    <input type="time" className="form-input w-full" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Duration</label>
-                    <input type="text" className="form-input w-full" placeholder="Duration" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Monday</label>
-                    <input type="checkbox" className="form-checkbox" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Time</label>
-                    <input type="time" className="form-input w-full" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Duration</label>
-                    <input type="text" className="form-input w-full" placeholder="Duration" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Monday</label>
-                    <input type="checkbox" className="form-checkbox" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Time</label>
-                    <input type="time" className="form-input w-full" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Duration</label>
-                    <input type="text" className="form-input w-full" placeholder="Duration" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Monday</label>
-                    <input type="checkbox" className="form-checkbox" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Time</label>
-                    <input type="time" className="form-input w-full" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Duration</label>
-                    <input type="text" className="form-input w-full" placeholder="Duration" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Monday</label>
-                    <input type="checkbox" className="form-checkbox" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Time</label>
-                    <input type="time" className="form-input w-full" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Duration</label>
-                    <input type="text" className="form-input w-full" placeholder="Duration" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Monday</label>
-                    <input type="checkbox" className="form-checkbox" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Time</label>
-                    <input type="time" className="form-input w-full" />
-                </div>
-                <div className='flex'>
-                    <label className="block font-medium text-gray-700 mb-1 text-[12px]">Duration</label>
-                    <input type="text" className="form-input w-full" placeholder="Duration" />
-                </div>
+              ))}
             </div>
-            <div className="grid grid-cols-2 gap-4 mt-6">
-                <div>
-                <label className="block font-medium text-gray-700 mb-1">Package</label>
-                <input type="text" className="form-input w-full" placeholder="Simple" />
-                </div>
-                <div>
-                <label className="block font-medium text-gray-700 mb-1">Total Hours</label>
-                <input type="number" className="form-input w-full" placeholder="1" />
-                </div>
-                <div>
-                <label className="block font-medium text-gray-700 mb-1">Preferred Teacher</label>
-                <select className="form-select w-full">
-                    <option>Male</option>
-                    <option>Female</option>
+            <div className="grid grid-cols-4 gap-4">
+              <div className="col-span-2">
+                <label className="block font-medium text-[14px] text-gray-700">Package</label>
+                <input type="text" className="form-input w-full text-[12px]" placeholder="Simple" />
+              </div>
+              <div className="col-span-2">
+                <label className="block font-medium text-[14px] text-gray-700">Total Hours</label>
+                <input type="number" className="form-input w-full text-[12px]" placeholder="1" />
+              </div>
+              <div className="col-span-2">
+                <label className="block font-medium text-[14px] text-gray-700">Preferred Teacher</label>
+                <select className="form-select w-full text-[13px]">
+                  <option>Male</option>
+                  <option>Female</option>
                 </select>
-                </div>
-                <div>
-                <label className="block font-medium text-gray-700 mb-1">Course</label>
-                <select className="form-select w-full">
-                    <option>Arabic</option>
-                    <option>English</option>
+              </div>
+              <div className="col-span-2">
+                <label className="block font-medium text-gray-700">Course</label>
+                <select className="form-select w-full text-[13px]">
+                  <option>Arabic</option>
+                  <option>Quran</option>
+                  <option>Islamic Studies</option>
                 </select>
-                </div>
-                <div>
-                <label className="block font-medium text-gray-700 mb-1">Start Date</label>
-                <input type="date" className="form-input w-full" />
-                </div>
-                <div>
-                <label className="block font-medium text-gray-700 mb-1">End Date</label>
-                <input type="date" className="form-input w-full" />
-                </div>
+              </div>
+              <div className="col-span-2">
+                <label className="block font-medium text-gray-700 text-[13px]">Start Date</label>
+                <input type="date" className="form-input w-full text-[11px]" />
+              </div>
+              <div className="col-span-2">
+                <label className="block font-medium text-gray-700 text-[13px]">End Date</label>
+                <input type="date" className="form-input w-full text-[11px]" />
+              </div>
             </div>
           </div>
-          
-          <div className="flex justify-end mt-6">
+          <div className="flex justify-end mt-4">
             <button
-              className="bg-blue-600 text-white px-4 py-2 rounded"
+              className="bg-[#012a4a] text-white py-2 px-4 rounded-lg mr-2"
               onClick={closeModal}
             >
               Close
+            </button>
+            <button
+              className="bg-[#012a4a] text-white py-2 px-4 rounded-lg"
+            >
+              Save
             </button>
           </div>
         </div>
