@@ -121,6 +121,7 @@ interface EvaluationRequest {
   hours: number;
   subscription: {
     subscriptionName: string;
+    subscriptionPricePerHr: string;
   };
   classStartDate: Date;
   classEndDate: Date;
@@ -156,12 +157,6 @@ interface EvaluationData {
   status: string;
   createdDate: Date;
   createdBy: string;
-  subscription: {
-    subscriptionName: string;
-    subscriptionPricePerHr: number;
-    subscriptionDays: number;
-  };
-  planTotalPrice: number;
 }
 
 // Step 1 Component
@@ -495,7 +490,7 @@ const Step3 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
             <div className="relative bg-gray-900 rounded-lg p-8">
               <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r 
                            from-blue-400 to-purple-400 arabic-text">
-                ارسلها
+                ا��سلها
               </div>
             </div>
           </div>
@@ -719,65 +714,148 @@ const Step4 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
   );
 };
 
+// Define the Evaluation interface based on your backend schema
+interface IEvaluation {
+  student: {
+    studentId: string; // This should be set when the student is created
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    studentPhone: number;
+    studentCity?: string;
+    studentCountry: string;
+    studentCountryCode: string; // Add this if needed
+    learningInterest: string; // Adjust to your enum type
+    numberOfStudents: number;
+    preferredTeacher: string; // Adjust to your enum type
+    preferredFromTime?: string;
+    preferredToTime?: string;
+    timeZone: string;
+    referralSource: string; // Adjust to your enum type
+    preferredDate?: Date;
+    evaluationStatus: string; // Adjust to your enum type
+    status: string; // Adjust to your enum type
+    createdDate?: Date;
+    createdBy?: string;
+  };
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel?: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  subscription: {
+    subscriptionName: string;
+    subscriptionPricePerHr: number;
+  };
+  classStartDate: Date;
+  accomplishmentTime: string;
+  studentRate: number;
+  expectedFinishingDate: number;
+  classEndDate?: Date;
+  classStartTime: string;
+  classEndTime: string;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  studentStatus?: string;
+  classStatus?: string;
+  comments?: string;
+  trialClassStatus?: string;
+  status?: string;
+  createdDate?: Date;
+  createdBy?: string;
+  updatedDate?: Date;
+  updatedBy?: string;
+}
+
 // Step 5 Component
-const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; nextStep: () => void }) => {
-  const [evaluationData, setEvaluationData] = useState<any>(null);
-  const [selectedLanguageLevel, setSelectedLanguageLevel] = useState<string | null>(null);
-  const [selectedReadingLevel, setSelectedReadingLevel] = useState<number | null>(null);
-  const [selectedGrammarLevel, setSelectedGrammarLevel] = useState<number | null>(null);
-  const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null); // Selected plan
+const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+  const [evaluationData, setEvaluationData] = useState<IEvaluation>({
+    student: {
+      studentId: '', // This should be set when the student is created
+      studentFirstName: '',
+      studentLastName: '',
+      studentEmail: '',
+      studentPhone: 0,
+      studentCity: '',
+      studentCountry: '',
+      studentCountryCode: '', // Add this if needed
+      learningInterest: '',
+      numberOfStudents: 1,
+      preferredTeacher: '',
+      preferredFromTime: '',
+      preferredToTime: '',
+      timeZone: '',
+      referralSource: '',
+      preferredDate: new Date(),
+      evaluationStatus: '',
+      status: '',
+      createdDate: new Date(),
+      createdBy: '',
+    },
+    isLanguageLevel: false,
+    languageLevel: '',
+    isReadingLevel: false,
+    readingLevel: '',
+    isGrammarLevel: false,
+    grammarLevel: '',
+    hours: 3,
+    accomplishmentTime: '',
+    studentRate: 0,
+    expectedFinishingDate: 0,
+    subscription: {
+      subscriptionName: '',
+      subscriptionPricePerHr: 0,
+    },
+    classStartDate: new Date(),
+    classEndDate: new Date(),
+    classStartTime: '',
+    classEndTime: '',
+    gardianName: '',
+    gardianEmail: '',
+    gardianPhone: '',
+    gardianCity: '',
+    gardianCountry: '',
+    gardianTimeZone: '',
+    gardianLanguage: '',
+    assignedTeacher: '',
+    studentStatus: '',
+    classStatus: '',
+    comments: '',
+    trialClassStatus: '',
+    status: '',
+    createdDate: new Date(),
+    createdBy: '',
+    updatedDate: new Date(),
+    updatedBy: '',
+  });
 
-  useEffect(() => {
-    const fetchEvaluationData = async () => {
-      try {
-        const response = await fetch('http://localhost:5001/evaluation');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        console.log("response>>>",response);
-        const data = await response.json();
-        
-        // Bind the fetched data to the state
-        setEvaluationData(data);
-        setSelectedLanguageLevel(data.languageLevel);
-        setSelectedReadingLevel(data.readingLevel);
-        setSelectedGrammarLevel(data.grammarLevel);
-        setSelectedHours(data.hours);
-        setSelectedPlan(data.subscription.subscriptionName); // Assuming subscriptionName contains the plan name
+  // Update evaluationData based on user input
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEvaluationData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    };
-
-    fetchEvaluationData();
-  }, []);
-
-  // Function to handle POST request
-  const nextStep = async () => {
-    if (!selectedPlan || selectedHours <= 0) { // Check if hours are selected
-      alert('Please select a plan and hours before proceeding.');
-      return;
-    }
-
-    const postData = {
-      selectedLanguageLevel,
-      selectedReadingLevel,
-      selectedGrammarLevel,
-      selectedPlan,
-      selectedHours,
-    };
-
+  const handleSubmit = async () => {
     try {
       const response = await fetch('http://localhost:5001/evaluation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(postData),
-        
+        body: JSON.stringify(evaluationData),
       });
+      
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -785,33 +863,16 @@ const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; n
 
       const result = await response.json();
       console.log('Data successfully sent:', result);
-      handleNextStep(); 
+      
+      // Assuming the API returns the accomplishment time, rate, and expected finishing date
+      // setAccomplishmentTime(result.accomplishmentTime); // Bind accomplishment time from API response
+      // setYourRate(result.yourRate); // Bind your rate from API response
+      // setExpectedFinishingDate(result.expectedFinishingDate); // Bind expected finishing date from API response
+
+      // handleNextStep();
     } catch (error) {
-      console.error('Error sending data:', error);
+      console.error('Error:', error);
     }
-  };
-
-  // Calculate prices based on selected hours
-  // const calculatePrice = (rate: number) => {
-  //   return `$${((selectedHours * rate) * 4).toFixed(2)}`;
-  // };
-
-  // Pricing plans data
-  // const pricingPlans = [
-  //   { label: "Simple", rate: 8, basePrice: "$8/h"},
-  //   { label: "Essential", rate: 9, basePrice: "$9/h"},
-  //   { label: "Pro", rate: 11, basePrice: "$11/h"},
-  //   { label: "Elite", rate: 16, basePrice: "$16/h"},
-  // ];
-  
-  // Update the state for selected hours
-  const handleHourSelection = (hour: number) => {
-    setSelectedHours(hour); // Bind selected hours
-  };
-
-  // Update the state for selected plan
-  const handlePlanSelection = (plan: string) => {
-    setSelectedPlan(plan); // Bind selected plan
   };
 
   return (
@@ -846,10 +907,11 @@ const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; n
             <div className="flex items-center justify-between mb-8 bg-white/5 p-4 rounded-xl">
               <h4 className='text-white p-2 text-[13px]'>Language</h4>
               <select
+                name="languageLevel"
                 className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-2 py-1
                   focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]"
-                value={selectedLanguageLevel || ''}
-                onChange={(e) => setSelectedLanguageLevel(e.target.value)}
+                value={evaluationData.languageLevel}
+                onChange={handleInputChange}
               >
                 <option className="bg-gray-900">Level: A1</option>
                 <option className="bg-gray-900">Level: A2</option>
@@ -862,8 +924,8 @@ const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; n
               <select
                 className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-2 py-1
                   focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]"
-                value={selectedReadingLevel || ''}
-                onChange={(e) => setSelectedReadingLevel(Number(e.target.value))}
+                value={evaluationData.grammarLevel}
+                onChange={handleInputChange}
               >
                 <option className="bg-gray-900">1</option>
                 <option className="bg-gray-900">2</option>
@@ -876,8 +938,8 @@ const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; n
               <select
                 className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-2 py-1
                   focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]"
-                value={selectedGrammarLevel !== null ? selectedGrammarLevel : ''}
-                onChange={(e) => setSelectedGrammarLevel(Number(e.target.value))}
+                value={evaluationData.grammarLevel}
+                onChange={handleInputChange}
               >
                 <option className="bg-gray-900">01</option>
                 <option className="bg-gray-900">02</option>
@@ -886,7 +948,6 @@ const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; n
               </select>
             </div>
           </div>
-          
 
           {/* Hours Section */}
           <div className="mb-8">
@@ -895,9 +956,9 @@ const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; n
               {[1, 1.5, 2, 2.5, 3, 4, 5].map((hour) => (
                 <button
                   key={hour}
-                  onClick={() => handleHourSelection(hour)}
+                  onClick={() => setEvaluationData((prev) => ({ ...prev, hours: hour }))}
                   className={`px-6 text-[12px] py-3 rounded-xl transition-all duration-300 transform hover:scale-105
-                    ${hour === selectedHours
+                    ${hour === evaluationData.hours
                       ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
                       : "bg-white/10 text-white/80 hover:bg-white/20"
                     }`}
@@ -912,47 +973,60 @@ const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; n
           <div className="mb-8">
             <h2 className="text-base font-semibold text-white/90 mb-4">Select Preferred Package</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[
+                { name: "Simple", price: "$9/hr" },
+                { name: "Essential", price: "$11/hr" },
+                { name: "Pro", price: "$15/hr" },
+                { name: "Elite", price: "$19/hr" }
+              ].map((plan) => (
                 <div
-                  onClick={() => {
-                    if (evaluationData && evaluationData.subscription) {
-                      handlePlanSelection(evaluationData.subscription.subscriptionName);
+                  key={plan.name}
+                  onClick={() => setEvaluationData(prev => ({
+                    ...prev,
+                    subscription: {
+                      ...prev.subscription,
+                      subscriptionName: plan.name,
                     }
-                  }}
+                  }))}
                   className={`group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105 
-                    ${selectedPlan === (evaluationData?.subscription?.subscriptionName || '') ? 'border-2 border-blue-500' : ''}`}
+                    ${evaluationData.subscription.subscriptionName === plan.name ? 'border-2 border-blue-500' : ''}`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 
                     group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/10
                     group-hover:border-white/20 transition-all duration-300">
-                    <h3 className="text-[14px] text-center font-bold text-white mb-2">{evaluationData?.subscription?.subscriptionName}</h3>
+                    <h3 className="text-[14px] text-center font-bold text-white mb-2">{plan.name}</h3>
                     <div className="text-[17px] text-center font-bold text-transparent bg-clip-text bg-gradient-to-r 
                         from-blue-400 to-purple-400 mb-1">
-                      ${evaluationData?.subscription?.subscriptionPricePerHr} / hr
-                    </div>
-                    <div className="text-[10px] text-center text-white/60 mb-4">
-                      Total: ${evaluationData?.planTotalPrice} 
+                      {plan.price}
                     </div>
                   </div>
                 </div>
+              ))}
             </div>
           </div>
 
           {/* Completion Section */}
           <div className="flex flex-wrap items-center justify-between mt-8 bg-white/5 p-4 rounded-xl">
             <div className="text-white/80 text-[12px]">
-              Accomplishment Time: <span className="font-semibold text-white text-[12px]">150 hours</span>
+              Accomplishment Time: <span className="font-semibold text-white text-[12px]">
+                {evaluationData.accomplishmentTime || 'Not set'}
+              </span>
             </div>
             <div className="text-white/80 text-[12px]">
-              Your Rate: <span className="font-semibold text-white text-[12px]">0 hr/week</span>
+              Your Rate: <span className="font-semibold text-white text-[12px]">
+                {evaluationData.hours} hr/week
+              </span>
             </div>
             <div className="text-white/80 text-[12px]">
-              Expected Finishing Date: <span className="font-semibold text-[12px] text-white">37.5 months</span>
+              Expected Finishing Date: <span className="font-semibold text-[12px] text-white">
+                {evaluationData.expectedFinishingDate || 'Not set'}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Navigation Buttons - Add this at the bottom of the main content div */}
+        {/* Navigation Buttons */}
         <div className="flex items-center justify-between mt-8">
           <button
             onClick={prevStep}
@@ -965,7 +1039,7 @@ const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; n
 
           {/* Progress Indicators */}
           <div className="flex space-x-2">
-            {Array.from({length: 5}, (_, index) => (
+            {Array.from({ length: 5 }, (_, index) => (
               <div
                 key={index}
                 className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
@@ -980,8 +1054,8 @@ const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; n
           <button
             className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg
                      hover:from-blue-600 hover:to-purple-600 transition-all duration-200
-                     flex items-center space-x-2 text-[14px]"
-            onClick={handleNextStep}
+                     flex items-center space-x-2"
+            onClick={nextStep}
           >
             <span>Next</span>
             <span>→</span>
@@ -1005,24 +1079,45 @@ const Step5 = ({ prevStep, nextStep: handleNextStep }: { prevStep: () => void; n
 
 // Step 6 Component
 const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; nextStep: () => void; evaluationData: any }) => {
-  const [fetchedData, setFetchedData] = useState<any>(null);
+  const [guardianName, setGuardianName] = useState<string>('');
+  const [guardianEmail, setGuardianEmail] = useState<string>('');
+  const [guardianPhone, setGuardianPhone] = useState<string>('');
+  const [guardianCountry, setGuardianCountry] = useState<string>('');
+  const [guardianCity, setGuardianCity] = useState<string>('');
+  const [guardianLanguage, setGuardianLanguage] = useState<string>('');
+  const [guardianTimeZone, setGuardianTimeZone] = useState<string>('');
 
-  useEffect(() => {
-    const fetchEvaluationData = async () => {
-      try {
-        const response = await fetch('http://localhost:5001/evaluation');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setFetchedData(data);
-      } catch (error) {
-        console.error('Error:', error);
-      }
+  const handleSubmit = async () => {
+    const postData = {
+      name: guardianName,
+      email: guardianEmail,
+      phone: guardianPhone,
+      country: guardianCountry,
+      city: guardianCity,
+      language: guardianLanguage,
+      timeZone: guardianTimeZone,
     };
 
-    fetchEvaluationData();
-  }, []);
+    try {
+      const response = await fetch('http://localhost:5001/evaluation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text(); // Get the error message from the response
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      // Proceed to the next step after successful submission
+      nextStep();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
@@ -1058,12 +1153,13 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
                   <span className="flex items-center gap-2">
                     <span>👤</span>
                     <span>Guardian &apos; s Name</span>
-                    
                   </span>
                 </label>
                 <input
                   type="text"
                   placeholder="Enter guardian's name"
+                  value={guardianName}
+                  onChange={(e) => setGuardianName(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                            placeholder-white/30 focus:bg-white/10 focus:border-white/20 
                            focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
@@ -1076,12 +1172,13 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
                   <span className="flex items-center gap-2">
                     <span>📧</span>
                     <span>Guardian Email</span>
-                    
                   </span>
                 </label>
                 <input
                   type="email"
                   placeholder="Enter guardian's email"
+                  value={guardianEmail}
+                  onChange={(e) => setGuardianEmail(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                            placeholder-white/30 focus:bg-white/10 focus:border-white/20 
                            focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
@@ -1094,12 +1191,13 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
                   <span className="flex items-center gap-2">
                     <span>📱</span>
                     <span>Phone Number</span>
-                    
                   </span>
                 </label>
                 <input
                   type="tel"
                   placeholder="Enter phone number"
+                  value={guardianPhone}
+                  onChange={(e) => setGuardianPhone(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                            placeholder-white/30 focus:bg-white/10 focus:border-white/20 
                            focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
@@ -1112,10 +1210,12 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
                   <span className="flex items-center gap-2">
                     <span>🌍</span>
                     <span>Country</span>
-                    
                   </span>
                 </label>
-                <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
+                <select
+                  value={guardianCountry}
+                  onChange={(e) => setGuardianCountry(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                                focus:bg-white/10 focus:border-white/20 focus:ring-2 
                                focus:ring-purple-500/20 transition-all duration-200">
                   <option value="" className="bg-gray-900">Select country</option>
@@ -1136,7 +1236,10 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
                     <span>City</span>
                   </span>
                 </label>
-                <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
+                <select
+                  value={guardianCity}
+                  onChange={(e) => setGuardianCity(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                                focus:bg-white/10 focus:border-white/20 focus:ring-2 
                                focus:ring-purple-500/20 transition-all duration-200">
                   <option value="" className="bg-gray-900">Select city</option>
@@ -1152,10 +1255,12 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
                   <span className="flex items-center gap-2">
                     <span>🗣️</span>
                     <span>Preferred Language</span>
-                    
                   </span>
                 </label>
-                <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
+                <select
+                  value={guardianLanguage}
+                  onChange={(e) => setGuardianLanguage(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                                focus:bg-white/10 focus:border-white/20 focus:ring-2 
                                focus:ring-purple-500/20 transition-all duration-200">
                   <option value="" className="bg-gray-900">Select language</option>
@@ -1172,7 +1277,6 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
                 <span className="flex items-center gap-2">
                   <span>🕒</span>
                   <span>Time Zone</span>
-                  
                 </span>
               </label>
               <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
@@ -1324,26 +1428,54 @@ const Step7 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
   );
 };
 
-// Step 8 Component - Add Next button and fix layout
+// Step 8 Component
 const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
   const [evaluationData, setEvaluationData] = useState<any>(null);
+  const [classStatus, setClassStatus] = useState('Completed');
+  const [studentStatus, setStudentStatus] = useState('Joined');
 
-  useEffect(() => {
-    const fetchEvaluationData = async () => {
-      try {
-        const response = await fetch('http://localhost:5001/evaluation');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setEvaluationData(data);
-      } catch (error) {
-        console.error('Error:', error);
+  // Function to handle form submission
+  const handleSubmit = async () => {
+    try {
+      // Get student data from localStorage (assuming it was stored in Step2)
+      const studentData = localStorage.getItem('studentData');
+      
+      // Prepare the data to be sent
+      const submitData = {
+        classStatus,
+        studentStatus,
+        studentData: studentData ? JSON.parse(studentData) : null,
+        // Add any other data you want to include
+        submittedAt: new Date().toISOString()
+      };
+
+      // Make POST request to your API
+      const response = await fetch('http://localhost:5001/evaluation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
 
-    fetchEvaluationData();
-  }, []);
+      const result = await response.json();
+      console.log('Status updated successfully:', result);
+
+      // Optional: Show success message
+      alert('Status updated successfully!');
+
+      // Optional: Move to next step or redirect
+      nextStep();
+
+    } catch (error) {
+      console.error('Error submitting status:', error);
+      alert('Error updating status. Please try again.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
@@ -1403,12 +1535,16 @@ const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
               </label>
               <div className="relative">
-                <select className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white
-                               appearance-none cursor-pointer focus:outline-none focus:ring-2 
-                               focus:ring-purple-500/20 focus:border-white/20 transition-all duration-200
-                               hover:bg-white/10">
-                  <option value="joined" className="bg-gray-900">Completed</option>
-                  <option value="waiting" className="bg-gray-900">Not Completed</option>
+                <select 
+                  value={classStatus}
+                  onChange={(e) => setClassStatus(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white
+                            appearance-none cursor-pointer focus:outline-none focus:ring-2 
+                            focus:ring-purple-500/20 focus:border-white/20 transition-all duration-200
+                            hover:bg-white/10"
+                >
+                  <option value="Completed" className="bg-gray-900">Completed</option>
+                  <option value="Not Completed" className="bg-gray-900">Not Completed</option>
                 </select>
               </div>
             </div>
@@ -1423,22 +1559,29 @@ const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
               </label>
               <div className="relative">
-                <select className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white
-                               appearance-none cursor-pointer focus:outline-none focus:ring-2 
-                               focus:ring-purple-500/20 focus:border-white/20 transition-all duration-200
-                               hover:bg-white/10">
-                  <option value="student1" className="bg-gray-900">Joined</option>
-                  <option value="student2" className="bg-gray-900">Not Joined</option>
-                  <option value="student3" className="bg-gray-900">Waiting</option>
+                <select 
+                  value={studentStatus}
+                  onChange={(e) => setStudentStatus(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white
+                            appearance-none cursor-pointer focus:outline-none focus:ring-2 
+                            focus:ring-purple-500/20 focus:border-white/20 transition-all duration-200
+                            hover:bg-white/10"
+                >
+                  <option value="Joined" className="bg-gray-900">Joined</option>
+                  <option value="Not Joined" className="bg-gray-900">Not Joined</option>
+                  <option value="Waiting" className="bg-gray-900">Waiting</option>
                 </select>
               </div>
             </div>
           </div>
 
           {/* Submit Button */}
-          <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-4 rounded-xl
-                         hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-[1.02]
-                         font-semibold text-lg shadow-lg">
+          <button 
+            onClick={handleSubmit}
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-4 rounded-xl
+                      hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-[1.02]
+                      font-semibold text-lg shadow-lg"
+          >
             Submit
           </button>
         </div>
