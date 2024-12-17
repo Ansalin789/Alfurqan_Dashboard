@@ -28,24 +28,24 @@ const NextEvaluationClass = () => {
   const progress = ((time.minutes * 60 + time.seconds) / (5 * 60)) * 100;
 
   return (
-    <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] p-2 rounded-2xl shadow flex items-center justify-between text-white">
-      <div className="items-center p-2 px-10">
-        <h3 className="text-lg font-medium py-0">Your Next Evaluation Class</h3>
+    <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] rounded-[25px] shadow flex items-center justify-between text-white">
+      <div className="items-center p-2 px-8">
+        <h3 className="text-[15px] font-medium pt-2">Your Next Evaluation Class</h3>
         <div className="flex items-center space-x-8 py-3">
           <div className="flex items-center space-x-2">
-            <FaUserAlt className="w-4 h-4"/>
-            <p className="text-sm">Abinesh</p>
+            <FaUserAlt className="w-[10px]"/>
+            <p className="text-[13px]">Jijo</p>
           </div>
           <div className="flex items-center space-x-2">
-            <AiOutlineClockCircle className="w-4 h-4" />
-            <p className="text-sm">9:00 AM</p>
+            <AiOutlineClockCircle className="w-[10px]" />
+            <p className="text-[13px]">9:00 AM</p>
           </div>
         </div>
       </div>
       <div className="flex items-center space-x-2 px-14">
-        <p className="text-lg font-bold">Starts in</p>
+        <p className="text-[15px] font-bold">Starts in</p>
         <div className="relative flex items-center justify-center p-10">
-          <svg className="absolute w-24 h-20" viewBox="0 0 36 36">
+          <svg className="absolute w-14 h-20" viewBox="0 0 36 36">
             <path
               className="circle-bg"
               d="M18 2.0845
@@ -66,11 +66,11 @@ const NextEvaluationClass = () => {
               strokeWidth="3"
             />
           </svg>
-          <div className="relative flex items-center justify-center rounded-full bg-[#234878] text-center">
-            <div className="absolute flex items-center justify-center w-14 h-14 rounded-full bg-white">
+          <div className="relative flex items-center justify-center w-2 rounded-full bg-[#234878] text-center">
+            <div className="absolute flex items-center justify-center w-10 h-10 rounded-full bg-white">
               <div className="text-[#234878]">
-                <p className="text-[6px] font-normal">SESSION 13</p>
-                <p className="text-base font-bold text-[#223857]">
+                <p className="text-[4px] font-bold">SESSION 13</p>
+                <p className="text-[11px] font-extrabold text-[#223857]">
                   {formatTime(time.minutes)}:{formatTime(time.seconds)}
                 </p>
               </div>

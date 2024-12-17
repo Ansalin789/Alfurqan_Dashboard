@@ -182,8 +182,6 @@ const MultiStepForm = () => {
                 createdBy: 'SYSTEM',
                 lastUpdatedBy: 'SYSTEM',
                 timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                createdDate: new Date().toISOString(),
-                lastUpdatedDate: new Date().toISOString()
             };
 
             // Debug log to check the data being sent
@@ -588,7 +586,7 @@ const MultiStepForm = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className='hidden'>
+                                    <div className=''>
                                         <p className="text-sm font-medium mb-2">To</p>
                                         <div className="max-h-[300px] overflow-y-auto scrollbar-hide">
                                             <div className="grid grid-cols-1 gap-3 text-[10px]">
