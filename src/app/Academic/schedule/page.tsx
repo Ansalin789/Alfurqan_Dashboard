@@ -1,7 +1,7 @@
 import React from 'react';
 import BaseLayout1 from '@/components/BaseLayout1';
 import ScheduleCalender from '@/components/Academic/ScheduleCalender';
-
+import ScheduleCalender1 from '@/components/Academic/ScheduleCalender1';
 export const metadata = {
   title: 'Schedule',
   description: 'Academic Schedule Page',
@@ -24,7 +24,7 @@ export default function SchedulePage() {
           <div className="grid grid-cols-4 gap-6">
             {/* Calendar */}
             <div className="col-span-3">
-              <ScheduleCalender />
+              <ScheduleCalender1 />
             </div>
             
             {/* List Schedule */}
