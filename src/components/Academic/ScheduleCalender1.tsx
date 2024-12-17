@@ -50,7 +50,7 @@ const ScheduleCalender: React.FC = () => {
   return (
     <div className="bg-white p-6 rounded shadow-lg">
       <Calendar
-        localizer={localizer}
+      localizer={localizer}
         events={events}
         startAccessor="start"
         endAccessor="end"

@@ -811,7 +811,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
     if (selectedPlan !== planLabel) {
       return "";
     }
-    return `$${(selectedHours * rate).toFixed(2)}`;
+    return `$${(selectedHours * rate*4).toFixed(2)}`;
   };
 
   // Pricing plans data
@@ -930,7 +930,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
           {/* Hours Section */}
           <div className="mb-8">
-            <h2 className="text-base font-normal text-white/90 mb-4">Select Preferred Hours</h2>
+            <h2 className="text-base font-normal text-white/90 mb-4">Select Preferred Hours/week</h2>
             <div className="flex flex-wrap gap-3">
               {[1, 1.5, 2, 2.5, 3, 4, 5].map((hour) => (
                 <button
@@ -948,54 +948,52 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
             </div>
           </div>
 
-          {/* Pricing Section */}
-          <div className="mb-8">
-            <h2 className="text-base font-normal text-white/90 mb-4">Select Preferred Pricing</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {pricingPlans.map((plan) => (
-                <div
-                  key={plan.label}
-                  className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 
-                               group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/10
-                               group-hover:border-white/20 transition-all duration-300">
-                    {/* Plan Name Section */}
-                    <div className="border-b border-white/10 pb-3 mb-3">
-                      <h3 className="text-sm font-bold text-white">{plan.label}</h3>
-                    </div>
-                    
-                    {/* Rate Per Hour Section */}
-                    <div className="border-b border-white/10 pb-3 mb-3">
-                      <div className="text-lg text-center font-bold text-transparent bg-clip-text bg-gradient-to-r 
-                                    from-blue-400 to-purple-400">
-                        {plan.basePrice}
-                      </div>
-                    </div>
-                    
-                    {/* Total Section - Now Clickable */}
-                    <div 
-                      className={`bg-white/5 rounded-lg p-3 cursor-pointer transition-all duration-300
-                                ${selectedPlan === plan.label ? 'bg-white/20' : 'hover:bg-white/10'}`}
-                      onClick={() => {
-                        if (selectedHours > 0) {
-                          setSelectedPlan(plan.label);
-                        } else {
-                          alert('Please select preferred hours first');
-                        }
-                      }}
-                    >
-                      <div className="text-sm text-white/60 mb-1">Total</div>
-                      <div className="text-xl font-semibold text-white">
-                        {calculatePrice(plan.rate, plan.label)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+         {/* Pricing Section */}
+<div className="mb-8">
+  <h2 className="text-base font-normal text-white/90 mb-4">Select Preferred Pricing per month</h2>
+  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    {pricingPlans.map((plan) => (
+      <div
+        key={plan.label}
+        className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105"
+        onClick={() => {
+          if (selectedHours > 0) {
+            setSelectedPlan(plan.label); // Set the selected plan when clicked
+          } else {
+            alert('Please select preferred hours first'); // Alert if no hours are selected
+          }
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 
+                         group-hover:opacity-100 transition-opacity duration-300"></div>
+        <div className="relative bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/10
+                        group-hover:border-white/20 transition-all duration-300">
+          {/* Plan Name Section */}
+          <div className="border-b border-white/10 pb-3 mb-3">
+            <h3 className="text-sm font-bold text-white">{plan.label}</h3>
+          </div>
+          
+          {/* Rate Per Hour Section */}
+          <div className="border-b border-white/10 pb-3 mb-3">
+            <div className="text-lg text-center font-bold text-transparent bg-clip-text bg-gradient-to-r 
+                            from-blue-400 to-purple-400">
+              {plan.basePrice}
             </div>
-          </div>  
+          </div>
+          
+          {/* Total Section */}
+          <div className="bg-white/5 rounded-lg p-3">
+            <div className="text-sm text-white/60 mb-1">Total</div>
+            <div className="text-xl font-semibold text-white">
+              {selectedPlan === plan.label ? calculatePrice(plan.rate, plan.label) : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
 
           {/* Optional: Add a reset button */}
           {/* {selectedPlan && (
@@ -1102,7 +1100,7 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
         },
         body: JSON.stringify(postData),
       });
-
+      
       if (!response.ok) {
         const errorText = await response.text(); // Get the error message from the response
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
