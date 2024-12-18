@@ -5,6 +5,7 @@ import Image from 'next/image';
 import axios from 'axios';
 
 import { useParams } from 'next/navigation';
+import EvaluationPage from '@/app/evaluation/page';
 
 // Define the return type of the getAllUsers function
 interface User {
@@ -218,12 +219,6 @@ const [trialId, setTrialId] = useState<string | null>(null); // Assuming you hav
         />
       </div>
 
-      {/* User Info */}
-      <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
-        <div className="text-sm font-semibold text-white flex items-center gap-2">
-          Robert Baratheon
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -274,7 +269,9 @@ const [trialId, setTrialId] = useState<string | null>(null); // Assuming you hav
 };
 
 // Step 2 Component
-const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationData: EvaluationData }> = ({ prevStep, nextStep, evaluationData }) => {
+
+// Step 2 Component
+const Step2: React.FC<{ prevStep: () => void; nextStep: (data: StudentData) => void; evaluationData: EvaluationData }> = ({ prevStep, nextStep, evaluationData }) => {
   const [studentData, setStudentData] = useState<StudentData>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -295,18 +292,9 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationDa
         }
         const data = await response.json();
         console.log('Fetched student data:', data);
-        
-        // if (!Array.isArray(data.data)) {
-        //   throw new Error('Expected array of students');
-        // }
-
-        const  studentArray = data;
-        console.log("response data", studentArray); 
-
-        setStudentData(studentArray);
-       localStorage.setItem('studentData', data[0]);
-      console.log(">>>>",  studentData);
-
+      setStudentData(data);
+      localStorage.setItem('studentData', JSON.stringify(data));
+      console.log(studentData);
       } catch (error) {
         console.error('Error fetching student data:', error);
         setError(error instanceof Error ? error.message : 'An error occurred');
@@ -421,7 +409,9 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationDa
           </button>
 
           <button
-            onClick={nextStep}
+            onClick={()=>{
+              console.log('Passing studentData to next step:', studentData)
+              nextStep(studentData)}}
             className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
                      bg-gradient-to-r from-blue-500 to-purple-500 
                      hover:from-blue-600 hover:to-purple-600 rounded-lg group"
@@ -436,15 +426,16 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: () => void; evaluationDa
 };
 
 // Step 3 Component
-const Step3 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
-
-
+const Step3 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: () =>void; studentData: StudentData  }) => {
+  console.log("Student Data in Step3:", studentData);
+  
   return (
+    
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[url('/assets/images/grid.svg')] opacity-10"></div>
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
-
+      
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
         <Image src="/assets/images/whitelogo.png" alt="Logo" className="w-40 drop-shadow-2xl" width={100} height={100} />
@@ -453,10 +444,10 @@ const Step3 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          Robert Baratheon
+        {studentData.firstName}&nbsp;{studentData.lastName}
         </div>
       </div>
-
+       
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-4xl">
         {/* Skills Selection */}
@@ -537,7 +528,7 @@ const Step3 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
             className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg
                      hover:from-blue-600 hover:to-purple-600 transition-all duration-200
                      flex items-center space-x-2"
-            onClick={nextStep}
+            onClick={()=>{nextStep(studentData)}}
           >
             <span>Next</span>
             <span>→</span>
@@ -551,12 +542,11 @@ const Step3 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
     </div>
   );
 };
-
 // Step 4 Component
-const Step4 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+const Step4 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: () => void;studentData:StudentData }) => {
   const [time, setTime] = useState(120); // 120 seconds = 2 minutes
   const [isActive, setIsActive] = useState(false);
-
+   console.log(studentData);
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     if (isActive && time > 0) {
@@ -599,7 +589,7 @@ const Step4 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          Robert Baratheon
+        {studentData.firstName}&nbsp;{studentData.lastName}
         </div>
       </div>
 
@@ -697,7 +687,7 @@ const Step4 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
             className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg
                      hover:from-blue-600 hover:to-purple-600 transition-all duration-200
                      flex items-center space-x-2"
-            onClick={nextStep}
+            onClick={()=>{nextStep(studentData)}}
           >
             <span>Next</span>
             <span>→</span>
@@ -777,35 +767,24 @@ interface IEvaluation {
 }
 
 // Step 5 Component
-const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: () => void;studentData:StudentData }) => {
   const [evaluationData, setEvaluationData] = useState<any>(null);
     const [isLanguageChecked, setIsLanguageChecked] = useState(false);
   const [isReadingChecked, setIsReadingChecked] = useState(false);
   const [isGrammarChecked, setIsGrammarChecked] = useState(false);
+  const[languageLevel,setLanguageLevel]=useState("");
+  const[readingLevel,setReadingLevel]=useState("");
+  const[grammarLevel,setGrammerLevel]=useState("");
+  const [accomplishmentTime, setAccomplishmentTime] = useState<number>(0);
+  const[studentRate,setStudentRate]=useState(0);
+  const[expectedFinishingDate,setexpectedFinishingDate]=useState(28);
+  const[subscriptionName,setsubscriptionName]=useState("");
 
-  useEffect(() => {
-    const fetchEvaluationData = async () => {
-      try {
-        const response = await fetch('http://localhost:5001/evaluation');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setEvaluationData(data);
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    };
-
-    fetchEvaluationData();
-  }, []);
-
-  // Add state for selected hours
   const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
 
   // First, add state to track which plan's total is being calculated
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-
+   console.log(selectedPlan);
   // Modify the calculatePrice function to return null if plan isn't selected
   const calculatePrice = (rate: number, planLabel: string) => {
     if (selectedPlan !== planLabel) {
@@ -821,6 +800,24 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
     { label: "Pro", rate: 11, basePrice: "$11/h"},
     { label: "Elite", rate: 16, basePrice: "$16/h"},
   ];
+  const handleNextStep = () => {
+    const updatedStudentData = {
+      ...studentData, // Retain existing data
+      isLanguageChecked,
+      isReadingChecked,
+      isGrammarChecked,
+      languageLevel,
+      readingLevel,
+      grammarLevel,
+      accomplishmentTime,
+      studentRate,
+      expectedFinishingDate,
+      subscriptionName,
+      selectedHours,
+      selectedPlan,
+    };
+    nextStep(updatedStudentData); // Pass updated data to nextStep
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
@@ -836,7 +833,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          Robert Baratheon
+          {studentData.firstName}&nbsp;{studentData.lastName}
         </div>
       </div>
 
@@ -869,7 +866,8 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
               </div>
               {isLanguageChecked && (
                 <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-4 py-2
-                                focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
+                                focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]" onChange={(e)=>setLanguageLevel(e.target.value)}>
+                  
                   <option className="bg-gray-900">Level: A1</option>
                   <option className="bg-gray-900">Level: A2</option>
                   <option className="bg-gray-900">Level: A3</option>
@@ -877,7 +875,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
                 </select>
               )}
             </div>
-
+            
             {/* Reading Section */}
             <div className="flex items-center space-x-2">
               <input
@@ -892,7 +890,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
               </label>
               {isReadingChecked && (
                 <select className="bg-white/10 text-white/90 border border-white/20 rounded-lg px-4 py-2
-                                focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
+                                focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]" onChange={(e)=>setReadingLevel(e.target.value)}>
                   <option className="bg-gray-900">1</option>
                   <option className="bg-gray-900">2</option>
                   <option className="bg-gray-900">3</option>
@@ -916,7 +914,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
               </label>
               {isGrammarChecked && (
                 <select className="bg-white/10 text-white border border-white/20 rounded-lg px-4 py-2
-                                focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]">
+                                focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]" onChange={(e)=>setGrammerLevel(e.target.value)}>
                   <option className="bg-gray-900">0</option>
                   <option className="bg-gray-900">1</option>
                   <option className="bg-gray-900">2</option>
@@ -930,12 +928,12 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 
           {/* Hours Section */}
           <div className="mb-8">
-            <h2 className="text-base font-normal text-white/90 mb-4">Select Preferred Hours/week</h2>
+            <h2 className="text-base font-normal text-white/90 mb-4">Select Preferred Hours / week</h2>
             <div className="flex flex-wrap gap-3">
               {[1, 1.5, 2, 2.5, 3, 4, 5].map((hour) => (
                 <button
                   key={hour}
-                  onClick={() => setSelectedHours(hour)}
+                  onClick={() => {setSelectedHours(hour); setAccomplishmentTime(hour*4);setStudentRate(hour)}}
                   className={`px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105
                            ${hour === selectedHours
                     ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
@@ -994,28 +992,16 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
   </div>
 </div>
 
-
-          {/* Optional: Add a reset button */}
-          {/* {selectedPlan && (
-            <button
-              onClick={() => setSelectedPlan(null)}
-              className="mt-4 px-4 py-2 text-sm text-white/60 hover:text-white 
-                        bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300"
-            >
-              Reset Calculations
-            </button>
-          )} */}
-
           {/* Completion Section */}
           <div className="flex flex-wrap items-center justify-between mt-8 bg-white/5 p-4 rounded-xl">
             <div className="text-white/80 text-[13px]">
-              Accomplishment Time: <span className="font-normal text-white text-[11px]">150 hours</span>
+              Accomplishment Time: <span className="font-normal text-white text-[11px]">{accomplishmentTime} Hours</span>
             </div>
             <div className="text-white/80 text-[13px]">
-              Your Rate: <span className="font-normal text-white text-[11px]">0 hr/week</span>
+              Your Rate: <span className="font-normal text-white text-[11px]">{studentRate} hr/week</span>
             </div>
             <div className="text-white/80 text-[13px]">
-              Expected Finishing Date: <span className="font-normal text-[11px] text-white">37.5 months</span>
+              Expected Finishing Date: <span className="font-normal text-[11px] text-white">28 Days</span>
             </div>
           </div>
         </div>
@@ -1049,7 +1035,7 @@ const Step5 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
             className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg
                      hover:from-blue-600 hover:to-purple-600 transition-all duration-200
                      flex items-center space-x-2"
-            onClick={nextStep}
+            onClick={handleNextStep}
           >
             <span>Next</span>
             <span>→</span>
@@ -1589,13 +1575,18 @@ const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 // Main EvaluationSteps component - Update total number of steps
 const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
   const [step, setStep] = useState(1);
-  const [evaluationData, setEvaluationData] = useState<any>(null);
+  const [studentData, setStudentData] = useState<StudentData>(null);
+
   const totalSteps = 8;
 
   const nextStep = (data: any) => {
     console.log('Current step:', step);
+    if (step === 2 && 3 && 4) {
+      setStudentData(data); // Store studentData when moving to the next step
+    }
+    
     if (step < totalSteps) {
-      setEvaluationData(data);
+      setStudentData(data);
       setStep((prev) => prev + 1);
     }
   };
@@ -1613,10 +1604,10 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
     <>
       {step === 1 && <Step1 nextStep={nextStep} />}
       {step === 2 && <Step2 prevStep={prevStep} nextStep={nextStep} evaluationData={evaluationData} />}
-      {step === 3 && <Step3 prevStep={prevStep} nextStep={nextStep} />}
-      {step === 4 && <Step4 prevStep={prevStep} nextStep={nextStep} />}
-      {step === 5 && <Step5 prevStep={prevStep} nextStep={nextStep} />}
-      {step === 6 && <Step6 prevStep={prevStep} nextStep={nextStep} />}
+      {step === 3 && <Step3 prevStep={prevStep} nextStep={nextStep} studentData={studentData}  />}
+      {step === 4 && <Step4 prevStep={prevStep} nextStep={nextStep} studentData={studentData} />}
+      {step === 5 && <Step5 prevStep={prevStep} nextStep={nextStep} studentData={studentData} />}
+      {step === 6 && <Step6 prevStep={prevStep} nextStep={nextStep} studentData={studentData} />}
       {step === 7 && <Step7 prevStep={prevStep} nextStep={nextStep} />}
       {step === 8 && <Step8 prevStep={prevStep} nextStep={nextStep} />}
     </>
