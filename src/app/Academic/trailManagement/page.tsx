@@ -203,7 +203,7 @@ const FilterModal = ({
           </button>
           <button
             onClick={handleApply}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-blue-700"
           >
             Apply Filters
           </button>
@@ -235,7 +235,7 @@ const TrailManagement = () => {
     }
 };
 
-  // Add pagination calculation
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
