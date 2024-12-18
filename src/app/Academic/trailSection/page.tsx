@@ -1,208 +1,672 @@
-'use client'
+"use client"
 
+import { useState, useEffect } from 'react';
+import Modal from 'react-modal';
+import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
 import BaseLayout1 from '@/components/BaseLayout1';
-import React, { useState } from 'react'
+
 import { useRouter } from 'next/navigation';
 import { FaSyncAlt, FaEdit, FaFilter} from 'react-icons/fa';
 import AddEvaluationModel from '@/components/Academic/AddEvaluationModel';
-import { User } from '@/types'; // Adjust the path as necessary
 
-// Define the return type of the getAllUsers function
-interface User {
-    student: {
-      studentFirstName: string;
-      studentLastName: string;
-      studentEmail: string;
-      studentPhone: number;
-      studentCountry: string;
-      studentCity?: string;
-      studentLanguage?: string;
-      studentCountryCode: string;
-      learningInterest: "Quran" | "Islamic Studies" | "Arabic";
-      numberOfStudents: number;
-      preferredTeacher: "Male" | "Female" | "Either";
-      preferredFromTime: string;
-      preferredToTime: string;
-      timeZone: string;
-      referralSource: "Friend" | "Social Media" | "E-Mail" | "Google" | "Other";
-      preferredDate: Date;
-      evaluationStatus: "PENDING" | "INPROGRESS" | "COMPLETED";
-      status: "Active" | "Inactive" | "Deleted";
+// Updated function to fetch users from the new API endpoint
+const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: string}> => {
+  try {
+    const response = await fetch('http://localhost:5001/evaluationlist');
+    // Check for response.ok to handle HTTP errors
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const rawData = await response.json();
+    // Ensure rawData has the expected structure
+    if (!rawData || !rawData.evaluation || !Array.isArray(rawData.evaluation)) {
+      throw new Error('Invalid data structure received from API');
+    }
+
+    // Transform API data to match User interface
+    const transformedData = rawData.evaluation.map((item: {
+      
+      _id: string;
+      student: {
+        learningInterest: any; 
+        studentId: string; 
+        studentFirstName: string; 
+        studentLastName: string; 
+        studentPhone: number; 
+        studentCountry: string; 
+        preferredTeacher: string; 
+        preferredFromTime: string; 
+        preferredToTime: string; 
+        evaluationStatus?: string; 
+        status?: string; 
+        trialClassStatus: string;
+      }; 
+      trialClassStatus: string;
+      // Add other fields as necessary
+    }) => ({
+      _id: item._id,
+      studentId: item.student.studentId,
+      studentFirstName: item.student.studentFirstName,
+      studentLastName: item.student.studentLastName,
+      number: item.student.studentPhone ? item.student.studentPhone.toString() : '',
+      country: item.student.studentCountry,
+      course: item.student.learningInterest, // Assuming this field exists in the new structure
+      preferredTeacher: item.student.preferredTeacher,
+      time: item.student.preferredFromTime,
+      evaluationStatus: item.student.evaluationStatus,
+      status: item.student.status,
+      trialClassStatus: item.trialClassStatus
+    }));
+
+    console.log(">>>>transformedData", transformedData)
+
+    return {
+      success: true,
+      data: transformedData,
+      message: 'Users fetched successfully',
     };
-    isLanguageLevel: boolean;
-    languageLevel: string;
-    isReadingLevel: boolean;
-    readingLevel?: string;
-    isGrammarLevel: boolean;
-    grammarLevel: string;
-    hours: number;
-    subscription: {
-      subscriptionName: string;
-      subscriptionPricePerHr: number;
-      subscriptionDays: number;
-      subscriptionStartDate: Date;
-      subscriptionEndDate: Date;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return {
+      success: false,
+      data: [],
+      message: error instanceof Error ? error.message : 'Failed to fetch users',
     };
-    planTotalPrice: number;
-    classStartDate: Date;
-    classEndDate?: Date;
-    classStartTime: string;
-    classEndTime: string;
-    gardianName: string;
-    gardianEmail: string;
-    gardianPhone: string;
-    gardianCity: string;
-    gardianCountry: string;
-    gardianTimeZone: string;
-    gardianLanguage: string;
-    studentStatus?: string;
-    classStatus?: string;
-    comment?: string;
+  }
+};
+
+// Move FilterModal outside of the TrailManagement component
+const FilterModal = ({ 
+  isOpen, 
+  onClose,
+  onApplyFilters, 
+  users 
+}: { 
+  isOpen: boolean;  
+  onClose: () => void; 
+  onApplyFilters: (filters: { country: string; course: string; teacher: string; status: string; }) => void;
+  users: User[];
+}) => {
+  const [filters, setFilters] = useState({
+    country: '',
+    course: '',
+    teacher: '',
+    status: ''
+  });
+
+    // Get unique values for each filter
+    const uniqueCountries = Array.from(new Set(users.map(user => user.country)));
+    const uniqueCourses = Array.from(new Set(users.map(user => user.course)));
+    const uniqueTeachers = Array.from(new Set(users.map(user => user.preferredTeacher)));
+  
+    const handleApply = () => {
+      onApplyFilters(filters);
+      onClose();
+    };
+  
+    const handleReset = () => {
+      setFilters({
+        country: '',
+        course: '',
+        teacher: '',
+        status: ''
+      });
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-lg w-[500px]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold">Filter Options</h2>
+          <button 
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            ×
+          </button>
+        </div>
+  
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Country
+            </label>
+            <select
+              className="w-full p-2 border rounded-lg"
+              value={filters.country}
+              onChange={(e) => setFilters({...filters, country: e.target.value})}
+            >
+              <option value="">All Countries</option>
+              {uniqueCountries.map((country) => (
+                <option key={country} value={country}>{country}</option>
+              ))}
+            </select>
+          </div>
+  
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Course
+            </label>
+            <select
+              className="w-full p-2 border rounded-lg"
+              value={filters.course}
+              onChange={(e) => setFilters({...filters, course: e.target.value})}
+            >
+              <option value="">All Courses</option>
+              {uniqueCourses.map((course) => (
+                <option key={course} value={course}>{course}</option>
+              ))}
+            </select>
+          </div>
+  
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Teacher
+            </label>
+            <select
+              className="w-full p-2 border rounded-lg"
+              value={filters.teacher}
+              onChange={(e) => setFilters({...filters, teacher: e.target.value})}
+            >
+              <option value="">All Teachers</option>
+              {uniqueTeachers.map((teacher) => (
+                <option key={teacher} value={teacher}>{teacher}</option>
+              ))}
+            </select>
+          </div>
+  
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
+            <select
+              className="w-full p-2 border rounded-lg"
+              value={filters.status}
+              onChange={(e) => setFilters({...filters, status: e.target.value})}
+            >
+              <option value="">All Statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </div>
+  
+          <div className="flex justify-end space-x-4 mt-6">
+            <button
+              onClick={handleReset}
+              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleApply}
+              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-blue-700"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
+
+
+
+
+const trailSection = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [showModal, setShowModal] = useState(false); 
+  const [formData, setFormData] = useState<User[]>([]);
+
+  
+
+
+    
+  const router = useRouter();
+  const handleSyncClick = () => {
+    if (router) {
+    router.push('trailManagement');
+    } else {
+    console.error('Router is not available');
+    }
+};
+    
+    
+const indexOfLastItem = currentPage * itemsPerPage;
+const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+    
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const allData = await getAllUsers();
+      if (allData.success && allData.data) {
+        setUsers(allData.data);
+        setFilteredUsers(allData.data); // Initialize filtered users
+      } else {
+        setErrorMessage(allData.message ?? 'Failed to fetch users');
+      }
+    } catch (error) {
+      setErrorMessage('An unexpected error occurred');
+      console.error('An unexpected error occurred', error);
+      
+    }
+  };
+
+  fetchData();
+}, []);
+
+useEffect(() => {
+  Modal.setAppElement('body');
+}, []);
+
+const openModal = (user: User | null = null) => {
+  setSelectedUser(user);
+  setIsEditMode(!!user);
+  setIsModalOpen(true);
+  setModalIsOpen(true);
+};
+
+const closeModal = () => {
+  setIsModalOpen(false);
+  setModalIsOpen(false);
+};
+
+useEffect(() => {
+  console.log('Current users data:', users);
+}, [users]);
+
+    
+useEffect(() => {
+  console.log('Current users data:', users);
+}, [users]);
+
+const fetchStudents = async () => {
+  try {
+    const allData = await getAllUsers();
+    if (allData.success && allData.data) {
+      setUsers(allData.data);
+    } else {
+      setErrorMessage(allData.message ?? 'Failed to fetch users');
+    }
+  } catch (error) {
+    setErrorMessage('An unexpected error occurred');
+    console.error('An unexpected error occurred', error);
+  }
+};
+
+const handleClick = async (id: string) => {
+  try {
+    const response = await fetch(`http://localhost:5001/evaluationlist/${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    
+    // Set the form data with the fetched user data
+    setFormData({
+      
+      firstName: data.student.studentFirstName,
+      lastName: data.student.studentLastName,
+      email: data.student.studentEmail,
+      phoneNumber: data.student.studentPhone.toString(),
+      city: data.gardianCity,
+      country: data.student.studentCountry,
+      language: data.gardianLanguage,
+      preferredTime: `${data.classStartTime} to ${data.classEndTime}`,
+      trailId: data._id,
+      course: data.student.learningInterest,
+      preferredTeacher: data.student.preferredTeacher,
+      level: data.languageLevel,
+      preferredDate: data.student.preferredDate,
+      selectedTeacher: data.student.preferredTeacher,
+      subscriptionName: data.subscription.subscriptionName,
+      guardianName: data.gardianName,
+      guardianEmail: data.gardianEmail,
+      guardianPhone: data.gardianPhone,
+      trialClassStatus: data.trialClassStatus,
+      evaluationStatus: data.student.evaluationStatus,
+      comment: '',
+    });
+
+    // Open the modal after setting the form data
+    setShowModal(true);
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+  }
+};
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+  // Add filter handling functionF
+  const handleApplyFilters = (filters: { country: string; course: string; teacher: string; status: string; }) => {
+    let filtered = [...users];
+    
+    if (filters.country) {
+      filtered = filtered.filter(user => user.country === filters.country);
+    }
+    if (filters.course) {
+      filtered = filtered.filter(user => user.course === filters.course);
+    }
+    if (filters.teacher) {
+      filtered = filtered.filter(user => user.preferredTeacher === filters.teacher);
+    }
+    if (filters.status) {
+      filtered = filtered.filter(user => user.evaluationStatus === filters.status);
+    }
+    
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+
+
+  const updateClick = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:5001/evaluationlist/${id}`);
+
+      console.log("response",response)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      // const data = await response.json();
+      
+      // // Set the form data with the fetched user data
+      // setFormData({
+        
+      //   firstName: data.student.studentFirstName,
+      //   lastName: data.student.studentLastName,
+      //   email: data.student.studentEmail,
+      //   phoneNumber: data.student.studentPhone.toString(),
+      //   city: data.gardianCity,
+      //   country: data.student.studentCountry,
+      //   language: data.gardianLanguage,
+      //   preferredTime: `${data.classStartTime} to ${data.classEndTime}`,
+      //   trailId: data._id,
+      //   course: data.student.learningInterest,
+      //   preferredTeacher: data.student.preferredTeacher,
+      //   level: data.languageLevel,
+      //   preferredDate: data.student.preferredDate,
+      //   selectedTeacher: data.student.preferredTeacher,
+      //   subscriptionName: data.subscription.subscriptionName,
+      //   guardianName: data.gardianName,
+      //   guardianEmail: data.gardianEmail,
+      //   guardianPhone: data.gardianPhone,
+      //   trialClassStatus: data.trialClassStatus,
+      //   evaluationStatus: data.student.evaluationStatus,
+      //   comment: '',
+      // });
+  
+      // Open the modal after setting the form data
+      setShowModal(true);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+  const Pagination = () => {
+    return (
+      <div className="flex justify-between items-center mt-4 px-4">
+        <div className="text-sm text-gray-600">
+          Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUsers.length)} of {filteredUsers.length} entries
+        </div>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-lg ${
+              currentPage === 1
+                ? 'bg-gray-100 text-gray-800 cursor-not-allowed'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border'
+            }`}
+          >
+            First
+          </button>
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-lg ${
+              currentPage === 1
+                ? 'bg-gray-100 text-gray-800 cursor-not-allowed'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border'
+            }`}
+          >
+            Previous
+          </button>
+          <div className="flex items-center space-x-1">
+            {[...Array(totalPages)].map((_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => setCurrentPage(index + 1)}
+                className={`px-3 py-1 rounded-lg ${
+                  currentPage === index + 1
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border'
+                }`}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-lg ${
+              currentPage === totalPages
+                ? 'bg-gray-100 text-gray-800 cursor-not-allowed'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border'
+            }`}
+          >
+            Next
+          </button>
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-lg ${
+              currentPage === totalPages
+                ? 'bg-gray-100 text-gray-800 cursor-not-allowed'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border'
+            }`}
+          >
+            Last
+          </button>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-600">Items per page:</span>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1); // Reset to first page when changing items per page
+            }}
+            className="border rounded-lg px-2 py-1"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
+      </div>
+    );
+  };
+
+  if (errorMessage) {
+    return (
+      <BaseLayout1>
+        <div className="min-h-screen p-4">{errorMessage}</div>
+      </BaseLayout1>
+    );
   }
 
-
-function Page() {
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [modalIsOpen, setModalIsOpen] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [showModal, setShowModal] = useState(false); 
-
-
-
-    const router = useRouter();
-    const handleSyncClick = () => {
-        if (router) {
-        router.push('trailManagement');
-        } else {
-        console.error('Router is not available');
-        }
-    };
-
-    const openModal = (user: User | null = null) => {
-        setSelectedUser(user);
-        setIsEditMode(!!user);
-        setIsModalOpen(true);
-        setModalIsOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setModalIsOpen(false);
-    };
-
-    const handleEditClick = () => {
-        setShowModal(true);
-      };
-    
-      const handleCloseModal = () => {
-        setShowModal(false);
-      };
-    
-    return (
-        <BaseLayout1>
-            <div className="p-4 bg-[#EDEDED] min-h-screen">
-                <div className="rounded-lg p-4">
-                    {/* Header */}
-                    <div className="flex items-center mb-6 space-x-2">
-                        <h2 className="text-2xl font-bold text-gray-800">Scheduled Trail Session</h2>
-                        <button className="bg-gray-800 text-white p-2 rounded-full shadow" onClick={handleSyncClick}>
-                        <FaSyncAlt />
-                        </button>
-                    </div>
-    
-                    {/* Search and Filter */}
-                    <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-4">
-                        <input
-                        type="text"
-                        placeholder="Search here..."
-                        className="p-2 border rounded-md w-64"
-                        />
-                        <button className="flex items-center bg-gray-200 p-2 rounded-lg shadow" >
-                            <FaFilter className="mr-2" /> Filter
-                        </button>
-                    </div>
-                    <div className="flex items-center space-x-4"onClick={() => openModal(null)}>
-                        <button className="px-4 py-2 rounded-md bg-[#223857] text-white hover:bg-[#1c2f49]">
-                        + Add new
-                        </button>
-                        <div>
-                        <select className="p-2 border rounded-md">
-                            <option>Duration: Last month</option>
-                            <option>Duration: Last week</option>
-                        </select>
-                        </div>
-                    </div>
-                    </div>
-    
-                    {/* Table */}
-                    <div
-                        className="overflow-x-auto bg-white shadow-3xl rounded-md h-[580px]"
-                        style={{
-                            scrollbarWidth: 'thin', // For Firefox
-                            scrollbarColor: '#4A5568 #E2E8F0', // Thumb color and track color for Firefox
-                        }}
-                    >
-                    <table className="w-full text-sm">
-                        <thead>
-                        <tr className="">
-                            {[
-                            'Trail ID',
-                            'Student Name',
-                            'Mobile',
-                            'Country',
-                            'Course',
-                            'Preferred Teacher',
-                            'Assigned Teacher',
-                            'Class Status',
-                            'Student Status',
-                            'Action',
-                            ].map((header) => (
-                            <th
-                                key={header}
-                                className="shadow-md p-6 text-left font-medium text-gray-700"
-                            >
-                                {header}
-                            </th>
-                            ))}
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {Array.from({ length: 80 }).map((_, index) => (
-                            <tr key={index}>
-                            <td className="p-4 text-[13px] text-center border border-b-gray-300">#0983867</td>
-                            <td className="p-4 text-[13px] text-center border border-b-gray-300">Stefan Salvatore</td>
-                            <td className="p-4 text-[13px] text-center border border-b-gray-300">9347655367</td>
-                            <td className="p-4 text-[13px] text-center border border-b-gray-300">UAE</td>
-                            <td className="p-4 text-[13px] text-center border border-b-gray-300">Arabic</td>
-                            <td className="p-4 text-[13px] text-center border border-b-gray-300">Male</td>
-                            <td className="p-4 text-[13px] text-center border border-b-gray-300">Robert James</td>
-                            <td className="p-4 text-[13px] text-center border border-b-gray-300">Completed</td>
-                            <td className="p-4 text-[13px] text-center border border-b-gray-300">Joined</td>
-                            <td className="p-4 text-[13px] text-center border border-b-gray-300">
-                                <button className="bg-[#223857] hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-grey-900" onClick={handleEditClick}>                                
-                                <FaEdit />
-                                </button>
-                            </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
+  return (
+    <BaseLayout1>
+      <div className={`min-h-screen p-4 bg-[#EDEDED] mt-5`}>
+        <div className="flex justify-between items-center mb-6">
+            <div className='flex items-center space-x-2'>
+              <h2 className="text-2xl font-semibold">Scheduled Trail Session</h2>
+              <button className="bg-gray-800 text-white p-2 rounded-full shadow" onClick={handleSyncClick}>
+                <FaSyncAlt />
+              </button>
             </div>
-            <AddEvaluationModel
+          </div>
+        <div className={`p-6 rounded-lg bg-[#EDEDED] overflow-y-scroll h-[600px]`}>
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-1 space-x-4 items-center justify-between">
+              <div className='flex'>
+                <input
+                  type="text"
+                  placeholder="Search here..."
+                  className={`border rounded-lg p-2 mx-4 shadow`}
+                />
+                <button 
+                  onClick={() => setIsFilterModalOpen(true)}
+                  className="flex items-center bg-gray-200 p-2 rounded-lg shadow"
+                >
+                  <FaFilter className="mr-2" /> Filter
+                </button>
+              </div>
+              <div className='flex'>
+                <button 
+                  onClick={() => openModal(null)}
+                  className={`border p-2 rounded-lg shadow flex bg-[#223857] text-[#fff] items-center mx-4`}
+                >
+                  <FaPlus className="mr-2" /> Add new
+                </button>
+                <select className={`border rounded-lg p-2 shadow`}>
+                  <option>Duration: Last month</option>
+                  <option>Duration: Last week</option>
+                  <option>Duration: Last year</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <table className={`min-w-full rounded-lg shadow bg-white`}>
+            <thead>
+              <tr>
+                <th className="p-4 text-[13px] text-center">Trail ID</th>
+                <th className="p-4 text-[13px] text-center">Student Name</th>
+                <th className="p-4 text-[13px] text-center">Mobile</th>
+                <th className="p-4 text-[13px] text-center">Country</th>
+                <th className="p-4 text-[13px] text-center">Course</th>
+                <th className="p-4 text-[13px] text-center">Preferred Teacher</th>
+                <th className="p-4 text-[13px] text-center">Assigned Teacher</th>
+
+                <th className="p-4 text-[13px] text-center">Time</th>
+                <th className="p-4 text-[13px] text-center">Class Status</th>
+                <th className="p-4 text-[13px] text-center">Student Status</th>
+                <th className="p-4 text-[13px] text-center">Action</th>
+                <th
+                    className="shadow-md p-2 text-left font-medium text-gray-700"
+                >
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentItems.length > 0 ? (
+                currentItems.map((item, index) => (
+                  <tr key={item._id || index} className={`border-t`}>
+                    <td className="p-2 text-[13px] text-center">{item._id}</td>
+                    <td className="p-2 text-[13px] text-center">{item.studentFirstName} {item.studentLastName}</td>
+                    <td className="p-2 text-[13px] text-center">{item.number}</td>
+                    <td className="p-2 text-[13px] text-center">{item.country}</td>
+                    <td className="p-2 text-[13px] text-center">{item.course}</td>
+                    <td className="p-2 text-[13px] text-center">{item.preferredTeacher}</td>
+                    <td className="p-2 text-[13px] text-center">{item.AssignedTeacher}</td>
+                    <td className="p-2 text-[13px] text-center">{item.time}</td>
+                    <td className="p-2 text-[13px] text-center">
+                      <span className={`px-2 text-[13px] text-center py-1 rounded-full ${
+                        item.evaluationStatus === 'PENDING' 
+                          ? 'bg-yellow-100 text-yellow-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {item.evaluationStatus ?? 'PENDING'}
+                      </span>
+                    </td>
+                    <td className="p-2 text-[13px] text-center">
+                      <span className={`px-2 text-[13px] text-center py-1 rounded-full ${
+                        item.status === 'Active' 
+                          ? 'bg-yellow-100 text-yellow-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {item.status ?? 'Active'}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => handleClick(item._id)}
+                        className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
+                      >
+                        <FaEdit size={13}/>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={10} className="p-4 text-center">
+                    No data available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          <Pagination />
+        </div>
+      </div>
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={() => setModalIsOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-lg"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+      >
+        <h2>Edit User</h2>
+
+
+      </Modal>
+      <AddEvaluationModal
         isOpen={isModalOpen}
         onRequestClose={closeModal} 
         userData={selectedUser}
         isEditMode={isEditMode}
         onSave={() => {
-        //   fetchStudents();
+          fetchStudents();
           closeModal();
         }}
       />
-      {showModal && (
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        users={users}
+      />
+
+{showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[720px]">
             <div className="flex justify-between items-center mb-4">
@@ -220,9 +684,8 @@ function Page() {
                 <input
                   id="firstName"
                   type="text"
-                  value="Enter your FirstName"
-                  readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  value={formData.firstName} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
@@ -230,9 +693,8 @@ function Page() {
                 <input
                   id="lastName"
                   type="text"
-                  value="Enter your LastName"
-                  readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  value={formData.lastName} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
@@ -240,9 +702,9 @@ function Page() {
                 <input
                   id="email"
                   type="email"
-                  value="Enter your Email"
+                  value={formData.email} // Bind to formData
                   readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
@@ -250,9 +712,8 @@ function Page() {
                 <input
                   id="phoneNumber"
                   type="number"
-                  value="Enter your Phone Number"
-                  readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  value={formData.phoneNumber} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
@@ -260,49 +721,57 @@ function Page() {
                 <input
                   id="city"
                   type="text"
-                  value="Enter your City"
+                  value={formData.city} // Bind to formData
                   readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
-                <label htmlFor="timeZone" className="block text-black text-xs font-medium">Country</label>
-                <select id="timeZone" className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400">
-                  <option>USA</option>
-                </select>
+                <label htmlFor="country" className="block text-black text-xs font-medium">Country</label>
+                <input
+                  id="country"
+                  type="text"
+                  value={formData.country} // Bind to formData
+                  readOnly
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
               </div>
               <div>
                 <label htmlFor="language" className="block text-black text-xs font-medium">Language</label>
                 <input
                   id="language"
                   type="text"
-                  value="English"
+                  value={formData.language} // Bind to formData
                   readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
-                <label htmlFor="timeZone" className="block text-black text-xs font-medium">Time Zone</label>
+                <label htmlFor="preferredTime" className="block text-black text-xs font-medium">Preferred Time</label>
                 <input
                   id="preferredTime"
-                  type="time"
-                  value="9:00 AM to 12:00 PM"
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  type="text"
+                  value={formData.preferredTime} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
                 <label htmlFor="trailId" className="block text-black text-xs font-medium">Trail ID</label>
-                <select id="trailId" className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400">
-                  <option>Enter Trail ID</option>
-                </select>
+                <input
+                  id="trailId"
+                  type="text"
+                  value={formData.trailId} // Bind to formData
+                  readOnly
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
               </div>
               <div>
                 <label htmlFor="course" className="block text-black text-xs font-medium">Course</label>
                 <input
                   id="course"
                   type="text"
-                  value="Arabic"
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  value={formData.course} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
@@ -310,8 +779,8 @@ function Page() {
                 <input
                   id="preferredTeacher"
                   type="text"
-                  value="Enter Preferred Teacher"
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  value={formData.preferredTeacher} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
@@ -319,8 +788,8 @@ function Page() {
                 <input
                   id="level"
                   type="text"
-                  value="Enter Level"
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  value={formData.level} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
@@ -328,17 +797,8 @@ function Page() {
                 <input
                   id="preferredDate"
                   type="date"
-                  value="2024-12-02"
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
-                />
-              </div>
-              <div>
-                <label htmlFor="preferredTime" className="block text-black text-xs font-medium">Preferred Time</label>
-                <input
-                  id="preferredTime"
-                  type="time"
-                  value="9:00 AM to 12:00 PM"
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  value={formData.preferredDate} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
@@ -346,33 +806,19 @@ function Page() {
                 <input
                   id="preferredHours"
                   type="text"
-                  value="9:00 AM to 12:00 PM"
+                  value={formData.preferredTime} // Bind to formData
                   readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
-                <label htmlFor="rescheduleDate" className="block text-black text-xs font-medium">Reschedule Date</label>
-                <select id="rescheduleDate" className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400">
-                  <option>Enter Reschedule Date</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="selectedTeacher" className="block text-black text-xs font-medium">Select Teacher</label>
+                <label htmlFor="preferredPackage" className="block text-black text-xs font-medium">Preferred package</label>
                 <input
-                  id="selectedTeacher"
+                  id="preferredPackage"
                   type="text"
-                  value="Enter Selected Teacher"
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
-                />
-              </div>
-              <div>
-                <label htmlFor="prefferdPackage" className="block text-black text-xs font-medium">Prefferd packages</label>
-                <input
-                  id="prefferdPackage"
-                  type="text"
-                  value="Enter Prefferd Package"
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  value={formData.subscriptionName} // Check if subscription exists
+                  readOnly
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
@@ -380,64 +826,79 @@ function Page() {
                 <input
                   id="guardianName"
                   type="text"
-                  value="Enter Guardian's name"
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400"
+                  value={formData.guardianName} // Bind to formDat
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
               <div>
                 <label htmlFor="guardianEmail" className="block text-black text-xs font-medium">Guardian's email</label>
-                <select id="guardianEmail" className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400">
-                  <option>Enter Guardian's email</option>
-                </select>
+                <input
+                  id="guardianEmail"
+                  type="email"
+                  value={formData.guardianEmail} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
               </div>
               <div>
                 <label htmlFor="guardianPhone" className="block text-black text-xs font-medium">Guardian's phone number</label>
-                <select id="guardianPhone" className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400">
-                  <option>Enter Guardian's phone number</option>
-                </select>
+                <input
+                  id="guardianPhone"
+                  type="text"
+                  value={formData.guardianPhone} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
               </div>
               <div>
-                <label htmlFor="classStatus" className="block text-black text-xs font-medium">Class Status</label>
-                <select id="classStatus" className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400">
-                  <option>Enter Class Status</option>
-                </select>
+                <label htmlFor="trialClassStatus" className="block text-black text-xs font-medium">Trail Class Status</label>
+                <input
+                  id="trialClassStatus"
+                  type="text"
+                  value={formData.trialClassStatus} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
               </div>
+
               <div>
-                <label htmlFor="studentStatus" className="block text-black text-xs font-medium">Student status</label>
-                <select id="studentStatus" className="w-full mt-2 p-1 border rounded-md text-xs text-gray-400">
-                  <option>Enter Student status</option>
-                </select>
+                <label htmlFor="evaluationStatus" className="block text-black text-xs font-medium">Evaluation status</label>
+                <input
+                  id="evaluationStatus"
+                  type="text"
+                  value={formData.evaluationStatus} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
               </div>
               <div className="col-span-2">
                 <label htmlFor="comment" className="block text-black text-xs font-medium">Comment</label>
                 <textarea
                   id="comment"
                   placeholder="Write your comment here..."
-                  className="w-full mt-2  border rounded-md text-xs text-gray-400"
+                  value={formData.comment} // Bind to formData
+                  className="w-full mt-2 border rounded-md text-xs text-gray-800"
                 ></textarea>
               </div>
               {/* Save and Cancel Buttons */}
               <div className="col-span-2 flex justify-end space-x-4 mt-0">
                 <button
                   type="button"
-                  className="px-4 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  className="px-4 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-800"
                   onClick={handleCloseModal}
                 >
                   Cancel
                 </button>
                 <button
+                 onClick={() => updateClick(item._id)}
                   type="submit"
                   className="px-4 py-1 bg-[#223857] text-white rounded-md hover:bg-[#1c2f49]"
                 >
-                  Save
+                  Update
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-        </BaseLayout1>
-      );
-}
+    </BaseLayout1>
+  );
+};
 
-export default Page
+export default trailSection
