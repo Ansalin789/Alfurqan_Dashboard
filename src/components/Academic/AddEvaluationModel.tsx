@@ -92,7 +92,7 @@ const AddEvaluationModal: React.FC<AddEvaluationModalProps> = ({
       studentLanguage: '',
       studentCountryCode: '',
       learningInterest: "Quran",
-      numberOfStudents: 1,
+      numberOfStudents: 0,
       preferredTeacher: "Either",
       preferredFromTime: '',
       preferredToTime: '',

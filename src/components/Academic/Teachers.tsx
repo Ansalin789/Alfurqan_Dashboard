@@ -22,67 +22,103 @@ ChartJS.register(
 
 export default function Teachers() {
     const data = {
-        labels: ['Total Teachers', 'Total Assigned', 'Total on leave'],
+        labels: ['', '', ''],
         datasets: [
             {
                 label: 'Male',
-                data: [60, 40, 20], // Corresponding values for Male
-                backgroundColor: '#40C4FF',
+                data: [80, 50, 20],
+                backgroundColor: '#6fd4ff',
+                borderRadius: {
+                    topLeft: 6,
+                    topRight: 6,
+                    bottomLeft: 6,
+                    bottomRight: 6
+                },
+                barThickness: 11,
             },
             {
                 label: 'Female',
-                data: [40, 50, 10], // Corresponding values for Female
-                backgroundColor: '#FF4081',
-            },
+                data: [50, 30, 12],
+                backgroundColor: '#ff82f5',
+                borderRadius: {
+                    topLeft: 6,
+                    topRight: 6,
+                    bottomLeft: 6,
+                    bottomRight: 6
+                },
+                barThickness: 11,
+            }
         ],
     };
 
     const options = {
         scales: {
             y: {
+                display: false,
                 beginAtZero: true,
                 grid: {
-                    display: false,
+                    display: false
                 },
                 ticks: {
-                    color: '#FFFFFF',
-                },
+                    padding: 10
+                }
             },
             x: {
+                display: false,
                 grid: {
-                    display: false,
-                },
-                ticks: {
-                    color: '#FFFFFF',
-                },
+                    display: false
+                }
             },
         },
         plugins: {
             legend: {
                 display: false,
             },
+            tooltip: {
+                enabled: false,
+            },
         },
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+            padding: {
+                left: 10,
+                right: 10,
+                top: 20,
+                bottom: 20,
+            },
+        },
     };
 
     return (
-        <div className="col-span-3 bg-[#3e68a1] p-6 rounded-[25px] shadow-lg">
-            <h3 className="text-xl font-semibold text-white mb-4">Teacher`&apos;`s</h3>
-            <div className="relative h-52">
+        <div className="col-span-12 bg-[#3e68a1] p-4 rounded-[25px] shadow-lg">
+            <div className="flex justify-between items-center gap-6">
+                <h3 className="text-[15px] font-semibold text-white">Teachers</h3>
+                <div className="flex gap-2 -ml-2">
+                    <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 rounded-full bg-[#6fd4ff]"></div>
+                        <span className="text-white/60 text-[10px]">Male</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 rounded-full bg-[#ff82f5]"></div>
+                        <span className="text-white/60 text-[10px]">Female</span>
+                    </div>
+                </div>
+            </div>
+            <div className="relative h-[120px]">
                 <Bar data={data} options={options} />
             </div>
-                {/* <div className="flex justify-between mt-4">
-                    <div className="text-center">
-                        <p className="text-white text-sm">Total Teachers</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-white text-sm">Total Assigned</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-white text-sm">Total on leave</p>
-                    </div>
-                </div> */}
+            <div className="flex justify-between mt-4">
+                <div className="text-center">
+                    <p className="text-white/60 text-[10px]">Total Teachers</p>
+                </div>
+                <div className="text-center">
+                    <p className="text-white/60 text-[10px]">Total Assigned</p>
+                </div>
+                <div className="text-center">
+                    <p className="text-white/60 text-[10px]">Total on leave</p>
+                </div>
+            </div>
         </div>
     );
 }

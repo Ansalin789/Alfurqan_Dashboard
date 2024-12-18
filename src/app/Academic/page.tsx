@@ -24,94 +24,94 @@ export default function Academic() {
   return (
     <div>
       <BaseLayout1>
-        <div className="flex flex-col lg:flex-row p-4 w-full">
-          <div className="flex-1 overflow-y-scroll scrollbar-hide h-[100vh] pr-4">
-            <header className="flex justify-between mb-8 p-4">
+        <div className="flex flex-col lg:flex-row p-2 w-full">
+          <div className="flex-1 pr-8 pl-4">
+            <header className="flex justify-between p-[5px]">
               <div className="flex space-x-4">
                 <div className="flex items-center space-x-4">
                   <div className="relative">
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                    <FaSearch className="absolute w-3 left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                     <input
                       type="text"
                       placeholder="Search here..."
-                      className="p-2 pl-10 w-80 rounded-xl bg-[#CED4DC] text-white border border-gray-300"
+                      className=" h-7 pl-8 w-48 text-[12px] rounded-xl bg-[#CED4DC] text-white border border-gray-300"
                     />
                   </div>
                 </div>
               </div>
             </header>
 
-            <main className="grid grid-cols-12 gap-4 -mt-8">
-              <div className="col-span-12 grid grid-cols-1 gap-4 p-4">
+            <main className="grid grid-cols-12 gap-4 pr-20">
+              <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
                 <TotalList />
               </div>
-              <div className="col-span-12 grid grid-cols-1 gap-4 p-4">
+              <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
                 <NextEvaluationClass />
               </div>
 
-              <div className="col-span-5 grid grid-cols-3 gap-4 p-4">
+              <div className="col-span-5 grid grid-cols-3 gap-4 p-0">
                 <TeachersStudent />
               </div>
-              <div className="col-span-3 grid grid-cols-3 gap-4 p-4">
+              <div className="col-span-4 grid grid-cols-3 gap-4 p-0">
                 <Countries />
               </div>
-              <div className="col-span-4 grid grid-cols-3 gap-4 p-4">
+              <div className="col-span-3 grid grid-cols-3 gap-4 p-0">
                 <Teachers />
               </div>
             
 
-              <div className="col-span-12 bg-[#CED4DC] p-6 rounded-[30px] shadow mb-10">
-                <h3 className="text-lg font-medium">Trail Request List</h3>
-                <table className="w-full mt-4">
+              <div className="col-span-12 bg-[#CED4DC] p-4 rounded-[30px] shadow mb-2">
+                <h3 className="text-[15px] font-medium ml-4">Student Evaluation</h3>
+                <table className="w-full mt-2">
                   <thead>
-                    <tr className="text-left border-b">
-                      <th className="p-2">Student Name</th>
-                      <th className="p-2">Topic</th>
-                      <th className="p-2">Task Name</th>
-                      <th className="p-2">Submission Date</th>
-                      <th className="p-2">Action</th>
+                    <tr className="text-center border-b text-[13px]">
+                      <th className="p-2">Trail</th>
+                      <th className="p-2">Name</th>
+                      <th className="p-2">Mobile</th>
+                      <th className="p-2">Country</th>
+                      <th className="p-2">Preferred Teacher</th>
+                      <th className="p-2">Date</th>
+                      <th className="p-2">Time</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[
                       {
                         id: 1,
-                        name: 'Emily Peterson',
-                        topic: 'World War II',
-                        task: 'Essay on the Impact of WWII on Modern Europe',
+                        name: 'Ansalin',
+                        task: '9344879988',
                         date: 'April 30, 2024',
                         action: 'Active',
                       },
                       {
                         id: 2,
-                        name: 'Jacob Lee',
-                        topic: 'The Cold War',
-                        task: 'Research Paper on the Cuban Missile Crisis',
+                        name: 'Gowtham',
+                        task: '9344349988',
                         date: 'May 5, 2024',
                         action: 'Not Viewed',
                       },
                       {
                         id: 3,
-                        name: 'Sarah Martin',
-                        topic: 'European Colonization',
-                        task: 'Prepare Arguments for Class Debate',
+                        name: 'Vaishak',
+                        task: '8944879988',
                         date: 'April 29, 2024',
                         action: 'Reviewing',
                       },
                       {
                         id: 4,
-                        name: 'Liam Johnson',
-                        topic: 'American History',
-                        task: 'Presentation on the Civil Rights Movement',
+                        name: 'Bharath',
+                        task: '9894879988',
                         date: 'May 10, 2024',
                         action: 'Not Viewed',
                       },
                     ].map((item) => (
-                      <tr key={item.id} className="border-b">
+                      <tr key={item.id} className="border-b text-[11px] text-center">
+                        <td className="p-2">{item.id}</td>
                         <td className="p-2">{item.name}</td>
-                        <td className="p-2">{item.topic}</td>
                         <td className="p-2">{item.task}</td>
                         <td className="p-2">{item.date}</td>
+                        <td className="p-2">{item.action}</td>
+                        <td className="p-2">{item.action}</td>
                         <td className="p-2">{item.action}</td>
                       </tr>
                     ))}
@@ -122,11 +122,11 @@ export default function Academic() {
             </main>
           </div>
       {/* calender sidebar */}
-          <div className="w-full lg:w-[300px] mt-6 lg:mt-0 p-0 rounded-[20px] h-[600px]">
-            <div className="col-span-4 p-4">
+          <div className=" lg:w-[300px] mt-6 lg:mt-0 rounded-[20px] h-[600px]">
+            <div className="col-span-4 pr-8 mb-8">
               <Calender />
             </div>
-            <div className="col-span-4 bg-white p-0 rounded-lg shadow">
+            <div className="col-span-4 pr-8 -ml-16 rounded-lg">
               <UpcomingClasses />
             </div>
           </div>

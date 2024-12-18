@@ -1,28 +1,26 @@
 import React, { useState } from "react";
 import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css"; 
+import "react-calendar/dist/Calendar.css";
+import "./Calendar.css";
 
 const Academic = () => {
-  const [value, setValue] = useState<Date | null>(new Date()); // Allow value to be Date or null
+  const [value, setValue] = useState<Date | null>(new Date());
 
   return (
-    <div className="flex items-center justify-center mt-16">
-      <div className="calendar-container rounded-lg shadow-lg p-4 bg-gray-200">
+    <div className="flex items-center justify-center mt-12">
+      <div className="calendar-container rounded-[50px] -ml-28">
         <Calendar
-          onChange={(newValue) => setValue(newValue as Date)} // Cast newValue to Date
+          onChange={(newValue) => setValue(newValue as Date)}
           value={value}
-          tileContent={({ date, view }) => {
-            // Add custom markers for specific dates
-            if (view === "month") {
-              if (date.getDate() === 5 || date.getDate() === 17) {
-                return (
-                  <div className="relative">
-                    <div className="dot absolute top-1 right-1 bg-gray-800 rounded-full w-2 h-2"></div>
-                  </div>
-                );
-              }
-            }
+          className="custom-calendar"
+          navigationLabel={({ date }) => {
+            return `${date.toLocaleString('default', { month: 'long' }).toUpperCase()}, ${date.getFullYear()}`;
           }}
+          nextLabel="›"
+          prevLabel="‹"
+          next2Label={null}
+          prev2Label={null}
+          showNeighboringMonth={false}
         />
       </div>
     </div>

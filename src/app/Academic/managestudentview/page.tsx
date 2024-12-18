@@ -16,6 +16,7 @@ const ManageStudentView = () => {
   const [activeTab, setActiveTab] = useState('scheduled');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
 
   const openModal = () => {
     setModalIsOpen(true);
@@ -55,6 +56,10 @@ const ManageStudentView = () => {
   const totalPages = Math.ceil(
     (activeTab === 'scheduled' ? scheduledClasses.length : completedClasses.length) / itemsPerPage
   );
+
+  const toggleDropdown = (index: number) => {
+    setActiveDropdown(activeDropdown === index ? null : index);
+  };
 
   return (
     <BaseLayout1>
@@ -203,7 +208,7 @@ const ManageStudentView = () => {
                 <table className="w-full table-auto">
                   <thead>
                     <tr>
-                      <th className="py-2 text-[14px]">Name</th>
+                      <th className="py-2 text-[14px] text-center">Name</th>
                       <th className="py-2 text-[14px]">Courses</th>
                       <th className="py-2 text-[14px]">Date</th>
                       {activeTab === 'completed' && (
@@ -237,8 +242,52 @@ const ManageStudentView = () => {
                             {item.status}
                           </button>
                         </td>
-                        <td className="py-2 text-right">
-                          <FiMoreVertical className="inline-block text-xl" />
+                        <td className="py-2 text-right relative">
+                          <button onClick={() => toggleDropdown(index)}>
+                            <FiMoreVertical className="inline-block text-xl cursor-pointer" />
+                          </button>
+                          {activeDropdown === index && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                              <div className="py-1">
+                                <button
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  onClick={() => {
+                                    // Add reschedule logic here
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  Reschedule
+                                </button>
+                                <button
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  onClick={() => {
+                                    // Add pause logic here
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  Pause Class
+                                </button>
+                                <button
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  onClick={() => {
+                                    // Add resume logic here
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  Resume Class
+                                </button>
+                                <button
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  onClick={() => {
+                                    // Add cancel logic here
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -288,7 +337,7 @@ const ManageStudentView = () => {
                   </div>
                   
                   <input type="time" className="form-input p-2 bg-[#D4D6D9] rounded-xl text-[11px] ml-4" />
-                  <input type="number" className="form-input ml-4 text-[11px] p-2 bg-[#D4D6D9] rounded-xl" placeholder="Duration" />
+                  <input type="number" className="form-input w-[75px] text-center ml-4 text-[11px] p-2 bg-[#D4D6D9] rounded-xl" placeholder="Duration" />
                 </div>
               ))}
             </div>

@@ -17,15 +17,15 @@ export default function Countries() {
     ];
 
     return (
-        <div className="col-span-4 bg-[#3e68a1] p-8 py-10 rounded-[25px] shadow-lg">
-            <h3 className="text-xl font-semibold text-white mb-4">Countries</h3>
+        <div className="col-span-12 bg-[#3e68a1] p-8 py-4 rounded-[25px] shadow-lg">
+            <h3 className="text-[15px] font-semibold text-white mb-2">Countries</h3>
             <table className="min-w-full divide-y divide-gray-200 overflow-y-scroll scrollbar-hide">
                 <tbody className="divide-y divide-gray-200">
                     {countriesData.map((country, index) => (
                         <tr key={index} className="flex justify-between items-center">
-                            <td className="flex items-center text-white py-1">
-                                {country.icon}
-                                {country.name}
+                            <td className="flex items-center text-white gap-3 py-2 text-[12px]">
+                                <span className='w-6'>{country.icon}</span>
+                                <span className='text-[12px]'>{country.name}</span>
                             </td>
                             <td className="text-white py-1">{country.count}</td>
                         </tr>
