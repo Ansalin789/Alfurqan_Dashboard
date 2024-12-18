@@ -25,7 +25,7 @@ export default function Academic() {
     <div>
       <BaseLayout1>
         <div className="flex flex-col lg:flex-row p-2 w-full">
-          <div className="flex-1 pr-4">
+          <div className="flex-1 pr-8 pl-4">
             <header className="flex justify-between p-[5px]">
               <div className="flex space-x-4">
                 <div className="flex items-center space-x-4">
@@ -41,7 +41,7 @@ export default function Academic() {
               </div>
             </header>
 
-            <main className="grid grid-cols-12 gap-4 ">
+            <main className="grid grid-cols-12 gap-4 pr-20">
               <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
                 <TotalList />
               </div>
@@ -122,11 +122,11 @@ export default function Academic() {
             </main>
           </div>
       {/* calender sidebar */}
-          <div className="w-full lg:w-[300px] mt-6 lg:mt-0 p-0 rounded-[20px] h-[600px]">
-            <div className="col-span-4 p-4">
+          <div className=" lg:w-[300px] mt-6 lg:mt-0 rounded-[20px] h-[600px]">
+            <div className="col-span-4 pr-8 mb-8">
               <Calender />
             </div>
-            <div className="col-span-4 bg-white p-0 rounded-lg shadow">
+            <div className="col-span-4 pr-8 -ml-16 rounded-lg">
               <UpcomingClasses />
             </div>
           </div>

@@ -10,7 +10,7 @@ const UpcomingClasses = () => {
 
   return (
     <div className="bg-gray-100 p-4 rounded-lg shadow-lg">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+      <h3 className="text-[15px] font-semibold text-gray-800 mb-4 text-center">
         Upcoming Classes
       </h3>
       <div className="space-y-4">
@@ -20,10 +20,10 @@ const UpcomingClasses = () => {
             className={`relative border-l-4 border-${classItem.color} bg-white p-4 rounded-md shadow-md`}
           >
             <div className="flex justify-between items-center">
-              <p className="text-sm text-gray-600">{classItem.date}</p>
-              <p className="text-sm text-gray-600">{classItem.time}</p>
+              <p className="text-[12px] text-gray-600">{classItem.date}</p>
+              <p className="text-[12px] text-gray-600">{classItem.time}</p>
             </div>
-            <h4 className="mt-2 text-base font-medium text-gray-800">{classItem.title}</h4>
+            <h4 className="mt-2 text-[13px] font-medium text-gray-800">{classItem.title}</h4>
             <div
               className={`absolute top-0 right-0 h-full w-1 border-r-4 border-${classItem.color} rounded-md`}
             ></div>
