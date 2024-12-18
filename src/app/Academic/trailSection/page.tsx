@@ -6,8 +6,7 @@ import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
 import BaseLayout1 from '@/components/BaseLayout1';
 
 import { useRouter } from 'next/navigation';
-import { FaSyncAlt, FaEdit, FaFilter} from 'react-icons/fa';
-import AddEvaluationModel from '@/components/Academic/AddEvaluationModel';
+import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
 
 // Updated function to fetch users from the new API endpoint
 const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: string}> => {
