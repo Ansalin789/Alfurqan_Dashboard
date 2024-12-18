@@ -70,54 +70,64 @@ const SchedulePage = () => {
 
   return (
     <BaseLayout1>
-      <div className="flex flex-col h-screen bg-gray-100">
+      <div className="flex flex-col h-screen">
         <div className="flex-1 p-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">December 2024</h1>
+            <h1 className="text-2xl font-bold">January 2024</h1>
+            
           </div>
 
           <div className="grid grid-cols-4 gap-6">
-            {/* Calendar */}
+            {/* Updated Calendar styling */}
             <div className="col-span-3">
-              <div className="bg-white p-6 rounded shadow-lg">
+              <div className="bg-white p-6 rounded-lg shadow">
                 <Calendar
                   localizer={localizer}
                   events={events}
                   startAccessor="start"
                   endAccessor="end"
-                  style={{ height: 600, fontSize: '12px' }}
-                  views={['month', 'week', 'day']}
+                  style={{ height: 550 }}
+                  views={['month']}
                   defaultView="month"
-                  toolbar
-                  eventPropGetter={eventStyleGetter}
-                  onNavigate={handleNavigate} // Use onNavigate to handle date clicks
+                  toolbar={false}
+                  eventPropGetter={(event) => ({
+                    style: {
+                      backgroundColor: '#E9EBFF',
+                      color: '#012A4A',
+                      borderRadius: '4px',
+                      padding: '2px 4px',
+                      fontSize:'7px',
+                      width:'60px'
+                    },
+                  })}
+                  onNavigate={handleNavigate}
                 />
               </div>
             </div>
 
-            {/* List Schedule */}
-            <div className="col-span-1 bg-white p-6 rounded shadow">
-              <h2 className="text-xl font-bold mb-4">List Schedule</h2>
-              {selectedDate && (
-                <p className="mb-4">Events for {selectedDate}:</p>
-              )}
-              <ul className="space-y-4 max-h-96 overflow-y-auto">
-                {eventsForSelectedDate.length > 0 ? (
-                  eventsForSelectedDate.map((item) => (
-                    <li key={item.scheduledFrom} className="border-b pb-4">
-                      <h3 className="font-bold">{item.title}</h3>
-                      <p className="text-gray-600">{item.scheduledFrom} - {item.scheduledTo}</p>
-                      <p className="text-gray-600">{item.course}</p>
-                      <p className="text-gray-500 text-sm mt-2">{item.description}</p>
-                      <p className="text-gray-500 text-sm mt-2">Teacher: {item.teacherName}</p>
-                      <p className="text-gray-500 text-sm mt-2">Location: {item.meetingLocation}</p>
-                      <a href={item.meetingLink} target="_blank" className="text-blue-500 underline">Join Meeting</a>
-                    </li>
-                  ))
-                ) : (
-                  <p>No events for this date.</p>
-                )}
-              </ul>
+            {/* Updated List Schedule styling */}
+            <div className="col-span-1">
+              <div className="bg-white p-6 rounded-lg shadow overflow-y-scroll h-[82vh] scrollbar-thin">
+                <h2 className="text-[18px] font-semibold mb-6">List Schedule</h2>
+                <div className="space-y-6">
+                  {eventsForSelectedDate.length > 0 ? (
+                    eventsForSelectedDate.map((item) => (
+                      <div key={item.scheduledFrom} className="border-b pb-2">
+                        <div className="flex justify-between">
+                            <h3 className="font-medium text-[14px]">{item.title}</h3>
+                          <span className="text-[11px] text-gray-500 text-end">{moment(item.start).format('DD MMM YYYY')}</span>
+                        </div>
+                        <div className="text-[12px] text-gray-500">
+                          {moment(item.start).format('h:mm A')}
+                        </div>
+                        <p className="text-[13px] text-gray-600 mt-2">{item.description || ''}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500">No events scheduled</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
