@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation';
 import { FaSyncAlt, FaEdit, FaFilter} from 'react-icons/fa';
 import AddEvaluationModel from '@/components/Academic/AddEvaluationModel';
+import { User } from '@/types'; // Adjust the path as necessary
 
 // Define the return type of the getAllUsers function
 interface User {

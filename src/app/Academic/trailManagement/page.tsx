@@ -534,7 +534,7 @@ const TrailManagement = () => {
             <Popup 
               isOpen={modalIsOpen} 
               onRequestClose={closeModal} 
-              user={selectedUserData} 
+              user={selectedUserData}
               isEditMode={isEditMode} 
               onSave={() => {
                 fetchStudents();

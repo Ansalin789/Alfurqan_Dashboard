@@ -91,8 +91,8 @@ export default function Teachers() {
     };
 
     return (
-        <div className="col-span-12 bg-[#3e68a1] p-6 rounded-[25px] shadow-lg">
-            <div className="flex justify-between items-center mb-6 gap-6">
+        <div className="col-span-12 bg-[#3e68a1] p-4 rounded-[25px] shadow-lg">
+            <div className="flex justify-between items-center gap-6">
                 <h3 className="text-[15px] font-semibold text-white">Teachers</h3>
                 <div className="flex gap-2 -ml-2">
                     <div className="flex items-center gap-1">

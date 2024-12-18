@@ -10,7 +10,7 @@ const data = [
 ];
 
 const Card: React.FC<{ title: string; value: number; color: string; icon: React.ReactNode; iconBg: string }> = ({ title, value, color, icon, iconBg }) => (
-  <div className={`p-4 size-[100%] rounded-2xl py-7 shadow-lg flex flex-col items-start ${color} relative bg-pattern`}>
+  <div className={`p-4 size-[100%] rounded-2xl py-5 shadow-lg flex flex-col items-start ${color} relative bg-pattern`}>
     <div className={`absolute top-4 right-2 ${iconBg} p-2 rounded-[100%] shadow-md`}>
       {React.isValidElement(icon) ? (
         <div className="flex items-center justify-center w-4 h-4">
@@ -22,10 +22,10 @@ const Card: React.FC<{ title: string; value: number; color: string; icon: React.
     </div>
     <div className="flex flex-col justify-between h-full">
       <div>
-        <span className="text-[14px] font-semibold text-black">{title}</span>
+        <span className="text-[13px] font-semibold text-black">{title}</span>
       </div>
       <div>
-        <span className="text-[18px] font-bold text-black">{value}</span>
+        <span className="text-[17px] font-bold text-black">{value}</span>
       </div>
     </div>
   </div>

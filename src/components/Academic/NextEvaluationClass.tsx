@@ -29,9 +29,9 @@ const NextEvaluationClass = () => {
 
   return (
     <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] rounded-[25px] shadow flex items-center justify-between text-white">
-      <div className="items-center p-2 px-8">
-        <h3 className="text-[15px] font-medium pt-2">Your Next Evaluation Class</h3>
-        <div className="flex items-center space-x-8 py-3">
+      <div className="items-center p-1 px-8">
+        <h3 className="text-[15px] font-medium pt-3">Your Next Evaluation Class</h3>
+        <div className="flex items-center space-x-8 py-2">
           <div className="flex items-center space-x-2">
             <FaUserAlt className="w-[10px]"/>
             <p className="text-[13px]">Jijo</p>

@@ -24,9 +24,9 @@ export default function Academic() {
   return (
     <div>
       <BaseLayout1>
-        <div className="flex flex-col lg:flex-row p-4 w-full">
-          <div className="flex-1 overflow-y-scroll scrollbar-hide h-[100vh] pr-4">
-            <header className="flex justify-between mb-8 p-3">
+        <div className="flex flex-col lg:flex-row p-2 w-full">
+          <div className="flex-1 pr-4">
+            <header className="flex justify-between p-[5px]">
               <div className="flex space-x-4">
                 <div className="flex items-center space-x-4">
                   <div className="relative">
@@ -34,37 +34,37 @@ export default function Academic() {
                     <input
                       type="text"
                       placeholder="Search here..."
-                      className=" h-8 pl-8 w-48 text-[12px] rounded-3xl bg-[#CED4DC] text-white border border-gray-300"
+                      className=" h-7 pl-8 w-48 text-[12px] rounded-xl bg-[#CED4DC] text-white border border-gray-300"
                     />
                   </div>
                 </div>
               </div>
             </header>
 
-            <main className="grid grid-cols-12 gap-4 -mt-8">
-              <div className="col-span-12 grid grid-cols-1 gap-4 p-2">
+            <main className="grid grid-cols-12 gap-4 ">
+              <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
                 <TotalList />
               </div>
-              <div className="col-span-12 grid grid-cols-1 gap-4 p-2">
+              <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
                 <NextEvaluationClass />
               </div>
 
-              <div className="col-span-5 grid grid-cols-3 gap-4 p-2">
+              <div className="col-span-5 grid grid-cols-3 gap-4 p-0">
                 <TeachersStudent />
               </div>
-              <div className="col-span-4 grid grid-cols-3 gap-4 p-2">
+              <div className="col-span-4 grid grid-cols-3 gap-4 p-0">
                 <Countries />
               </div>
-              <div className="col-span-3 grid grid-cols-3 gap-4 p-2">
+              <div className="col-span-3 grid grid-cols-3 gap-4 p-0">
                 <Teachers />
               </div>
             
 
-              <div className="col-span-12 bg-[#CED4DC] p-6 rounded-[30px] shadow mb-10">
-                <h3 className="text-[15px] font-medium">Student Evaluation</h3>
-                <table className="w-full mt-4">
+              <div className="col-span-12 bg-[#CED4DC] p-4 rounded-[30px] shadow mb-2">
+                <h3 className="text-[15px] font-medium ml-4">Student Evaluation</h3>
+                <table className="w-full mt-2">
                   <thead>
-                    <tr className="text-center border-b text-[14px]">
+                    <tr className="text-center border-b text-[13px]">
                       <th className="p-2">Trail</th>
                       <th className="p-2">Name</th>
                       <th className="p-2">Mobile</th>

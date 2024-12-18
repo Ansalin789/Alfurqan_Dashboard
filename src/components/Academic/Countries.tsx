@@ -17,8 +17,8 @@ export default function Countries() {
     ];
 
     return (
-        <div className="col-span-12 bg-[#3e68a1] p-8 py-8 rounded-[25px] shadow-lg">
-            <h3 className="text-[15px] font-semibold text-white mb-4">Countries</h3>
+        <div className="col-span-12 bg-[#3e68a1] p-8 py-4 rounded-[25px] shadow-lg">
+            <h3 className="text-[15px] font-semibold text-white mb-2">Countries</h3>
             <table className="min-w-full divide-y divide-gray-200 overflow-y-scroll scrollbar-hide">
                 <tbody className="divide-y divide-gray-200">
                     {countriesData.map((country, index) => (
