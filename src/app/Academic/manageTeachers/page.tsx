@@ -20,24 +20,29 @@ interface Teacher {
 const ManageTeacher: React.FC = () => {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
 
-  useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const response = await fetch('http://localhost:5001/users');
-        const data: Teacher[] = await response.json();
 
-        console.log('Fetched teachers:', data);
-
-        // Ensure data is an array before setting state
-        if (Array.isArray(data)) {
-          setTeachers(data);
-        } else {
-          console.error('Data is not an array:', data);
+    useEffect(() => {
+      const fetchTeachers = async () => {
+        try {
+          const response = await fetch('http://localhost:5001/users?role=TEACHER', {
+            headers: {
+              'Authorization': `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IlRlc3QgVXNlciIsInN1YiI6IjY3MmRjMzZmNmRhNjJkYzc2ZWY5Yzg4NSIsImlhdCI6MTczNDM0NjcxNiwiZXhwIjoxNzM0NDMzMTE2fQ.bPGpuxQJxJa2hHtYTF2HkrjrGP0ieVZ_Pi1iaD7a5p4"}`,
+            },
+          });
+          const data = await response.json();
+  
+          console.log('Fetched data:', data);
+  
+          // Access `users` array in the response
+          if (data && Array.isArray(data.users)) {
+            setTeachers(data.users);
+          } else {
+            console.error('Unexpected API response structure:', data);
+          }
+        } catch (error) {
+          console.error('Error fetching teachers:', error);
         }
-      } catch (error) {
-        console.error('Error fetching teachers:', error);
-      }
-    };
+      };
 
     fetchTeachers();
   }, []);

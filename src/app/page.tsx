@@ -23,7 +23,7 @@ export default function SignInSignUp(): JSX.Element {
       const userInfo = await axios.get(
         'https://www.googleapis.com/oauth2/v3/userinfo',
         {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+          headers: { Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IlRlc3QgVXNlciIsInN1YiI6IjY3MmRjMzZmNmRhNjJkYzc2ZWY5Yzg4NSIsImlhdCI6MTczNDQxMzA4MywiZXhwIjoxNzM0NDk5NDgzfQ.ZoWZ2uCXuKPRwEpZMGwVpYcAqVV95lqenlS1tMKTKfs"}` }
         }
       );
 

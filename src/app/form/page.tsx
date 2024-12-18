@@ -182,8 +182,6 @@ const MultiStepForm = () => {
                 createdBy: 'SYSTEM',
                 lastUpdatedBy: 'SYSTEM',
                 timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                createdDate: new Date().toISOString(),
-                lastUpdatedDate: new Date().toISOString()
             };
 
             // Debug log to check the data being sent
