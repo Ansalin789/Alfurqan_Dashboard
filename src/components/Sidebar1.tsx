@@ -4,12 +4,8 @@ import Image from "next/image";
 import Link from 'next/link';
 import React from 'react';
 import { RiDashboardFill } from "react-icons/ri";
-import { MdContactSupport } from "react-icons/md";
-import { IoBookmarks } from "react-icons/io5";
-import { IoPeopleSharp } from "react-icons/io5";
-import { MdLocalLibrary } from "react-icons/md";
-import { MdDateRange } from "react-icons/md";
-import { MdQuestionAnswer } from "react-icons/md";
+import { MdContactSupport,MdLocalLibrary, MdDateRange, MdQuestionAnswer } from "react-icons/md";
+import { IoBookmarks, IoPeopleSharp } from "react-icons/io5";
 import "/public/assets/css/globals.css";
 
 const SidebarItems = [
