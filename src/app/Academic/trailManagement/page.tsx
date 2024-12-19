@@ -25,7 +25,8 @@ interface User {
   evaluationStatus?: string;
   city?: string;
   students?: number;
-  comment?: string;
+  // comment?: string;
+  createdDate: Date;
 }
 
 interface GetAllUsersResponse {
@@ -47,7 +48,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     }
 
     // Transform API data to match User interface
-    const transformedData = rawData.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; }) => ({
+    const transformedData = rawData.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; createdDate: string; }) => ({
       studentId: item._id,
       fname: item.firstName,
       lname: item.lastName,
@@ -58,7 +59,8 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
       preferredTeacher: item.preferredTeacher,
       date: new Date(item.startDate).toLocaleDateString(),
       time: item.preferredFromTime,
-      evaluationStatus: item.evaluationStatus
+      evaluationStatus: item.evaluationStatus,
+      createdDate: new Date(item.createdDate),
     }));
 
     return {
@@ -204,7 +206,7 @@ const FilterModal = ({
           </button>
           <button
             onClick={handleApply}
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900"
           >
             Apply Filters
           </button>
@@ -223,7 +225,8 @@ const TrailManagement = () => {
   const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDuration, setSelectedDuration] = useState<string>('Last month');
 
   const router = useRouter();
   const handleSyncClick = () => {
@@ -406,8 +409,44 @@ const Pagination = () => {
       filtered = filtered.filter(user => user.evaluationStatus === filters.status);
     }
     
+    const currentDate = new Date();
+    const durationFilter = (user: User) => {
+      switch (selectedDuration) {
+        case 'Last month':
+          return user.createdDate >= new Date(currentDate.setMonth(currentDate.getMonth() - 1));
+        case 'Last week':
+          return user.createdDate >= new Date(currentDate.setDate(currentDate.getDate() - 7));
+        case 'Last year':
+          return user.createdDate >= new Date(currentDate.setFullYear(currentDate.getFullYear() - 1));
+        default:
+          return true;
+      }
+    };
+
+    filtered = filtered.filter(durationFilter);
+
     setFilteredUsers(filtered);
     setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    const filtered = users.filter(user => {
+      const fullName = `${user.fname} ${user.lname}`.toLowerCase();
+      return (
+        user.studentId.toLowerCase().includes(query.toLowerCase()) ||
+        fullName.includes(query.toLowerCase()) ||
+        user.email.toLowerCase().includes(query.toLowerCase()) ||
+        user.number.includes(query) ||
+        user.country.toLowerCase().includes(query.toLowerCase()) ||
+        user.course.toLowerCase().includes(query.toLowerCase()) ||
+        user.preferredTeacher.toLowerCase().includes(query.toLowerCase()) ||
+        user.time.toLowerCase().includes(query.toLowerCase()) ||
+        (user.evaluationStatus && user.evaluationStatus.toLowerCase().includes(query.toLowerCase()))
+      );
+    });
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when search changes
   };
 
 
@@ -439,6 +478,8 @@ const Pagination = () => {
                   type="text"
                   placeholder="Search here..."
                   className={`border rounded-lg px-2 text-[13px] mr-4 shadow`}
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
                 />
                 <button 
                   onClick={() => setIsFilterModalOpen(true)}
@@ -454,10 +495,14 @@ const Pagination = () => {
                 >
                   <FaPlus className="mr-2" /> Add new
                 </button>
-                <select className={`border rounded-lg p-2 shadow text-[14px]`}>
-                  <option>Duration: Last month</option>
-                  <option>Duration: Last week</option>
-                  <option>Duration: Last year</option>
+                <select
+                  className={`border rounded-lg p-2 shadow text-[14px]`}
+                  value={selectedDuration}
+                  onChange={(e) => setSelectedDuration(e.target.value)}
+                >
+                  <option value="Last month">Duration: Last month</option>
+                  <option value="Last week">Duration: Last week</option>
+                  <option value="Last year">Duration: Last year</option>
                 </select>
               </div>
             </div>

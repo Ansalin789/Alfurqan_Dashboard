@@ -28,7 +28,7 @@ studentId: string;
   date: string;
   time: string;
   evaluationStatus?: string;
-  city?: string;
+  city: string;
   numberofstudents: string;
   comment?: string;
   [key: string]: any;
@@ -54,7 +54,7 @@ interface ApiResponseUser {
   preferredFromTime: string;
   preferredToTime: string;
   evaluationStatus?: string;  
-  city?: string;    
+  city: string;    
 }
 
 const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) => {
@@ -71,9 +71,12 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
     time: '',
     evaluationStatus: 'PENDING',
     numberofstudents: '',
+    comment: '',
+    city:'',
   });
 
   const [users, setUsers] = useState<User[]>([]);
+  console.log(users);
 
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     try {
@@ -101,6 +104,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
         date: new Date(item.startDate).toLocaleDateString(),
         time: `${item.preferredFromTime}`,
         evaluationStatus: item.evaluationStatus,
+        city: item.city,
       }));
 
       return {
@@ -156,7 +160,6 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
         },
       }));
     }
-    // Add similar checks for other properties as needed
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -167,7 +170,6 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
   const router = useRouter();
 
   const handleStart = () => {
-    // router.push('/evaluation');
     console.log("Navigating with Student ID:", formData.studentId);
     router.push(`/evaluation?studentId=${formData.studentId}`);
   };
@@ -337,13 +339,6 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
             />
           </div>
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-[#293552] to-[#1e273c] text-white p-2 rounded-lg
-                       hover:shadow-lg transition-all duration-300 text-sm font-medium"
-          >
-            Save
-          </button>
         </form>
       </div>
     </Modal>

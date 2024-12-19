@@ -97,8 +97,6 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
         status: "Active" as "Active" | "Inactive" | "Deleted",
         createdBy: "SYSTEM",
         lastUpdatedBy: "SYSTEM",
-        createdDate: new Date().toISOString(),
-        lastUpdatedDate: new Date().toISOString()
       };
 
       if (!studentData.firstName || studentData.firstName.length < 3) {
