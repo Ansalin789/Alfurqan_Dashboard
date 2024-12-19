@@ -1,9 +1,7 @@
 'use client'
 
-// import { useRouter } from 'next/navigation';
 import { ReactNode } from "react";
 import Sidebar1 from "@/components/Sidebar1";
-// import { useTheme } from '@/context/ThemeContext';
 
 
 
@@ -11,30 +9,7 @@ import Sidebar1 from "@/components/Sidebar1";
 interface Props {
     children: ReactNode | ReactNode [];
 }
-export default function BaseLayout1({ children }: Props) {
-  // const router = useRouter();
-  // const { darkMode, toggleDarkMode } = useTheme();
-
-  // const handleSignOut = async () => {
-  //   try {
-  //     // Call the signout API
-  //     await fetch('http://localhost:5001/signout', {
-  //       method: 'POST',
-  //       credentials: 'include', // If you're using cookies
-  //     });
-
-  //     // Clear all auth data
-  //     localStorage.removeItem('authToken');
-  //     localStorage.removeItem('tokenExpiry');
-  //     localStorage.removeItem('userInfo');
-      
-  //     // Redirect to login page
-  //     router.push('/');
-  //   } catch (error) {
-  //     console.error('Signout failed:', error);
-  //     // Optionally handle the error (show message to user, etc.)
-  //   }
-  // };
+export default function BaseLayout1({ children }: Readonly<Props>) {
 
     return (
     <div className={`layout bg-[#EDEDED]`}>

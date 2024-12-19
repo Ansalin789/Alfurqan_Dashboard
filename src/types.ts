@@ -14,4 +14,5 @@ export interface User {
     students?: number;
     comment?: string;
     preferredDate?: Date;
+    numberofstudents: number;
 } 

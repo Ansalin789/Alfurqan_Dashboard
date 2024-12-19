@@ -7,6 +7,7 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import AddStudentModal from '@/components/Academic/AddStudentModel';
 import Popup from '@/components/Academic/Popup';
 import { useRouter } from 'next/navigation';
+import { table } from 'console';
 
 // Define the return type of the getAllUsers function
 interface User {
@@ -222,9 +223,7 @@ const TrailManagement = () => {
   const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+
 
   const router = useRouter();
   const handleSyncClick = () => {
@@ -235,11 +234,101 @@ const TrailManagement = () => {
     }
 };
 
+const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+const [currentPage, setCurrentPage] = useState(1);
+const [itemsPerPage, setItemsPerPage] = useState(10);
+console.log(setItemsPerPage);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+const indexOfLastItem = currentPage * itemsPerPage;
+const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
+const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+const Pagination = () => {
+  const renderPageNumbers = () => {
+    const pageNumbers = [];
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i <= 3 || i > totalPages - 3 || (currentPage >= 4 && currentPage <= totalPages - 3 && (i === currentPage - 1 || i === currentPage + 1))) {
+        pageNumbers.push(
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i)}
+            className={`px-3 py-1 rounded-lg ${
+              currentPage === i
+                ? 'bg-gray-800 text-white text-[13px]'
+                : 'bg-white text-gray-800 text-[13px] hover:bg-gray-50'
+            }`}
+          >
+            {i}
+          </button>
+        );
+      } else if (i === 4 || i === totalPages - 1) {
+        pageNumbers.push(<span key={i} className="px-3 py-1">...</span>);
+      }
+    }
+
+    return pageNumbers;
+  };
+
+  return (
+    <div className="flex justify-between items-center mt-4 px-4">
+      <div className="text-[12px] text-gray-700">
+        Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUsers.length)} of {filteredUsers.length} entries
+      </div>
+      <div className="flex space-x-2">
+        <button
+          onClick={() => setCurrentPage(1)}
+          disabled={currentPage === 1}
+          className={`px-3 py-1 text-[13px] rounded-lg ${
+            currentPage === 1
+              ? 'bg-gray-100 text-[13px] text-gray-400 cursor-not-allowed'
+              : 'bg-white text-gray-700 text-[13px] hover:bg-gray-50 border'
+          }`}
+        >
+          First
+        </button>
+        <button
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className={`px-3 py-1 text-[13px] rounded-lg ${
+            currentPage === 1
+              ? 'bg-gray-100 text-[13px] text-gray-400 cursor-not-allowed'
+              : 'bg-white text-gray-700 text-[13px] hover:bg-gray-50 border'
+          }`}
+        >
+          Previous
+        </button>
+        {renderPageNumbers()}
+        <button
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className={`px-3 py-1 text-[13px] rounded-lg ${
+            currentPage === totalPages
+              ? 'bg-gray-100 text-[13px] text-gray-400 cursor-not-allowed'
+              : 'bg-white text-gray-700 text-[13px] hover:bg-gray-50 border'
+          }`}
+        >
+          Next
+        </button>
+        <button
+          onClick={() => setCurrentPage(totalPages)}
+          disabled={currentPage === totalPages}
+          className={`px-3 py-1 text-[13px] rounded-lg ${
+            currentPage === totalPages
+              ? 'bg-gray-100 text-[13px] text-gray-400 cursor-not-allowed'
+              : 'bg-white text-gray-700 text-[13px] hover:bg-gray-50 border'
+          }`}
+        >
+          Last
+        </button>
+      </div>
+    </div>
+  );
+};
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -247,7 +336,7 @@ const TrailManagement = () => {
         const allData = await getAllUsers();
         if (allData.success && allData.data) {
           setUsers(allData.data);
-          setFilteredUsers(allData.data); // Initialize filtered users
+          setFilteredUsers(allData.data); 
         } else {
           setErrorMessage(allData.message ?? 'Failed to fetch users');
         }
@@ -321,93 +410,7 @@ const TrailManagement = () => {
     setCurrentPage(1); // Reset to first page when filters change
   };
 
-  // Add pagination controls component
-  const Pagination = () => {
-    return (
-      <div className="flex justify-between items-center mt-4 px-4">
-        <div className="text-sm text-gray-600">
-          Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUsers.length)} of {filteredUsers.length} entries
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setCurrentPage(1)}
-            disabled={currentPage === 1}
-            className={`px-3 py-1 rounded-lg ${
-              currentPage === 1
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border'
-            }`}
-          >
-            First
-          </button>
-          <button
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className={`px-3 py-1 rounded-lg ${
-              currentPage === 1
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border'
-            }`}
-          >
-            Previous
-          </button>
-          <div className="flex items-center space-x-1">
-            {[...Array(totalPages)].map((_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`px-3 py-1 rounded-lg ${
-                  currentPage === index + 1
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border'
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded-lg ${
-              currentPage === totalPages
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border'
-            }`}
-          >
-            Next
-          </button>
-          <button
-            onClick={() => setCurrentPage(totalPages)}
-            disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded-lg ${
-              currentPage === totalPages
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border'
-            }`}
-          >
-            Last
-          </button>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-600">Items per page:</span>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => {
-              setItemsPerPage(Number(e.target.value));
-              setCurrentPage(1); // Reset to first page when changing items per page
-            }}
-            className="border rounded-lg px-2 py-1"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
-        </div>
-      </div>
-    );
-  };
+
 
   if (errorMessage) {
     return (
@@ -419,27 +422,27 @@ const TrailManagement = () => {
 
   return (
     <BaseLayout1>
-      <div className={`min-h-screen p-4 bg-[#EDEDED] mt-5`}>
-        <div className="flex justify-between items-center mb-6">
+      <div className={`min-h-screen p-4 bg-[#EDEDED]`}>
+        <div className="flex justify-between items-center">
             <div className='flex items-center space-x-2'>
-              <h2 className="text-2xl font-semibold">Scheduled Evaluation Session</h2>
-              <button className="bg-gray-800 text-white p-2 rounded-full shadow" onClick={handleSyncClick}>
+              <h2 className="text-[20px] font-semibold">Scheduled Evaluation Session</h2>
+              <button className="bg-gray-800 text-white p-[4px] rounded-full shadow-2xl" onClick={handleSyncClick}>
                 <FaSyncAlt />
               </button>
             </div>
-          </div>
-        <div className={`p-6 rounded-lg bg-[#EDEDED] overflow-y-scroll h-[600px]`}>
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex flex-1 space-x-4 items-center justify-between">
+        </div>
+        <div className={`p-6 rounded-lg bg-[#EDEDED]`}>
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex flex-1 items-center justify-between">
               <div className='flex'>
                 <input
                   type="text"
                   placeholder="Search here..."
-                  className={`border rounded-lg p-2 mx-4 shadow`}
+                  className={`border rounded-lg px-2 text-[13px] mr-4 shadow`}
                 />
                 <button 
                   onClick={() => setIsFilterModalOpen(true)}
-                  className="flex items-center bg-gray-200 p-2 rounded-lg shadow"
+                  className="flex items-center bg-gray-200 p-2 rounded-lg text-[12px] shadow"
                 >
                   <FaFilter className="mr-2" /> Filter
                 </button>
@@ -447,11 +450,11 @@ const TrailManagement = () => {
               <div className='flex'>
                 <button 
                   onClick={() => openModal(null)}
-                  className={`border p-2 rounded-lg shadow flex bg-[#223857] text-[#fff] items-center mx-4`}
+                  className={`border text-[14px] p-2 rounded-lg shadow flex bg-[#223857] text-[#fff] items-center mx-4`}
                 >
                   <FaPlus className="mr-2" /> Add new
                 </button>
-                <select className={`border rounded-lg p-2 shadow`}>
+                <select className={`border rounded-lg p-2 shadow text-[14px]`}>
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
                   <option>Duration: Last year</option>
@@ -459,42 +462,40 @@ const TrailManagement = () => {
               </div>
             </div>
           </div>
-          <table className={`min-w-full rounded-lg shadow bg-white`}>
+          <table className={`min-w-full rounded-lg shadow bg-white`} style={{ width: '100%', tableLayout: 'fixed' }}>
             <thead>
               <tr>
-                <th className="p-4 text-[13px] text-center">Trail ID</th>
-                <th className="p-4 text-[13px] text-center">Student Name</th>
-                <th className="p-4 text-[13px] text-center">Email</th>
-                <th className="p-4 text-[13px] text-center">Mobile</th>
-                <th className="p-4 text-[13px] text-center">Country</th>
-                <th className="p-4 text-[13px] text-center">Course</th>
-                <th className="p-4 text-[13px] text-center">Preferred Teacher</th>
-                <th className="p-4 text-[13px] text-center">Time</th>
-                <th className="p-4 text-[13px] text-center">Evaluation Status</th>
-                <th className="p-4 text-[13px] text-center">Status</th>
-                <th className="p-4 text-[13px] text-center">Action</th>
-                <th
-                    className="shadow-md p-2 text-left font-medium text-gray-700"
-                >
-                </th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '24%' }}>Trail ID</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '15%' }}>Student Name</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '25%' }}>Email</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '12%' }}>Mobile</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '10%' }}>Country</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '10%' }}>Course</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '10%' }}>Preferred Teacher</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '10%' }}>Time</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '15%' }}>Evaluation Status</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '8%' }}>Status</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '10%' }}>Action</th>
+                {/* <th className=" p-2 text-left font-medium text-gray-700" style={{ width: '5%' }}>
+                </th> */}
               </tr>
             </thead>
             <tbody>
               {currentItems.length > 0 ? (
                 currentItems.map((item, index) => (
                   <tr key={item.studentId || index} className={`border-t`}>
-                    <td className="p-2 text-[13px] text-center">{item.studentId}</td>
-                    <td className="p-2 text-[13px] text-center">
+                    <td className="p-2 px-6 text-[11px] text-start">{item.studentId}</td>
+                    <td className="p-2 text-[11px] text-center">
                       {item.fname} {item.lname}
                     </td>
-                    <td className="p-2 text-[13px] text-center">{item.email}</td>
-                    <td className="p-2 text-[13px] text-center">{item.number}</td>
-                    <td className="p-2 text-[13px] text-center">{item.country}</td>
-                    <td className="p-2 text-[13px] text-center">{item.course}</td>
-                    <td className="p-2 text-[13px] text-center">{item.preferredTeacher}</td>
-                    <td className="p-2 text-[13px] text-center">{item.time}</td>
-                    <td className="p-2 text-[13px] text-center">
-                      <span className={`px-2 text-[13px] text-center py-1 rounded-full ${
+                    <td className="p-2 text-[11px] text-center">{item.email}</td>
+                    <td className="p-2 text-[11px] text-center">{item.number}</td>
+                    <td className="p-2 text-[11px] text-center">{item.country}</td>
+                    <td className="p-2 text-[11px] text-center">{item.course}</td>
+                    <td className="p-2 text-[11px] text-center">{item.preferredTeacher}</td>
+                    <td className="p-2 text-[11px] text-center">{item.time}</td>
+                    <td className="p-2 text-[11px] text-center">
+                      <span className={` text-[10px] text-center py-1 px-4 rounded-3xl ${
                         item.evaluationStatus === 'PENDING' 
                           ? 'bg-yellow-100 text-yellow-800' 
                           : 'bg-green-100 text-green-800'
@@ -502,8 +503,8 @@ const TrailManagement = () => {
                         {item.evaluationStatus ?? 'PENDING'}
                       </span>
                     </td>
-                    <td className="p-2 text-[13px] text-center">
-                    <span className={`px-2 text-[13px] text-center py-1 rounded-full ${
+                    <td className="p-2 text-[11px] text-center">
+                      <span className={`px-2 text-[11px] text-center py-1 rounded-2xl ${
                         item.status === 'Active' 
                           ? 'bg-yellow-100 text-yellow-800' 
                           : 'bg-green-100 text-green-800'
@@ -511,12 +512,12 @@ const TrailManagement = () => {
                         {item.status ?? 'Active'}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="p-2 px-8">
                       <button
                         onClick={() => handleEditClick(item)}
                         className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
                       >
-                        <FaEdit size={13}/>
+                        <FaEdit size={10}/>
                       </button>
                     </td>
                   </tr>
