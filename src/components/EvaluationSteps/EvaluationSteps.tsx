@@ -1446,7 +1446,7 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
         trialClassStatus: updatedStudentDatas.trialClassStatus,
         status: updatedStudentDatas.status,
         createdDate: updatedStudentDatas.createdDate,
-        createdBy: updatedStudentDatas.createdBy,
+        createdBy: updatedStudentDatas.academicCoach.name,
         updatedDate: new Date().toISOString(),
         updatedBy: "system", // or replace with the current user's email/ID
       };
