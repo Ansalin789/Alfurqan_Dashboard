@@ -802,7 +802,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
   ];
   const handleNextStep = () => {
     const updatedStudentData = {
-      ...studentData, // Retain existing data
+      ...studentData, 
       isLanguageChecked,
       isReadingChecked,
       isGrammarChecked,
@@ -814,7 +814,6 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
       expectedFinishingDate,
       subscriptionName,
       selectedHours,
-      selectedPlan,
     };
     nextStep(updatedStudentData); // Pass updated data to nextStep
   };
@@ -956,7 +955,8 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
         className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105"
         onClick={() => {
           if (selectedHours > 0) {
-            setSelectedPlan(plan.label); // Set the selected plan when clicked
+            setSelectedPlan(plan.label);
+            setsubscriptionName(plan.label); // Set the selected plan when clicked
           } else {
             alert('Please select preferred hours first'); // Alert if no hours are selected
           }
@@ -1051,14 +1051,8 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
 };
 
 
-
-
-
-
-
-
 // Step 6 Component
-const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; nextStep: () => void; evaluationData: any }) => {
+const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => void; nextStep: () => void; updatedStudentData:any }) => {
   const [guardianName, setGuardianName] = useState<string>('');
   const [guardianEmail, setGuardianEmail] = useState<string>('');
   const [guardianPhone, setGuardianPhone] = useState<string>('');
@@ -1066,38 +1060,20 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
   const [guardianCity, setGuardianCity] = useState<string>('');
   const [guardianLanguage, setGuardianLanguage] = useState<string>('');
   const [guardianTimeZone, setGuardianTimeZone] = useState<string>('');
-
-  const handleSubmit = async () => {
-    const postData = {
-      name: guardianName,
-      email: guardianEmail,
-      phone: guardianPhone,
-      country: guardianCountry,
-      city: guardianCity,
-      language: guardianLanguage,
-      timeZone: guardianTimeZone,
+    console.log(updatedStudentData);
+    const handleNextStep = () => {
+      const updatedStudentDatas = {
+        ...updatedStudentData,
+        guardianName,
+        guardianEmail,
+        guardianPhone,
+        guardianCountry,
+        guardianCity,
+        guardianLanguage,
+        guardianTimeZone,
+      };
+      nextStep(updatedStudentDatas); // Pass updated data to nextStep
     };
-
-    try {
-      const response = await fetch('http://localhost:5001/evaluation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postData),
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text(); // Get the error message from the response
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      // Proceed to the next step after successful submission
-      nextStep();
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
@@ -1113,7 +1089,7 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          Robert Baratheon
+         {updatedStudentData.firstName} &nbsp;{updatedStudentData.lastName}
         </div>
       </div>
 
@@ -1259,7 +1235,9 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
                   <span>Time Zone</span>
                 </span>
               </label>
-              <select className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
+              <select 
+                  value={guardianTimeZone}
+                  onChange={(e) => setGuardianTimeZone(e.target.value)}className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                              focus:bg-white/10 focus:border-white/20 focus:ring-2 
                              focus:ring-purple-500/20 transition-all duration-200">
                 <option value="" className="bg-gray-900">Select time zone</option>
@@ -1314,7 +1292,7 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
             className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg
                      hover:from-blue-600 hover:to-purple-600 transition-all duration-200
                      flex items-center space-x-2"
-            onClick={nextStep}
+            onClick={handleNextStep}
           >
             <span>Next</span>
             <span>→</span>
@@ -1326,7 +1304,8 @@ const Step6 = ({ prevStep, nextStep, evaluationData }: { prevStep: () => void; n
 };
 
 // Step 7 Component (Thank You Page)
-const Step7 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
+const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => void; nextStep: () => void;updatedStudentDatas:any }) => {
+  console.log(updatedStudentDatas);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative overflow-hidden">
       {/* Background Effects */}
@@ -1359,7 +1338,7 @@ const Step7 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          Robert Baratheon
+          {updatedStudentDatas.firstName} &nbsp; {updatedStudentDatas.lastName}
         </div>
       </div>
 
@@ -1367,7 +1346,7 @@ const Step7 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
       <div className="relative z-10 w-full max-w-4xl">
         <div className="flex items-center text-right justify-between mb-8">
         <button
-            onClick={prevStep}
+            onClick={()=>prevStep(updatedStudentDatas)}
             className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
                      bg-white/10 hover:bg-white/20 rounded-lg group"
           >
@@ -1409,26 +1388,71 @@ const Step7 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 };
 
 // Step 8 Component
-const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => void }) => {
-  const [evaluationData, setEvaluationData] = useState<any>(null);
+const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => void; nextStep: () => void;updatedStudentDatas:any }) => {
   const [classStatus, setClassStatus] = useState('Completed');
   const [studentStatus, setStudentStatus] = useState('Joined');
-
+   console.log(updatedStudentDatas);
   // Function to handle form submission
   const handleSubmit = async () => {
     try {
-      // Get student data from localStorage (assuming it was stored in Step2)
-      const studentData = localStorage.getItem('studentData');
-      
-      // Prepare the data to be sent
       const submitData = {
-        classStatus,
-        studentStatus,
-        studentData: studentData ? JSON.parse(studentData) : null,
-        // Add any other data you want to include
-        submittedAt: new Date().toISOString()
+        student: {
+          studentFirstName: updatedStudentDatas.firstName,
+          studentLastName: updatedStudentDatas.lastName,
+          studentEmail: updatedStudentDatas.email,
+          studentPhone: updatedStudentDatas.phoneNumber,
+          studentCountry: updatedStudentDatas.country,
+          studentCountryCode: updatedStudentDatas.countryCode,
+          learningInterest: updatedStudentDatas.learningInterest,
+          numberOfStudents: updatedStudentDatas.numberOfStudents,
+          preferredTeacher: updatedStudentDatas.preferredTeacher,
+          preferredFromTime: updatedStudentDatas.preferredFromTime,
+          preferredToTime: updatedStudentDatas.preferredToTime,
+          timeZone: updatedStudentDatas.timeZone,
+          referralSource: updatedStudentDatas.referralSource,
+          preferredDate: updatedStudentDatas.startDate,
+          evaluationStatus: updatedStudentDatas.evaluationStatus,
+          status: updatedStudentDatas.status,
+          createdDate: updatedStudentDatas.createdDate,
+          createdBy: updatedStudentDatas.createdBy,
+        },
+        isLanguageLevel: updatedStudentDatas.isLanguageChecked,
+        languageLevel: updatedStudentDatas.languageLevel,
+        isReadingLevel: updatedStudentDatas.isReadingChecked,
+        readingLevel: updatedStudentDatas.readingLevel,
+        isGrammarLevel: updatedStudentDatas.isGrammarChecked,
+        grammarLevel: updatedStudentDatas.grammarLevel,
+        hours: updatedStudentDatas.selectedHours,
+        subscription: {
+          subscriptionName: updatedStudentDatas.subscriptionName,
+        },
+        classStartDate: updatedStudentDatas.startDate,
+        classEndDate: updatedStudentDatas.classEndDate,
+        classStartTime: updatedStudentDatas.preferredFromTime,
+        classEndTime: updatedStudentDatas.preferredToTime,
+        accomplishmentTime: updatedStudentDatas.accomplishmentTime.toString(),
+        studentRate: updatedStudentDatas.studentRate,
+        expectedFinishingDate: updatedStudentDatas.expectedFinishingDate,
+        gardianName: updatedStudentDatas.guardianName,
+        gardianEmail: updatedStudentDatas.guardianEmail,
+        gardianPhone: updatedStudentDatas.guardianPhone.toString(),
+        gardianCity: updatedStudentDatas.guardianCity,
+        gardianCountry: updatedStudentDatas.guardianCountry,
+        gardianTimeZone: updatedStudentDatas.guardianTimeZone,
+        gardianLanguage: updatedStudentDatas.guardianLanguage,
+        assignedTeacher: updatedStudentDatas.assignedTeacher,
+        studentStatus: studentStatus,
+        classStatus: classStatus,
+        trialClassStatus: updatedStudentDatas.trialClassStatus,
+        status: updatedStudentDatas.status,
+        createdDate: updatedStudentDatas.createdDate,
+        createdBy: updatedStudentDatas.createdBy,
+        updatedDate: new Date().toISOString(),
+        updatedBy: "system", // or replace with the current user's email/ID
       };
-
+  
+      console.log("Payload being sent:", JSON.stringify(submitData, null, 2));
+  
       // Make POST request to your API
       const response = await fetch('http://localhost:5001/evaluation', {
         method: 'POST',
@@ -1437,25 +1461,26 @@ const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
         },
         body: JSON.stringify(submitData),
       });
-
+  
       if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error('Server error details:', errorDetails);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+  
       const result = await response.json();
       console.log('Status updated successfully:', result);
-
-      // Optional: Show success message
+  
       alert('Status updated successfully!');
-
-      // Optional: Move to next step or redirect
       nextStep();
-
+  
     } catch (error) {
       console.error('Error submitting status:', error);
       alert('Error updating status. Please try again.');
     }
   };
+  
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
@@ -1471,7 +1496,7 @@ const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          Robert Baratheon
+         {updatedStudentDatas.firstName} &nbsp;{updatedStudentDatas.lastName}
         </div>
       </div>
 
@@ -1576,7 +1601,8 @@ const Step8 = ({ prevStep, nextStep }: { prevStep: () => void; nextStep: () => v
 const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
   const [step, setStep] = useState(1);
   const [studentData, setStudentData] = useState<StudentData>(null);
-
+   const[updatedStudentData,setupdatedStudentData]=useState(null);
+   const[updatedStudentDatas,setupdatedStudentDatas]=useState(null);
   const totalSteps = 8;
 
   const nextStep = (data: any) => {
@@ -1584,7 +1610,12 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
     if (step === 2 && 3 && 4) {
       setStudentData(data); // Store studentData when moving to the next step
     }
-    
+    if(step === 5){
+      setupdatedStudentData(data);
+    }
+    if(step === 6 && 7 && 8){
+      setupdatedStudentDatas(data);
+    }
     if (step < totalSteps) {
       setStudentData(data);
       setStep((prev) => prev + 1);
@@ -1603,13 +1634,13 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
   return (
     <>
       {step === 1 && <Step1 nextStep={nextStep} />}
-      {step === 2 && <Step2 prevStep={prevStep} nextStep={nextStep} evaluationData={evaluationData} />}
+      {step === 2 && <Step2 prevStep={prevStep} nextStep={nextStep}  />}
       {step === 3 && <Step3 prevStep={prevStep} nextStep={nextStep} studentData={studentData}  />}
       {step === 4 && <Step4 prevStep={prevStep} nextStep={nextStep} studentData={studentData} />}
       {step === 5 && <Step5 prevStep={prevStep} nextStep={nextStep} studentData={studentData} />}
-      {step === 6 && <Step6 prevStep={prevStep} nextStep={nextStep} studentData={studentData} />}
-      {step === 7 && <Step7 prevStep={prevStep} nextStep={nextStep} />}
-      {step === 8 && <Step8 prevStep={prevStep} nextStep={nextStep} />}
+      {step === 6 && <Step6 prevStep={prevStep} nextStep={nextStep} updatedStudentData={updatedStudentData} />}
+      {step === 7 && <Step7 prevStep={prevStep} nextStep={nextStep} updatedStudentDatas={updatedStudentDatas} />}
+      {step === 8 && <Step8 prevStep={prevStep} nextStep={nextStep}  updatedStudentDatas={updatedStudentDatas}/>}
     </>
   );
 };
