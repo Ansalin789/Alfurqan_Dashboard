@@ -15,21 +15,38 @@ const HomePage = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount: 5000, currency: 'usd' }),
     });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
+    console.log('Fetch response:', data); // Log the response here
     console.log("Received clientSecret:", data.clientSecret);
     setClientSecret(data.clientSecret);
   };
   
   return (
-    <div>
-      <h1>Stripe Payment</h1>
-      <button onClick={createPaymentIntent}>Start Payment</button>
-      {clientSecret && (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+  <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+      Stripe Payment
+    </h1>
+    <button
+      onClick={createPaymentIntent}
+      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
+    >
+      Start Payment
+    </button>
+    {clientSecret && (
+      <div className="mt-6">
         <Elements stripe={stripePromise} options={{ clientSecret }}>
-<CheckoutForm  clientSecret={clientSecret} />
+          <CheckoutForm clientSecret={clientSecret} />
         </Elements>
-      )}
-    </div>
+      </div>
+    )}
+  </div>
+</div>
+
   );
 };
 
