@@ -6,7 +6,7 @@ import axios from 'axios';
 
 import { useParams } from 'next/navigation';
 import EvaluationPage from '@/app/evaluation/page';
-
+import { useRouter } from 'next/navigation';
 // Define the return type of the getAllUsers function
 interface User {
   trailId: string;
@@ -1389,6 +1389,7 @@ const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
 
 // Step 8 Component
 const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => void; nextStep: () => void;updatedStudentDatas:any }) => {
+  const router = useRouter();
   const [classStatus, setClassStatus] = useState('Completed');
   const [studentStatus, setStudentStatus] = useState('Joined');
    console.log(updatedStudentDatas);
@@ -1470,6 +1471,7 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
   
       const result = await response.json();
       console.log('Status updated successfully:', result);
+      router.push("/trailSection");
   
       alert('Status updated successfully!');
       nextStep();
