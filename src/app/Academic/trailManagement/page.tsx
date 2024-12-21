@@ -25,8 +25,7 @@ interface User {
   evaluationStatus?: string;
   city?: string;
   students?: number;
-  // comment?: string;
-  createdDate: Date;
+  comment?: string;
 }
 
 interface GetAllUsersResponse {
@@ -48,7 +47,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     }
 
     // Transform API data to match User interface
-    const transformedData = rawData.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; createdDate: string; }) => ({
+    const transformedData = rawData.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; }) => ({
       studentId: item._id,
       fname: item.firstName,
       lname: item.lastName,
@@ -60,7 +59,6 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
       date: new Date(item.startDate).toLocaleDateString(),
       time: item.preferredFromTime,
       evaluationStatus: item.evaluationStatus,
-      createdDate: new Date(item.createdDate),
     }));
 
     return {
@@ -226,7 +224,6 @@ const TrailManagement = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDuration, setSelectedDuration] = useState<string>('Last month');
 
   const router = useRouter();
   const handleSyncClick = () => {
@@ -409,22 +406,6 @@ const Pagination = () => {
       filtered = filtered.filter(user => user.evaluationStatus === filters.status);
     }
     
-    const currentDate = new Date();
-    const durationFilter = (user: User) => {
-      switch (selectedDuration) {
-        case 'Last month':
-          return user.createdDate >= new Date(currentDate.setMonth(currentDate.getMonth() - 1));
-        case 'Last week':
-          return user.createdDate >= new Date(currentDate.setDate(currentDate.getDate() - 7));
-        case 'Last year':
-          return user.createdDate >= new Date(currentDate.setFullYear(currentDate.getFullYear() - 1));
-        default:
-          return true;
-      }
-    };
-
-    filtered = filtered.filter(durationFilter);
-
     setFilteredUsers(filtered);
     setCurrentPage(1); // Reset to first page when filters change
   };
@@ -495,14 +476,10 @@ const Pagination = () => {
                 >
                   <FaPlus className="mr-2" /> Add new
                 </button>
-                <select
-                  className={`border rounded-lg p-2 shadow text-[14px]`}
-                  value={selectedDuration}
-                  onChange={(e) => setSelectedDuration(e.target.value)}
-                >
-                  <option value="Last month">Duration: Last month</option>
-                  <option value="Last week">Duration: Last week</option>
-                  <option value="Last year">Duration: Last year</option>
+                <select className={`border rounded-lg p-2 shadow text-[14px]`}>
+                  <option>Duration: Last month</option>
+                  <option>Duration: Last week</option>
+                  <option>Duration: Last year</option>
                 </select>
               </div>
             </div>
@@ -512,7 +489,7 @@ const Pagination = () => {
               <tr>
                 <th className="p-3 text-[12px] text-center" style={{ width: '24%' }}>Trail ID</th>
                 <th className="p-3 text-[12px] text-center" style={{ width: '15%' }}>Student Name</th>
-                <th className="p-3 text-[12px] text-center" style={{ width: '25%' }}>Email</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '35%' }}>Email</th>
                 <th className="p-3 text-[12px] text-center" style={{ width: '12%' }}>Mobile</th>
                 <th className="p-3 text-[12px] text-center" style={{ width: '10%' }}>Country</th>
                 <th className="p-3 text-[12px] text-center" style={{ width: '10%' }}>Course</th>

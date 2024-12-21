@@ -93,7 +93,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         referralSource: "Other" as "Friend" | "Social Media" | "E-Mail" | "Google" | "Other",
         startDate: formData.date,
-        evaluationStatus: (formData.evaluationStatus || "PENDING") as "PENDING" | "INPROGRESS" | "COMPLETED",
+        evaluationStatus: (formData.evaluationStatus ?? "PENDING") as "PENDING" | "INPROGRESS" | "COMPLETED",
         status: "Active" as "Active" | "Inactive" | "Deleted",
         createdBy: "SYSTEM",
         lastUpdatedBy: "SYSTEM",

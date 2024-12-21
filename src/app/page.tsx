@@ -103,7 +103,7 @@ export default function SignInSignUp(): JSX.Element {
         setError('Login failed. Please try again.');
       }
     }
-  }; 
+  };
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">

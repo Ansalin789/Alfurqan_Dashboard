@@ -438,10 +438,10 @@ const TrailManagement = () => {
 
   return (
     <BaseLayout1>
-      <div className={`min-h-screen p-4 bg-[#EDEDED] mt-5`}>
-        <div className="flex justify-between items-center mb-6">
+      <div className={`min-h-screen p-1 bg-[#EDEDED]`}>
+        <div className="flex justify-between items-center">
           <div className='flex items-center space-x-2'>
-            <h2 className="text-2xl font-semibold">Student List</h2>
+            <h2 className="text-[16px] font-semibold">Student List</h2>
           </div>
           {/* <div className="flex items-center space-x-4">
             <ToggleSwitch darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
@@ -457,7 +457,7 @@ const TrailManagement = () => {
             </div>
           </div> */}
         </div>
-        <div className={`p-6 rounded-lg bg-[#EDEDED] overflow-y-scroll h-[600px]`}>
+        <div className={`p-4 rounded-lg bg-[#EDEDED]`}>
           <div className="flex justify-between items-center mb-4">
             <div className="flex flex-1 space-x-4 items-center justify-between">
               <div className='flex'>
@@ -494,14 +494,14 @@ const TrailManagement = () => {
                 <th className="p-4 text-[13px] text-center">
                   <input type="checkbox" onChange={(e) => handleSelectAll(e.target.checked)} />
                 </th>
-                <th className="p-4 text-[13px] text-center">Student ID</th>
-                <th className="p-4 text-[13px] text-center">Date of Joining</th>
-                <th className="p-4 text-[13px] text-center">Student Name</th>
-                <th className="p-4 text-[13px] text-center">Teacher Name</th>
-                <th className="p-4 text-[13px] text-center">Contact</th>
-                <th className="p-4 text-[13px] text-center">Scheduled Classes</th>
-                <th className="p-4 text-[13px] text-center">Level</th>
-                <th className="p-4 text-[13px] text-center">Action</th>
+                <th className="p-4 text-[12px] text-center">Student ID</th>
+                <th className="p-4 text-[12px] text-center">Date of Joining</th>
+                <th className="p-4 text-[12px] text-center">Student Name</th>
+                <th className="p-4 text-[12px] text-center">Teacher Name</th>
+                <th className="p-4 text-[12px] text-center">Contact</th>
+                <th className="p-4 text-[12px] text-center">Scheduled Classes</th>
+                <th className="p-4 text-[12px] text-center">Level</th>
+                <th className="p-4 text-[12px] text-center">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -520,7 +520,7 @@ const TrailManagement = () => {
                     <td className="p-2 text-[13px] text-center">{item.number}</td>
                     <td className="p-2 text-[13px] text-center"></td>
                     <td className="p-2 text-[13px] text-center"></td>
-                    <td className="p-4">
+                    <td className="p-2">
                       <button
                         className="bg-gray-800 hover:cursor-pointer text-center text-white px-3 py-1 rounded-full shadow hover:bg-gray-900"onClick={handleSyncClick}
                       >
@@ -531,7 +531,7 @@ const TrailManagement = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={9} className="p-4 text-center">
+                  <td colSpan={9} className="p-2 text-center">
                     No data available
                   </td>
                 </tr>

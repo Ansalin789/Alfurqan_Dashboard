@@ -89,7 +89,7 @@ const AddEvaluationModal: React.FC<AddEvaluationModalProps> = ({
       studentPhone: 0,
       studentCountry: '',
       studentCity: '',
-      studentLanguage: '',
+      // studentLanguage: '',
       studentCountryCode: '',
       learningInterest: "Quran",
       numberOfStudents: 0,
@@ -200,23 +200,23 @@ gardianLanguage: '',
         },
       }));
     } else {
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value,
-        },
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+        if (name.includes('.')) {
+          const [parent, child] = name.split('.');
+          setFormData((prev) => ({
+            ...prev,
+            [parent]: {
+              ...prev[parent],
+              [child]: value,
+            },
+          }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+          }));
+          }
       }
-    }
-  };
+    };
 
   const formatTimeToAMPM = (time: string): string => {
     if (!time) return '';
@@ -337,7 +337,7 @@ gardianLanguage: '',
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
             </div>
-            <div className="form-group">
+            {/* <div className="form-group">
               <label className="block mb-1 text-xs font-medium text-gray-700">Language</label>
               <input
                 type="text"
@@ -346,7 +346,7 @@ gardianLanguage: '',
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
-            </div>
+            </div> */}
             <div className="form-group">
               <label className="block mb-1 text-xs font-medium text-gray-700">Time Zone</label>
               <input
@@ -370,7 +370,7 @@ gardianLanguage: '',
             <div className="form-group">
               <label className="block mb-1 text-xs font-medium text-gray-700">Course</label>
               <select
-                name="student.learningInterest"
+                name="Select Course"
                 value={formData.student.learningInterest}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
@@ -385,7 +385,7 @@ gardianLanguage: '',
             <div className="form-group">
               <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
               <select
-                name="student.preferredTeacher"
+                name="Select Teacher"
                 value={formData.student.preferredTeacher}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
@@ -450,8 +450,8 @@ gardianLanguage: '',
               <label className="block mb-1 text-xs font-medium text-gray-700">Reachedule Date</label>
               <input
                 type="date"
-                name="student.preferredToTime"
-                value={formData.student.preferredToTime}
+                name="student.preferredDate"
+                value={formData.student.preferredDate}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />

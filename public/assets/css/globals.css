@@ -44,12 +44,15 @@ body {
 }
 
 .sidebar {
-  height: 100%;
+  width: 100%;
   background-color: #223857;
   padding: 8px;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border-radius: 0 2px 2px 0;
+  overflow: hidden;
+  transition: width 0.3s;
 }
+
 
 .sidebar__top {
   display: flex;
@@ -124,12 +127,6 @@ body {
 
 .sidebar__wrapper {
   display: flex;
-}
-
-.sidebar {
-  width: 100%;
-  transition: width 0.3s;
-  overflow: hidden;
 }
 
 /* .sidebar:hover {
@@ -714,7 +711,6 @@ body {
   max-width: 500px;
   margin: 0 auto;
 }
-
 
 /* .sidebar__logo {
   margin-bottom: 10px;

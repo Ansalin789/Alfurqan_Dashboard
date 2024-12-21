@@ -228,19 +228,22 @@ const trailSection = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false); 
   const [formData, setFormData] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   
 
 
     
   const router = useRouter();
-  const handleSyncClick = () => {
+  const handleSyncClick = async () => {
+    setIsLoading(true);
     if (router) {
-    router.push('trailManagement');
+      await router.push('trailManagement');
     } else {
-    console.error('Router is not available');
+      console.error('Router is not available');
     }
-};
+    setIsLoading(false);
+  };
     
     
 const indexOfLastItem = currentPage * itemsPerPage;
@@ -522,6 +525,11 @@ const handleClick = async (id: string) => {
 
   return (
     <BaseLayout1>
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="text-white">Loading...</div>
+        </div>
+      )}
       <div className={`min-h-screen p-4 bg-[#EDEDED]`}>
         <div className="flex justify-between items-center">
             <div className='flex items-center space-x-2'>

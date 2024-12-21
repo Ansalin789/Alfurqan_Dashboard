@@ -31,6 +31,7 @@ const MultiStepForm = () => {
     const [referral, setReferral] = useState("");
     const [phoneNumber, setPhoneNumber] = useState(0);
     const [country, setCountry] = useState("");
+    const [city, setCity] = useState("");
     const [countryCode, setCountryCode] = useState("");
 
     // Learning Interest States
@@ -82,12 +83,12 @@ const MultiStepForm = () => {
         setPreferredFromTime("");
         
         // Automatically set preferredToTime when a from time is selected
-        const handleFromTimeSelection = (fromTime: string) => {
-            const fromTimeIndex = defaultTimes.indexOf(fromTime);
-            if (fromTimeIndex !== -1 && fromTimeIndex + 1 < defaultTimes.length) {
-                setPreferredToTime(defaultTimes[fromTimeIndex + 1]);
-            }
-        };
+        // const handleFromTimeSelection = (fromTime: string) => {
+        //     const fromTimeIndex = defaultTimes.indexOf(fromTime);
+        //     if (fromTimeIndex !== -1 && fromTimeIndex + 1 < defaultTimes.length) {
+        //         setPreferredToTime(defaultTimes[fromTimeIndex + 1]);
+        //     }
+        // };
     };
 
     const validateStep1 = () => {
@@ -168,6 +169,7 @@ const MultiStepForm = () => {
                 phoneNumber:  Number(phoneNumber),
                 country: country.length >= 3 ? country : country.padEnd(3, ' '),
                 countryCode: countryCode.toLowerCase(),
+                city: city,
                 learningInterest: learningInterest[0],
                 numberOfStudents: Number(numberOfStudents),
                 preferredTeacher: preferredTeacher,
@@ -193,7 +195,7 @@ const MultiStepForm = () => {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify(formattedData),
+                body: JSON.stringify(formattedData,null,2),
                 mode: 'cors',
             });
 
@@ -285,8 +287,38 @@ const MultiStepForm = () => {
         setCountryCode(selectedCountryCode);
     };
 
+    const formatTime = (hours: number, minutes: number): string => {
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12; // Convert to 12-hour format
+        const formattedMinutes = minutes.toString().padStart(2, '0');
+        return `${formattedHours}:${formattedMinutes} ${period}`;
+    };
+
+    const calculatePreferredToTime = (fromTime: string) => {
+        const timeParts = fromTime.split(':');
+        if (timeParts.length !== 2) return '12:00 AM'; // Default to '12:00 AM' if format is incorrect
+
+        const [hourPart, minutePart] = timeParts[0].trim().split(' ');
+        const hours = parseInt(hourPart, 10);
+        const minutes = parseInt(timeParts[1], 10);
+
+        if (isNaN(hours) || isNaN(minutes)) return '12:00 AM'; // Default to '12:00 AM' if parsing fails
+
+        const totalMinutes = hours * 60 + minutes + 30; // Add 30 minutes
+        const newHours = Math.floor(totalMinutes / 60) % 24; // Ensure hours wrap around after 24
+        const newMinutes = totalMinutes % 60;
+
+        return formatTime(newHours, newMinutes); // Format the time correctly
+    };
+
+    const handlePreferredFromTimeClick = (time: string) => {
+        setPreferredFromTime(time);
+        const toTime = calculatePreferredToTime(time);
+        setPreferredToTime(toTime);
+    };
+
     return (
-        <div className="max-w-[40%] mx-auto justify-center mt-10 p-6 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] bg-gradient-to-r from-[#dce5f9] via-[#fbfcff79] to-[#dce5f9]">
+        <div className="max-w-[40%] mx-auto justify-center mt-10 p-6 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] bg-gradient-to-r from-[#e3e8f4] via-[#94b3fa52] to-[#e3e8f4]">
             <div className="flex justify-between items-center mb-4">
                 <div className="text-sm font-medium">Contact</div>
                 <div className="text-sm font-medium">{step * 33}%</div>
@@ -302,48 +334,64 @@ const MultiStepForm = () => {
                             <Image src="/assets/images/alf.png" alt="Logo" width={160} height={160} className="mr-10" />
                         </div>
                         <div className="flex gap-6 mb-6">
+                            <div>
+                            <label htmlFor="First Name" className='text-[14px]'>First Name</label>
                             <input
                                 type="text"
-                                placeholder="First Name * (min. 3 characters)"
+                                placeholder="First Name"
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
                                 required
                                 minLength={3}
-                                className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 ${
-                                    firstName.trim().length < 3 ? 'border-blue-500' : ''
-                                }`}
+                                className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100`}
                             />
+                            </div>
+                            
+                            
+                            <div>
+                            <label htmlFor="Last Name" className='text-[14px]'>Last Name</label>
                             <input
                                 type="text"
-                                placeholder="Last Name * (min. 3 characters)"
+                                placeholder="Last Name"
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
                                 required
                                 minLength={3}
-                                className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 ${
-                                    lastName.trim().length < 3 ? 'border-blue-500' : ''
-                                }`}
+                                className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100`}
                             />
+                            </div>
                         </div>
                         <div className="flex gap-6 mb-6">
-                            <input
-                                type="email"
-                                placeholder="Email Address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 w-1/2"
-                            />
-                            <input
-                                type="text"
-                                placeholder="Referral Code"
-                                value={referral}
-                                onChange={(e) => setReferral(e.target.value)}
-                                className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 w-1/2"
-                            />
+                            <div>
+                                <label htmlFor="Email" className='text-[14px]'>Email</label><br />
+                                <input
+                                    type="email"
+                                    placeholder="Email Address"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="First Name" className='text-[14px]'>city</label>
+                                <input
+                                    type="text"
+                                    placeholder="City"
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                    required
+                                    minLength={3}
+                                    className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100`}
+                                />
+                            </div>
                         </div>
+                        
                         <div className="flex gap-6 mb-6">
+                            
                             <div className="w-1/2">
+                                <label htmlFor="Phone Number" className='text-[14px]'>Phone Number</label>
                                 <PhoneInput
                                     country={countryCode.toLowerCase()}
                                     value={phoneNumber}
@@ -356,12 +404,13 @@ const MultiStepForm = () => {
                                 />
                             </div>
                             <div className="w-1/2">
+                                <label htmlFor="Country" className='text-[14px]'>Country</label>
                                 <select
-                                    className="w-full p-3 border rounded appearance-none focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
+                                    className="w-full p-3 text-[13px] border rounded appearance-none focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
                                     value={country}
                                     onChange={handleCountryChange}
                                 >
-                                    <option value="">Please Select Your Country</option>
+                                    <option value="" className='text-[12px]'>Please Select Your Country</option>
                                     {getCountries().map((country) => (
                                         <option key={country} value={country}>
                                             {en[country]}
@@ -369,7 +418,19 @@ const MultiStepForm = () => {
                                     ))}
                                 </select>
                             </div>
+                            
                         </div>
+                            
+                            <div>
+                                <label htmlFor="Referral Code" className='text-[14px]'>Referral Code</label><br />
+                                <input
+                                type="text"
+                                placeholder="Referral Code"
+                                value={referral}
+                                onChange={(e) => setReferral(e.target.value)}
+                                className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 w-1/2"
+                            />
+                            </div>
                         <button
                             type="button"
                             onClick={nextStep}
@@ -558,7 +619,6 @@ const MultiStepForm = () => {
                                     }
                                 />
                             </div>
-
                             {/* Available Times Section */}
                             <div className="p-2 rounded-[20px] shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]">
                                 <h3 className="text-[15px] text-center align-middle font-semibold mb-4 text-[#293552] p-2">
@@ -573,7 +633,20 @@ const MultiStepForm = () => {
                                                 <button
                                                     key={time}
                                                     type="button"
-                                                    onClick={() => setPreferredFromTime(time)}
+                                                    value={preferredFromTime}
+                                                    onClick={() => {
+                                                        const fromTime = time;
+
+                                                        // Check if fromTime is a valid string
+                                                        if (typeof fromTime === 'string' && fromTime.includes(':')) {
+                                                            setPreferredFromTime(fromTime);
+                                                            const toTime = calculatePreferredToTime(fromTime);
+                                                            setPreferredToTime(toTime);
+                                                        } else {
+                                                            console.error('Invalid fromTime format:', fromTime);
+                                                            // Optionally, handle the error (e.g., show a message to the user)
+                                                        }
+                                                      }}
                                                     className={`p-1 rounded-lg transition-all duration-200 ${
                                                     preferredFromTime === time 
                                                         ? 'bg-[#293552] text-white shadow-lg transform scale-100 p-4 text-[10px]' 
@@ -586,7 +659,7 @@ const MultiStepForm = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className=''>
+                                    {/* <div className=''>
                                         <p className="text-sm font-medium mb-2">To</p>
                                         <div className="max-h-[300px] overflow-y-auto scrollbar-hide">
                                             <div className="grid grid-cols-1 gap-3 text-[10px]">
@@ -606,7 +679,7 @@ const MultiStepForm = () => {
                                                 ))}
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         </div>
