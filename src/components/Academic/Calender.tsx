@@ -139,8 +139,9 @@
 //     </div>
 //   );
 // };
-
 // export default Academic;
+
+
 'use client';
 import React, { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
@@ -166,14 +167,15 @@ const Academic: React.FC = () => {
           end: new Date(item.scheduledEndDate),
         }));
         setEvents(mappedEvents);
+        console.log("Fetched Events: ", mappedEvents);
       })
       .catch((error) => {
         console.error('Error fetching data: ', error);
       });
   }, []);
 
-  const isMeetingDate = (date: Date) =>
-    events.some((event) => {
+  const isMeetingDate = (date: Date) => {
+    return events.some((event) => {
       const eventStart = new Date(event.start);
       return (
         eventStart.getFullYear() === date.getFullYear() &&
@@ -181,6 +183,7 @@ const Academic: React.FC = () => {
         eventStart.getDate() === date.getDate()
       );
     });
+  };
 
   return (
     <div className="bg-white p-6 rounded shadow-lg">
@@ -197,8 +200,23 @@ const Academic: React.FC = () => {
           next2Label={null}
           prev2Label={null}
           showNeighboringMonth={false}
-          tileClassName={({ date }) =>
-            isMeetingDate(date) ? "highlighted" : "blue"
+          tileContent={({ date, view }) =>
+            view === 'month' && isMeetingDate(date) ? (
+              <div
+                style={{
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {date.getDate()}
+              </div>
+            ) : null
           }
         />
       </a>
@@ -207,3 +225,4 @@ const Academic: React.FC = () => {
 };
 
 export default Academic;
+
