@@ -224,6 +224,10 @@ const TrailManagement = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  console.log(setItemsPerPage);
 
   const router = useRouter();
   const handleSyncClick = () => {
@@ -234,10 +238,7 @@ const TrailManagement = () => {
     }
 };
 
-const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-const [currentPage, setCurrentPage] = useState(1);
-const [itemsPerPage, setItemsPerPage] = useState(10);
-console.log(setItemsPerPage);
+
 
 
 const indexOfLastItem = currentPage * itemsPerPage;
@@ -435,7 +436,7 @@ const Pagination = () => {
   if (errorMessage) {
     return (
       <BaseLayout1>
-        <div className="min-h-screen p-4">{errorMessage}</div>
+        <div className="min-h-screen p-2">{errorMessage}</div>
       </BaseLayout1>
     );
   }
@@ -445,7 +446,7 @@ const Pagination = () => {
       <div className={`min-h-screen p-4 bg-[#EDEDED]`}>
         <div className="flex justify-between items-center">
             <div className='flex items-center space-x-2'>
-              <h2 className="text-[20px] font-semibold">Scheduled Evaluation Session</h2>
+              <h2 className="text-[18px] font-semibold">Scheduled Evaluation Session</h2>
               <button className="bg-gray-800 text-white p-[4px] rounded-full shadow-2xl" onClick={handleSyncClick}>
                 <FaSyncAlt />
               </button>

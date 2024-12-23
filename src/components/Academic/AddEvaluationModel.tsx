@@ -27,7 +27,7 @@ interface User {
     numberOfStudents: number;
     preferredTeacher: "Male" | "Female" | "Either";
     preferredFromTime: string;
-    preferredToTime: string;
+    preferredToTime?: string;
     timeZone: string;
     referralSource: "Friend" | "Social Media" | "E-Mail" | "Google" | "Other";
     preferredDate: string;
@@ -149,7 +149,7 @@ gardianLanguage: '',
           studentEmail: formData.student.studentEmail.trim().toLowerCase(),
           studentPhone: Number(formData.student.studentPhone),
           preferredFromTime: formatTimeToAMPM(formData.student.preferredFromTime),
-          preferredToTime: formatTimeToAMPM(formData.student.preferredToTime),
+          // preferredToTime: formatTimeToAMPM(formData.student.preferredToTime),
           createdDate: new Date().toISOString(),
         },
         hours: Number(formData.hours),
@@ -376,7 +376,7 @@ gardianLanguage: '',
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
                 required
               >
-                <option value="">Select Course</option>
+                <option value="Select Course">Select Course</option>
                 <option value="Quran">Quran</option>
                 <option value="Islamic Studies">Islamic Studies</option>
                 <option value="Arabic">Arabic</option>
@@ -428,7 +428,7 @@ gardianLanguage: '',
               <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Time</label>
               <input
                 type="time"
-                name="student.preferredFromTime"
+                name="time"
                 value={formData.student.preferredFromTime}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
@@ -446,7 +446,7 @@ gardianLanguage: '',
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
             </div>
-            <div className="form-group">
+            {/* <div className="form-group">
               <label className="block mb-1 text-xs font-medium text-gray-700">Reachedule Date</label>
               <input
                 type="date"
@@ -455,7 +455,7 @@ gardianLanguage: '',
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
-            </div>
+            </div> */}
             <div className="form-group">
               <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Package</label>
               <select

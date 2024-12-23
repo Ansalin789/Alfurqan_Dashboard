@@ -12,6 +12,7 @@ import Countries from '@/components/Academic/Countries';
 import Teachers from '@/components/Academic/Teachers';
 import Calender from '@/components/Academic/Calender';
 import UpcomingClasses from '@/components/Academic/UpcommingClasses';
+import Dashboardevaluation from '@/components/Academic/Dashboardevaluation';
 
 
 // Register Chart.js components
@@ -60,7 +61,7 @@ export default function Academic() {
               </div>
             
 
-              <div className="col-span-12 bg-[#CED4DC] p-4 rounded-[30px] shadow mb-2">
+              {/* <div className="col-span-12 bg-[#CED4DC] p-4 rounded-[30px] shadow mb-2">
                 <h3 className="text-[15px] font-medium ml-4">Student Evaluation</h3>
                 <table className="w-full mt-2">
                   <thead>
@@ -117,7 +118,11 @@ export default function Academic() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </div> */}
+              <Dashboardevaluation />
+
+
+
               
             </main>
           </div>

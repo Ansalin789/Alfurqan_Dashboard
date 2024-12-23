@@ -19,7 +19,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret }) => {
     if (!stripe || !elements) return;
 
     const cardElement = elements.getElement(CardElement);
-    console.log("cardElement>>>>", cardElement);
+    console.log('Card Element:', elements.getElement(CardElement));
 
     const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
@@ -37,13 +37,31 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+    onSubmit={handleSubmit}
+    className="max-w-md mx-auto p-6 border border-gray-300 rounded-lg shadow-lg bg-white flex flex-col gap-4"
+  >
+    <div
+      className="p-3 border border-gray-300 rounded focus-within:border-blue-500 bg-gray-50 transition-colors"
+    >
       <CardElement />
-      <button type="submit" disabled={!stripe || loading}>
-        {loading ? 'Processing...' : 'Pay'}
-      </button>
-      {message && <p>{message}</p>}
-    </form>
+    </div>
+  
+    <button
+      type="submit"
+      disabled={!stripe || loading}
+      className={`w-full py-2 px-4 rounded text-white font-bold transition-colors ${
+        !stripe || loading
+          ? 'bg-gray-400 cursor-not-allowed'
+          : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
+      }`}
+    >
+      {loading ? 'Processing...' : 'Pay'}
+    </button>
+  
+    {message && <p className="text-center text-sm text-gray-700">{message}</p>}
+  </form>
+  
   );
 };
 

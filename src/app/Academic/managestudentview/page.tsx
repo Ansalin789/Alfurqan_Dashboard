@@ -61,6 +61,10 @@ const ManageStudentView = () => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
 
+  const handleReschedule = () => {
+    router.push('/Academic/studentreschedule');
+  };
+
   return (
     <BaseLayout1>
       <div className="flex flex-col md:flex-row pt-14 pl-4 min-h-screen">
@@ -94,7 +98,7 @@ const ManageStudentView = () => {
               <Image
                 src="/assets/images/proff.jpg"
                 alt="Profile"
-                className="rounded-full justify-center align-middle text-center ml-28 w-24 h-24 mb-4 mt-[45px]"
+                className="rounded-full justify-center align-middle text-center ml-20 w-24 h-24 mb-4 mt-[45px]"
                 width={150}
                 height={150}
               />
@@ -251,10 +255,11 @@ const ManageStudentView = () => {
                               <div className="py-1">
                                 <button
                                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  onClick={() => {
-                                    // Add reschedule logic here
-                                    setActiveDropdown(null);
-                                  }}
+                                  // onClick={() => {
+                                  //   // Add reschedule logic here
+                                  //   setActiveDropdown(null);
+                                  // }}
+                                  onClick={handleReschedule}
                                 >
                                   Reschedule
                                 </button>
@@ -331,11 +336,10 @@ const ManageStudentView = () => {
             <div>
               {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
                 <div key={day} className="flex items-center mb-2">
-                  <div className='border-1 p-2 rounded-xl border-gray-950 bg-[#D4D6D9] flex'>
+                  <div className='flex items-center border-1 p-2 rounded-xl border-gray-950 bg-[#D4D6D9]'>
                     <input type="checkbox" className="form-checkbox mr-2 rounded-xl text-[11px]" />
                     <label className="block font-medium text-gray-700 rounded-xl text-[11px]">{day}</label>
                   </div>
-                  
                   <input type="time" className="form-input p-2 bg-[#D4D6D9] rounded-xl text-[11px] ml-4" />
                   <input type="number" className="form-input w-[75px] text-center ml-4 text-[11px] p-2 bg-[#D4D6D9] rounded-xl" placeholder="Duration" />
                 </div>
