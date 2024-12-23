@@ -1,7 +1,15 @@
 import React from 'react';
 import Modal from 'react-modal';
 
-const FilterModal = ({ isOpen, onClose, onApplyFilters, users }) => {
+// Define the props interface
+interface FilterModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onApplyFilters: (filters: { country: string; course: string; teacher: string; status: string; }) => void;
+    users: User[]; // Assuming User is imported from your types file
+}
+
+const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilters, users }) => {
     // Modal logic
     return (
         <Modal isOpen={isOpen} onRequestClose={onClose}>

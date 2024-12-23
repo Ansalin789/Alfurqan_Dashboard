@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
@@ -7,6 +7,7 @@ import BaseLayout1 from '@/components/BaseLayout1';
 
 import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
+import FilterModal from './FilterModal'; // Adjust the import path as necessary
 
 // Updated function to fetch users from the new API endpoint
 const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: string}> => {
@@ -73,147 +74,6 @@ const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: s
     };
   }
 };
-
-// Move FilterModal outside of the TrailManagement component
-const FilterModal = ({ 
-  isOpen, 
-  onClose,
-  onApplyFilters, 
-  users 
-}: { 
-  isOpen: boolean;  
-  onClose: () => void; 
-  onApplyFilters: (filters: { country: string; course: string; teacher: string; status: string; }) => void;
-  users: User[];
-}) => {
-  const [filters, setFilters] = useState({
-    country: '',
-    course: '',
-    teacher: '',
-    status: ''
-  });
-
-    // Get unique values for each filter
-    const uniqueCountries = Array.from(new Set(users.map(user => user.country)));
-    const uniqueCourses = Array.from(new Set(users.map(user => user.course)));
-    const uniqueTeachers = Array.from(new Set(users.map(user => user.preferredTeacher)));
-  
-    const handleApply = () => {
-      onApplyFilters(filters);
-      onClose();
-    };
-  
-    const handleReset = () => {
-      setFilters({
-        country: '',
-        course: '',
-        teacher: '',
-        status: ''
-      });
-    };
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onRequestClose={onClose}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-lg w-[500px]"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Filter Options</h2>
-          <button 
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ×
-          </button>
-        </div>
-  
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Country
-            </label>
-            <select
-              className="w-full p-2 border rounded-lg"
-              value={filters.country}
-              onChange={(e) => setFilters({...filters, country: e.target.value})}
-            >
-              <option value="">All Countries</option>
-              {uniqueCountries.map((country) => (
-                <option key={country} value={country}>{country}</option>
-              ))}
-            </select>
-          </div>
-  
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Course
-            </label>
-            <select
-              className="w-full p-2 border rounded-lg"
-              value={filters.course}
-              onChange={(e) => setFilters({...filters, course: e.target.value})}
-            >
-              <option value="">All Courses</option>
-              {uniqueCourses.map((course) => (
-                <option key={course} value={course}>{course}</option>
-              ))}
-            </select>
-          </div>
-  
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Teacher
-            </label>
-            <select
-              className="w-full p-2 border rounded-lg"
-              value={filters.teacher}
-              onChange={(e) => setFilters({...filters, teacher: e.target.value})}
-            >
-              <option value="">All Teachers</option>
-              {uniqueTeachers.map((teacher) => (
-                <option key={teacher} value={teacher}>{teacher}</option>
-              ))}
-            </select>
-          </div>
-  
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select
-              className="w-full p-2 border rounded-lg"
-              value={filters.status}
-              onChange={(e) => setFilters({...filters, status: e.target.value})}
-            >
-              <option value="">All Statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="COMPLETED">Completed</option>
-            </select>
-          </div>
-  
-          <div className="flex justify-end space-x-4 mt-6">
-            <button
-              onClick={handleReset}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-            >
-              Reset
-            </button>
-            <button
-              onClick={handleApply}
-              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-blue-700"
-            >
-              Apply Filters
-            </button>
-          </div>
-        </div>
-      </Modal>
-    );
-  };
-
-
-
 
 const trailSection = () => {
   const [users, setUsers] = useState<User[]>([]);
