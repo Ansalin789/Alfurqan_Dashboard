@@ -59,70 +59,8 @@ export default function Academic() {
               <div className="col-span-3 grid grid-cols-3 gap-4 p-0">
                 <Teachers />
               </div>
-            
 
-              {/* <div className="col-span-12 bg-[#CED4DC] p-4 rounded-[30px] shadow mb-2">
-                <h3 className="text-[15px] font-medium ml-4">Student Evaluation</h3>
-                <table className="w-full mt-2">
-                  <thead>
-                    <tr className="text-center border-b text-[13px]">
-                      <th className="p-2">Trail</th>
-                      <th className="p-2">Name</th>
-                      <th className="p-2">Mobile</th>
-                      <th className="p-2">Country</th>
-                      <th className="p-2">Preferred Teacher</th>
-                      <th className="p-2">Date</th>
-                      <th className="p-2">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      {
-                        id: 1,
-                        name: 'Ansalin',
-                        task: '9344879988',
-                        date: 'April 30, 2024',
-                        action: 'Active',
-                      },
-                      {
-                        id: 2,
-                        name: 'Gowtham',
-                        task: '9344349988',
-                        date: 'May 5, 2024',
-                        action: 'Not Viewed',
-                      },
-                      {
-                        id: 3,
-                        name: 'Vaishak',
-                        task: '8944879988',
-                        date: 'April 29, 2024',
-                        action: 'Reviewing',
-                      },
-                      {
-                        id: 4,
-                        name: 'Bharath',
-                        task: '9894879988',
-                        date: 'May 10, 2024',
-                        action: 'Not Viewed',
-                      },
-                    ].map((item) => (
-                      <tr key={item.id} className="border-b text-[11px] text-center">
-                        <td className="p-2">{item.id}</td>
-                        <td className="p-2">{item.name}</td>
-                        <td className="p-2">{item.task}</td>
-                        <td className="p-2">{item.date}</td>
-                        <td className="p-2">{item.action}</td>
-                        <td className="p-2">{item.action}</td>
-                        <td className="p-2">{item.action}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div> */}
               <Dashboardevaluation />
-
-
-
               
             </main>
           </div>

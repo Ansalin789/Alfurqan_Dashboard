@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FiCalendar, FiMoreVertical } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
-import AddScheduleModal from './AddScheduleModel'; 
 
 interface Class {
   name: string;
@@ -19,7 +18,6 @@ const ScheduledClasses = () => {
   const [activeTab, setActiveTab] = useState('scheduled');
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);  // State to control modal visibility
   const dropdownRef = useRef<HTMLTableDataCellElement | null>(null);
   const itemsPerPage = 10;
 
@@ -53,7 +51,13 @@ const ScheduledClasses = () => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
 
-
+  const handleReschedule = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    router.push('/Academic/teachereschedule');
+    setTimeout(() => {
+      setActiveDropdown(null);
+    }, 100);
+  };
 
   const handleClickOutside = (event: MouseEvent) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -136,9 +140,30 @@ const ScheduledClasses = () => {
                       <div className="py-1">
                         <button
                           className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsModalOpen(true)}  // Open modal on click
+                          onClick={(event) => {
+                            handleReschedule(event);
+                            setActiveDropdown(null);
+                          }}
                         >
-                          Add new Schedule
+                          Reschedule
+                        </button>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Pause Class
+                        </button>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Resume Class
+                        </button>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Cancel
                         </button>
                       </div>
                     </div>
@@ -149,23 +174,25 @@ const ScheduledClasses = () => {
           </tbody>
         </table>
 
-        <div className="flex justify-end mt-4 space-x-2">
-          {Array.from({ length: totalPages }).map((_, index) => (
-            <button 
-              key={index}
-              className={`px-2 py-1 text-[11px] rounded-lg ${
-                currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-black'
-              }`}
-              onClick={() => setCurrentPage(index + 1)}
-            >
-              {index + 1}
-            </button>
-          ))}
+        <div className="flex justify-between items-center mt-1">
+          <span className="text-[11px]">
+            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, activeTab === 'scheduled' ? 5 : completedClasses.length)} of {activeTab === 'scheduled' ? 5 : completedClasses.length} entries
+          </span>
+          <div className="flex space-x-2">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i + 1}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`px-2 py-1 text-[11px] rounded-[3px] ${
+                  currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-300'
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* Add the modal component */}
-      <AddScheduleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };

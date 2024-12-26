@@ -52,8 +52,12 @@ const ManageTeacher: React.FC = () => {
     fetchTeachers();
   }, []);
 
-  const handleViewStudentList = () => {
-    router.push('/Academic/viewstudentlist');
+  const handleViewTeachersList = () => {
+    router.push('/Academic/viewteacherslist');
+  };
+
+  const handleViewTeacherSchedule = () => {
+    router.push('/Academic/viewTeacherSchedule');
   };
 
   const toggleMenu = (index: number) => {
@@ -112,13 +116,13 @@ const ManageTeacher: React.FC = () => {
                 </div>
                 {menuVisible[index] && (
                   <div className="absolute bg-white shadow-lg rounded-lg -mt-4 ml-36">
-                    <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={handleViewStudentList}>
-                      View Student List
+                    <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={handleViewTeachersList}>
+                      View Teacher List
                     </button>
                     {/* <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => { handleViewStudentList(); router.push('/Academic/viewTeacherSchedule'); }}>
                       View Schedule Classes
                     </button> */}
-                    <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => { handleViewStudentList(); router.push('/Academic/messages'); }}>Chat</button>
+                    <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => { handleViewTeachersList(); router.push('/Academic/messages'); }}>Chat</button>
                     <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => toggleMenu(index)}>
                       Cancel
                     </button>
@@ -133,7 +137,7 @@ const ManageTeacher: React.FC = () => {
                       <LiaStarSolid key={i} className='text-[#223857]' />
                     ))}
                   </div>
-                  <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg" >
+                  <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg" onClick={handleViewTeacherSchedule}>
                     View Schedule
                   </button>
                 </div>

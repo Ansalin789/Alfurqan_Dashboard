@@ -94,24 +94,7 @@ const ManageStudentView = () => {
         </div>
         <div className="flex flex-col items-center bg-[#fff] shadow-lg rounded-2xl md:w-[300px] h-[600px]">
           <div className="bg-[#012a4a] align-middle p-6 w-full h-1/4 rounded-t-2xl">
-            <div className="w-full flex justify-end">
-              <button className="text-gray-500 hover:text-gray-700">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.293 6.293a1 1 0 011.414 0l1 1a1 1 0 010 1.414l-12 12a1 1 0 01-.39.22l-4 1a1 1 0 01-1.22-1.22l1-4a1 1 0 01.22-.39l12-12z"
-                  />
-                </svg>
-              </button>
-            </div>
+            
             <div className="justify-center">
               <Image
                 src="/assets/images/proff.jpg"
