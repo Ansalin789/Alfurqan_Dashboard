@@ -50,17 +50,17 @@ const SchedulePage = () => {
   };
 
   // Style customization for calendar events
-  const eventStyleGetter = (event: any) => {
-    return {
-      style: {
-        backgroundColor: '#B0E0E6',
-        color: '#0000CD',
-        borderRadius: '4px',
-        padding: '3px',
-        fontSize: '12px',
-      },
-    };
-  };
+  // const eventStyleGetter = (event: any) => {
+  //   return {
+  //     style: {
+  //       backgroundColor: '#B0E0E6',
+  //       color: '#0000CD',
+  //       borderRadius: '4px',
+  //       padding: '3px',
+  //       fontSize: '12px',
+  //     },
+  //   };
+  // };
 
   // Handle navigation (clicking on a date in the calendar)
   const handleNavigate = (date: Date) => {
@@ -107,7 +107,7 @@ const SchedulePage = () => {
 
             {/* Updated List Schedule styling */}
             <div className="col-span-1">
-              <div className="bg-white p-6 rounded-lg shadow overflow-y-scroll h-[82vh] scrollbar-thin">
+              <div className="bg-white p-6 w-72 rounded-lg shadow overflow-y-scroll h-[600px] scrollbar-thin">
                 <h2 className="text-[18px] font-semibold mb-6">List Schedule</h2>
                 <div className="space-y-6">
                   {eventsForSelectedDate.length > 0 ? (

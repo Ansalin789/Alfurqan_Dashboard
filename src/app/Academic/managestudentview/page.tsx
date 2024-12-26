@@ -3,11 +3,10 @@
 import { useRouter } from 'next/navigation';
 import BaseLayout1 from '@/components/BaseLayout1';
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Modal from 'react-modal';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
-import { FiSun, FiMoon, FiBell, FiCalendar, FiMoreVertical } from 'react-icons/fi';
-import { FaMedal, FaPercent, FaUserCheck } from 'react-icons/fa';
+import { FiCalendar, FiMoreVertical } from 'react-icons/fi';
 
 const ManageStudentView = () => {
   const router = useRouter();
@@ -17,6 +16,7 @@ const ManageStudentView = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const dropdownRef = useRef<HTMLTableDataCellElement | null>(null);
 
   const openModal = () => {
     setModalIsOpen(true);
@@ -61,9 +61,27 @@ const ManageStudentView = () => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
 
-  const handleReschedule = () => {
+  const handleReschedule = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    console.log("Navigating to reschedule page");
     router.push('/Academic/studentreschedule');
+    setTimeout(() => {
+        setActiveDropdown(null);
+    }, 100);
   };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setActiveDropdown(null);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <BaseLayout1>
@@ -179,18 +197,18 @@ const ManageStudentView = () => {
             </div>
           ) : (
             <div className="p-2">
-              <div className="bg-white shadow-lg rounded-lg p-6 -ml-20 mb-14 overflow-y-scroll h-96 scrollbar-hide">
-                <div className="flex justify-between items-center mb-4">
+              <div className="bg-white shadow-lg rounded-lg p-4 -ml-20 mb-10 overflow-y-scroll h-[350px] scrollbar-hide">
+                <div className="flex justify-between items-center mb-1">
                   <h3 className="text-[14px] font-semibold">Scheduled Classes</h3>
                   <div className="flex space-x-4 items-center">
                     <FiCalendar className="text-[14px]" />
-                    <button className="bg-gray-100 p-2 text-[13px] rounded-lg">Date</button>
+                    <button className="bg-gray-100 p-1 text-[11px] rounded-lg">Date</button>
                   </div>
                 </div>
 
-                <div className="flex justify-start items-center border-b mb-4">
+                <div className="flex justify-start items-center border-b mb-2">
                   <button 
-                    className={`py-2 px-4 text-[14px] ${activeTab === 'scheduled' ? 'border-b-2 border-blue-600' : ''}`}
+                    className={`py-2 px-4 text-[13px] ${activeTab === 'scheduled' ? 'border-b-2 border-blue-600' : ''}`}
                     onClick={() => {
                       setActiveTab('scheduled');
                       setCurrentPage(1);
@@ -199,7 +217,7 @@ const ManageStudentView = () => {
                     Scheduled (10)
                   </button>
                   <button 
-                    className={`py-2 px-4 text-[14px] ${activeTab === 'completed' ? 'border-b-2 border-blue-600' : ''}`}
+                    className={`py-2 px-4 text-[13px] ${activeTab === 'completed' ? 'border-b-2 border-blue-600' : ''}`}
                     onClick={() => {
                       setActiveTab('completed');
                       setCurrentPage(1);
@@ -212,61 +230,49 @@ const ManageStudentView = () => {
                 <table className="w-full table-auto">
                   <thead>
                     <tr>
-                      <th className="py-2 text-[14px] text-center">Name</th>
-                      <th className="py-2 text-[14px]">Courses</th>
-                      <th className="py-2 text-[14px]">Date</th>
-                      {activeTab === 'completed' && (
-                        <>
-                          <th className="py-2 text-[14px]">Grade</th>
-                          <th className="py-2 text-[14px]">Performance</th>
-                        </>
-                      )}
-                      <th className="py-2 text-[14px]">Status</th>
+                      <th className="py-2 text-[13px] text-center">Name</th>
+                      <th className="py-2 text-[13px] text-center">Courses</th>
+                      <th className="py-2 text-[13px] text-center">Date</th>
+                      <th className="py-2 text-[13px]">Status</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
                     {getCurrentData().map((item, index) => (
                       <tr key={index} className="border-t">
-                        <td className="py-2 text-[14px]">{item.name}</td>
-                        <td className="py-2 text-[14px]">{item.course}</td>
-                        <td className="py-2 text-[14px]">{item.date}</td>
-                        {activeTab === 'completed' && (
-                          <>
-                            <td className="py-2 text-[14px]">{item.grade}</td>
-                            <td className="py-2 text-[14px]">{item.performance}</td>
-                          </>
-                        )}
-                        <td className="py-2">
+                        <td className="py-1 text-[12px] text-center">{item.name}</td>
+                        <td className="py-1 text-[12px] text-center">{item.course}</td>
+                        <td className="py-1 text-[12px] text-center">{item.date}</td>
+                        <td className="py-1 text-center">
                           <button 
-                            className={`px-4 py-1 rounded-lg text-[14px] ${
+                            className={`px-4 py-1 rounded-lg text-[12px] text-center ${
                               item.status === 'Completed' ? 'bg-green-600' : 'bg-gray-900'
                             } text-white`}
                           >
                             {item.status}
                           </button>
                         </td>
-                        <td className="py-2 text-right relative">
-                          <button onClick={() => toggleDropdown(index)}>
-                            <FiMoreVertical className="inline-block text-xl cursor-pointer" />
-                          </button>
-                          {activeDropdown === index && (
+                        <td className="py-1 text-right relative" ref={dropdownRef}>
+                          {activeTab === 'scheduled' && (
+                            <button onClick={() => toggleDropdown(index)}>
+                              <FiMoreVertical className="inline-block text-xl cursor-pointer" />
+                            </button>
+                          )}
+                          {activeDropdown === index && activeTab === 'scheduled' && (
                             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
                               <div className="py-1">
                                 <button
                                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  // onClick={() => {
-                                  //   // Add reschedule logic here
-                                  //   setActiveDropdown(null);
-                                  // }}
-                                  onClick={handleReschedule}
+                                  onClick={(event: React.MouseEvent) => {
+                                    handleReschedule(event);
+                                    setActiveDropdown(null);
+                                  }}
                                 >
                                   Reschedule
                                 </button>
                                 <button
                                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   onClick={() => {
-                                    // Add pause logic here
                                     setActiveDropdown(null);
                                   }}
                                 >
@@ -275,7 +281,6 @@ const ManageStudentView = () => {
                                 <button
                                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   onClick={() => {
-                                    // Add resume logic here
                                     setActiveDropdown(null);
                                   }}
                                 >
@@ -284,7 +289,6 @@ const ManageStudentView = () => {
                                 <button
                                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                   onClick={() => {
-                                    // Add cancel logic here
                                     setActiveDropdown(null);
                                   }}
                                 >
@@ -299,16 +303,16 @@ const ManageStudentView = () => {
                   </tbody>
                 </table>
 
-                <div className="flex justify-between items-center mt-4">
-                  <span>
-                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, activeTab === 'scheduled' ? scheduledClasses.length : completedClasses.length)} of {activeTab === 'scheduled' ? scheduledClasses.length : completedClasses.length} entries
+                <div className="flex justify-between items-center mt-1">
+                  <span className='text-[11px]'>
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, activeTab === 'scheduled' ? 5 : completedClasses.length)} of {activeTab === 'scheduled' ? 5 : completedClasses.length} entries
                   </span>
                   <div className="flex space-x-2">
                     {Array.from({ length: totalPages }, (_, i) => (
                       <button
                         key={i + 1}
                         onClick={() => setCurrentPage(i + 1)}
-                        className={`px-2 py-1 rounded-lg ${
+                        className={`px-2 py-1 text-[11px] rounded-[3px] ${
                           currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-300'
                         }`}
                       >
@@ -335,35 +339,41 @@ const ManageStudentView = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                <div key={day} className="flex items-center mb-2">
-                  <div className='flex items-center border-1 p-2 rounded-xl border-gray-950 bg-[#D4D6D9]'>
-                    <input type="checkbox" className="form-checkbox mr-2 rounded-xl text-[11px]" />
-                    <label className="block font-medium text-gray-700 rounded-xl text-[11px]">{day}</label>
+                <div key={day} className="flex items-center mb-2 w-96">
+                  <div className='flex items-center border-1 p-2 rounded-xl border border-[#D4D6D9] bg-[#f7f7f8] w-60 justify-between'>
+                    
+                    <label className="block font-medium text-[#333B4C] rounded-xl text-[11px]">{day}</label>
+                    <input type="checkbox" className="form-checkbox border border-[#D4D6D9] bg-[#f7f7f8] mr-2 rounded-2xl text-[11px]" />
                   </div>
-                  <input type="time" className="form-input p-2 bg-[#D4D6D9] rounded-xl text-[11px] ml-4" />
-                  <input type="number" className="form-input w-[75px] text-center ml-4 text-[11px] p-2 bg-[#D4D6D9] rounded-xl" placeholder="Duration" />
+                  <input type="time" className="form-input w-[100px] p-2 border border-[#D4D6D9] bg-[#f7f7f8] rounded-xl text-[11px] ml-4" />
+                  <input type="number" className="form-input w-[100px] text-center ml-4 text-[11px] p-2 border border-[#D4D6D9] bg-[#f7f7f8] text-[#333B4C] rounded-xl" placeholder="Duration" />
                 </div>
               ))}
             </div>
             <div className="grid grid-cols-4 gap-4">
-              <div className="col-span-2">
-                <label className="block font-medium text-[13px] text-gray-700">Package</label>
-                <input type="text" className="form-input w-full bg-[#d4d6d9] p-2 rounded-xl text-[12px]" placeholder="Simple" />
+            <div className="col-span-2">
+                <label className="block font-medium text-gray-700 text-[12px]">Select Package</label>
+                <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl">
+                  <option>Simple</option>
+                  <option>Basic</option>
+                  <option>Pro</option>
+                  <option>Elite</option>
+                </select>
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-[13px] text-gray-700">Total Hours</label>
-                <input type="number" className="form-input w-full bg-[#d4d6d9] p-2 rounded-xl text-[12px]" placeholder="1" />
+                <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]" placeholder="1" />
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-[13px] text-gray-700">Preferred Teacher</label>
-                <select className="form-select w-full text-[13px] bg-[#d4d6d9] p-2 rounded-xl">
+                <select className="form-select w-full text-[13px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl">
                   <option>Male</option>
                   <option>Female</option>
                 </select>
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text[13px] text-gray-700">Course</label>
-                <select className="form-select w-full text-[12px] bg-[#d4d6d9] p-2 rounded-xl">
+                <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl">
                   <option>Arabic</option>
                   <option>Quran</option>
                   <option>Islamic Studies</option>
@@ -371,23 +381,23 @@ const ManageStudentView = () => {
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-gray-700 text-[12px]">Start Date</label>
-                <input type="date" className="form-input w-full text-[11px] bg-[#d4d6d9] p-2 rounded-xl" />
+                <input type="date" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" />
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-gray-700 text-[12px]">End Date</label>
-                <input type="date" className="form-input w-full text-[11px] bg-[#d4d6d9] p-2 rounded-xl" />
+                <input type="date" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" />
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-gray-700 text-[12px]">Start Time</label>
-                <input type="time" className="form-input w-full text-[11px] bg-[#d4d6d9] p-2 rounded-xl" />
+                <input type="time" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" />
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-gray-700 text-[12px]">End Time</label>
-                <input type="time" className="form-input w-full text-[11px] bg-[#d4d6d9] p-2 rounded-xl" />
+                <input type="time" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" />
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-gray-700 text-[12px]">SelectTeacher</label>
-                <select className="form-select w-full text-[12px] bg-[#d4d6d9] p-2 rounded-xl">
+                <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl">
                   <option>Teacher 1</option>
                   <option>Teacher 2</option>
                   <option>Teacher 3</option>

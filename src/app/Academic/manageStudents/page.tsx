@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaFilter, FaPlus } from 'react-icons/fa';
 import BaseLayout1 from '@/components/BaseLayout1';
-import AddStudentModal from '@/components/Academic/AddStudentModel';
 import { useRouter } from 'next/navigation';
+import AddTrailStudentModal from '@/components/Academic/AddTrailStudentModel';
 
 
 
@@ -547,7 +547,7 @@ const TrailManagement = () => {
       >
         <h2>Edit User</h2>
       </Modal>
-      <AddStudentModal
+      <AddTrailStudentModal
         isOpen={isModalOpen}
         onRequestClose={closeModal} 
         userData={selectedUser}
