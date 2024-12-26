@@ -1,13 +1,17 @@
-'use client';
+
+"use client"
 
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
 import BaseLayout1 from '@/components/BaseLayout1';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
-import FilterModal from './FilterModal'; // Adjust the import path as necessary
+import { User } from '@/types';
+import Link from 'next/link';
+import Invoice from '@/components/Invoice';
 
 // Updated function to fetch users from the new API endpoint
 const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: string}> => {
@@ -25,7 +29,7 @@ const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: s
 
     // Transform API data to match User interface
     const transformedData = rawData.evaluation.map((item: {
-      
+      paymentLink: string; 
       _id: string;
       student: {
         learningInterest: any; 
@@ -34,14 +38,18 @@ const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: s
         studentLastName: string; 
         studentPhone: number; 
         studentCountry: string; 
-        preferredTeacher: string; 
+        preferredTeacher: string;
         preferredFromTime: string; 
         preferredToTime: string; 
-        evaluationStatus?: string; 
+        classStatus?: string; 
         status?: string; 
         trialClassStatus: string;
       }; 
       trialClassStatus: string;
+      assignedTeacher:string; 
+      paymentStatus:string;
+       // Optional if it might not always be present
+
       // Add other fields as necessary
     }) => ({
       _id: item._id,
@@ -53,9 +61,13 @@ const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: s
       course: item.student.learningInterest, // Assuming this field exists in the new structure
       preferredTeacher: item.student.preferredTeacher,
       time: item.student.preferredFromTime,
-      evaluationStatus: item.student.evaluationStatus,
+      classStatus: item.student.classStatus,
       status: item.student.status,
-      trialClassStatus: item.trialClassStatus
+      trialClassStatus: item.trialClassStatus,
+      paymentStatus:item.paymentStatus,
+      assignedTeacher:item.assignedTeacher,
+      paymentLink: item.paymentLink 
+
     }));
 
     console.log(">>>>transformedData", transformedData)
@@ -75,6 +87,147 @@ const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: s
   }
 };
 
+// Move FilterModal outside of the TrailManagement component
+const FilterModal = ({ 
+  isOpen, 
+  onClose,
+  onApplyFilters, 
+  users 
+}: { 
+  isOpen: boolean;  
+  onClose: () => void; 
+  onApplyFilters: (filters: { country: string; course: string; teacher: string; status: string; }) => void;
+  users: User[];
+}) => {
+  const [filters, setFilters] = useState({
+    country: '',
+    course: '',
+    teacher: '',
+    status: ''
+  });
+
+    // Get unique values for each filter
+    const uniqueCountries = Array.from(new Set(users.map(user => user.country)));
+    const uniqueCourses = Array.from(new Set(users.map(user => user.course)));
+    const uniqueTeachers = Array.from(new Set(users.map(user => user.preferredTeacher)));
+  
+    const handleApply = () => {
+      onApplyFilters(filters);
+      onClose();
+    };
+  
+    const handleReset = () => {
+      setFilters({
+        country: '',
+        course: '',
+        teacher: '',
+        status: ''
+      });
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-lg w-[500px]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold">Filter Options</h2>
+          <button 
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            ×
+          </button>
+        </div>
+  
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Country
+            </label>
+            <select
+              className="w-full p-2 border rounded-lg"
+              value={filters.country}
+              onChange={(e) => setFilters({...filters, country: e.target.value})}
+            >
+              <option value="">All Countries</option>
+              {uniqueCountries.map((country) => (
+                <option key={country} value={country}>{country}</option>
+              ))}
+            </select>
+          </div>
+  
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Course
+            </label>
+            <select
+              className="w-full p-2 border rounded-lg"
+              value={filters.course}
+              onChange={(e) => setFilters({...filters, course: e.target.value})}
+            >
+              <option value="">All Courses</option>
+              {uniqueCourses.map((course) => (
+                <option key={course} value={course}>{course}</option>
+              ))}
+            </select>
+          </div>
+  
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Teacher
+            </label>
+            <select
+              className="w-full p-2 border rounded-lg"
+              value={filters.teacher}
+              onChange={(e) => setFilters({...filters, teacher: e.target.value})}
+            >
+              <option value="">All Teachers</option>
+              {uniqueTeachers.map((teacher) => (
+                <option key={teacher} value={teacher}>{teacher}</option>
+              ))}
+            </select>
+          </div>
+  
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
+            <select
+              className="w-full p-2 border rounded-lg"
+              value={filters.status}
+              onChange={(e) => setFilters({...filters, status: e.target.value})}
+            >
+              <option value="">All Statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </div>
+  
+          <div className="flex justify-end space-x-4 mt-6">
+            <button
+              onClick={handleReset}
+              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleApply}
+              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-blue-700"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
+
+
+
+
 const trailSection = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -87,23 +240,28 @@ const trailSection = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false); 
-  const [formData, setFormData] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState("");
+   const[trialClassStatus,settrailClassStatus]=useState("");
+   const[studentStatus,setStudentStatus]=useState("");
+   const[paymentStatus,setpaymentStatus]=useState("");
+   const[paymentLink,setpaymentLink]=useState("");
 
   
-
+   const [options, setOptions] = useState({
+    trialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
+    studentStatus: ["JOINED","NOT JOINED","WAITING"],
+    paymentStatus: [ "PAID", "FAILED","PENDING"],
+  });
 
     
   const router = useRouter();
-  const handleSyncClick = async () => {
-    setIsLoading(true);
+  const handleSyncClick = () => {
     if (router) {
-      await router.push('trailManagement');
+    router.push('trailManagement');
     } else {
-      console.error('Router is not available');
+    console.error('Router is not available');
     }
-    setIsLoading(false);
-  };
+};
     
     
 const indexOfLastItem = currentPage * itemsPerPage;
@@ -178,33 +336,25 @@ const handleClick = async (id: string) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    
-    // Set the form data with the fetched user data
-    setFormData({
-      
-      firstName: data.student.studentFirstName,
-      lastName: data.student.studentLastName,
-      email: data.student.studentEmail,
-      phoneNumber: data.student.studentPhone.toString(),
-      city: data.gardianCity,
-      country: data.student.studentCountry,
-      language: data.gardianLanguage,
-      preferredTime: `${data.classStartTime} to ${data.classEndTime}`,
-      trailId: data._id,
-      course: data.student.learningInterest,
-      preferredTeacher: data.student.preferredTeacher,
-      level: data.languageLevel,
-      preferredDate: data.student.preferredDate,
-      selectedTeacher: data.student.preferredTeacher,
-      subscriptionName: data.subscription.subscriptionName,
-      guardianName: data.gardianName,
-      guardianEmail: data.gardianEmail,
-      guardianPhone: data.gardianPhone,
-      trialClassStatus: data.trialClassStatus,
-      evaluationStatus: data.student.evaluationStatus,
-      comment: '',
-    });
-
+    setOptions((prev) => ({
+      trialClassStatus: prev.trialClassStatus.includes(data.trialClassStatus)
+        ? prev.trialClassStatus
+        : [...prev.trialClassStatus, data.trialClassStatus],
+      studentStatus: prev.studentStatus.includes(data.studentStatus)
+        ? prev.studentStatus
+        : [...prev.studentStatus, data.studentStatus],
+      paymentStatus: prev.paymentStatus.includes(data.paymentStatus)
+        ? prev.paymentStatus
+        : [...prev.paymentStatus, data.paymentStatus],
+    }));
+    settrailClassStatus(data.trialClassStatus);
+    setStudentStatus(data.studentStatus);
+    setpaymentStatus(data.paymentStatus);
+    setpaymentLink(
+      `http://localhost:3000/invoice?id=${encodeURIComponent(data.student.studentId)}`);
+    setFormData(data);
+    console.log(data);
+   
     // Open the modal after setting the form data
     setShowModal(true);
   } catch (error) {
@@ -236,58 +386,112 @@ const handleClick = async (id: string) => {
     setCurrentPage(1); // Reset to first page when filters change
   };
 
-
-
+  
+   
   const updateClick = async (id: string) => {
-    try {
-      const response = await fetch(`http://localhost:5001/evaluationlist/${id}`);
+    const formDataNames = {
+      _id: formData._id,
+      student: {
+        studentId:formData._id,
+        studentFirstName: formData.student.studentFirstName,
+        studentLastName: formData.student.studentLastName,
+        studentEmail: formData.student.studentEmail,
+        studentPhone: formData.student.studentPhone,
+        studentCountry: formData.student.studentCountry,
+        studentCountryCode: formData.student.studentCountryCode,
+        learningInterest: formData.student.learningInterest,
+        numberOfStudents: formData.student.numberOfStudents,
+        preferredTeacher: formData.student.preferredTeacher,
+        preferredFromTime: formData.student.preferredFromTime,
+        preferredToTime: formData.student.preferredToTime,
+        timeZone: formData.student.timeZone,
+        referralSource: formData.student.referralSource,
+        preferredDate: formData.student.preferredDate,
+        evaluationStatus: formData.student.evaluationStatus,
+        status: formData.student.status,
+        createdDate: formData.student.createdDate,
+        createdBy: formData.student.createdBy,
+      },
+      isLanguageLevel: formData.isLanguageLevel,
+      languageLevel: formData.languageLevel,
+      isReadingLevel: formData.isReadingLevel,
+      readingLevel: formData.readingLevel,
+      isGrammarLevel: formData.isGrammarLevel,
+      grammarLevel: formData.grammarLevel,
+      hours: formData.hours,
+      subscription: {
+        subscriptionName: formData.subscription.subscriptionName,
+      },
+      classStartDate: formData.classStartDate,
+      classEndDate: formData.classEndDate,
+      classStartTime: formData.classStartTime,
+      classEndTime: formData.classEndTime,
+      gardianName: formData.gardianName,
+      gardianEmail: formData.gardianEmail,
+      gardianPhone: formData.gardianPhone,
+      gardianCity: formData.gardianCity,
+      gardianCountry: formData.gardianCountry,
+      gardianTimeZone: formData.gardianTimeZone,
+      gardianLanguage: formData.gardianLanguage,
+      assignedTeacher: formData.assignedTeacher,
+      studentStatus: studentStatus,
+      classStatus: formData.classStatus,
+      comments: formData.comments,
+      trialClassStatus: trialClassStatus,
+      invoiceStatus: formData.invoiceStatus,
+      paymentLink:paymentLink,
+      paymentStatus: paymentStatus ,
+      status: formData.status,
+      createdDate: formData.createdDate,
+      createdBy: formData.createdBy,
+      updatedDate: formData.updatedDate,
+      updatedBy: formData.updatedBy,
+      planTotalPrice: formData.planTotalPrice,
+      accomplishmentTime: formData.accomplishmentTime,
+      studentRate: formData.studentRate,
+      expectedFinishingDate: formData.expectedFinishingDate  
+    };
+    
+  alert(JSON.stringify(formDataNames));
 
+    try {
+      const response = await fetch(`http://localhost:5001/evaluation/${id}`,
+        {
+          method: 'PUT', 
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formDataNames),
+        });
+       
       console.log("response",response)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      // const data = await response.json();
       
-      // // Set the form data with the fetched user data
-      // setFormData({
-        
-      //   firstName: data.student.studentFirstName,
-      //   lastName: data.student.studentLastName,
-      //   email: data.student.studentEmail,
-      //   phoneNumber: data.student.studentPhone.toString(),
-      //   city: data.gardianCity,
-      //   country: data.student.studentCountry,
-      //   language: data.gardianLanguage,
-      //   preferredTime: `${data.classStartTime} to ${data.classEndTime}`,
-      //   trailId: data._id,
-      //   course: data.student.learningInterest,
-      //   preferredTeacher: data.student.preferredTeacher,
-      //   level: data.languageLevel,
-      //   preferredDate: data.student.preferredDate,
-      //   selectedTeacher: data.student.preferredTeacher,
-      //   subscriptionName: data.subscription.subscriptionName,
-      //   guardianName: data.gardianName,
-      //   guardianEmail: data.gardianEmail,
-      //   guardianPhone: data.gardianPhone,
-      //   trialClassStatus: data.trialClassStatus,
-      //   evaluationStatus: data.student.evaluationStatus,
-      //   comment: '',
-      // });
   
       // Open the modal after setting the form data
-      setShowModal(true);
+      // setShowModal(true);
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
   };
-
-
-
-
-
-
-
-
+  const handleChange = (field: string) => (event: React.ChangeEvent<HTMLSelectElement>) => {
+    console.log(`Field: ${field}, Value: ${event.target.value}`);
+    switch (field) {
+      case "trialClassStatus":
+        settrailClassStatus(event.target.value);
+        break;
+      case "studentStatus":
+        setStudentStatus(event.target.value);
+        break;
+      case "paymentStatus":
+        setpaymentStatus(event.target.value);
+        break;
+      default:
+        break;
+    }
+  };
 
 
 
@@ -385,11 +589,6 @@ const handleClick = async (id: string) => {
 
   return (
     <BaseLayout1>
-      {isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="text-white">Loading...</div>
-        </div>
-      )}
       <div className={`min-h-screen p-4 bg-[#EDEDED]`}>
         <div className="flex justify-between items-center">
             <div className='flex items-center space-x-2'>
@@ -440,10 +639,10 @@ const handleClick = async (id: string) => {
                 <th className="p-3 text-[12px] text-center"style={{ width: '13%' }}>Course</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '10%' }}>Preferred Teacher</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '18%' }}>Assigned Teacher</th>
-
                 <th className="p-3 text-[12px] text-center"style={{ width: '14%' }}>Time</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '15%' }}>Class Status</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '15%' }}>Student Status</th>
+                <th className="p-3 text-[12px] text-center"style={{ width: '18%' }}>Class Status</th>
+                <th className="p-3 text-[12px] text-center"style={{ width:'15%'}}>payment Status</th>
+                <th className="p-3 text-[12px] text-center"style={{ width: '13%' }}>Student Status</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '10%' }}>Action</th>
                 {/* <th
                     className="shadow-md p-2 text-left font-medium text-gray-700"
@@ -461,15 +660,33 @@ const handleClick = async (id: string) => {
                     <td className="p-2 text-[11px] text-center">{item.country}</td>
                     <td className="p-2 text-[11px] text-center">{item.course}</td>
                     <td className="p-2 text-[11px] text-center">{item.preferredTeacher}</td>
-                    <td className="p-2 text-[11px] text-center">{item.AssignedTeacher}</td>
+                    <td className="p-2 text-[11px] text-center">{item.assignedTeacher}</td>
                     <td className="p-2 text-[11px] text-center">{item.time}</td>
                     <td className="p-2 text-[11px] text-center">
-                      <span className={`px-2 text-[11px] text-center py-1 rounded-full ${
-                        item.evaluationStatus === 'PENDING' 
+                      <span className={`px-2 text-[9px] text-center py-1 rounded-full ${
+                        item.classStatus === 'COMPLETED' 
                           ? 'bg-yellow-100 text-yellow-800' 
                           : 'bg-green-100 text-green-800'
                       }`}>
-                        {item.evaluationStatus ?? 'PENDING'}
+                        {item.classStatus ?? 'COMPLETED'}
+                      </span>
+                      /
+                      <span className={`px-2 text-[9px] text-center py-1 rounded-full ${
+                        item.trialClassStatus === 'COMPLETED' 
+                          ? 'bg-yellow-100 text-yellow-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {item.trialClassStatus ?? 'COMPLETED'}
+                      </span>
+
+                    </td>
+                    <td className="p-2 text-[11px] text-center">
+                      <span className={`px-2 text-[11px] text-center py-1 rounded-full ${
+                        item.paymentStatus === 'PAID' 
+                          ? 'bg-yellow-100 text-yellow-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {item.paymentStatus ?? 'PAID'}
                       </span>
                     </td>
                     <td className="p-2 text-[11px] text-center">
@@ -531,6 +748,7 @@ const handleClick = async (id: string) => {
       />
 
 {showModal && (
+  <Router>
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[720px]">
             <div className="flex justify-between items-center mb-4">
@@ -548,7 +766,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="firstName"
                   type="text"
-                  value={formData.firstName} // Bind to formData
+                  disabled
+                  value={formData.student.studentFirstName} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -557,7 +776,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="lastName"
                   type="text"
-                  value={formData.lastName} // Bind to formData
+                  disabled
+                  value={formData.student.studentLastName} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -566,7 +786,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="email"
                   type="email"
-                  value={formData.email} // Bind to formData
+                  disabled
+                  value={formData.student.studentEmail} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -576,7 +797,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="phoneNumber"
                   type="number"
-                  value={formData.phoneNumber} // Bind to formData
+                  disabled
+                  value={formData.student.studentPhone} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -585,7 +807,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="city"
                   type="text"
-                  value={formData.city} // Bind to formData
+                  disabled
+                  value={formData.student.city || ""} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -595,27 +818,20 @@ const handleClick = async (id: string) => {
                 <input
                   id="country"
                   type="text"
-                  value={formData.country} // Bind to formData
+                  disabled
+                  value={formData.student.studentCountry} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
-              <div>
-                <label htmlFor="language" className="block text-black text-xs font-medium">Language</label>
-                <input
-                  id="language"
-                  type="text"
-                  value={formData.language} // Bind to formData
-                  readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-                />
-              </div>
+              
               <div>
                 <label htmlFor="preferredTime" className="block text-black text-xs font-medium">Preferred Time</label>
                 <input
                   id="preferredTime"
                   type="text"
-                  value={formData.preferredTime} // Bind to formData
+                  disabled
+                  value={formData.student.preferredFromTime +" TO "+  formData.student.preferredToTime} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -624,7 +840,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="trailId"
                   type="text"
-                  value={formData.trailId} // Bind to formData
+                  disabled
+                  value={formData._id} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -634,7 +851,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="course"
                   type="text"
-                  value={formData.course} // Bind to formData
+                  disabled
+                  value={formData.student.learningInterest} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -643,7 +861,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="preferredTeacher"
                   type="text"
-                  value={formData.preferredTeacher} // Bind to formData
+                  disabled
+                  value={formData.student.preferredTeacher} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -652,7 +871,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="level"
                   type="text"
-                  value={formData.level} // Bind to formData
+                  disabled
+                  value={formData.languageLevel} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -660,8 +880,9 @@ const handleClick = async (id: string) => {
                 <label htmlFor="preferredDate" className="block text-black text-xs font-medium">Preferred Date</label>
                 <input
                   id="preferredDate"
-                  type="date"
-                  value={formData.preferredDate} // Bind to formData
+                  type="text"
+                  disabled
+                  value={formData.student.preferredDate} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -670,7 +891,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="preferredHours"
                   type="text"
-                  value={formData.preferredTime} // Bind to formData
+                  disabled
+                  value={formData.hours} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -680,7 +902,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="preferredPackage"
                   type="text"
-                  value={formData.subscriptionName} // Check if subscription exists
+                  disabled
+                  value={formData.subscription.subscriptionName} // Check if subscription exists
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -690,7 +913,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="guardianName"
                   type="text"
-                  value={formData.guardianName} // Bind to formDat
+                  disabled
+                  value={formData.gardianName} // Bind to formDat
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -699,7 +923,8 @@ const handleClick = async (id: string) => {
                 <input
                   id="guardianEmail"
                   type="email"
-                  value={formData.guardianEmail} // Bind to formData
+                  disabled
+                  value={formData.gardianEmail} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -708,29 +933,68 @@ const handleClick = async (id: string) => {
                 <input
                   id="guardianPhone"
                   type="text"
-                  value={formData.guardianPhone} // Bind to formData
+                  disabled
+                  value={formData.gardianPhone} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
-              <div>
-                <label htmlFor="trialClassStatus" className="block text-black text-xs font-medium">Trail Class Status</label>
-                <input
-                  id="trialClassStatus"
-                  type="text"
-                  value={formData.trialClassStatus} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-                />
-              </div>
-
+              
               <div>
                 <label htmlFor="evaluationStatus" className="block text-black text-xs font-medium">Evaluation status</label>
                 <input
                   id="evaluationStatus"
                   type="text"
-                  value={formData.evaluationStatus} // Bind to formData
+                  disabled
+                  value={formData.student.evaluationStatus } // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
+              <div>
+               <label htmlFor="trialClassStatus" className="block text-black text-xs font-medium">Trial Class Status</label>
+        <select
+          id="trialClassStatus"
+          value={trialClassStatus}
+          onChange={handleChange("trialClassStatus")}
+          className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+        >
+          {options.trialClassStatus.map((status, index) => (
+            <option key={index} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      </div>
+              
+              <div>
+        <label htmlFor="studentStatus" className="block text-black text-xs font-medium">Student Status</label>
+        <select
+          id="studentStatus"
+          value={studentStatus}
+          onChange={handleChange("studentStatus")}
+          className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+        >
+          {options.studentStatus.map((status, index) => (
+            <option key={index} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label htmlFor="paymentStatus" className="block text-black text-xs font-medium">Payment Status</label>
+        <select
+          id="paymentStatus"
+          value={paymentStatus}
+          onChange={handleChange("paymentStatus")}
+          className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+        >
+          {options.paymentStatus.map((status, index) => (
+            <option key={index} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      </div>
               <div className="col-span-2">
                 <label htmlFor="comment" className="block text-black text-xs font-medium">Comment</label>
                 <textarea
@@ -740,6 +1004,60 @@ const handleClick = async (id: string) => {
                   className="w-full mt-2 border rounded-md text-xs text-gray-800"
                 ></textarea>
               </div>
+              {/* {formData.student?.studentFirstName &&
+ formData.student?.studentLastName &&
+ formData.subscription?.subscriptionName
+  ? (() => {
+      setpaymentLink(
+        `/invoice?name=${encodeURIComponent(
+          formData.student.studentFirstName + " " + formData.student.studentLastName
+        )}&plan=${encodeURIComponent(formData.subscription.subscriptionName)}`
+      );
+      return null; // Return null because setpaymentLink doesn't render anything
+    })()
+  : "No payment link generated"} */}
+
+            
+                {/* {formData.student.studentFirstName &&
+  formData.student.studentLastName &&
+  formData.subscription.subscriptionName ? setpaymentLink({
+                formData.subscription.subscriptionName
+                  ? `/invoice?name=${encodeURIComponent(
+                      formData.student.studentFirstName + " " + formData.student.studentLastName
+                    )}&plan=${encodeURIComponent(formData.subscription.subscriptionName)}`
+                 }
+              ) : "No payment link generated"} 
+             
+ 
+  
+   { setpaymentLink(
+      formData.subscription.subscriptionName
+        ? `/invoice?name=${encodeURIComponent(
+            formData.student.studentFirstName + " " + formData.student.studentLastName
+          )}&plan=${encodeURIComponent(formData.subscription.subscriptionName)}`
+        : "No payment link generated"
+    );}
+     */}
+
+  {/* {/* {formData.student.studentFirstName &&
+  formData.student.studentLastName &&
+  formData.subscription.subscriptionName ? (
+    <Link
+      href={`/invoice?name=${encodeURIComponent(
+        formData.student.studentFirstName + " " + formData.student.studentLastName
+      )}&plan=${encodeURIComponent(formData.subscription.subscriptionName)}`}
+      className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
+    >
+      Generate Invoice
+    </Link>
+  ) : (
+    <span className="px-4 py-1 bg-gray-400 text-white rounded-md text-xs">
+      Missing Information
+    </span>
+  )} */}
+
+
+
               {/* Save and Cancel Buttons */}
               <div className="col-span-2 flex justify-end space-x-4 mt-0">
                 <button
@@ -750,7 +1068,7 @@ const handleClick = async (id: string) => {
                   Cancel
                 </button>
                 <button
-                 onClick={() => updateClick(item._id)}
+                 onClick={() => updateClick(formData._id)}
                   type="submit"
                   className="px-4 py-1 bg-[#223857] text-white rounded-md hover:bg-[#1c2f49]"
                 >
@@ -758,11 +1076,14 @@ const handleClick = async (id: string) => {
                 </button>
               </div>
             </form>
+            <Routes>
+            <Route path="/invoice" element={<Invoice />} />
+          </Routes>
           </div>
         </div>
+        </Router>
       )}
     </BaseLayout1>
   );
 };
-
 export default trailSection

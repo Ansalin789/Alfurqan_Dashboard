@@ -1,3 +1,5 @@
+
+
 'use client';
 
 import React, { useState } from 'react';
@@ -32,6 +34,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
         email,
         phoneNumber: Number(phoneNumber),
         country,
+        countryCode:"+1",
         city,
         learningInterest,
         numberOfStudents: Number(numberOfStudents),
@@ -40,16 +43,11 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
         preferredToTime,
         startDate,
         evaluationStatus,
+        referralSource:"Google",
         status: 'Active',
         createdBy: 'SYSTEM',
         lastUpdatedBy: 'SYSTEM',
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        referralSource: "Other" as "Friend" | "Social Media" | "E-Mail" | "Google" | "Other",
-        startDate: formData.date,
-        evaluationStatus: (formData.evaluationStatus || "PENDING") as "PENDING" | "INPROGRESS" | "COMPLETED",
-        status: "Active" as "Active" | "Inactive" | "Deleted",
-        createdBy: "SYSTEM",
-        lastUpdatedBy: "SYSTEM",
       };
 
       if (!firstName || firstName.length < 3) {
@@ -66,6 +64,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
       }
 
       console.log('Sending data:', studentData);
+      
 
       const response = await fetch('http://localhost:5001/student', {
         method: 'POST',
@@ -91,15 +90,25 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
     }
   };
   const calculatePreferredToTime = (fromTime) => {
-    const [hours, minutes] = fromTime.split(':').map(Number);
-    const totalMinutes = hours * 60 + minutes + 30; // Add 30 minutes
-    const newHours = Math.floor(totalMinutes / 60) % 24; // Ensure hours wrap around after 24
+    // Split time and period (AM/PM)
+    const [time, period] = fromTime.split(' ');
+    const [hours, minutes] = time.split(':').map(Number);
+  
+    // Convert to 24-hour format for calculation
+    let hours24 = period === 'PM' && hours !== 12 ? hours + 12 : hours;
+    if (period === 'AM' && hours === 12) hours24 = 0;
+  
+    // Add 30 minutes
+    const totalMinutes = hours24 * 60 + minutes + 30;
+    const newHours24 = Math.floor(totalMinutes / 60) % 24; // Wrap around after 24 hours
     const newMinutes = totalMinutes % 60;
   
-    return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
-  };
+    // Convert back to 12-hour format
+    const newPeriod = newHours24 >= 12 ? 'PM' : 'AM';
+    const adjustedHours = newHours24 % 12 || 12;
   
-
+    return `${adjustedHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')} ${newPeriod}`;
+  };
 
   return (
     <Modal
@@ -223,16 +232,19 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
             <div className="form-group">
               <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Time</label>
               <input
-                type="time"
-                value={preferredFromTime}
-                onChange={(e) => {
-                  const fromTime = e.target.value;
-                  setPreferredFromTime(fromTime);
-                  const toTime = calculatePreferredToTime(fromTime);
-                  setPreferredToTime(toTime);
-                }}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
-              />
+    type="text"
+    placeholder="HH:MM AM/PM"
+    value={preferredFromTime}
+    onChange={(e) => {
+      const fromTime = e.target.value;
+  
+      
+        setPreferredFromTime(fromTime);
+        const toTime = calculatePreferredToTime(fromTime);
+        setPreferredToTime(toTime);
+    }}
+    className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+  />
             </div>
             <div className="form-group">
               <label className="block mb-1 text-xs font-medium text-gray-700">Evaluation Status</label>
