@@ -779,7 +779,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
   const[studentRate,setStudentRate]=useState(0);
   const[expectedFinishingDate,setexpectedFinishingDate]=useState(28);
   const[subscriptionName,setsubscriptionName]=useState("");
-
+   const[planTotalPrice,setplanTotalPrice]=useState<number>();
   const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
 
   // First, add state to track which plan's total is being calculated
@@ -790,8 +790,18 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
     if (selectedPlan !== planLabel) {
       return "";
     }
-    return `$${(selectedHours * rate*4).toFixed(2)}`;
+    return selectedHours * rate * 4;
   };
+  useEffect(() => {
+    // Only set planTotalPrice when a plan is selected
+    if (selectedPlan) {
+      const plan = pricingPlans.find(p => p.label === selectedPlan);
+      if (plan) {
+       const price= calculatePrice(plan.rate, plan.label);
+       setplanTotalPrice(price);
+      }
+    }
+  }, [selectedPlan, selectedHours]); 
 
   // Pricing plans data
   const pricingPlans = [
@@ -814,6 +824,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
       expectedFinishingDate,
       subscriptionName,
       selectedHours,
+      planTotalPrice,
     };
     nextStep(updatedStudentData); // Pass updated data to nextStep
   };
@@ -983,7 +994,14 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
           <div className="bg-white/5 rounded-lg p-3">
             <div className="text-sm text-white/60 mb-1">Total</div>
             <div className="text-xl font-semibold text-white">
-              {selectedPlan === plan.label ? calculatePrice(plan.rate, plan.label) : ''}
+             
+              {
+  selectedPlan === plan.label 
+    ? planTotalPrice !== undefined 
+      ? `$${planTotalPrice.toFixed(2)}` 
+      : '' 
+    : ''
+}
             </div>
           </div>
         </div>
@@ -1398,6 +1416,7 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
     try {
       const submitData = {
         student: {
+          studentId:updatedStudentDatas._id,
           studentFirstName: updatedStudentDatas.firstName,
           studentLastName: updatedStudentDatas.lastName,
           studentEmail: updatedStudentDatas.email,
@@ -1427,6 +1446,7 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
         subscription: {
           subscriptionName: updatedStudentDatas.subscriptionName,
         },
+        planTotalPrice:updatedStudentDatas.planTotalPrice,
         classStartDate: updatedStudentDatas.startDate,
         classEndDate: updatedStudentDatas.classEndDate,
         classStartTime: updatedStudentDatas.preferredFromTime,
@@ -1471,7 +1491,7 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
   
       const result = await response.json();
       console.log('Status updated successfully:', result);
-      router.push("/trailSection");
+      router.push("/Academic/trailSection");
   
       alert('Status updated successfully!');
       nextStep();
