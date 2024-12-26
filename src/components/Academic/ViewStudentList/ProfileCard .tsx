@@ -1,21 +1,26 @@
 import Image from 'next/image';
 import React from 'react';
+import { FiEdit2 } from 'react-icons/fi';
 
 const ProfileCard = () => {
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 w-full md:w-1/3">
-      <div className="flex flex-col items-center">
-        <Image
-          className="w-24 h-24 rounded-full"
-          src="/assets/images/proff.jpg" width={50} height={50}
-          alt="Profile"
-        />
-        <h2 className="mt-4 text-xl font-semibold">Will Jonto</h2>
-        <p className="text-gray-500">Teacher</p>
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden w-[300px]">
+      <div className="bg-[#012A4A] relative">
+        <div className="flex flex-col items-center pt-6 pb-4">
+          <Image
+            className="rounded-full border-4 border-white"
+            src="/assets/images/proff.jpg"
+            width={96} // Updated size to match the image
+            height={96} // Updated size to match the image
+            alt="Profile"
+          />
+          <h2 className="mt-4 text-xl font-semibold text-white">Will Jonto</h2>
+          <p className="text-gray-300">Teacher</p>
+        </div>
       </div>
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold">Personal Info</h3>
-        <ul className="mt-4 space-y-2 text-sm">
+      <div className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Personal Info</h3>
+        <ul className="space-y-2 text-sm">
           <li><strong>Full Name:</strong> Will Jonto</li>
           <li><strong>Email:</strong> willjontoax@gmail.com</li>
           <li><strong>Phone Number:</strong> (1) 2536 2561 2365</li>

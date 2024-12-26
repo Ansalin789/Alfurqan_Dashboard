@@ -1,20 +1,33 @@
 import React from 'react';
+import Image from 'next/image';
 
 const StudentList = () => {
   const students = [
-    { name: 'Abdullah Sulaiman', course: 'Arabic' },
-    { name: 'Iman Gabel', course: 'Quran' },
-    { name: 'Hassan Ibrahim', course: 'Arabic' },
-    { name: 'Hassan Ibrahim', course: 'Quran' },
+    { name: 'Abdullah Sulaiman', course: 'Arabic', avatar: '/assets/images/proff.jpg' },
+    { name: 'Iman Gabel', course: 'Quran', avatar: '/assets/images/proff.jpg' },
+    { name: 'Hassan Zadran', course: 'Arabic', avatar: '/assets/images/proff.jpg' },
+    { name: 'Hassan dummy', course: 'Quran', avatar: '/assets/images/proff.jpg' },
+    { name: 'Hassan Data', course: 'Quran', avatar: '/assets/images/proff.jpg' },
+    { name: 'Hassan Ibrahim', course: 'Quran', avatar: '/assets/images/proff.jpg' },
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 ml-14">
-      <h3 className="text-lg font-semibold mb-4">Students List</h3>
-      <ul className="space-y-2">
+    <div className="bg-[#CED4DC] rounded-lg shadow-lg p-6 w-72 h-[300px] ml-20">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Students List</h3>
+        <span className="text-lg font-semibold">20</span>
+      </div>
+      <ul className="space-y-2 overflow-y-auto h-40 scrollbar-thin scrollbar-track-black">
         {students.map((student, index) => (
-          <li key={index} className="flex justify-between items-center">
-            <span>{student.name} ({student.course})</span>
+          <li key={index} className="flex items-center">
+            <Image
+              src={student.avatar}
+              width={24}
+              height={24}
+              className="rounded-full"
+              alt={`${student.name} avatar`}
+            />
+            <span className="ml-3 text-[12px]">{student.name} ({student.course})</span>
           </li>
         ))}
       </ul>

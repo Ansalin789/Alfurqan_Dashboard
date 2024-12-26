@@ -231,6 +231,7 @@ const TrailManagement = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   console.log(setItemsPerPage);
+  console.log(selectedUser);
 
 
   const router = useRouter();
@@ -550,7 +551,6 @@ const TrailManagement = () => {
       <AddTrailStudentModal
         isOpen={isModalOpen}
         onRequestClose={closeModal} 
-        userData={selectedUser}
         isEditMode={isEditMode}
         onSave={() => {
           fetchStudents();

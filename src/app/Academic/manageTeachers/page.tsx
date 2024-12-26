@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { FaFilter, FaPlus } from 'react-icons/fa';
 import { LiaStarSolid } from "react-icons/lia";
 import { HiOutlineDotsVertical } from "react-icons/hi";
+import { useRouter } from 'next/navigation';
 import BaseLayout1 from '@/components/BaseLayout1';
 
 interface Teacher {
@@ -18,34 +19,50 @@ interface Teacher {
 }
 
 const ManageTeacher: React.FC = () => {
+  const router = useRouter();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [menuVisible, setMenuVisible] = useState<boolean[]>([]);
 
 
-    useEffect(() => {
-      const fetchTeachers = async () => {
-        try {
-          const response = await fetch('http://localhost:5001/users?role=TEACHER', {
-            headers: {
-              'Authorization': `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IlRlc3QgVXNlciIsInN1YiI6IjY3MmRjMzZmNmRhNjJkYzc2ZWY5Yzg4NSIsImlhdCI6MTczNDM0NjcxNiwiZXhwIjoxNzM0NDMzMTE2fQ.bPGpuxQJxJa2hHtYTF2HkrjrGP0ieVZ_Pi1iaD7a5p4"}`,
-            },
-          });
-          const data = await response.json();
-  
-          console.log('Fetched data:', data);
-  
-          // Access `users` array in the response
-          if (data && Array.isArray(data.users)) {
-            setTeachers(data.users);
-          } else {
-            console.error('Unexpected API response structure:', data);
-          }
-        } catch (error) {
-          console.error('Error fetching teachers:', error);
+  useEffect(() => {
+    
+
+    const fetchTeachers = async () => {
+      try {
+        const response = await fetch('http://localhost:5001/users?role=TEACHER', {
+          headers: {
+            'Authorization': `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IlRlc3QgVXNlciIsInN1YiI6IjY3MmRjMzZmNmRhNjJkYzc2ZWY5Yzg4NSIsImlhdCI6MTczNDM0NjcxNiwiZXhwIjoxNzM0NDMzMTE2fQ.bPGpuxQJxJa2hHtYTF2HkrjrGP0ieVZ_Pi1iaD7a5p4"}`,
+          },
+        });
+        const data = await response.json();
+
+        console.log('Fetched data:', data);
+
+        // Access `users` array in the response
+        if (data && Array.isArray(data.users)) {
+          setTeachers(data.users);
+        } else {
+          console.error('Unexpected API response structure:', data);
         }
-      };
+      } catch (error) {
+        console.error('Error fetching teachers:', error);
+      }
+    };
 
     fetchTeachers();
   }, []);
+
+  const handleViewStudentList = () => {
+    router.push('/Academic/viewstudentlist');
+  };
+
+  const toggleMenu = (index: number) => {
+    setMenuVisible((prev) => {
+      const newMenuVisible = [...prev];
+      newMenuVisible[index] = !newMenuVisible[index];
+      return newMenuVisible;
+    });
+  };
 
   return (
     <BaseLayout1>
@@ -80,7 +97,7 @@ const ManageTeacher: React.FC = () => {
             </div>
           </div>
           {/* Cards */}
-          <div className="grid grid-cols-6 gap-4 p-6">
+          <div className="grid grid-cols-6 gap-4 p-6" style={{ width: '100%' }}>
             {teachers.map((teacher, index) => (
               <div key={index} className="bg-white shadow-md rounded-lg p-4 w-48">
                 <div className="flex justify-between items-center">
@@ -89,20 +106,34 @@ const ManageTeacher: React.FC = () => {
                     alt="Teacher"
                     className="w-12 h-12 ml-12 mt-4 rounded-full" width={40} height={40}
                   />
-                  <button className="text-gray-400">
-                    <HiOutlineDotsVertical size={20} className='text-[#717579]'/>
+                  <button className="text-gray-400" onClick={() => toggleMenu(index)}>
+                    <HiOutlineDotsVertical size={20} className='text-[#717579]' />
                   </button>
                 </div>
+                {menuVisible[index] && (
+                  <div className="absolute bg-white shadow-lg rounded-lg -mt-4 ml-36">
+                    <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={handleViewStudentList}>
+                      View Student List
+                    </button>
+                    {/* <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => { handleViewStudentList(); router.push('/Academic/viewTeacherSchedule'); }}>
+                      View Schedule Classes
+                    </button> */}
+                    <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => { handleViewStudentList(); router.push('/Academic/messages'); }}>Chat</button>
+                    <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => toggleMenu(index)}>
+                      Cancel
+                    </button>
+                  </div>
+                )}
                 <div className="mt-4 text-center">
                   <h3 className="text-base font-bold text-[#223857] mb-2">{teacher.userName}</h3>
                   <p className="text-[#717579] text-sm">Level: {teacher.level}</p>
                   <p className="text-[#717579] p-1 text-sm">{teacher.subject}</p>
                   <div className='flex text-center justify-center'>
                     {Array.from({ length: teacher.rating || 0 }).map((_, i) => (
-                      <LiaStarSolid key={i} className='text-[#223857]'/>
+                      <LiaStarSolid key={i} className='text-[#223857]' />
                     ))}
                   </div>
-                  <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg">
+                  <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg" >
                     View Schedule
                   </button>
                 </div>
@@ -116,3 +147,8 @@ const ManageTeacher: React.FC = () => {
 }
 
 export default ManageTeacher;
+
+
+
+
+//onClick={() => { handleViewStudentList (); router.push('/Academic/viewTeacherSchedule');}}
