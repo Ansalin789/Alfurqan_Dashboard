@@ -6,7 +6,9 @@ import { FaFilter, FaPlus } from 'react-icons/fa';
 import { LiaStarSolid } from "react-icons/lia";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import BaseLayout1 from '@/components/BaseLayout1';
-
+import Modal from 'react-modal';
+import {useRouter} from 'next/navigation';
+import { error } from 'console';
 interface Teacher {
   userId: string;
   userName: string;
@@ -18,9 +20,20 @@ interface Teacher {
 }
 
 const ManageTeacher: React.FC = () => {
+  const router = useRouter();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-
-
+  const [menuVisible, setMenuVisible] = useState<boolean[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newTeacher, setNewTeacher] = useState({
+    userName: '',
+    email: '',
+    password:'',
+    role: ["TEACHER"],
+    status: "Active",
+    createdBy: "SYSTEM",
+    profileImage:null,
+    lastUpdatedBy: "SYSTEM",
+  });
     useEffect(() => {
       const fetchTeachers = async () => {
         try {
@@ -46,7 +59,55 @@ const ManageTeacher: React.FC = () => {
 
     fetchTeachers();
   }, []);
+  const handleViewTeachersList = () => {
+    router.push('/Academic/viewteacherslist');
+  };
 
+  const handleViewTeacherSchedule = () => {
+    router.push('/Academic/viewTeacherSchedule');
+  };
+
+  const toggleMenu = (index: number) => {
+    setMenuVisible((prev) => {
+      const newMenuVisible = [...prev];
+      newMenuVisible[index] = !newMenuVisible[index];
+      return newMenuVisible;
+    });
+  };
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewTeacher((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = async() => {
+    console.log('New Teacher Data:', newTeacher);
+   try{
+    const response = await fetch('http://localhost:5001/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newTeacher),
+    });
+    const responseData = await response.json();
+      console.log('Response:', response.status, responseData);
+   }catch{
+    console.error('Error saving new teacher:');
+   }
+    closeModal();
+  };
   return (
     <BaseLayout1>
       <div className="flex h-screen">
@@ -68,7 +129,7 @@ const ManageTeacher: React.FC = () => {
                 </button>
               </div>
               <div className='flex px-4'>
-                <button className={`border p-2 rounded-lg shadow flex items-center mx-4 bg-[#223857] text-white`}>
+                <button className={`border p-2 rounded-lg shadow flex items-center mx-4 bg-[#223857] text-white`} onClick={openModal}>
                   <FaPlus className="mr-2" /> Add new
                 </button>
                 <select className={`border rounded-lg p-2 shadow `}>
@@ -93,6 +154,20 @@ const ManageTeacher: React.FC = () => {
                     <HiOutlineDotsVertical size={20} className='text-[#717579]'/>
                   </button>
                 </div>
+                {menuVisible[index] && (
+                  <div className="absolute bg-white shadow-lg rounded-lg -mt-4 ml-36">
+                    <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={handleViewTeachersList}>
+                      View Teacher List
+                    </button>
+                    {/* <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => { handleViewStudentList(); router.push('/Academic/viewTeacherSchedule'); }}>
+                      View Schedule Classes
+                    </button> */}
+                    <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => { handleViewTeachersList(); router.push('/Academic/messages'); }}>Chat</button>
+                    <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => toggleMenu(index)}>
+                      Cancel
+                    </button>
+                  </div>
+                )}
                 <div className="mt-4 text-center">
                   <h3 className="text-base font-bold text-[#223857] mb-2">{teacher.userName}</h3>
                   <p className="text-[#717579] text-sm">Level: {teacher.level}</p>
@@ -102,7 +177,7 @@ const ManageTeacher: React.FC = () => {
                       <LiaStarSolid key={i} className='text-[#223857]'/>
                     ))}
                   </div>
-                  <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg">
+                  <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg" onClick={handleViewTeacherSchedule}>
                     View Schedule
                   </button>
                 </div>
@@ -111,6 +186,61 @@ const ManageTeacher: React.FC = () => {
           </div>
         </div>
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={closeModal}
+        contentLabel="Add New Teacher"
+        className="modal"
+        overlayClassName="modal-overlay"
+      >
+        <div className="p-3">
+          <h2 className="text-[20px] font-semibold text-[#223857] mb-4">Add New Teacher</h2>
+          <div className="mb-4">
+            <label className="block text-[#223857] mb-2">Username</label>
+            <input
+              type="text"
+              name="userName"
+              value={newTeacher.userName}
+              onChange={handleInputChange}
+              className="border rounded-lg p-2 w-full"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-[#223857] mb-2">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={newTeacher.email}
+              onChange={handleInputChange}
+              className="border rounded-lg p-2 w-full"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-[#223857] mb-2">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={newTeacher.password}
+              onChange={handleInputChange}
+              className="border rounded-lg p-2 w-full"
+            />
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={closeModal}
+              className="bg-gray-200 text-[#223857] px-4 py-2 rounded-lg mr-2"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="bg-[#223857] text-white px-4 py-2 rounded-lg"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </Modal>
     </BaseLayout1>
   );
 }

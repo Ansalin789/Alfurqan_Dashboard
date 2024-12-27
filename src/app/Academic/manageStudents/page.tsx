@@ -30,7 +30,7 @@ interface GetAllUsersResponse {
   message?: string; // Make message optional
 }
 
-// Update the getAllUsers function to fetch from your API
+//Update the getAllUsers function to fetch from your API
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   try {
     const response = await fetch('http://localhost:5001/studentlist');
@@ -72,7 +72,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   }
 };
 
-// Define a type for filters
+//Define a type for filters
 interface Filters {
   country: string;
   course: string;
@@ -219,7 +219,7 @@ const FilterModal = ({
 };
 
 const TrailManagement = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState({ totalCount: 0, students: [] });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -234,12 +234,23 @@ const TrailManagement = () => {
 
 
   const router = useRouter();
-  const handleSyncClick = () => {
-    if (router) {
-    router.push('managestudentview');
-    } else {
-    console.error('Router is not available');
-    }
+  const handleSyncClick = (student: any) => {
+  // if (student && student.studentId) {
+  //   // Your logic to handle the click
+  //   const studentId = student.studentId; // Use studentId
+    router.push('/managestudentview');
+  // } else {
+  //   console.error('Student data is not available');
+  // }
+};
+const handleSyncClick = (studentId) => {
+  if (router) {
+  router.push('managestudentview');
+  console.log(studentId);
+  localStorage.setItem('studentManageID',studentId);
+  } else {
+  console.error('Router is not available');
+  }
 };
 
 
@@ -298,7 +309,7 @@ const TrailManagement = () => {
     }
   };
 
-  // Update the handleApplyFilters function
+  //Update the handleApplyFilters function
   const handleApplyFilters = (filters: Filters) => { // Updated type
     let filtered = [...users];
     
@@ -431,9 +442,31 @@ const TrailManagement = () => {
       </BaseLayout1>
     );
   }
+  const userset=async()=>{
+    try {
+      const response = await fetch('http://localhost:5001/alstudents');
+      const data = await response.json();
+      setUsers(data);
+      console.log(data);
+    }
+    catch{
+           console.log("Error fetching data");
+    }
+   };
+   useEffect(()=>{
+    userset();
+   },[]);
 
-
-
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch("http://localhost:5001/alstudents");
+      const data = await response.json();
+      setUsers(data);
+      console.log(data);
+    };
+    fetchData();
+  }, []);
+  
   return (
     <BaseLayout1>
       <div className={`min-h-screen p-1 bg-[#EDEDED]`}>
@@ -503,38 +536,38 @@ const TrailManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {currentItems.length > 0 ? (
-                currentItems.map((item, index) => (
-                  <tr key={item.trailId || index} className={`border-t`}>
+                 {users.students && users.students.length > 0 ? (
+                          users.students.map((student, index) => (
+                            <tr key={student.studentId || index} className="border-t">
                     <td className="p-2 text-center">
-                      <input type="checkbox" onChange={() => handleSelectUser(item.trailId)} />
-                    </td>
-                    <td className="p-2 text-[11px] text-center">{item.trailId}</td>
-                    <td className="p-2 text-[11px] text-center">{item.date}</td>
-                    <td className="p-2 text-[11px] text-center">
-                      {item.fname} {item.lname}
-                    </td>
-                    <td className="p-2 text-[11px] text-center">{item.preferredTeacher}</td>
-                    <td className="p-2 text-[11px] text-center">{item.number}</td>
-                    <td className="p-2 text-[11px] text-center"></td>
-                    <td className="p-2 text-[11px] text-center"></td>
-                    <td className="p-1 text-center">
-                      <button
-                        className="bg-gray-800 text-[11px] hover:cursor-pointer text-center text-white px-3 py-1 rounded-full shadow hover:bg-gray-900"onClick={handleSyncClick}
-                      >
-                        view
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={9} className="p-2 text-center">
-                    No data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
+                   <input type="checkbox" onChange={() => handleSelectUser(student.student?.studentId)} />
+                             </td>
+                      <td className="p-2 text-[11px] text-center">{student.student?.studentId}</td>
+        <td className="p-2 text-[11px] text-center">{new Date(student.createdDate).toLocaleDateString()}</td>
+        <td className="p-2 text-[11px] text-center">{student.username}</td>
+        <td className="p-2 text-[11px] text-center"></td>
+        <td className="p-2 text-[11px] text-center">{student.student?.studentPhone}</td>
+        <td className="p-2 text-[11px] text-center">-</td>
+        <td className="p-2 text-[11px] text-center">1</td>
+        <td className="p-1 text-center">
+          <button
+            className="bg-gray-800 text-[11px] hover:cursor-pointer text-center text-white px-3 py-1 rounded-full shadow hover:bg-gray-900"
+            onClick={() => handleSyncClick(student._id)}
+          >
+            View
+          </button>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan={9} className="p-2 text-center">
+        No data available
+      </td>
+    </tr>
+  )}
+</tbody>
+
           </table>
           <Pagination />
         </div>
@@ -553,7 +586,7 @@ const TrailManagement = () => {
         userData={selectedUser}
         isEditMode={isEditMode}
         onSave={() => {
-          fetchStudents();
+           fetchStudents();
           closeModal();
         }}
       />

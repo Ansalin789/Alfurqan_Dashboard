@@ -8,6 +8,8 @@ import Modal from 'react-modal';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import { FiCalendar, FiMoreVertical } from 'react-icons/fi';
 
+
+
 const ManageStudentView = () => {
   const router = useRouter();
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -17,7 +19,25 @@ const ManageStudentView = () => {
   const itemsPerPage = 10;
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLTableDataCellElement | null>(null);
-
+ const[studentData,setStudentData]=useState("");
+ 
+  useEffect(()=>{
+    const studentId=localStorage.getItem('studentManageID');
+    console.log(studentId);
+    if (studentId) {
+      const fetchData = async () => {
+        try {
+          const response = await fetch(`http://localhost:5001/alstudents/${studentId}`);
+          const data = await response.json();
+          setStudentData(data);
+          console.log(data);
+        } catch (error) {
+          console.error('Error fetching student data:', error);
+        }
+      };
+      fetchData();
+    }
+  },[]);
   const openModal = () => {
     setModalIsOpen(true);
   };
@@ -122,30 +142,28 @@ const ManageStudentView = () => {
               />
             </div>
             <div className="justify-center text-center border border-b-black">
-              <h2 className="text-2xl font-semibold mb-2">Will Jonto</h2>
+              <h2 className="text-2xl font-semibold mb-2">{studentData.studentEvaluationDetails?.student?.studentFirstName}</h2>
               <p className="text-gray-500 mb-4">Student</p>
             </div>
 
             <div className="text-left w-full p-2 pt-6">
               <h3 className="font-semibold mb-2">Personal Info</h3>
               <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Full Name: </span>Will Jonto
+                <span className="font-semibold text-[14px]">Full Name: </span>{studentData.studentEvaluationDetails?.student?.studentFirstName}
               </p>
               <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Email: </span>willjontoax@gmail.com
+                <span className="font-semibold text-[14px]">Email: </span>{studentData.studentEvaluationDetails?.student?.studentEmail}
               </p>
               <p className="text-gray-800 text-[13px] mb-1">
-                <span className="font-semibold text-[14px]">Phone Number: </span>+91 9800887765
+                <span className="font-semibold text-[14px]">Phone Number: </span>{studentData.studentEvaluationDetails?.student?.studentPhone}
               </p>
               <p className="text-gray-800 text-[14px] mb-1">
                 <span className="font-semibold text-[14px]">Level: </span>1
               </p>
               <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Package: </span>Simple
+                <span className="font-semibold text-[14px]">Package: </span>{studentData.studentEvaluationDetails?.subscription?.subscriptionName}
               </p>
-              <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Mother tongue: </span>English
-              </p>
+              
             </div>
           </div>
         </div>
@@ -353,31 +371,19 @@ const ManageStudentView = () => {
             <div className="grid grid-cols-4 gap-4">
             <div className="col-span-2">
                 <label className="block font-medium text-gray-700 text-[12px]">Select Package</label>
-                <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl">
-                  <option>Simple</option>
-                  <option>Basic</option>
-                  <option>Pro</option>
-                  <option>Elite</option>
-                </select>
+                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.subscription?.subscriptionName} />
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-[13px] text-gray-700">Total Hours</label>
-                <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]" placeholder="1" />
+                <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]" value={studentData.studentEvaluationDetails?.accomplishmentTime} />
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-[13px] text-gray-700">Preferred Teacher</label>
-                <select className="form-select w-full text-[13px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl">
-                  <option>Male</option>
-                  <option>Female</option>
-                </select>
+                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.student?.preferredTeacher} />
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text[13px] text-gray-700">Course</label>
-                <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl">
-                  <option>Arabic</option>
-                  <option>Quran</option>
-                  <option>Islamic Studies</option>
-                </select>
+               
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-gray-700 text-[12px]">Start Date</label>
