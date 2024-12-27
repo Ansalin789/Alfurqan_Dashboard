@@ -489,8 +489,8 @@ const Pagination = () => {
             <thead>
               <tr>
                 <th className="p-3 text-[12px] text-center" style={{ width: '24%' }}>Trail ID</th>
-                <th className="p-3 text-[12px] text-center" style={{ width: '15%' }}>Student Name</th>
-                <th className="p-3 text-[12px] text-center" style={{ width: '35%' }}>Email</th>
+                <th className="p-3 text-[12px] text-center" style={{ width: '25%' }}>Student Name</th>
+                <th className="p-3 text-[12px] text-center" style={{ wordWrap: 'break-word', width: '35%' }}>Email</th>
                 <th className="p-3 text-[12px] text-center" style={{ width: '12%' }}>Mobile</th>
                 <th className="p-3 text-[12px] text-center" style={{ width: '10%' }}>Country</th>
                 <th className="p-3 text-[12px] text-center" style={{ width: '10%' }}>Course</th>
@@ -511,7 +511,7 @@ const Pagination = () => {
                     <td className="p-2 text-[11px] text-center">
                       {item.fname} {item.lname}
                     </td>
-                    <td className="p-2 text-[11px] text-center">{item.email}</td>
+                    <td className="p-2 text-[11px] text-center" style={{ wordWrap: 'break-word', width: '5%' }}>{item.email}</td>
                     <td className="p-2 text-[11px] text-center">{item.number}</td>
                     <td className="p-2 text-[11px] text-center">{item.country}</td>
                     <td className="p-2 text-[11px] text-center">{item.course}</td>
