@@ -4,7 +4,7 @@ import { FiEdit2 } from 'react-icons/fi';
 
 const ProfileCard = () => {
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden w-[300px]">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden w-[300px] mt-14">
       <div className="bg-[#012A4A] relative">
         <div className="flex flex-col items-center pt-6 pb-4">
           <Image
@@ -23,12 +23,10 @@ const ProfileCard = () => {
         <ul className="space-y-2 text-sm">
           <li><strong>Full Name:</strong> Will Jonto</li>
           <li><strong>Email:</strong> willjontoax@gmail.com</li>
-          <li><strong>Phone Number:</strong> (1) 2536 2561 2365</li>
-          <li><strong>Level:</strong> 1</li>
+          {/* <li><strong>Phone Number:</strong> (1) 2536 2561 2365</li>
           <li><strong>Time Zone:</strong> USA(time)</li>
           <li><strong>Country:</strong> USA</li>
-          <li><strong>Course Handling:</strong> Arabic</li>
-          <li><strong>Working Hours:</strong> Arabic</li>
+          <li><strong>Working Hours:</strong> Arabic</li> */}
           <li><strong>Bio:</strong> Lorem Ipsum is simply dummy text of the printing and typesetting industry.</li>
         </ul>
       </div>

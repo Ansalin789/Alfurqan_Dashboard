@@ -632,15 +632,15 @@ const handleClick = async (id: string) => {
           <table className={`min-w-full rounded-lg shadow bg-white`} style={{ width: '100%', tableLayout: 'fixed' }}>
             <thead>
               <tr>
-                <th className="p-3 text-[12px] text-center"style={{ width: '24%' }}>Trail ID</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '20%' }}>Student Name</th>
+                <th className="p-3 text-[12px] text-center"style={{ width: '26%' }}>Trail ID</th>
+                <th className="p-3 text-[12px] text-center"style={{ width: '22%' }}>Student Name</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '15%' }}>Mobile</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '12%' }}>Country</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '13%' }}>Course</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '10%' }}>Preferred Teacher</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '18%' }}>Assigned Teacher</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '14%' }}>Time</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '18%' }}>Class Status</th>
+                <th className="p-3 text-[12px] text-center"style={{ width: '25%' }}>Class Status</th>
                 <th className="p-3 text-[12px] text-center"style={{ width:'15%'}}>payment Status</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '13%' }}>Student Status</th>
                 <th className="p-3 text-[12px] text-center"style={{ width: '10%' }}>Action</th>
