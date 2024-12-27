@@ -5,9 +5,9 @@ import Image from 'next/image';
 import { FaFilter, FaPlus } from 'react-icons/fa';
 import { LiaStarSolid } from "react-icons/lia";
 import { HiOutlineDotsVertical } from "react-icons/hi";
+import { useRouter } from 'next/navigation';
 import BaseLayout1 from '@/components/BaseLayout1';
 import Modal from 'react-modal';
-import {useRouter} from 'next/navigation';
 import { error } from 'console';
 interface Teacher {
   userId: string;
@@ -23,6 +23,7 @@ const ManageTeacher: React.FC = () => {
   const router = useRouter();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [menuVisible, setMenuVisible] = useState<boolean[]>([]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTeacher, setNewTeacher] = useState({
     userName: '',
@@ -54,8 +55,34 @@ const ManageTeacher: React.FC = () => {
           }
         } catch (error) {
           console.error('Error fetching teachers:', error);
-        }
-      };
+// =======
+
+
+//   useEffect(() => {
+    
+
+//     const fetchTeachers = async () => {
+//       try {
+//         const response = await fetch('http://localhost:5001/users?role=TEACHER', {
+//           headers: {
+//             'Authorization': `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IlRlc3QgVXNlciIsInN1YiI6IjY3MmRjMzZmNmRhNjJkYzc2ZWY5Yzg4NSIsImlhdCI6MTczNDM0NjcxNiwiZXhwIjoxNzM0NDMzMTE2fQ.bPGpuxQJxJa2hHtYTF2HkrjrGP0ieVZ_Pi1iaD7a5p4"}`,
+//           },
+//         });
+//         const data = await response.json();
+
+//         console.log('Fetched data:', data);
+
+//         // Access `users` array in the response
+//         if (data && Array.isArray(data.users)) {
+//           setTeachers(data.users);
+//         } else {
+//           console.error('Unexpected API response structure:', data);
+// >>>>>>> 2d6a1dc0c1d2447cc20c04071e06bd19ba334117
+//         }
+//       } catch (error) {
+//         console.error('Error fetching teachers:', error);
+      }
+    };
 
     fetchTeachers();
   }, []);
@@ -63,6 +90,13 @@ const ManageTeacher: React.FC = () => {
     router.push('/Academic/viewteacherslist');
   };
 
+// <<<<<<< HEAD
+// =======
+//   const handleViewTeachersList = () => {
+//     router.push('/Academic/viewteacherslist');
+//   };
+
+// >>>>>>> 2d6a1dc0c1d2447cc20c04071e06bd19ba334117
   const handleViewTeacherSchedule = () => {
     router.push('/Academic/viewTeacherSchedule');
   };
@@ -141,7 +175,7 @@ const ManageTeacher: React.FC = () => {
             </div>
           </div>
           {/* Cards */}
-          <div className="grid grid-cols-6 gap-4 p-6">
+          <div className="grid grid-cols-6 gap-4 p-6" style={{ width: '100%' }}>
             {teachers.map((teacher, index) => (
               <div key={index} className="bg-white shadow-md rounded-lg p-4 w-48">
                 <div className="flex justify-between items-center">
@@ -150,8 +184,8 @@ const ManageTeacher: React.FC = () => {
                     alt="Teacher"
                     className="w-12 h-12 ml-12 mt-4 rounded-full" width={40} height={40}
                   />
-                  <button className="text-gray-400">
-                    <HiOutlineDotsVertical size={20} className='text-[#717579]'/>
+                  <button className="text-gray-400" onClick={() => toggleMenu(index)}>
+                    <HiOutlineDotsVertical size={20} className='text-[#717579]' />
                   </button>
                 </div>
                 {menuVisible[index] && (
@@ -174,7 +208,7 @@ const ManageTeacher: React.FC = () => {
                   <p className="text-[#717579] p-1 text-sm">{teacher.subject}</p>
                   <div className='flex text-center justify-center'>
                     {Array.from({ length: teacher.rating || 0 }).map((_, i) => (
-                      <LiaStarSolid key={i} className='text-[#223857]'/>
+                      <LiaStarSolid key={i} className='text-[#223857]' />
                     ))}
                   </div>
                   <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg" onClick={handleViewTeacherSchedule}>
@@ -246,3 +280,8 @@ const ManageTeacher: React.FC = () => {
 }
 
 export default ManageTeacher;
+
+
+
+
+//onClick={() => { handleViewStudentList (); router.push('/Academic/viewTeacherSchedule');}}

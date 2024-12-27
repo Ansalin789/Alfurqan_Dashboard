@@ -1,11 +1,11 @@
 import React from 'react';
-import ProfileCard from '@/components/Academic/ViewStudentList/ProfileCard ';
-import Stats from '@/components/Academic/ViewStudentList/Stats';
-import StudentList from '@/components/Academic/ViewStudentList/StudentList';
-import ScheduledClasses from '@/components/Academic/ViewStudentList/ScheduledClasses';
+import ProfileCard from '@/components/Academic/ViewTeachersList/ProfileCard ';
+import Stats from '@/components/Academic/ViewTeachersList/Stats';
+import StudentList from '@/components/Academic/ViewTeachersList/StudentList';
+import ScheduledClasses from '@/components/Academic/ViewTeachersList/ScheduledClasses';
 import BaseLayout1 from '@/components/BaseLayout1';
 
-const ViewStudentList = () => {
+const ViewTeachersList = () => {
   return (
     <BaseLayout1>
     <div className="p-6 min-h-screen w-[100%] flex flex-col">
@@ -24,4 +24,4 @@ const ViewStudentList = () => {
   );
 };
 
-export default ViewStudentList;
+export default ViewTeachersList;

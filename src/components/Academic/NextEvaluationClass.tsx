@@ -152,7 +152,7 @@ const NextEvaluationClass = () => {
             <div className="absolute flex items-center justify-center w-10 h-10 rounded-full bg-white">
               <div className="text-[#234878]">
                 <p className="text-[4px] font-bold">SESSION 13</p>
-                <p className="text-[11px] font-extrabold text-[#223857]">
+                <p className="text-[8px] font-extrabold text-[#223857]">
                   {formatTime(time.hours)}:{formatTime(time.minutes)}:{formatTime(time.seconds)}
                 </p>
               </div>

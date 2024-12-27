@@ -1,5 +1,7 @@
 import React from 'react';
 import { FaUserCircle } from 'react-icons/fa';
+import Link from 'next/link'
+
 
 export default function Academic() {
     const teachersData = [
@@ -16,6 +18,13 @@ export default function Academic() {
     ];
 
     return (
+        <Link 
+        href="/Academic/manageStudents"
+        className="block col-span-12 bg-[#3e68a1] p-4 py-3 rounded-[25px] shadow-xl 
+                 transition-transform hover:scale-[1.02] 
+                 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        aria-label="View Teachers and Students Management"
+    >
         <div className="col-span-12 bg-[#3e68a1] p-4 py-3 rounded-[25px] shadow-xl">
             <h3 className="text-[15px] font-semibold text-white mb-2">Teachers - Students</h3>
             <div className="max-h-40 overflow-y-scroll scrollbar-thin">
@@ -40,5 +49,6 @@ export default function Academic() {
                 </table>
             </div>
         </div>
+        </Link>
     );
 }

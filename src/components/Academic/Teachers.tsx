@@ -9,6 +9,8 @@ import {
   Legend
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import Link from 'next/link'
+
 
 // Register ChartJS components
 ChartJS.register(
@@ -91,6 +93,13 @@ export default function Teachers() {
     };
 
     return (
+        <Link 
+        href="/Academic/manageTeachers"
+        className="block col-span-12 bg-[#3e68a1] p-4 py-3 rounded-[25px] shadow-xl 
+                 transition-transform hover:scale-[1.02] 
+                 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        aria-label="View Teachers and Students Management"
+    >
         <div className="col-span-12 bg-[#3e68a1] p-4 rounded-[25px] shadow-lg">
             <div className="flex justify-between items-center gap-6">
                 <h3 className="text-[15px] font-semibold text-white">Teachers</h3>
@@ -120,5 +129,6 @@ export default function Teachers() {
                 </div>
             </div>
         </div>
+        </Link>
     );
 }
