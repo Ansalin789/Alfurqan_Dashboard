@@ -10,213 +10,212 @@ import AddTrailStudentModal from '@/components/Academic/AddTrailStudentModel';
 
 
 // Define the return type of the getAllUsers function
-interface User {
-  trailId: string;
-  fname: string;
-  lname: string;
-  email: string;
-  number: string;
-  country: string;
-  course: string;
-  preferredTeacher: string;
-  date: string;
-  time: string;
-  evaluationStatus?: string;
-}
+// interface User {
+//   trailId: string;
+//   fname: string;
+//   lname: string;
+//   email: string;
+//   number: string;
+//   country: string;
+//   course: string;
+//   preferredTeacher: string;
+//   date: string;
+//   time: string;
+//   evaluationStatus?: string;
+// }
 
-interface GetAllUsersResponse {
-  success: boolean;
-  data: User[];
-  message?: string; // Make message optional
-}
+// interface GetAllUsersResponse {
+//   success: boolean;
+//   data: User[];
+//   message?: string; // Make message optional
+// }
 
-//Update the getAllUsers function to fetch from your API
-const getAllUsers = async (): Promise<GetAllUsersResponse> => {
-  try {
-    const response = await fetch('http://localhost:5001/studentlist');
-    const rawData = await response.json();
-    console.log('Raw API Response:', rawData); // Debug log
+// //Update the getAllUsers function to fetch from your API
+// const getAllUsers = async (): Promise<GetAllUsersResponse> => {
+//   try {
+//     const response = await fetch('http://localhost:5001/studentlist');
+//     const rawData = await response.json();
+//     console.log('Raw API Response:', rawData); // Debug log
 
-    // Check if rawData.students exists and is an array
-    if (!rawData.students || !Array.isArray(rawData.students)) {
-      throw new Error('Invalid data structure received from API');
-    }
+//     // Check if rawData.students exists and is an array
+//     if (!rawData.students || !Array.isArray(rawData.students)) {
+//       throw new Error('Invalid data structure received from API');
+//     }
 
-    // Transform API data to match User interface
-    const transformedData = rawData.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; }) => ({
-      trailId: item._id,
-      fname: item.firstName,
-      lname: item.lastName,
-      email: item.email,
-      number: item.phoneNumber.toString(),
-      country: item.country,
-      course: item.learningInterest,
-      preferredTeacher: item.preferredTeacher,
-      date: new Date(item.startDate).toLocaleDateString(),
-      time: `${item.preferredFromTime} - ${item.preferredToTime}`,
-      evaluationStatus: item.evaluationStatus
-    }));
+//     // Transform API data to match User interface
+//     const transformedData = rawData.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; }) => ({
+//       trailId: item._id,
+//       fname: item.firstName,
+//       lname: item.lastName,
+//       email: item.email,
+//       number: item.phoneNumber.toString(),
+//       country: item.country,
+//       course: item.learningInterest,
+//       preferredTeacher: item.preferredTeacher,
+//       date: new Date(item.startDate).toLocaleDateString(),
+//       time: `${item.preferredFromTime} - ${item.preferredToTime}`,
+//       evaluationStatus: item.evaluationStatus
+//     }));
 
-    return {
-      success: true,
-      data: transformedData,
-      message: 'Users fetched successfully',
-    };
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    return {
-      success: false,
-      data: [],
-      message: error instanceof Error ? error.message : 'Failed to fetch users',
-    };
-  }
-};
+//     return {
+//       success: true,
+//       data: transformedData,
+//       message: 'Users fetched successfully',
+//     };
+//   } catch (error) {
+//     console.error('Error fetching users:', error);
+//     return {
+//       success: false,
+//       data: [],
+//       message: error instanceof Error ? error.message : 'Failed to fetch users',
+//     };
+//   }
+// };
 
-//Define a type for filters
-interface Filters {
-  country: string;
-  course: string;
-  teacher: string;
-  status: string;
-}
+// //Define a type for filters
+// interface Filters {
+//   country: string;
+//   course: string;
+//   teacher: string;
+//   status: string;
+// }
 
-// Update the FilterModal component
-const FilterModal = ({ 
-  isOpen, 
-  onClose,
-  onApplyFilters, 
-  users 
-}: { 
-  isOpen: boolean;  
-  onClose: () => void; 
-  onApplyFilters: (filters: Filters) => void; // Updated type
-  users: User[];
-}) => {
-  const [filters, setFilters] = useState<Filters>({
-    country: '',
-    course: '',
-    teacher: '',
-    status: ''
-  });
+// // Update the FilterModal component
+// const FilterModal = ({ 
+//   isOpen, 
+//   onClose,
+//   onApplyFilters, 
+//   users 
+// }: { 
+//   isOpen: boolean;  
+//   onClose: () => void; 
+//   onApplyFilters: (filters: Filters) => void; // Updated type
+//   users: User[];
+// }) => {
+//   const [filters, setFilters] = useState<Filters>({
+//     country: '',
+//     course: '',
+//     teacher: '',
+//     status: ''
+//   });
 
-  // Get unique values for each filter
-  const uniqueCountries = Array.from(new Set(users.map(user => user.country)));
-  const uniqueCourses = Array.from(new Set(users.map(user => user.course)));
-  const uniqueTeachers = Array.from(new Set(users.map(user => user.preferredTeacher)));
+//   // Get unique values for each filter
+//   const uniqueCountries = Array.from(new Set(users.map(user => user.country)));
+//   const uniqueCourses = Array.from(new Set(users.map(user => user.course)));
+//   const uniqueTeachers = Array.from(new Set(users.map(user => user.preferredTeacher)));
 
-  const handleApply = () => {
-    onApplyFilters(filters);
-    onClose();
-  };
+//   const handleApply = () => {
+//     onApplyFilters(filters);
+//     onClose();
+//   };
 
-  const handleReset = () => {
-    setFilters({
-      country: '',
-      course: '',
-      teacher: '',
-      status: ''
-    });
-  };
+//   const handleReset = () => {
+//     setFilters({
+//       country: '',
+//       course: '',
+//       teacher: '',
+//       status: ''
+//     });
+//   };
 
-  return (
-    <Modal
-      isOpen={isOpen}
-      onRequestClose={onClose}
-      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-lg w-[500px]"
-      overlayClassName="fixed inset-0 bg-black bg-opacity-50"
-    >
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Filter Options</h2>
-        <button 
-          onClick={onClose}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          ×
-        </button>
-      </div>
+  // return (
+  //   <Modal
+  //     isOpen={isOpen}
+  //     onRequestClose={onClose}
+  //     className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-lg w-[500px]"
+  //     overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+  //   >
+  //     <div className="flex justify-between items-center mb-6">
+  //       <h2 className="text-xl font-semibold">Filter Options</h2>
+  //       <button 
+  //         onClick={onClose}
+  //         className="text-gray-500 hover:text-gray-700"
+  //       >
+  //         ×
+  //       </button>
+  //     </div>
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Country
-          </label>
-          <select
-            className="w-full p-2 border rounded-lg"
-            value={filters.country}
-            onChange={(e) => setFilters({...filters, country: e.target.value})}
-          >
-            <option value="">All Countries</option>
-            {uniqueCountries.map((country) => (
-              <option key={country} value={country}>{country}</option>
-            ))}
-          </select>
-        </div>
+  //     <div className="space-y-4">
+  //       <div>
+  //         <label className="block text-sm font-medium text-gray-700 mb-1">
+  //           Country
+  //         </label>
+  //         <select
+  //           className="w-full p-2 border rounded-lg"
+  //           value={filters.country}
+  //           onChange={(e) => setFilters({...filters, country: e.target.value})}
+  //         >
+  //           <option value="">All Countries</option>
+  //           {uniqueCountries.map((country) => (
+  //             <option key={country} value={country}>{country}</option>
+  //           ))}
+  //         </select>
+  //       </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Course
-          </label>
-          <select
-            className="w-full p-2 border rounded-lg"
-            value={filters.course}
-            onChange={(e) => setFilters({...filters, course: e.target.value})}
-          >
-            <option value="">All Courses</option>
-            {uniqueCourses.map((course) => (
-              <option key={course} value={course}>{course}</option>
-            ))}
-          </select>
-        </div>
+  //       <div>
+  //         <label className="block text-sm font-medium text-gray-700 mb-1">
+  //           Course
+  //         </label>
+  //         <select
+  //           className="w-full p-2 border rounded-lg"
+  //           value={filters.course}
+  //           onChange={(e) => setFilters({...filters, course: e.target.value})}
+  //         >
+  //           <option value="">All Courses</option>
+  //           {uniqueCourses.map((course) => (
+  //             <option key={course} value={course}>{course}</option>
+  //           ))}
+  //         </select>
+  //       </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Teacher
-          </label>
-          <select
-            className="w-full p-2 border rounded-lg"
-            value={filters.teacher}
-            onChange={(e) => setFilters({...filters, teacher: e.target.value})}
-          >
-            <option value="">All Teachers</option>
-            {uniqueTeachers.map((teacher) => (
-              <option key={teacher} value={teacher}>{teacher}</option>
-            ))}
-          </select>
-        </div>
+  //       <div>
+  //         <label className="block text-sm font-medium text-gray-700 mb-1">
+  //           Teacher
+  //         </label>
+  //         <select
+  //           className="w-full p-2 border rounded-lg"
+  //           value={filters.teacher}
+  //           onChange={(e) => setFilters({...filters, teacher: e.target.value})}
+  //         >
+  //           <option value="">All Teachers</option>
+  //           {uniqueTeachers.map((teacher) => (
+  //             <option key={teacher} value={teacher}>{teacher}</option>
+  //           ))}
+  //         </select>
+  //       </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Status
-          </label>
-          <select
-            className="w-full p-2 border rounded-lg"
-            value={filters.status}
-            onChange={(e) => setFilters({...filters, status: e.target.value})}
-          >
-            <option value="">All Statuses</option>
-            <option value="PENDING">Pending</option>
-            <option value="COMPLETED">Completed</option>
-          </select>
-        </div>
+  //       <div>
+  //         <label className="block text-sm font-medium text-gray-700 mb-1">
+  //           Status
+  //         </label>
+  //         <select
+  //           className="w-full p-2 border rounded-lg"
+  //           value={filters.status}
+  //           onChange={(e) => setFilters({...filters, status: e.target.value})}
+  //         >
+  //           <option value="">All Statuses</option>
+  //           <option value="PENDING">Pending</option>
+  //           <option value="COMPLETED">Completed</option>
+  //         </select>
+  //       </div>
 
-        <div className="flex justify-end space-x-4 mt-6">
-          <button
-            onClick={handleReset}
-            className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-          >
-            Reset
-          </button>
-          <button
-            onClick={handleApply}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Apply Filters
-          </button>
-        </div>
-      </div>
-    </Modal>
-  );
-};
+  //       <div className="flex justify-end space-x-4 mt-6">
+  //         <button
+  //           onClick={handleReset}
+  //           className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+  //         >
+  //           Reset
+  //         </button>
+  //         <button
+  //           onClick={handleApply}
+  //           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+  //         >
+  //           Apply Filters
+  //         </button>
+  //       </div>
+  //     </div>
+  //   </Modal>
+  // );
 
 const TrailManagement = () => {
   const [users, setUsers] = useState({ totalCount: 0, students: [] });
@@ -235,15 +234,15 @@ const TrailManagement = () => {
 
 
   const router = useRouter();
-  const handleSyncClick = (student: any) => {
-  // if (student && student.studentId) {
-  //   // Your logic to handle the click
-  //   const studentId = student.studentId; // Use studentId
-    router.push('/managestudentview');
-  // } else {
-  //   console.error('Student data is not available');
-  // }
-};
+//   const handleSyncClick = (student: any) => {
+//   // if (student && student.studentId) {
+//   //   // Your logic to handle the click
+//   //   const studentId = student.studentId; // Use studentId
+//     router.push('/managestudentview');
+//   // } else {
+//   //   console.error('Student data is not available');
+//   // }
+// };
 const handleSyncClick = (studentId) => {
   if (router) {
   router.push('managestudentview');
@@ -256,27 +255,27 @@ const handleSyncClick = (studentId) => {
 
 
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const allData = await getAllUsers();
-        if (allData.success && allData.data) {
-          setUsers(allData.data);
-          setFilteredUsers(allData.data); // Initialize filtered users
-        } else {
-          setErrorMessage(allData.message ?? 'Failed to fetch users');
-        }
-      } catch {
-        setErrorMessage('An unexpected error occurred'); // Set error message for UI
-      }
-    };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const allData = await getAllUsers();
+  //       if (allData.success && allData.data) {
+  //         setUsers(allData.data);
+  //         setFilteredUsers(allData.data); // Initialize filtered users
+  //       } else {
+  //         setErrorMessage(allData.message ?? 'Failed to fetch users');
+  //       }
+  //     } catch {
+  //       setErrorMessage('An unexpected error occurred'); // Set error message for UI
+  //     }
+  //   };
 
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
 
-  useEffect(() => {
-    Modal.setAppElement('body');
-  }, []);
+  // useEffect(() => {
+  //   Modal.setAppElement('body');
+  // }, []);
 
 
   const openModal = (user: User | null = null) => {
@@ -293,43 +292,43 @@ const handleSyncClick = (studentId) => {
   };
 
 
-  useEffect(() => {
-    console.log('Current users data:', users);
-  }, [users]);
+  // useEffect(() => {
+  //   console.log('Current users data:', users);
+  // }, [users]);
 
-  const fetchStudents = async () => {
-    try {
-      const allData = await getAllUsers();
-      if (allData.success && allData.data) {
-        setUsers(allData.data);
-      } else {
-        setErrorMessage(allData.message ?? 'Failed to fetch users');
-      }
-    } catch {
-      setErrorMessage('An unexpected error occurred');
-    }
-  };
+  // const fetchStudents = async () => {
+  //   try {
+  //     const allData = await getAllUsers();
+  //     if (allData.success && allData.data) {
+  //       setUsers(allData.data);
+  //     } else {
+  //       setErrorMessage(allData.message ?? 'Failed to fetch users');
+  //     }
+  //   } catch {
+  //     setErrorMessage('An unexpected error occurred');
+  //   }
+  // };
 
-  //Update the handleApplyFilters function
-  const handleApplyFilters = (filters: Filters) => { // Updated type
-    let filtered = [...users];
+  // //Update the handleApplyFilters function
+  // const handleApplyFilters = (filters: Filters) => { // Updated type
+  //   let filtered = [...users];
     
-    if (filters.country) {
-      filtered = filtered.filter(user => user.country === filters.country);
-    }
-    if (filters.course) {
-      filtered = filtered.filter(user => user.course === filters.course);
-    }
-    if (filters.teacher) {
-      filtered = filtered.filter(user => user.preferredTeacher === filters.teacher);
-    }
-    if (filters.status) {
-      filtered = filtered.filter(user => user.evaluationStatus === filters.status);
-    }
+  //   if (filters.country) {
+  //     filtered = filtered.filter(user => user.country === filters.country);
+  //   }
+  //   if (filters.course) {
+  //     filtered = filtered.filter(user => user.course === filters.course);
+  //   }
+  //   if (filters.teacher) {
+  //     filtered = filtered.filter(user => user.preferredTeacher === filters.teacher);
+  //   }
+  //   if (filters.status) {
+  //     filtered = filtered.filter(user => user.evaluationStatus === filters.status);
+  //   }
     
-    setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
-  };
+  //   setFilteredUsers(filtered);
+  //   setCurrentPage(1); // Reset to first page when filters change
+  // };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -443,20 +442,20 @@ const handleSyncClick = (studentId) => {
       </BaseLayout1>
     );
   }
-  const userset=async()=>{
-    try {
-      const response = await fetch('http://localhost:5001/alstudents');
-      const data = await response.json();
-      setUsers(data);
-      console.log(data);
-    }
-    catch{
-           console.log("Error fetching data");
-    }
-   };
-   useEffect(()=>{
-    userset();
-   },[]);
+  // const userset=async()=>{
+  //   try {
+  //     const response = await fetch('http://localhost:5001/alstudents');
+  //     const data = await response.json();
+  //     setUsers(data);
+  //     console.log(data);
+  //   }
+  //   catch{
+  //          console.log("Error fetching data");
+  //   }
+  //  };
+  //  useEffect(()=>{
+  //   userset();
+  //  },[]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -586,16 +585,16 @@ const handleSyncClick = (studentId) => {
         onRequestClose={closeModal} 
         isEditMode={isEditMode}
         onSave={() => {
-           fetchStudents();
+          //  fetchStudents();
           closeModal();
         }}
       />
-      <FilterModal
+      {/* <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         onApplyFilters={handleApplyFilters}
         users={users}
-      />
+      /> */}
     </BaseLayout1>
   );
 };

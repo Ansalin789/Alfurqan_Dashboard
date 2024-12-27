@@ -15,4 +15,5 @@ export interface User {
     comment?: string;
     preferredDate?: Date;
     numberofstudents: number;
+    status: string;
 } 
