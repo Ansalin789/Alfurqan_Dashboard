@@ -20,7 +20,16 @@ const ManageStudentView = () => {
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLTableDataCellElement | null>(null);
  const[studentData,setStudentData]=useState("");
- 
+ const [teachers, setTeachers] = useState<Teacher[]>([]);
+ interface Teacher {
+  userId: string;
+  userName: string;
+  email: string;
+  profileImage?: string | null;
+  level: string;
+  subject: string;
+  rating: number;
+}
   useEffect(()=>{
     const studentId=localStorage.getItem('studentManageID');
     console.log(studentId);
@@ -37,6 +46,27 @@ const ManageStudentView = () => {
       };
       fetchData();
     }
+          const fetchTeachers = async () => {
+            try {
+              const response = await fetch('http://localhost:5001/users?role=TEACHER', {
+                headers: {
+                  'Authorization': `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IlRlc3QgVXNlciIsInN1YiI6IjY3MmRjMzZmNmRhNjJkYzc2ZWY5Yzg4NSIsImlhdCI6MTczNDM0NjcxNiwiZXhwIjoxNzM0NDMzMTE2fQ.bPGpuxQJxJa2hHtYTF2HkrjrGP0ieVZ_Pi1iaD7a5p4"}`,
+                },
+              });
+              const data = await response.json();
+      
+              console.log('Fetched data:', data);
+      
+              // Access `users` array in the response
+              if (data && Array.isArray(data.users)) {
+                setTeachers(data.users);
+              } else {
+                console.error('Unexpected API response structure:', data);
+              }
+            } catch (error) {
+              console.error('Error fetching teachers:', error);}
+            }
+            fetchTeachers();
   },[]);
   const openModal = () => {
     setModalIsOpen(true);
@@ -102,7 +132,115 @@ const ManageStudentView = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+  useEffect(() => {
+    if (studentData?.studentEvaluationDetails?.accomplishmentTime) {
+      setSchedule((prevSchedule) =>
+        prevSchedule.map((item) => ({
+          ...item,
+          duration: studentData.studentEvaluationDetails.accomplishmentTime,
+        }))
+      );
+    }
+  }, [studentData]);
 
+  const [schedule, setSchedule] = useState(
+    ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => ({
+      day,
+      startTime: "",
+      duration: "", // Initial duration in hours from API
+      endTime: "",
+      isSelected: false, // Track if the day is selected
+    }))
+  );
+
+  const handleStartTimeChange = (index, newStartTime) => {
+    const updatedSchedule = [...schedule];
+
+    // Set the start time for the selected day
+    updatedSchedule[index].startTime = newStartTime;
+    updatedSchedule[index].isSelected = true; // Mark as selected
+
+    // Calculate the end time based on the start time and duration
+    const [hours, minutes] = newStartTime.split(":").map(Number);
+    const startDate = new Date();
+    startDate.setHours(hours);
+    startDate.setMinutes(minutes);
+
+    // Calculate the end time by adding the duration in hours (converted to minutes)
+    const endDate = new Date(startDate.getTime());
+    endDate.setMinutes(startDate.getMinutes() + updatedSchedule[index].duration * 60); // Adding the duration in minutes
+    updatedSchedule[index].endTime = endDate.toTimeString().slice(0, 5); // Format end time as HH:mm
+
+    // Reduce duration by 30 minutes (0.5 hours) for all subsequent selected days (below the selected index)
+    for (let i = index + 1; i < updatedSchedule.length; i++) {
+      if (!updatedSchedule[i].isSelected) { // Only reduce duration for unselected days
+        updatedSchedule[i].duration = Math.max(0, updatedSchedule[i].duration - 0.25); // Reduce by 30 minutes
+      }
+    }
+
+    // Update the schedule
+    setSchedule(updatedSchedule);
+  };
+
+  const handleCheckboxChange = (index) => {
+    const updatedSchedule = [...schedule];
+    
+    // Toggle selection of the day
+    updatedSchedule[index].isSelected = !updatedSchedule[index].isSelected;
+    
+    // Reset the duration when unselected
+    if (!updatedSchedule[index].isSelected) {
+      updatedSchedule[index].duration = defaultDuration; // Reset to default duration
+    }
+    
+    setSchedule(updatedSchedule);
+  };
+  interface TimeSlot {
+    label: string;
+    value: string;
+  }
+  
+  interface Teacher {
+    teacherName: string;
+    teacherEmail: string;
+  }
+  
+  interface RequestData {
+    classDay: TimeSlot[];
+    package: string;
+    teacher: Teacher;
+    preferedTeacher: string;
+    course: string;
+    totalHourse: number;
+    startDate: string;
+    endDate: string;
+    startTime: TimeSlot[];
+    endTime: TimeSlot[];
+    scheduleStatus: string;
+  }
+  const sendDataToAPI = async (data: RequestData): Promise<void> => {
+    try {
+      const response = await fetch("https://your-api-endpoint.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to send data");
+      }
+  
+      const responseData = await response.json();
+      console.log("Success:", responseData);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+  
+  // Call the function to send the data
+  
   return (
     <BaseLayout1>
       <div className="flex flex-col md:flex-row pt-14 pl-4 min-h-screen">
@@ -339,58 +477,111 @@ const ManageStudentView = () => {
           <h2 className="text-xl font-semibold mb-4">Schedule Classes</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                <div key={day} className="flex items-center mb-2 w-96">
-                  <div className='flex items-center border-1 p-2 rounded-xl border border-[#D4D6D9] bg-[#f7f7f8] w-60 justify-between'>
-                    
-                    <label className="block font-medium text-[#333B4C] rounded-xl text-[11px]">{day}</label>
-                    <input type="checkbox" className="form-checkbox border border-[#D4D6D9] bg-[#f7f7f8] mr-2 rounded-2xl text-[11px]" />
-                  </div>
-                  <input type="time" className="form-input w-[100px] p-2 border border-[#D4D6D9] bg-[#f7f7f8] rounded-xl text-[11px] ml-4" />
-                  <input type="number" className="form-input w-[100px] text-center ml-4 text-[11px] p-2 border border-[#D4D6D9] bg-[#f7f7f8] text-[#333B4C] rounded-xl" placeholder="Duration" />
-                </div>
-              ))}
+            {schedule.map((item, index) => (
+        <div key={item.day} className="flex items-center mb-2 w-96">
+          <div className="flex items-center border-1 p-2 rounded-xl border border-[#D4D6D9] bg-[#f7f7f8] w-60 justify-between">
+            <label className="block font-medium text-[#333B4C] rounded-xl text-[11px]">
+              {item.day}
+            </label>
+            <input
+              type="checkbox"
+              className="form-checkbox border border-[#D4D6D9] bg-[#f7f7f8] mr-2 rounded-2xl text-[11px]"
+              checked={item.isSelected}
+              onChange={() => handleCheckboxChange(index)} // Trigger selection when checkbox is clicked
+            />
+          </div>
+          <input
+            type="time"
+            className="form-input w-[100px] p-2 border border-[#D4D6D9] bg-[#f7f7f8] rounded-xl text-[11px] ml-4"
+            value={item.startTime}
+            onChange={(e) => handleStartTimeChange(index, e.target.value)}
+            // Disable start time input if day is selected
+          />
+          
+          {/* Display the duration only if the day is selected */}
+          
+              <input
+                type="number"
+                className="form-input w-[100px] text-center ml-4 text-[11px] p-2 border border-[#D4D6D9] bg-[#f7f7f8] text-[#333B4C] rounded-xl"
+                value={item.duration} // Display duration as a floating-point number (in hours)
+                readOnly
+              />
+            
+        </div>
+      ))}
             </div>
             <div className="grid grid-cols-4 gap-4">
             <div className="col-span-2">
                 <label className="block font-medium text-gray-700 text-[12px]">Select Package</label>
-                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.subscription?.subscriptionName} />
+                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.subscription?.subscriptionName}  readOnly/>
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-[13px] text-gray-700">Total Hours</label>
-                <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]" value={studentData.studentEvaluationDetails?.accomplishmentTime} />
+                <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]" value={studentData.studentEvaluationDetails?.accomplishmentTime}  readOnly/>
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text-[13px] text-gray-700">Preferred Teacher</label>
-                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.student?.preferredTeacher} />
+                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.student?.preferredTeacher}  readOnly/>
               </div>
               <div className="col-span-2">
                 <label className="block font-medium text[13px] text-gray-700">Course</label>
-               
+                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.student?.learningInterest}  readOnly/>
               </div>
               <div className="col-span-2">
-                <label className="block font-medium text-gray-700 text-[12px]">Start Date</label>
-                <input type="date" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" />
-              </div>
-              <div className="col-span-2">
-                <label className="block font-medium text-gray-700 text-[12px]">End Date</label>
-                <input type="date" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" />
-              </div>
-              <div className="col-span-2">
-                <label className="block font-medium text-gray-700 text-[12px]">Start Time</label>
-                <input type="time" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" />
-              </div>
-              <div className="col-span-2">
-                <label className="block font-medium text-gray-700 text-[12px]">End Time</label>
-                <input type="time" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" />
-              </div>
+                     <label className="block font-medium text-gray-700 text-[12px]">Start Date</label>
+                             <input
+                       type="text"
+                    className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
+                             value={
+                            studentData?.studentDetails?.createdDate
+                         ? new Date(studentData.studentDetails.createdDate).toISOString().slice(0, 10) // Extract YYYY-MM-DD
+                                  : "Invalid Date" // Fallback if createdDate is invalid or missing
+                                      }
+                                   readOnly
+                                     />
+                                   </div>
+                             <div className="col-span-2">
+                                 <label className="block font-medium text-gray-700 text-[12px]">Start Date</label>
+                             <input
+                                   type="text"
+                                className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
+                               value={
+                     studentData?.studentDetails?.createdDate
+                         ? new Date(studentData.studentDetails.createdDate).toISOString().slice(0, 10)
+                       : "N/A" // Fallback if createdDate is invalid or missing
+                            }
+                       readOnly
+                            />
+                          </div>
+
+                          <div className="col-span-2">
+                     <label className="block font-medium text-gray-700 text-[12px]">Start Time</label>
+                       <input
+                     type="time"
+                         className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
+                        defaultValue="09:00" // Set default start time to 09:00
+                        disabled={schedule.some(item => item.isSelected)}
+                         />
+                        </div>
+                     <div className="col-span-2">
+                         <label className="block font-medium text-gray-700 text-[12px]">End Time</label>
+                           <input
+                        type="time"
+                           className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
+              defaultValue="09:30" // Set default end time to 09:30
+              disabled={schedule.some(item => item.isSelected)}
+                 />
+                  </div>
+
               <div className="col-span-2">
                 <label className="block font-medium text-gray-700 text-[12px]">SelectTeacher</label>
                 <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl">
-                  <option>Teacher 1</option>
-                  <option>Teacher 2</option>
-                  <option>Teacher 3</option>
-                </select>
+                 {teachers.map((teacher) => (
+                     <option key={teacher.userId} value={teacher.userId}>
+                      {teacher.userName}
+                      </option>
+                         ))}
+                  </select>
               </div>
             </div>
           </div>
