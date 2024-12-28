@@ -10,6 +10,7 @@ import { FiCalendar, FiMoreVertical } from 'react-icons/fi';
 
 
 
+
 const ManageStudentView = () => {
   const router = useRouter();
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -32,7 +33,7 @@ const ManageStudentView = () => {
 }
   useEffect(()=>{
     const studentId=localStorage.getItem('studentManageID');
-    console.log(studentId);
+    console.log(">>>>>",studentId);
     if (studentId) {
       const fetchData = async () => {
         try {
@@ -132,16 +133,6 @@ const ManageStudentView = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-  useEffect(() => {
-    if (studentData?.studentEvaluationDetails?.accomplishmentTime) {
-      setSchedule((prevSchedule) =>
-        prevSchedule.map((item) => ({
-          ...item,
-          duration: studentData.studentEvaluationDetails.accomplishmentTime,
-        }))
-      );
-    }
-  }, [studentData]);
 
   const [schedule, setSchedule] = useState(
     ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => ({
@@ -152,6 +143,17 @@ const ManageStudentView = () => {
       isSelected: false, // Track if the day is selected
     }))
   );
+
+  useEffect(() => {
+    if (studentData?.studentEvaluationDetails?.accomplishmentTime) {
+      setSchedule((prevSchedule) =>
+        prevSchedule.map((item) => ({
+          ...item,
+          duration: studentData.studentEvaluationDetails.accomplishmentTime,
+        }))
+      );
+    }
+  }, [studentData]);
 
   const handleStartTimeChange = (index, newStartTime) => {
     const updatedSchedule = [...schedule];
@@ -168,8 +170,8 @@ const ManageStudentView = () => {
 
     // Calculate the end time by adding the duration in hours (converted to minutes)
     const endDate = new Date(startDate.getTime());
-    endDate.setMinutes(startDate.getMinutes() + updatedSchedule[index].duration * 60); // Adding the duration in minutes
-    updatedSchedule[index].endTime = endDate.toTimeString().slice(0, 5); // Format end time as HH:mm
+    endDate.setMinutes(startDate.getMinutes() + 30); // Adding 30 minutes
+    updatedSchedule[index].endTime = endDate.toTimeString().slice(0, 5);
 
     // Reduce duration by 30 minutes (0.5 hours) for all subsequent selected days (below the selected index)
     for (let i = index + 1; i < updatedSchedule.length; i++) {
@@ -195,6 +197,40 @@ const ManageStudentView = () => {
     
     setSchedule(updatedSchedule);
   };
+     const[selectTeacher,setselectTeacher]=useState("");
+  // Constructing the final request data with the necessary format
+  const requestData = {
+    classDay: schedule.filter(item => item.isSelected).map(item => ({
+      label: item.day,
+      value: item.day,
+    })),
+    startTime: schedule.filter(item => item.isSelected).map(item => ({
+      label: item.startTime,
+      value: item.startTime,
+    })),
+    endTime: schedule.filter(item => item.isSelected).map(item => ({
+      label: item.endTime,
+      value: item.endTime,
+    })),
+    package: studentData.studentEvaluationDetails?.subscription?.subscriptionName,  // Replace with your actual package value
+    teacher: {
+      teacherName:studentData.studentEvaluationDetails?.assignedTeacher,
+      teacherEmail:  studentData.studentEvaluationDetails?.assignedTeacherEmail,
+    },
+    preferedTeacher: studentData.studentEvaluationDetails?.student?.preferredTeacher, // Replace with the selected teacher preference
+    course: studentData.studentEvaluationDetails?.student?.learningInterest, // Replace with your actual course value
+    totalHourse: Number(studentData.studentEvaluationDetails?.accomplishmentTime), // Calculate total hours
+    startDate: studentData?.studentDetails?.createdDate
+    ? new Date(studentData.studentDetails.createdDate).toISOString().slice(0, 10):'', // Replace with your actual start date
+    endDate: studentData?.studentDetails?.createdDate
+    ? (() => {
+        const date = new Date(studentData.studentDetails.createdDate);
+        date.setDate(date.getDate() + 28); // Add 28 days
+        return date.toISOString().slice(0, 10); // Format as YYYY-MM-DD
+      })()
+    : " ", // Replace with your actual end date
+    scheduleStatus: "Active" // Replace with your actual schedule status
+  };
   interface TimeSlot {
     label: string;
     value: string;
@@ -218,28 +254,63 @@ const ManageStudentView = () => {
     endTime: TimeSlot[];
     scheduleStatus: string;
   }
-  const sendDataToAPI = async (data: RequestData): Promise<void> => {
+  const[classscheduleid,setclassscheduleid]=useState("");
+  const sendDataToAPI = async (): Promise<void> => {
+    console.log(requestData);
+    const studentId=localStorage.getItem('studentManageID')
+    console.log(studentId);
+    if (!studentId) {
+      console.error("Error: Student ID is missing.");
+      return;
+    }
     try {
-      const response = await fetch("https://your-api-endpoint.com/submit", {
-        method: "POST",
+      const response = await fetch(`http://localhost:5001/classschedule/${studentId}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(requestData),
       });
   
       if (!response.ok) {
-        throw new Error("Failed to send data");
+        // If the server responds but status is not OK
+        const errorDetails = await response.text(); // Read the response for debugging
+        throw new Error(`Failed to send data: ${response.status} - ${errorDetails}`);
       }
   
+      // Parse the response JSON
       const responseData = await response.json();
       console.log("Success:", responseData);
+        setclassscheduleid(requestData.student?.studentId);
+      setIsScheduled(true);
+    closeModal();
+    studentlist();
     } catch (error) {
-      console.error("Error:", error);
+      // Handle errors from fetch or thrown by your code
+      console.error("Error:", error.message);
     }
   };
-  
-  // Call the function to send the data
+  const [studentllistdata,setstudentlistdata]=useState("");
+  const studentlist=async()=>{
+      try{
+           const response=await fetch('http://localhost:5001/classShedule',{
+            method:'GET',
+            headers:{
+              "Content-Type":"application/json",
+            }}
+          );
+          const data=await response.json();
+           console.log(data);
+            setstudentlistdata(data);
+      }catch(error){
+            console.log(error);
+      }
+  };
+  const studentId=localStorage.getItem('studentManageID');
+  const filteredStudents = studentllistdata?.students?.filter((item) => {
+    return item.student?.studentId === studentId;
+  });
+  console.log(filteredStudents);
   
   return (
     <BaseLayout1>
@@ -377,11 +448,11 @@ const ManageStudentView = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {getCurrentData().map((item, index) => (
+                    {filteredStudents?.map((item, index)  => (
                       <tr key={index} className="border-t">
-                        <td className="py-1 text-[12px] text-center">{item.name}</td>
-                        <td className="py-1 text-[12px] text-center">{item.course}</td>
-                        <td className="py-1 text-[12px] text-center">{item.date}</td>
+                        <td className="py-1 text-[12px] text-center">{item.student.studentFirstName}</td>
+                        <td className="py-1 text-[12px] text-center">Quran</td>
+                        <td className="py-1 text-[12px] text-center">{new Date(item.createdDate).toISOString().slice(0, 10)}</td>
                         <td className="py-1 text-center">
                           <button 
                             className={`px-4 py-1 rounded-lg text-[12px] text-center ${
@@ -541,17 +612,21 @@ const ManageStudentView = () => {
                                      />
                                    </div>
                              <div className="col-span-2">
-                                 <label className="block font-medium text-gray-700 text-[12px]">Start Date</label>
-                             <input
-                                   type="text"
-                                className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
-                               value={
-                     studentData?.studentDetails?.createdDate
-                         ? new Date(studentData.studentDetails.createdDate).toISOString().slice(0, 10)
-                       : "N/A" // Fallback if createdDate is invalid or missing
-                            }
-                       readOnly
-                            />
+                                 <label className="block font-medium text-gray-700 text-[12px]">End Date</label>
+                                 <input
+                         type="text"
+  className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
+  value={
+    studentData?.studentDetails?.createdDate
+      ? (() => {
+          const date = new Date(studentData.studentDetails.createdDate);
+          date.setDate(date.getDate() + 28); // Add 28 days
+          return date.toISOString().slice(0, 10); // Format as YYYY-MM-DD
+        })()
+      : "N/A" // Fallback if createdDate is invalid or missing
+  }
+  readOnly
+/>
                           </div>
 
                           <div className="col-span-2">
@@ -575,7 +650,7 @@ const ManageStudentView = () => {
 
               <div className="col-span-2">
                 <label className="block font-medium text-gray-700 text-[12px]">SelectTeacher</label>
-                <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl">
+                <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" onChange={(e)=>e.target.selectedOptions}>
                  {teachers.map((teacher) => (
                      <option key={teacher.userId} value={teacher.userId}>
                       {teacher.userName}
@@ -594,7 +669,7 @@ const ManageStudentView = () => {
             </button>
             <button
               className="bg-[#012a4a] text-white py-2 px-4 rounded-lg"
-              onClick={handleSave}
+              onClick={sendDataToAPI}
             >
               Save
             </button>
