@@ -87,7 +87,7 @@ const ManageTeacher: React.FC = () => {
     fetchTeachers();
   }, []);
   const handleViewTeachersList = () => {
-    router.push('/Academic/viewteacherslist');
+    router.push('/Academic/viewTeacherSchedule');
   };
 
 // <<<<<<< HEAD
@@ -98,7 +98,7 @@ const ManageTeacher: React.FC = () => {
 
 // >>>>>>> 2d6a1dc0c1d2447cc20c04071e06bd19ba334117
   const handleViewTeacherSchedule = () => {
-    router.push('/Academic/viewTeacherSchedule');
+    router.push('/Academic/viewteacherslist');
   };
 
   const toggleMenu = (index: number) => {
@@ -191,7 +191,7 @@ const ManageTeacher: React.FC = () => {
                 {menuVisible[index] && (
                   <div className="absolute bg-white shadow-lg rounded-lg -mt-4 ml-36">
                     <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={handleViewTeachersList}>
-                      View Teacher List
+                      View Schedule
                     </button>
                     {/* <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => { handleViewStudentList(); router.push('/Academic/viewTeacherSchedule'); }}>
                       View Schedule Classes
@@ -212,7 +212,7 @@ const ManageTeacher: React.FC = () => {
                     ))}
                   </div>
                   <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg" onClick={handleViewTeacherSchedule}>
-                    View Schedule
+                    View Teacher List
                   </button>
                 </div>
               </div>
