@@ -199,8 +199,7 @@ gardianLanguage: '',
           preferredDate: new Date(value).toISOString(),
         },
       }));
-    } else {
-        if (name.includes('.')) {
+    } else if (name.includes('.')) {
           const [parent, child] = name.split('.');
           setFormData((prev) => ({
             ...prev,
@@ -215,7 +214,6 @@ gardianLanguage: '',
             [name]: value,
           }));
           }
-      }
     };
 
   const formatTimeToAMPM = (time: string): string => {
@@ -269,7 +267,7 @@ gardianLanguage: '',
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-3 gap-5">
             <div className="form-group">
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">First Name</label>
+              <label htmlFor="first-name" className="block text-xs font-medium text-gray-700">First Name</label>
               <div className="relative">
                 <input
                   type="text"
@@ -288,8 +286,8 @@ gardianLanguage: '',
               </div>
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
-              <input
+              <label  htmlFor="last-name" className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
+              <input 
                 type="text"
                 name="student.studentLastName"
                 value={formData.student.studentLastName}
@@ -298,7 +296,7 @@ gardianLanguage: '',
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Email</label>
+              <label htmlFor="email" className="block mb-1 text-xs font-medium text-gray-700">Email</label>
               <input
                 type="email"
                 name="student.studentEmail"
@@ -308,7 +306,7 @@ gardianLanguage: '',
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
+              <label htmlFor="phone-number" className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
               <input
                 type="number"
                 name="student.studentPhone"
@@ -318,7 +316,7 @@ gardianLanguage: '',
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">City</label>
+              <label htmlFor="city" className="block mb-1 text-xs font-medium text-gray-700">City</label>
               <input
                 type="text"
                 name="student.studentCity"
@@ -328,7 +326,7 @@ gardianLanguage: '',
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Country</label>
+              <label htmlFor="country" className="block mb-1 text-xs font-medium text-gray-700">Country</label>
               <input
                 type="text"
                 name="student.studentCountry"
@@ -337,18 +335,8 @@ gardianLanguage: '',
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
             </div>
-            {/* <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Language</label>
-              <input
-                type="text"
-                name="student.studentLanguage"
-                value={formData.student.studentLanguage}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
-              />
-            </div> */}
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Time Zone</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Time Zone</label>
               <input
                 type="text"
                 name="student.timeZone"
@@ -358,7 +346,7 @@ gardianLanguage: '',
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Trial ID</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Trial ID</label>
               <input
                 type="text"
                 name="trailId"
@@ -368,7 +356,7 @@ gardianLanguage: '',
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Course</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Course</label>
               <select
                 name="Select Course"
                 value={formData.student.learningInterest}
@@ -383,7 +371,7 @@ gardianLanguage: '',
               </select>
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
               <select
                 name="Select Teacher"
                 value={formData.student.preferredTeacher}
@@ -398,7 +386,7 @@ gardianLanguage: '',
               </select>
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Level</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Level</label>
               <select
                 name="languageLevel"
                 value={formData.languageLevel}
@@ -415,7 +403,7 @@ gardianLanguage: '',
             
             
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Date</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Date</label>
               <input
                 type="date"
                 name="student.preferredDate"
@@ -425,7 +413,7 @@ gardianLanguage: '',
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Time</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Time</label>
               <input
                 type="time"
                 name="time"
@@ -435,7 +423,7 @@ gardianLanguage: '',
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Hours</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Hours</label>
               <input
                 type="number"
                 name="hours"
@@ -446,18 +434,8 @@ gardianLanguage: '',
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
             </div>
-            {/* <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Reachedule Date</label>
-              <input
-                type="date"
-                name="student.preferredDate"
-                value={formData.student.preferredDate}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
-              />
-            </div> */}
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Package</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Package</label>
               <select
                 name="student.preferredTeacher"
                 value={formData.student.preferredTeacher}
@@ -472,7 +450,7 @@ gardianLanguage: '',
               </select>
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Guardians Name</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Guardians Name</label>
               <input
                 type="text"
                 name="gardianName"
@@ -482,7 +460,7 @@ gardianLanguage: '',
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Guardians Phone Number</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Guardians Phone Number</label>
               <input
                 type="text"
                 name="gardianPhone"
@@ -492,7 +470,7 @@ gardianLanguage: '',
               />
             </div>
             <div className="col-span-2">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Class Status</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Class Status</label>
               <select
                 name="student.evaluationStatus"
                 value={formData.student.evaluationStatus}
@@ -506,7 +484,7 @@ gardianLanguage: '',
               </select>
             </div>
             <div className="col-span-2">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Student Status</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Student Status</label>
               <select
                 name="studentStatus"
                 value={formData.studentStatus}
@@ -520,7 +498,7 @@ gardianLanguage: '',
               </select>
             </div>
             <div>
-              <label className="block mb-1 text-xs font-medium text-gray-700">Comment</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Comment</label>
               <textarea
                 name="comment"
                 value={formData.comment}

@@ -56,55 +56,55 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, student, onSave 
       <form className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-gray-700">First Name</label>
+            <label  htmlFor="first-name" className="block text-gray-700">First Name</label>
             <input
               type="text"
-              value={formData?.fname || ""}
+              value={formData?.fname}
               onChange={(e) => handleInputChange("fname", e.target.value)}
               className="border rounded p-2 w-full"
             />
           </div>
           <div>
-            <label className="block text-gray-700">Last Name</label>
+            <label  htmlFor="first-name" className="block text-gray-700">Last Name</label>
             <input
               type="text"
-              value={formData?.lname || ""}
+              value={formData?.lname}
               onChange={(e) => handleInputChange("lname", e.target.value)}
               className="border rounded p-2 w-full"
             />
           </div>
           <div>
-            <label className="block text-gray-700">Email</label>
+            <label htmlFor="first-name" className="block text-gray-700">Email</label>
             <input
               type="email"
-              value={formData?.email || ""}
+              value={formData?.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               className="border rounded p-2 w-full"
             />
           </div>
           <div>
-            <label className="block text-gray-700">Phone Number</label>
+            <label htmlFor="first-name" className="block text-gray-700">Phone Number</label>
             <input
               type="text"
-              value={formData?.phone || ""}
+              value={formData?.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
               className="border rounded p-2 w-full"
             />
           </div>
           <div>
-            <label className="block text-gray-700">City</label>
+            <label htmlFor="first-name" className="block text-gray-700">City</label>
             <input
               type="text"
-              value={formData?.city || ""}
+              value={formData?.city }
               onChange={(e) => handleInputChange("city", e.target.value)}
               className="border rounded p-2 w-full"
             />
           </div>
           <div>
-            <label className="block text-gray-700">Country</label>
+            <label htmlFor="first-name" className="block text-gray-700">Country</label>
             <input
               type="text"
-              value={formData?.country || ""}
+              value={formData?.country}
               onChange={(e) => handleInputChange("country", e.target.value)}
               className="border rounded p-2 w-full"
             />

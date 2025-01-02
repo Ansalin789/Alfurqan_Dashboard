@@ -69,7 +69,7 @@ const NextEvaluationClass = () => {
   }, []);
 
   useEffect(() => {
-    if (classData && classData.classStartDate) {
+    if (classData?.classStartDate) {
       const interval = setInterval(() => {
         const now = new Date();
         const classStartDate = new Date(classData.classStartDate);

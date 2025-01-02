@@ -1,5 +1,4 @@
-// import React from 'react';
-// import { FaFlagUsa, FaFlagUae, FaFlagCanada, FaFlagJapan } from 'react-icons/fa';
+
 
 import React from 'react';
 import { 

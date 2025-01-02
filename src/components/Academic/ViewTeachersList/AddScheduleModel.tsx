@@ -29,18 +29,17 @@ const AddScheduleModal: React.FC<AddScheduleModalProps> = ({ isOpen, onClose, on
     }, 3000);
   };
 
-  const handleModalClick = (e: React.MouseEvent) => e.stopPropagation();
 
   if (!isOpen) return null;
 
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      onClick={onClose}
+      
     >
       <div
         className="bg-white rounded-lg p-4 w-[300px]"
-        onClick={handleModalClick}
+        
       >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-[14px] font-semibold">Add new Schedule</h3>

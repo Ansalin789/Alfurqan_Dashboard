@@ -92,7 +92,7 @@
 }
 
 .event-day {
-  /* background: #31527f !important;  */
+
   background-image: linear-gradient(to right, #30507c, #5792e2) !important;
   color: white !important;
   border-radius: 6px !important;

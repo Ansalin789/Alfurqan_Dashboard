@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import React from 'react';
-import { FiEdit2 } from 'react-icons/fi';
+
 
 const ProfileCard = () => {
   return (

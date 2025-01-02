@@ -9,8 +9,15 @@ import { FaTimes } from 'react-icons/fa';
 if (typeof window !== 'undefined') {
   Modal.setAppElement('body');
 }
+interface AddStudentModalProps {
+  isOpen: boolean;
+  onRequestClose: () => void;
+  isEditMode: boolean;
+  onSave: () => void;
+}
 
-const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
+  const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }: AddStudentModalProps) => {
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -25,7 +32,9 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
   const [evaluationStatus, setEvaluationStatus] = useState('');
   const [preferredFromTime, setPreferredFromTime] = useState('');
 
-  const handleSubmit = async (e) => {
+ 
+    const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     try {
       const studentData = {
@@ -87,11 +96,11 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
       onRequestClose();
       alert('Student saved successfully!');
     } catch (error) {
-      console.error('Error:', error.message);
-      alert(`Failed to save student: ${error.message}`);
+      console.error('Error:', error);
+      alert(`Failed to save student: ${error}`);
     }
   };
-  const calculatePreferredToTime = (fromTime) => {
+  const calculatePreferredToTime = (fromTime: string) => {
     // Split time and period (AM/PM)
     const [time, period] = fromTime.split(' ');
     const [hours, minutes] = time.split(':').map(Number);
@@ -134,7 +143,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-3 gap-5">
             <div className="form-group">
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">First Name</label>
+              <label htmlFor="first-name" className="block text-xs font-medium text-gray-700 mb-1.5">First Name</label>
               <input
                 type="text"
                 value={firstName}
@@ -143,7 +152,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
               <input
                 type="text"
                 value={lastName}
@@ -152,7 +161,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Email</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Email</label>
               <input
                 type="email"
                 value={email}
@@ -161,7 +170,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
               <input
                 type="number"
                 value={phoneNumber}
@@ -170,7 +179,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">City</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">City</label>
               <input
                 type="text"
                 value={city}
@@ -179,7 +188,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Country</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Country</label>
               <input
                 type="text"
                 value={country}
@@ -188,7 +197,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
               <input
                 type="number"
                 value={numberOfStudents}
@@ -197,7 +206,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
               <select
                 value={preferredTeacher}
                 onChange={(e) => setPreferredTeacher(e.target.value)}
@@ -210,7 +219,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
               </select>
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Learning Interest</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Learning Interest</label>
               <select
                 value={learningInterest}
                 onChange={(e) => setLearningInterest(e.target.value)}
@@ -223,7 +232,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
               </select>
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Date</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Date</label>
               <input
                 type="date"
                 value={startDate}
@@ -232,7 +241,7 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Time</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Time</label>
               <input
     type="text"
     placeholder="HH:MM AM/PM"
@@ -249,12 +258,13 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
   />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Evaluation Status</label>
+              <label  htmlFor="first-name"className="block mb-1 text-xs font-medium text-gray-700">Evaluation Status</label>
               <select
                 value={evaluationStatus}
                 onChange={(e) => setEvaluationStatus(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               >
+                                <option value=""></option>
                 <option value="PENDING">Pending</option>
                 <option value="INPROGRESS">In Progress</option>
                 <option value="COMPLETED">Completed</option>

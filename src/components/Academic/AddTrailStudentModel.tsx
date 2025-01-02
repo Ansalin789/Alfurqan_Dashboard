@@ -8,7 +8,14 @@ if (typeof window !== 'undefined') {
   Modal.setAppElement('body');
 }
 
-const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
+interface AddStudentModalProps {
+  isOpen: boolean;
+  onRequestClose: () => void;
+  isEditMode: boolean;
+  onSave: () => void;
+}
+const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }: AddStudentModalProps) => {
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -22,7 +29,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
   const [startDate, setStartDate] = useState('');
   const [preferredFromTime, setPreferredFromTime] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const studentData = {
@@ -86,11 +93,11 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
       onRequestClose();
       alert('Student saved successfully!');
     } catch (error) {
-      console.error('Error:', error.message);
-      alert(`Failed to save student: ${error.message}`);
+      console.error('Error:', error);
+      alert(`Failed to save student: ${error}`);
     }
   };
-  const calculatePreferredToTime = (fromTime) => {
+  const calculatePreferredToTime = (fromTime: string) => {
     const [hours, minutes] = fromTime.split(':').map(Number);
     const totalMinutes = hours * 60 + minutes + 30; // Add 30 minutes
     const newHours = Math.floor(totalMinutes / 60) % 24; // Ensure hours wrap around after 24
@@ -123,7 +130,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-3 gap-5">
             <div className="form-group">
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">First Name</label>
+              <label   htmlFor="first-name" className="block text-xs font-medium text-gray-700 mb-1.5">First Name</label>
               <input
                 type="text"
                 value={firstName}
@@ -132,7 +139,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
               <input
                 type="text"
                 value={lastName}
@@ -141,7 +148,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Email</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Email</label>
               <input
                 type="email"
                 value={email}
@@ -150,7 +157,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
               <input
                 type="number"
                 value={phoneNumber}
@@ -159,7 +166,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">City</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">City</label>
               <input
                 type="text"
                 value={city}
@@ -168,7 +175,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Country</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Country</label>
               <input
                 type="text"
                 value={country}
@@ -177,7 +184,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
               <input
                 type="number"
                 value={numberOfStudents}
@@ -186,7 +193,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
+              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
               <select
                 value={preferredTeacher}
                 onChange={(e) => setPreferredTeacher(e.target.value)}
@@ -199,7 +206,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
               </select>
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Learning Interest</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Learning Interest</label>
               <select
                 value={learningInterest}
                 onChange={(e) => setLearningInterest(e.target.value)}
@@ -212,7 +219,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
               </select>
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Date</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Date</label>
               <input
                 type="date"
                 value={startDate}
@@ -221,7 +228,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Time</label>
+              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Time</label>
               <input
                 type="time"
                 value={preferredFromTime}
@@ -234,18 +241,6 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
               />
             </div>
-            {/* <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Evaluation Status</label>
-              <select
-                value={evaluationStatus}
-                onChange={(e) => setEvaluationStatus(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
-              >
-                <option value="PENDING">Pending</option>
-                <option value="INPROGRESS">In Progress</option>
-                <option value="COMPLETED">Completed</option>
-              </select>
-            </div> */}
           </div>
 
           <div className="flex justify-end mt-4 gap-2">

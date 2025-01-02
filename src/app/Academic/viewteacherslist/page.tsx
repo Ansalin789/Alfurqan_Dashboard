@@ -3,7 +3,6 @@ import Image from 'next/image';
 
 import { useRouter } from 'next/navigation';
 import Stats from '@/components/Academic/ViewTeachersList/Stats';
-import StudentList from '@/components/Academic/ViewTeachersList/StudentList';
 import BaseLayout1 from '@/components/BaseLayout1';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import Modal from 'react-modal';
