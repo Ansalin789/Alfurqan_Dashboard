@@ -10,8 +10,12 @@ import Students from '@/components/Supervisor/Students';
 
 const TrailManagement = () => {
   interface Student {
+    username: string;
+    createdDate: string | number | Date;
     studentId: string;
     student: {
+      studentPhone:number;
+      studentId: string;
       username: string;
       createdDate: string;
     };
@@ -32,7 +36,6 @@ const TrailManagement = () => {
   
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   console.log(setItemsPerPage);
   const router = useRouter();
 
@@ -92,7 +95,7 @@ const handleSyncClick = (studentId: string) => {
     return (
       <div className="flex justify-between items-center mt-4 px-4">
         <div className="text-[12px] text-gray-700">
-          Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, Students.length)} of {Students.length} entries
+          Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, users.totalCount)} of {users.totalCount} entries
         </div>
         <div className="flex space-x-2">
           <button
@@ -145,21 +148,7 @@ const handleSyncClick = (studentId: string) => {
     );
   };
 
-  const handleSelectAll = (isChecked: boolean) => {
-    if (isChecked) {
-      setSelectedUsers(Students.map((user: { trailId: any; }) => user.trailId));
-    } else {
-      setSelectedUsers([]);
-    }
-  };
-
-  const handleSelectUser = (trailId: string) => {
-    if (selectedUsers.includes(trailId)) {
-      setSelectedUsers(selectedUsers.filter(id => id !== trailId));
-    } else {
-      setSelectedUsers([...selectedUsers, trailId]);
-    }
-  };
+ 
 
  
  
@@ -221,9 +210,7 @@ const handleSyncClick = (studentId: string) => {
           <table className={`min-w-full rounded-lg shadow bg-[#fff]`} style={{ width: '100%', tableLayout: 'fixed' }}>
             <thead>
               <tr>
-                <th className="p-4 text-[13px] text-center" style={{ width: '8%' }}>
-                  <input type="checkbox" onChange={(e) => handleSelectAll(e.target.checked)} />
-                </th>
+                
                 <th className="p-4 text-[12px] text-center" style={{ width: '24%' }}>Student ID</th>
                 <th className="p-4 text-[12px] text-center"style={{ width: '15%' }}>Date of Joining</th>
                 <th className="p-4 text-[12px] text-center"style={{ width: '18%' }}>Student Name</th>
@@ -236,11 +223,9 @@ const handleSyncClick = (studentId: string) => {
             </thead>
             <tbody>
                  {users.students && users.students.length > 0 ? (
-                          users.students.map((student, index) => (
+                          users.students.map((student: Student, index: number) => (
                             <tr key={student.studentId || index} className="border-t">
-                    <td className="p-2 text-center">
-                   <input type="checkbox" onChange={() => handleSelectUser(student.student?.studentId)} />
-                             </td>
+                   
                       <td className="p-2 text-[11px] text-center">{student.student?.studentId}</td>
         <td className="p-2 text-[11px] text-center">{new Date(student.createdDate).toLocaleDateString()}</td>
         <td className="p-2 text-[11px] text-center">{student.username}</td>
