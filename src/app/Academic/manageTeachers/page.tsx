@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { FaFilter, FaPlus } from 'react-icons/fa';
-import { LiaStarSolid } from "react-icons/lia";
+
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from 'next/navigation';
 import BaseLayout1 from '@/components/BaseLayout1';
@@ -63,11 +63,14 @@ const ManageTeacher: React.FC = () => {
 
     fetchTeachers();
   }, []);
+  useEffect(() => {
+    setMenuVisible(Array(teachers.length).fill(false));
+  }, [teachers]);
   const handleViewTeachersList = () => {
     router.push('/Academic/viewTeacherSchedule');
   };
 
-  const handleViewTeacherSchedule = (teacherId) => {
+  const handleViewTeacherSchedule = (teacherId:string) => {
     if (!teacherId) {
       console.error('Teacher ID is undefined.');
       return;
@@ -154,11 +157,11 @@ const ManageTeacher: React.FC = () => {
           </div>
           {/* Cards */}
           <div className="grid grid-cols-6 gap-4 p-6" style={{ width: '100%' }}>
-            {teachers.map((teacher, index) => (
-              <div key={index} className="bg-white shadow-md rounded-lg p-4 w-48">
+            {teachers.map((teacher,index) => (
+              <div key={teacher._id} className="bg-white shadow-md rounded-lg p-4 w-48">
                 <div className="flex justify-between items-center">
                   <Image
-                    src={teacher.profileImage || "/assets/images/proff.jpg"}
+                    src={teacher.profileImage ?? "/assets/images/proff.jpg"}
                     alt="Teacher"
                     className="w-12 h-12 ml-12 mt-4 rounded-full" width={40} height={40}
                   />
@@ -185,9 +188,7 @@ const ManageTeacher: React.FC = () => {
                   <p className="text-[#717579] text-sm">Level: {teacher.level}</p>
                   <p className="text-[#717579] p-1 text-sm">{teacher.subject}</p>
                   <div className='flex text-center justify-center'>
-                    {Array.from({ length: teacher.rating || 0 }).map((_, i) => (
-                      <LiaStarSolid key={i} className='text-[#223857]' />
-                    ))}
+                    
                   </div>
                   <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg" onClick={()=>handleViewTeacherSchedule(teacher._id)}>
                     View Teacher List
@@ -208,7 +209,7 @@ const ManageTeacher: React.FC = () => {
         <div className="p-3">
           <h2 className="text-[20px] font-semibold text-[#223857] mb-4">Add New Teacher</h2>
           <div className="mb-4">
-            <label className="block text-[#223857] mb-2">Username</label>
+            <label htmlFor='username' className="block text-[#223857] mb-2">Username</label>
             <input
               type="text"
               name="userName"
@@ -218,7 +219,7 @@ const ManageTeacher: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-[#223857] mb-2">Email</label>
+            <label htmlFor='email' className="block text-[#223857] mb-2">Email</label>
             <input
               type="email"
               name="email"
@@ -228,7 +229,7 @@ const ManageTeacher: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-[#223857] mb-2">Password</label>
+            <label htmlFor='password' className="block text-[#223857] mb-2">Password</label>
             <input
               type="password"
               name="password"

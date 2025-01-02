@@ -67,7 +67,7 @@ const handleSyncClick = (studentId: string) => {
   const Pagination = () => {
     const renderPageNumbers = () => {
       const pageNumbers = [];
-      const totalPages = Math.ceil(Students.length / itemsPerPage);
+      const totalPages = Math.ceil(users.totalCount / itemsPerPage);
   
       for (let i = 1; i <= totalPages; i++) {
         if (i <= 3 || i > totalPages - 3 || (currentPage >= 4 && currentPage <= totalPages - 3 && (i === currentPage - 1 || i === currentPage + 1))) {

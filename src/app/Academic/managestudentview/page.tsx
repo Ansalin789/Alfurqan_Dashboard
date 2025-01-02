@@ -8,9 +8,6 @@ import Modal from 'react-modal';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import { FiCalendar, FiMoreVertical } from 'react-icons/fi';
 
-
-
-
 const ManageStudentView = () => {
   const router = useRouter();
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -588,23 +585,23 @@ const ManageStudentView = () => {
             </div>
             <div className="grid grid-cols-4 gap-4">
             <div className="col-span-2">
-                <label className="block font-medium text-gray-700 text-[12px]"><textarea>Select Package</textarea></label>
+                <label htmlFor="select Package" className="block font-medium text-gray-700 text-[12px]">Select Package</label>
                 <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.subscription?.subscriptionName}  readOnly/>
               </div>
               <div className="col-span-2">
-                <label className="block font-medium text-[13px] text-gray-700"><textarea>Total Hours</textarea></label>
+                <label htmlFor="total hous"className="block font-medium text-[13px] text-gray-700">Total Hours</label>
                 <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]" value={studentData.studentEvaluationDetails?.accomplishmentTime}  readOnly/>
               </div>
               <div className="col-span-2">
-                <label className="block font-medium text-[13px] text-gray-700"><textarea>Preferred Teacher</textarea></label>
+                <label htmlFor='ucvuy' className="block font-medium text-[13px] text-gray-700">Preferred Teacher</label>
                 <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.student?.preferredTeacher}  readOnly/>
               </div>
               <div className="col-span-2">
-                <label className="block font-medium text[13px] text-gray-700"><textarea>Course</textarea></label>
+                <label htmlFor='ucvuy1' className="block font-medium text[13px] text-gray-700">Course</label>
                 <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.student?.learningInterest}  readOnly/>
               </div>
               <div className="col-span-2">
-                     <label className="block font-medium text-gray-700 text-[12px]"><textarea>Start Date</textarea></label>
+                     <label htmlFor="start date" className="block font-medium text-gray-700 text-[12px]">Start Date</label>
                              <input
                        type="text"
                     className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
@@ -617,7 +614,7 @@ const ManageStudentView = () => {
                                      />
                                    </div>
                              <div className="col-span-2">
-                                 <label className="block font-medium text-gray-700 text-[12px]"><textarea>End Date</textarea></label>
+                                 <label htmlFor='end date' className="block font-medium text-gray-700 text-[12px]">End Date</label>
                                  <input
                          type="text"
   className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
@@ -635,7 +632,7 @@ const ManageStudentView = () => {
                           </div>
 
                           <div className="col-span-2">
-                     <label className="block font-medium text-gray-700 text-[12px]"><textarea>Start Time</textarea></label>
+                     <label htmlFor='start time' className="block font-medium text-gray-700 text-[12px]">Start Time</label>
                        <input
                      type="time"
                          className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
@@ -644,7 +641,7 @@ const ManageStudentView = () => {
                          />
                         </div>
                      <div className="col-span-2">
-                         <label className="block font-medium text-gray-700 text-[12px]"><textarea>End Time</textarea></label>
+                         <label htmlFor='end time' className="block font-medium text-gray-700 text-[12px]">End Time</label>
                            <input
                         type="time"
                            className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
@@ -654,7 +651,7 @@ const ManageStudentView = () => {
                   </div>
 
               <div className="col-span-2">
-                <label className="block font-medium text-gray-700 text-[12px]"><textarea>SelectTeacher</textarea></label>
+                <label htmlFor='select tetacher' className="block font-medium text-gray-700 text-[12px]">SelectTeacher</label>
                 <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" onChange={(e)=>e.target.selectedOptions}>
                  {teachers.map((teacher) => (
                      <option key={teacher.userId} value={teacher.userId}>
