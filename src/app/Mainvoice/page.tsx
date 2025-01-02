@@ -11,9 +11,12 @@ const HomePage = () => {
 
   const [clientSecret, setClientSecret] = useState('');
   const createPaymentIntent = async () => {
+    const auth=localStorage.getItem('authToken');
     const response = await fetch(`http://localhost:5001/create-payment-intent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' ,
+      'Authorization': `Bearer ${auth}`,
+      },
       body: JSON.stringify({ amount: 5000, currency: 'usd' }),
     });
     if (!response.ok) {

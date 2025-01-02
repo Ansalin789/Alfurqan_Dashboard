@@ -31,9 +31,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId 
     if (error) {
       setMessage(error.message || 'An unexpected error occurred.');
     } else if (paymentIntent?.status === 'succeeded') {
+      const auth=localStorage.getItem('authToken');
       const response = await fetch(`http://localhost:5001/create-payment-intent`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' ,
+          'Authorization': `Bearer ${auth}`,  
+        },
         body: JSON.stringify({amount:paymentIntent.amount, currency:paymentIntent.currency,evaluationId:evaluationId, paymentIntentResponse:paymentIntent}),
       });
       setMessage('Payment successful!');

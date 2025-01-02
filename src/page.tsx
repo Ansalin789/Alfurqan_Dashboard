@@ -79,10 +79,11 @@ export default function SignInSignUp(): JSX.Element {
     setError('');
     try {
       const response = await axios.post('http://localhost:5001/signin', { username, password });
-      const { token, role } = response.data;
-
+      const {accessToken, role } = response.data;
+           console.log(response.data);
+           console.log(accessToken);
       // Store the token securely
-      localStorage.setItem('authToken', token);
+      localStorage.setItem('authToken', accessToken);
       
       // Optional: Store token expiry
       const tokenExpiry = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 hours from now

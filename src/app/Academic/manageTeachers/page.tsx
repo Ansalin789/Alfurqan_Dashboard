@@ -8,8 +8,9 @@ import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from 'next/navigation';
 import BaseLayout1 from '@/components/BaseLayout1';
 import Modal from 'react-modal';
-import { error } from 'console';
+
 interface Teacher {
+  _id:string;
   userId: string;
   userName: string;
   email: string;
@@ -38,10 +39,11 @@ const ManageTeacher: React.FC = () => {
     useEffect(() => {
       const fetchTeachers = async () => {
         try {
+          const auth=localStorage.getItem('authToken');
           const response = await fetch('http://localhost:5001/users?role=TEACHER', {
             headers: {
-              'Authorization': `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IlRlc3QgVXNlciIsInN1YiI6IjY3MmRjMzZmNmRhNjJkYzc2ZWY5Yzg4NSIsImlhdCI6MTczNDM0NjcxNiwiZXhwIjoxNzM0NDMzMTE2fQ.bPGpuxQJxJa2hHtYTF2HkrjrGP0ieVZ_Pi1iaD7a5p4"}`,
-            },
+              'Authorization': `Bearer ${auth}`,        
+                },
           });
           const data = await response.json();
   
@@ -55,32 +57,7 @@ const ManageTeacher: React.FC = () => {
           }
         } catch (error) {
           console.error('Error fetching teachers:', error);
-// =======
 
-
-//   useEffect(() => {
-    
-
-//     const fetchTeachers = async () => {
-//       try {
-//         const response = await fetch('http://localhost:5001/users?role=TEACHER', {
-//           headers: {
-//             'Authorization': `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IlRlc3QgVXNlciIsInN1YiI6IjY3MmRjMzZmNmRhNjJkYzc2ZWY5Yzg4NSIsImlhdCI6MTczNDM0NjcxNiwiZXhwIjoxNzM0NDMzMTE2fQ.bPGpuxQJxJa2hHtYTF2HkrjrGP0ieVZ_Pi1iaD7a5p4"}`,
-//           },
-//         });
-//         const data = await response.json();
-
-//         console.log('Fetched data:', data);
-
-//         // Access `users` array in the response
-//         if (data && Array.isArray(data.users)) {
-//           setTeachers(data.users);
-//         } else {
-//           console.error('Unexpected API response structure:', data);
-// >>>>>>> 2d6a1dc0c1d2447cc20c04071e06bd19ba334117
-//         }
-//       } catch (error) {
-//         console.error('Error fetching teachers:', error);
       }
     };
 
@@ -90,14 +67,13 @@ const ManageTeacher: React.FC = () => {
     router.push('/Academic/viewTeacherSchedule');
   };
 
-// <<<<<<< HEAD
-// =======
-//   const handleViewTeachersList = () => {
-//     router.push('/Academic/viewteacherslist');
-//   };
-
-// >>>>>>> 2d6a1dc0c1d2447cc20c04071e06bd19ba334117
-  const handleViewTeacherSchedule = () => {
+  const handleViewTeacherSchedule = (teacherId) => {
+    if (!teacherId) {
+      console.error('Teacher ID is undefined.');
+      return;
+    }
+    localStorage.setItem('manageTeacherId', teacherId);
+    console.log('Teacher ID:', teacherId); // Debugging
     router.push('/Academic/viewteacherslist');
   };
 
@@ -128,10 +104,12 @@ const ManageTeacher: React.FC = () => {
   const handleSave = async() => {
     console.log('New Teacher Data:', newTeacher);
    try{
+    const auth=localStorage.getItem('authToken');
     const response = await fetch('http://localhost:5001/users', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+         'Authorization': `Bearer ${auth}`,
       },
       body: JSON.stringify(newTeacher),
     });
@@ -211,7 +189,7 @@ const ManageTeacher: React.FC = () => {
                       <LiaStarSolid key={i} className='text-[#223857]' />
                     ))}
                   </div>
-                  <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg" onClick={handleViewTeacherSchedule}>
+                  <button className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg" onClick={()=>handleViewTeacherSchedule(teacher._id)}>
                     View Teacher List
                   </button>
                 </div>

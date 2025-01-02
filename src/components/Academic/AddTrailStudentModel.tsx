@@ -20,7 +20,6 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
   const [numberOfStudents, setNumberOfStudents] = useState('');
   const [preferredTeacher, setPreferredTeacher] = useState('');
   const [startDate, setStartDate] = useState('');
-//   const [evaluationStatus, setEvaluationStatus] = useState('');
   const [preferredFromTime, setPreferredFromTime] = useState('');
 
   const handleSubmit = async (e) => {
@@ -66,11 +65,12 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) =>
       }
 
       console.log('Sending data:', studentData);
-
+      const auth=localStorage.getItem('authToken');
       const response = await fetch('http://localhost:5001/student', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth}`,        
         },
         body: JSON.stringify(studentData),
       });

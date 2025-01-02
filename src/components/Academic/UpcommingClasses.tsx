@@ -29,10 +29,12 @@ const UpcomingClasses: React.FC = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
+        const auth=localStorage.getItem('authToken');
         const response = await fetch('http://localhost:5001/evaluationlist', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth}`, 
           },
         });
 

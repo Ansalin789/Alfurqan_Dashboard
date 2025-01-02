@@ -188,12 +188,13 @@ const MultiStepForm = () => {
 
             // Debug log to check the data being sent
             console.log('Sending data:', formattedData);
-
+            const auth=localStorage.getItem('authToken');
             const response = await fetch('http://localhost:5001/student', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
+                    'Authorization': `Bearer ${auth}`,
                 },
                 body: JSON.stringify(formattedData,null,2),
                 mode: 'cors',

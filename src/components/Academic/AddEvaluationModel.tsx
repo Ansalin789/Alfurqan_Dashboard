@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
-// import { useRouter } from 'next/navigation';
 
 
 
@@ -160,12 +159,13 @@ gardianLanguage: '',
       if (!evaluationData.student.studentFirstName || evaluationData.student.studentFirstName.length < 3) {
         throw new Error('First name must be at least 3 characters long');
       }
-
+      const auth=localStorage.getItem('authToken');
       const response = await fetch('http://localhost:5001/evaluation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'Authorization': `Bearer ${auth}`,
         },
         body: JSON.stringify(evaluationData),
       });

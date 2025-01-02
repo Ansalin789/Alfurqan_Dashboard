@@ -15,7 +15,12 @@ const SchedulePage = () => {
 
   // Fetch events data
   useEffect(() => {
-    fetch('http://localhost:5001/meetingSchedulelist')
+    const auth=localStorage.getItem('authToken');
+    fetch('http://localhost:5001/meetingSchedulelist',{
+      headers: {
+         'Authorization': `Bearer ${auth}`,
+      },
+    })
       .then((response) => response.json())
       .then((data) => {
         const mappedEvents = data.academicCoach.map((item: any) => {
@@ -49,18 +54,7 @@ const SchedulePage = () => {
     setEventsForSelectedDate(filteredEvents);
   };
 
-  // Style customization for calendar events
-  // const eventStyleGetter = (event: any) => {
-  //   return {
-  //     style: {
-  //       backgroundColor: '#B0E0E6',
-  //       color: '#0000CD',
-  //       borderRadius: '4px',
-  //       padding: '3px',
-  //       fontSize: '12px',
-  //     },
-  //   };
-  // };
+  
 
   // Handle navigation (clicking on a date in the calendar)
   const handleNavigate = (date: Date) => {

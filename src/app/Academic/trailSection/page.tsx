@@ -16,7 +16,13 @@ import Invoice from '@/components/Invoice';
 // Updated function to fetch users from the new API endpoint
 const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: string}> => {
   try {
-    const response = await fetch('http://localhost:5001/evaluationlist');
+    const auth=localStorage.getItem('authToken');
+    const response = await fetch('http://localhost:5001/evaluationlist',{
+      headers: {
+        'Content-Type': 'application/json',
+         'Authorization': `Bearer ${auth}`,
+      },
+    });
     // Check for response.ok to handle HTTP errors
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -331,7 +337,13 @@ const fetchStudents = async () => {
 
 const handleClick = async (id: string) => {
   try {
-    const response = await fetch(`http://localhost:5001/evaluationlist/${id}`);
+    const auth=localStorage.getItem('authToken');
+    const response = await fetch(`http://localhost:5001/evaluationlist/${id}`,{
+      headers: {
+        'Content-Type': 'application/json',
+         'Authorization': `Bearer ${auth}`,
+      },
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -455,11 +467,13 @@ const handleClick = async (id: string) => {
   alert(JSON.stringify(formDataNames));
 
     try {
+      const auth=localStorage.getItem('authToken');
       const response = await fetch(`http://localhost:5001/evaluation/${id}`,
         {
           method: 'PUT', 
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth}`,
           },
           body: JSON.stringify(formDataNames),
         });

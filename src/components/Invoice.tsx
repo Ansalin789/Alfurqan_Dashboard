@@ -556,7 +556,12 @@ const Invoice = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/evaluationlist/${studentId}`);
+      const auth=localStorage.getItem('authToken');
+      const response = await fetch(`http://localhost:5001/evaluationlist/${studentId}`,{
+        headers: { 'Content-Type': 'application/json' ,
+          'Authorization': `Bearer ${auth}` ,
+        },
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -617,9 +622,12 @@ const Invoice = () => {
    
     const evaluationid = evaluationData._id;  // Replace with your actual evaluation ID
     const totalprice = evaluationData.planTotalPrice;
+    const auth=localStorage.getItem('authToken');
     const response = await fetch(`http://localhost:5001/create-payment-intent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' ,
+        'Authorization': `Bearer ${auth}` ,
+      },
       body: JSON.stringify({ amount: totalprice, currency: 'usd',evaluationId:evaluationid,paymentIntentResponse:"" }),
     });
     const data = await response.json();

@@ -23,7 +23,13 @@ const Studentreschedule = () => {
 
   // Fetch teacher schedules from the backend
   useEffect(() => {
-    fetch('http://localhost:5001/shiftschedule?role=TEACHER')
+    const auth=localStorage.getItem('authToken');
+    fetch('http://localhost:5001/shiftschedule?role=TEACHER',{
+      headers: {
+        'Content-Type': 'application/json',
+         'Authorization': `Bearer ${auth}`,
+      },
+    })
       .then((response) => response.json())
       .then((data) => {
         console.log("Fetched teacher data:", data); // Log to check the data format

@@ -37,7 +37,13 @@ const ManageStudentView = () => {
     if (studentId) {
       const fetchData = async () => {
         try {
-          const response = await fetch(`http://localhost:5001/alstudents/${studentId}`);
+          const auth=localStorage.getItem('authToken');
+          const response = await fetch(`http://localhost:5001/alstudents/${studentId}`,
+            {
+              headers: {
+                     'Authorization': `Bearer ${auth}`,
+              },
+            });
           const data = await response.json();
           setStudentData(data);
           console.log(data);
@@ -49,9 +55,10 @@ const ManageStudentView = () => {
     }
           const fetchTeachers = async () => {
             try {
+              const auth=localStorage.getItem('authToken');
               const response = await fetch('http://localhost:5001/users?role=TEACHER', {
                 headers: {
-                  'Authorization': `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IlRlc3QgVXNlciIsInN1YiI6IjY3MmRjMzZmNmRhNjJkYzc2ZWY5Yzg4NSIsImlhdCI6MTczNDM0NjcxNiwiZXhwIjoxNzM0NDMzMTE2fQ.bPGpuxQJxJa2hHtYTF2HkrjrGP0ieVZ_Pi1iaD7a5p4"}`,
+                       'Authorization': `Bearer ${auth}`,
                 },
               });
               const data = await response.json();
@@ -77,10 +84,7 @@ const ManageStudentView = () => {
     setModalIsOpen(false);
   };
 
-  const handleSave = () => {
-    setIsScheduled(true);
-    closeModal();
-  };
+  
 
   const scheduledClasses = Array.from({ length: 5 }).map((_, i) => ({
     name: 'Samantha William',
@@ -98,11 +102,7 @@ const ManageStudentView = () => {
     performance: '95%'
   }));
 
-  const getCurrentData = () => {
-    const data = activeTab === 'scheduled' ? scheduledClasses : completedClasses;
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return data.slice(startIndex, startIndex + itemsPerPage);
-  };
+  
 
   const totalPages = Math.ceil(
     (activeTab === 'scheduled' ? scheduledClasses.length : completedClasses.length) / itemsPerPage
@@ -197,7 +197,7 @@ const ManageStudentView = () => {
     
     setSchedule(updatedSchedule);
   };
-     const[selectTeacher,setselectTeacher]=useState("");
+    
   // Constructing the final request data with the necessary format
   const requestData = {
     classDay: schedule.filter(item => item.isSelected).map(item => ({
@@ -264,10 +264,12 @@ const ManageStudentView = () => {
       return;
     }
     try {
+      const auth=localStorage.getItem('authToken');
       const response = await fetch(`http://localhost:5001/classschedule/${studentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${auth}`,
         },
         body: JSON.stringify(requestData),
       });
@@ -293,10 +295,12 @@ const ManageStudentView = () => {
   const [studentllistdata,setstudentlistdata]=useState("");
   const studentlist=async()=>{
       try{
+        const auth=localStorage.getItem('authToken');
            const response=await fetch('http://localhost:5001/classShedule',{
             method:'GET',
             headers:{
               "Content-Type":"application/json",
+              'Authorization': `Bearer ${auth}`,
             }}
           );
           const data=await response.json();
@@ -451,10 +455,11 @@ const ManageStudentView = () => {
                     {filteredStudents?.map((item, index)  => (
                       <tr key={index} className="border-t">
                         <td className="py-1 text-[12px] text-center">{item.student.studentFirstName}</td>
-                        <td className="py-1 text-[12px] text-center">Quran</td>
+                        <td className="py-1 text-[12px] text-center">{studentData.studentEvaluationDetails?.student?.learningInterest}</td>
                         <td className="py-1 text-[12px] text-center">{new Date(item.createdDate).toISOString().slice(0, 10)}</td>
                         <td className="py-1 text-center">
                           <button 
+
                             className={`px-4 py-1 rounded-lg text-[12px] text-center ${
                               item.status === 'Completed' ? 'bg-green-600' : 'bg-gray-900'
                             } text-white`}
@@ -583,23 +588,23 @@ const ManageStudentView = () => {
             </div>
             <div className="grid grid-cols-4 gap-4">
             <div className="col-span-2">
-                <label className="block font-medium text-gray-700 text-[12px]">Select Package</label>
+                <label className="block font-medium text-gray-700 text-[12px]"><textarea>Select Package</textarea></label>
                 <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.subscription?.subscriptionName}  readOnly/>
               </div>
               <div className="col-span-2">
-                <label className="block font-medium text-[13px] text-gray-700">Total Hours</label>
+                <label className="block font-medium text-[13px] text-gray-700"><textarea>Total Hours</textarea></label>
                 <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]" value={studentData.studentEvaluationDetails?.accomplishmentTime}  readOnly/>
               </div>
               <div className="col-span-2">
-                <label className="block font-medium text-[13px] text-gray-700">Preferred Teacher</label>
+                <label className="block font-medium text-[13px] text-gray-700"><textarea>Preferred Teacher</textarea></label>
                 <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.student?.preferredTeacher}  readOnly/>
               </div>
               <div className="col-span-2">
-                <label className="block font-medium text[13px] text-gray-700">Course</label>
+                <label className="block font-medium text[13px] text-gray-700"><textarea>Course</textarea></label>
                 <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.student?.learningInterest}  readOnly/>
               </div>
               <div className="col-span-2">
-                     <label className="block font-medium text-gray-700 text-[12px]">Start Date</label>
+                     <label className="block font-medium text-gray-700 text-[12px]"><textarea>Start Date</textarea></label>
                              <input
                        type="text"
                     className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
@@ -612,7 +617,7 @@ const ManageStudentView = () => {
                                      />
                                    </div>
                              <div className="col-span-2">
-                                 <label className="block font-medium text-gray-700 text-[12px]">End Date</label>
+                                 <label className="block font-medium text-gray-700 text-[12px]"><textarea>End Date</textarea></label>
                                  <input
                          type="text"
   className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
@@ -630,7 +635,7 @@ const ManageStudentView = () => {
                           </div>
 
                           <div className="col-span-2">
-                     <label className="block font-medium text-gray-700 text-[12px]">Start Time</label>
+                     <label className="block font-medium text-gray-700 text-[12px]"><textarea>Start Time</textarea></label>
                        <input
                      type="time"
                          className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
@@ -639,7 +644,7 @@ const ManageStudentView = () => {
                          />
                         </div>
                      <div className="col-span-2">
-                         <label className="block font-medium text-gray-700 text-[12px]">End Time</label>
+                         <label className="block font-medium text-gray-700 text-[12px]"><textarea>End Time</textarea></label>
                            <input
                         type="time"
                            className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
@@ -649,7 +654,7 @@ const ManageStudentView = () => {
                   </div>
 
               <div className="col-span-2">
-                <label className="block font-medium text-gray-700 text-[12px]">SelectTeacher</label>
+                <label className="block font-medium text-gray-700 text-[12px]"><textarea>SelectTeacher</textarea></label>
                 <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" onChange={(e)=>e.target.selectedOptions}>
                  {teachers.map((teacher) => (
                      <option key={teacher.userId} value={teacher.userId}>

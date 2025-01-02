@@ -65,11 +65,13 @@ const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }) => {
 
       console.log('Sending data:', studentData);
       
-
+      const auth=localStorage.getItem('authToken');
+      console.log(auth);
       const response = await fetch('http://localhost:5001/student', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth}`,
         },
         body: JSON.stringify(studentData),
       });

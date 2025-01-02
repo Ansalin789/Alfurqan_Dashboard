@@ -285,7 +285,12 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: (data: StudentData) => v
     const fetchStudentData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5001/studentlist/${studentId}`);
+        const auth=localStorage.getItem('authToken');
+        const response = await fetch(`http://localhost:5001/studentlist/${studentId}`,{
+          headers: {
+            'Authorization': `Bearer ${auth}`,        
+              },
+        });
         console.log("response>>>",response)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -1473,12 +1478,13 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
       };
   
       console.log("Payload being sent:", JSON.stringify(submitData, null, 2));
-  
+      const auth=localStorage.getItem('authToken');
       // Make POST request to your API
       const response = await fetch('http://localhost:5001/evaluation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth}`,  
         },
         body: JSON.stringify(submitData),
       });

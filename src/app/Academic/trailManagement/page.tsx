@@ -37,7 +37,13 @@ interface GetAllUsersResponse {
 // Update the getAllUsers function to fetch from your API
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   try {
-    const response = await fetch('http://localhost:5001/studentlist');
+    const auth=localStorage.getItem('authToken');
+    const response = await fetch('http://localhost:5001/studentlist',{
+      headers: {
+        'Content-Type': 'application/json',
+         'Authorization': `Bearer ${auth}`,
+      },
+    });
     const rawData = await response.json();
     console.log('Raw API Response:', rawData); // Debug log
 

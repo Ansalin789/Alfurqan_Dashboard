@@ -17,7 +17,12 @@ const StudentEvaluation = () => {
 
   useEffect(() => {
     // Fetch data from API
-    fetch('http://localhost:5001/evaluationlist')
+    const auth=localStorage.getItem('authToken');
+    fetch('http://localhost:5001/evaluationlist',{
+      headers: {
+        'Authorization': `Bearer ${auth}`,        
+          },
+    })
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

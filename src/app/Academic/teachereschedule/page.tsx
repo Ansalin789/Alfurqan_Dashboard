@@ -17,7 +17,12 @@ const Teachereschedule = () => {
 
   // Fetch events data
   useEffect(() => {
-    fetch('http://localhost:5001/meetingSchedulelist')
+    const auth=localStorage.getItem('authToken');
+    fetch('http://localhost:5001/meetingSchedulelist',{
+      headers: {
+         'Authorization': `Bearer ${auth}`,
+      },
+    })
       .then((response) => response.json())
       .then((data) => {
         const mappedEvents = data.academicCoach.map((item: any) => ({
