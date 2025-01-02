@@ -9,10 +9,10 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 const localizer = momentLocalizer(moment);
 
 const SchedulePage = () => {
-  const [selectedDate, setSelectedDate] = useState<string>(''); // State to hold the selected date
+  const [selectedDate, setSelectedDate] = useState<string>(""); // State to hold the selected date
   const [eventsForSelectedDate, setEventsForSelectedDate] = useState<any[]>([]); // State to hold filtered events
   const [events, setEvents] = useState<any[]>([]); // State to store all events
-
+ console.log(selectedDate);
   // Fetch events data
   useEffect(() => {
     const auth=localStorage.getItem('authToken');
