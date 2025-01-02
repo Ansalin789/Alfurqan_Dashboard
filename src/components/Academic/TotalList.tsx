@@ -104,8 +104,13 @@ const Dashboard = () => {
       try {
         setIsLoading(true);
         setError(null);
-
-        const response = await fetch('http://localhost:5001/dashboard/widgets'); // Replace with your API endpoint
+        const auth=localStorage.getItem('authToken');
+        const response = await fetch('http://localhost:5001/dashboard/widgets',{
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth}`, 
+          },
+        }); // Replace with your API endpoint
         if (!response.ok) {
           throw new Error(`HTTP Error: ${response.status}`);
         }
