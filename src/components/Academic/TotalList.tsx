@@ -1,5 +1,3 @@
-
-
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { FaUserGraduate, FaCheckCircle, FaClock, FaHourglassHalf } from "react-icons/fa";
@@ -34,9 +32,7 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
   <div className={`p-4 size-[100%] rounded-2xl py-5 shadow-lg flex flex-col items-start ${color} relative bg-pattern`}>
     <div className={`absolute top-4 right-2 ${iconBg} p-2 rounded-[100%] shadow-md`}>
       {React.isValidElement(icon) ? (
-        <div className="flex items-center justify-center w-4 h-4">
-          {icon}
-        </div>
+        <div className="flex items-center justify-center w-4 h-4">{icon}</div>
       ) : (
         <Image src={icon as string} alt={`${title} icon`} className="w-6 h-6 opacity-60" />
       )}
@@ -52,6 +48,44 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
   </div>
 );
 
+// Fetch data from the API
+const fetchDashboardData = async (authToken: string | null): Promise<ApiResponse> => {
+  const response = await fetch('http://localhost:5001/dashboard/widgets', {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP Error: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+// Map API response to dashboard data
+const mapApiResponseToData = (apiResponse: ApiResponse): DataItem[] => {
+  return initialData.map(item => {
+    let value = 0;
+    switch (item.title) {
+      case 'Trail Assigned':
+        value = apiResponse.classtype || 0;
+        break;
+      case 'Evaluation Done':
+        value = apiResponse.status || 0;
+        break;
+      case 'Evaluation Pending':
+        value = apiResponse.totalPending || 0;
+        break;
+      case 'Total Pendings':
+        value = apiResponse.totalActive || 0;
+        break;
+    }
+    return { ...item, value };
+  });
+};
+
 // Dashboard Component
 const Dashboard = () => {
   const [data, setData] = useState<DataItem[]>(initialData.map(item => ({ ...item, value: 0 })));
@@ -59,52 +93,24 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCounts = async () => {
+    const loadDashboardData = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const auth=localStorage.getItem('authToken');
-        const response = await fetch('http://localhost:5001/dashboard/widgets',{
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth}`, 
-          },
-        }); // Replace with your API endpoint
-        if (!response.ok) {
-          throw new Error(`HTTP Error: ${response.status}`);
-        }
 
-        const counts: ApiResponse = await response.json();
+        const authToken = localStorage.getItem('authToken');
+        const apiResponse = await fetchDashboardData(authToken);
 
-        // Update the data with API response
-        setData(prevData =>
-          prevData.map(item => {
-            let value = 0;
-            switch (item.title) {
-              case 'Trail Assigned':
-                value = counts.classtype || 0;
-                break;
-              case 'Evaluation Done':
-                value = counts.status || 0;
-                break;
-              case 'Evaluation Pending':
-                value = counts.totalPending || 0;
-                break;
-              case 'Total Pendings':
-                value = counts.totalActive || 0;
-                break;
-            }
-            return { ...item, value };
-          })
-        );
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Unknown error');
+        const updatedData = mapApiResponseToData(apiResponse);
+        setData(updatedData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchCounts();
+    loadDashboardData();
   }, []);
 
   if (isLoading) {
@@ -117,7 +123,7 @@ const Dashboard = () => {
 
   return (
     <div className="grid grid-cols-4 gap-6">
-      {data.map((item) => (
+      {data.map(item => (
         <Card key={item.title} {...item} />
       ))}
     </div>
