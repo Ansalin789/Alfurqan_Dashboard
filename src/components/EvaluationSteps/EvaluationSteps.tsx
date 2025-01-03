@@ -2,10 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import axios from 'axios';
-
-import { useParams } from 'next/navigation';
-import EvaluationPage from '@/app/evaluation/page';
 import { useRouter } from 'next/navigation';
 // Define the return type of the getAllUsers function
 interface User {
@@ -193,7 +189,7 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
     },
   ];
 
-const [trialId, setTrialId] = useState<string | null>(null); // Assuming you have a state for trialId
+
 
 
   const handleStartEvaluations = () => {
@@ -773,8 +769,7 @@ interface IEvaluation {
 
 // Step 5 Component
 const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: () => void;studentData:StudentData }) => {
-  const [evaluationData, setEvaluationData] = useState<any>(null);
-    const [isLanguageChecked, setIsLanguageChecked] = useState(false);
+  const [isLanguageChecked, setIsLanguageChecked] = useState(false);
   const [isReadingChecked, setIsReadingChecked] = useState(false);
   const [isGrammarChecked, setIsGrammarChecked] = useState(false);
   const[languageLevel,setLanguageLevel]=useState("");
@@ -782,7 +777,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
   const[grammarLevel,setGrammerLevel]=useState("");
   const [accomplishmentTime, setAccomplishmentTime] = useState<number>(0);
   const[studentRate,setStudentRate]=useState(0);
-  const[expectedFinishingDate,setexpectedFinishingDate]=useState(28);
+  const[expectedFinishingDate]=useState(28);
   const[subscriptionName,setsubscriptionName]=useState("");
    const[planTotalPrice,setplanTotalPrice]=useState<number>();
   const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
@@ -961,59 +956,61 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
             </div>
           </div>
 
-         {/* Pricing Section */}
-<div className="mb-8">
-  <h2 className="text-base font-normal text-white/90 mb-4">Select Preferred Pricing per month</h2>
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-    {pricingPlans.map((plan) => (
-      <div
-        key={plan.label}
-        className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105"
-        onClick={() => {
-          if (selectedHours > 0) {
-            setSelectedPlan(plan.label);
-            setsubscriptionName(plan.label); // Set the selected plan when clicked
-          } else {
-            alert('Please select preferred hours first'); // Alert if no hours are selected
-          }
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 
-                         group-hover:opacity-100 transition-opacity duration-300"></div>
-        <div className="relative bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/10
-                        group-hover:border-white/20 transition-all duration-300">
-          {/* Plan Name Section */}
-          <div className="border-b border-white/10 pb-3 mb-3">
-            <h3 className="text-sm font-bold text-white">{plan.label}</h3>
-          </div>
+   {/* Pricing Section */}
+    <div className="mb-8">
+      <h2 className="text-base font-normal text-white/90 mb-4">Select Preferred Pricing per month</h2>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {pricingPlans.map((plan) => (
           
-          {/* Rate Per Hour Section */}
-          <div className="border-b border-white/10 pb-3 mb-3">
-            <div className="text-lg text-center font-bold text-transparent bg-clip-text bg-gradient-to-r 
-                            from-blue-400 to-purple-400">
-              {plan.basePrice}
+          <button
+            key={plan.label}
+            className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105"
+            onClick={() => {
+              if (selectedHours > 0) {
+                setSelectedPlan(plan.label);
+                setsubscriptionName(plan.label); // Set the selected plan when clicked
+              } else {
+                alert('Please select preferred hours first'); // Alert if no hours are selected
+              }
+            }}
+          >
+            
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 
+                            group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/10
+                            group-hover:border-white/20 transition-all duration-300">
+              {/* Plan Name Section */}
+              <div className="border-b border-white/10 pb-3 mb-3">
+                <h3 className="text-sm font-bold text-white">{plan.label}</h3>
+              </div>
+              
+              {/* Rate Per Hour Section */}
+              <div className="border-b border-white/10 pb-3 mb-3">
+                <div className="text-lg text-center font-bold text-transparent bg-clip-text bg-gradient-to-r 
+                                from-blue-400 to-purple-400">
+                  {plan.basePrice}
+                </div>
+              </div>
+              
+              {/* Total Section */}
+              <div className="bg-white/5 rounded-lg p-3">
+                <div className="text-sm text-white/60 mb-1">Total</div>
+                <div className="text-xl font-semibold text-white">
+                {
+                  (() => {
+                    if (selectedPlan === plan.label && planTotalPrice !== undefined) {
+                     return `$${planTotalPrice.toFixed(2)}`;
+                       }
+                           return ''; // Return an empty string if conditions are not met
+                    })()
+                   }
+                </div>
+              </div>
             </div>
-          </div>
-          
-          {/* Total Section */}
-          <div className="bg-white/5 rounded-lg p-3">
-            <div className="text-sm text-white/60 mb-1">Total</div>
-            <div className="text-xl font-semibold text-white">
-             
-              {
-  selectedPlan === plan.label 
-    ? planTotalPrice !== undefined 
-      ? `$${planTotalPrice.toFixed(2)}` 
-      : '' 
-    : ''
-}
-            </div>
-          </div>
-        </div>
+          </button>
+        ))}
       </div>
-    ))}
-  </div>
-</div>
+    </div>
 
           {/* Completion Section */}
           <div className="flex flex-wrap items-center justify-between mt-8 bg-white/5 p-4 rounded-xl">
@@ -1185,7 +1182,7 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
 
               {/* Country */}
               <div className="group">
-                <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
+                <label htmlFor ="name" className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>🌍</span>
                     <span>Country</span>

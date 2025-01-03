@@ -10,8 +10,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
 import { User } from '@/types';
-import Link from 'next/link';
-import Invoice from '@/components/Invoice';
+
+
 
 // Updated function to fetch users from the new API endpoint
 const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: string}> => {
