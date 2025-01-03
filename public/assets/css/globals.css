@@ -48,11 +48,11 @@ body {
   width: 200px;
   background-color: #223857;
   padding: 8px;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border-radius: 0 2px 2px 0;
   overflow: hidden;
-  transition: width 0.3s;
+  transition: width 0.3s, all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
 
 .sidebar__top {
   display: flex;
