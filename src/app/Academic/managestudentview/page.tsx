@@ -251,7 +251,7 @@ const ManageStudentView = () => {
     endTime: TimeSlot[];
     scheduleStatus: string;
   }
-  const[classscheduleid,setclassscheduleid]=useState("");
+  const[setclassscheduleid]=useState("");
   const sendDataToAPI = async (): Promise<void> => {
     console.log(requestData);
     const studentId=localStorage.getItem('studentManageID')

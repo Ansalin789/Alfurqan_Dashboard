@@ -55,10 +55,19 @@ export default function SignInSignUp(): JSX.Element {
 
   // Now use the functions in the hook
   const googleLogin = useGoogleLogin({
-    onSuccess: handleGoogleSuccess,
+    onSuccess: (tokenResponse) => {
+      (async () => {
+        try {
+          await handleGoogleSuccess(tokenResponse);
+        } catch (error) {
+          console.error('Error in Google login success handler:', error);
+        }
+      })();
+    },
     onError: handleGoogleFailure,
-    flow: 'implicit'
+    flow: 'implicit',
   });
+  
 
   useEffect(() => {
     setIsClient(true);
