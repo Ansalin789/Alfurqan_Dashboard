@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "/public/assets/css/globals.css";
+import "@/styles/globals.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ThemeProvider } from '@/context/ThemeContext';
 

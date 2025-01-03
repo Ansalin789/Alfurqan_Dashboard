@@ -10,11 +10,7 @@ import { MdAssignment } from "react-icons/md";
 import { MdOutlinePayment } from "react-icons/md";
 import { GiGiftOfKnowledge } from "react-icons/gi";
 
-
-
-
-
-import "/public/assets/css/globals.css";
+import "@/styles/globals.css";
 
 const SidebarItems = [
     {

@@ -6,8 +6,7 @@ import React from 'react';
 import { RiDashboardFill } from "react-icons/ri";
 import { MdContactSupport,MdLocalLibrary, MdDateRange, MdQuestionAnswer } from "react-icons/md";
 import { IoBookmarks, IoPeopleSharp } from "react-icons/io5";
-import "/public/assets/css/globals.css";
-
+import "@/styles/globals.css";
 const SidebarItems = [
     {
         name: 'Dashboard',
