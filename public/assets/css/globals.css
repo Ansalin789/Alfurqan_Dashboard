@@ -123,24 +123,6 @@ body {
   width: 100%;
 }
 
-/* .sidebar__name {
-  display: none;
-  transition: opacity 0.3s;
-} */
-
-/* .sidebar:hover .sidebar__name {
-  display: inline;
-  opacity: 1;
-}
-
-.sidebar:hover .sidebar__logo-name {
-  display: block;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-} */
-
 .letter {
   background-image: `url("/assets/images/Dewatermark.png") `;
   background-repeat: "no-repeat";
@@ -149,9 +131,8 @@ body {
   background-color: "#000";
 }
 
-/* dark theme */
 
-/* Tailwind CSS Custom Classes */
+
 .custom-checkbox {
   appearance: none;
   width: 1.5rem;
