@@ -139,7 +139,7 @@ const FilterModal = ({
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
             Country
           </label>
           <select
@@ -155,7 +155,7 @@ const FilterModal = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
             Course
           </label>
           <select
@@ -171,7 +171,7 @@ const FilterModal = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
             Teacher
           </label>
           <select
@@ -187,7 +187,7 @@ const FilterModal = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
             Status
           </label>
           <select
@@ -505,8 +505,7 @@ const Pagination = () => {
                 <th className="p-3 text-[12px] text-center" style={{ width: '15%' }}>Evaluation Status</th>
                 <th className="p-3 text-[12px] text-center" style={{ width: '8%' }}>Status</th>
                 <th className="p-3 text-[12px] text-center" style={{ width: '10%' }}>Action</th>
-                {/* <th className=" p-2 text-left font-medium text-gray-700" style={{ width: '5%' }}>
-                </th> */}
+                
               </tr>
             </thead>
             <tbody>
