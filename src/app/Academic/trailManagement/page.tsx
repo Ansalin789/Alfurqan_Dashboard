@@ -491,7 +491,7 @@ const Pagination = () => {
               </div>
             </div>
           </div>
-          <table className={`min-w-full rounded-lg shadow bg-white`} style={{ width: '100%', tableLayout: 'fixed' }}>
+          <table className="min-w-full rounded-lg shadow bg-white" style={{ width: '100%', tableLayout: 'fixed' }}>
             <thead>
               <tr>
                 <th className="p-3 text-[12px] text-center" style={{ width: '24%' }}>Trail ID</th>
