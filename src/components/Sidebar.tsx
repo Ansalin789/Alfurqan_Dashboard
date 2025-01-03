@@ -9,7 +9,7 @@ import { GrSchedules } from "react-icons/gr";
 import { MdAssignment, MdAnalytics, MdContactSupport } from "react-icons/md";
 import { LuMessagesSquare } from "react-icons/lu";
 
-import "/public/assets/css/globals.css";
+import "../styles/globals.css";
 
 const SidebarItems = [
     {
