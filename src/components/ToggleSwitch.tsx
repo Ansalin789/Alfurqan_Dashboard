@@ -16,11 +16,9 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         className={`text-xl ${darkMode ? "text-gray-500" : "text-yellow-500"}`}
       />
       <div className="relative inline-block w-10 ml-2 mr-2 align-middle select-none transition duration-200 ease-in">
-        <input
+      <input
           type="checkbox"
-          className={`${
-            darkMode ? "bg-gray-600" : "bg-gray-600"
-          } absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer checked:right-0`}
+          className="absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer checked:right-0"
           checked={darkMode}
           onChange={toggleDarkMode}
         />

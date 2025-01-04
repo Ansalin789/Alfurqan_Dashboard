@@ -160,6 +160,7 @@ interface EvaluationData {
 const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
   const steps = [
     {
+      id:'step1',
       step: '1',
       title: 'Clarify',
       description: 'Clarify your interest from our experienced teacher',
@@ -167,6 +168,7 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
       icon: '👋',
     },
     {
+      id:'step2',
       step: '2',
       title: 'Assess',
       description: 'Assess your level with our best evaluation test exams',
@@ -174,6 +176,7 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
       icon: '🖊️',
     },
     {
+      id:'step3',
       step: '3',
       title: 'Schedule',
       description: 'Schedule a time for your evaluation',
@@ -181,6 +184,7 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
       icon: '📅',
     },
     {
+      id:'step4',
       step: '4',
       title: 'Question',
       description: 'Ask and clarify all your doubts',
@@ -226,9 +230,9 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {steps.map((item, idx) => (
+          {steps.map((item) => (
             <div
-              key={idx}
+              key={item.id}
               className="group relative rounded-xl overflow-hidden hover:scale-105 transition-all duration-300"
             >
               <div className={`absolute inset-0 ${item.color} opacity-90`}></div>
@@ -1125,13 +1129,15 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Guardian's Name */}
               <div className="group">
-                <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
+                <label htmlFor="guardian-name"
+                   className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>👤</span>
-                    <span>Guardian &apos; s Name</span>
+                    <span>Guardian's Name</span>
                   </span>
                 </label>
                 <input
+                  id="guardian-name"
                   type="text"
                   placeholder="Enter guardian's name"
                   value={guardianName}
