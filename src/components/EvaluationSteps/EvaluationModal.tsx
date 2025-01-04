@@ -71,10 +71,13 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-5">
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">First Name</label>
+              <label 
+                htmlFor="studentFirstName"
+                className="block mb-1 text-xs font-medium text-gray-700">First Name</label>
               <input
                 type="text"
                 name="studentFirstName"
+                id="studentFirstName"
                 value={formData.studentFirstName}
                 onChange={handleChange}
                 required
@@ -82,8 +85,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
+              <label 
+              htmlFor="studentLastName"
+              className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
               <input
+                id="studentLastName"
                 type="text"
                 name="studentLastName"
                 value={formData.studentLastName}
@@ -93,8 +99,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Email</label>
+              <label 
+               htmlFor="email"
+              className="block mb-1 text-xs font-medium text-gray-700">Email</label>
               <input
+                id="email"
                 type="email"
                 name="email"
                 value={formData.email}
@@ -104,8 +113,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
+              <label 
+               htmlFor='phoneNumber'
+              className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
               <input
+                id="phoneNumber"
                 type="text"
                 name="phoneNumber"
                 value={formData.phoneNumber}
@@ -115,8 +127,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Country</label>
+              <label 
+               htmlFor='country'
+               className="block mb-1 text-xs font-medium text-gray-700">Country</label>
               <input
+                id="country"
                 type="text"
                 name="country"
                 value={formData.country}
@@ -126,8 +141,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Learning Interest</label>
+              <label 
+                 htmlFor='learningInterest'
+                className="block mb-1 text-xs font-medium text-gray-700">Learning Interest</label>
               <input
+                 id="learningInterest"
                 type="text"
                 name="learningInterest"
                 value={formData.learningInterest}
@@ -137,8 +155,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
+              <label 
+               htmlFor='numberOfStudents'
+              className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
               <input
+                id='numberOfStudents'
                 type="text"
                 name="numberOfStudents"
                 value={formData.numberOfStudents}
@@ -148,8 +169,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
+              <label 
+                 htmlFor='preferredTeacher'
+                className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
               <input
+                 id='preferredTeacher'
                 type="text"
                 name="preferredTeacher"
                 value={formData.preferredTeacher}
@@ -159,8 +183,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Date</label>
+              <label 
+               htmlFor='date'
+              className="block mb-1 text-xs font-medium text-gray-700">Date</label>
               <input
+               id='date'
                 type="date"
                 name="date"
                 value={formData.date}
@@ -170,8 +197,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Time</label>
+              <label 
+              htmlFor='time'
+              className="block mb-1 text-xs font-medium text-gray-700">Time</label>
               <input
+                id='time'
                 type="text"
                 name="time"
                 value={formData.time}
@@ -182,8 +212,11 @@ const EvaluationModal: React.FC<EvaluationModalProps> = ({ isOpen, onRequestClos
             </div>
           </div>
           <div className="form-group">
-            <label className="block mb-1 text-xs font-medium text-gray-700">Comment</label>
+            <label 
+              htmlFor='comment'
+              className="block mb-1 text-xs font-medium text-gray-700">Comment</label>
             <textarea
+               id='comment'
               name="comment"
               value={formData.comment}
               onChange={handleChange}
