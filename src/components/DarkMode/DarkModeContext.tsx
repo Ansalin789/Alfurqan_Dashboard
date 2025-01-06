@@ -1,7 +1,7 @@
 // contexts/DarkModeContext.tsx
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useMemo , ReactNode } from 'react';
 
 interface DarkModeContextProps {
   darkMode: boolean;
@@ -23,8 +23,9 @@ export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+
   return (
-    <DarkModeContext.Provider value={{ darkMode, toggleDarkMode }}>
+    <DarkModeContext.Provider value={useMemo(() => ({ darkMode, toggleDarkMode }), [darkMode, toggleDarkMode])}>
       {children}
     </DarkModeContext.Provider>
   );

@@ -36,8 +36,8 @@ export default function Academic() {
                         </tr>
                     </thead>
                     <tbody className="mb-1">
-                        {teachersData.map((teacher, index) => (
-                            <tr key={index}>
+                        {teachersData.map((teacher) => (
+                            <tr key={teacher.name}>
                                 <td className="px-2 py-1 text-[12px] whitespace-nowrap flex items-center text-white">
                                     <FaUserCircle className="text-red-500 mr-2" />
                                     {teacher.name}
