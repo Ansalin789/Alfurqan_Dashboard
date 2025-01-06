@@ -7,7 +7,8 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import Modal from 'react-modal';
 import React, { useState, useRef, useEffect } from 'react';
-import { FiCalendar, FiMoreVertical, FiClock } from 'react-icons/fi';
+import { FiCalendar, FiMoreVertical} from 'react-icons/fi';
+import StudentList from '@/components/Academic/ViewTeachersList/StudentList';
 
 
 
@@ -33,7 +34,7 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
   const [activeTab, setActiveTab] = useState('scheduled');
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const dropdownRef = useRef<HTMLTableDataCellElement | null>(null);
+  const dropdownRef = useRef< | null>(null);
   const itemsPerPage = 10;
 
   const scheduledClasses: Class[] = Array.from({ length: 5 }).map(() => ({
