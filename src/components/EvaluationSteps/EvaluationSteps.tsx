@@ -431,7 +431,7 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: (data: StudentData) => v
 };
 
 // Step 3 Component
-const Step3 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: () =>void; studentData: StudentData  }) => {
+const Step3 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: (studentData: StudentData) =>void; studentData: StudentData  }) => {
   console.log("Student Data in Step3:", studentData);
   
   return (
@@ -548,7 +548,7 @@ const Step3 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
   );
 };
 // Step 4 Component
-const Step4 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: () => void;studentData:StudentData }) => {
+const Step4 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: (studentData: StudentData) => void;studentData:StudentData }) => {
   const [time, setTime] = useState(120); // 120 seconds = 2 minutes
   const [isActive, setIsActive] = useState(false);
    console.log(studentData);
@@ -772,18 +772,18 @@ interface IEvaluation {
 }
 
 // Step 5 Component
-const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: () => void;studentData:StudentData }) => {
+const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: (updatedStudentData:any ) => void;studentData:StudentData }) => {
   const [isLanguageChecked, setIsLanguageChecked] = useState(false);
   const [isReadingChecked, setIsReadingChecked] = useState(false);
   const [isGrammarChecked, setIsGrammarChecked] = useState(false);
   const[languageLevel,setLanguageLevel]=useState("");
   const[readingLevel,setReadingLevel]=useState("");
-  const[grammarLevel,setGrammerLevel]=useState("");
+  const[grammarLevel,setGrammerLevel]=useState<string>();
   const [accomplishmentTime, setAccomplishmentTime] = useState<number>(0);
   const[studentRate,setStudentRate]=useState(0);
   const[expectedFinishingDate]=useState(28);
-  const[subscriptionName,setsubscriptionName]=useState("");
-   const[planTotalPrice,setplanTotalPrice]=useState<number>();
+  const[subscriptionName,setSubscriptionName]=useState<string>();
+   const[planTotalPrice,setPlanTotalPrice]=useState<number>();
   const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
 
   // First, add state to track which plan's total is being calculated
@@ -802,7 +802,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
       const plan = pricingPlans.find(p => p.label === selectedPlan);
       if (plan) {
        const price= calculatePrice(plan.rate, plan.label);
-       setplanTotalPrice(price);
+       setPlanTotalPrice(price || 0);
       }
     }
   }, [selectedPlan, selectedHours]); 
@@ -972,7 +972,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
             onClick={() => {
               if (selectedHours > 0) {
                 setSelectedPlan(plan.label);
-                setsubscriptionName(plan.label); // Set the selected plan when clicked
+                setSubscriptionName(plan.label); // Set the selected plan when clicked
               } else {
                 alert('Please select preferred hours first'); // Alert if no hours are selected
               }
@@ -1076,7 +1076,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
 
 
 // Step 6 Component
-const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => void; nextStep: () => void; updatedStudentData:any }) => {
+const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => void; nextStep: (updatedStudentDatas:any) => void; updatedStudentData:any }) => {
   const [guardianName, setGuardianName] = useState<string>('');
   const [guardianEmail, setGuardianEmail] = useState<string>('');
   const [guardianPhone, setGuardianPhone] = useState<string>('');
@@ -1129,52 +1129,57 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Guardian's Name */}
               <div className="group">
-                <label htmlFor="guardian-name"
+                <label htmlFor="guardian-name" 
                    className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>👤</span>
                     <span>Guardian's Name</span>
                   </span>
-                </label>
                 <input
-                  id="guardian-name"
+                  id="guardian-name" 
                   type="text"
                   placeholder="Enter guardian's name"
                   value={guardianName}
                   onChange={(e) => setGuardianName(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                            placeholder-white/30 focus:bg-white/10 focus:border-white/20 
-                           focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
+                           focus:ring-2 focus:ring-purple-500/20 transition-all duration-200" 
+                           aria-labelledby="guardian-name" 
                 />
+                </label>
+
               </div>
 
               {/* Guardian's Email */}
               <div className="group">
-                <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
+                <label htmlFor='guardianEmail' className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>📧</span>
                     <span>Guardian Email</span>
                   </span>
-                </label>
                 <input
-                  type="email"
+                  type="text"
                   placeholder="Enter guardian's email"
                   value={guardianEmail}
                   onChange={(e) => setGuardianEmail(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                            placeholder-white/30 focus:bg-white/10 focus:border-white/20 
                            focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
+                           aria-labelledby="guardian-email" 
+
                 />
+                </label>
               </div>
 
               {/* Phone Number */}
               <div className="group">
-                <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
+                <label htmlFor='guardianPhone'
+                   className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>📱</span>
                     <span>Phone Number</span>
                   </span>
-                </label>
+                
                 <input
                   type="tel"
                   placeholder="Enter phone number"
@@ -1183,28 +1188,33 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                            placeholder-white/30 focus:bg-white/10 focus:border-white/20 
                            focus:ring-2 focus:ring-purple-500/20 transition-all duration-200"
+                           aria-labelledby="guardian-phone" 
+                           
                 />
+                </label>
               </div>
 
               {/* Country */}
               <div className="group">
-                <label htmlFor ="name" className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
+                <label htmlFor='guardianCountry' className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>🌍</span>
                     <span>Country</span>
                   </span>
-                </label>
                 <select
                   value={guardianCountry}
                   onChange={(e) => setGuardianCountry(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                                focus:bg-white/10 focus:border-white/20 focus:ring-2 
-                               focus:ring-purple-500/20 transition-all duration-200">
+                               focus:ring-purple-500/20 transition-all duration-200"
+                              aria-labelledby="guardian-country" 
+                           >
                   <option value="" className="bg-gray-900">Select country</option>
                   <option value="us" className="bg-gray-900">United States</option>
                   <option value="uk" className="bg-gray-900">United Kingdom</option>
                   <option value="ca" className="bg-gray-900">Canada</option>
                 </select>
+                </label>
               </div>
             </div>
 
@@ -1212,65 +1222,75 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* City */}
               <div className="group">
-                <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
+                <label  htmlFor='guardianCity'
+                    className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>🏙️</span>
                     <span>City</span>
                   </span>
-                </label>
                 <select
                   value={guardianCity}
                   onChange={(e) => setGuardianCity(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                                focus:bg-white/10 focus:border-white/20 focus:ring-2 
-                               focus:ring-purple-500/20 transition-all duration-200">
+                               focus:ring-purple-500/20 transition-all duration-200"
+                              aria-labelledby="guardian-city" 
+                              >
                   <option value="" className="bg-gray-900">Select city</option>
                   <option value="ny" className="bg-gray-900">New York</option>
                   <option value="ld" className="bg-gray-900">London</option>
                   <option value="tk" className="bg-gray-900">Tokyo</option>
                 </select>
+                </label>
               </div>
 
               {/* Language */}
               <div className="group">
-                <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
+                <label htmlFor='guardianLanguage'
+                   className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>🗣️</span>
                     <span>Preferred Language</span>
                   </span>
-                </label>
                 <select
                   value={guardianLanguage}
                   onChange={(e) => setGuardianLanguage(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                                focus:bg-white/10 focus:border-white/20 focus:ring-2 
-                               focus:ring-purple-500/20 transition-all duration-200">
+                               focus:ring-purple-500/20 transition-all duration-200"
+                              aria-labelledby="guardian-language" 
+                              >
                   <option value="" className="bg-gray-900">Select language</option>
                   <option value="en" className="bg-gray-900">Arabic</option>
                   <option value="ar" className="bg-gray-900">Quran</option>
                   <option value="fr" className="bg-gray-900">Islamic Studies</option>
                 </select>
+                </label>
+
               </div>
             </div>
 
             {/* Time Zone Section */}
             <div className="group">
-              <label className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
+              <label  htmlFor='guardianTimeZone'
+                 className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                 <span className="flex items-center gap-2">
                   <span>🕒</span>
                   <span>Time Zone</span>
                 </span>
-              </label>
               <select 
                   value={guardianTimeZone}
                   onChange={(e) => setGuardianTimeZone(e.target.value)}className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                              focus:bg-white/10 focus:border-white/20 focus:ring-2 
-                             focus:ring-purple-500/20 transition-all duration-200">
+                             focus:ring-purple-500/20 transition-all duration-200"
+                             aria-labelledby="guardian-timezone" 
+                             >
                 <option value="" className="bg-gray-900">Select time zone</option>
                 <option value="est" className="bg-gray-900">Eastern Time (ET)</option>
                 <option value="pst" className="bg-gray-900">Pacific Time (PT)</option>
                 <option value="gmt" className="bg-gray-900">Greenwich Mean Time (GMT)</option>
               </select>
+              </label>
             </div>
 
             {/* Terms and Conditions */}
@@ -1330,7 +1350,7 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
 };
 
 // Step 7 Component (Thank You Page)
-const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => void; nextStep: () => void;updatedStudentDatas:any }) => {
+const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: (updatedStudentDatas:any) => void; nextStep: () => void;updatedStudentDatas:any }) => {
   console.log(updatedStudentDatas);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative overflow-hidden">
@@ -1339,7 +1359,7 @@ const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
 
       {/* Animated Background Circles */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* <div className="absolute inset-0 overflow-hidden">
         {Array.from({ length: 20 }).map((_, i) => (
           <div
             key={i}
@@ -1354,7 +1374,7 @@ const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
             }}
           ></div>
         ))}
-      </div>
+      </div> */}
 
       {/* Logo */}
       <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
@@ -1563,13 +1583,13 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             {/* Class Status Card */}
             <div className="group">
-              <label className="block text-white/60 group-hover:text-white/90 text-lg font-semibold mb-4 transition-colors">
+              <label htmlFor='classstatus' className="block text-white/60 group-hover:text-white/90 text-lg font-semibold mb-4 transition-colors">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">👨‍🏫</span>
                   <span>Class Status</span>
                 </div>
                 <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
-              </label>
+             
               <div className="relative">
                 <select 
                   value={classStatus}
@@ -1578,22 +1598,24 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
                             appearance-none cursor-pointer focus:outline-none focus:ring-2 
                             focus:ring-purple-500/20 focus:border-white/20 transition-all duration-200
                             hover:bg-white/10"
+                            aria-labelledby="classstatus" 
                 >
                   <option value="Completed" className="bg-gray-900">Completed</option>
                   <option value="Not Completed" className="bg-gray-900">Not Completed</option>
                 </select>
               </div>
+              </label>
             </div>
 
             {/* Student Status Card */}
             <div className="group">
-              <label className="block text-white/60 group-hover:text-white/90 text-lg font-semibold mb-4 transition-colors">
+              <label  htmlFor='studentstatus' className="block text-white/60 group-hover:text-white/90 text-lg font-semibold mb-4 transition-colors">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">👥</span>
                   <span>Student Status</span>
                 </div>
                 <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
-              </label>
+             
               <div className="relative">
                 <select 
                   value={studentStatus}
@@ -1602,12 +1624,15 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
                             appearance-none cursor-pointer focus:outline-none focus:ring-2 
                             focus:ring-purple-500/20 focus:border-white/20 transition-all duration-200
                             hover:bg-white/10"
+                            aria-labelledby="studentstatus"
+                            
                 >
                   <option value="Joined" className="bg-gray-900">Joined</option>
                   <option value="Not Joined" className="bg-gray-900">Not Joined</option>
                   <option value="Waiting" className="bg-gray-900">Waiting</option>
                 </select>
               </div>
+              </label>
             </div>
           </div>
 
@@ -1631,9 +1656,9 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
 // Main EvaluationSteps component - Update total number of steps
 const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
   const [step, setStep] = useState(1);
-  const [studentData, setStudentData] = useState<StudentData>(null);
-   const[updatedStudentData,setupdatedStudentData]=useState(null);
-   const[updatedStudentDatas,setupdatedStudentDatas]=useState(null);
+  const [studentData, setStudentData] = useState<StudentData>();
+   const[updatedStudentData,setUpdatedStudentData]=useState<any>(null);
+   const[updatedStudentDatas,setUpdatedStudentDatas]=useState<any>(null);
   const totalSteps = 8;
 
   const nextStep = (data: any) => {
@@ -1642,10 +1667,10 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
       setStudentData(data); // Store studentData when moving to the next step
     }
     if(step === 5){
-      setupdatedStudentData(data);
+      setUpdatedStudentData(data);
     }
     if(step === 6 && 7 && 8){
-      setupdatedStudentDatas(data);
+      setUpdatedStudentDatas(data);
     }
     if (step < totalSteps) {
       setStudentData(data);

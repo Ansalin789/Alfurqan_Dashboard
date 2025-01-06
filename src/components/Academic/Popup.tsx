@@ -215,7 +215,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-3 gap-5">
             <div className="form-group">
-              <label className="block text-xs font-medium text-gray-700 mb-1.5">First Name</label>
+              <label htmlFor='name' className="block text-xs font-medium text-gray-700 mb-1.5">First Name</label>
               <div className="relative">
                 <input
                   type="text"
@@ -234,7 +234,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               </div>
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
+              <label htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
               <input
                 type="text"
                 name="lname"
@@ -244,7 +244,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Email</label>
+              <label htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">Email</label>
               <input
                 type="email"
                 name="email"
@@ -254,7 +254,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
+              <label htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
               <input
                 type="text"
                 name="number"
@@ -264,7 +264,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">City</label>
+              <label htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">City</label>
               <input
                 type="text"
                 name="city"
@@ -274,7 +274,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Country</label>
+              <label htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">Country</label>
               <input
                 type="text"
                 name="country"
@@ -284,7 +284,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Course</label>
+              <label htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">Course</label>
               <input
                 type="text"
                 name="course"
@@ -294,7 +294,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
+              <label htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
               <input
                 type="text"
                 name="numberofstudents"
@@ -304,7 +304,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
+              <label htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
               <input
                 type="text"
                 name="preferredTeacher"
@@ -314,7 +314,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Date</label>
+              <label htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">Date</label>
               <input
                 type="date"
                 name="date"
@@ -324,7 +324,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
               />
             </div>
             <div className="form-group">
-              <label className="block mb-1 text-xs font-medium text-gray-700">Time</label>
+              <label htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">Time</label>
               <input
                 type="text"
                 name="time"
@@ -335,7 +335,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
             </div>
           </div>
           <div className="form-group">
-            <label className="block mb-1 text-xs font-medium text-gray-700">Comment</label>
+            <label  htmlFor='name' className="block mb-1 text-xs font-medium text-gray-700">Comment</label>
             <textarea
               name="comment"
               value={formData.comment}
