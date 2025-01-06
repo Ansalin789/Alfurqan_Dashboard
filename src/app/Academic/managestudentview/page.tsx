@@ -17,16 +17,90 @@ const ManageStudentView = () => {
   const itemsPerPage = 10;
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLTableDataCellElement | null>(null);
- const[studentData,setStudentData]=useState("");
  const [teachers, setTeachers] = useState<Teacher[]>([]);
- interface Teacher {
-  userId: string;
-  userName: string;
-  email: string;
-  profileImage?: string | null;
-  level: string;
-  subject: string;
-  rating: number;
+ const [studentData, setStudentData] = useState<StudentData>();
+ interface StudentData {
+  studentDetails: {
+    _id: string;
+    student: {
+      studentId: string;
+      studentEmail: string;
+      studentPhone: number;
+    };
+    username: string;
+    password: string;
+    role: string;
+    status: string;
+    createdDate: string;
+    createdBy: string;
+    updatedDate: string;
+    __v: number;
+  };
+  studentEvaluationDetails: {
+    student: {
+      studentId: string;
+      studentFirstName: string;
+      studentLastName: string;
+      studentEmail: string;
+      studentPhone: number;
+      studentCountry: string;
+      studentCountryCode: string;
+      learningInterest: string;
+      numberOfStudents: number;
+      preferredTeacher: string;
+      preferredFromTime: string;
+      preferredToTime: string;
+      timeZone: string;
+      referralSource: string;
+      preferredDate: string;
+      evaluationStatus: string;
+      status: string;
+      createdDate: string;
+      createdBy: string;
+    };
+    subscription: {
+      subscriptionName: string;
+    };
+    _id: string;
+    isLanguageLevel: boolean;
+    languageLevel: string;
+    isReadingLevel: boolean;
+    readingLevel: string;
+    isGrammarLevel: boolean;
+    grammarLevel: string;
+    hours: number;
+    planTotalPrice: number;
+    classStartDate: string;
+    classEndDate: string;
+    classStartTime: string;
+    classEndTime: string;
+    accomplishmentTime: string;
+    studentRate: number;
+    gardianName: string;
+    gardianEmail: string;
+    gardianPhone: string;
+    gardianCity: string;
+    gardianCountry: string;
+    gardianTimeZone: string;
+    gardianLanguage: string;
+    assignedTeacher: string;
+    studentStatus: string;
+    classStatus: string;
+    comments: string;
+    trialClassStatus: string;
+    invoiceStatus: string;
+    paymentLink: string;
+    paymentStatus: string;
+    status: string;
+    createdDate: string;
+    createdBy: string;
+    updatedDate: string;
+    updatedBy: string;
+    expectedFinishingDate: number;
+    assignedTeacherId: string;
+    assignedTeacherEmail: string;
+    __v: number;
+  };
 }
   useEffect(()=>{
     const studentId=localStorage.getItem('studentManageID');
@@ -113,8 +187,10 @@ const ManageStudentView = () => {
     event.stopPropagation();
     console.log("Navigating to reschedule page");
     router.push('/Academic/studentreschedule');
+   
     setTimeout(() => {
         setActiveDropdown(null);
+        
     }, 100);
   };
 
@@ -152,7 +228,7 @@ const ManageStudentView = () => {
     }
   }, [studentData]);
 
-  const handleStartTimeChange = (index, newStartTime) => {
+  const handleStartTimeChange = (index:number, newStartTime:string) => {
     const updatedSchedule = [...schedule];
 
     // Set the start time for the selected day
@@ -173,7 +249,7 @@ const ManageStudentView = () => {
     // Reduce duration by 30 minutes (0.5 hours) for all subsequent selected days (below the selected index)
     for (let i = index + 1; i < updatedSchedule.length; i++) {
       if (!updatedSchedule[i].isSelected) { // Only reduce duration for unselected days
-        updatedSchedule[i].duration = Math.max(0, updatedSchedule[i].duration - 0.25); // Reduce by 30 minutes
+        updatedSchedule[i].duration  = Math.max(0, updatedSchedule[i].duration - 0.25); // Reduce by 30 minutes
       }
     }
 
@@ -181,7 +257,7 @@ const ManageStudentView = () => {
     setSchedule(updatedSchedule);
   };
 
-  const handleCheckboxChange = (index) => {
+  const handleCheckboxChange = (index: number) => {
     const updatedSchedule = [...schedule];
     
     // Toggle selection of the day
@@ -191,7 +267,6 @@ const ManageStudentView = () => {
     if (!updatedSchedule[index].isSelected) {
       updatedSchedule[index].duration = defaultDuration; // Reset to default duration
     }
-    
     setSchedule(updatedSchedule);
   };
     
@@ -209,25 +284,31 @@ const ManageStudentView = () => {
       label: item.endTime,
       value: item.endTime,
     })),
-    package: studentData.studentEvaluationDetails?.subscription?.subscriptionName,  // Replace with your actual package value
-    teacher: {
-      teacherName:studentData.studentEvaluationDetails?.assignedTeacher,
-      teacherEmail:  studentData.studentEvaluationDetails?.assignedTeacherEmail,
+    student: {
+      studentId: studentData?.studentEvaluationDetails?.student?.studentId ?? '',
+      studentFirstName: studentData?.studentEvaluationDetails?.student?.studentFirstName ?? '',
+      studentLastName: studentData?.studentEvaluationDetails?.student?.studentLastName ?? '',
+      studentEmail: studentData?.studentEvaluationDetails?.student?.studentEmail ?? '',
     },
-    preferedTeacher: studentData.studentEvaluationDetails?.student?.preferredTeacher, // Replace with the selected teacher preference
-    course: studentData.studentEvaluationDetails?.student?.learningInterest, // Replace with your actual course value
-    totalHourse: Number(studentData.studentEvaluationDetails?.accomplishmentTime), // Calculate total hours
-    startDate: studentData?.studentDetails?.createdDate
-    ? new Date(studentData.studentDetails.createdDate).toISOString().slice(0, 10):'', // Replace with your actual start date
+    package: studentData?.studentEvaluationDetails?.subscription?.subscriptionName ?? '', 
+    teacher: {
+      teacherName: studentData?.studentEvaluationDetails?.assignedTeacher ?? '',
+      teacherEmail: studentData?.studentEvaluationDetails?.assignedTeacherEmail ?? '',
+    },
+    preferedTeacher: studentData?.studentEvaluationDetails?.student?.preferredTeacher ?? '', 
+    course: studentData?.studentEvaluationDetails?.student?.learningInterest ?? '', 
+    totalHourse: Number(studentData?.studentEvaluationDetails?.accomplishmentTime) || 0,
+    startDate: studentData?.studentDetails?.createdDate ? new Date(studentData.studentDetails.createdDate).toISOString().slice(0, 10) : '',
     endDate: studentData?.studentDetails?.createdDate
-    ? (() => {
-        const date = new Date(studentData.studentDetails.createdDate);
-        date.setDate(date.getDate() + 28); // Add 28 days
-        return date.toISOString().slice(0, 10); // Format as YYYY-MM-DD
-      })()
-    : " ", // Replace with your actual end date
-    scheduleStatus: "Active" // Replace with your actual schedule status
+      ? (() => {
+          const date = new Date(studentData.studentDetails.createdDate);
+          date.setDate(date.getDate() + 28);
+          return date.toISOString().slice(0, 10);
+        })()
+      : '',
+    scheduleStatus: 'Active',
   };
+  
   interface TimeSlot {
     label: string;
     value: string;
@@ -237,11 +318,18 @@ const ManageStudentView = () => {
     teacherName: string;
     teacherEmail: string;
   }
+  interface Students {
+     studentId: string;
+     studentFirstName: string;
+     studentLastName:string;
+     studentEmail: string;
+  }
   
   interface RequestData {
     classDay: TimeSlot[];
     package: string;
     teacher: Teacher;
+    student:Students;
     preferedTeacher: string;
     course: string;
     totalHourse: number;
@@ -251,7 +339,7 @@ const ManageStudentView = () => {
     endTime: TimeSlot[];
     scheduleStatus: string;
   }
-  const[setclassscheduleid]=useState("");
+ 
   const sendDataToAPI = async (): Promise<void> => {
     console.log(requestData);
     const studentId=localStorage.getItem('studentManageID')
@@ -262,7 +350,7 @@ const ManageStudentView = () => {
     }
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5001/classschedule/${studentId}`, {
+      const response = await fetch(`http://localhost:5001/createclassschedule/${studentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -280,16 +368,16 @@ const ManageStudentView = () => {
       // Parse the response JSON
       const responseData = await response.json();
       console.log("Success:", responseData);
-        setclassscheduleid(requestData.student?.studentId);
+        
       setIsScheduled(true);
     closeModal();
     studentlist();
     } catch (error) {
       // Handle errors from fetch or thrown by your code
-      console.error("Error:", error.message);
+      console.error("Error:", error);
     }
   };
-  const [studentllistdata,setstudentlistdata]=useState("");
+  const [studentllistdata, setStudentllistdata]=useState("");
   const studentlist=async()=>{
       try{
         const auth=localStorage.getItem('authToken');
@@ -302,13 +390,13 @@ const ManageStudentView = () => {
           );
           const data=await response.json();
            console.log(data);
-            setstudentlistdata(data);
+            setStudentllistdata(data);
       }catch(error){
             console.log(error);
       }
   };
   const studentId=localStorage.getItem('studentManageID');
-  const filteredStudents = studentllistdata?.students?.filter((item) => {
+  const filteredStudents = studentllistdata?.students?.filter((item: { student: { studentId: string | null; }; }) => {
     return item.student?.studentId === studentId;
   });
   console.log(filteredStudents);
@@ -335,26 +423,26 @@ const ManageStudentView = () => {
               />
             </div>
             <div className="justify-center text-center border border-b-black">
-              <h2 className="text-2xl font-semibold mb-2">{studentData.studentEvaluationDetails?.student?.studentFirstName}</h2>
+              <h2 className="text-2xl font-semibold mb-2">{studentData?.studentEvaluationDetails?.student?.studentFirstName ?? "" }</h2>
               <p className="text-gray-500 mb-4">Student</p>
             </div>
 
             <div className="text-left w-full p-2 pt-6">
               <h3 className="font-semibold mb-2">Personal Info</h3>
               <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Full Name: </span>{studentData.studentEvaluationDetails?.student?.studentFirstName}
+                <span className="font-semibold text-[14px]">Full Name: </span>{studentData?.studentEvaluationDetails?.student?.studentFirstName}
               </p>
               <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Email: </span>{studentData.studentEvaluationDetails?.student?.studentEmail}
+                <span className="font-semibold text-[14px]">Email: </span>{studentData?.studentEvaluationDetails?.student?.studentEmail}
               </p>
               <p className="text-gray-800 text-[13px] mb-1">
-                <span className="font-semibold text-[14px]">Phone Number: </span>{studentData.studentEvaluationDetails?.student?.studentPhone}
+                <span className="font-semibold text-[14px]">Phone Number: </span>{studentData?.studentEvaluationDetails?.student?.studentPhone}
               </p>
               <p className="text-gray-800 text-[14px] mb-1">
                 <span className="font-semibold text-[14px]">Level: </span>1
               </p>
               <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Package: </span>{studentData.studentEvaluationDetails?.subscription?.subscriptionName}
+                <span className="font-semibold text-[14px]">Package: </span>{studentData?.studentEvaluationDetails?.subscription?.subscriptionName}
               </p>
               
             </div>
@@ -449,10 +537,10 @@ const ManageStudentView = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredStudents?.map((item, index)  => (
-                      <tr key={index} className="border-t">
+                    {filteredStudents?.map((item:any,index:number)  => (
+                      <tr key={filteredStudents.studentEvaluationDetails?.student?.studentId} className="border-t">
                         <td className="py-1 text-[12px] text-center">{item.student.studentFirstName}</td>
-                        <td className="py-1 text-[12px] text-center">{studentData.studentEvaluationDetails?.student?.learningInterest}</td>
+                        <td className="py-1 text-[12px] text-center">{studentData?.studentEvaluationDetails?.student?.learningInterest}</td>
                         <td className="py-1 text-[12px] text-center">{new Date(item.createdDate).toISOString().slice(0, 10)}</td>
                         <td className="py-1 text-center">
                           <button 
@@ -471,14 +559,12 @@ const ManageStudentView = () => {
                             </button>
                           )}
                           {activeDropdown === index && activeTab === 'scheduled' && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                            <div ref={dropdownRef}
+                              className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
                               <div className="py-1">
                                 <button
                                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  onClick={(event: React.MouseEvent) => {
-                                    handleReschedule(event);
-                                    setActiveDropdown(null);
-                                  }}
+                                  onClick={handleReschedule}
                                 >
                                   Reschedule
                                 </button>
@@ -586,19 +672,19 @@ const ManageStudentView = () => {
             <div className="grid grid-cols-4 gap-4">
             <div className="col-span-2">
                 <label htmlFor="select Package" className="block font-medium text-gray-700 text-[12px]">Select Package</label>
-                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.subscription?.subscriptionName}  readOnly/>
+                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData?.studentEvaluationDetails?.subscription?.subscriptionName}  readOnly/>
               </div>
               <div className="col-span-2">
                 <label htmlFor="total hous"className="block font-medium text-[13px] text-gray-700">Total Hours</label>
-                <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]" value={studentData.studentEvaluationDetails?.accomplishmentTime}  readOnly/>
+                <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]" value={studentData?.studentEvaluationDetails?.accomplishmentTime}  readOnly/>
               </div>
               <div className="col-span-2">
                 <label htmlFor='ucvuy' className="block font-medium text-[13px] text-gray-700">Preferred Teacher</label>
-                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.student?.preferredTeacher}  readOnly/>
+                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData?.studentEvaluationDetails?.student?.preferredTeacher}  readOnly/>
               </div>
               <div className="col-span-2">
                 <label htmlFor='ucvuy1' className="block font-medium text[13px] text-gray-700">Course</label>
-                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData.studentEvaluationDetails?.student?.learningInterest}  readOnly/>
+                <input type="text" className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" value={studentData?.studentEvaluationDetails?.student?.learningInterest}  readOnly/>
               </div>
               <div className="col-span-2">
                      <label htmlFor="start date" className="block font-medium text-gray-700 text-[12px]">Start Date</label>

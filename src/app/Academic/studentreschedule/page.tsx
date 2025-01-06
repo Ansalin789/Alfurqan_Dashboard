@@ -10,24 +10,64 @@ import Image from 'next/image';
 import { FaCheck } from "react-icons/fa";
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 
+
 const localizer = momentLocalizer(moment);
 
 const Studentreschedule = () => {
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState<string>(''); // State to hold the selected date
-  const [eventsForSelectedDate, setEventsForSelectedDate] = useState<any[]>([]); // State to hold filtered events
+  const [selectedDate, setSelectedDate] = useState<string>(''); // State to hold the selected date 
   const [events, setEvents] = useState<any[]>([]); // State to store all events
   const [teachers, setTeachers] = useState<any[]>([]); // State to store teachers and their availability
-  const [selectedTeacher, setSelectedTeacher] = useState<string | null>(null); // State to hold selected teacher
   const [rescheduleSuccess, setRescheduleSuccess] = useState<boolean>(false); // State for success message
+  interface Student {
+    student: {
+      studentId: string | null;
+      studentFirstName: string;
+      studentLastName: string;
+      studentEmail: string;
+    };
+    startDate: string;
+    endDate: string;
+    package: string;
+    preferedTeacher: string;
+    status: string;
+    totalHourse: number;
+    _id: string;
+  }
+  
+  interface StudentListResponse {
+    students: Student[];
+  }
+  
+  const [studentllistdata, setStudentllistdata] = useState<StudentListResponse | null>(null);
+  
 
-  // Fetch teacher schedules from the backend
+  // Fetch teacher schedules and student data from the backend
   useEffect(() => {
-    const auth=localStorage.getItem('authToken');
-    fetch('http://localhost:5001/shiftschedule?role=TEACHER',{
+    const studentlist = async () => {
+      try {
+        const auth = localStorage.getItem('authToken');
+        const response = await fetch('http://localhost:5001/classShedule', {
+          method: 'GET',
+          headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${auth}`,
+          }
+        });
+        const data = await response.json();
+        console.log(data);
+        setStudentllistdata(data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    studentlist();
+
+    const auth = localStorage.getItem('authToken');
+    fetch('http://localhost:5001/shiftschedule?role=TEACHER', {
       headers: {
         'Content-Type': 'application/json',
-         'Authorization': `Bearer ${auth}`,
+        'Authorization': `Bearer ${auth}`,
       },
     })
       .then((response) => response.json())
@@ -40,21 +80,30 @@ const Studentreschedule = () => {
         }
       })
       .catch((error) => console.error('Error fetching data: ', error));
-
-    // Fetch events (if required, you can add another fetch for events here)
-    // fetch('http://localhost:5001/events') // Example for fetching events
-    //   .then(response => response.json())
-    //   .then(data => setEvents(data))
-    //   .catch(error => console.error('Error fetching events: ', error));
   }, []);
+
+  const studentId = localStorage.getItem('studentManageID');
+  const filteredStudents = studentllistdata?.students?.filter((item: { student: { studentId: string | null; }; }) => {
+    return item.student?.studentId === studentId;
+  });
+  console.log(filteredStudents);
+  useEffect(() => {
+      const studentEvents = (filteredStudents ?? []).map((student: any) => {
+        return {
+          title: `${student.student.studentFirstName} ${student.student.studentLastName}`,
+          start: new Date(student.startDate),
+          end: new Date(student.endDate),
+          allDay: true,
+        };
+      })|| [];
+      setEvents(studentEvents); // Set the events on the calendar
+  }, [studentllistdata]);
 
   // Handle date selection from the calendar
   const handleDateClick = (date: string) => {
     setSelectedDate(date);
-
     // Filter events for the selected date (if required)
-    const filteredEvents = events.filter((event) => event.date === date);
-    setEventsForSelectedDate(filteredEvents);
+    
   };
 
   const handleNavigate = (date: Date) => {
@@ -62,11 +111,97 @@ const Studentreschedule = () => {
     handleDateClick(formattedDate); // Call the date click handler
   };
 
-  const handleTeacherSelect = (teacher: string) => {
-    setSelectedTeacher(teacher);
-    setRescheduleSuccess(true); // Show success message
-    setTimeout(() => setRescheduleSuccess(false), 3000); // Hide after 3 seconds
+  const handleTeacherSelect = async (teacherId:string, teachername:string,teacheremail:string, fromtime:string, totime:string) => {
+    try {   
+      const filteredItem = filteredStudents?.find((item: { startDate: string | number | Date; }) => {
+        const itemStartDate = new Date(item.startDate).toISOString().split("T")[0];
+        const normalizedSelectedDate = new Date(selectedDate).toISOString().split("T")[0];
+        return itemStartDate === normalizedSelectedDate;
+      });
+      
+      if (!filteredItem) {
+        console.error("No matching schedule found.");
+        return;
+      }
+      console.log(filteredItem);
+      const auth = localStorage.getItem("authToken");
+      if (!auth) {
+        console.error("Auth token not found. Please log in.");
+        return;
+      }
+      if ( !filteredItem.student.studentFirstName || !filteredItem.student.studentLastName || !filteredItem.student.studentId) {
+        console.error("Missing required student information.");
+        return;
+      }
+    
+      const date = new Date(selectedDate);
+
+// Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+const dayIndex = date.getDay();
+
+// Map the day index to the day name
+const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const dayName = daysOfWeek[dayIndex];
+
+  
+      const requestData = {
+        classDay: [
+          { label: dayName,value: dayName }  
+        ],
+        startDate:selectedDate,
+        endDate:selectedDate,
+        startTime: [
+          { label: "Start Time", value: fromtime }
+        ],
+        endTime: [
+          { label: "End Time", value: totime }
+        ],
+        createdBy: "Admin",
+  createdDate: new Date().toISOString(),
+  scheduleStatus: 'Active',
+  package: filteredItem.package,
+  preferedTeacher: filteredItem.preferedTeacher,    // Example data
+  status: filteredItem.status,
+  student: {
+    studentId: filteredItem.student.studentId, 
+    studentFirstName: filteredItem.student.studentFirstName, 
+    studentLastName:filteredItem.student.studentLastName , 
+    studentEmail: filteredItem.student.studentEmail,
+  },
+  teacher: {
+    // teacherId: teacherId, 
+    teacherName: teachername, 
+    teacherEmail: teacheremail,
+  },
+  totalHourse: filteredItem.totalHourse,    
+  lastUpdatedDate: new Date().toISOString(),
+  _id:filteredItem._id,
+      };
+      console.log(requestData);
+      console.log(filteredItem._id);
+      const response = await fetch(`http://localhost:5001/classSchedule/${filteredItem._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${auth}`,
+        },
+        body: JSON.stringify(requestData),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to update schedule: ${response.statusText}`);
+      }
+       
+      console.log("Schedule updated successfully.");
+      const data = await response.json();
+      console.log(data);
+      setRescheduleSuccess(true);
+      setTimeout(() => setRescheduleSuccess(false), 3000);
+    } catch (error) {
+      console.error("Error updating schedule:", error);
+    }
   };
+  
 
   // Filter available teachers for the selected date
   const getAvailableTeachers = () => {
@@ -91,8 +226,8 @@ const Studentreschedule = () => {
       <div className="flex flex-col h-screen relative">
         <div className="flex-1">
           <div className="p-2">
-            <IoArrowBackCircleSharp 
-              className="text-[25px] bg-[#fff] rounded-full text-[#012a4a] cursor-pointer" 
+            <IoArrowBackCircleSharp
+              className="text-[25px] bg-[#fff] rounded-full text-[#012a4a] cursor-pointer"
               onClick={() => router.push('managestudentview')}
             />
           </div>
@@ -120,8 +255,8 @@ const Studentreschedule = () => {
                       color: '#012A4A',
                       borderRadius: '4px',
                       padding: '2px 4px',
-                      fontSize:'7px',
-                      width:'60px'
+                      fontSize: '7px',
+                      width: '60px'
                     },
                   })}
                   onNavigate={handleNavigate}
@@ -134,20 +269,22 @@ const Studentreschedule = () => {
               <h2 className="text-[15px] font-semibold mb-4 text-[#012A4A]">Select your Teacher and time Slot to Reschedule your class*</h2>
               <div>
                 <h3 className='pt-3 pb-4 text-[#012A4A] font-semibold'>Available Teachers</h3>
-                {getAvailableTeachers().map((teacher, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 mb-2 bg-white shadow-lg rounded-lg cursor-pointer" onClick={() => handleTeacherSelect(teacher.name)}>
-                    <div className="flex items-center">
-                      <Image src={`/assets/images/alf1.png`} width={50} height={50} alt={teacher.name} className="w-8 h-8 rounded-full mr-2" />
-                      <div>
-                        <p className="text-[12px] font-medium">{teacher.name}</p>
-                        <p className="text-[11px] text-gray-600">Level: 3</p>
+                <div style={{ maxHeight: '300px', overflowY: 'scroll' }}>
+                  {getAvailableTeachers().map((teacher) => (
+                    <button key={teacher.teacherId} className="flex items-center justify-between p-2 mb-2 bg-white shadow-lg rounded-lg cursor-pointer" onClick={() => handleTeacherSelect(teacher.teacherId,teacher.name,teacher.email,teacher.fromtime,teacher.totime)}>
+                      <div className="flex items-center">
+                        <Image src={`/assets/images/alf1.png`} width={50} height={50} alt={teacher.name} className="w-8 h-8 rounded-full mr-2" />
+                        <div>
+                          <p className="text-[12px] font-medium">{teacher.name}</p>
+                          <p className="text-[11px] text-gray-600">Level: 3</p>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] p-4 text-gray-600">{teacher.fromtime} to {teacher.totime}</p>
-                    </div>
-                  </div>
-                ))}
+                      <div>
+                        <p className="text-[10px] p-4 text-gray-600">{teacher.fromtime} to {teacher.totime}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
               {rescheduleSuccess && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
