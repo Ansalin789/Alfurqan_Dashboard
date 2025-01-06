@@ -34,8 +34,10 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
   const [activeTab, setActiveTab] = useState('scheduled');
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const [Studentlistdata, setStudentlistdata] = useState();
   const dropdownRef = useRef< | null>(null);
   const itemsPerPage = 10;
+
 
   const scheduledClasses: Class[] = Array.from({ length: 5 }).map(() => ({
     name: 'Samantha William',
@@ -53,11 +55,7 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
     performance: '95%'
   }));
 
-  const getCurrentData = () => {
-    const data = activeTab === 'scheduled' ? scheduledClasses : completedClasses;
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return data.slice(startIndex, startIndex + itemsPerPage);
-  };
+
 
   const totalPages = Math.ceil(
     (activeTab === 'scheduled' ? scheduledClasses.length : completedClasses.length) / itemsPerPage
@@ -75,9 +73,10 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
     }, 100);
   };
 
+
   const handleClickOutside = (event: MouseEvent) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-      setActiveDropdown(null);
+      setActiveDropdown(null); 
     }
   };
 
@@ -98,26 +97,6 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
     setModalIsOpen(false);
   };
 
-  const handleSave = () => {
-    setIsScheduled(true);
-    closeModal();
-  };
-
-  const handleModalClick = (e: React.MouseEvent) => e.stopPropagation();
-
-  const handleReschedules = (event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    onSuccess();
-    
-    onClose();
-
-    // Redirect after 3 seconds
-    setTimeout(() => {
-      router.push('/Academic/viewTeacherSchedule');
-    }, 3000);
-  };
   interface Teacher {
     _id:string;
     userId: string;
@@ -158,18 +137,19 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
    
-  const handleStartTimeChange = (e) => {
+
+  const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = e.target.value; // Input time in 24-hour format
     setStartTime(time); // Store in state in 24-hour format
   };
 
-  const handleEndTimeChange = (e) => {
+  const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = e.target.value; // Input time in 24-hour format
     setEndTime(time); // Store in state in 24-hour format
   };
 
   // Function to format time to 12-hour format for display purposes
-  const formatTimeToAmPm = (time) => {
+  const formatTimeToAmPm = (time: string) => {
     const [hours, minutes] = time.split(':');
     let hour = parseInt(hours, 10);
     const amPm = hour >= 12 ? 'PM' : 'AM';
@@ -178,13 +158,18 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
     return `${hour}:${minutes} ${amPm}`;
   };
   
-  const calculateHoursAcrossDays = (startDate, startTime, endDate, endTime) => {
+  const calculateHoursAcrossDays = (
+    startDate: string,
+    startTime: string,
+    endDate: string,
+    endTime: string
+  ): string => {
     // Parse dates
     const start = new Date(`${startDate}T${startTime}`);
     const end = new Date(`${endDate}T${endTime}`);
   
     // Calculate the number of full days (excluding the partial start and end days)
-    const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    const totalDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   
     // Calculate the duration for a single day (start to end time)
     const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -203,8 +188,8 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
     return totalDuration.toFixed(2);
   };
   
-
-  const handleSave1 = async (e) => {
+  
+ const handleSave1 = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     
     const totalDuration = calculateHoursAcrossDays(startDate, startTime, endDate, endTime);
@@ -212,9 +197,9 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
     const formattedEndTime = formatTimeToAmPm(endTime);
     const payload = {
       academicCoachId: "674027a9f070ff2404c5c184",
-      teacherId: teachers._id,
-      name: teachers.userName,
-      email: teachers.email,
+      teacherId: teachers?._id,
+      name: teachers?.userName,
+      email: teachers?.email,
       role: "TEACHER",
       workhrs: totalDuration,
       startdate: startDate,
@@ -247,7 +232,7 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
       console.error('Error saving schedule:', error);
     }
   };
-const [studentllistdata,setstudentlistdata]=useState("");
+
   const studentlist=async()=>{
       try{
         const auth=localStorage.getItem('authToken');
@@ -260,14 +245,15 @@ const [studentllistdata,setstudentlistdata]=useState("");
           );
           const data=await response.json();
            console.log(data);
-            setstudentlistdata(data);
+            setStudentlistdata(data);
       }catch(error){
             console.log(error);
       }
   };
   const teacherId=localStorage.getItem('manageTeacherId');
+
   console.log(teacherId);
-  const filteredStudents =studentllistdata?.users?.filter((item) => {
+  const filteredStudents =Studentlistdata?.users?.filter((item: any) => {
       console.log(`Comparing: item.teacherId = ${item.teacherId}, teacherId = ${teacherId}`); // Debugging inside filter
       return item.teacherId === teacherId;
     });
@@ -302,10 +288,6 @@ const [studentllistdata,setstudentlistdata]=useState("");
                 <ul className="space-y-2 text-sm">
                   <li><strong>Full Name:</strong> {teachers?.userName}</li>
                   <li><strong>Email:</strong> {teachers?.email}</li>
-                  {/* <li><strong>Phone Number:</strong> (1) 2536 2561 2365</li>
-                  <li><strong>Time Zone:</strong> USA(time)</li>
-                  <li><strong>Country:</strong> USA</li>
-                  <li><strong>Working Hours:</strong> Arabic</li> */}
                   <li><strong>Bio:</strong> Lorem Ipsum is simply dummy text of the printing and typesetting industry.</li>
                 </ul>
               </div>
@@ -381,8 +363,8 @@ const [studentllistdata,setstudentlistdata]=useState("");
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents?.map((item, index) => (
-                    <tr key={index} className="border-t">
+                  {filteredStudents?.map((item:any,index:any) => (
+                    <tr key={item._id} className="border-t">
                       <td className="py-1 text-[12px] text-center">{item.name}</td>
                       <td className="py-1 text-[12px] text-center">{item.course}</td>
                       <td className="py-1 text-[12px] text-center">{new Date(item.startdate).toISOString().slice(0, 10)}</td>
@@ -396,11 +378,11 @@ const [studentllistdata,setstudentlistdata]=useState("");
                         </button>
                       </td>
                       <td className="py-1 text-right relative" ref={dropdownRef}>
-                        {activeTab === 'scheduled' && (
-                          <button onClick={() => toggleDropdown(index)}>
-                            <FiMoreVertical className="inline-block text-xl cursor-pointer" />
-                          </button>
-                        )}
+                          {activeTab === 'scheduled' && (
+                            <button onClick={() => toggleDropdown(index)}>
+                              <FiMoreVertical className="inline-block text-xl cursor-pointer" />
+                            </button>
+                          )}
                         {activeDropdown === index && activeTab === 'scheduled' && (
                           <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
                             <div className="py-1">
@@ -470,10 +452,10 @@ const [studentllistdata,setstudentlistdata]=useState("");
       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
       overlayClassName="fixed inset-0 bg-black bg-opacity-50"
     >
-      <div
+      <button
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
         onClick={closeModal}>
-        <div
+        <button
           className="bg-white rounded-lg p-4 w-[300px]"
           onClick={(e) => e.stopPropagation()}
         >
@@ -555,8 +537,8 @@ const [studentllistdata,setstudentlistdata]=useState("");
               Submit Schedule
             </button>
           </form>
-        </div>
-      </div>
+        </button>
+      </button>
     </Modal>
     </BaseLayout1>
   );
