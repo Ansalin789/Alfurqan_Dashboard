@@ -5,7 +5,7 @@ import { FcGoogle } from "react-icons/fc";
 import { GrApple } from "react-icons/gr";
 
 const SignIn: React.FC = () => {
-  const [emailNotExist, setEmailNotExist] = useState(true);
+  const [emailNotExist, setEmailNotExist] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -13,7 +13,7 @@ const SignIn: React.FC = () => {
     // Mock check for email existence (replace with actual API check)
     const emailExists = false; // Replace with actual check logic
     if (!emailExists) {
-      setEmailNotExist(false);
+      setEmailNotExist(true);
     }
   };
 
