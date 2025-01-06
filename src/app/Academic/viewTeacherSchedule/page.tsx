@@ -29,67 +29,66 @@ const ViewTeacherSchedule = () => {
                 </div>
 
                 {/* Calendar Rows */}
-                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-                  (day, index) => (
-                    <div
-                      key={index}
-                      className="grid grid-cols-12 items-center border-b border-gray-300 h-16 relative"
-                    >
-                      {/* Day Name */}
-                      <div className="text-sm font-semibold text-gray-600 text-center p-2 border-r border-gray-300">
-                        {day}
-                      </div>
-                      {/* Time Slots */}
-                      <div className="col-span-11 relative">
-                        {/* Example Classes */}
-                        {day === "Sun" && (
-                          <div
-                            className="absolute bg-red-400 text-white text-xs rounded-lg py-1 px-2"
-                            style={{
-                              left: "25%", // Adjust based on time slot (2 AM)
-                              width: "20%", // Adjust duration (2 hours)
-                            }}
-                          >
-                            Class 1
-                          </div>
-                        )}
-                        {day === "Tue" && (
-                          <div
-                            className="absolute bg-blue-400 text-white text-xs rounded-lg py-1 px-2"
-                            style={{
-                              left: "50%", // Adjust based on time slot (6 AM)
-                              width: "30%", // Adjust duration (3 hours)
-                            }}
-                          >
-                            Class 2
-                          </div>
-                        )}
-                        {day === "Thu" && (
-                          <div
-                            className="absolute bg-black text-white text-xs rounded-lg py-1 px-2"
-                            style={{
-                              left: "40%", // Adjust based on time slot (5 AM)
-                              width: "25%", // Adjust duration (2.5 hours)
-                            }}
-                          >
-                            Class 3
-                          </div>
-                        )}
-                        {day === "Sat" && (
-                          <div
-                            className="absolute bg-green-400 text-white text-xs rounded-lg py-1 px-2"
-                            style={{
-                              left: "60%", // Adjust based on time slot (7 AM)
-                              width: "20%", // Adjust duration (2 hours)
-                            }}
-                          >
-                            Class 4
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                )}
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+  <div
+    key={day} // Use the unique day string as the key
+    className="grid grid-cols-12 items-center border-b border-gray-300 h-16 relative"
+  >
+    {/* Day Name */}
+    <div className="text-sm font-semibold text-gray-600 text-center p-2 border-r border-gray-300">
+      {day}
+    </div>
+    {/* Time Slots */}
+    <div className="col-span-11 relative">
+      {/* Example Classes */}
+      {day === "Sun" && (
+        <div
+          className="absolute bg-red-400 text-white text-xs rounded-lg py-1 px-2"
+          style={{
+            left: "25%", // Adjust based on time slot (2 AM)
+            width: "20%", // Adjust duration (2 hours)
+          }}
+        >
+          Class 1
+        </div>
+      )}
+      {day === "Tue" && (
+        <div
+          className="absolute bg-blue-400 text-white text-xs rounded-lg py-1 px-2"
+          style={{
+            left: "50%", // Adjust based on time slot (6 AM)
+            width: "30%", // Adjust duration (3 hours)
+          }}
+        >
+          Class 2
+        </div>
+      )}
+      {day === "Thu" && (
+        <div
+          className="absolute bg-black text-white text-xs rounded-lg py-1 px-2"
+          style={{
+            left: "40%", // Adjust based on time slot (5 AM)
+            width: "25%", // Adjust duration (2.5 hours)
+          }}
+        >
+          Class 3
+        </div>
+      )}
+      {day === "Sat" && (
+        <div
+          className="absolute bg-green-400 text-white text-xs rounded-lg py-1 px-2"
+          style={{
+            left: "60%", // Adjust based on time slot (7 AM)
+            width: "20%", // Adjust duration (2 hours)
+          }}
+        >
+          Class 4
+        </div>
+      )}
+    </div>
+  </div>
+))}
+
               </div>
             </div>
 
