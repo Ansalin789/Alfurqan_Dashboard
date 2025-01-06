@@ -16,8 +16,8 @@ const ManageStudentView = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const dropdownRef = useRef<HTMLTableDataCellElement | null>(null);
- const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const dropdownRef = useRef<HTMLTableCellElement | null>(null);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
  const [studentData, setStudentData] = useState<StudentData>();
  interface StudentData {
   studentDetails: {
@@ -101,6 +101,20 @@ const ManageStudentView = () => {
     assignedTeacherEmail: string;
     __v: number;
   };
+}interface Teacher {
+    _id: string;
+    userName: string;
+    email: string;
+    password: string;
+    role: string[]; // Array of roles, e.g., "TEACHER"
+    profileImage: string | null; // Could be a URL or null
+    status: string; // Active/Inactive status
+    createdBy: string; // Who created the record
+    lastUpdatedBy: string; // Who last updated the record
+    userId: string; // Unique ID for the user
+    lastLoginDate: string; // Last login timestamp
+    createdDate: string; // Creation timestamp
+    lastUpdatedDate: string; // Last update timestamp
 }
   useEffect(()=>{
     const studentId=localStorage.getItem('studentManageID');
@@ -248,10 +262,12 @@ const ManageStudentView = () => {
 
     // Reduce duration by 30 minutes (0.5 hours) for all subsequent selected days (below the selected index)
     for (let i = index + 1; i < updatedSchedule.length; i++) {
-      if (!updatedSchedule[i].isSelected) { // Only reduce duration for unselected days
-        updatedSchedule[i].duration  = Math.max(0, updatedSchedule[i].duration - 0.25); // Reduce by 30 minutes
+      if (!updatedSchedule[i].isSelected) {
+        // Ensure 'duration' is treated as a number
+        updatedSchedule[i].duration = Math.max(0, (Number(updatedSchedule[i].duration) - 0.25)).toString(); // Convert to number before performing arithmetic
       }
     }
+    
 
     // Update the schedule
     setSchedule(updatedSchedule);
@@ -264,9 +280,9 @@ const ManageStudentView = () => {
     updatedSchedule[index].isSelected = !updatedSchedule[index].isSelected;
     
     // Reset the duration when unselected
-    if (!updatedSchedule[index].isSelected) {
-      updatedSchedule[index].duration = defaultDuration; // Reset to default duration
-    }
+    // if (!updatedSchedule[index].isSelected) {
+    //   updatedSchedule[index].duration = defaultDuration; // Reset to default duration
+    // }
     setSchedule(updatedSchedule);
   };
     
@@ -377,7 +393,40 @@ const ManageStudentView = () => {
       console.error("Error:", error);
     }
   };
-  const [studentllistdata, setStudentllistdata]=useState("");
+  interface StudentListData {
+    students: {
+      student: {
+        studentId: string;
+        studentFirstName: string;
+        studentLastName: string;
+        studentEmail: string;
+      };
+      teacher: {
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+      };
+      _id: string;
+      schedule: {
+        classDay: string[];
+        package: string;
+        preferedTeacher: string;
+        totalHourse: number;
+        startDate: string;
+        endDate: string;
+        startTime: string[];
+        endTime: string[];
+        scheduleStatus: string;
+        status: string;
+        createdBy: string;
+        createdDate: string;
+        lastUpdatedDate: string;
+      };
+      __v: number;
+    }[];
+  }
+  
+  const [studentllistdata, setStudentllistdata]=useState<StudentListData>();
   const studentlist=async()=>{
       try{
         const auth=localStorage.getItem('authToken');
@@ -389,7 +438,7 @@ const ManageStudentView = () => {
             }}
           );
           const data=await response.json();
-           console.log(data);
+           console.log(">>>>>>>>"+data);
             setStudentllistdata(data);
       }catch(error){
             console.log(error);
@@ -538,7 +587,7 @@ const ManageStudentView = () => {
                   </thead>
                   <tbody>
                     {filteredStudents?.map((item:any,index:number)  => (
-                      <tr key={filteredStudents.studentEvaluationDetails?.student?.studentId} className="border-t">
+                      <tr key={item.student?.studentId} className="border-t">
                         <td className="py-1 text-[12px] text-center">{item.student.studentFirstName}</td>
                         <td className="py-1 text-[12px] text-center">{studentData?.studentEvaluationDetails?.student?.learningInterest}</td>
                         <td className="py-1 text-[12px] text-center">{new Date(item.createdDate).toISOString().slice(0, 10)}</td>

@@ -5,11 +5,10 @@ import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
 import BaseLayout1 from '@/components/BaseLayout1';
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-
 import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
 import { User } from '@/types';
+
 
 
 
@@ -29,7 +28,7 @@ const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: s
     }
     const rawData = await response.json();
     // Ensure rawData has the expected structure
-    if (!rawData || !rawData.evaluation || !Array.isArray(rawData.evaluation)) {
+    if (!rawData.evaluation || !Array.isArray(rawData.evaluation)) {
       throw new Error('Invalid data structure received from API');
     }
 
@@ -150,7 +149,7 @@ const FilterModal = ({
   
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor='ayvayv' className="block text-sm font-medium text-gray-700 mb-1">
               Country
             </label>
             <select
@@ -166,7 +165,7 @@ const FilterModal = ({
           </div>
   
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor='ciuviuva' className="block text-sm font-medium text-gray-700 mb-1">
               Course
             </label>
             <select
@@ -182,7 +181,7 @@ const FilterModal = ({
           </div>
   
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor='ivbiucv' className="block text-sm font-medium text-gray-700 mb-1">
               Teacher
             </label>
             <select
@@ -198,7 +197,7 @@ const FilterModal = ({
           </div>
   
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor='daiuiauv' className="block text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
             <select
@@ -234,27 +233,48 @@ const FilterModal = ({
 
 
 
-const trailSection = () => {
+const TrailSection = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false); 
-  const [formData, setFormData] = useState("");
-   const[trialClassStatus,settrailClassStatus]=useState("");
+  const [formData, setFormData] = useState<FormData>();
+   const[TrialClassStatus,setTrailClassStatus]=useState("");
    const[studentStatus,setStudentStatus]=useState("");
    const[paymentStatus,setpaymentStatus]=useState("");
    const[paymentLink,setpaymentLink]=useState("");
-
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const allData = await getAllUsers();
+        if (allData.success && allData.data) {
+          setUsers(allData.data);
+          setFilteredUsers(allData.data); // Initialize filtered users
+        } else {
+          setErrorMessage(allData.message ?? 'Failed to fetch users');
+        }
+      } catch (error) {
+        setErrorMessage('An unexpected error occurred');
+        console.error('An unexpected error occurred', error);
+        
+      }
+    };
+  
+    fetchData();
+  }, []);
+  
+  useEffect(() => {
+    Modal.setAppElement('body');
+  }, []);
   
    const [options, setOptions] = useState({
-    trialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
+    TrialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
     studentStatus: ["JOINED","NOT JOINED","WAITING"],
     paymentStatus: [ "PAID", "FAILED","PENDING"],
   });
@@ -274,34 +294,74 @@ const indexOfLastItem = currentPage * itemsPerPage;
 const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
 const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-
-    
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const allData = await getAllUsers();
-      if (allData.success && allData.data) {
-        setUsers(allData.data);
-        setFilteredUsers(allData.data); // Initialize filtered users
-      } else {
-        setErrorMessage(allData.message ?? 'Failed to fetch users');
-      }
-    } catch (error) {
-      setErrorMessage('An unexpected error occurred');
-      console.error('An unexpected error occurred', error);
-      
-    }
+interface FormData {
+  _id: string;
+  student: {
+    city: string;
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    studentPhone: number;
+    studentCountry: string;
+    studentCountryCode: string;
+    learningInterest: string;
+    numberOfStudents: number;
+    preferredTeacher: string;
+    preferredFromTime: string;
+    preferredToTime: string;
+    timeZone: string;
+    referralSource: string;
+    preferredDate: string; // ISO date string
+    evaluationStatus: string;
+    status: string;
+    createdDate: string; // ISO date string
+    createdBy: string;
   };
-
-  fetchData();
-}, []);
-
-useEffect(() => {
-  Modal.setAppElement('body');
-}, []);
-
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  subscription: {
+    subscriptionName: string;
+  };
+  planTotalPrice: number;
+  classStartDate: string; // ISO date string
+  classEndDate: string; // ISO date string
+  classStartTime: string;
+  classEndTime: string;
+  accomplishmentTime: string;
+  studentRate: number;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  assignedTeacherId: string;
+  assignedTeacherEmail: string;
+  studentStatus: string;
+  classStatus: string;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  status: string;
+  createdDate: string; // ISO date string
+  createdBy: string;
+  updatedDate: string; // ISO date string
+  updatedBy: string;
+  expectedFinishingDate: number;
+  __v: number;
+}
 const openModal = (user: User | null = null) => {
-  setSelectedUser(user);
+
   setIsEditMode(!!user);
   setIsModalOpen(true);
   setModalIsOpen(true);
@@ -311,12 +371,7 @@ const closeModal = () => {
   setIsModalOpen(false);
   setModalIsOpen(false);
 };
-
-useEffect(() => {
-  console.log('Current users data:', users);
-}, [users]);
-
-    
+   
 useEffect(() => {
   console.log('Current users data:', users);
 }, [users]);
@@ -335,7 +390,7 @@ const fetchStudents = async () => {
   }
 };
 
-const handleClick = async (id: string) => {
+const handleClick = async (id:any) => {
   try {
     const auth=localStorage.getItem('authToken');
     const response = await fetch(`http://localhost:5001/evaluationlist/${id}`,{
@@ -349,9 +404,9 @@ const handleClick = async (id: string) => {
     }
     const data = await response.json();
     setOptions((prev) => ({
-      trialClassStatus: prev.trialClassStatus.includes(data.trialClassStatus)
-        ? prev.trialClassStatus
-        : [...prev.trialClassStatus, data.trialClassStatus],
+      TrialClassStatus: prev.TrialClassStatus.includes(data.trialClassStatus)
+        ? prev.TrialClassStatus
+        : [...prev.TrialClassStatus, data.trialClassStatus],
       studentStatus: prev.studentStatus.includes(data.studentStatus)
         ? prev.studentStatus
         : [...prev.studentStatus, data.studentStatus],
@@ -359,7 +414,7 @@ const handleClick = async (id: string) => {
         ? prev.paymentStatus
         : [...prev.paymentStatus, data.paymentStatus],
     }));
-    settrailClassStatus(data.trialClassStatus);
+    setTrailClassStatus(data.TrialClassStatus);
     setStudentStatus(data.studentStatus);
     setpaymentStatus(data.paymentStatus);
     setpaymentLink(
@@ -397,71 +452,71 @@ const handleClick = async (id: string) => {
     setFilteredUsers(filtered);
     setCurrentPage(1); // Reset to first page when filters change
   };
-
+     
   
    
-  const updateClick = async (id: string) => {
+  const updateClick = async (id: string | undefined) => {
     const formDataNames = {
-      _id: formData._id,
+      _id: formData?._id ?? "",
       student: {
-        studentId:formData._id,
-        studentFirstName: formData.student.studentFirstName,
-        studentLastName: formData.student.studentLastName,
-        studentEmail: formData.student.studentEmail,
-        studentPhone: formData.student.studentPhone,
-        studentCountry: formData.student.studentCountry,
-        studentCountryCode: formData.student.studentCountryCode,
-        learningInterest: formData.student.learningInterest,
-        numberOfStudents: formData.student.numberOfStudents,
-        preferredTeacher: formData.student.preferredTeacher,
-        preferredFromTime: formData.student.preferredFromTime,
-        preferredToTime: formData.student.preferredToTime,
-        timeZone: formData.student.timeZone,
-        referralSource: formData.student.referralSource,
-        preferredDate: formData.student.preferredDate,
-        evaluationStatus: formData.student.evaluationStatus,
-        status: formData.student.status,
-        createdDate: formData.student.createdDate,
-        createdBy: formData.student.createdBy,
+        studentId:formData?._id,
+        studentFirstName: formData?.student.studentFirstName,
+        studentLastName: formData?.student.studentLastName,
+        studentEmail: formData?.student.studentEmail,
+        studentPhone: formData?.student.studentPhone,
+        studentCountry: formData?.student.studentCountry,
+        studentCountryCode: formData?.student.studentCountryCode,
+        learningInterest: formData?.student.learningInterest,
+        numberOfStudents: formData?.student.numberOfStudents,
+        preferredTeacher: formData?.student.preferredTeacher,
+        preferredFromTime: formData?.student.preferredFromTime,
+        preferredToTime: formData?.student.preferredToTime,
+        timeZone: formData?.student.timeZone,
+        referralSource: formData?.student.referralSource,
+        preferredDate: formData?.student.preferredDate,
+        evaluationStatus: formData?.student.evaluationStatus,
+        status: formData?.student.status,
+        createdDate: formData?.student.createdDate,
+        createdBy: formData?.student.createdBy,
       },
-      isLanguageLevel: formData.isLanguageLevel,
-      languageLevel: formData.languageLevel,
-      isReadingLevel: formData.isReadingLevel,
-      readingLevel: formData.readingLevel,
-      isGrammarLevel: formData.isGrammarLevel,
-      grammarLevel: formData.grammarLevel,
-      hours: formData.hours,
+      isLanguageLevel: formData?.isLanguageLevel,
+      languageLevel: formData?.languageLevel,
+      isReadingLevel: formData?.isReadingLevel,
+      readingLevel: formData?.readingLevel,
+      isGrammarLevel: formData?.isGrammarLevel,
+      grammarLevel: formData?.grammarLevel,
+      hours: formData?.hours,
       subscription: {
-        subscriptionName: formData.subscription.subscriptionName,
+        subscriptionName: formData?.subscription.subscriptionName,
       },
-      classStartDate: formData.classStartDate,
-      classEndDate: formData.classEndDate,
-      classStartTime: formData.classStartTime,
-      classEndTime: formData.classEndTime,
-      gardianName: formData.gardianName,
-      gardianEmail: formData.gardianEmail,
-      gardianPhone: formData.gardianPhone,
-      gardianCity: formData.gardianCity,
-      gardianCountry: formData.gardianCountry,
-      gardianTimeZone: formData.gardianTimeZone,
-      gardianLanguage: formData.gardianLanguage,
-      assignedTeacher: formData.assignedTeacher,
+      classStartDate: formData?.classStartDate,
+      classEndDate: formData?.classEndDate,
+      classStartTime: formData?.classStartTime,
+      classEndTime: formData?.classEndTime,
+      gardianName: formData?.gardianName,
+      gardianEmail: formData?.gardianEmail,
+      gardianPhone: formData?.gardianPhone,
+      gardianCity: formData?.gardianCity,
+      gardianCountry: formData?.gardianCountry,
+      gardianTimeZone: formData?.gardianTimeZone,
+      gardianLanguage: formData?.gardianLanguage,
+      assignedTeacher: formData?.assignedTeacher,
       studentStatus: studentStatus,
-      classStatus: formData.classStatus,
-      comments: formData.comments,
-      trialClassStatus: trialClassStatus,
-      invoiceStatus: formData.invoiceStatus,
+      classStatus: formData?.classStatus,
+      comments: formData?.comments,
+      trialClassStatus: TrialClassStatus,
+      invoiceStatus: formData?.invoiceStatus,
       paymentLink:paymentLink,
       paymentStatus: paymentStatus ,
-      status: formData.status,
-      createdDate: formData.createdDate,
-      createdBy: formData.createdBy,
-      updatedDate: formData.updatedDate,
-      updatedBy: formData.updatedBy,
-      planTotalPrice: formData.planTotalPrice,
-      accomplishmentTime: formData.accomplishmentTime,
-      studentRate: formData.studentRate,
-      expectedFinishingDate: formData.expectedFinishingDate  
+      status: formData?.status,
+      createdDate: formData?.createdDate,
+      createdBy: formData?.createdBy,
+      updatedDate: formData?.updatedDate,
+      updatedBy: formData?.updatedBy,
+      planTotalPrice: formData?.planTotalPrice,
+      accomplishmentTime: formData?.accomplishmentTime,
+      studentRate: formData?.studentRate,
+      expectedFinishingDate: formData?.expectedFinishingDate  
     };
     
   alert(JSON.stringify(formDataNames));
@@ -493,8 +548,8 @@ const handleClick = async (id: string) => {
   const handleChange = (field: string) => (event: React.ChangeEvent<HTMLSelectElement>) => {
     console.log(`Field: ${field}, Value: ${event.target.value}`);
     switch (field) {
-      case "trialClassStatus":
-        settrailClassStatus(event.target.value);
+      case "TrialClassStatus":
+        setTrailClassStatus(event.target.value);
         break;
       case "studentStatus":
         setStudentStatus(event.target.value);
@@ -667,7 +722,7 @@ const handleClick = async (id: string) => {
             <tbody>
               {currentItems.length > 0 ? (
                 currentItems.map((item, index) => (
-                  <tr key={item._id || index} className={`border-t`}>
+                  <tr key={item._id} className={`border-t`}>
                     <td className="p-2 px-6 text-[11px] text-center">{item._id}</td>
                     <td className="p-2 text-[11px] text-center">{item.studentFirstName} {item.studentLastName}</td>
                     <td className="p-2 text-[11px] text-center">{item.number}</td>
@@ -684,7 +739,8 @@ const handleClick = async (id: string) => {
                       }`}>
                         {item.classStatus ?? 'COMPLETED'}
                       </span>
-                      /
+                        
+          <span>/</span>
                       <span className={`px-2 text-[9px] text-center py-1 rounded-full ${
                         item.trialClassStatus === 'COMPLETED' 
                           ? 'bg-yellow-100 text-yellow-800' 
@@ -747,7 +803,6 @@ const handleClick = async (id: string) => {
       <AddEvaluationModal
         isOpen={isModalOpen}
         onRequestClose={closeModal} 
-        userData={selectedUser}
         isEditMode={isEditMode}
         onSave={() => {
           fetchStudents();
@@ -762,7 +817,7 @@ const handleClick = async (id: string) => {
       />
 
 {showModal && (
-  <Router>
+  
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[720px]">
             <div className="flex justify-between items-center mb-4">
@@ -781,7 +836,7 @@ const handleClick = async (id: string) => {
                   id="firstName"
                   type="text"
                   disabled
-                  value={formData.student.studentFirstName} // Bind to formData
+                  value={formData?.student.studentFirstName} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -791,7 +846,7 @@ const handleClick = async (id: string) => {
                   id="lastName"
                   type="text"
                   disabled
-                  value={formData.student.studentLastName} // Bind to formData
+                  value={formData?.student.studentLastName} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -801,7 +856,7 @@ const handleClick = async (id: string) => {
                   id="email"
                   type="email"
                   disabled
-                  value={formData.student.studentEmail} // Bind to formData
+                  value={formData?.student.studentEmail} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -812,7 +867,7 @@ const handleClick = async (id: string) => {
                   id="phoneNumber"
                   type="number"
                   disabled
-                  value={formData.student.studentPhone} // Bind to formData
+                  value={formData?.student.studentPhone} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -822,7 +877,7 @@ const handleClick = async (id: string) => {
                   id="city"
                   type="text"
                   disabled
-                  value={formData.student.city || ""} // Bind to formData
+                  value={formData?.student.city ?? ""} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -833,7 +888,7 @@ const handleClick = async (id: string) => {
                   id="country"
                   type="text"
                   disabled
-                  value={formData.student.studentCountry} // Bind to formData
+                  value={formData?.student.studentCountry} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -845,7 +900,7 @@ const handleClick = async (id: string) => {
                   id="preferredTime"
                   type="text"
                   disabled
-                  value={formData.student.preferredFromTime +" TO "+  formData.student.preferredToTime} // Bind to formData
+                  value={formData?.student.preferredFromTime +" TO "+  formData?.student.preferredToTime} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -855,7 +910,7 @@ const handleClick = async (id: string) => {
                   id="trailId"
                   type="text"
                   disabled
-                  value={formData._id} // Bind to formData
+                  value={formData?._id} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -866,7 +921,7 @@ const handleClick = async (id: string) => {
                   id="course"
                   type="text"
                   disabled
-                  value={formData.student.learningInterest} // Bind to formData
+                  value={formData?.student.learningInterest} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -876,7 +931,7 @@ const handleClick = async (id: string) => {
                   id="preferredTeacher"
                   type="text"
                   disabled
-                  value={formData.student.preferredTeacher} // Bind to formData
+                  value={formData?.student.preferredTeacher} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -886,7 +941,7 @@ const handleClick = async (id: string) => {
                   id="level"
                   type="text"
                   disabled
-                  value={formData.languageLevel} // Bind to formData
+                  value={formData?.languageLevel} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -896,7 +951,7 @@ const handleClick = async (id: string) => {
                   id="preferredDate"
                   type="text"
                   disabled
-                  value={formData.student.preferredDate} // Bind to formData
+                  value={formData?.student.preferredDate} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -906,7 +961,7 @@ const handleClick = async (id: string) => {
                   id="preferredHours"
                   type="text"
                   disabled
-                  value={formData.hours} // Bind to formData
+                  value={formData?.hours} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -917,7 +972,7 @@ const handleClick = async (id: string) => {
                   id="preferredPackage"
                   type="text"
                   disabled
-                  value={formData.subscription.subscriptionName} // Check if subscription exists
+                  value={formData?.subscription.subscriptionName} // Check if subscription exists
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -928,7 +983,7 @@ const handleClick = async (id: string) => {
                   id="guardianName"
                   type="text"
                   disabled
-                  value={formData.gardianName} // Bind to formDat
+                  value={formData?.gardianName} // Bind to formDat
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -938,7 +993,7 @@ const handleClick = async (id: string) => {
                   id="guardianEmail"
                   type="email"
                   disabled
-                  value={formData.gardianEmail} // Bind to formData
+                  value={formData?.gardianEmail} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -948,7 +1003,7 @@ const handleClick = async (id: string) => {
                   id="guardianPhone"
                   type="text"
                   disabled
-                  value={formData.gardianPhone} // Bind to formData
+                  value={formData?.gardianPhone} // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -959,7 +1014,7 @@ const handleClick = async (id: string) => {
                   id="evaluationStatus"
                   type="text"
                   disabled
-                  value={formData.student.evaluationStatus } // Bind to formData
+                  value={formData?.student.evaluationStatus } // Bind to formData
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
               </div>
@@ -967,12 +1022,12 @@ const handleClick = async (id: string) => {
                <label htmlFor="trialClassStatus" className="block text-black text-xs font-medium">Trial Class Status</label>
         <select
           id="trialClassStatus"
-          value={trialClassStatus}
-          onChange={handleChange("trialClassStatus")}
+          value={TrialClassStatus}
+          onChange={handleChange("TrialClassStatus")}
           className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
         >
-          {options.trialClassStatus.map((status, index) => (
-            <option key={index} value={status}>
+          {options.TrialClassStatus.map((status) => (
+            <option key={status} value={status}>
               {status}
             </option>
           ))}
@@ -987,8 +1042,8 @@ const handleClick = async (id: string) => {
           onChange={handleChange("studentStatus")}
           className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
         >
-          {options.studentStatus.map((status, index) => (
-            <option key={index} value={status}>
+          {options.studentStatus.map((status) => (
+            <option key={status} value={status}>
               {status}
             </option>
           ))}
@@ -1002,8 +1057,8 @@ const handleClick = async (id: string) => {
           onChange={handleChange("paymentStatus")}
           className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
         >
-          {options.paymentStatus.map((status, index) => (
-            <option key={index} value={status}>
+          {options.paymentStatus.map((status) => (
+            <option key={status} value={status}>
               {status}
             </option>
           ))}
@@ -1014,64 +1069,10 @@ const handleClick = async (id: string) => {
                 <textarea
                   id="comment"
                   placeholder="Write your comment here..."
-                  value={formData.comment} // Bind to formData
+                  value={formData?.comments} // Bind to formData
                   className="w-full mt-2 border rounded-md text-xs text-gray-800"
                 ></textarea>
               </div>
-              {/* {formData.student?.studentFirstName &&
- formData.student?.studentLastName &&
- formData.subscription?.subscriptionName
-  ? (() => {
-      setpaymentLink(
-        `/invoice?name=${encodeURIComponent(
-          formData.student.studentFirstName + " " + formData.student.studentLastName
-        )}&plan=${encodeURIComponent(formData.subscription.subscriptionName)}`
-      );
-      return null; // Return null because setpaymentLink doesn't render anything
-    })()
-  : "No payment link generated"} */}
-
-            
-                {/* {formData.student.studentFirstName &&
-  formData.student.studentLastName &&
-  formData.subscription.subscriptionName ? setpaymentLink({
-                formData.subscription.subscriptionName
-                  ? `/invoice?name=${encodeURIComponent(
-                      formData.student.studentFirstName + " " + formData.student.studentLastName
-                    )}&plan=${encodeURIComponent(formData.subscription.subscriptionName)}`
-                 }
-              ) : "No payment link generated"} 
-             
- 
-  
-   { setpaymentLink(
-      formData.subscription.subscriptionName
-        ? `/invoice?name=${encodeURIComponent(
-            formData.student.studentFirstName + " " + formData.student.studentLastName
-          )}&plan=${encodeURIComponent(formData.subscription.subscriptionName)}`
-        : "No payment link generated"
-    );}
-     */}
-
-  {/* {/* {formData.student.studentFirstName &&
-  formData.student.studentLastName &&
-  formData.subscription.subscriptionName ? (
-    <Link
-      href={`/invoice?name=${encodeURIComponent(
-        formData.student.studentFirstName + " " + formData.student.studentLastName
-      )}&plan=${encodeURIComponent(formData.subscription.subscriptionName)}`}
-      className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs"
-    >
-      Generate Invoice
-    </Link>
-  ) : (
-    <span className="px-4 py-1 bg-gray-400 text-white rounded-md text-xs">
-      Missing Information
-    </span>
-  )} */}
-
-
-
               {/* Save and Cancel Buttons */}
               <div className="col-span-2 flex justify-end space-x-4 mt-0">
                 <button
@@ -1082,7 +1083,7 @@ const handleClick = async (id: string) => {
                   Cancel
                 </button>
                 <button
-                 onClick={() => updateClick(formData._id)}
+                 onClick={() => updateClick(formData?._id)}
                   type="submit"
                   className="px-4 py-1 bg-[#223857] text-white rounded-md hover:bg-[#1c2f49]"
                 >
@@ -1090,14 +1091,11 @@ const handleClick = async (id: string) => {
                 </button>
               </div>
             </form>
-            <Routes>
-            <Route path="/invoice" element={<Invoice />} />
-          </Routes>
           </div>
         </div>
-        </Router>
+       
       )}
     </BaseLayout1>
   );
 };
-export default trailSection
+export default TrailSection
