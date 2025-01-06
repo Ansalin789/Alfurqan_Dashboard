@@ -224,7 +224,6 @@ const TrailManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedUserData, setSelectedUserData] = useState<User | null>(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -362,7 +361,7 @@ const Pagination = () => {
   }, []);
 
   const openModal = (user: User | null = null) => {
-    setSelectedUser(user);
+    
     setIsEditMode(!!user);
     setIsModalOpen(true);
     setModalIsOpen(true);
@@ -430,7 +429,7 @@ const Pagination = () => {
         user.course.toLowerCase().includes(query.toLowerCase()) ||
         user.preferredTeacher.toLowerCase().includes(query.toLowerCase()) ||
         user.time.toLowerCase().includes(query.toLowerCase()) ||
-        (user.evaluationStatus && user.evaluationStatus.toLowerCase().includes(query.toLowerCase()))
+        ( user.evaluationStatus?.toLowerCase().includes(query.toLowerCase()))
       );
     });
     setFilteredUsers(filtered);
@@ -589,7 +588,6 @@ const Pagination = () => {
       <AddStudentModal
         isOpen={isModalOpen}
         onRequestClose={closeModal} 
-        userData={selectedUser}
         isEditMode={isEditMode}
         onSave={() => {
           fetchStudents();
