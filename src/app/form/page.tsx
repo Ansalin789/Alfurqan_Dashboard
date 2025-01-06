@@ -299,9 +299,8 @@ const MultiStepForm = () => {
         const timeParts = fromTime.split(':');
         if (timeParts.length !== 2) return '12:00 AM'; // Default to '12:00 AM' if format is incorrect
 
-        const [hourPart, minutePart] = timeParts[0].trim().split(' ');
-        const hours = parseInt(hourPart, 10);
-        const minutes = parseInt(timeParts[1], 10);
+        const hours = parseInt(timeParts[0].trim(), 10);
+        const minutes = parseInt(timeParts[1].trim(), 10);
 
         if (isNaN(hours) || isNaN(minutes)) return '12:00 AM'; // Default to '12:00 AM' if parsing fails
 
@@ -312,11 +311,6 @@ const MultiStepForm = () => {
         return formatTime(newHours, newMinutes); // Format the time correctly
     };
 
-    const handlePreferredFromTimeClick = (time: string) => {
-        setPreferredFromTime(time);
-        const toTime = calculatePreferredToTime(time);
-        setPreferredToTime(toTime);
-    };
 
     return (
         <div className="max-w-[40%] mx-auto justify-center mt-10 p-6 rounded-br-[20px] rounded-tl-[20px] rounded-bl-[10px] rounded-tr-[10px] shadow-[8px_8px_50px_0px_rgba(0,0,0,0.4)] bg-gradient-to-r from-[#e3e8f4] via-[#94b3fa52] to-[#e3e8f4]">
@@ -395,7 +389,7 @@ const MultiStepForm = () => {
                                 <label htmlFor="Phone Number" className='text-[14px]'>Phone Number</label>
                                 <PhoneInput
                                     country={countryCode.toLowerCase()}
-                                    value={phoneNumber}
+                                    value={phoneNumber ? String(phoneNumber) : ""}
                                     onChange={handlePhoneChange}
                                     inputClass="w-full p-3 py-6 rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
                                     containerClass="w-full"

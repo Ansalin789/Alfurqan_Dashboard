@@ -1,14 +1,15 @@
 import React from 'react';
 import Image from 'next/image';
+import { nanoid } from 'nanoid'; // Import nanoid for generating unique IDs
 
 const StudentList = () => {
   const students = [
-    { name: 'Abdullah Sulaiman', course: 'Arabic', avatar: '/assets/images/proff.jpg' },
-    { name: 'Iman Gabel', course: 'Quran', avatar: '/assets/images/proff.jpg' },
-    { name: 'Hassan Zadran', course: 'Arabic', avatar: '/assets/images/proff.jpg' },
-    { name: 'Hassan dummy', course: 'Quran', avatar: '/assets/images/proff.jpg' },
-    { name: 'Hassan Data', course: 'Quran', avatar: '/assets/images/proff.jpg' },
-    { name: 'Hassan Ibrahim', course: 'Quran', avatar: '/assets/images/proff.jpg' },
+    { id: nanoid(), name: 'Abdullah Sulaiman', course: 'Arabic', avatar: '/assets/images/proff.jpg' },
+    { id: nanoid(), name: 'Iman Gabel', course: 'Quran', avatar: '/assets/images/proff.jpg' },
+    { id: nanoid(), name: 'Hassan Zadran', course: 'Arabic', avatar: '/assets/images/proff.jpg' },
+    { id: nanoid(), name: 'Hassan dummy', course: 'Quran', avatar: '/assets/images/proff.jpg' },
+    { id: nanoid(), name: 'Hassan Data', course: 'Quran', avatar: '/assets/images/proff.jpg' },
+    { id: nanoid(), name: 'Hassan Ibrahim', course: 'Quran', avatar: '/assets/images/proff.jpg' },
   ];
 
   return (
@@ -18,8 +19,8 @@ const StudentList = () => {
         <span className="text-lg font-semibold">20</span>
       </div>
       <ul className="space-y-2 overflow-y-auto h-40 scrollbar-thin scrollbar-track-black">
-        {students.map((student, index) => (
-          <li key={index} className="flex items-center">
+        {students.map((student) => (
+          <li key={student.id} className="flex items-center">
             <Image
               src={student.avatar}
               width={24}
