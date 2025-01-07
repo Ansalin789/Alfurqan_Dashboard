@@ -1,26 +1,88 @@
 "use client";
 import Image from "next/image";
-import React, { useState } from "react";
-import { FcGoogle } from "react-icons/fc";
+import React, { useState,useEffect } from "react";
 import { GrApple } from "react-icons/gr";
-
+import { useRouter } from 'next/navigation';
+import { signIn } from "../../endpoints/page"; 
+import { GoogleLogin } from '@react-oauth/google';
 const SignIn: React.FC = () => {
   const [emailNotExist, setEmailNotExist] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [showError, setShowError] = useState(false);
+  const router = useRouter(); 
+  useEffect(() => {
+    if (error) {
+      setShowError(true);
+      setTimeout(() => {
+        setShowError(false);
+      }, 5000); // Hide the error after 5 seconds
+    }
+  }, [error]);
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock check for email existence (replace with actual API check)
-    const emailExists = false; // Replace with actual check logic
-    if (!emailExists) {
-      setEmailNotExist(true);
+    setError(''); 
+    try {
+      const data = await signIn(username, password);
+      const { accessToken, role } = data;
+      localStorage.setItem('authToken', accessToken);
+      if (role?.includes('TEACHER')) {
+        router.push('/student/ui/dashboard');
+        alert("Login successful as TEACHER");
+      }
+    } catch (error: any) {
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status === 400) {
+          setEmailNotExist(true);
+        } else if (status === 404 && data.message === 'Email not found') {
+          setEmailNotExist(true); 
+        } else {
+          setError(data.message || 'Login failed. Please try again later.');
+        }
+      } else {
+        setError('Login failed. Please try again later.');
+        setEmailNotExist(true);
+      }
+      console.error('Login error:', error);
     }
   };
+  const handleGoogleSuccess = (response: any) => {
+    const { credential } = response;
+    console.log("Google login success:", credential);
+     router.push('/student/ui/dashboard');
+  };
 
+  interface GoogleError {
+    error: string;
+    details?: string;
+  }
+  
+  const handleGoogleFailure = (error: GoogleError) => {
+    console.error("Google login failed:", error.error);
+    if (error.details) {
+      console.error("Error details:", error.details);
+    }
+  };
+  const errorWrapper = () => {
+    const error: GoogleError = { error: "Some error message" }; 
+    handleGoogleFailure(error); 
+  };
+  const newuserclick=()=>{
+    router.push('/form');
+  }
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-100">
+      {showError && error && (
+        <div className="fixed top-0 right-4 p-4 bg-red-600 text-white rounded-lg shadow-lg z-50">
+          {error}
+        </div>
+      )}
       {emailNotExist ? (
-        <div className="flex-1 flex flex-col items-center justify-center bg-[#E8EFF6]  ">
+        <div className="flex-1 flex flex-col items-center justify-center bg-[#E8EFF6] px-8 md:px-16 ">
              <div className="flex justify-center mb-8">
               <Image
                 src="/assets/images/alf.png"
@@ -42,7 +104,7 @@ const SignIn: React.FC = () => {
                   required
                 />
          <p className="text-center text-sm px-4 py-2 text-gray-500 mt-4">
-               <a href="/signup" className="text-blue-600">New user?</a>
+               <button className="text-blue-600" onClick={newuserclick} >New user?</button>
             </p>
           <div className="mt-6 space-y-2">
             <button
@@ -85,8 +147,10 @@ const SignIn: React.FC = () => {
               <div>
                 <input
                   type="text"
-                  placeholder="Name or Email"
+                  placeholder="Username"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                 />
               </div>
@@ -95,6 +159,8 @@ const SignIn: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
                 <button
@@ -116,15 +182,18 @@ const SignIn: React.FC = () => {
 
             {/* Sign In Options */}
             <div className="my-4 space-y-5">
-              <button
-                type="button"
-                className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-md hover:bg-gray-100"
-              >
-                <FcGoogle className="w-5 h-6 mr-2" />
-                <span className="text-sm leading-none font-semibold">
-                  Sign in with Google
-                </span>
-              </button>
+      <div
+        className="flex flex-col justify-center items-center w-full px-100"
+        style={{ maxWidth: '800px' , border: 'none',padding:0}} // Max width set here for Google login button
+      >
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={errorWrapper}
+          useOneTap
+          shape="rectangular"
+          size="large"
+        />
+        </div>
               <button
                 type="button"
                 className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-md hover:bg-gray-100"
@@ -146,13 +215,11 @@ const SignIn: React.FC = () => {
 
             {/* Sign Up Option */}
             <p className="text-center text-sm text-gray-500 mt-4">
-              New user? <a href="/signup" className="text-blue-500">Sign Up</a>
+              New user?  <button className="text-blue-600" onClick={newuserclick} >Sign up</button>
             </p>
           </div>
         </div>
       )}
-
-      {/* Right Section - Information */}
       <div className="hidden md:flex flex-1 bg-[#E8EFF6] items-center justify-center">
         <Image
           src="/assets/images/side right.png"
