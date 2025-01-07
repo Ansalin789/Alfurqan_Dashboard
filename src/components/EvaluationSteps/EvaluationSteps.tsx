@@ -4,55 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 // Define the return type of the getAllUsers function
-interface User {
-  trailId: string;
-  fname: string;
-  lname: string;
-  email: string;
-  number: string;
-  country: string;
-  course: string;
-  preferredTeacher: string;
-  date: string;
-  time: string;
-  evaluationStatus?: string;
-  city?: string;
-  students?: number;
-  comment?: string;
-}
 
 
 
-// interface StudentData{
-//   _id: any,
-//   firstName: any,
-//   lastName: any,
-//   cademicCoach: {
-//       academicCoachId: any,
-//       name: any,
-//       role: any,
-//       email: any
-//   },
-//   email: any,
-//   phoneNumber: any,
-//   country: any,
-//   countryCode: any,
-//   learningInterest: any,
-//   numberOfStudents: any,
-//   preferredTeacher: any,
-//   preferredFromTime: any,
-//   preferredToTime: any,
-//   timeZone: any,
-//   referralSource: any,
-//   startDate: any,
-//   evaluationStatus: any,
-//   status: any,
-//   createdDate: any,
-//   createdBy: any,
-//   lastUpdatedBy: any,
-//   lastUpdatedDate: any
- 
-// }
+
 
 interface AcademicCoach {
   academicCoachId: string; // Assuming it's a string or number
@@ -86,52 +41,7 @@ interface StudentData {
   lastUpdatedDate: string; // Or use `Date` if it's a Date object
 }
 
-// Interface for Evaluation Request
-interface EvaluationRequest {
-  student: {
-    studentId: string;
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-    studentPhone: number;
-    studentCountry: string;
-    studentCountryCode: string;
-    learningInterest: string;
-    numberOfStudents: number;
-    preferredTeacher: string;
-    preferredFromTime: string;
-    preferredToTime: string;
-    timeZone: string;
-    referralSource: string;
-    preferredDate: Date;
-    evaluationStatus: string;
-    status: string;
-    createdDate: Date;
-    createdBy: string;
-  };
-  isLanguageLevel: boolean;
-  languageLevel: string;
-  isReadingLevel: boolean;
-  readingLevel: string;
-  isGrammarLevel: boolean;
-  grammarLevel: string;
-  hours: number;
-  subscription: {
-    subscriptionName: string;
-    subscriptionPricePerHr: string;
-  };
-  classStartDate: Date;
-  classEndDate: Date;
-  classStartTime: string;
-  classEndTime: string;
-  gardianName: string;
-  gardianEmail: string;
-  gardianPhone: string;
-  gardianCity: string;
-  gardianCountry: string;
-  gardianTimeZone: string;
-  gardianLanguage: string;
-}
+
 
 // Interface for Evaluation Data
 interface EvaluationData {
@@ -710,66 +620,7 @@ const Step4 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
   );
 };
 
-// Define the Evaluation interface based on your backend schema
-interface IEvaluation {
-  student: {
-    studentId: string; // This should be set when the student is created
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-    studentPhone: number;
-    studentCity?: string;
-    studentCountry: string;
-    studentCountryCode: string; // Add this if needed
-    learningInterest: string; // Adjust to your enum type
-    numberOfStudents: number;
-    preferredTeacher: string; // Adjust to your enum type
-    preferredFromTime?: string;
-    preferredToTime?: string;
-    timeZone: string;
-    referralSource: string; // Adjust to your enum type
-    preferredDate?: Date;
-    evaluationStatus: string; // Adjust to your enum type
-    status: string; // Adjust to your enum type
-    createdDate?: Date;
-    createdBy?: string;
-  };
-  isLanguageLevel: boolean;
-  languageLevel: string;
-  isReadingLevel: boolean;
-  readingLevel?: string;
-  isGrammarLevel: boolean;
-  grammarLevel: string;
-  hours: number;
-  subscription: {
-    subscriptionName: string;
-    subscriptionPricePerHr: number;
-  };
-  classStartDate: Date;
-  accomplishmentTime: string;
-  studentRate: number;
-  expectedFinishingDate: number;
-  classEndDate?: Date;
-  classStartTime: string;
-  classEndTime: string;
-  gardianName: string;
-  gardianEmail: string;
-  gardianPhone: string;
-  gardianCity: string;
-  gardianCountry: string;
-  gardianTimeZone: string;
-  gardianLanguage: string;
-  assignedTeacher: string;
-  studentStatus?: string;
-  classStatus?: string;
-  comments?: string;
-  trialClassStatus?: string;
-  status?: string;
-  createdDate?: Date;
-  createdBy?: string;
-  updatedDate?: Date;
-  updatedBy?: string;
-}
+
 
 // Step 5 Component
 const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: (updatedStudentData:any ) => void;studentData:StudentData }) => {
@@ -1133,7 +984,7 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
                    className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>👤</span>
-                    <span>Guardian's Name</span>
+                    <span>Guardian&apos;s Name</span>
                   </span>
                 <input
                   id="guardian-name" 
