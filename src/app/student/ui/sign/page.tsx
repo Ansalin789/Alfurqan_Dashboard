@@ -4,7 +4,7 @@ import React, { useState,useEffect } from "react";
 import { GrApple } from "react-icons/gr";
 import { useRouter } from 'next/navigation';
 import { signIn } from "../../endpoints/page"; 
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin,CredentialResponse } from '@react-oauth/google';
 const SignIn: React.FC = () => {
   const [emailNotExist, setEmailNotExist] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -50,7 +50,7 @@ const SignIn: React.FC = () => {
       console.error('Login error:', error);
     }
   };
-  const handleGoogleSuccess = (response: any) => {
+  const handleGoogleSuccess = (response: CredentialResponse) => {
     const { credential } = response;
     console.log("Google login success:", credential);
      router.push('/student/ui/dashboard');
@@ -67,6 +67,7 @@ const SignIn: React.FC = () => {
       console.error("Error details:", error.details);
     }
   };
+
   const errorWrapper = () => {
     const error: GoogleError = { error: "Some error message" }; 
     handleGoogleFailure(error); 
