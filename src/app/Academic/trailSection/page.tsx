@@ -12,70 +12,100 @@ import { User } from '@/types';
 
 
 
-// Updated function to fetch users from the new API endpoint
-const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: string}> => {
+// Define interfaces for the API response structure
+interface Student {
+  learningInterest: string; // Replace with the exact type if known
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentPhone: number;
+  studentCountry: string;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+}
+
+interface EvaluationItem {
+  paymentLink: string;
+  _id: string;
+  student: Student;
+  trialClassStatus: string;
+  assignedTeacher: string;
+  paymentStatus: string;
+}
+
+interface ApiResponse {
+  evaluation: EvaluationItem[];
+}
+
+// Define the transformed user structure
+interface TransformedUser {
+  _id: string;
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  number: string;
+  country: string;
+  course: string; // Assuming this corresponds to `learningInterest`
+  preferredTeacher: string;
+  time: string;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+  paymentStatus: string;
+  assignedTeacher: string;
+  paymentLink: string;
+}
+
+const getAllUsers = async (): Promise<{
+  success: boolean;
+  data: TransformedUser[];
+  message: string;
+}> => {
   try {
-    const auth=localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:5001/evaluationlist',{
+    const auth = localStorage.getItem('authToken');
+    const response = await fetch('http://localhost:5001/evaluationlist', {
       headers: {
         'Content-Type': 'application/json',
-         'Authorization': `Bearer ${auth}`,
+        Authorization: `Bearer ${auth}`,
       },
     });
+
     // Check for response.ok to handle HTTP errors
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const rawData = await response.json();
+
+    const rawData: ApiResponse = await response.json();
+
     // Ensure rawData has the expected structure
     if (!rawData.evaluation || !Array.isArray(rawData.evaluation)) {
       throw new Error('Invalid data structure received from API');
     }
 
-    // Transform API data to match User interface
-    const transformedData = rawData.evaluation.map((item: {
-      paymentLink: string; 
-      _id: string;
-      student: {
-        learningInterest: any; 
-        studentId: string; 
-        studentFirstName: string; 
-        studentLastName: string; 
-        studentPhone: number; 
-        studentCountry: string; 
-        preferredTeacher: string;
-        preferredFromTime: string; 
-        preferredToTime: string; 
-        classStatus?: string; 
-        status?: string; 
-        trialClassStatus: string;
-      }; 
-      trialClassStatus: string;
-      assignedTeacher:string; 
-      paymentStatus:string;
-       // Optional if it might not always be present
-
-      // Add other fields as necessary
-    }) => ({
+    // Transform API data to match TransformedUser interface
+    const transformedData: TransformedUser[] = rawData.evaluation.map((item) => ({
       _id: item._id,
       studentId: item.student.studentId,
       studentFirstName: item.student.studentFirstName,
       studentLastName: item.student.studentLastName,
       number: item.student.studentPhone ? item.student.studentPhone.toString() : '',
       country: item.student.studentCountry,
-      course: item.student.learningInterest, // Assuming this field exists in the new structure
+      course: item.student.learningInterest,
       preferredTeacher: item.student.preferredTeacher,
       time: item.student.preferredFromTime,
       classStatus: item.student.classStatus,
       status: item.student.status,
       trialClassStatus: item.trialClassStatus,
-      paymentStatus:item.paymentStatus,
-      assignedTeacher:item.assignedTeacher,
-      paymentLink: item.paymentLink 
-
+      paymentStatus: item.paymentStatus,
+      assignedTeacher: item.assignedTeacher,
+      paymentLink: item.paymentLink,
     }));
 
-    console.log(">>>>transformedData", transformedData)
+    console.log('>>>>transformedData', transformedData);
 
     return {
       success: true,
@@ -91,6 +121,7 @@ const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: s
     };
   }
 };
+
 
 // Move FilterModal outside of the TrailManagement component
 const FilterModal = ({ 
@@ -390,7 +421,7 @@ const fetchStudents = async () => {
   }
 };
 
-const handleClick = async (id:any) => {
+const handleClick = async (id:string) => {
   try {
     const auth=localStorage.getItem('authToken');
     const response = await fetch(`http://localhost:5001/evaluationlist/${id}`,{
@@ -721,7 +752,7 @@ const handleClick = async (id:any) => {
             </thead>
             <tbody>
               {currentItems.length > 0 ? (
-                currentItems.map((item, index) => (
+                currentItems.map((item) => (
                   <tr key={item._id} className={`border-t`}>
                     <td className="p-2 px-6 text-[11px] text-center">{item._id}</td>
                     <td className="p-2 text-[11px] text-center">{item.studentFirstName} {item.studentLastName}</td>
@@ -978,7 +1009,7 @@ const handleClick = async (id:any) => {
                 />
               </div>
               <div>
-                <label htmlFor="guardianName" className="block text-black text-xs font-medium">Guardian's name</label>
+                <label htmlFor="guardianName" className="block text-black text-xs font-medium">Guardian&apos;s name</label>
                 <input
                   id="guardianName"
                   type="text"
@@ -988,7 +1019,7 @@ const handleClick = async (id:any) => {
                 />
               </div>
               <div>
-                <label htmlFor="guardianEmail" className="block text-black text-xs font-medium">Guardian's email</label>
+                <label htmlFor="guardianEmail" className="block text-black text-xs font-medium">Guardian&apos;s email</label>
                 <input
                   id="guardianEmail"
                   type="email"
@@ -998,7 +1029,7 @@ const handleClick = async (id:any) => {
                 />
               </div>
               <div>
-                <label htmlFor="guardianPhone" className="block text-black text-xs font-medium">Guardian's phone number</label>
+                <label htmlFor="guardianPhone" className="block text-black text-xs font-medium">Guardian&apos;s phone Number</label>
                 <input
                   id="guardianPhone"
                   type="text"

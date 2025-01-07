@@ -325,21 +325,11 @@ const ManageStudentView = () => {
       : '',
     scheduleStatus: 'Active',
   };
-  
-  interface TimeSlot {
-    label: string;
-    value: string;
-  }
+ 
   
   interface Teacher {
     teacherName: string;
     teacherEmail: string;
-  }
-  interface Students {
-     studentId: string;
-     studentFirstName: string;
-     studentLastName:string;
-     studentEmail: string;
   }
   
  
@@ -412,6 +402,26 @@ const ManageStudentView = () => {
       __v: number;
     }[];
   }
+  interface FilteredStudentItem {
+    student: {
+      studentId: string;
+      studentFirstName: string;
+      studentLastName?: string; // Optional if not used
+      studentEmail?: string;    // Optional if not used
+    };
+    teacher?: {
+      teacherId: string;
+      teacherName: string;
+      teacherEmail?: string;    // Optional if not used
+    };
+    _id?: string;               // Optional if not used
+    schedule?: object;          // Add specific properties if required
+    __v?: number;               // Optional if not used
+    createdDate: string;        // Must be present
+    status: string;             // Must be present
+  }
+  
+  
   
   const [studentllistdata, setStudentllistdata]=useState<StudentListData>();
   const studentlist=async()=>{
@@ -431,10 +441,19 @@ const ManageStudentView = () => {
             console.log(error);
       }
   };
-  const studentId=localStorage.getItem('studentManageID');
-  const filteredStudents = studentllistdata?.students?.filter((item: { student: { studentId: string | null; }; }) => {
-    return item.student?.studentId === studentId;
-  });
+  
+  const studentId = localStorage.getItem('studentManageID');
+
+  // Declare and initialize filteredStudents first
+  const filteredStudents = studentllistdata?.students?.filter(
+    (item: { student: { studentId: string | null } }) => {
+      return item.student?.studentId === studentId;
+    }
+  );
+  
+  // Then cast it to the appropriate type
+  const typedFilteredStudents = filteredStudents as FilteredStudentItem[];
+  
   console.log(filteredStudents);
   
   return (
@@ -573,67 +592,69 @@ const ManageStudentView = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredStudents?.map((item:any,index:number)  => (
-                      <tr key={item.student?.studentId} className="border-t">
-                        <td className="py-1 text-[12px] text-center">{item.student.studentFirstName}</td>
-                        <td className="py-1 text-[12px] text-center">{studentData?.studentEvaluationDetails?.student?.learningInterest}</td>
-                        <td className="py-1 text-[12px] text-center">{new Date(item.createdDate).toISOString().slice(0, 10)}</td>
-                        <td className="py-1 text-center">
-                          <button 
 
-                            className={`px-4 py-1 rounded-lg text-[12px] text-center ${
-                              item.status === 'Completed' ? 'bg-green-600' : 'bg-gray-900'
-                            } text-white`}
-                          >
-                            {item.status}
-                          </button>
-                        </td>
-                        <td className="py-1 text-right relative" ref={dropdownRef}>
-                          {activeTab === 'scheduled' && (
-                            <button onClick={() => toggleDropdown(index)}>
-                              <FiMoreVertical className="inline-block text-xl cursor-pointer" />
-                            </button>
-                          )}
-                          {activeDropdown === index && activeTab === 'scheduled' && (
-                            <div ref={dropdownRef}
-                              className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
-                              <div className="py-1">
-                                <button
-                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  onClick={handleReschedule}
-                                >
-                                  Reschedule
-                                </button>
-                                <button
-                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  onClick={() => {
-                                    setActiveDropdown(null);
-                                  }}
-                                >
-                                  Pause Class
-                                </button>
-                                <button
-                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  onClick={() => {
-                                    setActiveDropdown(null);
-                                  }}
-                                >
-                                  Resume Class
-                                </button>
-                                <button
-                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  onClick={() => {
-                                    setActiveDropdown(null);
-                                  }}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+      {typedFilteredStudents?.map((item: FilteredStudentItem, index: number) => (
+          <tr key={item.student.studentId} className="border-t">
+            <td className="py-1 text-[12px] text-center">{item.student.studentFirstName}</td>
+            <td className="py-1 text-[12px] text-center">{studentData?.studentEvaluationDetails?.student?.learningInterest}</td>
+            <td className="py-1 text-[12px] text-center">{new Date(item.createdDate).toISOString().slice(0, 10)}</td>
+            <td className="py-1 text-center">
+              <button
+                className={`px-4 py-1 rounded-lg text-[12px] text-center ${
+                  item.status === 'Completed' ? 'bg-green-600' : 'bg-gray-900'
+                } text-white`}
+              >
+                {item.status}
+              </button>
+            </td>
+            <td className="py-1 text-right relative" ref={dropdownRef}>
+              {activeTab === 'scheduled' && (
+                <button onClick={() => toggleDropdown(index)}>
+                  <FiMoreVertical className="inline-block text-xl cursor-pointer" />
+                </button>
+              )}
+              {activeDropdown === index && activeTab === 'scheduled' && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200"
+                >
+                  <div className="py-1">
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={handleReschedule}
+                    >
+                      Reschedule
+                    </button>
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setActiveDropdown(null);
+                      }}
+                    >
+                      Pause Class
+                    </button>
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setActiveDropdown(null);
+                      }}
+                    >
+                      Resume Class
+                    </button>
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setActiveDropdown(null);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </td>
+          </tr>
+        ))}
                   </tbody>
                 </table>
 

@@ -26,6 +26,13 @@ interface AddTeacherModalProps {
   onSuccess: () => void; 
 }
 
+interface Student {
+  _id: string;
+  name: string;
+  course: string;
+  startdate: string; // or Date if it's a Date object
+  status: string;
+}
 
 const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const router = useRouter();
@@ -37,7 +44,8 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
   const [Studentlistdata, setStudentlistdata] = useState();
   const dropdownRef = useRef< | null>(null);
   const itemsPerPage = 10;
-
+   
+  console.log(isOpen, onClose, onSuccess);
 
   const scheduledClasses: Class[] = Array.from({ length: 5 }).map(() => ({
     name: 'Samantha William',
@@ -106,6 +114,9 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
     level: string;
     subject: string;
     rating: number;
+  }
+  interface User {
+    teacherId: string;  // assuming teacherId is a string
   }
   const [teachers, setTeachers] = useState<Teacher>();
   useEffect(() => {
@@ -253,11 +264,13 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
   const teacherId=localStorage.getItem('manageTeacherId');
 
   console.log(teacherId);
-  const filteredStudents =Studentlistdata?.users?.filter((item: any) => {
-      console.log(`Comparing: item.teacherId = ${item.teacherId}, teacherId = ${teacherId}`); // Debugging inside filter
-      return item.teacherId === teacherId;
-    });
+
+  const filteredStudents = Studentlistdata?.users?.filter((item: User) => {
+    console.log(`Comparing: item.teacherId = ${item.teacherId}, teacherId = ${teacherId}`); // Debugging inside filter
+    return item.teacherId === teacherId;
+  });
   console.log(filteredStudents);
+
   return (
     <BaseLayout1>
     
@@ -363,7 +376,7 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents?.map((item:any,index:any) => (
+                    {filteredStudents?.map((item: Student, index: number) => (
                     <tr key={item._id} className="border-t">
                       <td className="py-1 text-[12px] text-center">{item.name}</td>
                       <td className="py-1 text-[12px] text-center">{item.course}</td>
@@ -378,11 +391,11 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
                         </button>
                       </td>
                       <td className="py-1 text-right relative" ref={dropdownRef}>
-                          {activeTab === 'scheduled' && (
-                            <button onClick={() => toggleDropdown(index)}>
-                              <FiMoreVertical className="inline-block text-xl cursor-pointer" />
-                            </button>
-                          )}
+                        {activeTab === 'scheduled' && (
+                          <button onClick={() => toggleDropdown(index)}>
+                            <FiMoreVertical className="inline-block text-xl cursor-pointer" />
+                          </button>
+                        )}
                         {activeDropdown === index && activeTab === 'scheduled' && (
                           <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
                             <div className="py-1">
