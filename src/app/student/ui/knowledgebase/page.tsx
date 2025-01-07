@@ -50,7 +50,7 @@ const Knowledgebase: React.FC = () => {
                 {/* <p className='text-end text-[#525151] text-[11px]'>view all ᐳ</p> */}
 
                 {/* Cards Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 overflow-y-scroll scrollbar-thin scrollbar-track-black">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
                 {[...Array(6)].map((_, index) => (
                     <PdfCard
                     title="Sample PDF"

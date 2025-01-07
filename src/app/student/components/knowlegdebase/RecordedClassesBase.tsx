@@ -77,7 +77,7 @@ const RecordedClassesBase: React.FC = () => {
       </div>
 
       {/* Video Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 overflow-y-scroll scrollbar-thin scrollbar-track-black">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
         {videoData.map((video) => (
           <div
             key={video.id}
