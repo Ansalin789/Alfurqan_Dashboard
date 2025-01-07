@@ -16,9 +16,38 @@ const localizer = momentLocalizer(moment);
 const Studentreschedule = () => {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<string>(''); // State to hold the selected date 
-  const [events, setEvents] = useState<any[]>([]); // State to store all events
-  const [teachers, setTeachers] = useState<any[]>([]); // State to store teachers and their availability
+const [events, setEvents] = useState<Event[]>([]); // State to store all events
+const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all teachers
   const [rescheduleSuccess, setRescheduleSuccess] = useState<boolean>(false); // State for success message
+
+
+  interface Event {
+    id: string;
+    title: string;
+    start: Date;
+    end: Date;
+    allDay: boolean;
+    description: string;
+    meetingLink: string;
+    studentName: string;
+    teacherName: string;
+    course: string;
+    meetingLocation: string;
+    scheduledFrom: string;
+    scheduledTo: string;
+    date: string;
+  }
+  
+  // Define the type for a teacher
+  interface Teacher {
+    id: string;
+    name: string;
+    subject: string;
+    email: string;
+    phone?: string; // Optional field
+    [key: string]: any; // To allow additional properties if necessary
+  }
+
   interface Student {
     student: {
       studentId: string | null;

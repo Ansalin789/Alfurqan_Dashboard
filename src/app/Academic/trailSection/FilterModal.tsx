@@ -9,7 +9,7 @@ interface FilterModalProps {
     users: User[]; // Assuming User is imported from your types file
 }
 
-const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilters, users }) => {
+const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilters: _onApplyFilters, users: _users }) => {
     // Modal logic
     return (
         <Modal isOpen={isOpen} onRequestClose={onClose}>
@@ -22,4 +22,4 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApplyFilte
     );
 };
 
-export default FilterModal; 
+export default FilterModal;

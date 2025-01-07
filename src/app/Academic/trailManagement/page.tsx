@@ -7,7 +7,7 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import AddStudentModal from '@/components/Academic/AddStudentModel';
 import Popup from '@/components/Academic/Popup';
 import { useRouter } from 'next/navigation';
-import { table } from 'console';
+
 
 // Define the return type of the getAllUsers function
 interface User {

@@ -22,68 +22,68 @@ interface User {
 }
 
 
-// Interface for Student Data from APIL
-// interface StudentData {
-//   academicCoach?: {
-//     academicCoachId: string;
-//     email: string;
-//     role: string;
-//     name: string;
-//   };
-//   country: string;
-//   countryCode: string;
-//   createdBy: string;
-//   createdDate: Date;
-//   email: string;
-//   evaluationStatus: "PENDING" | "INPROGRESS" | "COMPLETED";
-//   firstName: string;
-//   lastName: string;
-//   lastUpdatedBy: string;
-//   lastUpdatedDate: Date;
-//   learningInterest: "Quran" | "Islamic Studies" | "Arabic";
-//   numberOfStudents: number;
-//   phoneNumber: number;
-//   preferredFromTime: string;
-//   preferredToTime: string;
-//   preferredTeacher: "Male" | "Female" | "Either";
-//   referralSource: string;
-//   startDate: Date;
-//   status: "Active" | "Inactive" | "Deleted";
-//   timeZone: string;
-//   _id: string;
-  
+
+// interface StudentData{
+//   _id: any,
+//   firstName: any,
+//   lastName: any,
+//   cademicCoach: {
+//       academicCoachId: any,
+//       name: any,
+//       role: any,
+//       email: any
+//   },
+//   email: any,
+//   phoneNumber: any,
+//   country: any,
+//   countryCode: any,
+//   learningInterest: any,
+//   numberOfStudents: any,
+//   preferredTeacher: any,
+//   preferredFromTime: any,
+//   preferredToTime: any,
+//   timeZone: any,
+//   referralSource: any,
+//   startDate: any,
+//   evaluationStatus: any,
+//   status: any,
+//   createdDate: any,
+//   createdBy: any,
+//   lastUpdatedBy: any,
+//   lastUpdatedDate: any
+ 
 // }
 
+interface AcademicCoach {
+  academicCoachId: string; // Assuming it's a string or number
+  name: string;
+  role: string;
+  email: string;
+}
 
-interface StudentData{
-  _id: any,
-  firstName: any,
-  lastName: any,
-  cademicCoach: {
-      academicCoachId: any,
-      name: any,
-      role: any,
-      email: any
-  },
-  email: any,
-  phoneNumber: any,
-  country: any,
-  countryCode: any,
-  learningInterest: any,
-  numberOfStudents: any,
-  preferredTeacher: any,
-  preferredFromTime: any,
-  preferredToTime: any,
-  timeZone: any,
-  referralSource: any,
-  startDate: any,
-  evaluationStatus: any,
-  status: any,
-  createdDate: any,
-  createdBy: any,
-  lastUpdatedBy: any,
-  lastUpdatedDate: any
- 
+interface StudentData {
+  _id: string; // Assuming _id is a string, or use ObjectId if you're using MongoDB
+  firstName: string;
+  lastName: string;
+  academicCoach: AcademicCoach;
+  email: string;
+  phoneNumber: string; // If it's a number, you can change this to `number`
+  country: string;
+  countryCode: string; // Assuming it's a string
+  learningInterest: string; // Assuming it's a string, could be an array of strings if needed
+  numberOfStudents: number; // Assuming this is a number
+  preferredTeacher: string; // Assuming it's a string, or can be an object if needed
+  preferredFromTime: string; // Or use `Date` if it's a Date object
+  preferredToTime: string; // Or use `Date` if it's a Date object
+  timeZone: string; // Assuming it's a string
+  referralSource: string; // Assuming it's a string, could be an enum if fixed
+  startDate: string; // Or use `Date` if it's a Date object
+  evaluationStatus: string; // Assuming it's a string (e.g., "Completed", "Pending")
+  status: string; // Assuming it's a string (e.g., "Active", "Inactive")
+  createdDate: string; // Or use `Date` if it's a Date object
+  createdBy: string; // Assuming it's a string (could be an object or ID if needed)
+  lastUpdatedBy: string; // Same as createdBy
+  lastUpdatedDate: string; // Or use `Date` if it's a Date object
 }
 
 // Interface for Evaluation Request

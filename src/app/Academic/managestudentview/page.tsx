@@ -170,22 +170,23 @@ const ManageStudentView = () => {
   };
 
   
-
-  const scheduledClasses = Array.from({ length: 5 }).map((_, i) => ({
+  
+  const scheduledClasses = Array.from({ length: 5 }).map(() => ({
     name: 'Samantha William',
     course: 'Tajweed Masterclass',
     date: 'January 2, 2020',
-    status: 'Scheduled'
+    status: 'Scheduled',
   }));
-
-  const completedClasses = Array.from({ length: 50 }).map((_, i) => ({
+  
+  const completedClasses = Array.from({ length: 50 }).map(() => ({
     name: 'John Smith',
     course: 'Advanced Quran Reading',
     date: 'December 15, 2023',
     status: 'Completed',
     grade: 'A',
-    performance: '95%'
+    performance: '95%',
   }));
+  
 
   
 
@@ -341,20 +342,6 @@ const ManageStudentView = () => {
      studentEmail: string;
   }
   
-  interface RequestData {
-    classDay: TimeSlot[];
-    package: string;
-    teacher: Teacher;
-    student:Students;
-    preferedTeacher: string;
-    course: string;
-    totalHourse: number;
-    startDate: string;
-    endDate: string;
-    startTime: TimeSlot[];
-    endTime: TimeSlot[];
-    scheduleStatus: string;
-  }
  
   const sendDataToAPI = async (): Promise<void> => {
     console.log(requestData);
