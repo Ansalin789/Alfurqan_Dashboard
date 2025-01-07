@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { useState,useEffect } from "react";
 import { GrApple } from "react-icons/gr";
 import { useRouter } from 'next/navigation';
-import { signIn } from "../../endpoints/page"; 
+import { signIn,checkEmail } from "../../endpoints/page"; 
 import { GoogleLogin,CredentialResponse } from '@react-oauth/google';
 const SignIn: React.FC = () => {
   const [emailNotExist, setEmailNotExist] = useState(false);
@@ -29,9 +29,9 @@ const SignIn: React.FC = () => {
       const data = await signIn(username, password);
       const { accessToken, role } = data;
       localStorage.setItem('authToken', accessToken);
-      if (role?.includes('TEACHER')) {
+      if (role?.includes('Student')) {
         router.push('/student/ui/dashboard');
-        alert("Login successful as TEACHER");
+        alert("Login successful as Student");
       }
     } catch (error: any) {
       if (error.response) {
@@ -50,10 +50,38 @@ const SignIn: React.FC = () => {
       console.error('Login error:', error);
     }
   };
-  const handleGoogleSuccess = (response: CredentialResponse) => {
+  const handleGoogleSuccess = async (response: CredentialResponse) => {
     const { credential } = response;
-    console.log("Google login success:", credential);
-     router.push('/student/ui/dashboard');
+    if (!credential) {
+      console.error("Google login failed: No credential received");
+      setError("Google login failed: No credential received");
+      return;
+    }
+  
+    const email = extractEmailFromCredential(credential); // Replace with your extraction logic
+    console.log("Google login success, email:", email);
+  
+    try {
+      // Call the checkEmail function to verify if the email exists
+      const result = await checkEmail(email);
+  
+      // Handle result based on the returned message
+      if (result?.message === 'Email exists') {
+        router.push('/student/ui/dashboard'); // Redirect to dashboard
+      } else {
+        setError("Email not found"); // Display appropriate error message
+        console.log(result?.message); // Log the error message for debugging
+      }
+    } catch (error) {
+      // Handle unexpected errors during the checkEmail call
+      console.error("Error during email verification:", error);
+      setError("An unexpected error occurred. Please try again.");
+    }
+  };
+  
+  const extractEmailFromCredential = (credential: string) => {
+    const decodedCredential = JSON.parse(atob(credential.split('.')[1])); // Decode the payload (base64)
+    return decodedCredential.email;
   };
 
   interface GoogleError {
