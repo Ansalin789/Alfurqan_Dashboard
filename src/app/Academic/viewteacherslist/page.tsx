@@ -20,10 +20,11 @@ interface Class {
   grade?: string;
   performance?: string;
 }
-interface AddTeacherModalProps {
+
+interface ViewTeachersListProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void; 
+  onSuccess: () => void;
 }
 
 interface Student {
@@ -33,8 +34,8 @@ interface Student {
   startdate: string; // or Date if it's a Date object
   status: string;
 }
+const ViewTeachersList: React.FC<ViewTeachersListProps> = ({ isOpen, onClose, onSuccess }) => {
 
-const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const router = useRouter();
   const [isScheduled, setIsScheduled] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
