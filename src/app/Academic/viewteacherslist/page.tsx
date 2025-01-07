@@ -23,8 +23,6 @@ interface Class {
 
 interface ViewTeachersListProps {
   isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
 }
 
 interface Student {
@@ -34,7 +32,7 @@ interface Student {
   startdate: string; // or Date if it's a Date object
   status: string;
 }
-const ViewTeachersList: React.FC<ViewTeachersListProps> = ({ isOpen, onClose, onSuccess }) => {
+const ViewTeachersList: React.FC<ViewTeachersListProps> = ({ isOpen}) => {
 
   const router = useRouter();
   const [isScheduled, setIsScheduled] = useState(false);
@@ -46,7 +44,7 @@ const ViewTeachersList: React.FC<ViewTeachersListProps> = ({ isOpen, onClose, on
   const dropdownRef = useRef< | null>(null);
   const itemsPerPage = 10;
    
-  console.log(isOpen, onClose, onSuccess);
+  console.log(isOpen);
 
   const scheduledClasses: Class[] = Array.from({ length: 5 }).map(() => ({
     name: 'Samantha William',
@@ -370,7 +368,7 @@ const ViewTeachersList: React.FC<ViewTeachersListProps> = ({ isOpen, onClose, on
                 <thead>
                   <tr>
                     <th className="py-2 text-[13px] text-center">Name</th>
-                    <th className="py-2 text-[13px] text-center">Courses</th>
+                    
                     <th className="py-2 text-[13px] text-center">Date</th>
                     <th className="py-2 text-[13px]">Status</th>
                     <th></th>
@@ -380,7 +378,7 @@ const ViewTeachersList: React.FC<ViewTeachersListProps> = ({ isOpen, onClose, on
                     {filteredStudents?.map((item: Student, index: number) => (
                     <tr key={item._id} className="border-t">
                       <td className="py-1 text-[12px] text-center">{item.name}</td>
-                      <td className="py-1 text-[12px] text-center">{item.course}</td>
+                      
                       <td className="py-1 text-[12px] text-center">{new Date(item.startdate).toISOString().slice(0, 10)}</td>
                       <td className="py-1 text-center">
                         <button 
