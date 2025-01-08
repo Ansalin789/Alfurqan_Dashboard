@@ -7,7 +7,7 @@ import { FiFilter } from "react-icons/fi";
 import { GrShare } from "react-icons/gr";
 import RecordedClassesBase from '../../components/knowlegdebase/RecordedClassesBase';
 
-const Knowledgebase: React.FC = () => {
+const Knowledge: React.FC = () => {
   return (
     <BaseLayout2>
       <div className="p-6">
@@ -46,19 +46,20 @@ const Knowledgebase: React.FC = () => {
           </div>
 
           {/* Cards Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
             {[...Array(6)].map((_, index) => (
-              <PdfCard
-                key={index} // Added a unique "key" prop here
+                <PdfCard
+                key={`pdf-card-${index}`}
                 title="Sample PDF"
                 details="Details"
-                pdfUrl="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" // Path to the PDF file
-              />
+                pdfUrl="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+                />
             ))}
-          </div>
+        </div>
+
         </section>
 
-        <RecordedClassesBase />
+        <RecordedClassesBase /> 
 
         <section>
           <h2 className="text-[25px] font-bold text-[#5C5F85] p-2 px-7">
@@ -73,4 +74,4 @@ const Knowledgebase: React.FC = () => {
   );
 };
 
-export default Knowledgebase;
+export default Knowledge;

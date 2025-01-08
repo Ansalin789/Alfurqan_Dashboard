@@ -34,7 +34,7 @@ const SidebarItems = [
     },
     {
         name: 'Knowledge',
-        href: '/Student/knowledge',
+        href: '/student/ui/knowledge',
         icon: FaFolderOpen,
     },
     {
