@@ -21,10 +21,6 @@ interface Class {
   performance?: string;
 }
 
-interface ViewTeachersListProps {
-  isOpen: boolean;
-}
-
 interface Student {
   _id: string;
   name: string;
@@ -32,7 +28,7 @@ interface Student {
   startdate: string; // or Date if it's a Date object
   status: string;
 }
-const ViewTeachersList: React.FC<ViewTeachersListProps> = ({ isOpen}) => {
+const ViewTeachersList= () => {
 
   const router = useRouter();
   const [isScheduled, setIsScheduled] = useState(false);
@@ -40,11 +36,11 @@ const ViewTeachersList: React.FC<ViewTeachersListProps> = ({ isOpen}) => {
   const [activeTab, setActiveTab] = useState('scheduled');
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const [Studentlistdata, setStudentlistdata] = useState();
+  const [Studentlistdata, setStudentListdata] = useState();
   const dropdownRef = useRef< | null>(null);
   const itemsPerPage = 10;
    
-  console.log(isOpen);
+  
 
   const scheduledClasses: Class[] = Array.from({ length: 5 }).map(() => ({
     name: 'Samantha William',
@@ -255,7 +251,7 @@ const ViewTeachersList: React.FC<ViewTeachersListProps> = ({ isOpen}) => {
           );
           const data=await response.json();
            console.log(data);
-            setStudentlistdata(data);
+            setStudentListdata(data);
       }catch(error){
             console.log(error);
       }
