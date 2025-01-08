@@ -2,7 +2,6 @@
 
 import React from 'react'
 import 'react-calendar/dist/Calendar.css'
-import BaseLayout1 from '@/components/BaseLayout1'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import TotalList from '../../components/Academic/TotalList';
 import { FaSearch } from "react-icons/fa";
@@ -13,6 +12,7 @@ import Teachers from '@/components/Academic/Teachers';
 import Calender from '@/components/Academic/Calender';
 import UpcomingClasses from '@/components/Academic/UpcommingClasses';
 import Dashboardevaluation from '@/components/Academic/Dashboardevaluation';
+import BaseLayout from '@/components/BaseLayout';
 
 
 // Register Chart.js components
@@ -21,10 +21,10 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function Academic() {
 
-
+  const userRole = "academicCoach";
   return (
     <div>
-      <BaseLayout1>
+      <BaseLayout role={userRole}>
         <div className="flex flex-col lg:flex-row p-2 w-full">
           <div className="flex-1 pr-8 pl-4">
             <header className="flex justify-between p-[5px]">
@@ -74,7 +74,7 @@ export default function Academic() {
             </div>
           </div>
         </div>
-      </BaseLayout1>
+      </BaseLayout>
     </div>
   )
 }

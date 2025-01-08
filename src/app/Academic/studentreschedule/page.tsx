@@ -2,13 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import BaseLayout1 from '@/components/BaseLayout1';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Image from 'next/image';
 import { FaCheck } from "react-icons/fa";
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
+import BaseLayout from '@/components/BaseLayout';
 
 
 const localizer = momentLocalizer(moment);
@@ -221,8 +221,10 @@ const dayName = daysOfWeek[dayIndex];
     });
   };
 
+  const userRole = "academicCoach";
+
   return (
-    <BaseLayout1>
+    <BaseLayout role={userRole}>
       <div className="flex flex-col h-screen relative">
         <div className="flex-1">
           <div className="p-2">
@@ -300,7 +302,7 @@ const dayName = daysOfWeek[dayIndex];
           </div>
         </div>
       </div>
-    </BaseLayout1>
+    </BaseLayout>
   );
 };
 

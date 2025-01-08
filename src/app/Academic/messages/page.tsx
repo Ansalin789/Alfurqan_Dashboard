@@ -1,4 +1,4 @@
-import BaseLayout1 from '@/components/BaseLayout1';
+import BaseLayout from '@/components/BaseLayout';
 import React from 'react';
 
 export default function Messages() {
@@ -19,8 +19,10 @@ export default function Messages() {
     { no:15,name: 'Ms. Patel', role: 'HR Manager', message: 'All staff performance reviews are due by the end of this month. Please submit your reports to HR as soon as possible. Thank you.', time: '8:20 AM', type: 'sent' },
   ];
 
+  const userRole = "academicCoach";
+
   return (
-    <BaseLayout1>
+    <BaseLayout role={userRole}>
       <div className="flex h-screen bg-gray-100">
         {/* Sidebar */}
         <div className="w-1/4 bg-white p-4 border-r">
@@ -105,6 +107,6 @@ export default function Messages() {
           </div>
         </div>
       </div>
-    </BaseLayout1>
+    </BaseLayout>
   );
 }

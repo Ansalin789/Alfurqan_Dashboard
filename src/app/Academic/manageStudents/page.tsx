@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaFilter, FaPlus } from 'react-icons/fa';
-import BaseLayout1 from '@/components/BaseLayout1';
 import { useRouter } from 'next/navigation';
 import AddTrailStudentModal from '@/components/Academic/AddTrailStudentModel';
 import PaginationPre from '@/components/PaginationPre';
+import BaseLayout from '@/components/BaseLayout';
 
 const TrailManagement = () => {
   interface Student {
@@ -78,8 +78,10 @@ const TrailManagement = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedStudents = users.students.slice(startIndex, startIndex + itemsPerPage);
 
+  const userRole = "academicCoach";
+
   return (
-    <BaseLayout1>
+    <BaseLayout role={userRole}>
       <div className="min-h-screen p-1 bg-[#EDEDED]">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
@@ -185,7 +187,7 @@ const TrailManagement = () => {
         isEditMode={isEditMode}
         onSave={closeModal}
       />
-    </BaseLayout1>
+    </BaseLayout>
   );
 };
 

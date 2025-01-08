@@ -1,9 +1,11 @@
-import BaseLayout1 from "@/components/BaseLayout1";
+import BaseLayout from "@/components/BaseLayout";
 import React from "react";
 
 const ViewTeacherSchedule = () => {
+
+  const userRole = "academicCoach";
   return (
-    <BaseLayout1>
+    <BaseLayout role={userRole}>
       <div className="min-h-screen p-6 flex justify-center items-center">
         <div className="w-full max-w-7xl rounded-lg p-6">
           <h2 className="p-2 text-[25px] text-gray-900 font-semibold">Reschedule Class</h2>
@@ -165,7 +167,7 @@ const ViewTeacherSchedule = () => {
           </div>
         </div>
       </div>
-    </BaseLayout1>
+    </BaseLayout>
   );
 };
 

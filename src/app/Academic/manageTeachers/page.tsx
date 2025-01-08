@@ -6,8 +6,8 @@ import { FaFilter, FaPlus } from 'react-icons/fa';
 
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from 'next/navigation';
-import BaseLayout1 from '@/components/BaseLayout1';
 import Modal from 'react-modal';
+import BaseLayout from '@/components/BaseLayout';
 
 interface Teacher {
   _id:string;
@@ -123,8 +123,10 @@ const ManageTeacher: React.FC = () => {
    }
     closeModal();
   };
+
+const userRole = "academicCoach";
   return (
-    <BaseLayout1>
+    <BaseLayout role={userRole}>
       <div className="flex h-screen">
         {/* Main Content */}
         <div className="flex-1 p-2">
@@ -254,7 +256,7 @@ const ManageTeacher: React.FC = () => {
           </div>
         </div>
       </Modal>
-    </BaseLayout1>
+    </BaseLayout>
   );
 }
 
