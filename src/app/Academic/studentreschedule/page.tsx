@@ -115,7 +115,14 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
   const filteredStudents = studentllistdata?.students?.filter((item: { student: { studentId: string | null; }; }) => {
     return item.student?.studentId === studentId;
   });
-  console.log(filteredStudents);
+  console.log(">>>>>>>>>fs"+filteredStudents);
+  interface StudentEvent {
+    title: string;
+    start: Date;
+    end: Date;
+    allDay: boolean;
+  }
+
   useEffect(() => {
       const studentEvents = (filteredStudents ?? []).map((student: any) => {
         return {
@@ -173,28 +180,11 @@ const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Fri
 const dayName = daysOfWeek[dayIndex];
 
   
-      const requestData = {
-        classDay: [
-          { label: dayName,value: dayName }  
-        ],
-        startDate:selectedDate,
-        endDate:selectedDate,
-        startTime: [
-          { label: "Start Time", value: fromtime }
-        ],
-        endTime: [
-          { label: "End Time", value: totime }
-        ],
-        createdBy: "Admin",
-  createdDate: new Date().toISOString(),
-  scheduleStatus: 'Active',
-  package: filteredItem.package,
-  preferedTeacher: filteredItem.preferedTeacher,    // Example data
-  status: filteredItem.status,
+const requestData = {
   student: {
     studentId: filteredItem.student.studentId, 
     studentFirstName: filteredItem.student.studentFirstName, 
-    studentLastName:filteredItem.student.studentLastName , 
+    studentLastName: filteredItem.student.studentLastName, 
     studentEmail: filteredItem.student.studentEmail,
   },
   teacher: {
@@ -202,13 +192,31 @@ const dayName = daysOfWeek[dayIndex];
     teacherName: teachername, 
     teacherEmail: teacheremail,
   },
-  totalHourse: filteredItem.totalHourse,    
+  classDay: [
+    { value: dayName, label: dayName }
+  ],
+  package: filteredItem.package,
+  preferedTeacher: filteredItem.preferedTeacher,
+  // course: filteredItem.student., // Ensure `course` exists in `filteredItem`
+  totalHourse: filteredItem.totalHourse,
+  startDate: selectedDate,
+  endDate: selectedDate,
+  startTime: [
+    { value: fromtime, label: "Start Time" }
+  ],
+  endTime: [
+    { value: totime, label: "End Time" }
+  ],
+  scheduleStatus: 'Active',
+  createdBy: "Admin",
+  createdDate: new Date().toISOString(),
   lastUpdatedDate: new Date().toISOString(),
-  _id:filteredItem._id,
-      };
-      console.log(requestData);
+  status: filteredItem.status,
+};
+
+      console.log(requestData); 
       console.log(filteredItem._id);
-      const response = await fetch(`http://localhost:5001/classSchedule/${filteredItem._id}`, {
+      const response = await fetch(`http://localhost:5001/classShedule/${filteredItem._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

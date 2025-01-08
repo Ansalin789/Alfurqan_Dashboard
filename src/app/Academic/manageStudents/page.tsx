@@ -69,6 +69,7 @@ const TrailManagement = () => {
         },
       });
       const data = await response.json();
+      console.log(auth);
       setUsers(data);
     };
 
