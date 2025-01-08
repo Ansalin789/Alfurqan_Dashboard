@@ -1,9 +1,9 @@
 'use client'
 
 
-import BaseLayout from '@/components/BaseLayout'
 import React from 'react';
 import PdfCard from '@/app/student/components/knowlegdebase/PdfCard';
+import BaseLayout2 from '@/components/BaseLayout2';
 import { FiFilter } from "react-icons/fi";
 import { GrShare } from "react-icons/gr";
 import RecordedClassesBase from '../../components/knowlegdebase/RecordedClassesBase';
@@ -11,13 +11,13 @@ import RecordedClassesBase from '../../components/knowlegdebase/RecordedClassesB
 
 
 const Knowledgebase: React.FC = () => {
-    const userRole = "Student";
   return (
-    <BaseLayout role={userRole}>
-        <div className="p-2" style={{width: '1200px'}}>
+    <BaseLayout2>
+        <div className="p-6">
             <section className=" bg-[#ffffff] p-6 py-3 rounded-xl">
                 <div className="flex items-center justify-between p-1 border-b-2 border-b-[#525151]">
                     <h2 className="text-[25px] font-bold text-[#5C5F85]">Knowledge Base</h2>
+                    {/* Date and Filter */}
                     <div className="flex items-center space-x-2 ">
                     <div className="relative">
                     <input
@@ -50,12 +50,12 @@ const Knowledgebase: React.FC = () => {
                 {/* <p className='text-end text-[#525151] text-[11px]'>view all ᐳ</p> */}
 
                 {/* Cards Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 h-48 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
-                {[...Array(15)].map((_, index) => (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
+                {[...Array(6)].map((_, index) => (
                     <PdfCard
                     title="Sample PDF"
                     details="Details"
-                    pdfUrl="/alf/public/assets/images/Ansalin sagar J.pdf"
+                    pdfUrl="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" // Path to the PDF file
                   />
                   
                 ))}
@@ -73,7 +73,7 @@ const Knowledgebase: React.FC = () => {
                 </button>
             </section>
         </div>
-    </BaseLayout>
+    </BaseLayout2>
   );
 };
 

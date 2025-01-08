@@ -1,6 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
-import BaseLayout from '@/components/BaseLayout';
+import BaseLayout1 from '@/components/BaseLayout1'
 
 export default function Support() {
   const blogPosts = [
@@ -24,10 +24,8 @@ export default function Support() {
     }
   ];
 
-  const userRole = "academicCoach";
-
   return (
-    <BaseLayout role={userRole}>
+    <BaseLayout1>
       <div className="flex h-screen">
 
         {/* Main Content */}
@@ -109,6 +107,6 @@ export default function Support() {
           </div>
         </main>
       </div>
-    </BaseLayout>
+    </BaseLayout1>
   )
 }

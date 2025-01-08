@@ -3,12 +3,12 @@ import Image from 'next/image';
 
 import { useRouter } from 'next/navigation';
 import Stats from '@/components/Academic/ViewTeachersList/Stats';
+import BaseLayout1 from '@/components/BaseLayout1';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import Modal from 'react-modal';
 import React, { useState, useRef, useEffect } from 'react';
 import { FiCalendar, FiMoreVertical} from 'react-icons/fi';
 import StudentList from '@/components/Academic/ViewTeachersList/StudentList';
-import BaseLayout from '@/components/BaseLayout';
 
 
 
@@ -258,10 +258,8 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
       return item.teacherId === teacherId;
     });
   console.log(filteredStudents);
-
-  const userRole = "academicCoach";
   return (
-    <BaseLayout role={userRole}>
+    <BaseLayout1>
     
     <div className="p-6 min-h-screen w-[100%] flex flex-col">
     <div className="p-2">
@@ -542,7 +540,7 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
         </button>
       </button>
     </Modal>
-    </BaseLayout>
+    </BaseLayout1>
   );
 };
 

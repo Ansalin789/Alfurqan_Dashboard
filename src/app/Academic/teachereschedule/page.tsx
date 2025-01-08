@@ -4,9 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import BaseLayout1 from '@/components/BaseLayout1';
 import AddScheduleModal from '@/components/Academic/ViewTeachersList/AddScheduleModel';
 import { FaCheck } from 'react-icons/fa';
-import BaseLayout from '@/components/BaseLayout';
 
 const localizer = momentLocalizer(moment);
 
@@ -44,10 +44,8 @@ const Teachereschedule = () => {
     }, 3000); // Hide message after 3 seconds
   };
 
-  const userRole = "academicCoach";
-
   return (
-    <BaseLayout role={userRole}>
+    <BaseLayout1>
       <div className="flex flex-col h-screen p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -103,7 +101,7 @@ const Teachereschedule = () => {
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleSuccessMessage}
       />
-    </BaseLayout>
+    </BaseLayout1>
   );
 };
 

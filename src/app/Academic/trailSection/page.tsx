@@ -4,10 +4,10 @@
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from 'react-icons/fa';
+import BaseLayout1 from '@/components/BaseLayout1';
 import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
 import { User } from '@/types';
-import BaseLayout from '@/components/BaseLayout';
 
 
 
@@ -648,18 +648,16 @@ const handleClick = async (id:any) => {
     );
   };
 
-  const userRole = "academicCoach";
-
   if (errorMessage) {
     return (
-      <BaseLayout role={userRole}>
+      <BaseLayout1>
         <div className="min-h-screen p-4">{errorMessage}</div>
-      </BaseLayout>
+      </BaseLayout1>
     );
   }
 
   return (
-    <BaseLayout role={userRole}>
+    <BaseLayout1>
       <div className={`min-h-screen p-4 bg-[#EDEDED]`}>
         <div className="flex justify-between items-center">
             <div className='flex items-center space-x-2'>
@@ -1097,7 +1095,7 @@ const handleClick = async (id:any) => {
         </div>
        
       )}
-    </BaseLayout>
+    </BaseLayout1>
   );
 };
 export default TrailSection

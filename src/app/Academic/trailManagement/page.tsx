@@ -8,7 +8,6 @@ import AddStudentModal from '@/components/Academic/AddStudentModel';
 import Popup from '@/components/Academic/Popup';
 import { useRouter } from 'next/navigation';
 import { table } from 'console';
-import BaseLayout from '@/components/BaseLayout';
 
 // Define the return type of the getAllUsers function
 interface User {
@@ -437,18 +436,18 @@ const Pagination = () => {
     setCurrentPage(1); // Reset to first page when search changes
   };
 
-  const userRole = "academicCoach";
+
 
   if (errorMessage) {
     return (
-      <BaseLayout role={userRole}>
+      <BaseLayout1>
         <div className="min-h-screen p-2">{errorMessage}</div>
-      </BaseLayout>
+      </BaseLayout1>
     );
   }
 
   return (
-    <BaseLayout role={userRole}>
+    <BaseLayout1>
       <div className={`min-h-screen p-4 bg-[#EDEDED]`}>
         <div className="flex justify-between items-center">
             <div className='flex items-center space-x-2'>
@@ -601,7 +600,7 @@ const Pagination = () => {
         onApplyFilters={handleApplyFilters}
         users={users}
       />
-    </BaseLayout>
+    </BaseLayout1>
   );
 };
 

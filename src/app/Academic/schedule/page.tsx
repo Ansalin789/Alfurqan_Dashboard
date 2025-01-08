@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import BaseLayout1 from '@/components/BaseLayout1';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import BaseLayout from '@/components/BaseLayout';
 
 const localizer = momentLocalizer(moment);
 
@@ -62,10 +62,8 @@ const SchedulePage = () => {
     handleDateClick(formattedDate); // Call the date click handler
   };
 
-  const userRole = "academicCoach";
-
   return (
-    <BaseLayout role={userRole}>
+    <BaseLayout1>
       <div className="flex flex-col h-screen">
         <div className="flex-1 p-6">
           <div className="flex justify-between items-center mb-6">
@@ -128,7 +126,7 @@ const SchedulePage = () => {
           </div>
         </div>
       </div>
-    </BaseLayout>
+    </BaseLayout1>
   );
 };
 

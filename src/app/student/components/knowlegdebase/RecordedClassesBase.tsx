@@ -77,7 +77,7 @@ const RecordedClassesBase: React.FC = () => {
       </div>
 
       {/* Video Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black h-60">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
         {videoData.map((video) => (
           <div
             key={video.id}
@@ -100,7 +100,7 @@ const RecordedClassesBase: React.FC = () => {
         ))}
       </div>
 
-
+      {/* Video Player Modal */}
       {selectedVideo && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg overflow-hidden max-w-2xl w-full">

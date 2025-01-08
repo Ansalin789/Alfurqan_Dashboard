@@ -1,12 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import BaseLayout1 from '@/components/BaseLayout1';
 import Image from 'next/image';
 import React, { useState, useEffect, useRef } from 'react';
 import Modal from 'react-modal';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import { FiCalendar, FiMoreVertical } from 'react-icons/fi';
-import BaseLayout from '@/components/BaseLayout';
 
 const ManageStudentView = () => {
   const router = useRouter();
@@ -449,10 +449,9 @@ const ManageStudentView = () => {
     return item.student?.studentId === studentId;
   });
   console.log(filteredStudents);
-  const userRole = "academicCoach";
   
   return (
-    <BaseLayout role={userRole}>
+    <BaseLayout1>
       <div className="flex flex-col md:flex-row pt-14 pl-4 min-h-screen">
         <div className="p-2">
           <IoArrowBackCircleSharp 
@@ -814,7 +813,7 @@ const ManageStudentView = () => {
           </div>
         </div>
       </Modal>
-    </BaseLayout>
+    </BaseLayout1>
   );
 };
 
