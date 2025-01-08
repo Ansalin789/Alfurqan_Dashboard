@@ -570,16 +570,19 @@ const Pagination = () => {
         <h2>Edit User</h2>
         {selectedUserData ? (
           <div>
-            <Popup 
-              isOpen={modalIsOpen} 
-              onRequestClose={closeModal} 
-              user={selectedUserData}
-              isEditMode={isEditMode} 
-              onSave={() => {
-                fetchStudents();
-                closeModal();
-              }} 
-            />
+           <Popup
+            isOpen={modalIsOpen}
+            onRequestClose={closeModal}
+            user={{
+              ...selectedUserData,
+              city: selectedUserData.city ?? '', // Provide a default value for city if undefined
+            }}
+            isEditMode={isEditMode}
+            onSave={() => {
+              fetchStudents();
+              closeModal();
+            }}
+          />
           </div>
         ) : (
           <div>No user data available for editing.</div>
