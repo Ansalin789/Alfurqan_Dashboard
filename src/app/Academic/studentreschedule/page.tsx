@@ -22,20 +22,12 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
 
 
   interface Event {
-    id: string;
+    
     title: string;
     start: Date;
     end: Date;
     allDay: boolean;
-    description: string;
-    meetingLink: string;
-    studentName: string;
-    teacherName: string;
-    course: string;
-    meetingLocation: string;
-    scheduledFrom: string;
-    scheduledTo: string;
-    date: string;
+    
   }
   
   // Define the type for a teacher
@@ -124,7 +116,7 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
   }
 
   useEffect(() => {
-      const studentEvents = (filteredStudents ?? []).map((student: any) => {
+      const studentEvents:Event[] = (filteredStudents ?? []).map((student: any) => {
         return {
           title: `${student.student.studentFirstName} ${student.student.studentLastName}`,
           start: new Date(student.startDate),
