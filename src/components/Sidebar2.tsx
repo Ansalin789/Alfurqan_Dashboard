@@ -19,7 +19,7 @@ const SidebarItems = [
     },
     {
         name: 'Classes',
-        href: '/Student/classes',
+        href: '/student/ui/classes',
         icon: IoPeopleSharp,
     },
     {
