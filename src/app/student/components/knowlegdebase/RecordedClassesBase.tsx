@@ -79,24 +79,25 @@ const RecordedClassesBase: React.FC = () => {
       {/* Video Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
         {videoData.map((video) => (
-          <div
-            key={video.id}
-            className="w-60 bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
-            onClick={() => handleVideoClick(video.videoUrl)}
-          >
-            <img
-              src={video.thumbnail}
-              alt="Class Thumbnail"
-              className="w-full h-32 object-cover"
-            />
-            <div className="p-3">
-              <h3 className="text-[12px] font-bold text-gray-800 mb-1">{video.title}</h3>
-              <p className="text-[11px] text-gray-500 mb-2">{video.time}</p>
-              <p className="text-[10px] text-gray-500 bg-[#dadada] px-[8px] py-[2px] rounded-lg">
-                <b>Note:</b> Recorded classes will remain available for a maximum of one month from the class date.
-              </p>
-            </div>
+          <button
+          key={video.id}
+          className="w-60 bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
+          onClick={() => handleVideoClick(video.videoUrl)}
+          aria-label={`Play video ${video.title}`}
+        >
+          <img
+            src={video.thumbnail}
+            alt="Class Thumbnail"
+            className="w-full h-32 object-cover"
+          />
+          <div className="p-3">
+            <h3 className="text-[12px] font-bold text-gray-800 mb-1">{video.title}</h3>
+            <p className="text-[11px] text-gray-500 mb-2">{video.time}</p>
+            <p className="text-[10px] text-gray-500 bg-[#dadada] px-[8px] py-[2px] rounded-lg">
+              <b>Note:</b> Recorded classes will remain available for a maximum of one month from the class date.
+            </p>
           </div>
+        </button>
         ))}
       </div>
 
