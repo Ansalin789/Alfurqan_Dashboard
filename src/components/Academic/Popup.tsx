@@ -13,8 +13,11 @@ interface PopupProps {
   isOpen: boolean;
   onRequestClose: () => void;
   user: User | null;
+  isEditMode: boolean;  // Add this line
+
   onSave: (user: User) => void;
 }
+
 
 interface User {
 studentId: string;
@@ -29,7 +32,7 @@ studentId: string;
   time: string;
   evaluationStatus?: string;
   city: string;
-  numberofstudents: string;
+  numberofstudents?: string;
   comment?: string;
   [key: string]: any;
 }
@@ -77,6 +80,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
 
   const [users, setUsers] = useState<User[]>([]);
   console.log(users);
+  
 
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     try {
