@@ -265,13 +265,12 @@ const FilterModal = ({
 
 
 const TrailSection = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<TransformedUser[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<TransformedUser[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false); 
@@ -288,8 +287,8 @@ const TrailSection = () => {
     try {
       const allData = await getAllUsers();
       if (allData.success && allData.data) {
-        setUsers(allData.data as unknown as User[]); // Cast TransformedUser[] to User[]
-        setFilteredUsers(allData.data as unknown as User[]); // Initialize filtered users
+        setUsers(allData.data); // Cast TransformedUser[] to User[]
+        setFilteredUsers(allData.data); // Initialize filtered users
       } else {
         setErrorMessage(allData.message ?? 'Failed to fetch users');
       }
@@ -414,7 +413,7 @@ const fetchStudents = async () => {
   try {
     const allData = await getAllUsers();
     if (allData.success && allData.data) {
-      setUsers(allData.data as unknown as User[]); // Cast to User[] to resolve type error
+      setUsers(allData.data); // Cast to User[] to resolve type error
     } else {
       setErrorMessage(allData.message ?? 'Failed to fetch users');
     }
@@ -466,26 +465,6 @@ const handleClick = async (id:string) => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-  };
-  // Add filter handling functionF
-  const handleApplyFilters = (filters: { country: string; course: string; teacher: string; status: string; }) => {
-    let filtered = [...users];
-    
-    if (filters.country) {
-      filtered = filtered.filter(user => user.country === filters.country);
-    }
-    if (filters.course) {
-      filtered = filtered.filter(user => user.course === filters.course);
-    }
-    if (filters.teacher) {
-      filtered = filtered.filter(user => user.preferredTeacher === filters.teacher);
-    }
-    if (filters.status) {
-      filtered = filtered.filter(user => user.evaluationStatus === filters.status);
-    }
-    
-    setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
   };
      
   
@@ -555,7 +534,6 @@ const handleClick = async (id:string) => {
     };
     
   alert(JSON.stringify(formDataNames));
-
     try {
       const auth=localStorage.getItem('authToken');
       const response = await fetch(`http://localhost:5001/evaluation/${id}`,
@@ -596,7 +574,9 @@ const handleClick = async (id:string) => {
         break;
     }
   };
-
+  useEffect(() => {
+    console.log(`Updated TrialClassStatus: ${trialClassStatus}`);
+  }, [trialClassStatus]);
 
 
   const Pagination = () => {
@@ -712,7 +692,7 @@ const handleClick = async (id:string) => {
                   className={`border rounded-lg px-2 text-[13px] mr-4 shadow`}
                 />
                 <button 
-                  onClick={() => setIsFilterModalOpen(true)}
+                  // onClick={() => setIsFilterModalOpen(true)}
                   className="flex items-center bg-gray-200 p-2 rounded-lg text-[12px] shadow"
                 >
                   <FaFilter className="mr-2" /> Filter
@@ -845,12 +825,11 @@ const handleClick = async (id:string) => {
           closeModal();
         }}
       />
-      <FilterModal
+      {/* <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         onApplyFilters={handleApplyFilters}
-        users={users}
-      />
+      /> */}
 
 {showModal && (
   

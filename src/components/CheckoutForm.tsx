@@ -5,7 +5,7 @@ import { useState } from 'react';
 // Define the type for the props
 interface CheckoutFormProps {
   clientSecret: string;
-  evaluationId: string;
+  evaluationId?: string;
 }
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId }) => {
