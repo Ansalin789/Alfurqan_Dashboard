@@ -29,6 +29,23 @@ interface Student {
   status: string;
 }
 
+interface User {
+  _id: string;
+  userName: string;
+  email: string;
+  status: string;
+  teacherId: string;
+  name: string;
+  course: string;
+  startdate: string; // or a Date object, based on your data type
+  // assuming this field links student to teacher
+}
+
+interface StudentListData {
+  users: User[]; // Array of User objects
+  status: string;
+}
+
 const ViewTeachersList= () => {
 
   const router = useRouter();
@@ -37,7 +54,7 @@ const ViewTeachersList= () => {
   const [activeTab, setActiveTab] = useState('scheduled');
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const [Studentlistdata, setStudentListdata]= useState();
+  const [studentListData, setStudentListData] = useState<StudentListData | null>(null); // Set to null initially
   const dropdownRef = useRef<HTMLTableCellElement | null>(null); // Use HTMLTableCellElement instead
 
 
@@ -113,9 +130,7 @@ const ViewTeachersList= () => {
     subject: string;
     rating: number;
   }
-  interface User {
-    teacherId: string;  // assuming teacherId is a string
-  }
+ 
   const [teachers, setTeachers] = useState<Teacher>();
   useEffect(() => {
         const fetchTeachers = async () => {
@@ -198,8 +213,8 @@ const ViewTeachersList= () => {
   };
   
   
-  const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
     
     const totalDuration = calculateHoursAcrossDays(startDate, startTime, endDate, endTime);
     const formattedStartTime = formatTimeToAmPm(startTime);
@@ -236,37 +251,39 @@ const ViewTeachersList= () => {
       console.log(data);
       closeModal();
       setIsScheduled(true);
-      studentlist();
+      studentList();
     } catch (error) {
       console.error('Error saving schedule:', error);
     }
   };
 
-  const studentlist=async()=>{
-      try{
-        const auth=localStorage.getItem('authToken');
-           const response=await fetch('http://localhost:5001/shiftschedule?role=TEACHER',{
-            method:'GET',
-            headers:{
-              "Content-Type":"application/json",
-              'Authorization': `Bearer ${auth}`,
-            }}
-          );
-          const data=await response.json();
-           console.log(data);
-            setStudentListdata(data);
-      }catch(error){
-            console.log(error);
-      }
+  const studentList = async () => {
+    try {
+      const auth = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:5001/shiftschedule?role=TEACHER', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth}`,
+        },
+      });
+      const data = await response.json();
+      setStudentListData(data); // Update with actual data
+    } catch (error) {
+      console.error('Error fetching student data:', error);
+    }
   };
+
+
+
   const teacherId=localStorage.getItem('manageTeacherId');
 
   console.log(teacherId);
 
-  const filteredStudents = Studentlistdata?.users?.filter((item: User) => {
-    console.log(`Comparing: item.teacherId = ${item.teacherId}, teacherId = ${teacherId}`); // Debugging inside filter
+  const filteredStudents: Student[] | undefined = studentListData?.users?.filter((item: User) => {
     return item.teacherId === teacherId;
   });
+  
   console.log(filteredStudents);
 
   return (
@@ -374,62 +391,65 @@ const ViewTeachersList= () => {
                   </tr>
                 </thead>
                 <tbody>
-                    {filteredStudents?.map((item: Student, index: number) => (
-                    <tr key={item._id} className="border-t">
-                      <td className="py-1 text-[12px] text-center">{item.name}</td>
-                      
-                      <td className="py-1 text-[12px] text-center">{new Date(item.startdate).toISOString().slice(0, 10)}</td>
-                      <td className="py-1 text-center">
-                        <button 
-                          className={`px-4 py-1 rounded-lg text-[12px] text-center ${
-                            item.status === 'Completed' ? 'bg-green-600' : 'bg-gray-900'
-                          } text-white`}
+                {filteredStudents?.map((item: Student, index: number) => (
+              <tr key={item._id} className="border-t">
+                <td className="py-1 text-[12px] text-center">{item.name}</td>
+                
+                <td className="py-1 text-[12px] text-center">{new Date(item.startdate).toISOString().slice(0, 10)}</td>
+                
+                <td className="py-1 text-center">
+                  <button 
+                    className={`px-4 py-1 rounded-lg text-[12px] text-center ${
+                      item.status === 'Completed' ? 'bg-green-600' : 'bg-gray-900'
+                    } text-white`}
+                  >
+                    Active
+                  </button>
+                </td>
+                
+                <td className="py-1 text-right relative" ref={dropdownRef}>
+                  {activeTab === 'scheduled' && (
+                    <button onClick={() => toggleDropdown(index)}>
+                      <FiMoreVertical className="inline-block text-xl cursor-pointer" />
+                    </button>
+                  )}
+                  
+                  {activeDropdown === index && activeTab === 'scheduled' && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                      <div className="py-1">
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={(event) => {
+                            handleReschedule(event);
+                            setActiveDropdown(null);
+                          }}
                         >
-                          Active
+                          Reschedule
                         </button>
-                      </td>
-                      <td className="py-1 text-right relative" ref={dropdownRef}>
-                        {activeTab === 'scheduled' && (
-                          <button onClick={() => toggleDropdown(index)}>
-                            <FiMoreVertical className="inline-block text-xl cursor-pointer" />
-                          </button>
-                        )}
-                        {activeDropdown === index && activeTab === 'scheduled' && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
-                            <div className="py-1">
-                              <button
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={(event) => {
-                                  handleReschedule(event);
-                                  setActiveDropdown(null);
-                                }}
-                              >
-                                Reschedule
-                              </button>
-                              <button
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={() => setActiveDropdown(null)}
-                              >
-                                Pause Class
-                              </button>
-                              <button
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={() => setActiveDropdown(null)}
-                              >
-                                Resume Class
-                              </button>
-                              <button
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={() => setActiveDropdown(null)}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Pause Class
+                        </button>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Resume Class
+                        </button>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
                 </tbody>
               </table>
       
