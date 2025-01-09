@@ -150,7 +150,7 @@ const ViewTeachersList= () => {
           
           console.log(">>>>"+auth);
           try {
-            const response = await fetch(`http://localhost:5001/users/${teacherIdLocal}`, {
+            const response = await fetch(`http://alfurqanacademy.tech:5001/users/${teacherIdLocal}`, {
               headers: {
                 'Authorization': `Bearer ${auth}`,
               },
@@ -249,7 +249,7 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
 
     try {
       
-      const response = await fetch('http://localhost:5001/shiftschedule',
+      const response = await fetch('http://alfurqanacademy.tech:5001/shiftschedule',
          {
           method: 'POST',
           headers: {
@@ -272,7 +272,7 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
   const studentList = async () => {
     try {
     
-      const response = await fetch('http://localhost:5001/shiftschedule?role=TEACHER', {
+      const response = await fetch('http://alfurqanacademy.tech:5001/shiftschedule?role=TEACHER', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

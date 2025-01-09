@@ -123,7 +123,7 @@ const ManageStudentView = () => {
       const fetchData = async () => {
         try {
           const auth=localStorage.getItem('authToken');
-          const response = await fetch(`http://localhost:5001/alstudents/${studentId}`,
+          const response = await fetch(`http://alfurqanacademy.tech:5001/alstudents/${studentId}`,
             {
               headers: {
                      'Authorization': `Bearer ${auth}`,
@@ -141,7 +141,7 @@ const ManageStudentView = () => {
           const fetchTeachers = async () => {
             try {
               const auth=localStorage.getItem('authToken');
-              const response = await fetch('http://localhost:5001/users?role=TEACHER', {
+              const response = await fetch('http://alfurqanacademy.tech:5001/users?role=TEACHER', {
                 headers: {
                        'Authorization': `Bearer ${auth}`,
                 },
@@ -343,7 +343,7 @@ const ManageStudentView = () => {
     }
     try {
       
-      const response = await fetch(`http://localhost:5001/createclassschedule/${studentId}`, {
+      const response = await fetch(`http://alfurqanacademy.tech:5001/createclassschedule/${studentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -427,7 +427,7 @@ const ManageStudentView = () => {
   const studentlist=async()=>{
       try{
         
-           const response=await fetch('http://localhost:5001/classShedule',{
+           const response=await fetch('http://alfurqanacademy.tech:5001/classShedule',{
             method:'GET',
             headers:{
               "Content-Type":"application/json",

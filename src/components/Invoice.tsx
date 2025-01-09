@@ -54,7 +54,7 @@ const Invoice = () => {
 
     try {
       const auth = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5001/evaluationlist/${studentId}`, {
+      const response = await fetch(`http://alfurqanacademy.tech:5001/evaluationlist/${studentId}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${auth}`,
@@ -120,7 +120,7 @@ const Invoice = () => {
     const evaluationid = evaluationData._id; // Replace with your actual evaluation ID
     const totalprice = evaluationData.planTotalPrice;
     const auth = localStorage.getItem('authToken');
-    const response = await fetch(`http://localhost:5001/create-payment-intent`, {
+    const response = await fetch(`http://alfurqanacademy.tech:5001/create-payment-intent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -67,7 +67,7 @@ const getAllUsers = async (): Promise<{
 }> => {
   try {
     const auth = localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:5001/evaluationlist', {
+    const response = await fetch('http://alfurqanacademy.tech:5001/evaluationlist', {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${auth}`,
@@ -427,7 +427,7 @@ const fetchStudents = async () => {
 const handleClick = async (id:string) => {
   try {
     const auth=localStorage.getItem('authToken');
-    const response = await fetch(`http://localhost:5001/evaluationlist/${id}`,{
+    const response = await fetch(`http://alfurqanacademy.tech:5001/evaluationlist/${id}`,{
       headers: {
         'Content-Type': 'application/json',
          'Authorization': `Bearer ${auth}`,
@@ -452,7 +452,7 @@ const handleClick = async (id:string) => {
     setStudentStatus(data.studentStatus);
     setPaymentStatus(data.paymentStatus);
     setPaymentLink(
-      `http://localhost:3000/invoice?id=${encodeURIComponent(data.student.studentId)}`);
+      `http://alfurqanacademy.tech:3000/invoice?id=${encodeURIComponent(data.student.studentId)}`);
     setFormData(data);
     console.log(data);
    
@@ -536,7 +536,7 @@ const handleClick = async (id:string) => {
   alert(JSON.stringify(formDataNames));
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5001/evaluation/${id}`,
+      const response = await fetch(`http://alfurqanacademy.tech:5001/evaluation/${id}`,
         {
           method: 'PUT', 
           headers: {

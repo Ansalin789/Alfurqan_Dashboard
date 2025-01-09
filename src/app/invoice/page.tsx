@@ -6,10 +6,7 @@ import Invoice from '@/components/Invoice';
 
 const Form = () => {
  
-
-  
-
-  return (
+ return (
     <div style={{ padding: '20px' }}>
       <button>Go to Invoice</button>
       <Invoice />

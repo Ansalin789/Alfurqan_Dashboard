@@ -18,7 +18,7 @@ const StudentEvaluation = () => {
   useEffect(() => {
     // Fetch data from API
     const auth=localStorage.getItem('authToken');
-    fetch('http://localhost:5001/evaluationlist',{
+    fetch('http://alfurqanacademy.tech:5001/evaluationlist',{
       headers: {
         'Authorization': `Bearer ${auth}`,        
           },

@@ -30,7 +30,7 @@ const UpcomingClasses: React.FC = () => {
     const fetchClasses = async () => {
       try {
         const auth=localStorage.getItem('authToken');
-        const response = await fetch('http://localhost:5001/evaluationlist', {
+        const response = await fetch('http://alfurqanacademy.tech:5001/evaluationlist', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

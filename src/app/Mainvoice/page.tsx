@@ -13,7 +13,7 @@ const HomePage = () => {
 
   const createPaymentIntent = async () => {
     const auth = localStorage.getItem('authToken');
-    const response = await fetch(`http://localhost:5001/create-payment-intent`, {
+    const response = await fetch(`http://alfurqanacademy.tech:5001/create-payment-intent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
