@@ -130,15 +130,27 @@ const ViewTeachersList= () => {
     subject: string;
     rating: number;
   }
- 
+ const [teacherIdLocal, setTeacherIdLocal] = useState<string | null>(null);
+   const [auth, setAuth] = useState<string | null>(null);
+   useEffect(() => {
+     // Access localStorage only on the client side
+     if (typeof window !== "undefined") {
+      const teacherId=localStorage.getItem('manageTeacherId');
+       setTeacherIdLocal(teacherId); 
+        const seauth=localStorage.getItem('authToken');
+        setAuth(seauth);
+     }
+   }, []);
+   // Declare and initialize filteredStudents first
+  
   const [teachers, setTeachers] = useState<Teacher>();
   useEffect(() => {
         const fetchTeachers = async () => {
-          const teacherId=localStorage.getItem('manageTeacherId');
-          const auth=localStorage.getItem('authToken');
+          
+          
           console.log(">>>>"+auth);
           try {
-            const response = await fetch(`http://localhost:5001/users/${teacherId}`, {
+            const response = await fetch(`http://localhost:5001/users/${teacherIdLocal}`, {
               headers: {
                 'Authorization': `Bearer ${auth}`,
               },
@@ -236,7 +248,7 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
     };
 
     try {
-      const auth=localStorage.getItem('authToken');
+      
       const response = await fetch('http://localhost:5001/shiftschedule',
          {
           method: 'POST',
@@ -259,7 +271,7 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
 
   const studentList = async () => {
     try {
-      const auth = localStorage.getItem('authToken');
+    
       const response = await fetch('http://localhost:5001/shiftschedule?role=TEACHER', {
         method: 'GET',
         headers: {
@@ -276,12 +288,10 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
 
 
 
-  const teacherId=localStorage.getItem('manageTeacherId');
-
-  console.log(teacherId);
+  
 
   const filteredStudents: Student[] | undefined = studentListData?.users?.filter((item: User) => {
-    return item.teacherId === teacherId;
+    return item.teacherId === teacherIdLocal;
   });
   
   console.log(filteredStudents);

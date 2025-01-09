@@ -342,7 +342,7 @@ const ManageStudentView = () => {
       return;
     }
     try {
-      const auth=localStorage.getItem('authToken');
+      
       const response = await fetch(`http://localhost:5001/createclassschedule/${studentId}`, {
         method: "PUT",
         headers: {
@@ -426,7 +426,7 @@ const ManageStudentView = () => {
   const [studentllistdata, setStudentllistdata]=useState<StudentListData>();
   const studentlist=async()=>{
       try{
-        const auth=localStorage.getItem('authToken');
+        
            const response=await fetch('http://localhost:5001/classShedule',{
             method:'GET',
             headers:{
@@ -442,12 +442,21 @@ const ManageStudentView = () => {
       }
   };
   
-  const studentId = localStorage.getItem('studentManageID');
-
+  const [studentIdLocal, setStudentIdLocal] = useState<string | null>(null);
+  const [auth, setAuth] = useState<string | null>(null);
+  useEffect(() => {
+    // Access localStorage only on the client side
+    if (typeof window !== "undefined") {
+      const studentId = localStorage.getItem('studentManageID');
+      setStudentIdLocal(studentId); 
+       const seauth=localStorage.getItem('authToken');
+       setAuth(seauth);
+    }
+  }, []);
   // Declare and initialize filteredStudents first
   const filteredStudents = studentllistdata?.students?.filter(
     (item: { student: { studentId: string | null } }) => {
-      return item.student?.studentId === studentId;
+      return item.student?.studentId === studentIdLocal;
     }
   );
   

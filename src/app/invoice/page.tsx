@@ -2,8 +2,7 @@
 
 import Invoice from "@/components/Invoice";
 import React from "react";
-import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
-const linkdata = '/invoice?name=Joe+Selvaraj&plan=Elite&due=16"'
+import { BrowserRouter as Router, Route, Routes} from "react-router-dom";
 const Form = () => {
   return (
     <Router>

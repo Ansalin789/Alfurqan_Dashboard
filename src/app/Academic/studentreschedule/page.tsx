@@ -62,7 +62,15 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
   
   const [studentllistdata, setStudentllistdata] = useState<StudentListResponse | null>(null);
   
-
+ const [teacherIdLocal, setTeacherIdLocal] = useState<string | null>(null);
+   
+   useEffect(() => {
+     // Access localStorage only on the client side
+     if (typeof window !== "undefined") {
+      const studentId = localStorage.getItem('studentManageID');
+       setTeacherIdLocal(studentId); 
+     }
+   }, []);
   // Fetch teacher schedules and student data from the backend
   useEffect(() => {
     const studentlist = async () => {
@@ -103,9 +111,9 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
       .catch((error) => console.error('Error fetching data: ', error));
   }, []);
 
-  const studentId = localStorage.getItem('studentManageID');
+  
   const filteredStudents = studentllistdata?.students?.filter((item: { student: { studentId: string | null; }; }) => {
-    return item.student?.studentId === studentId;
+    return item.student?.studentId === teacherIdLocal;
   });
   console.log(">>>>>>>>>fs"+filteredStudents);
   interface StudentEvent {
