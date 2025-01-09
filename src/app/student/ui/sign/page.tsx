@@ -33,7 +33,7 @@ const SignIn: React.FC = () => {
       console.log(accessToken);
       console.log(authToken);
       if (role?.includes('Student')) {
-        router.push('/student/ui/liveclass');
+        router.push('/student/ui/dashboard');
         alert("Login successful as Student");
       }
     } catch (error: any) {
