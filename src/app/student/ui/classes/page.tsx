@@ -10,6 +10,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 // Define TypeScript types for classes
 type UpcomingClass = {
+  [x: string]: any;
   classID: number;
   name: string;
   teacherName: string;
@@ -44,7 +45,7 @@ const Classes = () => {
     course: `Course ${index + 1}`,
     date: "January 15, 2025",
     scheduled: "10:00 AM - 11:30 AM",
-    status:"",
+    status:""
   
   }));
 
