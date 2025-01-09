@@ -276,36 +276,39 @@ const TrailSection = () => {
   const [itemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false); 
   const [formData, setFormData] = useState<FormData>();
-   const[TrialClassStatus,setTrailClassStatus]=useState("");
-   const[studentStatus,setStudentStatus]=useState("");
-   const[paymentStatus,setpaymentStatus]=useState("");
-   const[paymentLink,setpaymentLink]=useState("");
+  const [trialClassStatus, setTrialClassStatus] = useState("");
+  const [studentStatus, setStudentStatus] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [paymentLink, setPaymentLink] = useState("");
+  
+
+   
    useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const allData = await getAllUsers();
-        if (allData.success && allData.data) {
-          setUsers(allData.data);
-          setFilteredUsers(allData.data); // Initialize filtered users
-        } else {
-          setErrorMessage(allData.message ?? 'Failed to fetch users');
-        }
-      } catch (error) {
-        setErrorMessage('An unexpected error occurred');
-        console.error('An unexpected error occurred', error);
-        
+  const fetchData = async () => {
+    try {
+      const allData = await getAllUsers();
+      if (allData.success && allData.data) {
+        setUsers(allData.data as unknown as User[]); // Cast TransformedUser[] to User[]
+        setFilteredUsers(allData.data as unknown as User[]); // Initialize filtered users
+      } else {
+        setErrorMessage(allData.message ?? 'Failed to fetch users');
       }
-    };
-  
-    fetchData();
-  }, []);
-  
-  useEffect(() => {
-    Modal.setAppElement('body');
-  }, []);
+    } catch (error) {
+      setErrorMessage('An unexpected error occurred');
+      console.error('An unexpected error occurred', error);
+    }
+  };
+
+  fetchData();
+}, []);
+
+useEffect(() => {
+  Modal.setAppElement('body');
+}, []);
+
   
    const [options, setOptions] = useState({
-    TrialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
+    trialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
     studentStatus: ["JOINED","NOT JOINED","WAITING"],
     paymentStatus: [ "PAID", "FAILED","PENDING"],
   });
@@ -411,7 +414,7 @@ const fetchStudents = async () => {
   try {
     const allData = await getAllUsers();
     if (allData.success && allData.data) {
-      setUsers(allData.data);
+      setUsers(allData.data as unknown as User[]); // Cast to User[] to resolve type error
     } else {
       setErrorMessage(allData.message ?? 'Failed to fetch users');
     }
@@ -420,6 +423,7 @@ const fetchStudents = async () => {
     console.error('An unexpected error occurred', error);
   }
 };
+
 
 const handleClick = async (id:string) => {
   try {
@@ -435,9 +439,9 @@ const handleClick = async (id:string) => {
     }
     const data = await response.json();
     setOptions((prev) => ({
-      TrialClassStatus: prev.TrialClassStatus.includes(data.trialClassStatus)
-        ? prev.TrialClassStatus
-        : [...prev.TrialClassStatus, data.trialClassStatus],
+      trialClassStatus: prev.trialClassStatus.includes(data.trialClassStatus)
+        ? prev.trialClassStatus
+        : [...prev.trialClassStatus, data.trialClassStatus],
       studentStatus: prev.studentStatus.includes(data.studentStatus)
         ? prev.studentStatus
         : [...prev.studentStatus, data.studentStatus],
@@ -445,10 +449,10 @@ const handleClick = async (id:string) => {
         ? prev.paymentStatus
         : [...prev.paymentStatus, data.paymentStatus],
     }));
-    setTrailClassStatus(data.TrialClassStatus);
+    setTrialClassStatus(data.trialClassStatus);
     setStudentStatus(data.studentStatus);
-    setpaymentStatus(data.paymentStatus);
-    setpaymentLink(
+    setPaymentStatus(data.paymentStatus);
+    setPaymentLink(
       `http://localhost:3000/invoice?id=${encodeURIComponent(data.student.studentId)}`);
     setFormData(data);
     console.log(data);
@@ -535,7 +539,7 @@ const handleClick = async (id:string) => {
       studentStatus: studentStatus,
       classStatus: formData?.classStatus,
       comments: formData?.comments,
-      trialClassStatus: TrialClassStatus,
+      trialClassStatus: trialClassStatus,
       invoiceStatus: formData?.invoiceStatus,
       paymentLink:paymentLink,
       paymentStatus: paymentStatus ,
@@ -580,13 +584,13 @@ const handleClick = async (id:string) => {
     console.log(`Field: ${field}, Value: ${event.target.value}`);
     switch (field) {
       case "TrialClassStatus":
-        setTrailClassStatus(event.target.value);
+        setTrialClassStatus(event.target.value);
         break;
       case "studentStatus":
         setStudentStatus(event.target.value);
         break;
       case "paymentStatus":
-        setpaymentStatus(event.target.value);
+        setPaymentStatus(event.target.value);
         break;
       default:
         break;
@@ -800,12 +804,13 @@ const handleClick = async (id:string) => {
                       </span>
                     </td>
                     <td className="p-2 px-8">
-                      <button
-                        onClick={() => handleClick(item._id)}
+                    <button
+                        onClick={() => handleClick(item._id.toString())} // Convert number to string
                         className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
                       >
-                        <FaEdit size={10}/>
+                        <FaEdit size={10} />
                       </button>
+
                     </td>
                   </tr>
                 ))
@@ -1053,11 +1058,11 @@ const handleClick = async (id:string) => {
                <label htmlFor="trialClassStatus" className="block text-black text-xs font-medium">Trial Class Status</label>
         <select
           id="trialClassStatus"
-          value={TrialClassStatus}
+          value={trialClassStatus}
           onChange={handleChange("TrialClassStatus")}
           className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
         >
-          {options.TrialClassStatus.map((status) => (
+          {options.trialClassStatus.map((status) => (
             <option key={status} value={status}>
               {status}
             </option>
