@@ -28,6 +28,7 @@ interface Student {
   startdate: string; // or Date if it's a Date object
   status: string;
 }
+
 const ViewTeachersList= () => {
 
   const router = useRouter();
@@ -36,8 +37,10 @@ const ViewTeachersList= () => {
   const [activeTab, setActiveTab] = useState('scheduled');
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const [Studentlistdata, setStudentListdata] = useState();
-  const dropdownRef = useRef< | null>(null);
+  const [Studentlistdata, setStudentListdata]= useState();
+  const dropdownRef = useRef<HTMLTableCellElement | null>(null); // Use HTMLTableCellElement instead
+
+
   const itemsPerPage = 10;
    
   
@@ -195,7 +198,7 @@ const ViewTeachersList= () => {
   };
   
   
- const handleSave1 = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     const totalDuration = calculateHoursAcrossDays(startDate, startTime, endDate, endTime);
@@ -476,75 +479,75 @@ const ViewTeachersList= () => {
               ×
             </button>
           </div>
-          <form onSubmit={handleSave1}>
-            <div className="mb-2">
-              <label htmlFor="title" className="block text-[12px] mb-1">Title</label>
-              <input
-                id="title"
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="mb-2">
-              <label htmlFor="startDate" className="block text-[12px] mb-1">Start Date</label>
-              <input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="mb-2">
-              <label htmlFor="endDate" className="block text-[12px] mb-1">End Date</label>
-              <input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="mb-2 flex space-x-2">
-  <div className="w-1/2">
-    <label htmlFor="startTime" className="block text-[12px] mb-1">Start Time</label>
-    <input
-      id="startTime"
-      type="time"
-      value={startTime}
-      onChange={handleStartTimeChange}
-      className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  </div>
-  <div className="w-1/2">
-    <label htmlFor="endTime" className="block text-[12px] mb-1">End Time</label>
-    <input
-      id="endTime"
-      type="time"
-      value={endTime}
-      onChange={handleEndTimeChange}      
-      className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  </div>
-</div>
+            <form onSubmit={handleSave1}>
+              <div className="mb-2">
+                <label htmlFor="title" className="block text-[12px] mb-1">Title</label>
+                <input
+                  id="title"
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="mb-2">
+                <label htmlFor="startDate" className="block text-[12px] mb-1">Start Date</label>
+                <input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="mb-2">
+                <label htmlFor="endDate" className="block text-[12px] mb-1">End Date</label>
+                <input
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="mb-2 flex space-x-2">
+                <div className="w-1/2">
+                  <label htmlFor="startTime" className="block text-[12px] mb-1">Start Time</label>
+                  <input
+                    id="startTime"
+                    type="time"
+                    value={startTime}
+                    onChange={handleStartTimeChange}
+                    className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label htmlFor="endTime" className="block text-[12px] mb-1">End Time</label>
+                  <input
+                    id="endTime"
+                    type="time"
+                    value={endTime}
+                    onChange={handleEndTimeChange}
+                    className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
 
-            <div className="mb-2">
-              <label htmlFor="comment" className="block text-[12px] mb-1">Comment</label>
-              <textarea
-                id="comment"
-                className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={2}
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-gray-800 text-white text-[12px] p-1 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Submit Schedule
-            </button>
-          </form>
+              <div className="mb-2">
+                <label htmlFor="comment" className="block text-[12px] mb-1">Comment</label>
+                <textarea
+                  id="comment"
+                  className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={2}
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-gray-800 text-white text-[12px] p-1 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Submit Schedule
+              </button>
+            </form>
         </button>
       </button>
     </Modal>
