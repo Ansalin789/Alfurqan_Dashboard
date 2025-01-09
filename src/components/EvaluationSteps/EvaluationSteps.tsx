@@ -181,7 +181,9 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
 // Step 2 Component
 
 // Step 2 Component
-const Step2: React.FC<{ prevStep: () => void; nextStep: (data: StudentData) => void; evaluationData: EvaluationData }> = ({ prevStep, nextStep, evaluationData }) => {
+const Step2: React.FC<{ prevStep: () => void;
+  nextStep: (data: StudentData) => void;
+  studentDatas?: StudentData;  }> = ({ prevStep, nextStep, studentDatas }) => {
   const [studentData, setStudentData] = useState<StudentData>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -247,7 +249,7 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: (data: StudentData) => v
     );
   }
 
-  console.log('Evaluation Data:', evaluationData);
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
@@ -326,7 +328,7 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: (data: StudentData) => v
           <button
             onClick={()=>{
               console.log('Passing studentData to next step:', studentData)
-              nextStep(studentData)}}
+              nextStep(studentData || {} as StudentData)}}
             className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
                      bg-gradient-to-r from-blue-500 to-purple-500 
                      hover:from-blue-600 hover:to-purple-600 rounded-lg group"
@@ -629,7 +631,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
   const [isGrammarChecked, setIsGrammarChecked] = useState(false);
   const[languageLevel,setLanguageLevel]=useState("");
   const[readingLevel,setReadingLevel]=useState("");
-  const[grammarLevel,setGrammerLevel]=useState<string>();
+  const[grammerLevel,setGrammerLevel]=useState<string>("");
   const [accomplishmentTime, setAccomplishmentTime] = useState<number>(0);
   const[studentRate,setStudentRate]=useState(0);
   const[expectedFinishingDate]=useState(28);
@@ -673,7 +675,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
       isGrammarChecked,
       languageLevel,
       readingLevel,
-      grammarLevel,
+      grammerLevel,
       accomplishmentTime,
       studentRate,
       expectedFinishingDate,
@@ -1201,7 +1203,7 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
 };
 
 // Step 7 Component (Thank You Page)
-const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: (updatedStudentDatas:any) => void; nextStep: () => void;updatedStudentDatas:any }) => {
+const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: (updatedStudentDatas:any) => void; nextStep: (data?: any) => void;updatedStudentDatas:any }) => {
   console.log(updatedStudentDatas);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative overflow-hidden">
@@ -1285,7 +1287,7 @@ const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: (updatedS
 };
 
 // Step 8 Component
-const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => void; nextStep: () => void;updatedStudentDatas:any }) => {
+const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => void; nextStep: (data?: any) => void;updatedStudentDatas:any }) => {
   const router = useRouter();
   const [classStatus, setClassStatus] = useState('Completed');
   const [studentStatus, setStudentStatus] = useState('Joined');
@@ -1539,17 +1541,59 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
   console.log('Rendering step:', step);
 
   return (
-    <>
-      {step === 1 && <Step1 nextStep={nextStep} />}
-      {step === 2 && <Step2 prevStep={prevStep} nextStep={nextStep}  />}
-      {step === 3 && <Step3 prevStep={prevStep} nextStep={nextStep} studentData={studentData}  />}
-      {step === 4 && <Step4 prevStep={prevStep} nextStep={nextStep} studentData={studentData} />}
-      {step === 5 && <Step5 prevStep={prevStep} nextStep={nextStep} studentData={studentData} />}
-      {step === 6 && <Step6 prevStep={prevStep} nextStep={nextStep} updatedStudentData={updatedStudentData} />}
-      {step === 7 && <Step7 prevStep={prevStep} nextStep={nextStep} updatedStudentDatas={updatedStudentDatas} />}
-      {step === 8 && <Step8 prevStep={prevStep} nextStep={nextStep}  updatedStudentDatas={updatedStudentDatas}/>}
-    </>
-  );
+  <>
+    {step === 1 && <Step1 nextStep={nextStep} />}
+    {step === 2 && (
+      <Step2
+        prevStep={prevStep}
+        nextStep={(data: StudentData) => nextStep(data)}
+        studentDatas={studentData ?? {} as StudentData} // Handle undefined
+      />
+    )}
+    {step === 3 && (
+      <Step3
+        prevStep={prevStep}
+        nextStep={(data: StudentData) => nextStep(data)}
+        studentData={studentData ?? {} as StudentData}
+      />
+    )}
+    {step === 4 && (
+      <Step4
+        prevStep={prevStep}
+        nextStep={(data: StudentData) => nextStep(data)}
+        studentData={studentData ?? {} as StudentData}
+      />
+    )}
+    {step === 5 && (
+      <Step5
+        prevStep={prevStep}
+        nextStep={(data: StudentData) => nextStep(data)}
+        studentData={studentData ?? {} as StudentData}
+      />
+    )}
+    {step === 6 && (
+      <Step6
+        prevStep={prevStep}
+        nextStep={(data: any) => nextStep(data)}
+        updatedStudentData={updatedStudentData}
+      />
+    )}
+    {step === 7 && (
+      <Step7
+        prevStep={prevStep}
+        nextStep={nextStep}
+        updatedStudentDatas={updatedStudentDatas}
+      />
+    )}
+    {step === 8 && (
+      <Step8
+        prevStep={prevStep}
+        nextStep={nextStep}
+        updatedStudentDatas={updatedStudentDatas}
+      />
+    )}
+  </>
+);
 };
 
 export default EvaluationSteps;
