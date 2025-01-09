@@ -28,9 +28,12 @@ const SignIn: React.FC = () => {
     try {
       const data = await signIn(username, password);
       const { accessToken, role } = data;
-      localStorage.setItem('authToken', accessToken);
+      localStorage.setItem('StudentAuthToken', accessToken);
+      const authToken=localStorage.getItem('StudentAuthToken');
+      console.log(accessToken);
+      console.log(authToken);
       if (role?.includes('Student')) {
-        router.push('/student/ui/dashboard');
+        router.push('/student/ui/liveclass');
         alert("Login successful as Student");
       }
     } catch (error: any) {
@@ -57,17 +60,17 @@ const SignIn: React.FC = () => {
       setError("Google login failed: No credential received");
       return;
     }
-  
     const email = extractEmailFromCredential(credential); // Replace with your extraction logic
-    console.log("Google login success, email:", email);
-  
     try {
       // Call the checkEmail function to verify if the email exists
       const result = await checkEmail(email);
   
       // Handle result based on the returned message
       if (result?.message === 'Email exists') {
-        router.push('/student/ui/dashboard'); // Redirect to dashboard
+        localStorage.setItem('StudentAuthToken',result.data.accessToken);
+        const authToken=localStorage.getItem('StudentAuthToken');
+        console.log(authToken);
+        router.push('/student/ui/liveclass'); // Redirect to dashboard
       } else {
         setError("Email not found"); // Display appropriate error message
         console.log(result?.message); // Log the error message for debugging
@@ -251,7 +254,7 @@ const SignIn: React.FC = () => {
       )}
       <div className="hidden md:flex flex-1 bg-[#E8EFF6] items-center justify-center">
         <Image
-          src="/assets/images/side right.png"
+          src="/assets/images/sideright.png"
           width={550}
           height={550}
           alt="Al Furqan Academy"
