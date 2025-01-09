@@ -1,19 +1,19 @@
-"use client"; // Mark this as a Client Component
+'use client'; // Mark this as a Client Component
 
-import Invoice from "@/components/Invoice";
-import React from "react";
-import { BrowserRouter as Router, Route, Routes} from "react-router-dom";
+import React from 'react';
+
+import Invoice from '@/components/Invoice';
+
 const Form = () => {
+ 
+
+  
+
   return (
-    <Router>
-      <div style={{ padding: "20px" }}>
-       
-        {/* Routes */}
-        <Routes>
-          <Route path="/invoice" element={<Invoice />} />
-        </Routes>
-      </div>
-    </Router>
+    <div style={{ padding: '20px' }}>
+      <button>Go to Invoice</button>
+      <Invoice />
+    </div>
   );
 };
 
