@@ -113,14 +113,14 @@ const TeacherReschedule = () => {
         {/* Reschedule Form Section */}
         <div className="w-[350px] ml-64 mt-36">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">Select your Preferred Time Slot</h2>
-          <div className="mb-4">
+          <div className="mb-4 flex">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Available Time Slots <span className="text-red-500">*</span>
             </label>
             <select
               value={selectedSlot}
               onChange={handleSlotChange}
-              className="block w-full bg-gray-50 border border-gray-300 text-gray-800 py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="block w-[40%] text-[11px] bg-[#DFE4F8] border-black opacity-[19%] border text-black py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
             >
               <option value="">Select</option>
               {generateTimeSlots().map((time, index) => (
@@ -137,12 +137,12 @@ const TeacherReschedule = () => {
               onChange={handleReasonChange}
               placeholder="Type here..."
               rows={4}
-              className="block w-full bg-gray-50 border border-gray-300 text-gray-800 py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full bg-[#DFE4F8] border border-gray-300 text-gray-800 py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             ></textarea>
           </div>
           <button
             onClick={handleSubmit}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="w-[200px] ml-16 text-center justify-center bg-[#1C3557] hover:bg-[#142741] text-white font-semibold py-2 px-4 rounded-full shadow-sm shadow-[#1C3557] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Request Re-Schedule
           </button>
@@ -152,18 +152,18 @@ const TeacherReschedule = () => {
       {/* Confirmation Popup */}
       {showPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[300px] text-center">
+          <div className="bg-[#F6F3FF] p-6 rounded-lg shadow-lg w-[300px] text-center">
             <p className="text-gray-800 font-semibold mb-4">Are you sure that you want to reschedule the Class?</p>
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => handlePopupAction("yes")}
-                className="bg-white border border-gray-300 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-100"
+                className="bg-white border border-gray-800 text-gray-800 py-2 px-4 rounded-full hover:bg-gray-100"
               >
                 Yes
               </button>
               <button
                 onClick={() => setShowPopup(false)}
-                className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                className="bg-[#223857] text-white py-2 px-4 rounded-full opacity-65 hover:bg-gray-800"
               >
                 No
               </button>

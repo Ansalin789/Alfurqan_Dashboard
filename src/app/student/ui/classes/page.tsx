@@ -39,7 +39,7 @@ const Classes = () => {
   const [popupVisible, setPopupVisible] = useState<number | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [sortKey, setSortKey] = useState<SortableKeys>("classID");
-  const [isPremiumUser, setIsPremiumUser] = useState(false); // Replace with actual role determination logic
+  const [isPremiumUser, setIsPremiumUser] = useState(true); // Replace with actual role determination logic
   const itemsPerPage = 10;
   console.log('set premium user ....', setIsPremiumUser);
 

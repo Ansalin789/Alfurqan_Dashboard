@@ -14,7 +14,7 @@ import "@/styles/globals.css";
 const SidebarItems = [
     {
         name: 'Dashboard',
-        href: '/Student',
+        href: '/student/ui/dashboard',
         icon: TbLayoutDashboardFilled,    
     },
     {
@@ -24,12 +24,12 @@ const SidebarItems = [
     },
     {
         name: 'Assignment',
-        href: '/Student/assignment',
+        href: '/student/ui/assignment',
         icon: MdAssignment,
     },
     {
         name: 'Payments',
-        href: '/Student/payments',
+        href: '/student/ui/payments',
         icon: MdOutlinePayment,
     },
     {
@@ -39,7 +39,7 @@ const SidebarItems = [
     },
     {
         name: 'Support',
-        href: '/Student/support',
+        href: '/student/ui/support',
         icon: MdContactSupport,
     }
 ];

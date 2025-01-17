@@ -283,7 +283,7 @@ const MyClass = () => {
             <div className="bg-white p-6 rounded shadow">
               <p className="text-gray-800 mb-4">Please wait until your session starts...</p>
               <button
-                className="bg-[#1C3557] text-white px-4 py-2 rounded text-center ml-10"
+                className="bg-[#1C3557] text-white px-4 py-2 rounded text-center ml-28 justify-center"
                 onClick={() => setIsPopupVisible(false)}
               >
                 OK
