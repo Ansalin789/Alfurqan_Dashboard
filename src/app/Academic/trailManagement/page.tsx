@@ -7,7 +7,7 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import AddStudentModal from '@/components/Academic/AddStudentModel';
 import Popup from '@/components/Academic/Popup';
 import { useRouter } from 'next/navigation';
-import { table } from 'console';
+
 
 // Define the return type of the getAllUsers function
 interface User {
@@ -38,7 +38,7 @@ interface GetAllUsersResponse {
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   try {
     const auth=localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:5001/studentlist',{
+    const response = await fetch('http://alfurqanacademy.tech:5001/studentlist',{
       headers: {
         'Content-Type': 'application/json',
          'Authorization': `Bearer ${auth}`,
@@ -570,16 +570,19 @@ const Pagination = () => {
         <h2>Edit User</h2>
         {selectedUserData ? (
           <div>
-            <Popup 
-              isOpen={modalIsOpen} 
-              onRequestClose={closeModal} 
-              user={selectedUserData}
-              isEditMode={isEditMode} 
-              onSave={() => {
-                fetchStudents();
-                closeModal();
-              }} 
-            />
+           <Popup
+            isOpen={modalIsOpen}
+            onRequestClose={closeModal}
+            user={{
+              ...selectedUserData,
+              city: selectedUserData.city ?? '', // Provide a default value for city if undefined
+            }}
+            isEditMode={isEditMode}
+            onSave={() => {
+              fetchStudents();
+              closeModal();
+            }}
+          />
           </div>
         ) : (
           <div>No user data available for editing.</div>
