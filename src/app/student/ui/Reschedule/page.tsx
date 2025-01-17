@@ -12,7 +12,9 @@ const TeacherReschedule = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [reason, setReason] = useState<string>('');
-  const [showPopup, setShowPopup] = useState<boolean>(false); // For popup visibility
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // For success modal
+
 
   // Fetch events data
   useEffect(() => {
@@ -71,10 +73,14 @@ const TeacherReschedule = () => {
 
   const handlePopupAction = (action: string) => {
     setShowPopup(false); // Hide popup
-    if (action === 'yes') {
-      alert('Reschedule request submitted!');
-      // You can add the API call or any other functionality here
+    if (action === "yes") {
+      setShowSuccessModal(true); // Show success modal
+      // Add API call or other functionality here if needed
     }
+  };
+
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false); // Close the success modal
   };
 
   return (
@@ -150,16 +156,34 @@ const TeacherReschedule = () => {
             <p className="text-gray-800 font-semibold mb-4">Are you sure that you want to reschedule the Class?</p>
             <div className="flex justify-center gap-4">
               <button
-                onClick={() => handlePopupAction('yes')}
+                onClick={() => handlePopupAction("yes")}
                 className="bg-white border border-gray-300 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-100"
               >
                 Yes
               </button>
               <button
-                onClick={() => handlePopupAction('no')}
+                onClick={() => setShowPopup(false)}
                 className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
               >
                 No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-6 shadow-lg w-96">
+            <p className="text-center text-[14px] font-semibold text-gray-800">
+              Reschedule Request Submitted Successfully
+            </p>
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={closeSuccessModal}
+                className="px-6 py-2 text-[13px] border border-t-black border-b-black bg-[#25A105] text-white rounded-lg hover:bg-[#237d0d]"
+              >
+                Done
               </button>
             </div>
           </div>

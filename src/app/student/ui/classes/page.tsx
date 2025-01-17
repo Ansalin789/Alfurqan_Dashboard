@@ -3,11 +3,11 @@
 import BaseLayout2 from "@/components/BaseLayout2";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaUser, FaCalendarAlt, FaSort } from "react-icons/fa";
-import { IoMdTime } from "react-icons/io";
+import { FaCalendarAlt, FaSort } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import MyClass from "./MyClass";
 
 type UpcomingClass = {
   [x: string]: any;
@@ -39,7 +39,9 @@ const Classes = () => {
   const [popupVisible, setPopupVisible] = useState<number | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [sortKey, setSortKey] = useState<SortableKeys>("classID");
+  const [isPremiumUser, setIsPremiumUser] = useState(false); // Replace with actual role determination logic
   const itemsPerPage = 10;
+  console.log('set premium user ....', setIsPremiumUser);
 
   const upcomingClasses: UpcomingClass[] = Array.from({ length: 25 }, (_, index) => ({
     classID: 1000 + index,
@@ -112,34 +114,16 @@ const Classes = () => {
     setSortKey(key);
   };
 
+  const handleUpgradePlan = () => {
+    setPopupVisible(null); // Close the popup
+    console.log("User prompted to switch to a higher plan.");
+  };
+
   return (
     <BaseLayout2>
       <div className="p-4 mx-auto w-[1250px]">
         <h1 className="text-2xl font-semibold text-gray-800 mb-2">My Class</h1>
-
-        <div className="bg-[#1C3557] text-white p-4 rounded-xl mb-4 flex justify-between items-center">
-          <div className="px-4">
-            <h2 className="text-[15px] font-medium">Tajweed Masterclass Session - 12</h2>
-            <div className="flex space-x-4">
-              <p className="mt-2 flex items-center text-[12px] font-light">
-                <span className="mr-1">
-                  <FaUser />
-                </span>
-                Prof. Smith
-              </p>
-              <p className="mt-2 flex items-center text-[12px] font-light">
-                <span className="mr-1">
-                  <IoMdTime />
-                </span>
-                9:00 AM - 10:30 AM
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-sm font-light">Starts in</span>
-            <div className="text-2xl font-bold">4:23</div>
-          </div>
-        </div>
+        <MyClass />
 
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Scheduled Classes</h2>
 
@@ -166,7 +150,6 @@ const Classes = () => {
               Completed ({completedClasses.length})
             </button>
           </div>
-          {/* Date Picker */}
           <div className="flex justify-end px-4 h-6">
             <div className="flex items-center border border-[#1C3557] rounded-md overflow-hidden bg-[#1C3557]">
               <div className="bg-[#1C3557] px-3 py-2 flex items-center">
@@ -202,26 +185,41 @@ const Classes = () => {
             <table className="table-auto w-full">
               <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
                 <tr>
-                  <th className="px-6 py-3 text-center">Class ID <FaSort
-                  className="inline ml-2 cursor-pointer"
-                  onClick={() => handleSort("classID")}
-                /></th>
-                  <th className="px-6 py-3 text-center">Name <FaSort
-                  className="inline ml-2 cursor-pointer"
-                  onClick={() => handleSort("name")}
-                /></th>
-                  <th className="px-6 py-3 text-center">Teacher Name <FaSort
-                  className="inline ml-2 cursor-pointer"
-                  onClick={() => handleSort("teacherName")}
-                /></th>
-                  <th className="px-6 py-3 text-center">Course <FaSort
-                  className="inline ml-2 cursor-pointer"
-                  onClick={() => handleSort("course")}
-                /></th>
-                  <th className="px-6 py-3 text-center">Date <FaSort
-                  className="inline ml-2 cursor-pointer"
-                  onClick={() => handleSort("date")}
-                /></th>
+                  <th className="px-6 py-3 text-center">
+                    Class ID{" "}
+                    <FaSort
+                      className="inline ml-2 cursor-pointer"
+                      onClick={() => handleSort("classID")}
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-center">
+                    Name{" "}
+                    <FaSort
+                      className="inline ml-2 cursor-pointer"
+                      onClick={() => handleSort("name")}
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-center">
+                    Teacher Name{" "}
+                    <FaSort
+                      className="inline ml-2 cursor-pointer"
+                      onClick={() => handleSort("teacherName")}
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-center">
+                    Course{" "}
+                    <FaSort
+                      className="inline ml-2 cursor-pointer"
+                      onClick={() => handleSort("course")}
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-center">
+                    Date{" "}
+                    <FaSort
+                      className="inline ml-2 cursor-pointer"
+                      onClick={() => handleSort("date")}
+                    />
+                  </th>
                   <th className="px-6 py-3 text-center">Scheduled</th>
                   {activeTab === "Completed" && (
                     <th className="px-6 py-3 text-center">Status</th>
@@ -244,9 +242,7 @@ const Classes = () => {
                     <td className="px-6 py-2 text-center">{item.scheduled}</td>
                     {activeTab === "Completed" && (
                       <td className="px-6 py-1 text-center">
-                        <div
-                          className="px-2 py-1 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] opacity-55 text-[10px]"
-                        >
+                        <div className="px-2 py-1 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] opacity-55 text-[10px]">
                           {String(item.status)}
                         </div>
                       </td>
@@ -259,18 +255,35 @@ const Classes = () => {
                         />
                         {popupVisible === item.classID && (
                           <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-                            <button
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                              onClick={() => handleReschedule(item.classID)}
-                            >
-                              Reschedule
-                            </button>
-                            <button
-                              className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-gray-100"
-                              onClick={() => handleCancel(item.classID)}
-                            >
-                              Cancel
-                            </button>
+                            {isPremiumUser ? (
+                              <>
+                                <button
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                                  onClick={() => handleReschedule(item.classID)}
+                                >
+                                  Reschedule
+                                </button>
+                                <button
+                                  className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-gray-100"
+                                  onClick={() => handleCancel(item.classID)}
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
+                                  <div className="bg-[#fff5f3] p-10 rounded shadow border border-[#F4B0A1] flex">
+                                  <p className="text-[#27303A] text-lg font">Switch to a higher plan for extended benefits...</p>
+                                  <button
+                                    className="bg-[#1C3557] text-white px-4 py-2 rounded text-center ml-10"
+                                    onClick={handleUpgradePlan}
+                                  >
+                                    OK
+                                  </button>
+                                  </div>
+                                  
+                              </div>
+                            )}
                           </div>
                         )}
                       </td>
@@ -292,7 +305,7 @@ const Classes = () => {
                     className={`w-5 h-5 text-[13px] flex items-center justify-center rounded ${
                       page === currentPage
                         ? "bg-[#1C3557] text-white"
-                        : "bg-gray-200 text-gray-800"
+                        : "text-[#1C3557] border border-[#1C3557]"
                     }`}
                   >
                     {page}
