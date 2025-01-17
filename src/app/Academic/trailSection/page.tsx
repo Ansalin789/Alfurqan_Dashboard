@@ -452,7 +452,7 @@ const handleClick = async (id:string) => {
     setStudentStatus(data.studentStatus);
     setPaymentStatus(data.paymentStatus);
     setPaymentLink(
-      `http://alfurqanacademy.tech:3000/invoice?id=${encodeURIComponent(data.student.studentId)}`);
+      `http://localhost:3000/invoice?id=${encodeURIComponent(data.student.studentId)}`);
     setFormData(data);
     console.log(data);
    
