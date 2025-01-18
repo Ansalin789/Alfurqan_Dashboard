@@ -1,4 +1,5 @@
-'use client'; // Mark this as a Client Component
+
+'use client';
 
 import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
