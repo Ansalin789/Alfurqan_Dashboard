@@ -6,7 +6,7 @@ import {
   Mic,
   Video,
   MonitorStop,
-  PhoneOff
+  PhoneOff,Disc
 } from 'lucide-react';
 import BaseLayout2 from '@/components/BaseLayout2';
 
@@ -18,7 +18,57 @@ function LiveClass() {
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
-  
+  const [ratings, setRatings] = useState([0, 0, 0]);
+  const [feedback, setFeedback] = useState('');
+  const[showfeedback,SetShowFeedback]=useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const[isScreenSharing,setIsScreenSharing]=useState(false);
+  function StarRating({
+    value,
+    onChange,
+  }: {
+    readonly value: number;
+    readonly onChange: (rating: number) => void;
+  }) {
+    return (
+      <div className="flex gap-1" role="radiogroup" aria-label="Star Rating">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <label
+            key={star}
+            className="text-xl cursor-pointer flex items-center"
+          >
+            <input
+              type="radio"
+              name="rating"
+              value={star}
+              checked={star === value}
+              onChange={() => onChange(star)}
+              className="hidden"
+            />
+            <span
+              className={`${
+                star <= value ? 'text-yellow-400' : 'text-gray-200'
+              }`}
+            >
+              ★
+            </span>
+          </label>
+        ))}
+      </div>
+    );
+  }
+  useEffect(() => {
+    let timeoutId: number | undefined
+    if (showPopup) {
+      timeoutId = window.setTimeout(() => {
+        setShowPopup(false)
+      }, 3000)
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [showPopup])
 
   useEffect(() => {
     if (isVideoCallActive) {
@@ -26,11 +76,16 @@ function LiveClass() {
     } else {
       endVideoCall();
     }
-
+  
+    // Cleanup on unmount or when the call ends
     return () => {
       endVideoCall();
     };
   }, [isVideoCallActive]);
+  const handleSubmit = () => {
+    console.log({ ratings, feedback })
+    setShowPopup(true)
+  }
 
   const startVideoCall = async () => {
     try {
@@ -82,6 +137,10 @@ function LiveClass() {
       localStreamRef.current.getTracks().forEach((track) => track.stop());
       localStreamRef.current = null;
     }
+    if (remoteStreamRef.current) {
+      remoteStreamRef.current.getTracks().forEach((track) => track.stop());
+      remoteStreamRef.current = null;
+    }
     if (localVideoRef.current) {
       localVideoRef.current.srcObject = null;
     }
@@ -101,19 +160,145 @@ function LiveClass() {
   };
 
   const endCall = () => {
-    setIsVideoCallActive(false); // Ends the call
+    setIsVideoCallActive(false);
+    SetShowFeedback(true); 
   };
+  const toggleScreenShare = async () => {
+    if (isScreenSharing) {
+      // Stop screen sharing
+      const tracks = localStreamRef.current?.getTracks();
+      tracks?.forEach((track) => {
+        if (track.kind === 'video') {
+          track.stop();
+        }
+      });
+      localStreamRef.current!.getVideoTracks()[0].enabled = true;
+            setIsScreenSharing(false);
+    } else {
+      try {
+        // Start screen sharing
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+        });
+        const screenTrack = screenStream.getTracks()[0];
+        const localStream = localStreamRef.current;
+        if (localStream) {
+          localStream.getTracks().forEach((track) => track.stop());
+          localStream.addTrack(screenTrack);
+        }
+        localStreamRef.current = localStream;
+        setIsScreenSharing(true);
+      } catch (err) {
+        console.error('Error starting screen share:', err);
+      }
+    }
+  };
+  
+  const startRecording = () => {
+    // Logic to start recording
+    console.log('Recording started');
+    setIsRecording(true);
+  };
+  
+  const stopRecording = () => {
+    // Logic to stop recording
+    console.log('Recording stopped');
+    setIsRecording(false);
+  };
+  
 
   return (
     <BaseLayout2>
       <div className="flex h-screen bg-[#E6E9ED]">
+      <div className={`
+        fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50
+        bg-[#1C3557] text-white px-8 py-4 rounded-xl shadow-lg
+        flex items-center gap-3 transition-opacity duration-300
+        ${showPopup ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+      `}>
+        <img src='/assets/images/Check.png' alt='find' className='w-[50px] mt-2'/>
+        <span className="font-semibold">Submitted Successfully</span>
+      </div>
+
+      {/* Backdrop overlay */}
+      <div className={`
+        fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity z-20 duration-300
+        ${showPopup ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+      `} />
         {/* Main Content */}
-        <div className="flex-1 overflow-auto w-[1200px] mt-5 ml-5 h-[800px]">
+        <div className="flex-1 overflow-auto  w-[1200px] mt-5 ml-5 h-[800px]">
           <div className="p-6 w-[100%]">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-4xl font-bold text-[#1C3557]">My Class</h1>
             </div>
+            {showfeedback ? (
+              <div className="flex items-center justify-center gap-10 mb-6">
+            <div className="bg-white rounded-3xl shadow-lg w-full max-w-sm">
+        <div className="relative ">
+          <img 
+            src="/assets/images/tajweedmasterclass.png"
+            alt="Tajweed" 
+            className="w-full h-52 object-cover  rounded-t-3xl"
+          />
+        </div>
+        <div className="p-8">
+          <div className="text-center">
+          <h3 className="text-2xl text-primary font-bold mb-3">Tajweed Masterclass</h3>
+            <h2 className="text-base text-gray-600 font-medium mb-1">Monday - 06.05.2024</h2>
+            <div className="text-gray-600 mb-6 font-medium">
+              <span>9:00 AM - 10:30 AM</span>
+            </div>
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-primary rounded-full"></div>
+              <span className="text-gray-700 font-medium">Prof. Smith</span>
+            </div>
+            <div className="text-gray-500 text-sm font-medium">Session - 12</div>
+          </div>
+        </div>
+      </div>
 
+      {/* Rating Card */}
+      <div className="bg-white rounded-3xl shadow-lg w-full max-w-sm p-8">
+        <div className="flex items-center gap-2 mb-8"> 
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#19216C"/>
+          </svg>
+          <h2 className="text-lg text-gray-700 font-semibold">Rating for the Class</h2>
+        </div>
+        
+        {[0, 1, 2].map((index) => (
+          <div key={index} className="mb-6">
+            <p className="text-gray-600 text-sm font-medium mb-2">Your rating for this class</p>
+            <StarRating
+              value={ratings[index]}
+              onChange={(rating) => {
+                const newRatings = [...ratings]
+                newRatings[index] = rating
+                setRatings(newRatings)
+              }}
+            />
+          </div>
+        ))}
+
+        <div className="mt-8">
+          <h3 className="text-gray-700 text-sm font-medium mb-3">Additional feedback</h3>
+          <textarea
+            className="w-full min-h-[120px] p-4 bg-red-50 rounded-xl mb-4 resize-none text-sm
+                     border-none focus:outline-none focus:ring-0 placeholder-gray-500"
+            placeholder="If you have any additional feedback, please type it in here..."
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+          />
+        </div>
+        <button 
+          className="w-full bg-[#1C3557] text-white py-3 px-6 rounded-xl font-semibold text-sm
+                   hover:bg-primary/90 transition-colors"
+          onClick={handleSubmit}
+        >
+          Submit feedback
+        </button>
+        </div>
+      </div>):(
             <div className="flex gap-6">
               {/* Left Column - Video */}
               <div className="flex-1">
@@ -143,30 +328,63 @@ function LiveClass() {
                   </div>
                   {/* Controls */}
                   <div className="flex justify-center items-center gap-4 ">
-                    <div className="flex gap-4 mb-2">
-                      <button
-                        className="p-2.5 rounded-full bg-gray-100 hover:bg-gray-200"
-                        onClick={toggleMute}  // Toggle microphone mute/unmute
-                      >
-                        <Mic size={18} className="text-gray-700" />
-                      </button>
-                      <button
-                        className="p-2.5 rounded-full bg-gray-100 hover:bg-gray-200"
-                        onClick={() => setIsVideoCallActive(!isVideoCallActive)}
-                      >
-                        <Video size={18} className="text-gray-700" />
-                      </button>
-                      <button className="p-2.5 rounded-full bg-gray-100 hover:bg-gray-200">
-                        <MonitorStop size={18} className="text-gray-700" />
-                      </button>
-                      <button
-                        className="p-2.5 rounded-full bg-red-100 hover:bg-red-200"
-                        onClick={endCall}  // End call functionality
-                      >
-                        <PhoneOff size={18} className="text-red-600" />
-                      </button>
-                    
-                    </div>
+                  <div className="flex gap-4 mb-2">
+  {/* Mute Button */}
+  <button
+    className={`p-2.5 rounded-full ${
+      isMuted ? 'bg-gray-200 hover:bg-gray-300' : 'bg-gray-100 hover:bg-gray-200'
+    }`}
+    onClick={toggleMute} // Toggle microphone mute/unmute
+  >
+    <Mic size={18} className={isMuted ? 'text-gray-500' : 'text-gray-700'} />
+  </button>
+
+  {/* Video Button */}
+  <button
+    className={`p-2.5 rounded-full ${
+      isVideoCallActive ? 'bg-green-200 hover:bg-green-300' : 'bg-gray-100 hover:bg-gray-200'
+    }`}
+    onClick={() => setIsVideoCallActive(!isVideoCallActive)}
+  >
+    <Video size={18} className={isVideoCallActive ? 'text-green-600' : 'text-gray-700'} />
+  </button>
+
+  {/* Screen Share Button */}
+  <button
+    className={`p-2.5 rounded-full ${
+      isScreenSharing ? 'bg-blue-200 hover:bg-blue-300' : 'bg-gray-100 hover:bg-gray-200'
+    }`}
+    onClick={toggleScreenShare}
+  >
+    <MonitorStop size={18} className={isScreenSharing ? 'text-blue-600' : 'text-gray-700'} />
+  </button>
+
+  {/* End Call Button */}
+  <button
+    className="p-2.5 rounded-full bg-red-100 hover:bg-red-200"
+    onClick={endCall} // End call functionality
+  >
+    <PhoneOff size={18} className="text-red-600" />
+  </button>
+
+  {/* Recording Button */}
+  <button
+    className={`p-2.5 rounded-full ${
+      isRecording ? 'bg-red-200 hover:bg-red-300' : 'bg-gray-100 hover:bg-gray-200'
+    }`}
+    onClick={() => {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+      setIsRecording(!isRecording);
+    }}
+  >
+    <Disc size={18} className={isRecording ? 'text-red-600' : 'text-gray-700'} />
+  </button>
+</div>
+
                     
                   </div>
                 </div>
@@ -237,6 +455,7 @@ function LiveClass() {
                 </div>
               </div>
             </div>
+              )} 
           </div>
         </div>
       </div>
