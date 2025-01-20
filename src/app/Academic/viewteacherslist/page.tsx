@@ -9,6 +9,7 @@ import Modal from 'react-modal';
 import React, { useState, useRef, useEffect } from 'react';
 import { FiCalendar, FiMoreVertical} from 'react-icons/fi';
 import StudentList from '@/components/Academic/ViewTeachersList/StudentList';
+import API_URL from '@/app/acendpoints/page';
 
 
 
@@ -114,7 +115,7 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
           const auth=localStorage.getItem('authToken');
           console.log(">>>>"+auth);
           try {
-            const response = await fetch(`http://localhost:5001/users/${teacherId}`, {
+            const response = await fetch(`${API_URL}/users/${teacherId}`, {
               headers: {
                 'Authorization': `Bearer ${auth}`,
               },
@@ -213,7 +214,7 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
 
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5001/shiftschedule',
+      const response = await fetch(`${API_URL}/shiftschedule`,
          {
           method: 'POST',
           headers: {
@@ -236,7 +237,7 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
   const studentlist=async()=>{
       try{
         const auth=localStorage.getItem('authToken');
-           const response=await fetch('http://localhost:5001/shiftschedule?role=TEACHER',{
+           const response=await fetch(`${API_URL}/shiftschedule?role=TEACHER`,{
             method:'GET',
             headers:{
               "Content-Type":"application/json",

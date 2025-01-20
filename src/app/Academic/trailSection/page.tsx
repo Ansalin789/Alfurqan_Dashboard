@@ -8,6 +8,8 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
 import { User } from '@/types';
+import axios from 'axios';
+import API_URL from '@/app/acendpoints/page';
 
 
 
@@ -16,24 +18,25 @@ import { User } from '@/types';
 const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: string}> => {
   try {
     const auth=localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:5001/evaluationlist',{
+    const academicId=localStorage.getItem('academicId');
+    const response = await axios.get(`${API_URL}/evaluationlist`,{
+      params:{academicCoachId:academicId },
       headers: {
         'Content-Type': 'application/json',
          'Authorization': `Bearer ${auth}`,
       },
     });
     // Check for response.ok to handle HTTP errors
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const rawData = await response.json();
+    // if (!response.data.ok) {
+    //   throw new Error(`HTTP error! status: ${response.status}`);
+    // }
     // Ensure rawData has the expected structure
-    if (!rawData.evaluation || !Array.isArray(rawData.evaluation)) {
+    if (!response.data.evaluation || !Array.isArray(response.data.evaluation)) {
       throw new Error('Invalid data structure received from API');
     }
 
     // Transform API data to match User interface
-    const transformedData = rawData.evaluation.map((item: {
+    const transformedData = response.data.evaluation.map((item: {
       paymentLink: string; 
       _id: string;
       student: {
@@ -393,7 +396,7 @@ const fetchStudents = async () => {
 const handleClick = async (id:any) => {
   try {
     const auth=localStorage.getItem('authToken');
-    const response = await fetch(`http://localhost:5001/evaluationlist/${id}`,{
+    const response = await fetch(`${API_URL}/evaluationlist/${id}`,{
       headers: {
         'Content-Type': 'application/json',
          'Authorization': `Bearer ${auth}`,
@@ -523,7 +526,7 @@ const handleClick = async (id:any) => {
 
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5001/evaluation/${id}`,
+      const response = await fetch(`${API_URL}/evaluation/${id}`,
         {
           method: 'PUT', 
           headers: {

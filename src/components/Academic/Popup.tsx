@@ -81,7 +81,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5001/studentlist',{
+      const response = await fetch(`${API_URL}/studentlist`,{
         headers: {
           'Authorization': `Bearer ${auth}`,        
             },

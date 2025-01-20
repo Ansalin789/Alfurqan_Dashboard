@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import API_URL from '@/app/acendpoints/page';
 // Define the return type of the getAllUsers function
 interface User {
   trailId: string;
@@ -286,7 +287,7 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: (data: StudentData) => v
       try {
         setLoading(true);
         const auth=localStorage.getItem('authToken');
-        const response = await fetch(`http://localhost:5001/studentlist/${studentId}`,{
+        const response = await fetch(`${API_URL}/studentlist/${studentId}`,{
           headers: {
             'Authorization': `Bearer ${auth}`,        
               },
@@ -1442,7 +1443,9 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
   // Function to handle form submission
   const handleSubmit = async () => {
     try {
+      console.log(">>>",updatedStudentDatas.academicCoach.academicCoachId)
       const submitData = {
+        academicCoachId:updatedStudentDatas.academicCoach.academicCoachId,
         student: {
           studentId:updatedStudentDatas._id,
           studentFirstName: updatedStudentDatas.firstName,
@@ -1503,7 +1506,7 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
       console.log("Payload being sent:", JSON.stringify(submitData, null, 2));
       const auth=localStorage.getItem('authToken');
       // Make POST request to your API
-      const response = await fetch('http://localhost:5001/evaluation', {
+      const response = await fetch(`${API_URL}/evaluation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
+import API_URL from '@/app/acendpoints/page';
 
 
 
@@ -160,7 +161,7 @@ gardianLanguage: '',
         throw new Error('First name must be at least 3 characters long');
       }
       const auth=localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5001/evaluation', {
+      const response = await fetch(`${API_URL}/evaluation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

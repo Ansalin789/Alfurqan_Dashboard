@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import "react-calendar/dist/Calendar.css";
 import "./Calendar.css";
+import API_URL from '@/app/acendpoints/page';
 
 interface Event {
   title: string;
@@ -16,7 +17,8 @@ const Academic: React.FC = () => {
 
   useEffect(() => {
     const auth=localStorage.getItem('authToken');
-    fetch('http://localhost:5001/meetingSchedulelist',{
+    console.log("URL>>>", API_URL);
+    fetch(`${API_URL}/meetingSchedulelist`,{
       headers: {
         'Authorization': `Bearer ${auth}`,        
           },

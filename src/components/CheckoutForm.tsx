@@ -1,4 +1,5 @@
 
+import API_URL from '@/app/acendpoints/page';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useState } from 'react';
 
@@ -34,7 +35,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId 
       setMessage(error.message ?? 'An unexpected error occurred.');
     } else if (paymentIntent?.status === 'succeeded') {
       const auth = localStorage.getItem('authToken');
-      await fetch(`http://localhost:5001/create-payment-intent`, {
+      await fetch(`${API_URL}/create-payment-intent`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

@@ -1,6 +1,8 @@
 import { FaUserAlt } from 'react-icons/fa';
 import { AiOutlineClockCircle } from 'react-icons/ai';
 import { useEffect, useState } from 'react';
+import API_URL from '@/app/acendpoints/page';
+import axios from 'axios';
 
 const NextEvaluationClass = () => {
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
@@ -16,19 +18,22 @@ const NextEvaluationClass = () => {
     const fetchNextEvaluationClass = async () => {
       try {
         const auth=localStorage.getItem('authToken');
-        const response = await fetch('http://localhost:5001/evaluationlist', {
+        const academicId=localStorage.getItem('academicId');
+        console.log("academicId>>",academicId);
+        const response = await axios.get(`${API_URL}/evaluationlist`, {
           method: 'GET',
+          params:{academicCoachId:academicId },
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${auth}`, 
           },
         });
 
-        if (!response.ok) {
+        if (!response.data) {
           throw new Error(`Failed to fetch data: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const data = await response.data;
 
         if (!data.evaluation || !Array.isArray(data.evaluation)) {
           throw new Error('Invalid data format from API');
