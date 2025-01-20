@@ -12,70 +12,100 @@ import { User } from '@/types';
 
 
 
-// Updated function to fetch users from the new API endpoint
-const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: string}> => {
+// Define interfaces for the API response structure
+interface Student {
+  learningInterest: string; // Replace with the exact type if known
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentPhone: number;
+  studentCountry: string;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+}
+
+interface EvaluationItem {
+  paymentLink: string;
+  _id: string;
+  student: Student;
+  trialClassStatus: string;
+  assignedTeacher: string;
+  paymentStatus: string;
+}
+
+interface ApiResponse {
+  evaluation: EvaluationItem[];
+}
+
+// Define the transformed user structure
+interface TransformedUser {
+  _id: string;
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  number: string;
+  country: string;
+  course: string; // Assuming this corresponds to `learningInterest`
+  preferredTeacher: string;
+  time: string;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+  paymentStatus: string;
+  assignedTeacher: string;
+  paymentLink: string;
+}
+
+const getAllUsers = async (): Promise<{
+  success: boolean;
+  data: TransformedUser[];
+  message: string;
+}> => {
   try {
-    const auth=localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:5001/evaluationlist',{
+    const auth = localStorage.getItem('authToken');
+    const response = await fetch('http://alfurqanacademy.tech:5001/evaluationlist', {
       headers: {
         'Content-Type': 'application/json',
-         'Authorization': `Bearer ${auth}`,
+        Authorization: `Bearer ${auth}`,
       },
     });
+
     // Check for response.ok to handle HTTP errors
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const rawData = await response.json();
+
+    const rawData: ApiResponse = await response.json();
+
     // Ensure rawData has the expected structure
     if (!rawData.evaluation || !Array.isArray(rawData.evaluation)) {
       throw new Error('Invalid data structure received from API');
     }
 
-    // Transform API data to match User interface
-    const transformedData = rawData.evaluation.map((item: {
-      paymentLink: string; 
-      _id: string;
-      student: {
-        learningInterest: any; 
-        studentId: string; 
-        studentFirstName: string; 
-        studentLastName: string; 
-        studentPhone: number; 
-        studentCountry: string; 
-        preferredTeacher: string;
-        preferredFromTime: string; 
-        preferredToTime: string; 
-        classStatus?: string; 
-        status?: string; 
-        trialClassStatus: string;
-      }; 
-      trialClassStatus: string;
-      assignedTeacher:string; 
-      paymentStatus:string;
-       // Optional if it might not always be present
-
-      // Add other fields as necessary
-    }) => ({
+    // Transform API data to match TransformedUser interface
+    const transformedData: TransformedUser[] = rawData.evaluation.map((item) => ({
       _id: item._id,
       studentId: item.student.studentId,
       studentFirstName: item.student.studentFirstName,
       studentLastName: item.student.studentLastName,
       number: item.student.studentPhone ? item.student.studentPhone.toString() : '',
       country: item.student.studentCountry,
-      course: item.student.learningInterest, // Assuming this field exists in the new structure
+      course: item.student.learningInterest,
       preferredTeacher: item.student.preferredTeacher,
       time: item.student.preferredFromTime,
       classStatus: item.student.classStatus,
       status: item.student.status,
       trialClassStatus: item.trialClassStatus,
-      paymentStatus:item.paymentStatus,
-      assignedTeacher:item.assignedTeacher,
-      paymentLink: item.paymentLink 
-
+      paymentStatus: item.paymentStatus,
+      assignedTeacher: item.assignedTeacher,
+      paymentLink: item.paymentLink,
     }));
 
-    console.log(">>>>transformedData", transformedData)
+    console.log('>>>>transformedData', transformedData);
 
     return {
       success: true,
@@ -91,6 +121,7 @@ const getAllUsers = async (): Promise<{success: boolean; data: any[]; message: s
     };
   }
 };
+
 
 // Move FilterModal outside of the TrailManagement component
 const FilterModal = ({ 
@@ -234,47 +265,49 @@ const FilterModal = ({
 
 
 const TrailSection = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<TransformedUser[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<TransformedUser[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false); 
   const [formData, setFormData] = useState<FormData>();
-   const[TrialClassStatus,setTrailClassStatus]=useState("");
-   const[studentStatus,setStudentStatus]=useState("");
-   const[paymentStatus,setpaymentStatus]=useState("");
-   const[paymentLink,setpaymentLink]=useState("");
+  const [trialClassStatus, setTrialClassStatus] = useState("");
+  const [studentStatus, setStudentStatus] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [paymentLink, setPaymentLink] = useState("");
+  
+
+   
    useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const allData = await getAllUsers();
-        if (allData.success && allData.data) {
-          setUsers(allData.data);
-          setFilteredUsers(allData.data); // Initialize filtered users
-        } else {
-          setErrorMessage(allData.message ?? 'Failed to fetch users');
-        }
-      } catch (error) {
-        setErrorMessage('An unexpected error occurred');
-        console.error('An unexpected error occurred', error);
-        
+  const fetchData = async () => {
+    try {
+      const allData = await getAllUsers();
+      if (allData.success && allData.data) {
+        setUsers(allData.data); // Cast TransformedUser[] to User[]
+        setFilteredUsers(allData.data); // Initialize filtered users
+      } else {
+        setErrorMessage(allData.message ?? 'Failed to fetch users');
       }
-    };
-  
-    fetchData();
-  }, []);
-  
-  useEffect(() => {
-    Modal.setAppElement('body');
-  }, []);
+    } catch (error) {
+      setErrorMessage('An unexpected error occurred');
+      console.error('An unexpected error occurred', error);
+    }
+  };
+
+  fetchData();
+}, []);
+
+useEffect(() => {
+  Modal.setAppElement('body');
+}, []);
+
   
    const [options, setOptions] = useState({
-    TrialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
+    trialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
     studentStatus: ["JOINED","NOT JOINED","WAITING"],
     paymentStatus: [ "PAID", "FAILED","PENDING"],
   });
@@ -380,7 +413,7 @@ const fetchStudents = async () => {
   try {
     const allData = await getAllUsers();
     if (allData.success && allData.data) {
-      setUsers(allData.data);
+      setUsers(allData.data); // Cast to User[] to resolve type error
     } else {
       setErrorMessage(allData.message ?? 'Failed to fetch users');
     }
@@ -390,10 +423,11 @@ const fetchStudents = async () => {
   }
 };
 
-const handleClick = async (id:any) => {
+
+const handleClick = async (id:string) => {
   try {
     const auth=localStorage.getItem('authToken');
-    const response = await fetch(`http://localhost:5001/evaluationlist/${id}`,{
+    const response = await fetch(`http://alfurqanacademy.tech:5001/evaluationlist/${id}`,{
       headers: {
         'Content-Type': 'application/json',
          'Authorization': `Bearer ${auth}`,
@@ -404,9 +438,9 @@ const handleClick = async (id:any) => {
     }
     const data = await response.json();
     setOptions((prev) => ({
-      TrialClassStatus: prev.TrialClassStatus.includes(data.trialClassStatus)
-        ? prev.TrialClassStatus
-        : [...prev.TrialClassStatus, data.trialClassStatus],
+      trialClassStatus: prev.trialClassStatus.includes(data.trialClassStatus)
+        ? prev.trialClassStatus
+        : [...prev.trialClassStatus, data.trialClassStatus],
       studentStatus: prev.studentStatus.includes(data.studentStatus)
         ? prev.studentStatus
         : [...prev.studentStatus, data.studentStatus],
@@ -414,10 +448,10 @@ const handleClick = async (id:any) => {
         ? prev.paymentStatus
         : [...prev.paymentStatus, data.paymentStatus],
     }));
-    setTrailClassStatus(data.TrialClassStatus);
+    setTrialClassStatus(data.trialClassStatus);
     setStudentStatus(data.studentStatus);
-    setpaymentStatus(data.paymentStatus);
-    setpaymentLink(
+    setPaymentStatus(data.paymentStatus);
+    setPaymentLink(
       `http://localhost:3000/invoice?id=${encodeURIComponent(data.student.studentId)}`);
     setFormData(data);
     console.log(data);
@@ -431,26 +465,6 @@ const handleClick = async (id:any) => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-  };
-  // Add filter handling functionF
-  const handleApplyFilters = (filters: { country: string; course: string; teacher: string; status: string; }) => {
-    let filtered = [...users];
-    
-    if (filters.country) {
-      filtered = filtered.filter(user => user.country === filters.country);
-    }
-    if (filters.course) {
-      filtered = filtered.filter(user => user.course === filters.course);
-    }
-    if (filters.teacher) {
-      filtered = filtered.filter(user => user.preferredTeacher === filters.teacher);
-    }
-    if (filters.status) {
-      filtered = filtered.filter(user => user.evaluationStatus === filters.status);
-    }
-    
-    setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
   };
      
   
@@ -504,7 +518,7 @@ const handleClick = async (id:any) => {
       studentStatus: studentStatus,
       classStatus: formData?.classStatus,
       comments: formData?.comments,
-      trialClassStatus: TrialClassStatus,
+      trialClassStatus: trialClassStatus,
       invoiceStatus: formData?.invoiceStatus,
       paymentLink:paymentLink,
       paymentStatus: paymentStatus ,
@@ -520,10 +534,9 @@ const handleClick = async (id:any) => {
     };
     
   alert(JSON.stringify(formDataNames));
-
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5001/evaluation/${id}`,
+      const response = await fetch(`http://alfurqanacademy.tech:5001/evaluation/${id}`,
         {
           method: 'PUT', 
           headers: {
@@ -549,19 +562,21 @@ const handleClick = async (id:any) => {
     console.log(`Field: ${field}, Value: ${event.target.value}`);
     switch (field) {
       case "TrialClassStatus":
-        setTrailClassStatus(event.target.value);
+        setTrialClassStatus(event.target.value);
         break;
       case "studentStatus":
         setStudentStatus(event.target.value);
         break;
       case "paymentStatus":
-        setpaymentStatus(event.target.value);
+        setPaymentStatus(event.target.value);
         break;
       default:
         break;
     }
   };
-
+  useEffect(() => {
+    console.log(`Updated TrialClassStatus: ${trialClassStatus}`);
+  }, [trialClassStatus]);
 
 
   const Pagination = () => {
@@ -677,7 +692,7 @@ const handleClick = async (id:any) => {
                   className={`border rounded-lg px-2 text-[13px] mr-4 shadow`}
                 />
                 <button 
-                  onClick={() => setIsFilterModalOpen(true)}
+                  // onClick={() => setIsFilterModalOpen(true)}
                   className="flex items-center bg-gray-200 p-2 rounded-lg text-[12px] shadow"
                 >
                   <FaFilter className="mr-2" /> Filter
@@ -721,7 +736,7 @@ const handleClick = async (id:any) => {
             </thead>
             <tbody>
               {currentItems.length > 0 ? (
-                currentItems.map((item, index) => (
+                currentItems.map((item) => (
                   <tr key={item._id} className={`border-t`}>
                     <td className="p-2 px-6 text-[11px] text-center">{item._id}</td>
                     <td className="p-2 text-[11px] text-center">{item.studentFirstName} {item.studentLastName}</td>
@@ -769,12 +784,13 @@ const handleClick = async (id:any) => {
                       </span>
                     </td>
                     <td className="p-2 px-8">
-                      <button
-                        onClick={() => handleClick(item._id)}
+                    <button
+                        onClick={() => handleClick(item._id.toString())} // Convert number to string
                         className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
                       >
-                        <FaEdit size={10}/>
+                        <FaEdit size={10} />
                       </button>
+
                     </td>
                   </tr>
                 ))
@@ -809,12 +825,11 @@ const handleClick = async (id:any) => {
           closeModal();
         }}
       />
-      <FilterModal
+      {/* <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         onApplyFilters={handleApplyFilters}
-        users={users}
-      />
+      /> */}
 
 {showModal && (
   
@@ -978,7 +993,7 @@ const handleClick = async (id:any) => {
                 />
               </div>
               <div>
-                <label htmlFor="guardianName" className="block text-black text-xs font-medium">Guardian's name</label>
+                <label htmlFor="guardianName" className="block text-black text-xs font-medium">Guardian&apos;s name</label>
                 <input
                   id="guardianName"
                   type="text"
@@ -988,7 +1003,7 @@ const handleClick = async (id:any) => {
                 />
               </div>
               <div>
-                <label htmlFor="guardianEmail" className="block text-black text-xs font-medium">Guardian's email</label>
+                <label htmlFor="guardianEmail" className="block text-black text-xs font-medium">Guardian&apos;s email</label>
                 <input
                   id="guardianEmail"
                   type="email"
@@ -998,7 +1013,7 @@ const handleClick = async (id:any) => {
                 />
               </div>
               <div>
-                <label htmlFor="guardianPhone" className="block text-black text-xs font-medium">Guardian's phone number</label>
+                <label htmlFor="guardianPhone" className="block text-black text-xs font-medium">Guardian&apos;s phone Number</label>
                 <input
                   id="guardianPhone"
                   type="text"
@@ -1022,11 +1037,11 @@ const handleClick = async (id:any) => {
                <label htmlFor="trialClassStatus" className="block text-black text-xs font-medium">Trial Class Status</label>
         <select
           id="trialClassStatus"
-          value={TrialClassStatus}
+          value={trialClassStatus}
           onChange={handleChange("TrialClassStatus")}
           className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
         >
-          {options.TrialClassStatus.map((status) => (
+          {options.trialClassStatus.map((status) => (
             <option key={status} value={status}>
               {status}
             </option>

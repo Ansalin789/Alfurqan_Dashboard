@@ -1,8 +1,9 @@
+
 export interface User {
     _id: number;
-    studentFirstName: ReactNode;
-    studentLastName: ReactNode;
-    assignedTeacher: ReactNode;
+    studentFirstName: string;
+    studentLastName: string;
+    assignedTeacher: string;
     classStatus: string;
     trialClassStatus: string;
     paymentStatus: string;

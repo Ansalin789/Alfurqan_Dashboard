@@ -8,22 +8,50 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const localizer = momentLocalizer(moment);
 
+
+interface Event {
+  id: string; // Example field
+  name: string; // Example field
+  date: string; // Example field
+  [key: string]: any; // Allow additional fields if needed
+}
+
+interface AcademicCoachItem {
+  subject: string;
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  description: string;
+  meetingLink: string;
+  student: {
+    name: string;
+  };
+  academicCoach: {
+    name: string;
+  };
+  course: {
+    courseName: string;
+  };
+  meetingLocation: string;
+  scheduledFrom: string;
+  scheduledTo: string;
+}
+
 const SchedulePage = () => {
   const [selectedDate, setSelectedDate] = useState<string>(""); // State to hold the selected date
-  const [eventsForSelectedDate, setEventsForSelectedDate] = useState<any[]>([]); // State to hold filtered events
-  const [events, setEvents] = useState<any[]>([]); // State to store all events
+  const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>([]); // State to hold filtered events
+  const [events, setEvents] = useState<Event[]>([]); // State to store all events
  console.log(selectedDate);
   // Fetch events data
   useEffect(() => {
     const auth=localStorage.getItem('authToken');
-    fetch('http://localhost:5001/meetingSchedulelist',{
+    fetch('http://alfurqanacademy.tech:5001/meetingSchedulelist',{
       headers: {
          'Authorization': `Bearer ${auth}`,
       },
     })
       .then((response) => response.json())
       .then((data) => {
-        const mappedEvents = data.academicCoach.map((item: any) => {
+        const mappedEvents = data.academicCoach.map((item: AcademicCoachItem) => {
           return {
             title: item.subject,
             start: new Date(item.scheduledStartDate), // Start Date
@@ -84,16 +112,6 @@ const SchedulePage = () => {
                   views={['month']}
                   defaultView="month"
                   toolbar={false}
-                  eventPropGetter={(event) => ({
-                    style: {
-                      backgroundColor: '#E9EBFF',
-                      color: '#012A4A',
-                      borderRadius: '4px',
-                      padding: '2px 4px',
-                      fontSize:'7px',
-                      width:'60px'
-                    },
-                  })}
                   onNavigate={handleNavigate}
                 />
               </div>
