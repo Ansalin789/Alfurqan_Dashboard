@@ -52,6 +52,7 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
 // Fetch data from the API
 const fetchDashboardData = async (authToken: string | null): Promise<ApiResponse> => {
   const response = await fetch(`${API_URL}/dashboard/widgets`, {
+
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${authToken}`,

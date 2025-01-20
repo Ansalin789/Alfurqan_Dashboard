@@ -20,6 +20,10 @@ interface ApiResponse {
     message: string;
 }
 
+type PhoneChangeData = {
+    countryCode: string;
+  };
+
 const MultiStepForm = () => {
     const router = useRouter();
     const [step, setStep] = useState(1);
@@ -30,7 +34,7 @@ const MultiStepForm = () => {
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [referral, setReferral] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState(0);
+    const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [country, setCountry] = useState("");
     const [city, setCity] = useState("");
     const [countryCode, setCountryCode] = useState("");
@@ -54,17 +58,18 @@ const MultiStepForm = () => {
 
 
 
-
-    const handlePhoneChange = (value: any, data: { countryCode: string }) => {
+        const handlePhoneChange = (value: string, data: PhoneChangeData) => {
         // Log the value to understand what is being passed
         console.log('Phone input value:', value);
     
-        // Remove non-numeric characters and convert to number
-      const numericValue = value ;
+        // Ensure value contains only digits (strip non-numeric characters)
+        const numericValue = value.replace(/\D/g, '');  // Keep only numeric characters
     
-        setPhoneNumber(numericValue);
-        setCountryCode(data.countryCode || '');
+        // Update state with numericValue
+        setPhoneNumber(numericValue);  // numericValue is now typed as a string containing digits
+        setCountryCode(data.countryCode || '');  // Set countryCode, fallback to empty string
     };
+    
 
     const handleDateChange = (value: Value) => {
         if (value instanceof Date) {
@@ -191,6 +196,7 @@ const MultiStepForm = () => {
             console.log('Sending data:', formattedData);
             const auth=localStorage.getItem('authToken');
             const response = await fetch(`${API_URL}/student`, {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

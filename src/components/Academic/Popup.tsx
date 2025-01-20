@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import API_URL from '@/app/acendpoints/page';
 
 if (typeof window !== 'undefined') {
   Modal.setAppElement('body');
@@ -13,8 +14,11 @@ interface PopupProps {
   isOpen: boolean;
   onRequestClose: () => void;
   user: User | null;
+  isEditMode: boolean;  // Add this line
+
   onSave: (user: User) => void;
 }
+
 
 interface User {
 studentId: string;
@@ -29,7 +33,7 @@ studentId: string;
   time: string;
   evaluationStatus?: string;
   city: string;
-  numberofstudents: string;
+  numberofstudents?: string;
   comment?: string;
   [key: string]: any;
 }
@@ -77,11 +81,13 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
 
   const [users, setUsers] = useState<User[]>([]);
   console.log(users);
+  
 
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     try {
       const auth=localStorage.getItem('authToken');
       const response = await fetch(`${API_URL}/studentlist`,{
+
         headers: {
           'Authorization': `Bearer ${auth}`,        
             },

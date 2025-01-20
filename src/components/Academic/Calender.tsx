@@ -11,6 +11,12 @@ interface Event {
   end: Date;
 }
 
+interface AcademicCoachItem {
+  subject: string;
+  scheduledStartDate: string; // Assuming this is a string in the API
+  scheduledEndDate: string;   // Assuming this is a string in the API
+}
+
 const Academic: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [value, setValue] = useState<Date>(new Date());
@@ -20,12 +26,12 @@ const Academic: React.FC = () => {
     console.log("URL>>>", API_URL);
     fetch(`${API_URL}/meetingSchedulelist`,{
       headers: {
-        'Authorization': `Bearer ${auth}`,        
-          },
+        'Authorization': `Bearer ${auth}`,
+      },
     })
       .then((response) => response.json())
       .then((data) => {
-        const mappedEvents = data.academicCoach.map((item: any) => ({
+        const mappedEvents = data.academicCoach.map((item: AcademicCoachItem) => ({
           title: item.subject,
           start: new Date(item.scheduledStartDate),
           end: new Date(item.scheduledEndDate),
@@ -53,22 +59,22 @@ const Academic: React.FC = () => {
     <div className="flex items-center justify-center mt-12">
       <a href="/Academic/schedule">
         <div className="calendar-container rounded-[50px] -ml-28">
-        <Calendar
-          onChange={(newValue) => setValue(newValue as Date)}
-          value={value}
-          className="custom-calendar"
-          navigationLabel={({ date }) =>
-            `${date.toLocaleString('default', { month: 'long' }).toUpperCase()}, ${date.getFullYear()}`
-          }
-          nextLabel="›"
-          prevLabel="‹"
-          next2Label={null}
-          prev2Label={null}
-          showNeighboringMonth={false}
-          tileClassName={({ date, view }) =>
-            view === 'month' && isMeetingDate(date) ? 'event-day' : undefined
-          }
-        />
+          <Calendar
+            onChange={(newValue) => setValue(newValue as Date)}
+            value={value}
+            className="custom-calendar"
+            navigationLabel={({ date }) =>
+              `${date.toLocaleString('default', { month: 'long' }).toUpperCase()}, ${date.getFullYear()}`
+            }
+            nextLabel="›"
+            prevLabel="‹"
+            next2Label={null}
+            prev2Label={null}
+            showNeighboringMonth={false}
+            tileClassName={({ date, view }) =>
+              view === 'month' && isMeetingDate(date) ? 'event-day' : undefined
+            }
+          />
         </div>
       </a>
     </div>
@@ -76,5 +82,3 @@ const Academic: React.FC = () => {
 };
 
 export default Academic;
-
-

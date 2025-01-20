@@ -12,7 +12,7 @@ if (typeof window !== 'undefined') {
 }
 
 interface User {
-  [key: string]: any;
+  [key: string]: unknown;
   trailId?: string;
   student: {
     studentFirstName: string;
@@ -191,7 +191,7 @@ gardianLanguage: '',
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-
+  
     if (name === 'student.preferredDate') {
       setFormData((prev) => ({
         ...prev,
@@ -201,21 +201,23 @@ gardianLanguage: '',
         },
       }));
     } else if (name.includes('.')) {
-          const [parent, child] = name.split('.');
-          setFormData((prev) => ({
-            ...prev,
-            [parent]: {
-              ...prev[parent],
-              [child]: value,
-            },
-          }));
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-          }));
-          }
-    };
+      const [parent, child] = name.split('.');
+  
+      setFormData((prev) => ({
+        ...prev,
+        [parent]: {
+          ...(prev[parent] && typeof prev[parent] === 'object' ? prev[parent] : {}), // Ensure it's an object
+          [child]: value,
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+  
 
   const formatTimeToAMPM = (time: string): string => {
     if (!time) return '';
@@ -227,6 +229,7 @@ gardianLanguage: '',
       const formattedHour = hour % 12 || 12;
       return `${String(formattedHour).padStart(2, '0')}:${minutes} ${ampm}`;
     } catch (e) {
+      console.log(e);
       return '';
     }
   };
@@ -245,17 +248,7 @@ gardianLanguage: '',
             </h2>
           </div>
           <div className="flex items-center gap-4">
-            {/* <button 
-              className="bg-gradient-to-r from-[#293552] to-[#1e273c] text-white px-5 py-2 rounded-lg
-                         hover:shadow-lg transition-all duration-300 text-sm font-medium
-                         flex items-center gap-2 transform hover:translate-y-[-1px]" 
-              onClick={handleStart}
-            >
-              <span>Start Evaluation</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button> */}
+            
             <button 
               onClick={onRequestClose} 
               className="text-gray-400 hover:text-gray-600 hover:rotate-90 transition-all duration-300"

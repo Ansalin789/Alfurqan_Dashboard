@@ -23,6 +23,7 @@ const StudentEvaluation = () => {
     console.log("academicId>>",academicId);
     axios.get(`${API_URL}/evaluationlist`,{
       params:{academicCoachId:academicId },
+
       headers: {
         'Authorization': `Bearer ${auth}`,        
           },

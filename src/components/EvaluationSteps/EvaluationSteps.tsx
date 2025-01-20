@@ -5,134 +5,44 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import API_URL from '@/app/acendpoints/page';
 // Define the return type of the getAllUsers function
-interface User {
-  trailId: string;
-  fname: string;
-  lname: string;
+
+
+
+
+
+interface AcademicCoach {
+  academicCoachId: string; // Assuming it's a string or number
+  name: string;
+  role: string;
   email: string;
-  number: string;
+}
+
+interface StudentData {
+  _id: string; // Assuming _id is a string, or use ObjectId if you're using MongoDB
+  firstName: string;
+  lastName: string;
+  academicCoach: AcademicCoach;
+  email: string;
+  phoneNumber: string; // If it's a number, you can change this to `number`
   country: string;
-  course: string;
-  preferredTeacher: string;
-  date: string;
-  time: string;
-  evaluationStatus?: string;
-  city?: string;
-  students?: number;
-  comment?: string;
+  countryCode: string; // Assuming it's a string
+  learningInterest: string; // Assuming it's a string, could be an array of strings if needed
+  numberOfStudents: number; // Assuming this is a number
+  preferredTeacher: string; // Assuming it's a string, or can be an object if needed
+  preferredFromTime: string; // Or use `Date` if it's a Date object
+  preferredToTime: string; // Or use `Date` if it's a Date object
+  timeZone: string; // Assuming it's a string
+  referralSource: string; // Assuming it's a string, could be an enum if fixed
+  startDate: string; // Or use `Date` if it's a Date object
+  evaluationStatus: string; // Assuming it's a string (e.g., "Completed", "Pending")
+  status: string; // Assuming it's a string (e.g., "Active", "Inactive")
+  createdDate: string; // Or use `Date` if it's a Date object
+  createdBy: string; // Assuming it's a string (could be an object or ID if needed)
+  lastUpdatedBy: string; // Same as createdBy
+  lastUpdatedDate: string; // Or use `Date` if it's a Date object
 }
 
 
-// Interface for Student Data from APIL
-// interface StudentData {
-//   academicCoach?: {
-//     academicCoachId: string;
-//     email: string;
-//     role: string;
-//     name: string;
-//   };
-//   country: string;
-//   countryCode: string;
-//   createdBy: string;
-//   createdDate: Date;
-//   email: string;
-//   evaluationStatus: "PENDING" | "INPROGRESS" | "COMPLETED";
-//   firstName: string;
-//   lastName: string;
-//   lastUpdatedBy: string;
-//   lastUpdatedDate: Date;
-//   learningInterest: "Quran" | "Islamic Studies" | "Arabic";
-//   numberOfStudents: number;
-//   phoneNumber: number;
-//   preferredFromTime: string;
-//   preferredToTime: string;
-//   preferredTeacher: "Male" | "Female" | "Either";
-//   referralSource: string;
-//   startDate: Date;
-//   status: "Active" | "Inactive" | "Deleted";
-//   timeZone: string;
-//   _id: string;
-  
-// }
-
-
-interface StudentData{
-  _id: any,
-  firstName: any,
-  lastName: any,
-  cademicCoach: {
-      academicCoachId: any,
-      name: any,
-      role: any,
-      email: any
-  },
-  email: any,
-  phoneNumber: any,
-  country: any,
-  countryCode: any,
-  learningInterest: any,
-  numberOfStudents: any,
-  preferredTeacher: any,
-  preferredFromTime: any,
-  preferredToTime: any,
-  timeZone: any,
-  referralSource: any,
-  startDate: any,
-  evaluationStatus: any,
-  status: any,
-  createdDate: any,
-  createdBy: any,
-  lastUpdatedBy: any,
-  lastUpdatedDate: any
- 
-}
-
-// Interface for Evaluation Request
-interface EvaluationRequest {
-  student: {
-    studentId: string;
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-    studentPhone: number;
-    studentCountry: string;
-    studentCountryCode: string;
-    learningInterest: string;
-    numberOfStudents: number;
-    preferredTeacher: string;
-    preferredFromTime: string;
-    preferredToTime: string;
-    timeZone: string;
-    referralSource: string;
-    preferredDate: Date;
-    evaluationStatus: string;
-    status: string;
-    createdDate: Date;
-    createdBy: string;
-  };
-  isLanguageLevel: boolean;
-  languageLevel: string;
-  isReadingLevel: boolean;
-  readingLevel: string;
-  isGrammarLevel: boolean;
-  grammarLevel: string;
-  hours: number;
-  subscription: {
-    subscriptionName: string;
-    subscriptionPricePerHr: string;
-  };
-  classStartDate: Date;
-  classEndDate: Date;
-  classStartTime: string;
-  classEndTime: string;
-  gardianName: string;
-  gardianEmail: string;
-  gardianPhone: string;
-  gardianCity: string;
-  gardianCountry: string;
-  gardianTimeZone: string;
-  gardianLanguage: string;
-}
 
 // Interface for Evaluation Data
 interface EvaluationData {
@@ -272,7 +182,9 @@ const Step1: React.FC<{ nextStep: (data: any) => void }> = ({ nextStep }) => {
 // Step 2 Component
 
 // Step 2 Component
-const Step2: React.FC<{ prevStep: () => void; nextStep: (data: StudentData) => void; evaluationData: EvaluationData }> = ({ prevStep, nextStep, evaluationData }) => {
+const Step2: React.FC<{ prevStep: () => void;
+  nextStep: (data: StudentData) => void;
+  studentDatas?: StudentData;  }> = ({ prevStep, nextStep, studentDatas }) => {
   const [studentData, setStudentData] = useState<StudentData>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -338,7 +250,7 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: (data: StudentData) => v
     );
   }
 
-  console.log('Evaluation Data:', evaluationData);
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
@@ -417,7 +329,7 @@ const Step2: React.FC<{ prevStep: () => void; nextStep: (data: StudentData) => v
           <button
             onClick={()=>{
               console.log('Passing studentData to next step:', studentData)
-              nextStep(studentData)}}
+              nextStep(studentData || {} as StudentData)}}
             className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
                      bg-gradient-to-r from-blue-500 to-purple-500 
                      hover:from-blue-600 hover:to-purple-600 rounded-lg group"
@@ -711,66 +623,7 @@ const Step4 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
   );
 };
 
-// Define the Evaluation interface based on your backend schema
-interface IEvaluation {
-  student: {
-    studentId: string; // This should be set when the student is created
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-    studentPhone: number;
-    studentCity?: string;
-    studentCountry: string;
-    studentCountryCode: string; // Add this if needed
-    learningInterest: string; // Adjust to your enum type
-    numberOfStudents: number;
-    preferredTeacher: string; // Adjust to your enum type
-    preferredFromTime?: string;
-    preferredToTime?: string;
-    timeZone: string;
-    referralSource: string; // Adjust to your enum type
-    preferredDate?: Date;
-    evaluationStatus: string; // Adjust to your enum type
-    status: string; // Adjust to your enum type
-    createdDate?: Date;
-    createdBy?: string;
-  };
-  isLanguageLevel: boolean;
-  languageLevel: string;
-  isReadingLevel: boolean;
-  readingLevel?: string;
-  isGrammarLevel: boolean;
-  grammarLevel: string;
-  hours: number;
-  subscription: {
-    subscriptionName: string;
-    subscriptionPricePerHr: number;
-  };
-  classStartDate: Date;
-  accomplishmentTime: string;
-  studentRate: number;
-  expectedFinishingDate: number;
-  classEndDate?: Date;
-  classStartTime: string;
-  classEndTime: string;
-  gardianName: string;
-  gardianEmail: string;
-  gardianPhone: string;
-  gardianCity: string;
-  gardianCountry: string;
-  gardianTimeZone: string;
-  gardianLanguage: string;
-  assignedTeacher: string;
-  studentStatus?: string;
-  classStatus?: string;
-  comments?: string;
-  trialClassStatus?: string;
-  status?: string;
-  createdDate?: Date;
-  createdBy?: string;
-  updatedDate?: Date;
-  updatedBy?: string;
-}
+
 
 // Step 5 Component
 const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextStep: (updatedStudentData:any ) => void;studentData:StudentData }) => {
@@ -779,7 +632,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
   const [isGrammarChecked, setIsGrammarChecked] = useState(false);
   const[languageLevel,setLanguageLevel]=useState("");
   const[readingLevel,setReadingLevel]=useState("");
-  const[grammarLevel,setGrammerLevel]=useState<string>();
+  const[grammarLevel,setGrammarLevel]=useState<string>("");
   const [accomplishmentTime, setAccomplishmentTime] = useState<number>(0);
   const[studentRate,setStudentRate]=useState(0);
   const[expectedFinishingDate]=useState(28);
@@ -929,7 +782,7 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
               </label>
               {isGrammarChecked && (
                 <select className="bg-white/10 text-white border border-white/20 rounded-lg px-4 py-2
-                                focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]" onChange={(e)=>setGrammerLevel(e.target.value)}>
+                                focus:ring-2 focus:ring-purple-500/20 focus:border-white/30 transition-all duration-200 text-[12px]" onChange={(e)=>setGrammarLevel(e.target.value)}>
                   <option className="bg-gray-900">0</option>
                   <option className="bg-gray-900">1</option>
                   <option className="bg-gray-900">2</option>
@@ -1074,10 +927,264 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
     </div>
   );
 };
+const Step6 = ({ prevStep, nextStep,updatedStudentData }: { prevStep: (updatedStudentData:any) => void; nextStep: (updatedStudentDatas: any) => void;updatedStudentData:any }) => {
+  console.log(updatedStudentData);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  interface Teacher {
+    _id: string;
+    userName: string;
+    email: string;
+    password: string;
+    role: string[]; // Array of roles, e.g., "TEACHER"
+    profileImage: string | null; // Could be a URL or null
+    status: string; // Active/Inactive status
+    createdBy: string; // Who created the record
+    lastUpdatedBy: string; // Who last updated the record
+    userId: string; // Unique ID for the user
+    lastLoginDate: string; // Last login timestamp
+    createdDate: string; // Creation timestamp
+    lastUpdatedDate: string; // Last update timestamp
+}
+  useEffect(
+    () => {
+      const fetchTeachers = async () => {
+        try {
+          const auth=localStorage.getItem('authToken');
+          const response = await fetch('http://alfurqanacademy.tech:5001/users?role=TEACHER', {
+            headers: {
+                   'Authorization': `Bearer ${auth}`,
+            },
+          });
+          const data = await response.json();
+  
+          console.log('Fetched data:', data);
+  
+          // Access `users` array in the response
+          if (data && Array.isArray(data.users)) {
+            setTeachers(data.users);
+          } else {
+            console.error('Unexpected API response structure:', data);
+          }
+        } catch (error) {
+          console.error('Error fetching teachers:', error);}
+        }
+        fetchTeachers();
+},[]);
+const handleNextStep = () => {
+  const updatedStudentDatas = {
+    ...updatedStudentData
+  };
+  nextStep(updatedStudentDatas); // Pass updated data to nextStep
+};
+  const [schedule, setSchedule] = useState(
+      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => ({
+        day,
+        startTime: "",
+        duration: "", // Initial duration in hours from API
+        endTime: "",
+        isSelected: false, // Track if the day is selected
+      }))
+    );
+    const handleStartTimeChange = (index:number, newStartTime:string) => {
+      const updatedSchedule = [...schedule];
+  
+      // Set the start time for the selected day
+      updatedSchedule[index].startTime = newStartTime;
+      updatedSchedule[index].isSelected = true; // Mark as selected
+  
+      // Calculate the end time based on the start time and duration
+      const [hours, minutes] = newStartTime.split(":").map(Number);
+      const startDate = new Date();
+      startDate.setHours(hours);
+      startDate.setMinutes(minutes);
+  
+      // Calculate the end time by adding the duration in hours (converted to minutes)
+      const endDate = new Date(startDate.getTime());
+      endDate.setMinutes(startDate.getMinutes() + 30); // Adding 30 minutes
+      updatedSchedule[index].endTime = endDate.toTimeString().slice(0, 5);
+  
+      // Reduce duration by 30 minutes (0.5 hours) for all subsequent selected days (below the selected index)
+      for (let i = index + 1; i < updatedSchedule.length; i++) {
+        if (!updatedSchedule[i].isSelected) {
+          // Ensure 'duration' is treated as a number
+          updatedSchedule[i].duration = Math.max(0, (Number(updatedSchedule[i].duration) - 0.25)).toString(); // Convert to number before performing arithmetic
+        }
+      }
+      
+  
+      // Update the schedule
+      setSchedule(updatedSchedule);
+    };
+  
+    const handleCheckboxChange = (index: number) => {
+      const updatedSchedule = [...schedule];
+      
+      // Toggle selection of the day
+      updatedSchedule[index].isSelected = !updatedSchedule[index].isSelected;
+      
+      // Reset the duration when unselected
+      // if (!updatedSchedule[index].isSelected) {
+      //   updatedSchedule[index].duration = defaultDuration; // Reset to default duration
+      // }
+      setSchedule(updatedSchedule);
+    };
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[url('/assets/images/grid.svg')] opacity-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
+      {/* Logo */}
+      <div className="absolute top-0 left-5 p-10 hover:scale-105 transition-transform">
+        <Image src="/assets/images/whitelogo.png" alt="Logo" className="w-28 drop-shadow-2xl" width={100} height={100} />
+      </div>
+
+      {/* User Info */}
+      <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
+        <div className="text-sm font-semibold text-white flex items-center gap-2">
+          {updatedStudentData.firstName} &nbsp; {updatedStudentData.lastName}
+        </div>
+      </div>
+      <div className="relative z-10 w-full max-w-4xl">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
+          <h2 className="text-xl font-semibold mb-4">Schedule Classes</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+            {schedule.map((item, index) => (
+        <div key={item.day} className="flex items-center mb-2 w-96">
+          <div className="flex items-center border-1 p-2 rounded-xl border border-[#D4D6D9] bg-[#f7f7f8] w-60 justify-between">
+            <label className="block font-medium text-[#333B4C] rounded-xl text-[11px]">
+              {item.day}
+            </label>
+            <input
+              type="checkbox"
+              className="form-checkbox border border-[#D4D6D9] bg-[#f7f7f8] mr-2 rounded-2xl text-[11px]"
+              checked={item.isSelected}
+              onChange={() => handleCheckboxChange(index)} // Trigger selection when checkbox is clicked
+            />
+          </div>
+          <input
+            type="time"
+            className="form-input w-[100px] p-2 border border-[#D4D6D9] bg-[#f7f7f8] rounded-xl text-[11px] ml-4"
+            value={item.startTime}
+            onChange={(e) => handleStartTimeChange(index, e.target.value)}
+            // Disable start time input if day is selected
+          />
+          
+          {/* Display the duration only if the day is selected */}
+          
+              <input
+                type="number"
+                className="form-input w-[100px] text-center ml-4 text-[11px] p-2 border border-[#D4D6D9] bg-[#f7f7f8] text-[#333B4C] rounded-xl"
+                value={item.duration} // Display duration as a floating-point number (in hours)
+                readOnly
+              />
+            
+        </div>
+      ))}
+            </div>
+            <div className="grid grid-cols-4 gap-4">
+            
+              <div className="col-span-2">
+                <label htmlFor="total hous"className="block font-medium text-[13px] text-white">Total Hours</label>
+                <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]"   readOnly/>
+              </div>
+             
+              <div className="col-span-2">
+                     <label htmlFor="start date" className="block font-medium text-white text-[12px]">Start Date</label>
+                             <input
+                       type="text"
+                    className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
+                        //      value={
+                        //     studentData?.studentDetails?.createdDate
+                        //  ? new Date(studentData.studentDetails.createdDate).toISOString().slice(0, 10) // Extract YYYY-MM-DD
+                        //           : "Invalid Date" // Fallback if createdDate is invalid or missing
+                        //               }
+                                   readOnly
+                                     />
+                                   </div>
+                             <div className="col-span-2">
+                                 <label htmlFor='end date' className="block font-medium text-white text-[12px]">End Date</label>
+                                 <input
+                         type="text"
+  className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
+  // value={
+  //   studentData?.studentDetails?.createdDate
+  //     ? (() => {
+  //         const date = new Date(studentData.studentDetails.createdDate);
+  //         date.setDate(date.getDate() + 28); // Add 28 days
+  //         return date.toISOString().slice(0, 10); // Format as YYYY-MM-DD
+  //       })()
+  //     : "N/A" // Fallback if createdDate is invalid or missing
+  // }
+  readOnly
+/>
+                          </div>
+
+                          <div className="col-span-2">
+                     <label htmlFor='start time' className="block font-medium text-white text-[12px]">Start Time</label>
+                       <input
+                     type="time"
+                         className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
+                        defaultValue="09:00" // Set default start time to 09:00
+                        disabled={schedule.some(item => item.isSelected)}
+                         />
+                        </div>
+                     <div className="col-span-2">
+                         <label htmlFor='end time' className="block font-medium text-white text-[12px]">End Time</label>
+                           <input
+                        type="time"
+                           className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
+              defaultValue="09:30" // Set default end time to 09:30
+              disabled={schedule.some(item => item.isSelected)}
+                 />
+                  </div>
+
+              <div className="col-span-2">
+                <label htmlFor='select tetacher' className="block font-medium text-white text-[12px]">SelectTeacher</label>
+                <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" onChange={(e)=>e.target.selectedOptions}>
+                 {teachers.map((teacher) => (
+                     <option key={teacher.userId} value={teacher.userId}>
+                      {teacher.userName}
+                      </option>
+                         ))}
+                  </select>
+              </div>
+            </div>
+          </div>
+         
+          </div>
+        </div>
+        
+        
+
+      {/* Main Content */}
+      <div className="relative z-10 w-full max-w-4xl mt-4">
+        <div className="flex items-center text-right justify-between mb-8">
+        <button
+            onClick={()=>prevStep(updatedStudentData)}
+            className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
+                     bg-white/10 hover:bg-white/20 rounded-lg group"
+          >
+            <span className="transform group-hover:-translate-x-1 transition-transform duration-300">←</span>
+            <span>Back</span>
+          </button>
+          <button
+                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg
+                        hover:from-blue-600 hover:to-purple-600 transition-all duration-200
+                        flex items-center space-x-2"
+                onClick={handleNextStep}
+              >
+                <span>→</span>
+              </button>
+            </div>
+      </div>
+    </div>
+  );
+};
 
 
 // Step 6 Component
-const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => void; nextStep: (updatedStudentDatas:any) => void; updatedStudentData:any }) => {
+const Step7 = ({ prevStep, nextStep, updatedStudentDatas }: { prevStep: () => void; nextStep: (updatedStudentDatass:any) => void; updatedStudentDatas:any }) => {
   const [guardianName, setGuardianName] = useState<string>('');
   const [guardianEmail, setGuardianEmail] = useState<string>('');
   const [guardianPhone, setGuardianPhone] = useState<string>('');
@@ -1085,10 +1192,10 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
   const [guardianCity, setGuardianCity] = useState<string>('');
   const [guardianLanguage, setGuardianLanguage] = useState<string>('');
   const [guardianTimeZone, setGuardianTimeZone] = useState<string>('');
-    console.log(updatedStudentData);
+    console.log(updatedStudentDatas);
     const handleNextStep = () => {
-      const updatedStudentDatas = {
-        ...updatedStudentData,
+      const updatedStudentDatass = {
+        ...updatedStudentDatas,
         guardianName,
         guardianEmail,
         guardianPhone,
@@ -1097,7 +1204,7 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
         guardianLanguage,
         guardianTimeZone,
       };
-      nextStep(updatedStudentDatas); // Pass updated data to nextStep
+      nextStep(updatedStudentDatass); // Pass updated data to nextStep
     };
 
   return (
@@ -1114,7 +1221,7 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-         {updatedStudentData.firstName} &nbsp;{updatedStudentData.lastName}
+         {updatedStudentDatas.firstName} &nbsp;{updatedStudentDatas.lastName}
         </div>
       </div>
 
@@ -1134,7 +1241,7 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
                    className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>👤</span>
-                    <span>Guardian's Name</span>
+                    <span>Guardian&apos;s Name</span>
                   </span>
                 <input
                   id="guardian-name" 
@@ -1351,8 +1458,11 @@ const Step6 = ({ prevStep, nextStep, updatedStudentData }: { prevStep: () => voi
 };
 
 // Step 7 Component (Thank You Page)
-const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: (updatedStudentDatas:any) => void; nextStep: () => void;updatedStudentDatas:any }) => {
-  console.log(updatedStudentDatas);
+const Step8 = ({ prevStep, nextStep,updatedStudentDatass }: { prevStep: (updatedStudentDatass:any) => void; nextStep: (updatedStudentDatass: any) => void;updatedStudentDatass:any }) => {
+  console.log(updatedStudentDatass);
+  const handlenextstep=()=>{
+    nextStep(updatedStudentDatass);
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative overflow-hidden">
       {/* Background Effects */}
@@ -1385,7 +1495,7 @@ const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: (updatedS
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-          {updatedStudentDatas.firstName} &nbsp; {updatedStudentDatas.lastName}
+          {updatedStudentDatass.firstName} &nbsp; {updatedStudentDatass.lastName}
         </div>
       </div>
 
@@ -1393,7 +1503,7 @@ const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: (updatedS
       <div className="relative z-10 w-full max-w-4xl">
         <div className="flex items-center text-right justify-between mb-8">
         <button
-            onClick={()=>prevStep(updatedStudentDatas)}
+            onClick={()=>prevStep(updatedStudentDatass)}
             className="flex items-center gap-2 px-6 py-3 text-white transition-all duration-300 
                      bg-white/10 hover:bg-white/20 rounded-lg group"
           >
@@ -1404,7 +1514,7 @@ const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: (updatedS
                 className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg
                         hover:from-blue-600 hover:to-purple-600 transition-all duration-200
                         flex items-center space-x-2"
-                onClick={nextStep}
+                onClick={handlenextstep}
               >
                 <span>→</span>
               </button>
@@ -1435,74 +1545,73 @@ const Step7 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: (updatedS
 };
 
 // Step 8 Component
-const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => void; nextStep: () => void;updatedStudentDatas:any }) => {
+const Step9 = ({ prevStep, nextStep,updatedStudentDatass }: { prevStep: () => void; nextStep: (data?: any) => void;updatedStudentDatass:any }) => {
   const router = useRouter();
   const [classStatus, setClassStatus] = useState('Completed');
   const [studentStatus, setStudentStatus] = useState('Joined');
-   console.log(updatedStudentDatas);
+   console.log(updatedStudentDatass);
   // Function to handle form submission
   const handleSubmit = async () => {
     try {
-      console.log(">>>",updatedStudentDatas.academicCoach.academicCoachId)
+      console.log(">>>",updatedStudentDatass.academicCoach.academicCoachId)
       const submitData = {
-        academicCoachId:updatedStudentDatas.academicCoach.academicCoachId,
+        academicCoachId:updatedStudentDatass.academicCoach.academicCoachId,
         student: {
-          studentId:updatedStudentDatas._id,
-          studentFirstName: updatedStudentDatas.firstName,
-          studentLastName: updatedStudentDatas.lastName,
-          studentEmail: updatedStudentDatas.email,
-          studentPhone: updatedStudentDatas.phoneNumber,
-          studentCountry: updatedStudentDatas.country,
-          studentCountryCode: updatedStudentDatas.countryCode,
-          learningInterest: updatedStudentDatas.learningInterest,
-          numberOfStudents: updatedStudentDatas.numberOfStudents,
-          preferredTeacher: updatedStudentDatas.preferredTeacher,
-          preferredFromTime: updatedStudentDatas.preferredFromTime,
-          preferredToTime: updatedStudentDatas.preferredToTime,
-          timeZone: updatedStudentDatas.timeZone,
-          referralSource: updatedStudentDatas.referralSource,
-          preferredDate: updatedStudentDatas.startDate,
-          evaluationStatus: updatedStudentDatas.evaluationStatus,
-          status: updatedStudentDatas.status,
-          createdDate: updatedStudentDatas.createdDate,
-          createdBy: updatedStudentDatas.createdBy,
+          studentId: updatedStudentDatass._id,
+          studentFirstName: updatedStudentDatass.firstName,
+          studentLastName: updatedStudentDatass.lastName,
+          studentEmail: updatedStudentDatass.email,
+          studentPhone: updatedStudentDatass.phoneNumber,
+          studentCountry: updatedStudentDatass.country,
+          studentCountryCode: updatedStudentDatass.countryCode,
+          learningInterest: updatedStudentDatass.learningInterest,
+          numberOfStudents: updatedStudentDatass.numberOfStudents,
+          preferredTeacher: updatedStudentDatass.preferredTeacher,
+          preferredFromTime: updatedStudentDatass.preferredFromTime,
+          preferredToTime: updatedStudentDatass.preferredToTime,
+          timeZone: updatedStudentDatass.timeZone,
+          referralSource: updatedStudentDatass.referralSource,
+          preferredDate: updatedStudentDatass.startDate,
+          evaluationStatus: updatedStudentDatass.evaluationStatus,
+          status: updatedStudentDatass.status,
+          createdDate: updatedStudentDatass.createdDate,
+          createdBy: updatedStudentDatass.createdBy,
         },
-        isLanguageLevel: updatedStudentDatas.isLanguageChecked,
-        languageLevel: updatedStudentDatas.languageLevel,
-        isReadingLevel: updatedStudentDatas.isReadingChecked,
-        readingLevel: updatedStudentDatas.readingLevel,
-        isGrammarLevel: updatedStudentDatas.isGrammarChecked,
-        grammarLevel: updatedStudentDatas.grammarLevel,
-        hours: updatedStudentDatas.selectedHours,
+        isLanguageLevel: updatedStudentDatass.isLanguageChecked,
+        languageLevel: updatedStudentDatass.languageLevel,
+        isReadingLevel: updatedStudentDatass.isReadingChecked,
+        readingLevel: updatedStudentDatass.readingLevel,
+        isGrammarLevel: updatedStudentDatass.isGrammarChecked,
+        grammarLevel: updatedStudentDatass.grammarLevel,
+        hours: updatedStudentDatass.selectedHours,
         subscription: {
-          subscriptionName: updatedStudentDatas.subscriptionName,
+          subscriptionName: updatedStudentDatass.subscriptionName,
         },
-        planTotalPrice:updatedStudentDatas.planTotalPrice,
-        classStartDate: updatedStudentDatas.startDate,
-        classEndDate: updatedStudentDatas.classEndDate,
-        classStartTime: updatedStudentDatas.preferredFromTime,
-        classEndTime: updatedStudentDatas.preferredToTime,
-        accomplishmentTime: updatedStudentDatas.accomplishmentTime.toString(),
-        studentRate: updatedStudentDatas.studentRate,
-        expectedFinishingDate: updatedStudentDatas.expectedFinishingDate,
-        gardianName: updatedStudentDatas.guardianName,
-        gardianEmail: updatedStudentDatas.guardianEmail,
-        gardianPhone: updatedStudentDatas.guardianPhone.toString(),
-        gardianCity: updatedStudentDatas.guardianCity,
-        gardianCountry: updatedStudentDatas.guardianCountry,
-        gardianTimeZone: updatedStudentDatas.guardianTimeZone,
-        gardianLanguage: updatedStudentDatas.guardianLanguage,
-        assignedTeacher: updatedStudentDatas.assignedTeacher,
+        planTotalPrice: updatedStudentDatass.planTotalPrice,
+        classStartDate: updatedStudentDatass.startDate,
+        classEndDate: updatedStudentDatass.classEndDate,
+        classStartTime: updatedStudentDatass.preferredFromTime,
+        classEndTime: updatedStudentDatass.preferredToTime,
+        accomplishmentTime: updatedStudentDatass.accomplishmentTime.toString(),
+        studentRate: updatedStudentDatass.studentRate,
+        expectedFinishingDate: updatedStudentDatass.expectedFinishingDate,
+        gardianName: updatedStudentDatass.guardianName,
+        gardianEmail: updatedStudentDatass.guardianEmail,
+        gardianPhone: updatedStudentDatass.guardianPhone.toString(),
+        gardianCity: updatedStudentDatass.guardianCity,
+        gardianCountry: updatedStudentDatass.guardianCountry,
+        gardianTimeZone: updatedStudentDatass.guardianTimeZone,
+        gardianLanguage: updatedStudentDatass.guardianLanguage,
+        assignedTeacher: updatedStudentDatass.assignedTeacher,
         studentStatus: studentStatus,
         classStatus: classStatus,
-        trialClassStatus: updatedStudentDatas.trialClassStatus,
-        status: updatedStudentDatas.status,
-        createdDate: updatedStudentDatas.createdDate,
-        createdBy: updatedStudentDatas.academicCoach.name,
+        trialClassStatus: updatedStudentDatass.trialClassStatus,
+        status: updatedStudentDatass.status,
+        createdDate: updatedStudentDatass.createdDate,
+        createdBy: updatedStudentDatass.academicCoach.name,
         updatedDate: new Date().toISOString(),
         updatedBy: "system", // or replace with the current user's email/ID
       };
-  
       console.log("Payload being sent:", JSON.stringify(submitData, null, 2));
       const auth=localStorage.getItem('authToken');
       // Make POST request to your API
@@ -1523,10 +1632,8 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
   
       const result = await response.json();
       console.log('Status updated successfully:', result);
-      router.push("/Academic/trailSection");
-  
       alert('Status updated successfully!');
-      nextStep();
+      router.push("/Academic/trailSection");
   
     } catch (error) {
       console.error('Error submitting status:', error);
@@ -1550,7 +1657,7 @@ const Step8 = ({ prevStep, nextStep,updatedStudentDatas }: { prevStep: () => voi
       {/* User Info */}
       <div className="absolute top-5 right-5 bg-white/10 backdrop-blur-lg rounded-full px-6 py-2">
         <div className="text-sm font-semibold text-white flex items-center gap-2">
-         {updatedStudentDatas.firstName} &nbsp;{updatedStudentDatas.lastName}
+         {updatedStudentDatass.firstName} &nbsp;{updatedStudentDatass.lastName}
         </div>
       </div>
 
@@ -1662,7 +1769,8 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
   const [studentData, setStudentData] = useState<StudentData>();
    const[updatedStudentData,setUpdatedStudentData]=useState<any>(null);
    const[updatedStudentDatas,setUpdatedStudentDatas]=useState<any>(null);
-  const totalSteps = 8;
+   const[updatedStudentDatass,setUpdatedStudentDatass]=useState<any>({});
+  const totalSteps = 9;
 
   const nextStep = (data: any) => {
     console.log('Current step:', step);
@@ -1672,8 +1780,12 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
     if(step === 5){
       setUpdatedStudentData(data);
     }
-    if(step === 6 && 7 && 8){
+    if(step === 6 || step === 7  ){
       setUpdatedStudentDatas(data);
+      setUpdatedStudentDatass(data);
+    }
+    if(step === 8 || step === 9)  {
+      setUpdatedStudentDatass(data);
     }
     if (step < totalSteps) {
       setStudentData(data);
@@ -1691,17 +1803,66 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
   console.log('Rendering step:', step);
 
   return (
-    <>
-      {step === 1 && <Step1 nextStep={nextStep} />}
-      {step === 2 && <Step2 prevStep={prevStep} nextStep={nextStep}  />}
-      {step === 3 && <Step3 prevStep={prevStep} nextStep={nextStep} studentData={studentData}  />}
-      {step === 4 && <Step4 prevStep={prevStep} nextStep={nextStep} studentData={studentData} />}
-      {step === 5 && <Step5 prevStep={prevStep} nextStep={nextStep} studentData={studentData} />}
-      {step === 6 && <Step6 prevStep={prevStep} nextStep={nextStep} updatedStudentData={updatedStudentData} />}
-      {step === 7 && <Step7 prevStep={prevStep} nextStep={nextStep} updatedStudentDatas={updatedStudentDatas} />}
-      {step === 8 && <Step8 prevStep={prevStep} nextStep={nextStep}  updatedStudentDatas={updatedStudentDatas}/>}
-    </>
-  );
+  <>
+    {step === 1 && <Step1 nextStep={nextStep} />}
+    {step === 2 && (
+      <Step2
+        prevStep={prevStep}
+        nextStep={(data: StudentData) => nextStep(data)}
+        studentDatas={studentData ?? {} as StudentData} // Handle undefined
+      />
+    )}
+    {step === 3 && (
+      <Step3
+        prevStep={prevStep}
+        nextStep={(data: StudentData) => nextStep(data)}
+        studentData={studentData ?? {} as StudentData}
+      />
+    )}
+    {step === 4 && (
+      <Step4
+        prevStep={prevStep}
+        nextStep={(data: StudentData) => nextStep(data)}
+        studentData={studentData ?? {} as StudentData}
+      />
+    )}
+    {step === 5 && (
+      <Step5
+        prevStep={prevStep}
+        nextStep={(data: StudentData) => nextStep(data)}
+        studentData={studentData ?? {} as StudentData}
+      />
+    )}
+    {step === 6 && (
+      <Step6
+        prevStep={prevStep}
+        nextStep={(data: any) => nextStep(data)}
+        updatedStudentData={updatedStudentData}
+      />
+    )}
+    {step === 7 && (
+      <Step7
+        prevStep={prevStep}
+        nextStep={(data: any) => nextStep(data)}
+        updatedStudentDatas={updatedStudentDatas}
+      />
+    )}
+    {step === 8 && (
+      <Step8
+        prevStep={prevStep}
+        nextStep={nextStep}
+        updatedStudentDatass={updatedStudentDatass}
+      />
+    )}
+     {step === 9 && (
+      <Step9
+        prevStep={prevStep}
+        nextStep={(data: any) => nextStep(data)}
+        updatedStudentDatass={updatedStudentDatass}
+      />
+    )}
+  </>
+);
 };
 
 export default EvaluationSteps;
