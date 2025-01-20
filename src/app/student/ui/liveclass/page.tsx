@@ -383,9 +383,7 @@ function LiveClass() {
   >
     <Disc size={18} className={isRecording ? 'text-red-600' : 'text-gray-700'} />
   </button>
-</div>
-
-                    
+ </div>  
                   </div>
                 </div>
               </div>
