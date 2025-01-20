@@ -34,7 +34,7 @@ const SignIn: React.FC = () => {
       console.log(authToken);
       if (role?.includes('TEACHER')) {
         router.push('/teacher/ui/dashboard');
-        alert("Login successful as Student");
+        alert("Login successful as Teacher");
       }
     } catch (error: any) {
       if (error.response) {
