@@ -16,11 +16,11 @@ ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip,
 
 const TeachingActivity = () => {
   const data = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"],
+    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct","Nov","Dec"],
     datasets: [
       {
         label: "Teaching Activity",
-        data: [5, 10, 15, 20, 10, 15, 12, 18, 10, 8],
+        data: [5, 10, 15, 20, 10, 15, 12, 18, 10, 8, 15, 20],
         borderColor: "#012A4A",
         backgroundColor: (context: any) => {
           const chart = context.chart;
