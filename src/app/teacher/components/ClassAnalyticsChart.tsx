@@ -32,7 +32,7 @@ const ClassAnalyticsChart = () => {
   };
 
   return (
-    <div className="block w-[800px] h-[195px] bg-[#2F4B8B] p-4 rounded-[17px] shadow-md flex justify-between">
+    <div className="block w-[400px] h-[195px] bg-[#2F4B8B] p-4 rounded-[17px] shadow-md flex justify-between">
       {/* Chart */}
       <div className="relative w-36 h-36 mx-auto">
         <Doughnut data={data} options={options} />

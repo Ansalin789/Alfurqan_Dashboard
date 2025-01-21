@@ -49,20 +49,20 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
 );
 
 // Fetch data from the API
-const fetchDashboardData = async (authToken: string | null): Promise<ApiResponse> => {
-  const response = await fetch('http://localhost:5001/dashboard/widgets', {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${authToken}`,
-    },
-  });
+// const fetchDashboardData = async (authToken: string | null): Promise<ApiResponse> => {
+//   const response = await fetch('http://localhost:5001/dashboard/widgets', {
+//     headers: {
+//       'Content-Type': 'application/json',
+//       'Authorization': `Bearer ${authToken}`,
+//     },
+//   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP Error: ${response.status}`);
-  }
+//   if (!response.ok) {
+//     throw new Error(`HTTP Error: ${response.status}`);
+//   }
 
-  return response.json();
-};
+//   return response.json();
+// };
 
 // Map API response to dashboard data
 const mapApiResponseToData = (apiResponse: ApiResponse): DataItem[] => {
@@ -92,30 +92,30 @@ const Dash = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+  // useEffect(() => {
+  //   const loadDashboardData = async () => {
+  //     try {
+  //       setIsLoading(true);
+  //       setError(null);
 
-        const authToken = localStorage.getItem('authToken');
-        const apiResponse = await fetchDashboardData(authToken);
+  //       const authToken = localStorage.getItem('authToken');
+  //       const apiResponse = await fetchDashboardData(authToken);
 
-        const updatedData = mapApiResponseToData(apiResponse);
-        setData(updatedData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //       const updatedData = mapApiResponseToData(apiResponse);
+  //       setData(updatedData);
+  //     } catch (err) {
+  //       setError(err instanceof Error ? err.message : 'Unknown error');
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    loadDashboardData();
-  }, []);
+  //   loadDashboardData();
+  // }, []);
 
-  if (isLoading) {
-    return <div>Loading...</div>; // Replace with a loading spinner if needed
-  }
+  // if (isLoading) {
+  //   return <div>Loading...</div>;
+  // }
 
   if (error) {
     return <div>Error: {error}</div>;
