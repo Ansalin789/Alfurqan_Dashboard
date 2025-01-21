@@ -1,14 +1,29 @@
 import { FaUserAlt } from 'react-icons/fa';
 import { AiOutlineClockCircle } from 'react-icons/ai';
 import { useEffect, useState } from 'react';
+import API_URL from '@/app/acendpoints/page';
+import axios from 'axios';
+
+interface Student {
+  studentFirstName: string;
+  studentLastName: string;
+}
+
+interface Evaluation {
+  student: Student;
+  classStartDate: string;
+  classStartTime: string;
+}
+
+interface ClassData {
+  studentName: string;
+  classStartTime: string;
+  classStartDate: string;
+}
 
 const NextEvaluationClass = () => {
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [classData, setClassData] = useState<{
-    studentName: string;
-    classStartTime: string;
-    classStartDate: string;
-  } | null>(null);
+  const [classData, setClassData] = useState<ClassData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,38 +31,41 @@ const NextEvaluationClass = () => {
     const fetchNextEvaluationClass = async () => {
       try {
         const auth=localStorage.getItem('authToken');
-        const response = await fetch('http://localhost:5001/evaluationlist', {
+        const academicId=localStorage.getItem('academicId');
+        console.log("academicId>>",academicId);
+        const response = await axios.get(`${API_URL}/evaluationlist`, {
+
           method: 'GET',
+          params:{academicCoachId:academicId },
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth}`, 
+            'Authorization': `Bearer ${auth}`,
           },
         });
 
-        if (!response.ok) {
+        if (!response.data) {
           throw new Error(`Failed to fetch data: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const data = await response.data;
 
         if (!data.evaluation || !Array.isArray(data.evaluation)) {
           throw new Error('Invalid data format from API');
         }
 
         const upcomingClass = data.evaluation
-          .filter((item: any) => {
+          .filter((item: Evaluation) => {
             const classStartDate = new Date(item.classStartDate);
             const now = new Date();
             return classStartDate > now; // Filter for future classes
           })
-          .sort((a: any, b: any) => {
+          .sort((a: Evaluation, b: Evaluation) => {
             return (
-              new Date(a.classStartDate).getTime() -
-              new Date(b.classStartDate).getTime()
+              new Date(a.classStartDate).getTime() - new Date(b.classStartDate).getTime()
             );
           })
           .slice(0, 1) // Take only the first upcoming class
-          .map((item: any) => ({
+          .map((item: Evaluation) => ({
             studentName: `${item.student.studentFirstName} ${item.student.studentLastName}`,
             classStartTime: item.classStartTime,
             classStartDate: item.classStartDate, // Store class start date for countdown
@@ -125,7 +143,7 @@ const NextEvaluationClass = () => {
           </div>
         </div>
         {classData?.classStartDate && (
-          <p className="text-[13px] mt-2 text-gray-300 hidden" >
+          <p className="text-[13px] mt-2 text-gray-300 hidden">
             Class Date: {formatDate(classData.classStartDate)}
           </p>
         )}

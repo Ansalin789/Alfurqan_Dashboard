@@ -7,25 +7,47 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import BaseLayout1 from '@/components/BaseLayout1';
 import AddScheduleModal from '@/components/Academic/ViewTeachersList/AddScheduleModel';
 import { FaCheck } from 'react-icons/fa';
+import API_URL from '@/app/acendpoints/page';
+
+
+interface AcademicCoachItem {
+  subject: string;
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  description: string;
+}
+
+interface Event {
+  title: string;
+  start: Date;
+  end: Date;
+  allDay: boolean;
+  description: string;
+}
+
+
+
+
 
 const localizer = momentLocalizer(moment);
 
 const Teachereschedule = () => {
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<boolean>(false);
 
   // Fetch events data
   useEffect(() => {
     const auth=localStorage.getItem('authToken');
-    fetch('http://localhost:5001/meetingSchedulelist',{
+    fetch(`${API_URL}/meetingSchedulelist`,{
       headers: {
          'Authorization': `Bearer ${auth}`,
       },
     })
       .then((response) => response.json())
       .then((data) => {
-        const mappedEvents = data.academicCoach.map((item: any) => ({
+        const mappedEvents = data.academicCoach.map((item: AcademicCoachItem) => ({
           title: item.subject,
           start: new Date(item.scheduledStartDate),
           end: new Date(item.scheduledEndDate),
@@ -69,15 +91,6 @@ const Teachereschedule = () => {
             views={['month']}
             defaultView="month"
             toolbar={false}
-            eventPropGetter={(event) => ({
-              style: {
-                backgroundColor: '#E9EBFF',
-                color: '#012A4A',
-                borderRadius: '4px',
-                padding: '4px 6px',
-                fontSize: '12px',
-              },
-            })}
           />
         </div>
 

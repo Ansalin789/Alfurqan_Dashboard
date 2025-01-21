@@ -1,7 +1,7 @@
 // contexts/DarkModeContext.tsx
 'use client';
 
-import { createContext, useContext, useState, useMemo , ReactNode } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback, ReactNode } from 'react';
 
 interface DarkModeContextProps {
   darkMode: boolean;
@@ -13,7 +13,7 @@ const DarkModeContext = createContext<DarkModeContextProps | undefined>(undefine
 export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
   const [darkMode, setDarkMode] = useState(false);
 
-  const toggleDarkMode = () => {
+  const toggleDarkMode = useCallback(() => {
     setDarkMode((prevMode) => {
       const newMode = !prevMode;
       if (typeof window !== 'undefined') {
@@ -21,8 +21,7 @@ export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
       }
       return newMode;
     });
-  };
-
+  }, []); // Empty dependency array, so this function is memoized
 
   return (
     <DarkModeContext.Provider value={useMemo(() => ({ darkMode, toggleDarkMode }), [darkMode, toggleDarkMode])}>
