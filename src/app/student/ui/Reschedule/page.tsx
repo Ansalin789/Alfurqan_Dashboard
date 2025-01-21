@@ -131,8 +131,10 @@ const TeacherReschedule = () => {
             </select>
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Reason for Re-Schedule</label>
+            <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-2">Reason for Re-Schedule</label>
             <textarea
+              id="reason"
+              name="reason"
               value={reason}
               onChange={handleReasonChange}
               placeholder="Type here..."
