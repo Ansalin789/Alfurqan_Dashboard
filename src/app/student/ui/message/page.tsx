@@ -1,7 +1,6 @@
 'use client'
 
 
-import BaseLayout from '@/components/BaseLayout';
 import React, {useState} from 'react';
 import { GrAttachment } from "react-icons/gr";
 import { FaTelegramPlane } from "react-icons/fa";
@@ -98,8 +97,7 @@ const Message = () => {
                     </div>
                     {/* Chat List */}
                     <ul className="mt-4 space-y-4">
-                    {(activeTab === "Private" ? privateChats : groupChats).map(
-                        (chat, index) => (
+                    {(activeTab === "Private" ? privateChats : groupChats).map((chat, index) => (
                         <li key={index} className="flex items-center justify-between border-b-2 p-1">
                             <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-gray-300 rounded-lg"></div>
@@ -117,8 +115,8 @@ const Message = () => {
                             )}
                             </div>
                         </li>
-                        )
-                    )}
+                    ))}
+
                     </ul>
                 </div>
             </div>  
@@ -212,7 +210,7 @@ const Message = () => {
                     <img src="/assets/images/people.png" alt="" />
                 </div>
                 <h5 className="mt-2 font-semibold text-[12px]">Student Coordination</h5>
-                <p className="text-[10px] text-gray-500">Group • 12 members</p>
+                <p className="text-[10px] text-gray-500">Group &bull; 12 members</p>
             </div>
 
             {/* Description */}
