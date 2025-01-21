@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5001';
+const API_URL = `http://localhost:5001`;
 
 // signIn function
 export const signIn = async (username: string, password: string) => {

@@ -9,6 +9,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Image from 'next/image';
 import { FaCheck } from "react-icons/fa";
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
+import API_URL from '@/app/acendpoints/page';
 
 
 const localizer = momentLocalizer(moment);
@@ -16,9 +17,30 @@ const localizer = momentLocalizer(moment);
 const Studentreschedule = () => {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<string>(''); // State to hold the selected date 
-  const [events, setEvents] = useState<any[]>([]); // State to store all events
-  const [teachers, setTeachers] = useState<any[]>([]); // State to store teachers and their availability
+const [events, setEvents] = useState<Event[]>([]); // State to store all events
+const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all teachers
   const [rescheduleSuccess, setRescheduleSuccess] = useState<boolean>(false); // State for success message
+
+
+  interface Event {
+    
+    title: string;
+    start: Date;
+    end: Date;
+    allDay: boolean;
+    
+  }
+  
+  // Define the type for a teacher
+  interface Teacher {
+    id: string;
+    name: string;
+    subject: string;
+    email: string;
+    phone?: string; // Optional field
+    [key: string]: any; // To allow additional properties if necessary
+  }
+
   interface Student {
     student: {
       studentId: string | null;
@@ -41,13 +63,21 @@ const Studentreschedule = () => {
   
   const [studentllistdata, setStudentllistdata] = useState<StudentListResponse | null>(null);
   
-
+ const [teacherIdLocal, setTeacherIdLocal] = useState<string | null>(null);
+   
+   useEffect(() => {
+     // Access localStorage only on the client side
+     if (typeof window !== "undefined") {
+      const studentId = localStorage.getItem('studentManageID');
+       setTeacherIdLocal(studentId); 
+     }
+   }, []);
   // Fetch teacher schedules and student data from the backend
   useEffect(() => {
     const studentlist = async () => {
       try {
         const auth = localStorage.getItem('authToken');
-        const response = await fetch('http://localhost:5001/classShedule', {
+        const response = await fetch(`${API_URL}/classShedule`, {
           method: 'GET',
           headers: {
             "Content-Type": "application/json",
@@ -64,7 +94,7 @@ const Studentreschedule = () => {
     studentlist();
 
     const auth = localStorage.getItem('authToken');
-    fetch('http://localhost:5001/shiftschedule?role=TEACHER', {
+    fetch(`${API_URL}/shiftschedule?role=TEACHER`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${auth}`,
@@ -82,13 +112,20 @@ const Studentreschedule = () => {
       .catch((error) => console.error('Error fetching data: ', error));
   }, []);
 
-  const studentId = localStorage.getItem('studentManageID');
+  
   const filteredStudents = studentllistdata?.students?.filter((item: { student: { studentId: string | null; }; }) => {
-    return item.student?.studentId === studentId;
+    return item.student?.studentId === teacherIdLocal;
   });
-  console.log(filteredStudents);
+  console.log(">>>>>>>>>fs"+filteredStudents);
+  interface StudentEvent {
+    title: string;
+    start: Date;
+    end: Date;
+    allDay: boolean;
+  }
+
   useEffect(() => {
-      const studentEvents = (filteredStudents ?? []).map((student: any) => {
+      const studentEvents:Event[] = (filteredStudents ?? []).map((student: any) => {
         return {
           title: `${student.student.studentFirstName} ${student.student.studentLastName}`,
           start: new Date(student.startDate),
@@ -144,28 +181,11 @@ const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Fri
 const dayName = daysOfWeek[dayIndex];
 
   
-      const requestData = {
-        classDay: [
-          { label: dayName,value: dayName }  
-        ],
-        startDate:selectedDate,
-        endDate:selectedDate,
-        startTime: [
-          { label: "Start Time", value: fromtime }
-        ],
-        endTime: [
-          { label: "End Time", value: totime }
-        ],
-        createdBy: "Admin",
-  createdDate: new Date().toISOString(),
-  scheduleStatus: 'Active',
-  package: filteredItem.package,
-  preferedTeacher: filteredItem.preferedTeacher,    // Example data
-  status: filteredItem.status,
+const requestData = {
   student: {
     studentId: filteredItem.student.studentId, 
     studentFirstName: filteredItem.student.studentFirstName, 
-    studentLastName:filteredItem.student.studentLastName , 
+    studentLastName: filteredItem.student.studentLastName, 
     studentEmail: filteredItem.student.studentEmail,
   },
   teacher: {
@@ -173,13 +193,31 @@ const dayName = daysOfWeek[dayIndex];
     teacherName: teachername, 
     teacherEmail: teacheremail,
   },
-  totalHourse: filteredItem.totalHourse,    
+  classDay: [
+    { value: dayName, label: dayName }
+  ],
+  package: filteredItem.package,
+  preferedTeacher: filteredItem.preferedTeacher,
+  // course: filteredItem.student., // Ensure `course` exists in `filteredItem`
+  totalHourse: filteredItem.totalHourse,
+  startDate: selectedDate,
+  endDate: selectedDate,
+  startTime: [
+    { value: fromtime, label: "Start Time" }
+  ],
+  endTime: [
+    { value: totime, label: "End Time" }
+  ],
+  scheduleStatus: 'Active',
+  createdBy: "Admin",
+  createdDate: new Date().toISOString(),
   lastUpdatedDate: new Date().toISOString(),
-  _id:filteredItem._id,
-      };
-      console.log(requestData);
+  status: filteredItem.status,
+};
+
+      console.log(requestData); 
       console.log(filteredItem._id);
-      const response = await fetch(`http://localhost:5001/classSchedule/${filteredItem._id}`, {
+      const response = await fetch(`${API_URL}/classSchedule/${filteredItem._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

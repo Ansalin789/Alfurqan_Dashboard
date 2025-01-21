@@ -9,6 +9,7 @@ import Modal from 'react-modal';
 import React, { useState, useRef, useEffect } from 'react';
 import { FiCalendar, FiMoreVertical} from 'react-icons/fi';
 import StudentList from '@/components/Academic/ViewTeachersList/StudentList';
+import API_URL from '@/app/acendpoints/page';
 
 
 
@@ -20,24 +21,47 @@ interface Class {
   grade?: string;
   performance?: string;
 }
-interface AddTeacherModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void; 
+
+interface Student {
+  _id: string;
+  name: string;
+  course: string;
+  startdate: string; // or Date if it's a Date object
+  status: string;
 }
 
+interface User {
+  _id: string;
+  userName: string;
+  email: string;
+  status: string;
+  teacherId: string;
+  name: string;
+  course: string;
+  startdate: string; // or a Date object, based on your data type
+  // assuming this field links student to teacher
+}
 
-const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onSuccess }) => {
+interface StudentListData {
+  users: User[]; // Array of User objects
+  status: string;
+}
+
+const ViewTeachersList= () => {
+
   const router = useRouter();
   const [isScheduled, setIsScheduled] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('scheduled');
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  const [Studentlistdata, setStudentlistdata] = useState();
-  const dropdownRef = useRef< | null>(null);
-  const itemsPerPage = 10;
+  const [studentListData, setStudentListData] = useState<StudentListData | null>(null); // Set to null initially
+  const dropdownRef = useRef<HTMLTableCellElement | null>(null); // Use HTMLTableCellElement instead
 
+
+  const itemsPerPage = 10;
+   
+  
 
   const scheduledClasses: Class[] = Array.from({ length: 5 }).map(() => ({
     name: 'Samantha William',
@@ -107,14 +131,28 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
     subject: string;
     rating: number;
   }
+ const [teacherIdLocal, setTeacherIdLocal] = useState<string | null>(null);
+   const [auth, setAuth] = useState<string | null>(null);
+   useEffect(() => {
+     // Access localStorage only on the client side
+     if (typeof window !== "undefined") {
+      const teacherId=localStorage.getItem('manageTeacherId');
+       setTeacherIdLocal(teacherId); 
+        const seauth=localStorage.getItem('authToken');
+        setAuth(seauth);
+     }
+   }, []);
+   // Declare and initialize filteredStudents first
+  
   const [teachers, setTeachers] = useState<Teacher>();
   useEffect(() => {
         const fetchTeachers = async () => {
-          const teacherId=localStorage.getItem('manageTeacherId');
-          const auth=localStorage.getItem('authToken');
+          
+          
           console.log(">>>>"+auth);
           try {
-            const response = await fetch(`http://localhost:5001/users/${teacherId}`, {
+            const response = await fetch(`${API_URL}/users/${teacherIdLocal}`, {
+
               headers: {
                 'Authorization': `Bearer ${auth}`,
               },
@@ -189,8 +227,8 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
   };
   
   
- const handleSave1 = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
+const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
     
     const totalDuration = calculateHoursAcrossDays(startDate, startTime, endDate, endTime);
     const formattedStartTime = formatTimeToAmPm(startTime);
@@ -213,7 +251,7 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
 
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5001/shiftschedule',
+      const response = await fetch(`${API_URL}/shiftschedule`,
          {
           method: 'POST',
           headers: {
@@ -236,7 +274,7 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
   const studentlist=async()=>{
       try{
         const auth=localStorage.getItem('authToken');
-           const response=await fetch('http://localhost:5001/shiftschedule?role=TEACHER',{
+           const response=await fetch(`${API_URL}/shiftschedule?role=TEACHER`,{
             method:'GET',
             headers:{
               "Content-Type":"application/json",
@@ -245,19 +283,18 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
           );
           const data=await response.json();
            console.log(data);
-            setStudentlistdata(data);
+            setStudentListData(data);
       }catch(error){
             console.log(error);
       }
   };
-  const teacherId=localStorage.getItem('manageTeacherId');
 
-  console.log(teacherId);
-  const filteredStudents =Studentlistdata?.users?.filter((item: any) => {
-      console.log(`Comparing: item.teacherId = ${item.teacherId}, teacherId = ${teacherId}`); // Debugging inside filter
-      return item.teacherId === teacherId;
-    });
+  const filteredStudents: Student[] | undefined = studentListData?.users?.filter((item: User) => {
+    return item.teacherId === teacherIdLocal;
+  });
+  
   console.log(filteredStudents);
+
   return (
     <BaseLayout1>
     
@@ -356,69 +393,72 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
                 <thead>
                   <tr>
                     <th className="py-2 text-[13px] text-center">Name</th>
-                    <th className="py-2 text-[13px] text-center">Courses</th>
+                    
                     <th className="py-2 text-[13px] text-center">Date</th>
                     <th className="py-2 text-[13px]">Status</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents?.map((item:any,index:any) => (
-                    <tr key={item._id} className="border-t">
-                      <td className="py-1 text-[12px] text-center">{item.name}</td>
-                      <td className="py-1 text-[12px] text-center">{item.course}</td>
-                      <td className="py-1 text-[12px] text-center">{new Date(item.startdate).toISOString().slice(0, 10)}</td>
-                      <td className="py-1 text-center">
-                        <button 
-                          className={`px-4 py-1 rounded-lg text-[12px] text-center ${
-                            item.status === 'Completed' ? 'bg-green-600' : 'bg-gray-900'
-                          } text-white`}
+                {filteredStudents?.map((item: Student, index: number) => (
+              <tr key={item._id} className="border-t">
+                <td className="py-1 text-[12px] text-center">{item.name}</td>
+                
+                <td className="py-1 text-[12px] text-center">{new Date(item.startdate).toISOString().slice(0, 10)}</td>
+                
+                <td className="py-1 text-center">
+                  <button 
+                    className={`px-4 py-1 rounded-lg text-[12px] text-center ${
+                      item.status === 'Completed' ? 'bg-green-600' : 'bg-gray-900'
+                    } text-white`}
+                  >
+                    Active
+                  </button>
+                </td>
+                
+                <td className="py-1 text-right relative" ref={dropdownRef}>
+                  {activeTab === 'scheduled' && (
+                    <button onClick={() => toggleDropdown(index)}>
+                      <FiMoreVertical className="inline-block text-xl cursor-pointer" />
+                    </button>
+                  )}
+                  
+                  {activeDropdown === index && activeTab === 'scheduled' && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                      <div className="py-1">
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={(event) => {
+                            handleReschedule(event);
+                            setActiveDropdown(null);
+                          }}
                         >
-                          Active
+                          Reschedule
                         </button>
-                      </td>
-                      <td className="py-1 text-right relative" ref={dropdownRef}>
-                          {activeTab === 'scheduled' && (
-                            <button onClick={() => toggleDropdown(index)}>
-                              <FiMoreVertical className="inline-block text-xl cursor-pointer" />
-                            </button>
-                          )}
-                        {activeDropdown === index && activeTab === 'scheduled' && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
-                            <div className="py-1">
-                              <button
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={(event) => {
-                                  handleReschedule(event);
-                                  setActiveDropdown(null);
-                                }}
-                              >
-                                Reschedule
-                              </button>
-                              <button
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={() => setActiveDropdown(null)}
-                              >
-                                Pause Class
-                              </button>
-                              <button
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={() => setActiveDropdown(null)}
-                              >
-                                Resume Class
-                              </button>
-                              <button
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={() => setActiveDropdown(null)}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Pause Class
+                        </button>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Resume Class
+                        </button>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
                 </tbody>
               </table>
       
@@ -468,75 +508,75 @@ const ViewTeachersList: React.FC<AddTeacherModalProps> = ({ isOpen, onClose, onS
               ×
             </button>
           </div>
-          <form onSubmit={handleSave1}>
-            <div className="mb-2">
-              <label htmlFor="title" className="block text-[12px] mb-1">Title</label>
-              <input
-                id="title"
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="mb-2">
-              <label htmlFor="startDate" className="block text-[12px] mb-1">Start Date</label>
-              <input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="mb-2">
-              <label htmlFor="endDate" className="block text-[12px] mb-1">End Date</label>
-              <input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="mb-2 flex space-x-2">
-  <div className="w-1/2">
-    <label htmlFor="startTime" className="block text-[12px] mb-1">Start Time</label>
-    <input
-      id="startTime"
-      type="time"
-      value={startTime}
-      onChange={handleStartTimeChange}
-      className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  </div>
-  <div className="w-1/2">
-    <label htmlFor="endTime" className="block text-[12px] mb-1">End Time</label>
-    <input
-      id="endTime"
-      type="time"
-      value={endTime}
-      onChange={handleEndTimeChange}      
-      className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  </div>
-</div>
+            <form onSubmit={handleSave1}>
+              <div className="mb-2">
+                <label htmlFor="title" className="block text-[12px] mb-1">Title</label>
+                <input
+                  id="title"
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="mb-2">
+                <label htmlFor="startDate" className="block text-[12px] mb-1">Start Date</label>
+                <input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="mb-2">
+                <label htmlFor="endDate" className="block text-[12px] mb-1">End Date</label>
+                <input
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="mb-2 flex space-x-2">
+                <div className="w-1/2">
+                  <label htmlFor="startTime" className="block text-[12px] mb-1">Start Time</label>
+                  <input
+                    id="startTime"
+                    type="time"
+                    value={startTime}
+                    onChange={handleStartTimeChange}
+                    className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label htmlFor="endTime" className="block text-[12px] mb-1">End Time</label>
+                  <input
+                    id="endTime"
+                    type="time"
+                    value={endTime}
+                    onChange={handleEndTimeChange}
+                    className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
 
-            <div className="mb-2">
-              <label htmlFor="comment" className="block text-[12px] mb-1">Comment</label>
-              <textarea
-                id="comment"
-                className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={2}
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-gray-800 text-white text-[12px] p-1 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Submit Schedule
-            </button>
-          </form>
+              <div className="mb-2">
+                <label htmlFor="comment" className="block text-[12px] mb-1">Comment</label>
+                <textarea
+                  id="comment"
+                  className="w-full border rounded-lg p-1 text-[12px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={2}
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-gray-800 text-white text-[12px] p-1 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Submit Schedule
+              </button>
+            </form>
         </button>
       </button>
     </Modal>
