@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import API_URL from '@/app/acendpoints/page';
 // Define the return type of the getAllUsers function
 
 
@@ -198,7 +199,7 @@ const Step2: React.FC<{ prevStep: () => void;
       try {
         setLoading(true);
         const auth=localStorage.getItem('authToken');
-        const response = await fetch(`http://alfurqanacademy.tech:5001/studentlist/${studentId}`,{
+        const response = await fetch(`${API_URL}/studentlist/${studentId}`,{
           headers: {
             'Authorization': `Bearer ${auth}`,        
               },
@@ -1552,7 +1553,9 @@ const Step9 = ({ prevStep, nextStep,updatedStudentDatass }: { prevStep: () => vo
   // Function to handle form submission
   const handleSubmit = async () => {
     try {
+      console.log(">>>",updatedStudentDatass.academicCoach.academicCoachId)
       const submitData = {
+        academicCoachId:updatedStudentDatass.academicCoach.academicCoachId,
         student: {
           studentId: updatedStudentDatass._id,
           studentFirstName: updatedStudentDatass.firstName,
@@ -1607,12 +1610,12 @@ const Step9 = ({ prevStep, nextStep,updatedStudentDatass }: { prevStep: () => vo
         createdDate: updatedStudentDatass.createdDate,
         createdBy: updatedStudentDatass.academicCoach.name,
         updatedDate: new Date().toISOString(),
-        updatedBy: "system", // or replace with the current user's email/ID
+        updatedBy:"system", // or replace with the current user's email/ID
       };
       console.log("Payload being sent:", JSON.stringify(submitData, null, 2));
       const auth=localStorage.getItem('authToken');
       // Make POST request to your API
-      const response = await fetch('http://alfurqanacademy.tech:5001/evaluation', {
+      const response = await fetch(`${API_URL}/evaluation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

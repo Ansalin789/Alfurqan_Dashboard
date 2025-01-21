@@ -7,6 +7,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { useSearchParams } from 'next/navigation';  // Correct import from next/navigation
 import Image from 'next/image';
+import API_URL from '@/app/acendpoints/page';
 
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
 
@@ -54,11 +55,10 @@ const Invoice = () => {
     }
 
     try {
-      const auth = localStorage.getItem('authToken');
-      const response = await fetch(`http://alfurqanacademy.tech:5001/evaluationlist/${studentId}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth}`,
+      const auth=localStorage.getItem('authToken');
+      const response = await fetch(`${API_URL}/evaluationlist/${studentId}`,{
+        headers: { 'Content-Type': 'application/json' ,
+          'Authorization': `Bearer ${auth}` ,
         },
       });
       if (!response.ok) {
@@ -120,14 +120,14 @@ const Invoice = () => {
   const handleClick = async () => {
     const evaluationid = evaluationData._id; // Replace with your actual evaluation ID
     const totalprice = evaluationData.planTotalPrice;
-    const auth = localStorage.getItem('authToken');
-    const response = await fetch(`http://alfurqanacademy.tech:5001/create-payment-intent`, {
+    const auth=localStorage.getItem('authToken');
+    const response = await fetch(`${API_URL}/create-payment-intent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${auth}`,
       },
-      body: JSON.stringify({ amount: totalprice, currency: 'usd', evaluationId: evaluationid, paymentIntentResponse: "" }),
+      body: JSON.stringify({ amount: totalprice*100, currency: 'usd', evaluationId: evaluationid, paymentIntentResponse: "" }),
     });
     const data = await response.json();
     setClientSecret(data.clientSecret);

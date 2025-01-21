@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-
+import React, { useEffect, useState } from 'react'; 
+import API_URL from "../../app/acendpoints/page"
+import axios from 'axios';
 type StudentData = {
   id: number;
   name: string;
@@ -18,16 +19,20 @@ const StudentEvaluation = () => {
   useEffect(() => {
     // Fetch data from API
     const auth=localStorage.getItem('authToken');
-    fetch('http://alfurqanacademy.tech:5001/evaluationlist',{
+    const academicId=localStorage.getItem('academicId');
+    console.log("academicId>>",academicId);
+    axios.get(`${API_URL}/evaluationlist`,{
+      params:{academicCoachId:academicId },
+
       headers: {
         'Authorization': `Bearer ${auth}`,        
           },
     })
       .then((response) => {
-        if (!response.ok) {
+        if (!response.data) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return response.json();
+        return response.data;
       })
       .then((data) => {
         const formattedData: StudentData[] = data.evaluation.map((item: { student: { studentFirstName: string; studentLastName: string; studentPhone: string; studentCountry: string; preferredTeacher: string; preferredDate: string; preferredFromTime: string; preferredToTime: string; }; }, index: number) => ({

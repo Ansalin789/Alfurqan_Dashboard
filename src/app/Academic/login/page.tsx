@@ -8,6 +8,7 @@ import { FcGoogle } from "react-icons/fc";
 
 import Image from 'next/image';
 import axios from 'axios'; // Using axios for HTTP requests
+import API_URL from '@/app/acendpoints/page';
 
 export default function SignInSignUp(): JSX.Element {
   const router = useRouter();
@@ -28,15 +29,15 @@ export default function SignInSignUp(): JSX.Element {
       );
 
       // Send the Google token to your backend
-      const response = await axios.post('http://alfurqanacademy.tech:5001/google-signin', {
+      const response = await axios.post(`${API_URL}/google-signin`, {
         googleToken: tokenResponse.access_token,
         email: userInfo.data.email
       });
 
       // Handle the response from your backend
-      const { token, role } = response.data;
+      const { token, role ,_id} = response.data;
       localStorage.setItem('authToken', token);
-      
+      localStorage.setItem('AcademicId',_id);
       // Redirect based on role
       if (role?.includes('ACADEMIC COACH')) {
         router.push('/Academic');
@@ -87,13 +88,13 @@ export default function SignInSignUp(): JSX.Element {
     event.preventDefault();
     setError('');
     try {
-      const response = await axios.post('http://alfurqanacademy.tech:5001/signin', { username, password });
-      const {accessToken, role } = response.data;
+      const response = await axios.post(`${API_URL}/signin`, { username, password });
+      const {accessToken, role,_id } = response.data;
            console.log(response.data);
            console.log(accessToken);
       // Store the token securely
       localStorage.setItem('authToken', accessToken);
-      
+      localStorage.setItem('academicId',_id);
       // Optional: Store token expiry
       const tokenExpiry = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 hours from now
       localStorage.setItem('tokenExpiry', tokenExpiry.toString());

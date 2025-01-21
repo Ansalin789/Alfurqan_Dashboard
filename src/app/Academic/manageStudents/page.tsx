@@ -7,6 +7,7 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import { useRouter } from 'next/navigation';
 import AddTrailStudentModal from '@/components/Academic/AddTrailStudentModel';
 import PaginationPre from '@/components/PaginationPre';
+import API_URL from '@/app/acendpoints/page';
 
 const TrailManagement = () => {
   interface Student {
@@ -63,7 +64,7 @@ const TrailManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       const auth = localStorage.getItem('authToken');
-      const response = await fetch('http://alfurqanacademy.tech:5001/alstudents', {
+      const response = await fetch(`${API_URL}/alstudents`, {
         headers: {
           Authorization: `Bearer ${auth}`,
         },

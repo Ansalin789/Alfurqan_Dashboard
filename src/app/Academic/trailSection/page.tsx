@@ -8,6 +8,8 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
 import { User } from '@/types';
+import API_URL from '@/app/acendpoints/page';
+import axios from 'axios';
 
 
 
@@ -67,7 +69,10 @@ const getAllUsers = async (): Promise<{
 }> => {
   try {
     const auth = localStorage.getItem('authToken');
-    const response = await fetch('http://alfurqanacademy.tech:5001/evaluationlist', {
+    const academicId=localStorage.getItem('academicId');
+    console.log("academicId>>",academicId);
+    const response = await axios.get(`${API_URL}/evaluationlist`, {
+      params:{academicCoachId:academicId },
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${auth}`,
@@ -75,19 +80,18 @@ const getAllUsers = async (): Promise<{
     });
 
     // Check for response.ok to handle HTTP errors
-    if (!response.ok) {
+    if (!response.data) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const rawData: ApiResponse = await response.json();
 
     // Ensure rawData has the expected structure
-    if (!rawData.evaluation || !Array.isArray(rawData.evaluation)) {
+    if (!response.data.evaluation || !Array.isArray(response.data.evaluation)) {
       throw new Error('Invalid data structure received from API');
     }
 
     // Transform API data to match TransformedUser interface
-    const transformedData: TransformedUser[] = rawData.evaluation.map((item) => ({
+    const transformedData: TransformedUser[] = response.data.evaluation.map((item:any) => ({
       _id: item._id,
       studentId: item.student.studentId,
       studentFirstName: item.student.studentFirstName,
@@ -452,7 +456,7 @@ const handleClick = async (id:string) => {
     setStudentStatus(data.studentStatus);
     setPaymentStatus(data.paymentStatus);
     setPaymentLink(
-      `http://localhost:3000/invoice?id=${encodeURIComponent(data.student.studentId)}`);
+      `http://localhost:3000/invoice?id=${encodeURIComponent(data._id)}`);
     setFormData(data);
     console.log(data);
    
@@ -473,7 +477,7 @@ const handleClick = async (id:string) => {
     const formDataNames = {
       _id: formData?._id ?? "",
       student: {
-        studentId:formData?._id,
+        studentId:formData?.student.studentId,
         studentFirstName: formData?.student.studentFirstName,
         studentLastName: formData?.student.studentLastName,
         studentEmail: formData?.student.studentEmail,
