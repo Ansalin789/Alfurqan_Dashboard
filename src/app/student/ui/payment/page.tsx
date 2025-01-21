@@ -6,7 +6,6 @@ import { Elements } from '@stripe/react-stripe-js';
 import BaseLayout2 from "@/components/BaseLayout2";
 import StripePaymentForm from "@/app/student/components/StripePaymentForm/page";
 import html2pdf from 'html2pdf.js'; // Import html2pdf.js
-import Invoic from '@/app/student/components/pdfdesign/page'
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
 
 const Invoice = () => {
@@ -24,7 +23,6 @@ const Invoice = () => {
   const downloadInvoice = () => {
     setIsGeneratingPDF(true); // Set to true while generating PDF
     const invoiceElement = document.getElementById('invoic');
-    <Invoic />; // The div containing the invoice
     const options = {
       filename: 'invoice.pdf',
       html2canvas: { scale: 2 }, // Optional: higher scale for better quality
