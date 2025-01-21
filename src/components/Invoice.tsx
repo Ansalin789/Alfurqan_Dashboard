@@ -127,7 +127,7 @@ const Invoice = () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${auth}`,
       },
-      body: JSON.stringify({ amount: totalprice, currency: 'usd', evaluationId: evaluationid, paymentIntentResponse: "" }),
+      body: JSON.stringify({ amount: totalprice*100, currency: 'usd', evaluationId: evaluationid, paymentIntentResponse: "" }),
     });
     const data = await response.json();
     setClientSecret(data.clientSecret);

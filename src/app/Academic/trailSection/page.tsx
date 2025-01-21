@@ -456,7 +456,7 @@ const handleClick = async (id:string) => {
     setStudentStatus(data.studentStatus);
     setPaymentStatus(data.paymentStatus);
     setPaymentLink(
-      `http://localhost:3000/invoice?id=${encodeURIComponent(data.student.studentId)}`);
+      `http://localhost:3000/invoice?id=${encodeURIComponent(data._id)}`);
     setFormData(data);
     console.log(data);
    
@@ -477,7 +477,7 @@ const handleClick = async (id:string) => {
     const formDataNames = {
       _id: formData?._id ?? "",
       student: {
-        studentId:formData?._id,
+        studentId:formData?.student.studentId,
         studentFirstName: formData?.student.studentFirstName,
         studentLastName: formData?.student.studentLastName,
         studentEmail: formData?.student.studentEmail,
