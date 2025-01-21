@@ -14,32 +14,37 @@ import "@/styles/globals.css";
 const SidebarItems = [
     {
         name: 'Dashboard',
-        href: '/Student',
+        href: '/student/ui/dashboard',
         icon: TbLayoutDashboardFilled,    
     },
     {
         name: 'Classes',
-        href: '/Student/classes',
+        href: '/student/ui/classes',
         icon: IoPeopleSharp,
     },
     {
         name: 'Assignment',
-        href: '/Student/assignment',
+        href: '/student/ui/assignment',
         icon: MdAssignment,
     },
     {
         name: 'Payments',
-        href: '/Student/payments',
+        href: '/student/ui/payments',
         icon: MdOutlinePayment,
     },
     {
         name: 'Knowledge',
-        href: '/Student/knowledge',
+        href: '/student/ui/knowledge',
+        icon: FaFolderOpen,
+    },
+    {
+        name: 'Message',
+        href: '/student/ui/message',
         icon: FaFolderOpen,
     },
     {
         name: 'Support',
-        href: '/Student/support',
+        href: '/student/ui/support',
         icon: MdContactSupport,
     }
 ];
@@ -54,11 +59,11 @@ export default function Sidebar2() {
                         <Image src="/assets/images/alf2.png" width={130} height={50} alt='logo'/>
                     </p>
                 </div>
-                <ul className="sidebar__list">
+                <ul className="">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (
-                        <li className="sidebar__item" key={name}>
-                            <Link href={href} className='sidebar__link'>
-                                <span className="sidebar__icon">
+                        <li className=" text-center justify-center ml-6 hover:no-underline hover:flex hover:bg-[#476a9b] hover:text-[#fff] hover:align-middle hover:justify-center] hover:pl-2 pl-2 hover:rounded-lg" key={name}>
+                            <Link href={href} className='no-underline flex align-middle justify-start w-[100%] text-[#fff] pt-[15px] pb-[15px] text-[15px]'>
+                                <span className="text-[20px] inline-block mr-[10px]">
                                     <Icon />
                                 </span>
                                 <span className="sidebar__name">{name}</span>
@@ -87,6 +92,6 @@ export default function Sidebar2() {
                 </button>
 
             </aside>
-        </div>
-    );
+        </div>
+    );
 }
