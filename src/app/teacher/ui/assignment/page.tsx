@@ -1,10 +1,10 @@
 import React from 'react'
-import StudentsTable from '../../components/studentlist'
+import Assignment from '../../components/Assignment'
 
 const page = () => {
   return (
     <div>
-        <StudentsTable />
+      <Assignment />
     </div>
   )
 }
