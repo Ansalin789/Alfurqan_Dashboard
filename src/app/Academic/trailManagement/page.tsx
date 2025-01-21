@@ -8,6 +8,8 @@ import AddStudentModal from '@/components/Academic/AddStudentModel';
 import Popup from '@/components/Academic/Popup';
 import { useRouter } from 'next/navigation';
 import { table } from 'console';
+import axios from 'axios';
+import API_URL from '@/app/acendpoints/page';
 
 // Define the return type of the getAllUsers function
 interface User {
@@ -38,22 +40,26 @@ interface GetAllUsersResponse {
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   try {
     const auth=localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:5001/studentlist',{
+    const academicId=localStorage.getItem('academicId');
+    console.log("academicId>>",academicId);
+    const response = await axios.get(`${API_URL}/studentlist`,{
+      params:{academicCoachId:academicId },
       headers: {
         'Content-Type': 'application/json',
          'Authorization': `Bearer ${auth}`,
       },
     });
-    const rawData = await response.json();
-    console.log('Raw API Response:', rawData); // Debug log
+console.log("response>>>",response)
 
+   // const rawData = JSON.stringify(response.data);
+   // console.log('Raw API Response:', rawData); // Debug log
     // Check if rawData.students exists and is an array
-    if (!rawData.students || !Array.isArray(rawData.students)) {
+    if (!response.data.students || !Array.isArray(response.data.students)) {
       throw new Error('Invalid data structure received from API');
     }
 
     // Transform API data to match User interface
-    const transformedData = rawData.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; }) => ({
+    const transformedData = response.data.students.map((item: { _id: string; firstName: string; lastName: string; email: string; phoneNumber: string; country: string; learningInterest: string; preferredTeacher: string; startDate: string; preferredFromTime: string; preferredToTime: string; evaluationStatus?: string; }) => ({
       studentId: item._id,
       fname: item.firstName,
       lname: item.lastName,
@@ -570,16 +576,19 @@ const Pagination = () => {
         <h2>Edit User</h2>
         {selectedUserData ? (
           <div>
-            <Popup 
-              isOpen={modalIsOpen} 
-              onRequestClose={closeModal} 
-              user={selectedUserData}
-              isEditMode={isEditMode} 
-              onSave={() => {
-                fetchStudents();
-                closeModal();
-              }} 
-            />
+           <Popup
+            isOpen={modalIsOpen}
+            onRequestClose={closeModal}
+            user={{
+              ...selectedUserData,
+              city: selectedUserData.city ?? '', // Provide a default value for city if undefined
+            }}
+            isEditMode={isEditMode}
+            onSave={() => {
+              fetchStudents();
+              closeModal();
+            }}
+          />
           </div>
         ) : (
           <div>No user data available for editing.</div>

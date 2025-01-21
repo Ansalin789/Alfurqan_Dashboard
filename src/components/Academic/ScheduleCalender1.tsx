@@ -4,27 +4,43 @@ import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-
+import API_URL from '@/app/acendpoints/page';
 
 const localizer = momentLocalizer(moment);
 
+// Define types for events
+interface Event {
+  title: string;
+  start: Date;
+  end: Date;
+  allDay: boolean;
+  description: string;
+  meetingLink: string;
+  studentName: string;
+  teacherName: string;
+  course: string;
+  meetingLocation: string;
+  scheduledFrom: string;
+  scheduledTo: string;
+}
+
 const ScheduleCalender: React.FC = () => {
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<Event[]>([]); // Specify the event type here
 
   useEffect(() => {
     const auth=localStorage.getItem('authToken');
-    fetch('http://localhost:5001/meetingSchedulelist',{
+    fetch(`${API_URL}/meetingSchedulelist`,{
       headers: {
-        'Authorization': `Bearer ${auth}`,        
-          },
+        'Authorization': `Bearer ${auth}`,
+      },
     })
       .then((response) => response.json())
       .then((data) => {
         const mappedEvents = data.academicCoach.map((item: any) => {
           return {
             title: item.subject,
-            start: new Date(item.scheduledStartDate), // Start Date
-            end: new Date(item.scheduledEndDate), // End Date
+            start: new Date(item.scheduledStartDate),
+            end: new Date(item.scheduledEndDate),
             allDay: false,
             description: item.description,
             meetingLink: item.meetingLink,
@@ -40,14 +56,16 @@ const ScheduleCalender: React.FC = () => {
       })
       .catch((error) => console.error('Error fetching data: ', error));
   }, []);
-  const eventStyleGetter = (event: any) => {
+
+  // Adjusted eventStyleGetter with an unused parameter
+  const eventStyleGetter = (_: Event) => { // Use _ to indicate unused parameter
     return {
       style: {
-        backgroundColor:'#B0E0E6',
+        backgroundColor: '#B0E0E6',
         color: '#0000CD',
         borderRadius: '4px',
         padding: '3px',
-        fontSize: '12px', 
+        fontSize: '12px',
       },
     };
   };
@@ -55,7 +73,7 @@ const ScheduleCalender: React.FC = () => {
   return (
     <div className="bg-white p-6 rounded shadow-lg">
       <Calendar
-      localizer={localizer}
+        localizer={localizer}
         events={events}
         startAccessor="start"
         endAccessor="end"

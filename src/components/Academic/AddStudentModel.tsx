@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
+import API_URL from '@/app/acendpoints/page';
 
 if (typeof window !== 'undefined') {
   Modal.setAppElement('body');
@@ -76,7 +77,7 @@ interface AddStudentModalProps {
       
       const auth=localStorage.getItem('authToken');
       console.log(auth);
-      const response = await fetch('http://localhost:5001/student', {
+      const response = await fetch(`${API_URL}/student`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
+
 
 if (typeof window !== 'undefined') {
   Modal.setAppElement('body');

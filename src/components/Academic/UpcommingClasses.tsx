@@ -1,3 +1,5 @@
+import API_URL from '@/app/acendpoints/page';
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
 // Define interfaces for the API response
@@ -30,19 +32,22 @@ const UpcomingClasses: React.FC = () => {
     const fetchClasses = async () => {
       try {
         const auth=localStorage.getItem('authToken');
-        const response = await fetch('http://localhost:5001/evaluationlist', {
+        const academicId=localStorage.getItem('academicId');
+        console.log("academicId>>",academicId);
+        const response = await axios.get(`${API_URL}/evaluationlist`, {
           method: 'GET',
+          params:{academicCoachId:academicId },
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${auth}`, 
           },
         });
 
-        if (!response.ok) {
+        if (!response.data) {
           throw new Error(`Failed to fetch classes: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const data = await response.data;
         const upcomingClasses = data.evaluation
           .filter((item: Evaluation) => {
             const classStartDate = new Date(item.classStartDate);
