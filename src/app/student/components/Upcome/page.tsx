@@ -72,36 +72,47 @@ const Upcome = () => {
     <div className="col-span-12 -mt-4">
       <h2 className="text-[16px] font-bold text-gray-800 px-4 mb-0">Upcoming Classes</h2>
       <div className="bg-[#969DB2] p-1 rounded-lg shadow-md">
-        {evaluationList.map((item) => (
-          <div
-            key={item.id}
-            className="flex justify-between items-center text-white rounded-xl px-4 py-[4px]"
-          >
-            <div className="flex">
-              <span className="font-semibold text-[11px]">{`${item.id} - ${item.name}`}</span>
-            </div>
-            <div className="flex text-center">
-              <span className="text-[10px] text-center">by {item.preferredTeacher}</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="flex items-center gap-2 text-[11px]">
-                <i className="fa fa-calendar" aria-hidden="true"></i>
-                {item.date}
-              </span>
-            </div>
+        {evaluationList.map((item) => {
+          let backgroundColor: string;
+
+          if (item.id % 3 === 0) {
+            backgroundColor = "#7C88CC";
+          } else if (item.id % 3 === 1) {
+            backgroundColor = "#FFD700";
+          } else {
+            backgroundColor = "#FF69B4";
+          }
+
+          return (
             <div
-              className="text-[11px] px-4 py-[1px] rounded-md font-medium"
-              style={{
-                backgroundColor:
-                  item.id % 3 === 0 ? "#7C88CC" : item.id % 3 === 1 ? "#FFD700" : "#FF69B4",
-                color: "white",
-                fontSize:"11px",
-              }}
+              key={item.id}
+              className="flex justify-between items-center text-white rounded-xl px-4 py-[4px]"
             >
-              {item.time}
+              <div className="flex">
+                <span className="font-semibold text-[11px]">{`${item.id} - ${item.name}`}</span>
+              </div>
+              <div className="flex text-center">
+                <span className="text-[10px] text-center">by {item.preferredTeacher}</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="flex items-center gap-2 text-[11px]">
+                  <i className="fa fa-calendar" aria-hidden="true"></i>
+                  {item.date}
+                </span>
+              </div>
+              <div
+                className="text-[11px] px-4 py-[1px] rounded-md font-medium"
+                style={{
+                  backgroundColor,
+                  color: "white",
+                  fontSize: "11px",
+                }}
+              >
+                {item.time}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
