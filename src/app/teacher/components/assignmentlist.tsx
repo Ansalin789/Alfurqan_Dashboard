@@ -6,7 +6,16 @@ const AssignmentList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [isQuizOpen, setQuizOpen] = useState(false);
   const [title, setTitle] = useState("");  
+  const [assignmentType, setAssignmentType] = useState("");
+
+  const handleAssignmentTypeChange = (event) => {
+    setAssignmentType(event.target.value);
+  };
+  const handleCancel = () => {
+    setAssignmentType(""); // Reset the assignment type
+  };
   const assignments = [
     {
       topic: "Quiz",
@@ -202,11 +211,22 @@ const AssignmentList = () => {
             <select
               className="w-full p-2 bg-white border rounded shadow-md cursor-pointer"
               onChange={(e) => {
-                setTitle(e.target.value);  // Update title when option is selected
-                setDropdownOpen(false);    // Close the dropdown after selection
-              }}
-            >
-              <option className="hover:bg-gray-100">Quiz</option>
+                setTitle(e.target.value); 
+                setDropdownOpen(false);    
+              }} >
+              <option className="hover:bg-gray-100">Select</option>
+              <option
+                className="hover:bg-gray-100 cursor-pointer"
+                onClick={() => setQuizOpen(!isQuizOpen)}
+              >
+                Quiz
+              </option>
+              {isQuizOpen && (
+                <div className="assignment-modal">
+                  <h2>Add Assignments</h2>
+                </div>
+              )}
+
               <option className="hover:bg-gray-100">Writing</option>
               <option className="hover:bg-gray-100">Reading</option>
               <option className="hover:bg-gray-100">Image Identification</option>
