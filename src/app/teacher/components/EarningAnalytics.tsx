@@ -2,7 +2,7 @@ import React from "react";
 
 const EarningAnalytics: React.FC = () => {
   return (
-    <div className="bg-blue-600 text-white p-4 rounded-lg shadow-lg w-[400px] h-[195px]">
+    <div className="bg-blue-600 text-white p-2 rounded-lg shadow-lg w-[400px] h-[205px]">
       {/* Header */}
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-[15px] font-semibold">Earning Analytics</h2>
@@ -14,7 +14,7 @@ const EarningAnalytics: React.FC = () => {
       {/* Chart */}
       <div className="relative">
         {/* Labels */}
-        <div className="absolute top-0 left-0 flex flex-col h-full space-y-4 text-[12px] text-gray-300">
+        <div className="absolute top-0 left-0 flex flex-col h-full space-y-2 text-[8px] text-gray-300">
           <span>RC</span>
           <span>TC</span>
           <span>GC</span>
@@ -30,18 +30,18 @@ const EarningAnalytics: React.FC = () => {
             { label: "GC", thisWeek: 75, lastWeek: 125 },
             { label: "OT", thisWeek: 225, lastWeek: 175 },
           ].map((item, index) => (
-            <div key={index} className="mb-3">
+            <div key={index} className="mb-2">
               {/* Last Week Bar */}
-              <div className="bg-yellow-400 h-2 rounded-md" style={{ width: `${item.lastWeek}px` }}></div>
+              <div className="bg-yellow-400 h-1 rounded-md" style={{ width: `${item.lastWeek}px` }}></div>
               {/* This Week Bar */}
-              <div className="bg-teal-400 h-2 rounded-md mt-1" style={{ width: `${item.thisWeek}px` }}></div>
+              <div className="bg-teal-400 h-1 rounded-md mt-1" style={{ width: `${item.thisWeek}px` }}></div>
             </div>
           ))}
         </div>
       </div>
 
       {/* Footer */}
-      <div className="mt-6 flex justify-center space-x-8 text-xs text-gray-200">
+      <div className="mt-2 flex justify-center space-x-8 text-[11px] text-gray-200">
         <span>
           <span className="text-teal-400">●</span> This Week
         </span>
@@ -51,10 +51,10 @@ const EarningAnalytics: React.FC = () => {
       </div>
 
       {/* Legend */}
-      <div className="mt-4 flex justify-center text-xs text-gray-300">
-        <span className="mr-4">RC - Regular Class</span>
-        <span className="mr-4">TC - Trial Class</span>
-        <span className="mr-4">GC - Group Class</span>
+      <div className="mt-3 flex justify-center text-[10px] text-gray-300">
+        <span className="mr-3">RC - Regular Class</span>
+        <span className="mr-3">TC - Trial Class</span>
+        <span className="mr-3">GC - Group Class</span>
         <span>OT - Other</span>
       </div>
     </div>

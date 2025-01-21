@@ -8,11 +8,12 @@ import { FaSearch } from "react-icons/fa";
 import { BiFilterAlt } from "react-icons/bi";
 import Calender from '@/components/Academic/Calender';
 import UpcomingClasses from '@/components/Academic/UpcommingClasses';
-import Dashboardevaluation from '@/components/Academic/Dashboardevaluation';
 import Total from '@/app/teacher/components/total';
 import NextClass from '@/app/teacher/components/NextScheduleclass';
 import ClassAnalyticsChart from '@/app/teacher/components/ClassAnalyticsChart';
 import EarningAnalytics from '../../components/EarningAnalytics';
+import TeachingActivity from '../../components/TeachingActivity';
+import StudentsCard from '../../components/Students';
 
 
 // Register Chart.js components
@@ -70,7 +71,12 @@ export default function Academic() {
               <ClassAnalyticsChart />
               </div>
 
-              <Dashboardevaluation />
+              <div className="col-span-8 grid grid-cols-2 gap-4 p-0">
+                <TeachingActivity />
+              </div>
+              <div className="col-span-4 grid grid-cols-3 gap-4 p-0">
+              <StudentsCard />
+              </div>
               
             </main>
           </div>
