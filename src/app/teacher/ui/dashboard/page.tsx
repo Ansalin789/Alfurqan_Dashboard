@@ -6,7 +6,7 @@ import BaseLayout1 from '@/components/BaseLayout1'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { FaSearch } from "react-icons/fa";
 import { BiFilterAlt } from "react-icons/bi";
-import Calender from '@/components/Academic/Calender';
+import Calender from '@/app/teacher/components/Calender';
 import UpcomingClasses from '@/components/Academic/UpcommingClasses';
 import Total from '@/app/teacher/components/total';
 import NextClass from '@/app/teacher/components/NextScheduleclass';
