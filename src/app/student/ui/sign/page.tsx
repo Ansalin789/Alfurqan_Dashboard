@@ -70,7 +70,7 @@ const SignIn: React.FC = () => {
         localStorage.setItem('StudentAuthToken',result.data.accessToken);
         const authToken=localStorage.getItem('StudentAuthToken');
         console.log(authToken);
-        router.push('/student/ui/liveclass'); // Redirect to dashboard
+        router.push('/student/ui/dashboard'); // Redirect to dashboard
       } else {
         setError("Email not found"); // Display appropriate error message
         console.log(result?.message); // Log the error message for debugging
