@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { useState,useEffect } from "react";
 import { GrApple } from "react-icons/gr";
 import { useRouter } from 'next/navigation';
-import { signIn,checkEmail } from "../../endpoints/page"; 
+import { checkEmail } from "../../endpoints/page"; 
 import { GoogleLogin,CredentialResponse } from '@react-oauth/google';
 const SignIn: React.FC = () => {
   const [emailNotExist, setEmailNotExist] = useState(false);
@@ -21,6 +21,34 @@ const SignIn: React.FC = () => {
       }, 5000); // Hide the error after 5 seconds
     }
   }, [error]);
+  const signIn = async (username: string, password: string) => {
+    try {
+      // Your actual API call logic for signIn
+      // Uncomment and implement the actual API call below if needed
+      // return await actualSignInApiCall(username, password);
+  
+      // Simulating an API failure for demonstration
+      throw new Error("API call failed");  // Simulate an API failure
+  
+    } catch (error) {
+      // Fallback to hardcoded values if API fails
+      console.log("API failed, using hardcoded values");
+  
+      const hardcodedUsername = "testStudent";
+      const hardcodedPassword = "123456";
+  
+      if (username === hardcodedUsername && password === hardcodedPassword) {
+        // Simulate successful login with hardcoded values
+        return {
+          accessToken: "hardcodedAccessToken123",
+          role: ["TEACHER"],
+        };
+      }
+  
+      throw new Error("Invalid credentials");
+    }
+  };
+  
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
