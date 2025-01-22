@@ -1,11 +1,8 @@
+// src/app/student/components/StripePaymentForm/page.tsx
+import React from 'react';
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { Token } from '@stripe/stripe-js';
 
-interface StripePaymentFormProps {
-  onPaymentSuccess: (token: Token) => void; // Define the type for the onPaymentSuccess prop
-}
-
-const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }) => {
+const Page: React.FC = () => {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -13,7 +10,6 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
     event.preventDefault();
 
     if (!stripe || !elements) {
-      // Stripe.js has not loaded yet
       return;
     }
 
@@ -30,25 +26,27 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
       console.error(error);
       alert(error.message);
     } else if (token) {
-      // Process the payment with the token
-      onPaymentSuccess(token);
+      console.log('Payment successful:', token);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="mb-4">
-        <CardElement />
-      </div>
-      <button
-        type="submit"
-        disabled={!stripe}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-      >
-        Pay Now
-      </button>
-    </form>
+    <div>
+      <h1>Stripe Payment</h1>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <CardElement />
+        </div>
+        <button
+          type="submit"
+          disabled={!stripe}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+        >
+          Pay Now
+        </button>
+      </form>
+    </div>
   );
 };
 
-export default StripePaymentForm;
+export default Page;
