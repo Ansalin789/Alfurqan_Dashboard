@@ -1,8 +1,11 @@
-// src/app/student/components/StripePaymentForm/page.tsx
 import React from 'react';
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 
-const Page: React.FC = () => {
+interface StripePaymentFormProps {
+  onPaymentSuccess: (token: any) => Promise<void>;
+}
+
+const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }) => {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -27,6 +30,8 @@ const Page: React.FC = () => {
       alert(error.message);
     } else if (token) {
       console.log('Payment successful:', token);
+      // Call the onPaymentSuccess function passed as a prop
+      await onPaymentSuccess(token);
     }
   };
 
@@ -49,4 +54,4 @@ const Page: React.FC = () => {
   );
 };
 
-export default Page;
+export default StripePaymentForm;
