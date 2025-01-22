@@ -5,7 +5,7 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { API_URL } from '../../../app/acendpoints/page';
+
 
 const localizer = momentLocalizer(moment);
 
@@ -45,7 +45,7 @@ const SchedulePage = () => {
   // Fetch events data
   useEffect(() => {
     const auth=localStorage.getItem('authToken');
-    fetch(`${API_URL}/meetingSchedulelist`,{
+    fetch(`http://localhost:5001/meetingSchedulelist`,{
       headers: {
          'Authorization': `Bearer ${auth}`,
       },

@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:5001';
 // signIn function
 export const signIn = async (username: string, password: string) => {
   try {
-    const response = await axios.post(`${API_URL}/signin`, { username, password });
+    const response = await axios.post(`http://localhost:5001/signin`, { username, password });
 
     // Handle successful login response
     if (response.status === 200) {
@@ -26,7 +26,7 @@ export const signIn = async (username: string, password: string) => {
 export const checkEmail = async (email: string) => {
   try {
     // Send a POST request to the backend to check if the email exists
-    const response = await axios.post(`${API_URL}/allcheck-email`, { email});
+    const response = await axios.post(`http://localhost:5001/allcheck-email`, { email});
 
     // If the response status is 200, the email exists
     if (response.status === 200) {

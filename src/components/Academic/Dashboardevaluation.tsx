@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'; 
 import axios from 'axios';
-import { API_URL } from "../../app/acendpoints/page";
+
 
 type StudentData = {
   id: number;
@@ -22,7 +22,7 @@ const StudentEvaluation = () => {
     const auth=localStorage.getItem('authToken');
     const academicId=localStorage.getItem('academicId');
     console.log("academicId>>",academicId);
-    axios.get(`${API_URL}/evaluationlist`,{
+    axios.get(`http://localhost:5001/evaluationlist`,{
       params:{academicCoachId:academicId },
 
       headers: {

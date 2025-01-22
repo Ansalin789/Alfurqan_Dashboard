@@ -41,7 +41,7 @@ const SignIn: React.FC = () => {
         // Simulate successful login with hardcoded values
         return {
           accessToken: "hardcodedAccessToken123",
-          role: ["TEACHER"],
+          role: ["Student"],
         };
       }
   

@@ -7,7 +7,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { useSearchParams } from 'next/navigation';  // Correct import from next/navigation
 import Image from 'next/image';
-import { API_URL } from '../app/acendpoints/page';
+
 
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
 
@@ -56,7 +56,7 @@ const Invoice = () => {
 
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`${API_URL}/evaluationlist/${studentId}`,{
+      const response = await fetch(`http://localhost:5001/evaluationlist/${studentId}`,{
         headers: { 'Content-Type': 'application/json' ,
           'Authorization': `Bearer ${auth}` ,
         },
@@ -121,7 +121,7 @@ const Invoice = () => {
     const evaluationid = evaluationData._id; // Replace with your actual evaluation ID
     const totalprice = evaluationData.planTotalPrice;
     const auth=localStorage.getItem('authToken');
-    const response = await fetch(`${API_URL}/create-payment-intent`, {
+    const response = await fetch(`http://localhost:5001/create-payment-intent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -7,7 +7,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import BaseLayout1 from '@/components/BaseLayout1';
 import AddScheduleModal from '@/components/Academic/ViewTeachersList/AddScheduleModel';
 import { FaCheck } from 'react-icons/fa';
-import { API_URL } from '../../../app/acendpoints/page';
+
 
 
 interface AcademicCoachItem {
@@ -40,7 +40,7 @@ const Teachereschedule = () => {
   // Fetch events data
   useEffect(() => {
     const auth=localStorage.getItem('authToken');
-    fetch(`${API_URL}/meetingSchedulelist`,{
+    fetch(`http://localhost:5001/meetingSchedulelist`,{
       headers: {
          'Authorization': `Bearer ${auth}`,
       },

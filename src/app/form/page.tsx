@@ -10,7 +10,7 @@ import { getCountries } from 'react-phone-number-input/input'
 import en from 'react-phone-number-input/locale/en.json'
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
-import { API_URL } from '../acendpoints/page';
+
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -195,7 +195,7 @@ const MultiStepForm = () => {
             // Debug log to check the data being sent
             console.log('Sending data:', formattedData);
             const auth=localStorage.getItem('authToken');
-            const response = await fetch(`${API_URL}/student`, {
+            const response = await fetch(`http://localhost:5001/student`, {
 
                 method: 'POST',
                 headers: {

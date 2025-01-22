@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Modal from 'react-modal';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import { FiCalendar, FiMoreVertical } from 'react-icons/fi';
-import { API_URL } from '../../../app/acendpoints/page';
+
 
 const ManageStudentView = () => {
   const router = useRouter();
@@ -124,7 +124,7 @@ const ManageStudentView = () => {
       const fetchData = async () => {
         try {
           const auth=localStorage.getItem('authToken');
-          const response = await fetch(`${API_URL}/alstudents/${studentId}`,
+          const response = await fetch(`http://localhost:5001/alstudents/${studentId}`,
             {
               headers: {
                      'Authorization': `Bearer ${auth}`,
@@ -142,7 +142,7 @@ const ManageStudentView = () => {
           const fetchTeachers = async () => {
             try {
               const auth=localStorage.getItem('authToken');
-              const response = await fetch(`${API_URL}/users?role=TEACHER`, {
+              const response = await fetch(`http://localhost:5001/users?role=TEACHER`, {
 
                 headers: {
                        'Authorization': `Bearer ${auth}`,
@@ -345,7 +345,7 @@ const ManageStudentView = () => {
     }
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`${API_URL}/createclassschedule/${studentId}`, {
+      const response = await fetch(`http://localhost:5001/createclassschedule/${studentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -429,7 +429,7 @@ const ManageStudentView = () => {
   const studentlist=async()=>{
       try{
         const auth=localStorage.getItem('authToken');
-           const response=await fetch(`${API_URL}/classShedule`,{
+           const response=await fetch(`http://localhost:5001/classShedule`,{
             method:'GET',
             headers:{
               "Content-Type":"application/json",

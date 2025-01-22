@@ -9,7 +9,7 @@ import Popup from '@/components/Academic/Popup';
 import { useRouter } from 'next/navigation';
 import { table } from 'console';
 import axios from 'axios';
-import { API_URL } from '../../../app/acendpoints/page';
+
 
 // Define the return type of the getAllUsers function
 interface User {
@@ -42,7 +42,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     const auth=localStorage.getItem('authToken');
     const academicId=localStorage.getItem('academicId');
     console.log("academicId>>",academicId);
-    const response = await axios.get(`${API_URL}/studentlist`,{
+    const response = await axios.get(`http://localhost:5001/studentlist`,{
       params:{academicCoachId:academicId },
       headers: {
         'Content-Type': 'application/json',
