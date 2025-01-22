@@ -10,7 +10,7 @@ import { getCountries } from 'react-phone-number-input/input'
 import en from 'react-phone-number-input/locale/en.json'
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
-import API_URL from '../acendpoints/page';
+import { API_URL } from '../acendpoints/page';
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];

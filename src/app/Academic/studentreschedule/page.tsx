@@ -9,7 +9,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Image from 'next/image';
 import { FaCheck } from "react-icons/fa";
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
-import API_URL from '@/app/acendpoints/page';
+import { API_URL } from '../../../app/acendpoints/page';
 
 
 const localizer = momentLocalizer(moment);

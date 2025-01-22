@@ -9,7 +9,7 @@ import Popup from '@/components/Academic/Popup';
 import { useRouter } from 'next/navigation';
 import { table } from 'console';
 import axios from 'axios';
-import API_URL from '@/app/acendpoints/page';
+import { API_URL } from '../../../app/acendpoints/page';
 
 // Define the return type of the getAllUsers function
 interface User {

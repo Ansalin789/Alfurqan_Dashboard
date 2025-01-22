@@ -9,7 +9,7 @@ import Modal from 'react-modal';
 import React, { useState, useRef, useEffect } from 'react';
 import { FiCalendar, FiMoreVertical} from 'react-icons/fi';
 import StudentList from '@/components/Academic/ViewTeachersList/StudentList';
-import API_URL from '@/app/acendpoints/page';
+import { API_URL } from '../../../app/acendpoints/page';
 
 
 

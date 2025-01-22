@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Modal from 'react-modal';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import { FiCalendar, FiMoreVertical } from 'react-icons/fi';
-import API_URL from '@/app/acendpoints/page';
+import { API_URL } from '../../../app/acendpoints/page';
 
 const ManageStudentView = () => {
   const router = useRouter();

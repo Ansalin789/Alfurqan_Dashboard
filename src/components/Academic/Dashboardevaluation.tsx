@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'; 
-import API_URL from "../../app/acendpoints/page"
 import axios from 'axios';
+import { API_URL } from "../../app/acendpoints/page";
+
 type StudentData = {
   id: number;
   name: string;

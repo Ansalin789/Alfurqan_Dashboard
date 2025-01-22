@@ -1,4 +1,4 @@
-import API_URL from '@/app/acendpoints/page';
+import { API_URL } from '../../app/acendpoints/page';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { FaUserGraduate, FaCheckCircle, FaClock, FaHourglassHalf } from "react-icons/fa";

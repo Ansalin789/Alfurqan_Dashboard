@@ -8,7 +8,7 @@ import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from 'next/navigation';
 import BaseLayout1 from '@/components/BaseLayout1';
 import Modal from 'react-modal';
-import API_URL from '@/app/acendpoints/page';
+import { API_URL } from '../../../app/acendpoints/page';
 
 interface Teacher {
   _id:string;
