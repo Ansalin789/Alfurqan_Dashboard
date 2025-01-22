@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import BaseLayout2 from "@/components/BaseLayout2";
-import StripePaymentForm from "@/app/student/components/StripePaymentForm/page";
+import {StripePaymentForm} from "@/app/student/components/StripePaymentForm/page";
 import html2pdf from 'html2pdf.js'; // Import html2pdf.js
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
 

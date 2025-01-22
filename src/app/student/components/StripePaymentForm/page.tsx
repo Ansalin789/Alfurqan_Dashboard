@@ -54,4 +54,4 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
   );
 };
 
-export default StripePaymentForm;
+export { StripePaymentForm };
