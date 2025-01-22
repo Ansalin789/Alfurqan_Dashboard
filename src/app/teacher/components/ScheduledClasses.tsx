@@ -18,8 +18,7 @@ const ScheduledClasses = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-
-  const upcomingData = [
+  const [upcomingClasses, setUpcomingClasses] = useState([
     { id: 798, name: "Samantha William", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 7:30 AM" },
     { id: 799, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 8:30 AM" },
     { id: 800, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Re-Schedule Requested" },
@@ -28,7 +27,7 @@ const ScheduledClasses = () => {
     { id: 803, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 8:30 AM" },
     { id: 804, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 8:30 AM" },
     { id: 805, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 8:30 AM" },
-  ];
+  ]);
 
   const completedData = [
     { id: 803, name: "Samantha William", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Completed" },
@@ -37,7 +36,7 @@ const ScheduledClasses = () => {
     { id: 806, name: "Nadila Adja", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Completed" },
   ];
 
-  const dataToShow = activeTab === "upcoming" ? upcomingData : completedData;
+  const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -57,17 +56,33 @@ const ScheduledClasses = () => {
   const handleRescheduleSubmit = () => {
     if (rescheduleReason.trim()) {
       setShowSuccess(true);
+      setUpcomingClasses(prevClasses => 
+        prevClasses.map(item => 
+          item.id === selectedItemId 
+            ? { ...item, status: "Re-Schedule Requested" }
+            : item
+        )
+      );
+      
       setTimeout(() => {
         setShowSuccess(false);
         setIsRescheduleModalOpen(false);
         setRescheduleReason("");
-      }, 2000); // Hide after 2 seconds
+      }, 2000);
     }
   };
 
   const handleStatusClick = (status: string) => {
     if (status.includes('Available')) {
       router.push('/teacher/ui/liveclass'); // Replace with your desired route
+    }
+  };
+
+  const handleDateSelect = (date: Date | null) => {
+    if (date) {
+      setSelectedDate(date);
+      setIsDatePickerOpen(false);
+      router.push('/teacher/ui/schedule/schedules');
     }
   };
 
@@ -85,7 +100,7 @@ const ScheduledClasses = () => {
                   }`}
                   onClick={() => setActiveTab("upcoming")}
               >
-                  Upcoming ({upcomingData.length})
+                  Upcoming ({upcomingClasses.length})
               </button>
               <button
                   className={`px-6 py-2 text-[13px] font-semibold ${
@@ -109,12 +124,7 @@ const ScheduledClasses = () => {
                   <div className="absolute right-0 z-10">
                     <DatePicker
                       selected={selectedDate}
-                      onChange={(date: Date | null) => {
-                        if (date) {
-                          setSelectedDate(date);
-                          setIsDatePickerOpen(false);
-                        }
-                      }}
+                      onChange={handleDateSelect}
                       inline
                       className="border rounded-lg shadow-lg"
                     />
@@ -163,19 +173,19 @@ const ScheduledClasses = () => {
                     {activeTab === "upcoming" && (
                       <>
                         <button 
-                          className={`text-xl ${item.status === "Re-Schedule Requested" ? '' : 'cursor-not-allowed opacity-50'}`}
-                          onClick={() => item.status === "Re-Schedule Requested" && handleOptionsClick(item.id)}
+                          className="text-xl"
+                          onClick={() => handleOptionsClick(item.id)}
                         >
                           ...
                         </button>
-                        {selectedItemId === item.id && item.status === "Re-Schedule Requested" && (
+                        {selectedItemId === item.id && (
                           <div className="absolute right-0 mt-2 w-36 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                             <div className="py-1">
                               <button
                                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                 onClick={() => {
                                   setIsRescheduleModalOpen(true);
-                                  setSelectedItemId(null);
+                                  setSelectedItemId(item.id);
                                 }}
                               >
                                 Request
@@ -183,12 +193,10 @@ const ScheduledClasses = () => {
                               <button
                                 className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                                 onClick={() => {
-                                  // Add cancel logic here
-                                  console.log('Cancel clicked for id:', item.id);
                                   setSelectedItemId(null);
                                 }}
                               >
-                                Class
+                                Cancel
                               </button>
                             </div>
                           </div>
