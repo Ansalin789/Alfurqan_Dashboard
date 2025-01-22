@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
 import React from 'react'
 import 'react-calendar/dist/Calendar.css'
-import BaseLayout1 from '@/components/BaseLayout1'
+import BaseLayout from '@/components/BaseLayout'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { FaSearch } from "react-icons/fa";
 import { BiFilterAlt } from "react-icons/bi";
@@ -25,7 +25,7 @@ export default function Academic() {
 
   return (
     <div>
-      <BaseLayout1>
+      <BaseLayout>
         <div className="flex flex-col lg:flex-row p-2 w-full">
           <div className="flex-1 pr-8 pl-4">
           <header className="flex p-2">
@@ -90,7 +90,7 @@ export default function Academic() {
             </div>
           </div>
         </div>
-      </BaseLayout1>
+      </BaseLayout>
     </div>
   )
 }
