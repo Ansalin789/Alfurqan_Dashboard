@@ -6,9 +6,9 @@ import {
   Mic,
   Video,
   MonitorStop,
-  PhoneOff,Disc
+  PhoneOff,Disc,Timer, ChevronDown
 } from 'lucide-react';
-import BaseLayout2 from '@/components/BaseLayout2';
+import BaseLayout from '@/components/BaseLayout';
 
 function LiveClass() {
   const [isVideoCallActive, setIsVideoCallActive] = useState(false);
@@ -24,6 +24,7 @@ function LiveClass() {
   const [showPopup, setShowPopup] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const[isScreenSharing,setIsScreenSharing]=useState(false);
+  const[isFormData,setIsFormData]=useState(true);
   function StarRating({
     value,
     onChange,
@@ -82,7 +83,7 @@ function LiveClass() {
       endVideoCall();
     };
   }, [isVideoCallActive]);
-  const handleSubmit = () => {
+  const handleSubmitrate = () => {
     console.log({ ratings, feedback })
     setShowPopup(true)
   }
@@ -205,26 +206,260 @@ function LiveClass() {
     console.log('Recording stopped');
     setIsRecording(false);
   };
-  
+  const [student, setStudent] = useState({
+    firstName: 'Samantha',
+    lastName: 'William',
+    city: 'Texas',
+    country: 'USA',
+    trialId: '#098367',
+    course: 'Arabic',
+    classStatus: 'Joining',
+    sessionDate: '2024-05-06',
+    sessionTime: '04:23',
+    comments: '',
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setStudent(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Form submitted:', student);
+  };
+
+  const handleStartSession = () => {
+    console.log('Starting session for student:', student);
+    setIsFormData(false);
+  };
+
+  const handleClear = () => {
+    setStudent({
+      firstName: '',
+      lastName: '',
+      city: '',
+      country: '',
+      trialId: '',
+      course: '',
+      classStatus: 'Joining',
+      sessionDate: '',
+      sessionTime: '',
+      comments: '',
+    });
+  };
 
   return (
-    <BaseLayout2>
+    <BaseLayout>
       <div className="flex h-screen bg-[#E6E9ED]">
-      <div className={`
-        fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50
-        bg-[#1C3557] text-white px-8 py-4 rounded-xl shadow-lg
-        flex items-center gap-3 transition-opacity duration-300
-        ${showPopup ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-      `}>
+        {isFormData ? (
+               <div className="min-h-screen bg-[#E6E9ED] p-8">
+               <div className="max-w-6xl mx-auto">
+                 <h1 className="text-3xl font-bold text-gray-800 mb-8">Trial Class</h1>
+                 
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                   {/* Form Section */}
+                   <form onSubmit={handleSubmit} className="lg:col-span-2 bg-[#1e3a5f] text-white p-8 rounded-lg">
+                     <h2 className="text-xl font-semibold mb-6">Student Details</h2>
+                     
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       <div>
+                         <label htmlFor='firtname' className="block text-sm mb-2">First name</label>
+                         <input
+                           type="text"
+                           name="firstName"
+                           value={student.firstName}
+                           onChange={handleInputChange}
+                           className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400"
+                           required
+                         />
+                       </div>
+                       
+                       <div>
+                         <label htmlFor='firname'  className="block text-sm mb-2">Last name</label>
+                         <input
+                           type="text"
+                           name="lastName"
+                           value={student.lastName}
+                           onChange={handleInputChange}
+                           className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400"
+                           required
+                         />
+                       </div>
+         
+                       <div>
+                         <label  htmlFor='fname' className="block text-sm mb-2">City</label>
+                         <div className="relative">
+                           <select
+                             name="city"
+                             value={student.city}
+                             onChange={handleInputChange}
+                             className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
+                             required
+                           >
+                             <option value="Texas">Texas</option>
+                             <option value="New York">New York</option>
+                             <option value="California">California</option>
+                           </select>
+                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+                         </div>
+                       </div>
+         
+                       <div>
+                         <label htmlFor='firthgchgname'  className="block text-sm mb-2">Country</label>
+                         <div className="relative">
+                           <select
+                             name="country"
+                             value={student.country}
+                             onChange={handleInputChange}
+                             className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
+                             required
+                           >
+                             <option value="USA">USA</option>
+                             <option value="Canada">Canada</option>
+                             <option value="UK">UK</option>
+                           </select>
+                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+                         </div>
+                       </div>
+         
+                       <div>
+                         <label htmlFor='firfftname'  className="block text-sm mb-2">Trial ID</label>
+                         <input
+                           type="text"
+                           name="trialId"
+                           value={student.trialId}
+                           onChange={handleInputChange}
+                           className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400"
+                           required
+                         />
+                       </div>
+         
+                       <div>
+                         <label htmlFor='firtghggname'  className="block text-sm mb-2">Course</label>
+                         <div className="relative">
+                           <select
+                             name="course"
+                             value={student.course}
+                             onChange={handleInputChange}
+                             className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
+                             required
+                           >
+                             <option value="Arabic">Arabic</option>
+                             <option value="Islamic Studies">Islamic Studies</option>
+                             <option value="Quran">Quran</option>
+                           </select>
+                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+                         </div>
+                       </div>
+                     </div>
+         
+                     <div className="mt-6">
+                       <label htmlFor='fifffrtname'  className="block text-sm mb-2">Class Status</label>
+                       <div className="relative">
+                         <select
+                           name="classStatus"
+                           value={student.classStatus}
+                           onChange={handleInputChange}
+                           className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
+                           required
+                         >
+                           <option value="Joining">Joining</option>
+                           <option value="In Progress"></option>
+                           <option value="Completed">Completed</option>
+                         </select>
+                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+                       </div>
+                     </div>
+         
+                     <div className="mt-6">
+                       <label htmlFor='fiiugigrtname'  className="block text-sm mb-2">Additional Comments (Optional)</label>
+                       <textarea
+                         name="comments"
+                         value={student.comments}
+                         onChange={handleInputChange}
+                         placeholder="Write your comment here..."
+                         className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400 h-24 resize-none"
+                       />
+                     </div>
+         
+                     <div className="mt-6 flex justify-end gap-4">
+                       <button
+                         type="button"
+                         onClick={handleClear}
+                         className="px-6 py-2 rounded-lg border border-white/20 hover:bg-white/10 transition-colors"
+                       >
+                         Clear
+                       </button>
+                       <button
+                         type="submit"
+                         className="px-6 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 transition-colors"
+                       >
+                         Save
+                       </button>
+                     </div>
+                   </form>
+                   
+                   {/* Student Info Card */}
+                   <div className="bg-gray-100 rounded-lg p-6 h-fit">
+                     <div className="flex justify-center">
+                       <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
+                         <img
+                           src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100&h=100"
+                           alt="Student avatar"
+                           className="w-20 h-20 rounded-full object-cover"
+                         />
+                       </div>
+                     </div>
+                     <h2 className="text-xl font-semibold text-center mt-4">
+                       {student.firstName} {student.lastName}
+                     </h2>
+                     <div className="flex items-center justify-center gap-2 mt-2 text-gray-600">
+                       <Timer size={16} />
+                       <span>Monday - {student.sessionDate}</span>
+                     </div>
+                     
+                     <div className="mt-6 text-center">
+                       <p className="text-gray-600 mb-2">Trial Session<br />is Due in</p>
+                       <div className="inline-block relative">
+                         <div className="w-16 h-16 rounded-full border-4 border-blue-500 flex items-center justify-center">
+                           <span className="font-bold">{student.sessionTime}</span>
+                         </div>
+                         <span className="text-xs text-gray-500 mt-1 block">Mins</span>
+                       </div>
+                     </div>
+         
+                     <button
+                       onClick={handleStartSession}
+                       className="w-full bg-red-500 text-white rounded-lg py-3 mt-6 hover:bg-red-600 transition-colors"
+                     >
+                       Start Trial Session Now
+                     </button>
+         
+                     <div className="mt-4 bg-red-100 rounded-lg p-3 text-sm text-red-800">
+                       Once start session is clicked, link to be sent to the student
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             </div>
+        ):(
+          <div className="flex h-screen bg-[#E6E9ED]">
+            <div className={`
+               fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50
+              bg-[#1C3557] text-white px-8 py-4 rounded-xl shadow-lg
+                flex items-center gap-3 transition-opacity duration-300
+                 ${showPopup ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+                `}>
         <img src='/assets/images/Check.png' alt='find' className='w-[50px] mt-2'/>
         <span className="font-semibold">Submitted Successfully</span>
-      </div>
+             </div>
 
-      {/* Backdrop overlay */}
-      <div className={`
+             {/* Backdrop overlay */}
+         <div className={`
         fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity z-20 duration-300
         ${showPopup ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-      `} />
+          `} />
         {/* Main Content */}
         <div className="flex-1 overflow-auto  w-[1200px] mt-5 ml-5 h-[800px]">
           <div className="p-6 w-[100%]">
@@ -255,10 +490,10 @@ function LiveClass() {
             <div className="text-gray-500 text-sm font-medium">Session - 12</div>
           </div>
         </div>
-      </div>
+         </div>
 
-      {/* Rating Card */}
-      <div className="bg-white rounded-3xl shadow-lg w-full max-w-sm p-8">
+           {/* Rating Card */}
+          <div className="bg-white rounded-3xl shadow-lg w-full max-w-sm p-8">
         <div className="flex items-center gap-2 mb-8"> 
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#19216C"/>
@@ -293,12 +528,12 @@ function LiveClass() {
         <button 
           className="w-full bg-[#1C3557] text-white py-3 px-6 rounded-xl font-semibold text-sm
                    hover:bg-primary/90 transition-colors"
-          onClick={handleSubmit}
+          onClick={handleSubmitrate}
         >
           Submit feedback
         </button>
         </div>
-      </div>):(
+        </div>):(
             <div className="flex gap-6">
               {/* Left Column - Video */}
               <div className="flex-1">
@@ -383,7 +618,9 @@ function LiveClass() {
   >
     <Disc size={18} className={isRecording ? 'text-red-600' : 'text-gray-700'} />
   </button>
- </div>  
+</div>
+
+                    
                   </div>
                 </div>
               </div>
@@ -456,8 +693,10 @@ function LiveClass() {
               )} 
           </div>
         </div>
+        </div>
+        )}
       </div>
-    </BaseLayout2>
+    </BaseLayout>
   );
 }
 

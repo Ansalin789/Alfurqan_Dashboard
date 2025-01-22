@@ -14,37 +14,37 @@ import "../styles/globals.css";
 const SidebarItems = [
     {
         name: 'Dashboard',
-        href: '/Teacher',
+        href: '/teacher/ui/dashboard',
         icon: RiDashboardFill,    
     },
     {
         name: 'Live Classes',
-        href: '/Teacher/class',
+        href: '/teacher/ui/liveclass',
         icon: IoIosCellular,
     },
     {
         name: 'Schedule',
-        href: '/Teacher/schedule',
+        href: '/teacher/ui/schedule',
         icon: GrSchedules,
     },
     {
         name: 'Assignments',
-        href: '/Teacher/assignment',
+        href: '/teacher/ui/assignment',
         icon: MdAssignment,
     },
     {
         name: 'Messages',
-        href: '/Teacher/messages',
+        href: '/teacher/ui/message',
         icon: LuMessagesSquare,
     },
     {
         name: 'Analytics',
-        href: '/Teacher/analytics',
+        href: '/teacher/ui/analytics',
         icon: MdAnalytics,
     },
     {
         name: 'Support',
-        href: '/Teacher/support',
+        href: '/teacher/ui/support',
         icon: MdContactSupport,
     }
 ];
@@ -54,10 +54,10 @@ export default function Sidebar() {
         <div className="sidebar__wrapper">
             <aside className='sidebar'>
                 <div className='sidebar__top'>
-                    <Image src="/assets/images/alfwhite.png" width={100} height={100} className='sidebar__logo text-center bg-cover bg-center' alt='logo'/>
-                    <p className='sidebar__logo-name'>
+                    <Image src="/assets/images/whitelogo.png" width={130} height={130} className='bg-cover bg-center' alt='logo'/>
+                    {/* <p className='sidebar__logo-name'>
                         <Image src="/assets/images/alf2.png" width={130} height={50} alt='logo'/>
-                    </p>
+                    </p> */}
                 </div>
                 <ul className="sidebar__list">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (
