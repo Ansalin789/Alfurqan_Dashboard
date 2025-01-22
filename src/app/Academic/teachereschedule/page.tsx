@@ -7,7 +7,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import BaseLayout1 from '@/components/BaseLayout1';
 import AddScheduleModal from '@/components/Academic/ViewTeachersList/AddScheduleModel';
 import { FaCheck } from 'react-icons/fa';
-import { API_URL } from '@/app/acendpoints/page';
+import { API_URL } from '../../../app/acendpoints/page';
 
 
 interface AcademicCoachItem {

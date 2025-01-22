@@ -1,4 +1,4 @@
-import { API_URL } from '@/app/acendpoints/page';
+import { API_URL } from '../../app/acendpoints/page';
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 

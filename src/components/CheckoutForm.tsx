@@ -1,5 +1,5 @@
 
-import { API_URL } from '@/app/acendpoints/page';
+import { API_URL } from '../app/acendpoints/page';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useState } from 'react';
 

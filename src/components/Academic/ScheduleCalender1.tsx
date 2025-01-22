@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { API_URL } from '@/app/acendpoints/page';
+import { API_URL } from '../../app/acendpoints/page';
 
 const localizer = momentLocalizer(moment);
 

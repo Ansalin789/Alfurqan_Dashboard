@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '@/app/acendpoints/page';
+import { API_URL } from '../../app/acendpoints/page';
 
 if (typeof window !== 'undefined') {
   Modal.setAppElement('body');

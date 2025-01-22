@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
 import { User } from '@/types';
 import axios from 'axios';
-import { API_URL } from '@/app/acendpoints/page';
+import { API_URL } from '../../../app/acendpoints/page';
 
 
 
