@@ -1,57 +1,61 @@
-import React from 'react';
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { Token } from '@stripe/stripe-js';
 
 interface StripePaymentFormProps {
-  onPaymentSuccess: (token: any) => Promise<void>;
+  onPaymentSuccess: (token: Token | null) => void;
 }
 
 const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }) => {
   const stripe = useStripe();
   const elements = useElements();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
 
     if (!stripe || !elements) {
+      // Stripe.js has not loaded yet
       return;
     }
 
     const cardElement = elements.getElement(CardElement);
 
     if (!cardElement) {
-      alert('Card element not found');
+      // Handle the case where the card element is not available
+      console.error('Card element not found');
+      alert('Payment element is not available. Please try again.');
       return;
     }
 
-    const { token, error } = await stripe.createToken(cardElement);
+    try {
+      const { token, error } = await stripe.createToken(cardElement);
 
-    if (error) {
-      console.error(error);
-      alert(error.message);
-    } else if (token) {
-      console.log('Payment successful:', token);
-      // Call the onPaymentSuccess function passed as a prop
-      await onPaymentSuccess(token);
+      if (error) {
+        console.error(error);
+        alert(error.message);
+      } else {
+        // Process the payment with the token
+        onPaymentSuccess(token || null);
+      }
+    } catch (err) {
+      console.error('Payment processing error:', err);
+      alert('Something went wrong while processing the payment.');
     }
   };
 
   return (
-    <div>
-      <h1>Stripe Payment</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <CardElement />
-        </div>
-        <button
-          type="submit"
-          disabled={!stripe}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-        >
-          Pay Now
-        </button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <div className="mb-4">
+        <CardElement />
+      </div>
+      <button
+        type="submit"
+        disabled={!stripe}
+        className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+      >
+        Pay Now
+      </button>
+    </form>
   );
 };
 
-export { StripePaymentForm };
+export default StripePaymentForm;
