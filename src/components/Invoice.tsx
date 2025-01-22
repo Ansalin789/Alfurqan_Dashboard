@@ -7,7 +7,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { useSearchParams } from 'next/navigation';  // Correct import from next/navigation
 import Image from 'next/image';
-import API_URL from '@/app/acendpoints/page';
+import { API_URL } from '@/app/acendpoints/page';
 
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
 

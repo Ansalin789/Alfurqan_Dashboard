@@ -8,8 +8,8 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
 import { User } from '@/types';
-import API_URL from '@/app/acendpoints/page';
 import axios from 'axios';
+import { API_URL } from '@/app/acendpoints/page';
 
 
 

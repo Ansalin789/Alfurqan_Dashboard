@@ -1,8 +1,8 @@
 import { FaUserAlt } from 'react-icons/fa';
 import { AiOutlineClockCircle } from 'react-icons/ai';
 import { useEffect, useState } from 'react';
-import API_URL from '@/app/acendpoints/page';
 import axios from 'axios';
+import { API_URL } from '@/app/acendpoints/page';
 
 interface Student {
   studentFirstName: string;

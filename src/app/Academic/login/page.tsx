@@ -8,7 +8,7 @@ import { FcGoogle } from "react-icons/fc";
 
 import Image from 'next/image';
 import axios from 'axios'; // Using axios for HTTP requests
-import API_URL from '@/app/acendpoints/page';
+import { API_URL } from '@/app/acendpoints/page';
 
 export default function SignInSignUp(): JSX.Element {
   const router = useRouter();

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
-import API_URL from '@/app/acendpoints/page';
+import { API_URL } from '@/app/acendpoints/page';
 
 
 
