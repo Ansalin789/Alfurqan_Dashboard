@@ -10,6 +10,9 @@ import { useRouter } from "next/navigation";
 const AllStudents = () => {
   const router = useRouter();
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Number of items to show per page
 
   // Example student data - replace this with your actual data fetching logic
   const students = [
@@ -103,6 +106,36 @@ const AllStudents = () => {
       },
   ];
 
+  // Filter students based on search query
+  const filteredStudents = students.filter((student) => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      student.id.toLowerCase().includes(searchLower) ||
+      student.name.toLowerCase().includes(searchLower) ||
+      student.studentId.toLowerCase().includes(searchLower) ||
+      student.level.toString().includes(searchLower) ||
+      student.course.toLowerCase().includes(searchLower) ||
+      student.assignedDate.toLowerCase().includes(searchLower) ||
+      student.dueDate.toLowerCase().includes(searchLower) ||
+      student.status.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredStudents.slice(startIndex, endIndex);
+
+  // Generate page numbers
+  const getPageNumbers = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
   return (
     <BaseLayout>
       <div className="p-6 min-h-screen">
@@ -118,6 +151,8 @@ const AllStudents = () => {
                 type="text"
                 placeholder="Search"
                 className="w-full pl-10 pr-2 py-1 rounded-xl shadow-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-300 text-[12px] text-gray-600 placeholder-gray-400"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 />
             </div>
             </div>
@@ -138,7 +173,7 @@ const AllStudents = () => {
                 </tr>
               </thead>
               <tbody>
-                {students.map((student, index) => (
+                {currentItems.map((student, index) => (
                   <tr
                     key={index}
                     className="text-sm text-gray-700 border-b last:border-none"
@@ -160,15 +195,17 @@ const AllStudents = () => {
                     <td className="py-2 px-4">
                       <div className="relative">
                         <button 
-                          className="text-gray-500 hover:text-gray-700"
+                          className={`text-gray-500 ${student.status === "Not Completed" ? "hover:text-gray-700 cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
                           onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenDropdownId(openDropdownId === student.id ? null : student.id);
+                            if (student.status === "Not Completed") {
+                              e.stopPropagation();
+                              setOpenDropdownId(openDropdownId === student.id ? null : student.id);
+                            }
                           }}
                         >
                           <BsThreeDots />
                         </button>
-                        {openDropdownId === student.id && (
+                        {openDropdownId === student.id && student.status === "Not Completed" && (
                           <div 
                             className="absolute right-0 mr-10 w-24 shadow-2xl bg-white rounded-md shadow-lg z-10 border border-gray-200"
                             onClick={(e) => e.stopPropagation()}
@@ -198,16 +235,44 @@ const AllStudents = () => {
             </table>
           </div>
           <div className="flex justify-between items-center mt-4">
-            <p className="text-sm text-gray-600">Showing 1-3 of 100 data</p>
+            <p className="text-sm text-gray-600">
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredStudents.length)} of {filteredStudents.length} data
+            </p>
             <div className="flex space-x-2">
-              <button className="px-3 py-1 border rounded-md text-gray-600 border-gray-300 hover:bg-gray-200">
-                1
+              <button 
+                className={`px-3 py-1 border rounded-md ${
+                  currentPage === 1 
+                    ? 'text-gray-400 border-gray-200 cursor-not-allowed' 
+                    : 'text-gray-600 border-gray-300 hover:bg-gray-200'
+                }`}
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
               </button>
-              <button className="px-3 py-1 border rounded-md text-white bg-teal-500">
-                2
-              </button>
-              <button className="px-3 py-1 border rounded-md text-gray-600 border-gray-300 hover:bg-gray-200">
-                3
+              {getPageNumbers().map((pageNum) => (
+                <button
+                  key={pageNum}
+                  className={`px-3 py-1 border rounded-md ${
+                    currentPage === pageNum
+                      ? 'text-white bg-teal-500'
+                      : 'text-gray-600 border-gray-300 hover:bg-gray-200'
+                  }`}
+                  onClick={() => setCurrentPage(pageNum)}
+                >
+                  {pageNum}
+                </button>
+              ))}
+              <button 
+                className={`px-3 py-1 border rounded-md ${
+                  currentPage === totalPages 
+                    ? 'text-gray-400 border-gray-200 cursor-not-allowed' 
+                    : 'text-gray-600 border-gray-300 hover:bg-gray-200'
+                }`}
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Next
               </button>
             </div>
           </div>

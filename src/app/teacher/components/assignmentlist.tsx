@@ -27,6 +27,8 @@ const AssignmentList = () => {
     trueOrFalse: false
   });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
 
   const assignments = [
     {
@@ -45,6 +47,46 @@ const AssignmentList = () => {
       dueDate: "January 8, 2020",
       status: "Not Assigned",
     },
+    {
+      topic: "Reading",
+      assignmentId: "1234567890",
+      course: "Tajweed Masterclass",
+      assignedDate: "January 2, 2020",
+      dueDate: "January 8, 2020",
+      status: "Not Assigned",
+    },
+    {
+      topic: "Reading",
+      assignmentId: "1234567890",
+      course: "Tajweed Masterclass",
+      assignedDate: "January 2, 2020",
+      dueDate: "January 8, 2020",
+      status: "Not Assigned",
+    },
+    {
+      topic: "Reading",
+      assignmentId: "1234567890",
+      course: "Tajweed Masterclass",
+      assignedDate: "January 2, 2020",
+      dueDate: "January 8, 2020",
+      status: "Not Assigned",
+    },
+    {
+      topic: "Reading",
+      assignmentId: "1234567890",
+      course: "Tajweed Masterclass",
+      assignedDate: "January 2, 2020",
+      dueDate: "January 8, 2020",
+      status: "Not Assigned",
+    },
+    {
+      topic: "Reading",
+      assignmentId: "1234567890",
+      course: "Tajweed Masterclass",
+      assignedDate: "January 2, 2020",
+      dueDate: "January 8, 2020",
+      status: "Not Assigned",
+    },
   ];
 
   const filteredAssignments = assignments.filter((assignment) =>
@@ -52,6 +94,17 @@ const AssignmentList = () => {
       ? assignment.status !== "Completed"
       : assignment.status === "Completed"
   );
+
+  // Calculate pagination values
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredAssignments.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
+
+  // Add pagination handler
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
 
   const handleAssign = () => {
     setIsFormOpen(false);
@@ -62,7 +115,7 @@ const AssignmentList = () => {
   };
 
   return (
-    <div className="p-4 bg-white shadow-md rounded-md w-[900px] ml-56 mt-96">
+    <div className="p-4 bg-white shadow-md rounded-lg w-[900px] ml-56 mt-48">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-lg font-semibold text-gray-700">Assignment List</h1>
         <div className="relative w-40">
@@ -72,7 +125,7 @@ const AssignmentList = () => {
                 <input
                 type="text"
                 placeholder="Search"
-                className="w-full pl-10 pr-2 py-1 rounded-xl shadow-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-300 text-[12px] text-gray-600 placeholder-gray-400"
+                className="w-full pl-10 pr-2 py-1 rounded-xl shadow-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-300 text-[12px] text-gray-600 placeholder-gray-400"
                 />
             </div>
       </div>
@@ -128,7 +181,7 @@ const AssignmentList = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredAssignments.map((assignment, index) => (
+            {currentItems.map((assignment, index) => (
               <tr
                 key={index}
                 className={`border-b ${
@@ -166,17 +219,33 @@ const AssignmentList = () => {
                   {openDropdownIndex === index && (
                     <div className="absolute right-10 -mt-[30px] bg-white border rounded-md shadow-lg z-10 w-40">
                       <button
-                        className="block w-full text-left px-4 py-2 text-[12px] hover:bg-gray-100"
+                        className={`block w-full text-left px-4 py-2 text-[12px] ${
+                          assignment.status === "Assigned"
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "hover:bg-gray-100"
+                        }`}
                         onClick={() => {
-                          setOpenDropdownIndex(null);
-                          setIsFormOpen(true);
+                          if (assignment.status !== "Assigned") {
+                            setOpenDropdownIndex(null);
+                            setIsFormOpen(true);
+                          }
                         }}
+                        disabled={assignment.status === "Assigned"}
                       >
                         Assign
                       </button>
                       <button
-                        className="block w-full text-left px-4 py-2 text-[12px] hover:bg-gray-100"
-                        onClick={() => setOpenDropdownIndex(null)}
+                        className={`block w-full text-left px-4 py-2 text-[12px] ${
+                          assignment.status === "Assigned"
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "hover:bg-gray-100"
+                        }`}
+                        onClick={() => {
+                          if (assignment.status !== "Assigned") {
+                            setOpenDropdownIndex(null);
+                          }
+                        }}
+                        disabled={assignment.status === "Assigned"}
                       >
                         Cancel
                       </button>
@@ -191,16 +260,46 @@ const AssignmentList = () => {
 
       {/* Pagination */}
       <div className="flex justify-between items-center mt-4">
-        <span className="text-xs text-gray-600">Showing 1–5 of 100 data</span>
+        <span className="text-xs text-gray-600">
+          Showing {indexOfFirstItem + 1}–{Math.min(indexOfLastItem, filteredAssignments.length)} of {filteredAssignments.length} items
+        </span>
         <div className="flex space-x-2">
-          <button className="px-3 py-1 text-xs text-gray-600 bg-gray-200 rounded">
-            1
+          <button 
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 text-xs rounded ${
+              currentPage === 1 
+                ? 'text-gray-400 bg-gray-100' 
+                : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
+            }`}
+          >
+            Previous
           </button>
-          <button className="px-3 py-1 text-xs text-gray-600 bg-gray-200 rounded">
-            2
-          </button>
-          <button className="px-3 py-1 text-xs text-gray-600 bg-gray-200 rounded">
-            3
+          
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => handlePageChange(index + 1)}
+              className={`px-3 py-1 text-xs rounded ${
+                currentPage === index + 1
+                  ? 'text-white bg-[#223857]'
+                  : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+          
+          <button 
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 text-xs rounded ${
+              currentPage === totalPages 
+                ? 'text-gray-400 bg-gray-100' 
+                : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
+            }`}
+          >
+            Next
           </button>
         </div>
       </div>
@@ -336,9 +435,9 @@ const AssignmentList = () => {
             
 
             <div className="mb-4">
-              <p className="text-sm font-medium mb-2 text-[#012A4A]">Quiz Template</p>
-              <div className="flex space-x-4">
-                <label className="flex items-center">
+              <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Quiz Template</p>
+              <div className="flex space-x-4 ml-4">
+                <label className="flex items-center text-[#012A4A] text-[13px]">
                   <input
                     type="checkbox"
                     checked={questionType.choose}
@@ -347,7 +446,7 @@ const AssignmentList = () => {
                   />
                   Choose
                 </label>
-                <label className="flex items-center">
+                <label className="flex items-center text-[#012A4A] text-[13px]">
                   <input
                     type="checkbox"
                     checked={questionType.trueOrFalse}
@@ -360,9 +459,9 @@ const AssignmentList = () => {
             </div>
 
             <div className="mb-4">
-              <label className="text-sm text-gray-600">Type the question</label>
+              <label className="text-[12px] text-gray-600">Type the question</label>
               <textarea
-                className="w-full border rounded-lg p-2 mt-1"
+                className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
                 rows={3}
                 value={quizData.question}
                 onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
@@ -377,11 +476,11 @@ const AssignmentList = () => {
                     type="checkbox"
                     checked={answer.isCorrect}
                     onChange={() => (answer.id)}
-                    className="w-4 h-4"
+                    className="w-6 h-4"
                   />
                   <input
                     type="text"
-                    className="flex-1 border rounded-lg p-2"
+                    className="flex-1 rounded-lg p-2 border border-[#808FA4] text-center"
                     placeholder={`${answer.id}) Answer ${index + 1}`}
                     value={answer.text}
                     onChange={(e) => setQuizData(prev => ({
