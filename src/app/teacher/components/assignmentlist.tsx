@@ -4,7 +4,7 @@ import { BsSearch, BsThreeDots } from "react-icons/bs";
 
 const AssignmentList = () => {
   const [activeTab, setActiveTab] = useState("Pending");
-  const [openDropdownIndex, setOpenDropdownIndex] = useState(null); // Track open dropdown by index
+  const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null); // Track open dropdown by index
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [showTypeDropdown, setShowTypeDropdown] = useState(false); // Add this state
@@ -155,9 +155,7 @@ const AssignmentList = () => {
                   <button
                     className="text-blue-500 hover:underline"
                     onClick={() =>
-                      setOpenDropdownIndex(
-                        openDropdownIndex === index ? null : index
-                      )
+                      setOpenDropdownIndex(openDropdownIndex === index ? null : index)
                     }
                   >
                     <BsThreeDots />
