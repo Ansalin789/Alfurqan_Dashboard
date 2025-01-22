@@ -29,7 +29,7 @@ const SidebarItems = [
     },
     {
         name: 'Payments',
-        href: '/student/ui/payments',
+        href: '/student/ui/payment',
         icon: MdOutlinePayment,
     },
     {

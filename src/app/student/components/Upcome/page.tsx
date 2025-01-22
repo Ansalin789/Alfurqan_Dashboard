@@ -12,57 +12,50 @@ type StudentData = {
 };
 
 const Upcome = () => {
-  const [evaluationList, setEvaluationList] = useState<StudentData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [evaluationList] = useState<StudentData[]>([
+    {
+      id: 1,
+      name: "John Doe",
+      mobile: "123-456-7890",
+      country: "USA",
+      preferredTeacher: "Jane Smith",
+      date: "01/30/2025",
+      time: "10:00 AM - 11:00 AM",
+    },
+    {
+      id: 2,
+      name: "Alice Johnson",
+      mobile: "987-654-3210",
+      country: "Canada",
+      preferredTeacher: "Mark Wilson",
+      date: "02/05/2025",
+      time: "02:00 PM - 03:00 PM",
+    },
+    {
+      id: 3,
+      name: "Bob Brown",
+      mobile: "555-123-4567",
+      country: "UK",
+      preferredTeacher: "Emily Davis",
+      date: "02/10/2025",
+      time: "04:00 PM - 05:00 PM",
+    },
+    {
+      id: 4,
+      name: "Charlie Green",
+      mobile: "444-789-0123",
+      country: "Australia",
+      preferredTeacher: "Sarah Lee",
+      date: "02/15/2025",
+      time: "11:00 AM - 12:00 PM",
+    },
+  ]);
+
+  const [loading, setLoading] = useState(false);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch data from API
-    const auth = localStorage.getItem("StudentAuthToken");
-    fetch("http://localhost:5001/evaluationlist", {
-      headers: {
-        Authorization: `Bearer ${auth}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const formattedData: StudentData[] = data.evaluation.map(
-          (
-            item: {
-              student: {
-                studentFirstName: string;
-                studentLastName: string;
-                studentPhone: string;
-                studentCountry: string;
-                preferredTeacher: string;
-                preferredDate: string;
-                preferredFromTime: string;
-                preferredToTime: string;
-              };
-            },
-            index: number
-          ) => ({
-            id: index + 1,
-            name: `${item.student.studentFirstName} ${item.student.studentLastName}`,
-            mobile: item.student.studentPhone,
-            country: item.student.studentCountry,
-            preferredTeacher: item.student.preferredTeacher,
-            date: new Date(item.student.preferredDate).toLocaleDateString(),
-            time: `${item.student.preferredFromTime} - ${item.student.preferredToTime}`,
-          })
-        );
-        setEvaluationList(formattedData.slice(-4)); // Keep only the latest 3 records
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+    setLoading(false); // Data is hardcoded, so no need for actual loading logic
   }, []);
 
   if (loading) return <div>Loading...</div>;
@@ -89,7 +82,7 @@ const Upcome = () => {
               className="flex justify-between items-center text-white rounded-xl px-4 py-[4px]"
             >
               <div className="flex">
-                <span className="font-semibold text-[11px]">{`${item.id} - ${item.name}`}</span>
+              <span className="font-semibold text-[11px]">{item.id} - {item.name}</span>
               </div>
               <div className="flex text-center">
                 <span className="text-[10px] text-center">by {item.preferredTeacher}</span>
@@ -118,4 +111,4 @@ const Upcome = () => {
   );
 };
 
-export default Upcome;
+export default Upcome;

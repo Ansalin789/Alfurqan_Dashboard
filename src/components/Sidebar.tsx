@@ -34,7 +34,7 @@ const SidebarItems = [
     },
     {
         name: 'Messages',
-        href: '/teacher/ui/messages',
+        href: '/teacher/ui/message',
         icon: LuMessagesSquare,
     },
     {
