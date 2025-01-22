@@ -1,7 +1,7 @@
 'use client'
-import { FaUserAlt } from 'react-icons/fa';
 import { AiOutlineClockCircle } from 'react-icons/ai';
-import { useEffect, useState } from 'react';
+// import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FaUser } from "react-icons/fa";
 import { MdDateRange } from "react-icons/md";
 
