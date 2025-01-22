@@ -1,5 +1,6 @@
 "use client";
-import BaseLayout from "@/components/BaseLayout";
+
+
 import React, { Component } from "react";
 
 class  Assignment extends Component {
@@ -31,8 +32,6 @@ class  Assignment extends Component {
       },
     ];
     return (
-      <BaseLayout>
-      
       <div className="p-2">
         <h1 className="text-[25px] font-semibold p-4 text-[#272835]">Assignment</h1>
         <p className="text-[11px] font-semibold text-[#374557] px-4 -mt-3">
@@ -87,10 +86,8 @@ class  Assignment extends Component {
           ))}
         </div>
       </div>
-
-      </BaseLayout>
     );
   }
 }
 
-export default  Assignment;
+export default Assignment;

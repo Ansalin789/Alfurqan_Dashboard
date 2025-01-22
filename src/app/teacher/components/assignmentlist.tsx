@@ -1,14 +1,17 @@
 'use client';
 import React, { useState } from "react";
+import { BsSearch, BsThreeDots } from "react-icons/bs";
 
 const AssignmentList = () => {
   const [activeTab, setActiveTab] = useState("Pending");
   const [openDropdownIndex, setOpenDropdownIndex] = useState(null); // Track open dropdown by index
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isQuizOpen, setQuizOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [showTypeDropdown, setShowTypeDropdown] = useState(false); // Add this state
   const [showQuizModal, setShowQuizModal] = useState(false);
+  const [showWritingModal, setShowWritingModal] = useState(false);
+  const [showReadingModal, setShowReadingModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
   const [quizData, setQuizData] = useState({
     assignmentName: '',
     question: '',
@@ -23,6 +26,7 @@ const AssignmentList = () => {
     choose: false,
     trueOrFalse: false
   });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const assignments = [
     {
@@ -49,15 +53,28 @@ const AssignmentList = () => {
       : assignment.status === "Completed"
   );
 
+  const handleAssign = () => {
+    setIsFormOpen(false);
+    setShowSuccessModal(true);
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 2000);
+  };
+
   return (
     <div className="p-4 bg-white shadow-md rounded-md w-[900px] ml-56 mt-96">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-lg font-semibold text-gray-700">Assignment List</h1>
-        <input
-          type="text"
-          placeholder="Search"
-          className="border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring focus:ring-blue-300"
-        />
+        <div className="relative w-40">
+                <span className="absolute inset-y-0 left-4 text-[12px] flex items-center text-gray-400">
+                <BsSearch />
+                </span>
+                <input
+                type="text"
+                placeholder="Search"
+                className="w-full pl-10 pr-2 py-1 rounded-xl shadow-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-300 text-[12px] text-gray-600 placeholder-gray-400"
+                />
+            </div>
       </div>
 
       {/* Tabs */}
@@ -143,7 +160,8 @@ const AssignmentList = () => {
                       )
                     }
                   >
-                    ...
+                    <BsThreeDots />
+
                   </button>
 
                   {/* Dropdown Menu */}
@@ -211,10 +229,10 @@ const AssignmentList = () => {
               
               {/* Assignment Type Dropdown */}
               {showTypeDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-20">
+                <div className="absolute right-0 -mt-2 text-center justify-center w-[350px] bg-white border rounded-lg shadow-lg z-20">
                   <div className="py-1">
                     <button
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                      className="w-full px-4 py-2 text-center text-sm hover:bg-gray-100"
                       onClick={() => {
                         setTitle("Quiz");
                         setShowTypeDropdown(false);
@@ -224,28 +242,31 @@ const AssignmentList = () => {
                       Quiz
                     </button>
                     <button
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                      className="w-full px-4 py-2 text-center text-sm hover:bg-gray-100"
                       onClick={() => {
                         setTitle("Writing");
                         setShowTypeDropdown(false);
+                        setShowWritingModal(true);
                       }}
                     >
                       Writing
                     </button>
                     <button
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                      className="w-full px-4 py-2 text-center text-sm hover:bg-gray-100"
                       onClick={() => {
                         setTitle("Reading");
                         setShowTypeDropdown(false);
+                        setShowReadingModal(true);
                       }}
                     >
                       Reading
                     </button>
                     <button
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
+                      className="w-full px-4 py-2 text-center text-sm hover:bg-gray-100"
                       onClick={() => {
                         setTitle("Image Identification");
                         setShowTypeDropdown(false);
+                        setShowImageModal(true);
                       }}
                     >
                       Image Identification
@@ -270,12 +291,21 @@ const AssignmentList = () => {
               placeholder="Comment"
               className="w-full border-b-2 p-2 rounded mb-4 text-[14px]"
             ></textarea>
+            <div className="flex ml-40">
             <button
-              className="text-white flex items-center text-[13px] justify-center text-center py-2 rounded-lg ml-32 p-4 border border-grey bg-[#223857]"
+              className="text-[#223857] flex items-center text-[13px] justify-center text-center py-2 rounded-lg p-4 border border-grey bg-[#fff] shadow-lg"
               onClick={() => setIsFormOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="text-white font-semibold flex items-center text-[13px] justify-center text-center py-2 rounded-lg ml-2 p-4 border border-grey bg-[#223857]"
+              onClick={handleAssign}
             >
               Assign
             </button>
+            </div>
+            
           </div>
         </div>
       )}
@@ -283,29 +313,32 @@ const AssignmentList = () => {
       {/* Quiz Modal */}
       {showQuizModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-6 w-[500px]">
-            <h2 className="text-lg font-semibold mb-4">Add Assignments</h2>
-            
-            <div className="mb-4">
-              <label className="text-sm text-gray-600">Assignment Name</label>
+          <div className="bg-white rounded-lg p-4 w-[500px]">
+            <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
+            <div className="flex">
+            <div className="mb-2 grid ml-4">
+              <label className="text-[12px] text-[#012A4A]">Assignment Name</label>
               <input
                 type="text"
-                className="w-full border rounded-lg p-2 mt-1"
-                placeholder="Name of sess"
+                className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
+                placeholder="Name of Assignment"
                 value={quizData.assignmentName}
                 onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
               />
             </div>
 
-            <div className="mb-4">
-              <label className="text-sm text-gray-600">Assignment Type</label>
-              <div className="w-full border rounded-lg p-2 mt-1 bg-gray-50">
-                Quiz
-              </div>
+            <div className="mb-2 ml-10">
+              <label className="text-[12px] text-[#012A4A]">Assignment Type</label>
+              <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
+                <option value="Quiz">Quiz</option>
+              </select>
             </div>
+            </div>
+            
+            
 
             <div className="mb-4">
-              <p className="text-sm font-medium mb-2">Quiz Template</p>
+              <p className="text-sm font-medium mb-2 text-[#012A4A]">Quiz Template</p>
               <div className="flex space-x-4">
                 <label className="flex items-center">
                   <input
@@ -345,7 +378,7 @@ const AssignmentList = () => {
                   <input
                     type="checkbox"
                     checked={answer.isCorrect}
-                    onChange={() => handleAnswerSelect(answer.id)}
+                    onChange={() => (answer.id)}
                     className="w-4 h-4"
                   />
                   <input
@@ -380,6 +413,342 @@ const AssignmentList = () => {
               >
                 Save
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showWritingModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-4 w-[500px]">
+            <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
+            <div className="flex">
+            <div className="mb-2 grid ml-4">
+              <label className="text-[12px] text-[#012A4A]">Assignment Name</label>
+              <input
+                type="text"
+                className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
+                placeholder="Name of Assignment"
+                value={quizData.assignmentName}
+                onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
+              />
+            </div>
+
+            <div className="mb-2 ml-10">
+              <label className="text-[12px] text-[#012A4A]">Assignment Type</label>
+              <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
+                <option value="Quiz">Quiz</option>
+              </select>
+            </div>
+            </div>
+            
+            
+
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-2 text-[#012A4A]">Quiz Template</p>
+              <div className="flex space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={questionType.choose}
+                    onChange={(e) => setQuestionType(prev => ({ ...prev, choose: e.target.checked }))}
+                    className="mr-2"
+                  />
+                  Choose
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={questionType.trueOrFalse}
+                    onChange={(e) => setQuestionType(prev => ({ ...prev, trueOrFalse: e.target.checked }))}
+                    className="mr-2"
+                  />
+                  True or False
+                </label>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="text-sm text-gray-600">Type the question</label>
+              <textarea
+                className="w-full border rounded-lg p-2 mt-1"
+                rows={3}
+                value={quizData.question}
+                onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
+                placeholder="Which of the following letters is considered a Qalqalah letter?"
+              />
+            </div>
+
+            <div className="space-y-3">
+              {quizData.answers.map((answer, index) => (
+                <div key={answer.id} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={answer.isCorrect}
+                    onChange={() => (answer.id)}
+                    className="w-4 h-4"
+                  />
+                  <input
+                    type="text"
+                    className="flex-1 border rounded-lg p-2"
+                    placeholder={`${answer.id}) Answer ${index + 1}`}
+                    value={answer.text}
+                    onChange={(e) => setQuizData(prev => ({
+                      ...prev,
+                      answers: prev.answers.map(ans => 
+                        ans.id === answer.id ? { ...ans, text: e.target.value } : ans
+                      )
+                    }))}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                className="px-4 py-2 border rounded-lg"
+                onClick={() => setShowWritingModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-[#223857] text-white rounded-lg"
+                onClick={() => {
+                  // Handle save logic here
+                  setShowWritingModal(false);
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showReadingModal && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div className="bg-white rounded-lg p-4 w-[500px]">
+                  <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
+                  <div className="flex">
+                  <div className="mb-2 grid ml-4">
+                    <label className="text-[12px] text-[#012A4A]">Assignment Name</label>
+                    <input
+                      type="text"
+                      className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
+                      placeholder="Name of Assignment"
+                      value={quizData.assignmentName}
+                      onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="mb-2 ml-10">
+                    <label className="text-[12px] text-[#012A4A]">Assignment Type</label>
+                    <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
+                      <option value="Quiz">Quiz</option>
+                    </select>
+                  </div>
+                  </div>
+                  
+                  
+
+                  <div className="mb-4">
+                    <p className="text-sm font-medium mb-2 text-[#012A4A]">Quiz Template</p>
+                    <div className="flex space-x-4">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={questionType.choose}
+                          onChange={(e) => setQuestionType(prev => ({ ...prev, choose: e.target.checked }))}
+                          className="mr-2"
+                        />
+                        Choose
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={questionType.trueOrFalse}
+                          onChange={(e) => setQuestionType(prev => ({ ...prev, trueOrFalse: e.target.checked }))}
+                          className="mr-2"
+                        />
+                        True or False
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="text-sm text-gray-600">Type the question</label>
+                    <textarea
+                      className="w-full border rounded-lg p-2 mt-1"
+                      rows={3}
+                      value={quizData.question}
+                      onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
+                      placeholder="Which of the following letters is considered a Qalqalah letter?"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    {quizData.answers.map((answer, index) => (
+                      <div key={answer.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={answer.isCorrect}
+                          onChange={() => (answer.id)}
+                          className="w-4 h-4"
+                        />
+                        <input
+                          type="text"
+                          className="flex-1 border rounded-lg p-2"
+                          placeholder={`${answer.id}) Answer ${index + 1}`}
+                          value={answer.text}
+                          onChange={(e) => setQuizData(prev => ({
+                            ...prev,
+                            answers: prev.answers.map(ans => 
+                              ans.id === answer.id ? { ...ans, text: e.target.value } : ans
+                            )
+                          }))}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-end space-x-3 mt-6">
+                    <button
+                      className="px-4 py-2 border rounded-lg"
+                      onClick={() => setShowReadingModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-[#223857] text-white rounded-lg"
+                      onClick={() => {
+                        // Handle save logic here
+                        setShowReadingModal(false);
+                      }}
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+      {showImageModal && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div className="bg-white rounded-lg p-4 w-[500px]">
+                  <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
+                  <div className="flex">
+                  <div className="mb-2 grid ml-4">
+                    <label className="text-[12px] text-[#012A4A]">Assignment Name</label>
+                    <input
+                      type="text"
+                      className="w-[90%] border border-[#808FA4] rounded-lg p-2 mt-1 text-[12px]"
+                      placeholder="Name of Assignment"
+                      value={quizData.assignmentName}
+                      onChange={(e) => setQuizData(prev => ({ ...prev, assignmentName: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="mb-2 ml-10">
+                    <label className="text-[12px] text-[#012A4A]">Assignment Type</label>
+                    <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
+                      <option value="Quiz">Quiz</option>
+                    </select>
+                  </div>
+                  </div>
+                  
+                  
+
+                  <div className="mb-4">
+                    <p className="text-sm font-medium mb-2 text-[#012A4A]">Quiz Template</p>
+                    <div className="flex space-x-4">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={questionType.choose}
+                          onChange={(e) => setQuestionType(prev => ({ ...prev, choose: e.target.checked }))}
+                          className="mr-2"
+                        />
+                        Choose
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={questionType.trueOrFalse}
+                          onChange={(e) => setQuestionType(prev => ({ ...prev, trueOrFalse: e.target.checked }))}
+                          className="mr-2"
+                        />
+                        True or False
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="text-sm text-gray-600">Type the question</label>
+                    <textarea
+                      className="w-full border rounded-lg p-2 mt-1"
+                      rows={3}
+                      value={quizData.question}
+                      onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
+                      placeholder="Which of the following letters is considered a Qalqalah letter?"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    {quizData.answers.map((answer, index) => (
+                      <div key={answer.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={answer.isCorrect}
+                          onChange={() => (answer.id)}
+                          className="w-4 h-4"
+                        />
+                        <input
+                          type="text"
+                          className="flex-1 border rounded-lg p-2"
+                          placeholder={`${answer.id}) Answer ${index + 1}`}
+                          value={answer.text}
+                          onChange={(e) => setQuizData(prev => ({
+                            ...prev,
+                            answers: prev.answers.map(ans => 
+                              ans.id === answer.id ? { ...ans, text: e.target.value } : ans
+                            )
+                          }))}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-end space-x-3 mt-6">
+                    <button
+                      className="px-4 py-2 border rounded-lg"
+                      onClick={() => setShowImageModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-[#223857] text-white rounded-lg"
+                      onClick={() => {
+                        // Handle save logic here
+                        setShowImageModal(false);
+                      }}
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+      {/* Add Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-6 flex items-center space-x-4">
+            <div className="bg-green-100 rounded-full p-2">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Assigned Successfully</h3>
             </div>
           </div>
         </div>
