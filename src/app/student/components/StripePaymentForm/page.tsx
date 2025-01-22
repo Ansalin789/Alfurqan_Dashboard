@@ -5,7 +5,7 @@ interface StripePaymentFormProps {
   onPaymentSuccess: (token: Token | null) => void;
 }
 
-const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }) => {
+const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }: StripePaymentFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -20,7 +20,6 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
     const cardElement = elements.getElement(CardElement);
 
     if (!cardElement) {
-      // Handle the case where the card element is not available
       console.error('Card element not found');
       alert('Payment element is not available. Please try again.');
       return;
@@ -33,7 +32,6 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
         console.error(error);
         alert(error.message);
       } else {
-        // Process the payment with the token
         onPaymentSuccess(token || null);
       }
     } catch (err) {
