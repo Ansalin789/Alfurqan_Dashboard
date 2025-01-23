@@ -4,13 +4,12 @@ import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import BaseLayout2 from "@/components/BaseLayout2";
-import html2pdf from 'html2pdf.js';
 
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
 
-type StripePaymentFormProps= {
+type StripePaymentFormProps = {
   onPaymentSuccess: (token: any) => void;
-}
+};
 
 const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }) => {
   const stripe = useStripe();
@@ -71,6 +70,8 @@ const Invoice = () => {
   };
 
   const downloadInvoice = () => {
+    if (typeof window === 'undefined') return; // Ensure this runs only in the browser
+
     setIsGeneratingPDF(true);
     const invoiceElement = document.getElementById('invoic');
     const options = {
@@ -78,9 +79,15 @@ const Invoice = () => {
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
     };
-    html2pdf().set(options).from(invoiceElement).save().then(() => {
-      setIsGeneratingPDF(false);
-    });
+
+    const html2pdf = require('html2pdf.js'); // Dynamically load html2pdf.js
+    html2pdf()
+      .set(options)
+      .from(invoiceElement)
+      .save()
+      .then(() => {
+        setIsGeneratingPDF(false);
+      });
   };
 
   return (
@@ -174,16 +181,6 @@ const Invoice = () => {
                 Amount due on 20 Nov 2024: <span className="font-bold">$125</span>
               </p>
             </div>
-               
-            <div className="mb-4">
-              <h3 className="text-xs font-bold mb-1">Payment Instructions:</h3>
-              <p className="text-[11px]"><strong>AL FURQAN ACADEMY</strong></p>
-              <p className="text-[10px]">BANK NAME: ABC BANK LIMITED</p>
-              <p className="text-[10px]">SWIFT/IBAN: GB0021030012</p>
-              <p className="text-[10px]">ACCOUNT NUMBER: 12-1234-123456-12</p>
-              <p className="text-[10px]"><strong>PLEASE USE INV-0205 AS A REFERENCE NUMBER</strong></p>
-              <p className="text-[9px]">For any questions, please contact us at <span className="font-bold">contact@alfurqan.academy</span>.</p>
-            </div>
 
             {/* Toggle Payment Form */}
             <div className="flex justify-between mt-5">
@@ -197,50 +194,6 @@ const Invoice = () => {
               )}
             </div>
           </div>
-            {/* Latest Transactions Section */}
-          {!isGeneratingPDF && (
-
-<div className="w-[1000px] bg-white p-1 rounded-lg shadow mr-0 ml-0">
-  <div className="flex justify-between items-center mb-3">
-    <h3 className="text-sm font-bold text-gray-800">Latest Transactions</h3>
-    <a href="/transactions" className="text-xs text-blue-500 hover:underline">View all</a>
-  </div>
-  <div className="overflow-x-auto">
-    <table className="table-auto w-full border-collapse text-xs">
-      <thead>
-        <tr className="bg-gray-100 text-gray-600">
-          <th className="text-left px-3 py-1">Invoice Date</th>
-          <th className="text-left px-3 py-1">Invoice Number</th>
-          <th className="text-left px-3 py-1">Course Name</th>
-          <th className="text-left px-3 py-1">Payment Date</th>
-          <th className="text-left px-3 py-1">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr className="hover:bg-gray-50">
-          <td className="px-3 py-1 text-gray-700">October 15, 2024</td>
-          <td className="px-3 py-1 text-gray-700">INV-0204</td>
-          <td className="px-3 py-1 text-gray-700">Arabic - Basic</td>
-          <td className="px-3 py-1 text-gray-700">October 25, 2024</td>
-          <td className="px-3 py-1">
-            <span className="bg-green-100 text-green-600 py-0.5 px-2 rounded-full text-[10px]">Completed</span>
-          </td>
-        </tr>
-        <tr className="hover:bg-gray-50">
-          <td className="px-3 py-1 text-gray-700">October 14, 2024</td>
-          <td className="px-3 py-1 text-gray-700">INV-0203</td>
-          <td className="px-3 py-1 text-gray-700">Tajweed - Standard</td>
-          <td className="px-3 py-1 text-gray-700">October 24, 2024</td>
-          <td className="px-3 py-1">
-            <span className="bg-yellow-100 text-yellow-600 py-0.5 px-2 rounded-full text-[10px]">Pending</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-    )}
-
 
           {/* Modal for Payment Form */}
           {showModal && (
@@ -265,4 +218,4 @@ const Invoice = () => {
   );
 };
 
-export default Invoice;
+export default Invoice;
