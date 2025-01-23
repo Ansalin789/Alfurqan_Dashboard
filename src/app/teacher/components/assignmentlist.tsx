@@ -4,10 +4,10 @@ import { BsSearch, BsThreeDots } from "react-icons/bs";
 
 const AssignmentList = () => {
   const [activeTab, setActiveTab] = useState("Pending");
-  const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null); // Track open dropdown by index
+  const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [showTypeDropdown, setShowTypeDropdown] = useState(false); // Add this state
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [showWritingModal, setShowWritingModal] = useState(false);
   const [showReadingModal, setShowReadingModal] = useState(false);
@@ -29,6 +29,17 @@ const AssignmentList = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
+  const [showNoOptions, setShowNoOptions] = useState({
+    writing: false,
+    reading: false,
+    image: false
+  });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedAudio, setSelectedAudio] = useState<File | null>(null);
+  const [readingFile, setReadingFile] = useState<File | null>(null);
+  const [readingAudio, setReadingAudio] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageAudio, setImageAudio] = useState<File | null>(null);
 
   const assignments = [
     {
@@ -112,6 +123,51 @@ const AssignmentList = () => {
     setTimeout(() => {
       setShowSuccessModal(false);
     }, 2000);
+  };
+  const handleNoOptionsChange = (type: keyof typeof showNoOptions) => {
+    setShowNoOptions(prev => ({ ...prev, [type]: !prev[type] }));
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleAudioUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedAudio(file);
+    }
+  };
+
+  const handleReadingFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setReadingFile(file);
+    }
+  };
+
+  const handleReadingAudioUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setReadingAudio(file);
+    }
+  };
+
+  const handleImageFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+    }
+  };
+
+  const handleImageAudioUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageAudio(file);
+    }
   };
 
   return (
@@ -409,7 +465,7 @@ const AssignmentList = () => {
       {/* Quiz Modal */}
       {showQuizModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-4 w-[500px]">
+          <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
             <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
             <div className="flex">
             <div className="mb-2 grid ml-4">
@@ -459,13 +515,48 @@ const AssignmentList = () => {
 
             <div className="mb-4">
               <label className="text-[12px] text-gray-600">Type the question</label>
-              <textarea
-                className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
-                rows={3}
-                value={quizData.question}
-                onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
-                placeholder="Which of the following letters is considered a Qalqalah letter?"
-              />
+              <div className="relative">
+                <textarea
+                  className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
+                  rows={3}
+                  value={quizData.question}
+                  onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
+                  placeholder="Which of the following letters is considered a Qalqalah letter?"
+                />
+                
+              </div>
+              
+              {/* Preview section */}
+              <div className="mt-2 flex space-x-2">
+                {selectedFile && (
+                  <div className="relative">
+                    <img 
+                      src={URL.createObjectURL(selectedFile)} 
+                      alt="Uploaded file" 
+                      className="h-16 w-16 object-cover rounded"
+                    />
+                    <button
+                      onClick={() => setSelectedFile(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {selectedAudio && (
+                  <div className="relative">
+                    <audio controls className="h-8">
+                      <source src={URL.createObjectURL(selectedAudio)} />
+                    </audio>
+                    <button
+                      onClick={() => setSelectedAudio(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -498,15 +589,15 @@ const AssignmentList = () => {
               ))}
             </div>
 
-            <div className="flex justify-end space-x-3 mt-6">
+            <div className="flex justify-center space-x-3 mt-6">
               <button
-                className="px-4 py-2 border rounded-lg"
+                className="px-4 py-2 border rounded-lg text-[12px]"
                 onClick={() => setShowQuizModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-[#223857] text-white rounded-lg"
+                className="px-4 py-2 bg-[#223857] text-white rounded-lg text-[12px]"
                 onClick={() => {
                   // Handle save logic here
                   setShowQuizModal(false);
@@ -520,7 +611,7 @@ const AssignmentList = () => {
       )}
       {showWritingModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-4 w-[500px]">
+          <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
             <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
             <div className="flex">
             <div className="mb-2 grid ml-4">
@@ -547,6 +638,7 @@ const AssignmentList = () => {
             <div className="mb-4">
               <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Writing Template</p>
               <div className="flex space-x-4 ml-4">
+                
                 <label className="flex items-center text-[#012A4A] text-[13px]">
                   <input
                     type="checkbox"
@@ -570,54 +662,134 @@ const AssignmentList = () => {
 
             <div className="mb-4">
               <label className="text-[12px] text-gray-600">Type the question</label>
-              <textarea
-                className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
-                rows={3}
-                value={quizData.question}
-                onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
-                placeholder="Which of the following letters is considered a Qalqalah letter?"
-              />
+              <div className="relative">
+                <textarea
+                  className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
+                  rows={3}
+                  value={quizData.question}
+                  onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
+                  placeholder="Type your question here..."
+                />
+                <div className="absolute right-2 bottom-2 flex space-x-2">
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <svg 
+                      className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </label>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      onChange={handleAudioUpload}
+                      className="hidden"
+                    />
+                    <svg 
+                      className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                  </label>
+                </div>
+              </div>
+              
+              {/* Preview section */}
+              <div className="mt-2 flex space-x-2">
+                {selectedFile && (
+                  <div className="relative">
+                    <img 
+                      src={URL.createObjectURL(selectedFile)} 
+                      alt="Uploaded file" 
+                      className="h-16 w-16 object-cover rounded"
+                    />
+                    <button
+                      onClick={() => setSelectedFile(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {selectedAudio && (
+                  <div className="relative">
+                    <audio controls className="h-8">
+                      <source src={URL.createObjectURL(selectedAudio)} />
+                    </audio>
+                    <button
+                      onClick={() => setSelectedAudio(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="space-y-3">
-              {quizData.answers.map((answer, index) => (
-                <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
-                  <input
-                    type="checkbox"
-                    checked={answer.isCorrect}
-                    onChange={() => setQuizData(prev => ({
-                      ...prev,
-                      answers: prev.answers.map(ans => 
-                        ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
-                      )
-                    }))}
-                    className="w-5 h-3"
-                  />
-                  <input
-                    type="text"
-                    className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
-                    placeholder={`${answer.id}) Answer ${index + 1}`}
-                    value={answer.text}
-                    onChange={(e) => setQuizData(prev => ({
-                      ...prev,
-                      answers: prev.answers.map(ans => 
-                        ans.id === answer.id ? { ...ans, text: e.target.value } : ans
-                      )
-                    }))}
-                  />
-                </div>
-              ))}
-            </div>
+            <label className="flex items-center text-[#012A4A] text-[13px]">
+              <input
+                type="checkbox"
+                checked={showNoOptions.writing}
+                onChange={() => handleNoOptionsChange('writing')}
+                className="mr-2"
+              />
+              No Options
+            </label>
+
+            {!showNoOptions.writing && (
+              <div className="space-y-3">
+                {quizData.answers.map((answer, index) => (
+                  <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
+                    <input
+                      type="checkbox"
+                      checked={answer.isCorrect}
+                      onChange={() => setQuizData(prev => ({
+                        ...prev,
+                        answers: prev.answers.map(ans => 
+                          ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
+                        )
+                      }))}
+                      className="w-5 h-3"
+                    />
+                    <input
+                      type="text"
+                      className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
+                      placeholder={`${answer.id}) Answer ${index + 1}`}
+                      value={answer.text}
+                      onChange={(e) => setQuizData(prev => ({
+                        ...prev,
+                        answers: prev.answers.map(ans => 
+                          ans.id === answer.id ? { ...ans, text: e.target.value } : ans
+                        )
+                      }))}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="flex justify-end space-x-3 mt-6">
               <button
-                className="px-4 py-2 border rounded-lg"
+                className="px-4 py-2 border rounded-lg text-[12px]"
                 onClick={() => setShowWritingModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-[#223857] text-white rounded-lg"
+                className="px-4 py-2 bg-[#223857] text-white rounded-lg text-[12px]"
                 onClick={() => {
                   // Handle save logic here
                   setShowWritingModal(false);
@@ -632,7 +804,7 @@ const AssignmentList = () => {
 
       {showReadingModal && (
               <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                <div className="bg-white rounded-lg p-4 w-[500px]">
+                <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
                   <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
                   <div className="flex">
                   <div className="mb-2 grid ml-4">
@@ -658,7 +830,8 @@ const AssignmentList = () => {
 
                   <div className="mb-4">
                     <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Reading Template</p>
-                    <div className="flex space-x-4">
+                    <div className="flex space-x-4 ml-4">
+                      
                       <label className="flex items-center text-[#012A4A] text-[13px]">
                         <input
                           type="checkbox"
@@ -682,54 +855,134 @@ const AssignmentList = () => {
 
                   <div className="mb-4">
                     <label className="text-[12px] text-gray-600">Type the question</label>
-                    <textarea
-                      className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
-                      rows={3}
-                      value={quizData.question}
-                      onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
-                      placeholder="Which of the following letters is considered a Qalqalah letter?"
-                    />
+                    <div className="relative">
+                      <textarea
+                        className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
+                        rows={3}
+                        value={quizData.question}
+                        onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
+                        placeholder="Type your question here..."
+                      />
+                      <div className="absolute right-2 bottom-2 flex space-x-2">
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleReadingFileUpload}
+                            className="hidden"
+                          />
+                          <svg 
+                            className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </label>
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="audio/*"
+                            onChange={handleReadingAudioUpload}
+                            className="hidden"
+                          />
+                          <svg 
+                            className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                          </svg>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    {/* Preview section */}
+                    <div className="mt-2 flex space-x-2">
+                      {readingFile && (
+                        <div className="relative">
+                          <img 
+                            src={URL.createObjectURL(readingFile)} 
+                            alt="Uploaded file" 
+                            className="h-16 w-16 object-cover rounded"
+                          />
+                          <button
+                            onClick={() => setReadingFile(null)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                      {readingAudio && (
+                        <div className="relative">
+                          <audio controls className="h-8">
+                            <source src={URL.createObjectURL(readingAudio)} />
+                          </audio>
+                          <button
+                            onClick={() => setReadingAudio(null)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    {quizData.answers.map((answer, index) => (
-                      <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
+                    <label className="flex items-center text-[#012A4A] text-[13px]">
                         <input
                           type="checkbox"
-                          checked={answer.isCorrect}
-                          onChange={() => setQuizData(prev => ({
-                            ...prev,
-                            answers: prev.answers.map(ans => 
-                              ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
-                            )
-                          }))}
-                          className="w-5 h-3"
+                          checked={showNoOptions.reading}
+                          onChange={() => handleNoOptionsChange('reading')}
+                          className="mr-2"
                         />
-                        <input
-                          type="text"
-                          className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
-                          placeholder={`${answer.id}) Answer ${index + 1}`}
-                          value={answer.text}
-                          onChange={(e) => setQuizData(prev => ({
-                            ...prev,
-                            answers: prev.answers.map(ans => 
-                              ans.id === answer.id ? { ...ans, text: e.target.value } : ans
-                            )
-                          }))}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                        No Options
+                      </label>
 
-                  <div className="flex justify-end space-x-3 mt-6">
+                  {!showNoOptions.reading && (
+                    <div className="space-y-3">
+                      {quizData.answers.map((answer, index) => (
+                        <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
+                          <input
+                            type="checkbox"
+                            checked={answer.isCorrect}
+                            onChange={() => setQuizData(prev => ({
+                              ...prev,
+                              answers: prev.answers.map(ans => 
+                                ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
+                              )
+                            }))}
+                            className="w-5 h-3"
+                          />
+                          <input
+                            type="text"
+                            className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
+                            placeholder={`${answer.id}) Answer ${index + 1}`}
+                            value={answer.text}
+                            onChange={(e) => setQuizData(prev => ({
+                              ...prev,
+                              answers: prev.answers.map(ans => 
+                                ans.id === answer.id ? { ...ans, text: e.target.value } : ans
+                              )
+                            }))}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end space-x-3 mt-6 ">
                     <button
-                      className="px-4 py-2 border rounded-lg"
+                      className="px-4 py-2 border rounded-lg text-[12px]"
                       onClick={() => setShowReadingModal(false)}
                     >
                       Cancel
                     </button>
                     <button
-                      className="px-4 py-2 bg-[#223857] text-white rounded-lg"
+                      className="px-4 py-2 bg-[#223857] text-white rounded-lg text-[12px]"
                       onClick={() => {
                         // Handle save logic here
                         setShowReadingModal(false);
@@ -744,7 +997,7 @@ const AssignmentList = () => {
 
       {showImageModal && (
               <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                <div className="bg-white rounded-lg p-4 w-[500px]">
+                <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
                   <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
                   <div className="flex">
                   <div className="mb-2 grid ml-4">
@@ -771,6 +1024,7 @@ const AssignmentList = () => {
                   <div className="mb-4">
                     <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Image Identification Template</p>
                     <div className="flex space-x-4 ml-4">
+                      
                       <label className="flex items-center text-[#012A4A] text-[13px]">
                         <input
                           type="checkbox"
@@ -794,54 +1048,134 @@ const AssignmentList = () => {
 
                   <div className="mb-4">
                     <label className="text-[12px] text-gray-600">Type the question</label>
-                    <textarea
-                      className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
-                      rows={3}
-                      value={quizData.question}
-                      onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
-                      placeholder="Which of the following letters is considered a Qalqalah letter?"
-                    />
+                    <div className="relative">
+                      <textarea
+                        className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
+                        rows={3}
+                        value={quizData.question}
+                        onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
+                        placeholder="Type your question here..."
+                      />
+                      <div className="absolute right-2 bottom-2 flex space-x-2">
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageFileUpload}
+                            className="hidden"
+                          />
+                          <svg 
+                            className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </label>
+                        <label className="cursor-pointer">
+                          <input
+                            type="file"
+                            accept="audio/*"
+                            onChange={handleImageAudioUpload}
+                            className="hidden"
+                          />
+                          <svg 
+                            className="w-5 h-5 text-gray-500 hover:text-gray-700"
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                          </svg>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    {/* Preview section */}
+                    <div className="mt-2 flex space-x-2">
+                      {imageFile && (
+                        <div className="relative">
+                          <img 
+                            src={URL.createObjectURL(imageFile)} 
+                            alt="Uploaded file" 
+                            className="h-16 w-16 object-cover rounded"
+                          />
+                          <button
+                            onClick={() => setImageFile(null)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                      {imageAudio && (
+                        <div className="relative">
+                          <audio controls className="h-8">
+                            <source src={URL.createObjectURL(imageAudio)} />
+                          </audio>
+                          <button
+                            onClick={() => setImageAudio(null)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    {quizData.answers.map((answer, index) => (
-                      <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
+                  <label className="flex items-center text-[#012A4A] text-[13px]">
                         <input
                           type="checkbox"
-                          checked={answer.isCorrect}
-                          onChange={() => setQuizData(prev => ({
-                            ...prev,
-                            answers: prev.answers.map(ans => 
-                              ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
-                            )
-                          }))}
-                          className="w-5 h-3"
+                          checked={showNoOptions.image}
+                          onChange={() => handleNoOptionsChange('image')}
+                          className="mr-2"
                         />
-                        <input
-                          type="text"
-                          className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
-                          placeholder={`${answer.id}) Answer ${index + 1}`}
-                          value={answer.text}
-                          onChange={(e) => setQuizData(prev => ({
-                            ...prev,
-                            answers: prev.answers.map(ans => 
-                              ans.id === answer.id ? { ...ans, text: e.target.value } : ans
-                            )
-                          }))}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                        No Options
+                      </label>
+
+                  {!showNoOptions.image && (
+                    <div className="space-y-3">
+                      {quizData.answers.map((answer, index) => (
+                        <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
+                          <input
+                            type="checkbox"
+                            checked={answer.isCorrect}
+                            onChange={() => setQuizData(prev => ({
+                              ...prev,
+                              answers: prev.answers.map(ans => 
+                                ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
+                              )
+                            }))}
+                            className="w-5 h-3"
+                          />
+                          <input
+                            type="text"
+                            className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
+                            placeholder={`${answer.id}) Answer ${index + 1}`}
+                            value={answer.text}
+                            onChange={(e) => setQuizData(prev => ({
+                              ...prev,
+                              answers: prev.answers.map(ans => 
+                                ans.id === answer.id ? { ...ans, text: e.target.value } : ans
+                              )
+                            }))}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="flex justify-end space-x-3 mt-6">
                     <button
-                      className="px-4 py-2 border rounded-lg"
+                      className="px-4 py-2 border rounded-lg text-[12px]"
                       onClick={() => setShowImageModal(false)}
                     >
                       Cancel
                     </button>
                     <button
-                      className="px-4 py-2 bg-[#223857] text-white rounded-lg"
+                      className="px-4 py-2 bg-[#223857] text-white rounded-lg text-[12px]"
                       onClick={() => {
                         // Handle save logic here
                         setShowImageModal(false);
