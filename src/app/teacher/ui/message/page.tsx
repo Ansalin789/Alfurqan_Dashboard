@@ -20,17 +20,17 @@ const Message = () => {
     const [activeTab, setActiveTab] = useState("Private"); // State to track active tab
 
     const privateChats = [
-      { name: "Samantha William", message: "Lorem ipsum...", time: "12:45 PM", notifications: 2 },
-      { name: "Tony Soap", message: "Lorem ipsum...", time: "12:45 PM", notifications: 2 },
-      { name: "Karen Hope", message: "Lorem ipsum...", time: "12:45 PM", notifications: 1 },
-      { name: "Johnny Ahmad", message: "Lorem ipsum...", time: "12:45 PM", notifications: 0 },
-      { name: "Nadila Adja", message: "Lorem ipsum...", time: "12:45 PM", notifications: 4 },
+      { id:"1",name: "Samantha William", message: "Lorem ipsum...", time: "12:45 PM", notifications: 2 },
+      { id:"2",name: "Tony Soap", message: "Lorem ipsum...", time: "12:45 PM", notifications: 2 },
+      { id:"3",name: "Karen Hope", message: "Lorem ipsum...", time: "12:45 PM", notifications: 1 },
+      { id:"4",name: "Johnny Ahmad", message: "Lorem ipsum...", time: "12:45 PM", notifications: 0 },
+      { id:"5",name: "Nadila Adja", message: "Lorem ipsum...", time: "12:45 PM", notifications: 4 },
     ];
   
     const groupChats = [
-      { name: "Project Alpha", message: "Team meeting at 4 PM", time: "11:30 AM", notifications: 3 },
-      { name: "Family Group", message: "Let's plan the weekend", time: "9:15 AM", notifications: 1 },
-      { name: "Gym Buddies", message: "New workout schedule", time: "8:00 AM", notifications: 0 },
+      {id:"1", name: "Project Alpha", message: "Team meeting at 4 PM", time: "11:30 AM", notifications: 3 },
+      { id:"2", name: "Family Group", message: "Let's plan the weekend", time: "9:15 AM", notifications: 1 },
+      { id:"3", name: "Gym Buddies", message: "New workout schedule", time: "8:00 AM", notifications: 0 },
     ];
   return (
     <BaseLayout>
@@ -98,10 +98,10 @@ const Message = () => {
                     </button>
                     </div>
                     {/* Chat List */}
-                    <ul className="mt-4 space-y-4">
+                    <ul className="mt-4 space-y-4"> 
                     {(activeTab === "Private" ? privateChats : groupChats).map(
-                        (chat, index) => (
-                        <li key={index} className="flex items-center justify-between border-b-2 p-1">
+                        (chat) => (
+                        <li key={chat.id} className="flex items-center justify-between border-b-2 p-1">
                             <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-gray-300 rounded-lg"></div>
                             <div>
@@ -234,18 +234,16 @@ const Message = () => {
                 <button className="text-[10px]">View All</button>
                 </h6>
                 <ul className="mt-3 space-y-3">
-                {["Samantha William", "Tony Soap", "Karen Hope"].map(
-                    (member, index) => (
-                    <li key={index} className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full shadow-lg"></div>
-                        <div>
-                        <p className="text-[11px] font-medium text-[#374557]">{member}</p>
-                        <p className="text-[10px] text-gray-500">Student</p>
-                        </div>
-                    </li>
-                    )
-                )}
-                </ul>
+  {["1", "2", "3", "Samantha William", "Tony Soap", "Karen Hope"].map((member) => (
+    <li key={member} className="flex items-center gap-3">
+      <div className="w-8 h-8 bg-gray-200 rounded-full shadow-lg"></div>
+      <div>
+        <p className="text-[11px] font-medium text-[#374557]">{member}</p>
+        <p className="text-[10px] text-gray-500">Student</p>
+      </div>
+    </li>
+  ))}
+</ul>
             </div>
 
             {/* Attachments Section */}
@@ -284,4 +282,4 @@ const Message = () => {
   );
 };
 
-export default Message;
+export default Message;

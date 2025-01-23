@@ -58,9 +58,9 @@ const StudentList = () => {
                   status: "Not Assigned",
                   statusColor: "bg-red-100 text-red-700",
                 },
-              ].map((student, index) => (
+              ].map((student) => (
                 <tr
-                  key={index}
+                  key={student.id}
                   className="text-sm text-gray-700 border-b last:border-none"
                 >
                   <td className="py-2 px-4">{student.id}</td>

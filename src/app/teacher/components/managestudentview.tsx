@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import BaseLayout1 from '@/components/BaseLayout1';
+import BaseLayout from '@/components/BaseLayout';
 import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
@@ -117,7 +117,7 @@ const ManageStudentView = () => {
   },[]);
         
   return (
-    <BaseLayout1>
+    <BaseLayout>
       <div className="flex flex-col md:flex-row pt-14 pl-4 min-h-screen">
         <div className="p-2">
           <IoArrowBackCircleSharp 
@@ -167,7 +167,7 @@ const ManageStudentView = () => {
             </div>
 
      
-    </BaseLayout1>
+    </BaseLayout>
   );
 };
 

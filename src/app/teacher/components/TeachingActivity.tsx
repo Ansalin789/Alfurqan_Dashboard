@@ -59,8 +59,8 @@ const TeachingActivity: React.FC = () => {
 
       {/* Footer */}
       <div className="mt-6 flex justify-between text-[12px] text-gray-300">
-        {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"].map((month, index) => (
-          <span key={index} className="flex-1 text-center">
+        {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"].map((month) => (
+          <span key={month} className="flex-1 text-center">
             {month}
           </span>
         ))}

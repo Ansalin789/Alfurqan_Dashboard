@@ -29,8 +29,8 @@ const EarningAnalytics: React.FC = () => {
             { label: "TC", thisWeek: 100, lastWeek: 150 },
             { label: "GC", thisWeek: 75, lastWeek: 125 },
             { label: "OT", thisWeek: 225, lastWeek: 175 },
-          ].map((item, index) => (
-            <div key={index} className="mb-2">
+          ].map((item) => (
+            <div key={item.label} className="mb-2">
               {/* Last Week Bar */}
               <div className="bg-yellow-400 h-1 rounded-md" style={{ width: `${item.lastWeek}px` }}></div>
               {/* This Week Bar */}

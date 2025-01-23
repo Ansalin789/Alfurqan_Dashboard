@@ -138,9 +138,9 @@ const AllStudents = () => {
                 </tr>
               </thead>
               <tbody>
-                {students.map((student, index) => (
+                {students.map((student) => (
                   <tr
-                    key={index}
+                    key={student.id}
                     className="text-sm text-gray-700 border-b last:border-none"
                   >
                     <td className="py-2 px-4">{student.id}</td>
@@ -169,11 +169,11 @@ const AllStudents = () => {
                           <BsThreeDots />
                         </button>
                         {openDropdownId === student.id && (
-                          <div 
-                            className="absolute right-0 mr-10 w-24 shadow-2xl bg-white rounded-md shadow-lg z-10 border border-gray-200"
+                          <button 
+                            className="absolute right-0 mr-10 w-24 shadow-2xl bg-white rounded-md  z-10 border border-gray-200"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div
+                            <button
                               className="block w-full text-center px-4 py-1 text-[12px] text-black hover:bg-gray-100 cursor-pointer"
                               onClick={() => {
                                 router.push(`/teacher/ui/managestudentview`);
@@ -181,14 +181,14 @@ const AllStudents = () => {
                               }}
                             >
                               View
-                            </div>
-                            <div
+                            </button>
+                            <button
                               className="block w-full text-center px-4 py-1 text-[12px] text-black hover:bg-gray-100 cursor-pointer"
                               onClick={() => setOpenDropdownId(null)}
                             >
                               Cancel
-                            </div>
-                          </div>
+                            </button>
+                          </button>
                         )}
                       </div>
                     </td>

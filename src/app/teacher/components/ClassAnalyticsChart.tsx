@@ -32,7 +32,7 @@ const ClassAnalyticsChart = () => {
   };
 
   return (
-    <div className="block w-[400px] h-[195px] bg-[#2F4B8B] p-4 rounded-[17px] shadow-md flex justify-between">
+    <div className="w-[400px] h-[195px] bg-[#2F4B8B] p-4 rounded-[17px] shadow-md flex justify-between">
       {/* Chart */}
       <div className="relative w-36 h-36 mx-auto">
         <Doughnut data={data} options={options} />
@@ -46,21 +46,21 @@ const ClassAnalyticsChart = () => {
         <h3 className="text-[16px] font-semibold text-center mb-4">Class Analytics</h3>
         <div className="flex justify-between items-center">
           <span className="flex items-center">
-            <span className="w-3 h-3 rounded-full bg-[#FBBF24] mr-2"></span>
+            <div className="w-3 h-3 rounded-full bg-[#FBBF24] mr-2"></div>
             Scheduled (70%)
           </span>
           <span>28</span>
         </div>
         <div className="flex justify-between items-center mt-2">
           <span className="flex items-center">
-            <span className="w-3 h-3 rounded-full bg-[#34D399] mr-2"></span>
+            <div className="w-3 h-3 rounded-full bg-[#34D399] mr-2"></div>
             Completed (28%)
           </span>
           <span>15</span>
         </div>
         <div className="flex justify-between items-center mt-2">
           <span className="flex items-center">
-            <span className="w-3 h-3 rounded-full bg-[#A78BFA] mr-2"></span>
+            <div className="w-3 h-3 rounded-full bg-[#A78BFA] mr-2"></div>
             Absent (2%)
           </span>
           <span>2</span>
