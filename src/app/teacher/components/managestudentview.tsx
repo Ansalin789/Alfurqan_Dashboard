@@ -122,7 +122,7 @@ const ManageStudentView = () => {
         <div className="p-2">
           <IoArrowBackCircleSharp 
             className="text-[25px] bg-[#fff] rounded-full text-[#012a4a] cursor-pointer" 
-            onClick={() => router.push('manageStudents')}
+            onClick={() => router.push('allstudents')}
           />
         </div>
         <div className="flex flex-col items-center bg-[#fff] shadow-lg rounded-2xl md:w-[300px] h-[600px]">
