@@ -324,7 +324,6 @@ const AssignmentList = () => {
                 +
               </button>
               
-              {/* Assignment Type Dropdown */}
               {showTypeDropdown && (
                 <div className="absolute right-0 -mt-2 text-center justify-center w-[350px] bg-white border rounded-lg shadow-lg z-20">
                   <div className="py-1">
@@ -471,16 +470,21 @@ const AssignmentList = () => {
 
             <div className="space-y-3">
               {quizData.answers.map((answer, index) => (
-                <div key={answer.id} className="flex items-center space-x-2">
+                <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
                   <input
                     type="checkbox"
                     checked={answer.isCorrect}
-                    onChange={() => (answer.id)}
-                    className="w-6 h-4"
+                    onChange={() => setQuizData(prev => ({
+                      ...prev,
+                      answers: prev.answers.map(ans => 
+                        ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
+                      )
+                    }))}
+                    className="w-5 h-3"
                   />
                   <input
                     type="text"
-                    className="flex-1 rounded-lg p-2 border border-[#808FA4] text-center"
+                    className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
                     placeholder={`${answer.id}) Answer ${index + 1}`}
                     value={answer.text}
                     onChange={(e) => setQuizData(prev => ({
@@ -533,7 +537,7 @@ const AssignmentList = () => {
             <div className="mb-2 ml-10">
               <label className="text-[12px] text-[#012A4A]">Assignment Type</label>
               <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
-                <option value="Quiz">Quiz</option>
+                <option value="Quiz">Writing</option>
               </select>
             </div>
             </div>
@@ -541,9 +545,9 @@ const AssignmentList = () => {
             
 
             <div className="mb-4">
-              <p className="text-sm font-medium mb-2 text-[#012A4A]">Quiz Template</p>
-              <div className="flex space-x-4">
-                <label className="flex items-center">
+              <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Writing Template</p>
+              <div className="flex space-x-4 ml-4">
+                <label className="flex items-center text-[#012A4A] text-[13px]">
                   <input
                     type="checkbox"
                     checked={questionType.choose}
@@ -552,7 +556,7 @@ const AssignmentList = () => {
                   />
                   Choose
                 </label>
-                <label className="flex items-center">
+                <label className="flex items-center text-[#012A4A] text-[13px]">
                   <input
                     type="checkbox"
                     checked={questionType.trueOrFalse}
@@ -565,9 +569,9 @@ const AssignmentList = () => {
             </div>
 
             <div className="mb-4">
-              <label className="text-sm text-gray-600">Type the question</label>
+              <label className="text-[12px] text-gray-600">Type the question</label>
               <textarea
-                className="w-full border rounded-lg p-2 mt-1"
+                className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
                 rows={3}
                 value={quizData.question}
                 onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
@@ -577,16 +581,21 @@ const AssignmentList = () => {
 
             <div className="space-y-3">
               {quizData.answers.map((answer, index) => (
-                <div key={answer.id} className="flex items-center space-x-2">
+                <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
                   <input
                     type="checkbox"
                     checked={answer.isCorrect}
-                    onChange={() => (answer.id)}
-                    className="w-4 h-4"
+                    onChange={() => setQuizData(prev => ({
+                      ...prev,
+                      answers: prev.answers.map(ans => 
+                        ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
+                      )
+                    }))}
+                    className="w-5 h-3"
                   />
                   <input
                     type="text"
-                    className="flex-1 border rounded-lg p-2"
+                    className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
                     placeholder={`${answer.id}) Answer ${index + 1}`}
                     value={answer.text}
                     onChange={(e) => setQuizData(prev => ({
@@ -640,7 +649,7 @@ const AssignmentList = () => {
                   <div className="mb-2 ml-10">
                     <label className="text-[12px] text-[#012A4A]">Assignment Type</label>
                     <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
-                      <option value="Quiz">Quiz</option>
+                      <option value="Quiz">Reading</option>
                     </select>
                   </div>
                   </div>
@@ -648,9 +657,9 @@ const AssignmentList = () => {
                   
 
                   <div className="mb-4">
-                    <p className="text-sm font-medium mb-2 text-[#012A4A]">Quiz Template</p>
+                    <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Reading Template</p>
                     <div className="flex space-x-4">
-                      <label className="flex items-center">
+                      <label className="flex items-center text-[#012A4A] text-[13px]">
                         <input
                           type="checkbox"
                           checked={questionType.choose}
@@ -659,7 +668,7 @@ const AssignmentList = () => {
                         />
                         Choose
                       </label>
-                      <label className="flex items-center">
+                      <label className="flex items-center text-[#012A4A] text-[13px]">
                         <input
                           type="checkbox"
                           checked={questionType.trueOrFalse}
@@ -672,9 +681,9 @@ const AssignmentList = () => {
                   </div>
 
                   <div className="mb-4">
-                    <label className="text-sm text-gray-600">Type the question</label>
+                    <label className="text-[12px] text-gray-600">Type the question</label>
                     <textarea
-                      className="w-full border rounded-lg p-2 mt-1"
+                      className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
                       rows={3}
                       value={quizData.question}
                       onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
@@ -684,16 +693,21 @@ const AssignmentList = () => {
 
                   <div className="space-y-3">
                     {quizData.answers.map((answer, index) => (
-                      <div key={answer.id} className="flex items-center space-x-2">
+                      <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
                         <input
                           type="checkbox"
                           checked={answer.isCorrect}
-                          onChange={() => (answer.id)}
-                          className="w-4 h-4"
+                          onChange={() => setQuizData(prev => ({
+                            ...prev,
+                            answers: prev.answers.map(ans => 
+                              ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
+                            )
+                          }))}
+                          className="w-5 h-3"
                         />
                         <input
                           type="text"
-                          className="flex-1 border rounded-lg p-2"
+                          className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
                           placeholder={`${answer.id}) Answer ${index + 1}`}
                           value={answer.text}
                           onChange={(e) => setQuizData(prev => ({
@@ -747,7 +761,7 @@ const AssignmentList = () => {
                   <div className="mb-2 ml-10">
                     <label className="text-[12px] text-[#012A4A]">Assignment Type</label>
                     <select name="" id="" className="w-[100%] border border-[#808FA4] text-[#223857] text-[12px] rounded-lg p-2 mt-1">
-                      <option value="Quiz">Quiz</option>
+                      <option value="Quiz">Image</option>
                     </select>
                   </div>
                   </div>
@@ -755,9 +769,9 @@ const AssignmentList = () => {
                   
 
                   <div className="mb-4">
-                    <p className="text-sm font-medium mb-2 text-[#012A4A]">Quiz Template</p>
-                    <div className="flex space-x-4">
-                      <label className="flex items-center">
+                    <p className="text-sm font-medium mb-2 ml-2 text-[#012A4A]">Image Identification Template</p>
+                    <div className="flex space-x-4 ml-4">
+                      <label className="flex items-center text-[#012A4A] text-[13px]">
                         <input
                           type="checkbox"
                           checked={questionType.choose}
@@ -766,7 +780,7 @@ const AssignmentList = () => {
                         />
                         Choose
                       </label>
-                      <label className="flex items-center">
+                      <label className="flex items-center text-[#012A4A] text-[13px]">
                         <input
                           type="checkbox"
                           checked={questionType.trueOrFalse}
@@ -779,9 +793,9 @@ const AssignmentList = () => {
                   </div>
 
                   <div className="mb-4">
-                    <label className="text-sm text-gray-600">Type the question</label>
+                    <label className="text-[12px] text-gray-600">Type the question</label>
                     <textarea
-                      className="w-full border rounded-lg p-2 mt-1"
+                      className="w-full border border-[#808FA4] text-[#223857] text-[12px] text-center rounded-lg p-2 mt-1"
                       rows={3}
                       value={quizData.question}
                       onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
@@ -791,16 +805,21 @@ const AssignmentList = () => {
 
                   <div className="space-y-3">
                     {quizData.answers.map((answer, index) => (
-                      <div key={answer.id} className="flex items-center space-x-2">
+                      <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
                         <input
                           type="checkbox"
                           checked={answer.isCorrect}
-                          onChange={() => (answer.id)}
-                          className="w-4 h-4"
+                          onChange={() => setQuizData(prev => ({
+                            ...prev,
+                            answers: prev.answers.map(ans => 
+                              ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
+                            )
+                          }))}
+                          className="w-5 h-3"
                         />
                         <input
                           type="text"
-                          className="flex-1 border rounded-lg p-2"
+                          className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
                           placeholder={`${answer.id}) Answer ${index + 1}`}
                           value={answer.text}
                           onChange={(e) => setQuizData(prev => ({
