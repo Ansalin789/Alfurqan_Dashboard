@@ -11,7 +11,7 @@ const Knowledge: React.FC = () => {
   return (
     <BaseLayout2>
       <div className="p-6">
-        <section className=" bg-[#ffffff] p-6 py-3 rounded-xl">
+        <section className=" bg-[#ffffff] p-6 py-2 rounded-xl">
           <div className="flex items-center justify-between p-1 border-b-2 border-b-[#525151]">
             <h2 className="text-[25px] font-bold text-[#5C5F85]">Knowledge Base</h2>
             {/* Date and Filter */}
@@ -62,7 +62,7 @@ const Knowledge: React.FC = () => {
         <RecordedClassesBase /> 
 
         <section>
-          <h2 className="text-[25px] font-bold text-[#5C5F85] p-2 px-7">
+          <h2 className="text-[20px] font-bold text-[#5C5F85] p-1 px-7">
             Learn More Courses
           </h2>
           <button className="bg-[#223857] flex text-white text-[10px] p-2 ml-4 px-7 text-sm rounded-full hover:bg-[#1f334e]">

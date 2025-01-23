@@ -193,13 +193,6 @@ const Classes = () => {
                     />
                   </th>
                   <th className="px-6 py-3 text-center">
-                    Name{" "}
-                    <FaSort
-                      className="inline ml-2 cursor-pointer"
-                      onClick={() => handleSort("name")}
-                    />
-                  </th>
-                  <th className="px-6 py-3 text-center">
                     Teacher Name{" "}
                     <FaSort
                       className="inline ml-2 cursor-pointer"
@@ -235,7 +228,6 @@ const Classes = () => {
                     style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}
                   >
                     <td className="px-6 py-2 text-center">{item.classID}</td>
-                    <td className="px-6 py-2 text-center">{item.name}</td>
                     <td className="px-6 py-2 text-center">{item.teacherName}</td>
                     <td className="px-6 py-2 text-center">{item.course}</td>
                     <td className="px-6 py-2 text-center">{item.date}</td>
