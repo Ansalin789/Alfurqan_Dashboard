@@ -317,15 +317,16 @@ const Schedules: React.FC = () => {
                 scrollbarColor: "#d1d5db #f3f4f6", // Custom scrollbar color for Firefox
               }}
             >
-              {[...Array(4)].map((_, i) => (
+              {[...Array(4)].map((items) => (
                 <div
-                  key={i}
+                  key={items}
                   className="flex flex-col border rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow"
                 >
                   <span className="text-[11px] text-red-500 font-medium">Jan 5th, 2024</span>
                   <span className="text-base font-semibold">Abinesh</span>
                   <div className="flex items-center text-[11px] text-gray-600">
                     <span className="material-icons text-gray-400 mr-1">schedule</span>
+                    {/* */}
                     07:00 - 10:00 PM
                   </div>
                 </div>
@@ -339,6 +340,8 @@ const Schedules: React.FC = () => {
               <span className="text-base font-semibold">Meeting</span>
               <div className="flex items-center text-[11px] text-gray-600">
                 <span className="material-icons text-gray-400 mr-1">schedule</span>
+                    {/* */}
+
                 07:00 - 10:00 PM
               </div>
             </div>
