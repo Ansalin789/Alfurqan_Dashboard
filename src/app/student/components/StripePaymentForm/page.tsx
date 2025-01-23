@@ -1,10 +1,15 @@
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { Token } from '@stripe/stripe-js';
 
-const StripePaymentForm = ({ onPaymentSuccess }) => {
+interface StripePaymentFormProps {
+  onPaymentSuccess: (token: Token | null) => void;
+}
+
+const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }: StripePaymentFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
 
     if (!stripe || !elements) {
@@ -14,14 +19,24 @@ const StripePaymentForm = ({ onPaymentSuccess }) => {
 
     const cardElement = elements.getElement(CardElement);
 
-    const { token, error } = await stripe.createToken(cardElement);
+    if (!cardElement) {
+      console.error('Card element not found');
+      alert('Payment element is not available. Please try again.');
+      return;
+    }
 
-    if (error) {
-      console.error(error);
-      alert(error.message);
-    } else {
-      // Process the payment with the token
-      onPaymentSuccess(token);
+    try {
+      const { token, error } = await stripe.createToken(cardElement);
+
+      if (error) {
+        console.error(error);
+        alert(error.message);
+      } else {
+        onPaymentSuccess(token || null);
+      }
+    } catch (err) {
+      console.error('Payment processing error:', err);
+      alert('Something went wrong while processing the payment.');
     }
   };
 
