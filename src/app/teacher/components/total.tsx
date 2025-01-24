@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import { FaUserGraduate, FaCheckCircle, FaClock, FaHourglassHalf } from "react-icons/fa";
 
 // Define the type for the data items
@@ -48,22 +48,6 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
   </div>
 );
 
-// Fetch data from the API
-// const fetchDashboardData = async (authToken: string | null): Promise<ApiResponse> => {
-//   const response = await fetch('http://localhost:5001/dashboard/widgets', {
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Authorization': `Bearer ${authToken}`,
-//     },
-//   });
-
-//   if (!response.ok) {
-//     throw new Error(`HTTP Error: ${response.status}`);
-//   }
-
-//   return response.json();
-// };
-
 // Map API response to dashboard data
 const mapApiResponseToData = (apiResponse: ApiResponse): DataItem[] => {
   return initialData.map(item => {
@@ -88,34 +72,8 @@ const mapApiResponseToData = (apiResponse: ApiResponse): DataItem[] => {
 
 // Dashboard Component
 const Dash = () => {
-  const [data, setData] = useState<DataItem[]>(initialData.map(item => ({ ...item, value: 0 })));
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // useEffect(() => {
-  //   const loadDashboardData = async () => {
-  //     try {
-  //       setIsLoading(true);
-  //       setError(null);
-
-  //       const authToken = localStorage.getItem('authToken');
-  //       const apiResponse = await fetchDashboardData(authToken);
-
-  //       const updatedData = mapApiResponseToData(apiResponse);
-  //       setData(updatedData);
-  //     } catch (err) {
-  //       setError(err instanceof Error ? err.message : 'Unknown error');
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   loadDashboardData();
-  // }, []);
-
-  // if (isLoading) {
-  //   return <div>Loading...</div>;
-  // }
+  const [data] = useState<DataItem[]>(initialData.map(item => ({ ...item, value: 0 })));
+  const [error] = useState<string | null>(null);
 
   if (error) {
     return <div>Error: {error}</div>;

@@ -1,8 +1,8 @@
 import { FaUserAlt } from 'react-icons/fa';
 import { AiOutlineClockCircle } from 'react-icons/ai';
 import { useEffect, useState } from 'react';
-import API_URL from '@/app/acendpoints/page';
 import axios from 'axios';
+
 
 interface Student {
   studentFirstName: string;
@@ -33,7 +33,7 @@ const NextEvaluationClass = () => {
         const auth=localStorage.getItem('authToken');
         const academicId=localStorage.getItem('academicId');
         console.log("academicId>>",academicId);
-        const response = await axios.get(`${API_URL}/evaluationlist`, {
+        const response = await axios.get(`http://localhost:5001/evaluationlist`, {
 
           method: 'GET',
           params:{academicCoachId:academicId },

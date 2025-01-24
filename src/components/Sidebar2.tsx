@@ -29,7 +29,7 @@ const SidebarItems = [
     },
     {
         name: 'Payments',
-        href: '/student/ui/payments',
+        href: '/student/ui/payment',
         icon: MdOutlinePayment,
     },
     {
@@ -55,9 +55,6 @@ export default function Sidebar2() {
             <aside className='sidebar bg-[#012A4A]'>
                 <div className='sidebar__top'>
                     <Image src="/assets/images/whitelogo.png" width={100} height={100} className='sidebar__logo text-center bg-cover bg-center' alt='logo'/>
-                    <p className='sidebar__logo-name'>
-                        <Image src="/assets/images/alf2.png" width={130} height={50} alt='logo'/>
-                    </p>
                 </div>
                 <ul className="">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (

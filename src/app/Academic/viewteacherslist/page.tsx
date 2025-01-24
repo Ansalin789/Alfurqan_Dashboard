@@ -9,7 +9,7 @@ import Modal from 'react-modal';
 import React, { useState, useRef, useEffect } from 'react';
 import { FiCalendar, FiMoreVertical} from 'react-icons/fi';
 import StudentList from '@/components/Academic/ViewTeachersList/StudentList';
-import API_URL from '@/app/acendpoints/page';
+
 
 
 
@@ -151,7 +151,7 @@ const ViewTeachersList= () => {
           
           console.log(">>>>"+auth);
           try {
-            const response = await fetch(`${API_URL}/users/${teacherIdLocal}`, {
+            const response = await fetch(`http://localhost:5001/users/${teacherIdLocal}`, {
 
               headers: {
                 'Authorization': `Bearer ${auth}`,
@@ -251,7 +251,7 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
 
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`${API_URL}/shiftschedule`,
+      const response = await fetch(`http://localhost:5001/shiftschedule`,
          {
           method: 'POST',
           headers: {
@@ -274,7 +274,7 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
   const studentlist=async()=>{
       try{
         const auth=localStorage.getItem('authToken');
-           const response=await fetch(`${API_URL}/shiftschedule?role=TEACHER`,{
+           const response=await fetch(`http://localhost:5001/shiftschedule?role=TEACHER`,{
             method:'GET',
             headers:{
               "Content-Type":"application/json",

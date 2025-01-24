@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
-import { useRouter } from 'next/router';
-import API_URL from '../acendpoints/page';
+
 
 
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
@@ -15,7 +14,7 @@ const HomePage = () => {
 
   const createPaymentIntent = async () => {
     const auth=localStorage.getItem('authToken');
-    const response = await fetch(`${API_URL}/create-payment-intent`, {
+    const response = await fetch(`http://localhost:5001/create-payment-intent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

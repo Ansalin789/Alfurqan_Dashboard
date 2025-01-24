@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 
 const GeneratePage = () => {
@@ -36,7 +37,7 @@ const GeneratePage = () => {
           <img
             src={image}
             alt="Generated"
-            className="rounded shadow-lg w-full object-cover"
+            className="rounded-lg shadow-lg w-full object-cover border border-[#727272] "
             style={{ maxWidth: "500px", height: "240px" }} // Increased maxWidth and added height: auto
             onError={(e) => {
               console.error("Image failed to load:", image);

@@ -9,7 +9,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Image from 'next/image';
 import { FaCheck } from "react-icons/fa";
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
-import API_URL from '@/app/acendpoints/page';
+
 
 
 const localizer = momentLocalizer(moment);
@@ -77,7 +77,7 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
     const studentlist = async () => {
       try {
         const auth = localStorage.getItem('authToken');
-        const response = await fetch(`${API_URL}/classShedule`, {
+        const response = await fetch(`http://localhost:5001/classShedule`, {
           method: 'GET',
           headers: {
             "Content-Type": "application/json",
@@ -94,7 +94,7 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
     studentlist();
 
     const auth = localStorage.getItem('authToken');
-    fetch(`${API_URL}/shiftschedule?role=TEACHER`, {
+    fetch(`http://localhost:5001/shiftschedule?role=TEACHER`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${auth}`,
@@ -217,7 +217,7 @@ const requestData = {
 
       console.log(requestData); 
       console.log(filteredItem._id);
-      const response = await fetch(`${API_URL}/classSchedule/${filteredItem._id}`, {
+      const response = await fetch(`http://localhost:5001/classSchedule/${filteredItem._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

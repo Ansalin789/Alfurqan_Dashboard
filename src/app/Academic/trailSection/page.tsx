@@ -8,8 +8,8 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
 import { User } from '@/types';
-import API_URL from '@/app/acendpoints/page';
 import axios from 'axios';
+
 
 
 
@@ -71,7 +71,7 @@ const getAllUsers = async (): Promise<{
     const auth = localStorage.getItem('authToken');
     const academicId=localStorage.getItem('academicId');
     console.log("academicId>>",academicId);
-    const response = await axios.get(`${API_URL}/evaluationlist`, {
+    const response = await axios.get(`http://localhost:5001/evaluationlist`, {
       params:{academicCoachId:academicId },
       headers: {
         'Content-Type': 'application/json',

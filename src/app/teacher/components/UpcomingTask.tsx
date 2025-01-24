@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 
 // Define interfaces for the API response
 interface Student {
@@ -20,69 +20,10 @@ interface Evaluation {
 }
 
 const UpcomingTask: React.FC = () => {
-  const [classes, setClasses] = useState<
+  const [classes] = useState<
     { id: string; date: string; time: string; title: string; color: string }[]
   >([]);
-  // const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // useEffect(() => {
-  //   const fetchClasses = async () => {
-  //     try {
-  //       const auth=localStorage.getItem('authToken');
-  //       const response = await fetch('http://alfurqanacademy.tech:5001/evaluationlist', {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': `Bearer ${auth}`, 
-  //         },
-  //       });
-
-  //       if (!response.ok) {
-  //         throw new Error(`Failed to fetch classes: ${response.statusText}`);
-  //       }
-
-  //       const data = await response.json();
-  //       const upcomingClasses = data.evaluation
-  //         .filter((item: Evaluation) => {
-  //           const classStartDate = new Date(item.classStartDate);
-  //           const now = new Date();
-  //           return classStartDate > now; // Filter for future classes
-  //         })
-  //         .sort((a: Evaluation, b: Evaluation) => {
-  //           return (
-  //             new Date(a.classStartDate).getTime() -
-  //             new Date(b.classStartDate).getTime()
-  //           );
-  //         })
-  //         .slice(0, 2) // Take only the first 2 upcoming classes
-  //         .map((item: Evaluation) => ({
-  //           id: item._id, // Use the unique ID as the key
-  //           date: new Date(item.classStartDate).toLocaleDateString(), // Format date
-  //           time: `${item.classStartTime} - ${item.classEndTime}`, // Combine start and end time
-  //           title: item.student.learningInterest || 'Class', // Use learning interest as title
-  //           color: item.student.preferredTeacher === 'Female' ? 'blue-500' : 'red-500', // Example color logic
-  //         }));
-
-  //       setClasses(upcomingClasses);
-  //     } catch (err) {
-  //       if (err instanceof Error) {
-  //         setError(err.message);
-  //       } else {
-  //         setError('An unexpected error occurred');
-  //       }
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchClasses();
-  // }, []);
-
-  // if (loading) {
-  //   return <div className="text-center text-gray-600">Loading...</div>;
-  // }
-
+  const [error] = useState<string | null>(null);
   if (error) {
     return <div className="text-center text-red-500">Error: {error}</div>;
   }

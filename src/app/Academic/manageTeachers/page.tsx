@@ -8,7 +8,7 @@ import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from 'next/navigation';
 import BaseLayout1 from '@/components/BaseLayout1';
 import Modal from 'react-modal';
-import API_URL from '@/app/acendpoints/page';
+
 
 interface Teacher {
   _id:string;
@@ -41,7 +41,7 @@ const ManageTeacher: React.FC = () => {
       const fetchTeachers = async () => {
         try {
           const auth=localStorage.getItem('authToken');
-          const response = await fetch(`${API_URL}/users?role=TEACHER`, {
+          const response = await fetch(`http://localhost:5001/users?role=TEACHER`, {
             headers: {
               'Authorization': `Bearer ${auth}`,        
                 },
@@ -109,7 +109,7 @@ const ManageTeacher: React.FC = () => {
     console.log('New Teacher Data:', newTeacher);
    try{
     const auth=localStorage.getItem('authToken');
-    const response = await fetch(`${API_URL}/users`, {
+    const response = await fetch(`http://localhost:5001/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

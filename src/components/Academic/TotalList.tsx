@@ -1,4 +1,4 @@
-import API_URL from '@/app/acendpoints/page';
+
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { FaUserGraduate, FaCheckCircle, FaClock, FaHourglassHalf } from "react-icons/fa";
@@ -51,7 +51,7 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
 
 // Fetch data from the API
 const fetchDashboardData = async (authToken: string | null): Promise<ApiResponse> => {
-  const response = await fetch(`${API_URL}/dashboard/widgets`, {
+  const response = await fetch(`http://localhost:5001/dashboard/widgets`, {
 
     headers: {
       'Content-Type': 'application/json',

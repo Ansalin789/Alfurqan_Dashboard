@@ -1,19 +1,19 @@
-'use client'
+'use client';
 
 import React from 'react'
 import 'react-calendar/dist/Calendar.css'
-import BaseLayout1 from '@/components/BaseLayout1'
+import BaseLayout from '@/components/BaseLayout'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { FaSearch } from "react-icons/fa";
 import { BiFilterAlt } from "react-icons/bi";
 import Calender from '@/app/teacher/components/Calender';
-import UpcomingClasses from '@/components/Academic/UpcommingClasses';
 import Total from '@/app/teacher/components/total';
 import NextClass from '@/app/teacher/components/NextScheduleclass';
 import ClassAnalyticsChart from '@/app/teacher/components/ClassAnalyticsChart';
 import EarningAnalytics from '../../components/EarningAnalytics';
 import TeachingActivity from '../../components/TeachingActivity';
 import StudentsCard from '../../components/Students';
+import UpcomingTask from '../../components/UpcomingTask';
 
 
 // Register Chart.js components
@@ -25,7 +25,7 @@ export default function Academic() {
 
   return (
     <div>
-      <BaseLayout1>
+      <BaseLayout>
         <div className="flex flex-col lg:flex-row p-2 w-full">
           <div className="flex-1 pr-8 pl-4">
           <header className="flex p-2">
@@ -64,33 +64,33 @@ export default function Academic() {
                 <NextClass />
               </div>
 
-              <div className="col-span-6 grid grid-cols-2 gap-4 p-0">
+              <div className="col-span-6 grid grid-cols-1 gap-4 p-0">
                 <EarningAnalytics />
               </div>
-              <div className="col-span-6 grid grid-cols-3 gap-4 p-0">
+              <div className="col-span-6 grid grid-cols-1 gap-4 p-0">
               <ClassAnalyticsChart />
               </div>
 
-              <div className="col-span-8 grid grid-cols-2 gap-4 p-0">
+              <div className="col-span-9 grid grid-cols-1 gap-4 p-0">
                 <TeachingActivity />
               </div>
-              <div className="col-span-4 grid grid-cols-3 gap-4 p-0">
+              <div className="col-span-3 grid grid-cols-1 gap-4 p-0">
               <StudentsCard />
               </div>
               
             </main>
           </div>
           {/* calender sidebar */}
-          <div className=" lg:w-[300px] mt-6 lg:mt-0 rounded-[20px] h-[600px]">
+          <div className=" lg:w-[250px] mt-6 lg:mt-0 rounded-[20px] h-[600px]">
             <div className="col-span-4 pr-8 mb-8">
               <Calender />
             </div>
-            <div className="col-span-4 pr-8 -ml-16 rounded-lg">
-              <UpcomingClasses />
+            <div className="col-span-4 pr-8 -ml-24 rounded-lg">
+              <UpcomingTask />
             </div>
           </div>
         </div>
-      </BaseLayout1>
+      </BaseLayout>
     </div>
   )
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import API_URL from '@/app/acendpoints/page';
+
 
 if (typeof window !== 'undefined') {
   Modal.setAppElement('body');
@@ -86,7 +86,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`${API_URL}/studentlist`,{
+      const response = await fetch(`http://localhost:5001/studentlist`,{
 
         headers: {
           'Authorization': `Bearer ${auth}`,        

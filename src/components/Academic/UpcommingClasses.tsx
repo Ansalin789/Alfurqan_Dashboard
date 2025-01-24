@@ -1,4 +1,4 @@
-import API_URL from '@/app/acendpoints/page';
+
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 
@@ -34,7 +34,7 @@ const UpcomingClasses: React.FC = () => {
         const auth=localStorage.getItem('authToken');
         const academicId=localStorage.getItem('academicId');
         console.log("academicId>>",academicId);
-        const response = await axios.get(`${API_URL}/evaluationlist`, {
+        const response = await axios.get(`http://localhost:5001/evaluationlist`, {
           method: 'GET',
           params:{academicCoachId:academicId },
           headers: {

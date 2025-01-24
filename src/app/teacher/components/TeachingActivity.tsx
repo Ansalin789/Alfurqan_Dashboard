@@ -1,20 +1,22 @@
+'use client';
 import React from "react";
 
 const TeachingActivity: React.FC = () => {
   return (
-    <div className="bg-blue-600 text-white p-2 rounded-[20px] shadow-lg w-[550px] h-[225px]">
+    <div className="bg-gradient-to-t from-[#5C92DE] to-[#324F78] border border-black text-white p-2 rounded-[15px] shadow-lg w-[100%] h-[205px]">
       {/* Header */}
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-[13px] font-semibold">Teaching Activity</h2>
-        <button className="bg-white text-blue-600 px-3 py-1 rounded-full text-[12px] font-medium shadow-md">
-          Monthly
-        </button>
+        <h2 className="text-[13px] font-semibold ml-4">Teaching Activity</h2>
+        <select className="bg-white text-[#35537F] px-3 py-1 rounded-md text-[12px] font-medium shadow-md">
+          <option value="monthly">Monthly</option>
+          <option value="weekly">Weekly</option>
+        </select>
       </div>
 
       {/* Graph Area */}
       <div className="relative flex-1">
         {/* Gradient Graph */}
-        <svg viewBox="0 0 500 200" className="w-full h-[150px]">
+        <svg viewBox="0 0 500 200" className="w-full h-[140px]">
           {/* Gradient */}
           <defs>
             <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
@@ -39,7 +41,7 @@ const TeachingActivity: React.FC = () => {
         </svg>
 
         {/* Tooltip */}
-        <div className="absolute left-[80px] -top-[7px] flex flex-col items-center">
+        <div className="absolute left-[250px] -top-[7px] flex flex-col items-center">
           {/* Gauge Icon */}
           <div className="w-[50px] h-[50px] rounded-full border-[3px] border-red-500 relative flex items-center justify-center">
             <div className="w-[6px] h-[6px] bg-red-500 rounded-full"></div>
@@ -57,10 +59,9 @@ const TeachingActivity: React.FC = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="mt-6 flex justify-between text-[12px] text-gray-300">
-        {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"].map((month, index) => (
-          <span key={index} className="flex-1 text-center">
+      <div className="flex justify-between text-[12px] text-gray-300">
+        {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"].map((month) => (
+          <span key={month} className="flex-1 text-center text-[11px]">
             {month}
           </span>
         ))}
