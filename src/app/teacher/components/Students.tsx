@@ -1,49 +1,40 @@
+'use client';
 import React from "react";
 import { FaMale, FaFemale } from "react-icons/fa";
 
 const StudentsCard: React.FC = () => {
   return (
-    <div className="bg-blue-600 text-white rounded-[20px] shadow-lg w-[200px] h-[225px] p-4">
+    <div className="bg-[#324F78] text-white rounded-[15px] shadow-lg w-[100%] h-[205px] p-4">
       {/* Header */}
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-[14px] font-semibold">Students</h2>
-        <div className="w-[20px] h-[20px] bg-white text-blue-600 rounded-full flex items-center justify-center cursor-pointer">
-          ...
-        </div>
+      <div className="flex justify-center items-center mb-2 -mt-2 bg-[#fff] text-center rounded-md">
+        <h2 className="text-[14px] font-semibold text-[#242424] text-center py-[1px]">Students</h2>
       </div>
 
       {/* Donut Chart */}
       <div className="relative flex justify-center items-center">
-        {/* Outer Circle */}
-        <div className="w-[100px] h-[100px] rounded-full bg-white flex items-center justify-center relative">
-          {/* Boys Slice */}
+        {/* Outer Donut Circle */}
+        <div className="relative w-[100px] h-[100px] rounded-full">
+          {/* Donut Gradient */}
           <div
-            className="absolute w-[100px] h-[100px] rounded-full"
+            className="absolute inset-0 rounded-full"
             style={{
-              background: `conic-gradient(
-                #38bdf8 0%,
-                #38bdf8 47%,
-                transparent 47%,
-                transparent 100%
-              )`,
+              background: `conic-gradient(#fff 0% 47%, #83DBFC 47% 100%)`,
             }}
           ></div>
-          {/* Girls Slice */}
+
+          {/* Two-Color Inner Circle with Rounded Edges */}
           <div
-            className="absolute w-[85px] h-[85px] rounded-full bg-blue-600"
+            className="absolute inset-[10px] w-[80px] h-[80px] rounded-full bg-[#324F78]"
             style={{
-              background: `conic-gradient(
-                #f472b6 0%,
-                #f472b6 53%,
-                transparent 53%,
-                transparent 100%
-              )`,
+              clipPath: "inset(0 round 50px)",
+              background: `conic-gradient(#FF5BBE 0% 47%, #fff 47% 100%)`,
             }}
           ></div>
-          {/* Inner Icon */}
-          <div className="w-[50px] h-[50px] bg-blue-600 rounded-full flex items-center justify-center">
-            <FaMale className="text-[12px] text-blue-400" />
-            <FaFemale className="text-[12px] text-pink-400 ml-1" />
+
+          {/* Innermost Blue Circle with Icons */}
+          <div className="absolute inset-[20px] w-[60px] h-[60px] bg-[#324F78] rounded-full flex items-center justify-center">
+            <FaMale className="text-[18px] text-blue-400" />
+            <FaFemale className="text-[18px] text-pink-400 ml-1" />
           </div>
         </div>
       </div>

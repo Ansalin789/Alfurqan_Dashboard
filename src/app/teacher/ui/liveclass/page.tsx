@@ -255,11 +255,11 @@ function LiveClass() {
         {isFormData ? (
                <div className="min-h-screen bg-[#E6E9ED] p-8">
                <div className="max-w-6xl mx-auto">
-                 <h1 className="text-3xl font-bold text-gray-800 mb-8">Trial Class</h1>
+                 <h1 className="text-3xl font-bold text-gray-800 mb-3">Trial Class</h1>
                  
-                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                    {/* Form Section */}
-                   <form onSubmit={handleSubmit} className="lg:col-span-2 bg-[#1e3a5f] text-white p-8 rounded-lg">
+                   <form onSubmit={handleSubmit} className="lg:col-span-2 bg-[#1e3a5f] text-white p-5 rounded-lg">
                      <h2 className="text-xl font-semibold mb-6">Student Details</h2>
                      
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

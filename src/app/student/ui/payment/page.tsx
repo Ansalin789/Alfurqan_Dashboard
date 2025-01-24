@@ -180,11 +180,10 @@ const Invoice = () => {
               <p className="whitespace-nowrap">
                 Amount due on 20 Nov 2024: <span className="font-bold">$125</span>
               </p>
-            </div>
 
-            {/* Toggle Payment Form */}
-            <div className="flex justify-between mt-5">
-              {!isGeneratingPDF && (
+            </div>
+            <div className='flex mt-2'>
+            {!isGeneratingPDF && (
                 <button
                   onClick={() => setShowModal(true)}
                   className="bg-[#223857] text-white py-1 rounded-2xl px-3 text-xs ml-[850px] hover:bg-blue-600 transform hover:-translate-y-1 transition duration-300"
@@ -192,9 +191,66 @@ const Invoice = () => {
                   Pay Online
                 </button>
               )}
+             </div>
+            <div className="mb-4">
+              <h3 className="text-xs font-bold mb-1">Payment Instructions:</h3>
+              <p className="text-[11px]"><strong>AL FURQAN ACADEMY</strong></p>
+              <p className="text-[10px]">BANK NAME: ABC BANK LIMITED</p>
+              <p className="text-[10px]">SWIFT/IBAN: GB0021030012</p>
+              <p className="text-[10px]">ACCOUNT NUMBER: 12-1234-123456-12</p>
+              <p className="text-[10px]"><strong>PLEASE USE INV-0205 AS A REFERENCE NUMBER</strong></p>
+              <p className="text-[9px]">For any questions, please contact us at <span className="font-bold">contact@alfurqan.academy</span>.</p>
+            
+
+            {/* Toggle Payment Form */}
+              
+            
             </div>
           </div>
 
+
+          {!isGeneratingPDF && (
+
+<div className="w-[990px] bg-white p-1 rounded-lg shadow mr-20">
+  <div className="flex justify-between items-center mb-3">
+    <h3 className="text-sm font-bold text-gray-800">Latest Transactions</h3>
+    <a href="/transactions" className="text-xs text-blue-500 hover:underline">View all</a>
+  </div>
+  <div className="overflow-x-auto">
+    <table className="table-auto w-full border-collapse text-xs">
+      <thead>
+        <tr className="bg-gray-100 text-gray-600">
+          <th className="text-left px-3 py-1">Invoice Date</th>
+          <th className="text-left px-3 py-1">Invoice Number</th>
+          <th className="text-left px-3 py-1">Course Name</th>
+          <th className="text-left px-3 py-1">Payment Date</th>
+          <th className="text-left px-3 py-1">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr className="hover:bg-gray-50">
+          <td className="px-3 py-1 text-gray-700">October 15, 2024</td>
+          <td className="px-3 py-1 text-gray-700">INV-0204</td>
+          <td className="px-3 py-1 text-gray-700">Arabic - Basic</td>
+          <td className="px-3 py-1 text-gray-700">October 25, 2024</td>
+          <td className="px-3 py-1">
+            <span className="bg-green-100 text-green-600 py-0.5 px-2 rounded-full text-[10px]">Completed</span>
+          </td>
+        </tr>
+        <tr className="hover:bg-gray-50">
+          <td className="px-3 py-1 text-gray-700">October 14, 2024</td>
+          <td className="px-3 py-1 text-gray-700">INV-0203</td>
+          <td className="px-3 py-1 text-gray-700">Tajweed - Standard</td>
+          <td className="px-3 py-1 text-gray-700">October 24, 2024</td>
+          <td className="px-3 py-1">
+            <span className="bg-yellow-100 text-yellow-600 py-0.5 px-2 rounded-full text-[10px]">Pending</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+              )}
           {/* Modal for Payment Form */}
           {showModal && (
             <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">

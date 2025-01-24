@@ -55,9 +55,6 @@ export default function Sidebar() {
             <aside className='sidebar'>
                 <div className='sidebar__top'>
                     <Image src="/assets/images/whitelogo.png" width={130} height={130} className='bg-cover bg-center' alt='logo'/>
-                    {/* <p className='sidebar__logo-name'>
-                        <Image src="/assets/images/alf2.png" width={130} height={50} alt='logo'/>
-                    </p> */}
                 </div>
                 <ul className="sidebar__list">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (
