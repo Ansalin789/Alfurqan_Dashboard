@@ -63,7 +63,7 @@ const Upcome = () => {
 
   return (
     <div className="col-span-12 -mt-4">
-      <h2 className="text-[16px] font-bold text-gray-800 px-4 mb-0">Upcoming Classes</h2>
+      <h2 className="text-[13px] font-bold text-gray-800 px-4 mb-0">Upcoming Classes</h2>
       <div className="bg-[#969DB2] p-1 rounded-lg shadow-md">
         {evaluationList.map((item) => {
           let backgroundColor: string;
@@ -79,26 +79,25 @@ const Upcome = () => {
           return (
             <div
               key={item.id}
-              className="flex justify-between items-center text-white rounded-xl px-4 py-[4px]"
+              className="flex flex-col md:flex-row justify-between items-center text-white rounded-xl px-4 py-[4px] mb-2 md:mb-0"
             >
-              <div className="flex">
-              <span className="font-semibold text-[11px]">{item.id} - {item.name}</span>
+              <div className="flex w-full md:w-auto mb-2 md:mb-0">
+                <span className="font-semibold text-[11px] md:text-[11px]">{item.id} - {item.name}</span>
               </div>
-              <div className="flex text-center">
-                <span className="text-[10px] text-center">by {item.preferredTeacher}</span>
+              <div className="flex text-center w-full md:w-auto mb-2 md:mb-0">
+                <span className="text-[10px] md:text-[11px]">by {item.preferredTeacher}</span>
               </div>
-              <div className="flex flex-col items-center">
-                <span className="flex items-center gap-2 text-[11px]">
+              <div className="flex flex-col items-center w-full md:w-auto mb-2 md:mb-0">
+                <span className="flex items-center gap-2 text-[11px] md:text-[11px]">
                   <i className="fa fa-calendar" aria-hidden="true"></i>
                   {item.date}
                 </span>
               </div>
               <div
-                className="text-[11px] px-4 py-[1px] rounded-md font-medium"
+                className="text-[10px] md:text-[10px] px-4 py-[px] rounded-md font-medium"
                 style={{
                   backgroundColor,
                   color: "white",
-                  fontSize: "11px",
                 }}
               >
                 {item.time}
@@ -111,4 +110,4 @@ const Upcome = () => {
   );
 };
 
-export default Upcome;
+export default Upcome;

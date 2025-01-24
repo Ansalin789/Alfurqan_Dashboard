@@ -68,6 +68,8 @@ export default function Sidebar() {
                         </li>
                     ))}
                 </ul>
+                <Image src="/assets/images/refer.png" width={180} height={180} className='text-center bg-cover bg-center w-28 justify-center ml-8' alt='logo'/>
+               
             </aside>
         </div>
     );

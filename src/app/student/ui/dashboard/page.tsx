@@ -21,7 +21,7 @@ export default function Academic() {
     <div className={isDarkMode ? 'dark' : ''}>
       <BaseLayout2>
         
-        <div className="flex flex-col lg:flex-row p-2 w-full">
+        <div className="flex flex-col lg:flex-row p-2 w-[100%]">
           <div className="flex-1 p-2">
             <main className="grid grid-cols-12 gap-4 pr-6">
               <div className="col-span-12 grid grid-cols-1 gap-2 p-0">
@@ -41,7 +41,7 @@ export default function Academic() {
           </div>
 
           {/* Calendar sidebar */}
-          <div className="lg:w-[370px] mt-6 mr-6 lg:mt-4 border-[1px] border-[#727272] bg-white rounded-[8px] h-[622px] dark:bg-gray-800">
+          <div className="lg:w-[370px] mt-6 mr-6 lg:mt-4 border-[1px] border-[#727272] bg-white rounded-[8px] h-[622px]">
             <div className="col-span-4 pr-2 mb-4">
               <Profile />
             </div>
