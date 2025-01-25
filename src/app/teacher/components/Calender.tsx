@@ -55,7 +55,7 @@ const Calender: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center mt-12">
-      <a href="/Academic/schedule">
+      <a href="/teacher/ui/schedule">
         <div className="calendar-container rounded-[50px] -ml-28">
           <Calendar
             onChange={(newValue) => setValue(newValue as Date)}
