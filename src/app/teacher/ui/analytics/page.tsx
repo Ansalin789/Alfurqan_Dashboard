@@ -1,13 +1,18 @@
 "use client";
 import React, { useState } from 'react';
-import { Filter, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { Filter, Search, X } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
 import BaseLayout from '@/components/BaseLayout';
+import { FaSort } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+
 interface Student {
   id: string;
   name: string;
   course: string;
   courseType: string;
+  classDateTime: string;
+  courseDuration: string;
   joinDate: string;
   level: number;
   status: 'Active' | 'Inactive';
@@ -28,6 +33,9 @@ interface Earning {
   studentName: string;
   course: string;
   amount: number;
+  classDateTime: number;
+  courseDuration: number;
+  courseType: number;
   date: string;
   status: 'Paid' | 'Pending';
 }
@@ -35,6 +43,7 @@ interface Earning {
 type ViewType = 'students' | 'classes' | 'earnings';
 
 function Analytics() {
+  const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeView, setActiveView] = useState<ViewType>('students');
   const [filters, setFilters] = useState({
@@ -44,6 +53,8 @@ function Analytics() {
     status: '',
     date: '',
   });
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortKey, setSortKey] = useState<keyof Student | keyof Class | keyof Earning>("name"); // Default sort key
 
   const studentData = [
     { month: 'Jan', students: 8000 },
@@ -78,6 +89,8 @@ function Analytics() {
       name: 'Samantha William',
       course: 'Tajweed',
       courseType: 'Trial Class',
+      courseDuration: '4',
+      classDateTime: '4',
       joinDate: 'January 2, 2020',
       level: 2,
       status: 'Active'
@@ -87,6 +100,8 @@ function Analytics() {
       name: 'Jordan Nico',
       course: 'Arabic',
       courseType: 'Group Class',
+      courseDuration:'4',
+      classDateTime:'4',
       joinDate: 'January 2, 2020',
       level: 2,
       status: 'Active'
@@ -96,6 +111,8 @@ function Analytics() {
       name: 'Nadila Adja',
       course: 'Quran',
       courseType: 'Regular Class',
+      courseDuration: '4',
+      classDateTime: '4',
       joinDate: 'January 2, 2020',
       level: 2,
       status: 'Active'
@@ -138,6 +155,9 @@ function Analytics() {
       studentName: 'Samantha William',
       course: 'Tajweed',
       amount: 150,
+      classDateTime: 150,
+      courseDuration: 150,
+      courseType: 150,
       date: 'March 15, 2024',
       status: 'Paid'
     },
@@ -146,6 +166,9 @@ function Analytics() {
       studentName: 'Jordan Nico',
       course: 'Arabic',
       amount: 200,
+      classDateTime: 150,
+      courseDuration: 150,
+      courseType: 150,
       date: 'March 14, 2024',
       status: 'Pending'
     },
@@ -154,6 +177,9 @@ function Analytics() {
       studentName: 'Nadila Adja',
       course: 'Quran',
       amount: 175,
+      classDateTime: 150,
+      courseDuration: 150,
+      courseType: 150,
       date: 'March 13, 2024',
       status: 'Paid'
     }
@@ -184,12 +210,48 @@ function Analytics() {
     );
   });
 
+  // Function to handle sorting
+  const handleSort = (key: keyof Student | keyof Class | keyof Earning) => {
+    const order = sortOrder === "asc" ? "desc" : "asc";
+    setSortOrder(order);
+    setSortKey(key);
+  };
+
+  // Sorting logic for filtered data
+  const sortedStudents = [...filteredStudents].sort((a, b) => {
+    if (sortOrder === "asc") {
+      return a[sortKey as keyof Student].toString().localeCompare(b[sortKey as keyof Student].toString());
+    }
+    return b[sortKey as keyof Student].toString().localeCompare(a[sortKey as keyof Student].toString());
+  });
+
+  const sortedClasses = [...filteredClasses].sort((a, b) => {
+    if (sortOrder === "asc") {
+      return a[sortKey as keyof Class].toString().localeCompare(b[sortKey as keyof Class].toString());
+    }
+    return b[sortKey as keyof Class].toString().localeCompare(a[sortKey as keyof Class].toString());
+  });
+
+  const sortedEarnings = [...filteredEarnings].sort((a, b) => {
+    const aValue = a[sortKey as keyof Earning];
+    const bValue = b[sortKey as keyof Earning];
+    
+    if (aValue === undefined || bValue === undefined) {
+      return 0; // or handle the case as needed
+    }
+
+    if (sortOrder === "asc") {
+      return aValue.toString().localeCompare(bValue.toString());
+    }
+    return bValue.toString().localeCompare(aValue.toString());
+  });
+
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
   return (
     <BaseLayout>
-    <div className="h-screen w-screen bg-[#f1f1f4]">
+    <div className="h-screen w-screen">
       <div className="p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
@@ -197,10 +259,10 @@ function Analytics() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-3 gap-4 mb-6 w-[80%] ml-32">
             {/* Total Students Card */}
             <button
-              className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+              className={`bg-white ${activeView === 'students' ? 'border-4' : 'border-2'} border-[#1C3557] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow`}
               onClick={() => setActiveView('students')}
             >
               <h3 className="text-base font-semibold text-[#1e293b] mb-3">Total Students</h3>
@@ -223,7 +285,7 @@ function Analytics() {
 
             {/* Classes Card */}
             <button
-              className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+              className={`bg-white ${activeView === 'classes' ? 'border-4' : 'border-2'} border-[#1C3557] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow`}
               onClick={() => setActiveView('classes')}
             >
               <h3 className="text-base font-semibold text-[#1e293b] mb-3">Classes</h3>
@@ -257,7 +319,7 @@ function Analytics() {
 
             {/* Earnings Card */}
             <button
-              className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+              className={`bg-white ${activeView === 'earnings' ? 'border-4' : 'border-2'} border-[#1C3557] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow`}
               onClick={() => setActiveView('earnings')}
             >
               <h3 className="text-base font-semibold text-[#1e293b] mb-3">Earnings</h3>
@@ -291,66 +353,77 @@ function Analytics() {
           </div>
 
           {/* List View */}
-          <div className="bg-white rounded-xl shadow-sm">
+          <div className="bg-white rounded-xl shadow-sm mt-24">
             <div className="p-4 flex justify-between items-center">
               <h2 className="text-lg font-semibold text-[#1e293b]">
               {(() => {
-  if (activeView === 'students') {
-    return 'Students List';
-  } else if (activeView === 'classes') {
-    return 'Classes List';
-  } else {
-    return 'Earnings List';
-  }
-})()}
+                if (activeView === 'students') {
+                  return 'Students List';
+                } else if (activeView === 'classes') {
+                  return 'Classes List';
+                } else {
+                  return 'Earnings List';
+                }
+              })()}
 
               </h2>
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    onChange={(e) => handleFilterChange('name', e.target.value)}
-                    className="pl-9 pr-4 py-1.5 bg-gray-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4ade80] w-56"
-                  />
-                </div>
+              <div className="items-center gap-3 -mt-12">
                 <button
-                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg text-gray-600 hover:bg-gray-100 text-sm"
+                  className="flex items-center -mt-3 gap-2 ml-36 shadow-lg bg-[#FAFAFA] px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 text-sm"
                   onClick={() => setIsFilterOpen(true)}
                 >
                   <Filter className="w-4 h-4" />
                   <span>Filter</span>
                 </button>
+                <div className="relative shadow-ld mt-4 rounded-xl">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    onChange={(e) => handleFilterChange('name', e.target.value)}
+                    className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] shadow-lg rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4ade80] w-56"
+                  />
+                </div>
+                
               </div>
             </div>
 
             {activeView === 'students' && (
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-gray-500 border-y border-gray-100">
-                    <th className="px-4 py-3 font-medium text-sm">Name</th>
-                    <th className="px-4 py-3 font-medium text-sm">Student ID</th>
-                    <th className="px-4 py-3 font-medium text-sm">Courses</th>
-                    <th className="px-4 py-3 font-medium text-sm">Course Type</th>
-                    <th className="px-4 py-3 font-medium text-sm">Join Date</th>
+                  <tr className="text-left text-[#374557]">
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Name <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('name')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Student ID <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('id')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Courses <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('course')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Course Type <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('courseType')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Join Date <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('joinDate')} />
+                    </th>
                     <th className="px-4 py-3 font-medium text-sm">Level</th>
                     <th className="px-4 py-3 font-medium text-sm">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map((student) => (
+                  {sortedStudents.map((student) => (
                     <tr key={student.id} className="border-b border-gray-100 last:border-b-0">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gray-100 rounded-full"></div>
+                          <div className="w-8 h-8 bg-[#DBDBDB] rounded-lg"></div>
                           <span className="font-medium text-[#1e293b] text-sm">{student.name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-sm">{student.id}</td>
+                      <td className="px-4 py-3 text-[#1e293b] text-sm">{student.id}</td>
                       <td className="px-4 py-3 text-[#1e293b] text-sm">{student.course}</td>
-                      <td className="px-4 py-3 text-gray-500 text-sm">{student.courseType}</td>
-                      <td className="px-4 py-3 text-gray-500 text-sm">{student.joinDate}</td>
+                      <td className="px-4 py-3 text-[#1e293b] text-sm">{student.courseType}</td>
+                      <td className="px-4 py-3 text-[#1e293b] text-sm">{student.joinDate}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <span className="text-[#1e293b] text-sm">Level {student.level}</span>
@@ -360,7 +433,7 @@ function Analytics() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#4ade80] rounded-full text-xs">
+                        <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] rounded-full text-xs">
                           {student.status}
                         </span>
                       </td>
@@ -373,18 +446,32 @@ function Analytics() {
             {activeView === 'classes' && (
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-gray-500 border-y border-gray-100">
-                    <th className="px-4 py-3 font-medium text-sm">Class Name</th>
-                    <th className="px-4 py-3 font-medium text-sm">Class ID</th>
-                    <th className="px-4 py-3 font-medium text-sm">Instructor</th>
-                    <th className="px-4 py-3 font-medium text-sm">Schedule</th>
-                    <th className="px-4 py-3 font-medium text-sm">Students</th>
-                    <th className="px-4 py-3 font-medium text-sm">Type</th>
-                    <th className="px-4 py-3 font-medium text-sm">Status</th>
+                  <tr className="text-left text-[#374557] border-y border-gray-100">
+                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                      Class Name <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('name')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                      Student ID <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('id')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                      Courses <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('instructor')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                      Course Type <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('schedule')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                      Course Duration <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('students')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                      Class-Date & time <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('type')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                      Status <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('status')} />
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredClasses.map((cls) => (
+                  {sortedClasses.map((cls) => (
                     <tr key={cls.id} className="border-b border-gray-100 last:border-b-0">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -392,14 +479,14 @@ function Analytics() {
                           <span className="font-medium text-[#1e293b] text-sm">{cls.name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-sm">{cls.id}</td>
+                      <td className="px-4 py-3 text-[#1e293b] text-sm">{cls.id}</td>
                       <td className="px-4 py-3 text-[#1e293b] text-sm">{cls.instructor}</td>
-                      <td className="px-4 py-3 text-gray-500 text-sm">{cls.schedule}</td>
-                      <td className="px-4 py-3 text-gray-500 text-sm">{cls.students}</td>
+                      <td className="px-4 py-3 text-[#1e293b] text-sm">{cls.schedule}</td>
+                      <td className="px-4 py-3 text-[#1e293b] text-sm">{cls.students}</td>
                       <td className="px-4 py-3 text-[#1e293b] text-sm">{cls.type}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2.5 py-1 ${
-                          cls.status === 'Ongoing' ? 'bg-[#4ade80]/10 text-[#4ade80]' : 'bg-gray-100 text-gray-600'
+                          cls.status === 'Ongoing' ? 'bg-[#4ade80]/10 text-[#4ade80]' : 'bg-gray-100 text-[#1e293b]'
                         } rounded-full text-xs`}>
                           {cls.status}
                         </span>
@@ -413,19 +500,37 @@ function Analytics() {
             {activeView === 'earnings' && (
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-gray-500 border-y border-gray-100">
-                    <th className="px-4 py-3 font-medium text-sm">Payment ID</th>
-                    <th className="px-4 py-3 font-medium text-sm">Student Name</th>
-                    <th className="px-4 py-3 font-medium text-sm">Course</th>
-                    <th className="px-4 py-3 font-medium text-sm">Amount</th>
-                    <th className="px-4 py-3 font-medium text-sm">Date</th>
-                    <th className="px-4 py-3 font-medium text-sm">Status</th>
+                  <tr className="text-left text-[#374557] border-y border-gray-100">
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Name <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('studentName')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Student ID <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('id')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Courses <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('course')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Course Type <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('courseType')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Course Duration <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('courseDuration')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Class Date-Time <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('classDateTime')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Amount <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('amount')} />
+                    </th>
+                    <th className="px-4 py-3 font-medium text-sm">
+                      Status <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('status')} />
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredEarnings.map((earning) => (
+                  {sortedEarnings.map((earning) => (
                     <tr key={earning.id} className="border-b border-gray-100 last:border-b-0">
-                      <td className="px-4 py-3 text-gray-500 text-sm">{earning.id}</td>
+                      <td className="px-4 py-3 text-[#1e293b] text-sm">{earning.id}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-gray-100 rounded-full"></div>
@@ -433,8 +538,10 @@ function Analytics() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-[#1e293b] text-sm">{earning.course}</td>
+                      <td className="px-4 py-3 text-[#1e293b] text-sm">{earning.courseType}</td>
+                      <td className="px-4 py-3 text-[#1e293b] text-sm">{earning.courseDuration}</td>
+                      <td className="px-4 py-3 text-[#1e293b] text-sm">{earning.classDateTime}</td>
                       <td className="px-4 py-3 text-[#1e293b] text-sm">${earning.amount}</td>
-                      <td className="px-4 py-3 text-gray-500 text-sm">{earning.date}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2.5 py-1 ${
                           earning.status === 'Paid' ? 'bg-[#4ade80]/10 text-[#4ade80]' : 'bg-yellow-100 text-yellow-600'
@@ -447,171 +554,155 @@ function Analytics() {
                 </tbody>
               </table>
             )}
-
-            <div className="px-4 py-3 flex items-center justify-between border-t border-gray-100">
-            <p className="text-xs text-gray-500">
-  Showing 1-
-  {(() => {
-    if (activeView === 'students') {
-      return filteredStudents.length;
-    } else if (activeView === 'classes') {
-      return filteredClasses.length;
-    } else {
-      return filteredEarnings.length;
-    }
-  })()}
-  of{' '}
-  {(() => {
-    if (activeView === 'students') {
-      return students.length;
-    } else if (activeView === 'classes') {
-      return classes.length;
-    } else {
-      return earnings.length;
-    }
-  })()} data
-</p>
-
-              <div className="flex items-center gap-1">
-                <button className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-50">
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button className="w-7 h-7 rounded-lg bg-[#4ade80] text-white text-sm">1</button>
-                <button className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-50">
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
           </div>
+          <div className="flex justify-end">
+          <button
+            className="text-green-500 mt-4 underline cursor-pointer bg-transparent border-none p-0"
+            onClick={() => {
+              if (activeView === 'students') {
+                router.push('/teacher/ui/analytics/totalstudents');
+              } else if (activeView === 'classes') {
+                router.push('/teacher/ui/analytics/classes');
+              } else {
+                router.push('/teacher/ui/analytics/earnings');
+              }
+            }}
+          >
+            View All
+          </button>
         </div>
+        </div>
+        
+
+
       </div>
 
       {/* Filter Modal */}
       {isFilterOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl w-[400px] p-6 relative">
-      <button
-        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-        onClick={() => setIsFilterOpen(false)}
-      >
-        <X className="w-5 h-5" />
-      </button>
-      <h2 className="text-xl font-semibold mb-4">Filter By</h2>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            {(() => {
-              if (activeView === 'students') {
-                return 'Student Name';
-              } else if (activeView === 'classes') {
-                return 'Class Name';
-              } else {
-                return 'Student Name'; // Default case for other views (like earnings)
-              }
-            })()}
-          </label>
-          <input
-            type="text"
-            value={filters.name}
-            onChange={(e) => handleFilterChange('name', e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4ade80] focus:border-[#4ade80] sm:text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            {(() => {
-              if (activeView === 'students') {
-                return 'Student ID';
-              } else if (activeView === 'classes') {
-                return 'Class ID';
-              } else {
-                return 'Payment ID'; // Default case for earnings
-              }
-            })()}
-          </label>
-          <input
-            type="text"
-            value={filters.id}
-            onChange={(e) => handleFilterChange('id', e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4ade80] focus:border-[#4ade80] sm:text-sm"
-          />
-        </div>
-        {activeView === 'students' && (
-          <div>
-            <label htmlFor='hvbahi' className="block text-sm font-medium text-gray-700">Course</label>
-            <select
-              value={filters.course}
-              onChange={(e) => handleFilterChange('course', e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4ade80] focus:border-[#4ade80] sm:text-sm"
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl w-[400px] p-6 relative">
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              onClick={() => setIsFilterOpen(false)}
             >
-              <option value="">All</option>
-              <option value="Arabic">Arabic</option>
-              <option value="Quran">Quran</option>
-              <option value="Tajweed">Tajweed</option>
-            </select>
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-semibold mb-4">Filter By</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  {(() => {
+                    if (activeView === 'students') {
+                      return 'Student Name';
+                    } else if (activeView === 'classes') {
+                      return 'Class Name';
+                    } else {
+                      return 'Student Name'; // Default case for other views (like earnings)
+                    }
+                  })()}
+                </label>
+                <input
+                  type="text"
+                  value={filters.name}
+                  onChange={(e) => handleFilterChange('name', e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4ade80] focus:border-[#4ade80] sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  {(() => {
+                    if (activeView === 'students') {
+                      return 'Student ID';
+                    } else if (activeView === 'classes') {
+                      return 'Class ID';
+                    } else {
+                      return 'Payment ID'; // Default case for earnings
+                    }
+                  })()}
+                </label>
+                <input
+                  type="text"
+                  value={filters.id}
+                  onChange={(e) => handleFilterChange('id', e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4ade80] focus:border-[#4ade80] sm:text-sm"
+                />
+              </div>
+              {activeView === 'students' && (
+                <div>
+                  <label htmlFor='hvbahi' className="block text-sm font-medium text-gray-700">Course</label>
+                  <select
+                    value={filters.course}
+                    onChange={(e) => handleFilterChange('course', e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4ade80] focus:border-[#4ade80] sm:text-sm"
+                  >
+                    <option value="">All</option>
+                    <option value="Arabic">Arabic</option>
+                    <option value="Quran">Quran</option>
+                    <option value="Tajweed">Tajweed</option>
+                  </select>
+                </div>
+              )}
+              <div>
+                <label htmlFor='hvbahi'  className="block text-sm font-medium text-gray-700">Status</label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4ade80] focus:border-[#4ade80] sm:text-sm"
+                >
+                  <option value="">All</option>
+                  {(() => {
+                    if (activeView === 'students') {
+                      return (
+                        <>
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                        </>
+                      );
+                    } else if (activeView === 'classes') {
+                      return (
+                        <>
+                          <option value="Ongoing">Ongoing</option>
+                          <option value="Completed">Completed</option>
+                        </>
+                      );
+                    } else {
+                      return (
+                        <>
+                          <option value="Paid">Paid</option>
+                          <option value="Pending">Pending</option>
+                        </>
+                      );
+                    }
+                  })()}
+                </select>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                className="px-4 py-2 bg-gray-100 rounded-md text-gray-700 hover:bg-gray-200"
+                onClick={() => {
+                  setFilters({
+                    name: '',
+                    id: '',
+                    course: '',
+                    status: '',
+                    date: '',
+                  });
+                  setIsFilterOpen(false);
+                }}
+              >
+                Reset
+              </button>
+              <button
+                className="px-4 py-2 bg-[#4ade80] text-white rounded-md hover:bg-[#3ecf6e]"
+                onClick={() => setIsFilterOpen(false)}
+              >
+                Apply
+              </button>
+            </div>
           </div>
-        )}
-        <div>
-          <label htmlFor='hvbahi'  className="block text-sm font-medium text-gray-700">Status</label>
-          <select
-            value={filters.status}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4ade80] focus:border-[#4ade80] sm:text-sm"
-          >
-            <option value="">All</option>
-            {(() => {
-              if (activeView === 'students') {
-                return (
-                  <>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </>
-                );
-              } else if (activeView === 'classes') {
-                return (
-                  <>
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Completed">Completed</option>
-                  </>
-                );
-              } else {
-                return (
-                  <>
-                    <option value="Paid">Paid</option>
-                    <option value="Pending">Pending</option>
-                  </>
-                );
-              }
-            })()}
-          </select>
         </div>
-      </div>
-      <div className="mt-6 flex justify-end gap-3">
-        <button
-          className="px-4 py-2 bg-gray-100 rounded-md text-gray-700 hover:bg-gray-200"
-          onClick={() => {
-            setFilters({
-              name: '',
-              id: '',
-              course: '',
-              status: '',
-              date: '',
-            });
-            setIsFilterOpen(false);
-          }}
-        >
-          Reset
-        </button>
-        <button
-          className="px-4 py-2 bg-[#4ade80] text-white rounded-md hover:bg-[#3ecf6e]"
-          onClick={() => setIsFilterOpen(false)}
-        >
-          Apply
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </div>
     </BaseLayout>
   );
