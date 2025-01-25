@@ -86,7 +86,7 @@ const handleStartRecording = async () => {
         correctAnswer: 'The quick brown fox jumps over the lazy dog',
       },
       {
-        question: 'Describe what you see in the picture.',
+        question: 'Listen to the audio and write what you hear.',
         audioUrl: '/assets/audio/Ending.mp3',
         placeholder: 'Type your description here...',
         correctAnswer: 'A beautiful sunset over the mountains',

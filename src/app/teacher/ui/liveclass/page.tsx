@@ -253,133 +253,133 @@ function LiveClass() {
     <BaseLayout>
       <div className="flex h-screen bg-[#E6E9ED]">
         {isFormData ? (
-               <div className="min-h-screen bg-[#E6E9ED] p-8">
-               <div className="max-w-6xl mx-auto">
-                 <h1 className="text-3xl font-bold text-gray-800 mb-3">Trial Class</h1>
+               <div className="min-h-screen bg-[#E6E9ED] p-4">
+               <div className="max-w-[100%] mx-auto">
+                 <h1 className="text-[35px] font-semibold text-gray-800 mb-3">Trial Class</h1>
                  
                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                    {/* Form Section */}
-                   <form onSubmit={handleSubmit} className="lg:col-span-2 bg-[#1e3a5f] text-white p-5 rounded-lg">
-                     <h2 className="text-xl font-semibold mb-6">Student Details</h2>
+                   <form onSubmit={handleSubmit} className="lg:col-span-2 bg-[#1E3F6C] h-[100%] w-[80%] rounded-3xl opacity-[90%] text-white p-5 justify-center ml-28">
+                     <h2 className="text-[14px] font-medium mb-4">Student Details</h2>
                      
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                        <div>
-                         <label htmlFor='firtname' className="block text-sm mb-2">First name</label>
+                         <label htmlFor='firtname' className="block text-[12px] mb-2">First name</label>
                          <input
                            type="text"
                            name="firstName"
                            value={student.firstName}
                            onChange={handleInputChange}
-                           className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400"
+                           className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
                        </div>
                        
                        <div>
-                         <label htmlFor='firname'  className="block text-sm mb-2">Last name</label>
+                         <label htmlFor='firname'  className="block text-[12px] mb-2">Last name</label>
                          <input
                            type="text"
                            name="lastName"
                            value={student.lastName}
                            onChange={handleInputChange}
-                           className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400"
+                           className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
                        </div>
          
                        <div>
-                         <label  htmlFor='fname' className="block text-sm mb-2">City</label>
+                         <label  htmlFor='fname' className="block text-[12px] mb-2">City</label>
                          <div className="relative">
                            <select
                              name="city"
                              value={student.city}
                              onChange={handleInputChange}
-                             className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
+                             className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
                              <option value="Texas">Texas</option>
                              <option value="New York">New York</option>
                              <option value="California">California</option>
                            </select>
-                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+                           <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
                        </div>
          
                        <div>
-                         <label htmlFor='firthgchgname'  className="block text-sm mb-2">Country</label>
+                         <label htmlFor='firthgchgname'  className="block text-[12px] mb-2">Country</label>
                          <div className="relative">
                            <select
                              name="country"
                              value={student.country}
                              onChange={handleInputChange}
-                             className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
+                             className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
                              <option value="USA">USA</option>
                              <option value="Canada">Canada</option>
                              <option value="UK">UK</option>
                            </select>
-                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+                           <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
                        </div>
          
                        <div>
-                         <label htmlFor='firfftname'  className="block text-sm mb-2">Trial ID</label>
+                         <label htmlFor='firfftname'  className="block text-[12px] mb-2">Trial ID</label>
                          <input
                            type="text"
                            name="trialId"
                            value={student.trialId}
                            onChange={handleInputChange}
-                           className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400"
+                           className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
                        </div>
          
                        <div>
-                         <label htmlFor='firtghggname'  className="block text-sm mb-2">Course</label>
+                         <label htmlFor='firtghggname'  className="block text-[12px] mb-2">Course</label>
                          <div className="relative">
                            <select
                              name="course"
                              value={student.course}
                              onChange={handleInputChange}
-                             className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
+                             className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
                              <option value="Arabic">Arabic</option>
                              <option value="Islamic Studies">Islamic Studies</option>
                              <option value="Quran">Quran</option>
                            </select>
-                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+                           <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
                        </div>
                      </div>
          
-                     <div className="mt-6">
-                       <label htmlFor='fifffrtname'  className="block text-sm mb-2">Class Status</label>
+                     <div className="mt-6 w-1/2 ml-36">
+                       <label htmlFor='fifffrtname'  className="block text-[12px] mb-2">Class Status</label>
                        <div className="relative">
                          <select
                            name="classStatus"
                            value={student.classStatus}
                            onChange={handleInputChange}
-                           className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
+                           className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                            required
                          >
                            <option value="Joining">Joining</option>
-                           <option value="In Progress"></option>
+                           <option value="In Progress">In Progress</option>
                            <option value="Completed">Completed</option>
                          </select>
-                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
+                         <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                        </div>
                      </div>
          
                      <div className="mt-6">
-                       <label htmlFor='fiiugigrtname'  className="block text-sm mb-2">Additional Comments (Optional)</label>
+                       <label htmlFor='fiiugigrtname'  className="block text-[12px] mb-2">Additional Comments (Optional)</label>
                        <textarea
                          name="comments"
                          value={student.comments}
                          onChange={handleInputChange}
                          placeholder="Write your comment here..."
-                         className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 focus:outline-none focus:border-blue-400 h-24 resize-none"
+                         className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 h-24 resize-none"
                        />
                      </div>
          
@@ -387,13 +387,13 @@ function LiveClass() {
                        <button
                          type="button"
                          onClick={handleClear}
-                         className="px-6 py-2 rounded-lg border border-white/20 hover:bg-white/10 transition-colors"
+                         className="px-6 py-2 rounded-lg text-[12px] border border-white/20 hover:bg-white/10 transition-colors"
                        >
                          Clear
                        </button>
                        <button
                          type="submit"
-                         className="px-6 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 transition-colors"
+                         className="px-6 py-2 rounded-lg text-[12px] bg-[#587EB4] border-[#2A7CEB] border-2 transition-colors"
                        >
                          Save
                        </button>
@@ -401,8 +401,9 @@ function LiveClass() {
                    </form>
                    
                    {/* Student Info Card */}
-                   <div className="bg-gray-100 rounded-lg p-6 h-fit">
-                     <div className="flex justify-center">
+                   <div className=" rounded-lg p-6 h-fit">
+                    <div className='bg-[#fff] p-3 rounded-2xl'>
+                    <div className="flex justify-center">
                        <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
                          <img
                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100&h=100"
@@ -428,6 +429,8 @@ function LiveClass() {
                          <span className="text-xs text-gray-500 mt-1 block">Mins</span>
                        </div>
                      </div>
+                    </div>
+                     
          
                      <button
                        onClick={handleStartSession}
