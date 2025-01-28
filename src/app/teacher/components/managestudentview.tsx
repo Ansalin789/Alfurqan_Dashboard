@@ -99,7 +99,7 @@ const ManageStudentView = () => {
       const fetchData = async () => {
         try {
           const auth=localStorage.getItem('TeacherAuthToken');
-          const response = await fetch(`http://localhost:5001/alstudents/${studentId}`,
+          const response = await fetch(`https://alfurqanacademy.tech/alstudents/${studentId}`,
             {
               headers: {
                      'Authorization': `Bearer ${auth}`,
