@@ -45,6 +45,7 @@ const ManageTeacher: React.FC = () => {
             headers: {
               'Authorization': `Bearer ${auth}`,        
                 },
+                credentials:'include',
           });
           const data = await response.json();
   
@@ -115,6 +116,7 @@ const ManageTeacher: React.FC = () => {
         'Content-Type': 'application/json',
          'Authorization': `Bearer ${auth}`,
       },
+      credentials:'include',
       body: JSON.stringify(newTeacher),
     });
     const responseData = await response.json();

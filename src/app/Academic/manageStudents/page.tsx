@@ -68,6 +68,7 @@ const TrailManagement = () => {
         headers: {
           Authorization: `Bearer ${auth}`,
         },
+        credentials:'include',
       });
       const data = await response.json();
       console.log(auth);

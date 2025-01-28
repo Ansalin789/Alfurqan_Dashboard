@@ -129,6 +129,7 @@ const ManageStudentView = () => {
               headers: {
                      'Authorization': `Bearer ${auth}`,
               },
+              credentials:'include',
             });
           const data = await response.json();
           setStudentData(data);
@@ -147,6 +148,7 @@ const ManageStudentView = () => {
                 headers: {
                        'Authorization': `Bearer ${auth}`,
                 },
+                credentials:'include',
               });
               const data = await response.json();
       
@@ -351,6 +353,7 @@ const ManageStudentView = () => {
           "Content-Type": "application/json",
           'Authorization': `Bearer ${auth}`,
         },
+        credentials:'include',
         body: JSON.stringify(requestData),
       });
   
@@ -434,7 +437,9 @@ const ManageStudentView = () => {
             headers:{
               "Content-Type":"application/json",
               'Authorization': `Bearer ${auth}`,
-            }}
+            },
+          credentials:'include',
+          }
           );
           const data=await response.json();
            console.log(">>>>>>>>"+data);

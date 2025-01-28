@@ -82,7 +82,8 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
           headers: {
             "Content-Type": "application/json",
             'Authorization': `Bearer ${auth}`,
-          }
+          },
+          credentials:'include',
         });
         const data = await response.json();
         console.log(data);

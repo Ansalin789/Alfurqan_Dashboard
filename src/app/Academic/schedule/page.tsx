@@ -49,6 +49,7 @@ const SchedulePage = () => {
       headers: {
          'Authorization': `Bearer ${auth}`,
       },
+      credentials:'include',
     })
       .then((response) => response.json())
       .then((data) => {

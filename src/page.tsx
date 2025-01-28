@@ -79,7 +79,11 @@ export default function SignInSignUp(): JSX.Element {
     event.preventDefault();
     setError('');
     try {
-      const response = await axios.post(`https://alfurqanacademy.tech/signin`, { username, password });
+      const response = await axios.post(`https://alfurqanacademy.tech/signin`, { username, password },
+      {
+        withCredentials:true,
+      }
+    );
       const {accessToken, role } = response.data;
            console.log(response.data);
            console.log(accessToken);
