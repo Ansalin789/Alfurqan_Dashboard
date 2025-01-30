@@ -16,7 +16,8 @@ const DashboardStats = dynamic(() => import('../../components/dashboard/Dashboar
 
 export default function Academic() {
   const [isDarkMode] = React.useState(false);
-
+  const id =localStorage.getItem('StudentPortalId');
+console.log("id......"+id);
   return (
     <div className={isDarkMode ? 'dark' : ''}>
       <BaseLayout2>

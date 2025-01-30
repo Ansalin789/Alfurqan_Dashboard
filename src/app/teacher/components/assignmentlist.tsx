@@ -4,10 +4,10 @@ import { BsSearch, BsThreeDots } from "react-icons/bs";
 
 const AssignmentList = () => {
   const [activeTab, setActiveTab] = useState("Pending");
-  const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null); // Track open dropdown by index
+  const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [showTypeDropdown, setShowTypeDropdown] = useState(false); // Add this state
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [showWritingModal, setShowWritingModal] = useState(false);
   const [showReadingModal, setShowReadingModal] = useState(false);
@@ -40,6 +40,48 @@ const AssignmentList = () => {
   const [readingAudio, setReadingAudio] = useState<File | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageAudio, setImageAudio] = useState<File | null>(null);
+  const [assignedDate, setAssignedDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [comment, setComment] = useState("");
+  const handleFinalAssign = () => {
+    setTitle("");
+    setShowTypeDropdown(false);
+    setShowQuizModal(false);
+    setShowWritingModal(false);
+    setShowReadingModal(false);
+    setShowImageModal(false);
+    setQuizData({
+      assignmentName: '',
+      question: '',
+      answers: [
+        { id: 'a', text: '', isCorrect: false },
+        { id: 'b', text: '', isCorrect: false },
+        { id: 'c', text: '', isCorrect: false },
+        { id: 'd', text: '', isCorrect: false }
+      ]
+    });
+    setQuestionType({
+      choose: false,
+      trueOrFalse: false
+    });
+    setShowSuccessModal(false);
+    setCurrentPage(1);
+    setShowNoOptions({
+      writing: false,
+      reading: false,
+      image: false
+    });
+    setSelectedFile(null);
+    setSelectedAudio(null);
+    setReadingFile(null);
+    setReadingAudio(null);
+    setImageFile(null);
+    setImageAudio(null);
+    setAssignedDate("");
+    setDueDate("");
+    setComment("");
+  };
+  
 
   const assignments = [
     {
@@ -106,24 +148,80 @@ const AssignmentList = () => {
       : assignment.status === "Completed"
   );
 
-  // Calculate pagination values
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredAssignments.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
 
-  // Add pagination handler
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
+ 
+  const handleAssign = async () => {
+    const studentId11=localStorage.getItem('studentviewcontrol');
+    const studentId1=localStorage.getItem('TeacherPortalName');
+    const formData = new FormData();
+    formData.append("studentId",studentId11 ?? "");
+formData.append("assignmentName", quizData.assignmentName);
+formData.append("assignedTeacher",studentId1 ?? " " );
+formData.append("assignmentType", title);
+formData.append("chooseType", questionType.choose.toString());
+formData.append("trueorfalseType", questionType.trueOrFalse.toString());
+formData.append("question", quizData.question);
+formData.append("hasOptions", (!showNoOptions.writing && !showNoOptions.reading && !showNoOptions.image).toString());
+formData.append("options", JSON.stringify(quizData.answers));
+formData.append("status", "Assigned");
+formData.append("createdDate", new Date().toISOString());
+formData.append("createdBy", "System");
+formData.append("updatedDate", new Date().toISOString());
+formData.append("updatedBy", "System");
+formData.append("level", "0");
+formData.append("courses", "");
+formData.append("assignedDate", assignedDate || new Date().toISOString());
+formData.append("dueDate", dueDate || new Date().toISOString());
 
-  const handleAssign = () => {
-    setIsFormOpen(false);
-    setShowSuccessModal(true);
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 2000);
+if (selectedFile) {
+  formData.append("uploadFile", selectedFile);
+}
+
+if (selectedAudio) {
+  formData.append("audioFile",selectedAudio);
+}
+
+    try {
+      const auth = localStorage.getItem('TeacherAuthToken');
+      const response = await fetch("http://localhost:5001/assignments", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${auth}`,
+        },
+        body: formData, // Use FormData instead of JSON
+      });
+      console.log(formData);
+
+      if (response.ok) {
+        setIsFormOpen(false);
+        setShowSuccessModal(true);
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 2000);
+      } else {
+        console.error("Failed to assign assignment");
+      }
+    } catch (error) {
+      console.error("Error assigning assignment:", error);
+    }
   };
+
+  // const toBuffer = async (file: File) => {
+  //   return new Promise<ArrayBuffer>((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.onload = () => resolve(reader.result as ArrayBuffer);
+  //     reader.onerror = () => reject(new Error("Failed to read file"));
+  //     reader.readAsArrayBuffer(file);
+  //   });
+  // };
+
   const handleNoOptionsChange = (type: keyof typeof showNoOptions) => {
     setShowNoOptions(prev => ({ ...prev, [type]: !prev[type] }));
   };
@@ -284,6 +382,7 @@ const AssignmentList = () => {
                           if (assignment.status !== "Assigned") {
                             setOpenDropdownIndex(null);
                             setIsFormOpen(true);
+                            handleFinalAssign();
                           }
                         }}
                         disabled={assignment.status === "Assigned"}
@@ -360,6 +459,7 @@ const AssignmentList = () => {
         </div>
       </div>
 
+
       {/* Assign Form Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -432,38 +532,42 @@ const AssignmentList = () => {
                 type="text"
                 className="w-1/2 border-b-2 p-2 rounded text-[14px]"
                 placeholder="Assigned Date"
+                value={assignedDate}
+                onChange={(e) => setAssignedDate(e.target.value)}
               />
               <input
                 type="text"
                 className="w-1/2 border-b-2 p-2 rounded text-[14px]"
                 placeholder="Due Date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
               />
             </div>
             <textarea
               placeholder="Comment"
               className="w-full border-b-2 p-2 rounded mb-4 text-[14px]"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
             ></textarea>
             <div className="flex ml-40">
-            <button
-              className="text-[#223857] flex items-center text-[13px] justify-center text-center py-2 rounded-lg p-4 border border-grey bg-[#fff] shadow-lg"
-              onClick={() => setIsFormOpen(false)}
-            >
-              Cancel
-            </button>
-            <button
-              className="text-white font-semibold flex items-center text-[13px] justify-center text-center py-2 rounded-lg ml-2 p-4 border border-grey bg-[#223857]"
-              onClick={handleAssign}
-            >
-              Assign
-            </button>
+              <button
+                className="text-[#223857] flex items-center text-[13px] justify-center text-center py-2 rounded-lg p-4 border border-grey bg-[#fff] shadow-lg"
+                onClick={() => setIsFormOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="text-white font-semibold flex items-center text-[13px] justify-center text-center py-2 rounded-lg ml-2 p-4 border border-grey bg-[#223857]"
+                onClick={handleAssign}
+              >
+                Assign
+              </button>
             </div>
-            
           </div>
         </div>
       )}
 
-      {/* Quiz Modal */}
-      {showQuizModal && (
+{showQuizModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
             <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>
@@ -523,39 +627,6 @@ const AssignmentList = () => {
                   placeholder="Which of the following letters is considered a Qalqalah letter?"
                 />
                 
-              </div>
-              
-              {/* Preview section */}
-              <div className="mt-2 flex space-x-2">
-                {selectedFile && (
-                  <div className="relative">
-                    <img 
-                      src={URL.createObjectURL(selectedFile)} 
-                      alt="Uploaded file" 
-                      className="h-16 w-16 object-cover rounded"
-                    />
-                    <button
-                      onClick={() => setSelectedFile(null)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-                {selectedAudio && (
-                  <div className="relative">
-                    <audio controls className="h-8">
-                      <source src={URL.createObjectURL(selectedAudio)} />
-                      <track kind="captions" src="path_to_captions.vtt" default />
-                    </audio>
-                    <button
-                      onClick={() => setSelectedAudio(null)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -670,40 +741,55 @@ const AssignmentList = () => {
                   onChange={(e) => setQuizData(prev => ({ ...prev, question: e.target.value }))}
                   placeholder="Type your question here..."
                 />
-                <div className="absolute right-2 bottom-2 flex space-x-2">
-                 
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                    <svg 
-                      className="w-5 h-5 text-gray-500 hover:text-gray-700"
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                
-                  
-                    <input
-                      type="file"
-                      accept="audio/*"
-                      onChange={handleAudioUpload}
-                      className="hidden"
-                    />
-                    <svg 
-                      className="w-5 h-5 text-gray-500 hover:text-gray-700"
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                    </svg>
-                 
-                </div>
+             <div className="absolute right-2 bottom-2 flex space-x-4">
+  {/* Image Upload */}
+  <label className="cursor-pointer">
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleFileUpload}
+      className="hidden" // Hide default input
+    />
+     <span className="sr-only">Upload file</span>
+    <svg
+      className="w-6 h-6 text-gray-500 hover:text-gray-700"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+      />
+    </svg>
+  </label>
+
+  {/* Audio Upload */}
+  <label className="cursor-pointer">
+    <input
+      type="file"
+      accept="audio/*"
+      onChange={handleAudioUpload}
+      className="hidden" // Hide default input
+    />
+     <span className="sr-only">Upload Audio</span>
+    <svg
+      className="w-6 h-6 text-gray-500 hover:text-gray-700"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+      />
+    </svg>
+  </label>
+</div>
               </div>
               
               {/* Preview section */}
@@ -723,20 +809,7 @@ const AssignmentList = () => {
                     </button>
                   </div>
                 )}
-                {selectedAudio && (
-                  <div className="relative">
-                    <audio controls className="h-8">
-                      <source src={URL.createObjectURL(selectedAudio)} />
-                      <track kind="captions" src="path_to_captions.vtt" default />
-                    </audio>
-                    <button
-                      onClick={() => setSelectedAudio(null)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
+               
               </div>
             </div>
 
@@ -802,8 +875,7 @@ const AssignmentList = () => {
           </div>
         </div>
       )}
-
-      {showReadingModal && (
+{showReadingModal && (
               <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                 <div className="bg-white rounded-lg p-4 w-[500px] h-[600px]">
                   <h2 className="text-lg font-semibold mb-2 text-[#012A4A]">Add Assignments</h2>

@@ -1,9 +1,86 @@
 'use client';
 
+import axios from "axios";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
+
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+interface Schedule {
+  student: Student;
+  teacher: Teacher;
+  _id: string;
+  classDay: string[];
+  package: string;
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+
+interface ApiResponse {
+  totalCount: number;
+  students: Schedule[];
+}
+
 
 const StudentList = () => {
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("TeacherAuthToken");
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+
+        if (!teacherIdToFilter) {
+          console.error("No teacher ID found in localStorage.");
+          return;
+        }
+
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+
+        const filteredData = response.data.students.filter(
+          (item) => item.teacher.teacherId === teacherIdToFilter
+        );
+
+        const studentScheduleMap = new Map<string, Schedule>();
+
+        filteredData.forEach((item) => {
+          studentScheduleMap.set(item.student.studentId, item);
+        });
+
+        const uniqueSchedules = Array.from(studentScheduleMap.values());
+
+        setUniqueStudentSchedules(uniqueSchedules);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
   return (
     <div className="p-6">
       <div className="bg-white rounded-lg shadow-md p-4">
@@ -24,55 +101,21 @@ const StudentList = () => {
               </tr>
             </thead>
             <tbody>
-              {[
-                {
-                  id: "1234567890",
-                  name: "Samantha William",
-                  studentId: "1234567890",
-                  level: 2,
-                  course: "Arabic",
-                  assignedDate: "January 2, 2020",
-                  dueDate: "January 8, 2020",
-                  status: "Completed",
-                  statusColor: "bg-green-100 text-green-700",
-                },
-                {
-                  id: "1234567890",
-                  name: "Jordan Nico",
-                  studentId: "1234567890",
-                  level: 1,
-                  course: "Tajweed",
-                  assignedDate: "January 2, 2020",
-                  dueDate: "January 8, 2020",
-                  status: "Not Completed",
-                  statusColor: "bg-yellow-100 text-yellow-700",
-                },
-                {
-                  id: "1234567890",
-                  name: "Nadila Adja",
-                  studentId: "1234567890",
-                  level: 2,
-                  course: "Quran",
-                  assignedDate: "January 2, 2020",
-                  dueDate: "January 8, 2020",
-                  status: "Not Assigned",
-                  statusColor: "bg-red-100 text-red-700",
-                },
-              ].map((student) => (
+              {uniqueStudentSchedules.slice(0,3).map((student) => (
                 <tr
-                  key={student.id}
+                  key={student.student.studentId}
                   className="text-sm text-gray-700 border-b last:border-none"
                 >
-                  <td className="py-2 px-4">{student.id}</td>
-                  <td className="py-2 px-4">{student.name}</td>
-                  <td className="py-2 px-4">{student.studentId}</td>
-                  <td className="py-2 px-4">{student.level}</td>
-                  <td className="py-2 px-4">{student.course}</td>
-                  <td className="py-2 px-4">{student.assignedDate}</td>
-                  <td className="py-2 px-4">{student.dueDate}</td>
+                  <td className="py-2 px-4">{student._id}</td>
+                  <td className="py-2 px-4">{student.student.studentFirstName}</td>
+                  <td className="py-2 px-4">{student.student.studentId}</td>
+                  <td className="py-2 px-4">1</td>
+                  <td className="py-2 px-4">{student.package}</td>
+                  <td className="py-2 px-4">{new Date(student.startDate).toLocaleDateString()}</td>
+                  <td className="py-2 px-4">{new Date(student.endDate).toLocaleDateString()}</td>
                   <td className="py-2 px-4">
                     <span
-                      className={`rounded-lg py-1 px-3 text-xs font-semibold ${student.statusColor}`}
+                      className={`rounded-lg py-1 px-3 text-xs font-semibold ${student.status}`}
                     >
                       {student.status}
                     </span>

@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import BaseLayout2 from '@/components/BaseLayout2';
 import { BiSolidSkipNextCircle } from "react-icons/bi";
 import { IoPlaySkipBackCircle, IoMicCircleSharp, IoStopCircleSharp } from "react-icons/io5";
-import { FaStar, FaStarHalf , FaImages  } from "react-icons/fa";
+import { FaStar, FaImages  } from "react-icons/fa";
 
 type QuizData = {
   question: string;
@@ -76,7 +76,6 @@ const handleStartRecording = async () => {
   const mockQuizData: Record<string, QuizData[]> = {
     Quiz: [
       { question: 'What is the capital of France?', options: ['Paris', 'Rome', 'Berlin', 'Madrid'], answer: 'Paris' },
-      { question: 'What is 5 + 3?', options: ['5', '8', '10', '12'], answer: '8' },
     ],
     Writing: [
       {
@@ -85,12 +84,6 @@ const handleStartRecording = async () => {
         placeholder: 'Type your answer here...',
         correctAnswer: 'The quick brown fox jumps over the lazy dog',
       },
-      {
-        question: 'Listen to the audio and write what you hear.',
-        audioUrl: '/assets/audio/Ending.mp3',
-        placeholder: 'Type your description here...',
-        correctAnswer: 'A beautiful sunset over the mountains',
-      },
     ],
     Reading: [
       {
@@ -98,21 +91,10 @@ const handleStartRecording = async () => {
         question: 'What was the knight’s defining trait?',
         answer: 'Bravery',
       },
-      {
-        passage: 'In a small village, there lived a clever fox...',
-        question: 'What made the fox special?',
-        answer: 'Cleverness',
-      },
     ],
     'Image Identification': [
       { 
         imageUrl: '/assets/images/cat.jpeg', 
-        question: 'Identify the animal', 
-        options: ['(أ) قطة', '(ب) كلب', '(ج) أرنب', '(د) حصان'], 
-        answer: '(أ) قطة' 
-      },
-      { 
-        imageUrl: '/assets/images/dog.jpeg', 
         question: 'Identify the animal', 
         options: ['(أ) قطة', '(ب) كلب', '(ج) أرنب', '(د) حصان'], 
         answer: '(أ) قطة' 
@@ -192,9 +174,7 @@ const handleStartRecording = async () => {
 
   const calculateStarRating = (score: number) => {
     if (score === 1)
-      return [<FaStar key="full-1" />, <FaStarHalf key="half-1" />];
-    if (score === 2)
-      return [<FaStar key="full-1" />, <FaStar key="full-2" />, <FaStar key="full-3" />];
+      return [<FaStar key="full-1" />, <FaStar key="full-2" />, <FaStar key="full-3"  />];
     return [
       <FaStar key="empty-1" className="text-gray-200" />,
       <FaStar key="empty-2" className="text-gray-200" />,
@@ -219,7 +199,7 @@ const handleStartRecording = async () => {
     const accuracy = matchedWords / correctWords.length;
 
     if (accuracy >= 0.5) {
-      return 1.5;
+      return 3;
     }
 
     return 0;

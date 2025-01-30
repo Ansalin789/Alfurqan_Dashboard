@@ -2,107 +2,94 @@
 
 
 import BaseLayout from "@/components/BaseLayout";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BsSearch, BsThreeDots } from "react-icons/bs";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
 
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+interface Schedule {
+  student: Student;
+  teacher: Teacher;
+  _id: string;
+  classDay: string[];
+  package: string;
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+
+interface ApiResponse {
+  totalCount: number;
+  students: Schedule[];
+}
 
 const AllStudents = () => {
   const router = useRouter();
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("TeacherAuthToken");
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
 
-  // Example student data - replace this with your actual data fetching logic
-  const students = [
-    {
-      id: "1",
-      name: "Samantha William",
-      studentId: "1234567890",
-      level: 2,
-      course: "Arabic",
-      assignedDate: "January 2, 2020",
-      dueDate: "January 8, 2020",
-      status: "Completed",
-      statusColor: "bg-green-100 text-green-700",
-    },
-    {
-      id: "2",
-      name: "Jordan Nico",
-      studentId: "1234567891",
-      level: 1,
-      course: "Tajweed",
-      assignedDate: "January 2, 2020",
-      dueDate: "January 8, 2020",
-      status: "Not Completed",
-      statusColor: "bg-yellow-100 text-yellow-700",
-    },
-    {
-      id: "3",
-      name: "Nadila Adja",
-      studentId: "1234567892",
-      level: 2,
-      course: "Quran",
-      assignedDate: "January 2, 2020",
-      dueDate: "January 8, 2020",
-      status: "Not Assigned",
-      statusColor: "bg-red-100 text-red-700",
-    },
-    {
-        id: "4",
-        name: "Nadila Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700",
-      },
-      {
-        id: "5",
-        name: "Nadila Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700",
-      },
-      {
-        id: "6",
-        name: "Nadila Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700",
-      },
-      {
-        id: "7",
-        name: "Nadila Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700",
-      },
-      {
-        id: "8",
-        name: "Nadila Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700",
-      },
-  ];
+        if (!teacherIdToFilter) {
+          console.error("No teacher ID found in localStorage.");
+          return;
+        }
 
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+
+        const filteredData = response.data.students.filter(
+          (item) => item.teacher.teacherId === teacherIdToFilter
+        );
+
+        const studentScheduleMap = new Map<string, Schedule>();
+
+        filteredData.forEach((item) => {
+          studentScheduleMap.set(item.student.studentId, item);
+        });
+
+        const uniqueSchedules = Array.from(studentScheduleMap.values());
+
+        setUniqueStudentSchedules(uniqueSchedules);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+  const handleviewcontrol=(studentId:string)=>{
+    router.push(`/teacher/ui/managestudentview`);
+    setOpenDropdownId(null);
+    localStorage.setItem('studentviewcontrol',studentId);
+  };
   return (
     <BaseLayout>
       <div className="p-6 min-h-screen">
@@ -138,21 +125,21 @@ const AllStudents = () => {
                 </tr>
               </thead>
               <tbody>
-                {students.map((student) => (
+                {uniqueStudentSchedules.map((student) => (
                   <tr
-                    key={student.id}
+                    key={student.student.studentId}
                     className="text-sm text-gray-700 border-b last:border-none"
                   >
-                    <td className="py-2 px-4">{student.id}</td>
-                    <td className="py-2 px-4">{student.name}</td>
-                    <td className="py-2 px-4">{student.studentId}</td>
-                    <td className="py-2 px-4">{student.level}</td>
-                    <td className="py-2 px-4">{student.course}</td>
-                    <td className="py-2 px-4">{student.assignedDate}</td>
-                    <td className="py-2 px-4">{student.dueDate}</td>
+                    <td className="py-2 px-4">{student._id}</td>
+                    <td className="py-2 px-4">{student.student.studentFirstName}</td>
+                    <td className="py-2 px-4">{student.student.studentId}</td>
+                    <td className="py-2 px-4">1</td>
+                    <td className="py-2 px-4">{student.package}</td>
+                    <td className="py-2 px-4">{new Date(student.startDate).toLocaleDateString()}</td>
+                    <td className="py-2 px-4">{new Date(student.endDate).toLocaleDateString()}</td>
                     <td className="py-2 px-4">
                       <span
-                        className={`rounded-lg py-1 px-3 text-xs font-semibold ${student.statusColor}`}
+                        className={`rounded-lg py-1 px-3 text-xs font-semibold ${student.status}`}
                       >
                         {student.status}
                       </span>
@@ -163,12 +150,12 @@ const AllStudents = () => {
                           className="text-gray-500 hover:text-gray-700"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setOpenDropdownId(openDropdownId === student.id ? null : student.id);
+                            setOpenDropdownId(openDropdownId === student.student.studentId  ? null : student.student.studentId );
                           }}
                         >
                           <BsThreeDots />
                         </button>
-                        {openDropdownId === student.id && (
+                        {openDropdownId === student.student.studentId && (
                           <button 
                             className="absolute right-0 mr-10 w-24 shadow-2xl bg-white rounded-md  z-10 border border-gray-200"
                             onClick={(e) => e.stopPropagation()}
@@ -176,8 +163,7 @@ const AllStudents = () => {
                             <button
                               className="block w-full text-center px-4 py-1 text-[12px] text-black hover:bg-gray-100 cursor-pointer"
                               onClick={() => {
-                                router.push(`/teacher/ui/managestudentview`);
-                                setOpenDropdownId(null);
+                                handleviewcontrol(student.student.studentId)
                               }}
                             >
                               View

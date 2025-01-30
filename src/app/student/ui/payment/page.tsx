@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import BaseLayout2 from "@/components/BaseLayout2";
@@ -11,9 +11,37 @@ type StripePaymentFormProps = {
   onPaymentSuccess: (token: any) => void;
 };
 
+interface Student {
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  studentPhone: number;
+}
+
+interface Invoice {
+  _id: string;
+  courseName: string;
+  amount: number;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  lastUpdatedDate: string;
+  lastUpdatedBy: string;
+  invoiceStatus: string;
+  student: Student;
+}
+
+interface InvoiceResponse {
+  totalCount: number;
+  invoice: Invoice[];
+}
+
 const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const [invoiceData, setInvoiceData] = useState<Invoice[]>([]); // Initialize with an empty array
+
+  console.log("InvoiceData>>", invoiceData);
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
@@ -43,6 +71,16 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
     }
   };
 
+  useEffect(() => {
+    const fetchInvoiceData = async () => {
+      const response = await fetch('http://localhost:5001/studentinvoice');
+      const data: InvoiceResponse = await response.json();
+      setInvoiceData(data.invoice); // Set the fetched invoice data here
+    };
+
+    fetchInvoiceData();
+  }, []);
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="mb-4">
@@ -62,6 +100,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
 const Invoice = () => {
   const [showModal, setShowModal] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<Invoice[]>([]); // Ensure invoiceData is correctly declared
 
   const handlePaymentSuccess = async (token: any) => {
     console.log('Payment successful! Token:', token);
@@ -89,6 +128,16 @@ const Invoice = () => {
         setIsGeneratingPDF(false);
       });
   };
+
+  useEffect(() => {
+    const fetchInvoiceData = async () => {
+      const response = await fetch('http://localhost:5001/studentinvoice');
+      const data: InvoiceResponse = await response.json();
+      setInvoiceData(data.invoice); // Set invoiceData after fetching
+    };
+
+    fetchInvoiceData();
+  }, []);
 
   return (
     <BaseLayout2>
@@ -133,41 +182,31 @@ const Invoice = () => {
 
             {/* Invoice Table */}
             <div className="overflow-x-auto mb-4 bg-[#e6e6e6]">
-              <table className="table-auto w-full border-collapse border border-gray-200 rounded-sm text-xs">
-                <thead>
-                  <tr>
-                    <th className="border border-gray-300 p-2">Description</th>
-                    <th className="border border-gray-300 p-2">QTY</th>
-                    <th className="border border-gray-300 p-2">Price</th>
-                    <th className="border border-gray-300 p-2">GST</th>
-                    <th className="border border-gray-300 p-2">Amount</th>
+            <table className="table-auto w-full border-collapse border border-gray-200 rounded-sm text-xs">
+              <thead>
+                <tr>
+                  <th className="border border-gray-300 p-2">Description</th>
+                  <th className="border border-gray-300 p-2">QTY</th>
+                  <th className="border border-gray-300 p-2">Price</th>
+                  <th className="border border-gray-300 p-2">GST</th>
+                  <th className="border border-gray-300 p-2">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoiceData.map((invoice) => (
+                  <tr key={invoice._id}> {/* Assuming invoice.id is a unique identifier */}
+                    <td className="border border-gray-300 text-center">{invoice.courseName}</td>
+                    <td className="border border-gray-300 p-1 text-center">1</td> {/* Assuming QTY is 1 */}
+                    <td className="border border-gray-300 p-1 text-center">${invoice.amount}</td>
+                    <td className="border border-gray-300 p-1 text-center">$0.00</td> {/* Assuming GST is $0.00 */}
+                    <td className="border border-gray-300 p-1 text-center">${invoice.amount}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 text-center">Arabic Course (Standard)</td>
-                    <td className="border border-gray-300 p-1 text-center">1</td>
-                    <td className="border border-gray-300 p-1 text-center">$50</td>
-                    <td className="border border-gray-300 p-1 text-center">$0.00</td>
-                    <td className="border border-gray-300 p-1 text-center">$50</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-1 text-center">Tajweed Course (Basic)</td>
-                    <td className="border border-gray-300 p-1 text-center">1</td>
-                    <td className="border border-gray-300 p-1 text-center">$30</td>
-                    <td className="border border-gray-300 p-1 text-center">$0.00</td>
-                    <td className="border border-gray-300 p-1 text-center">$30</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-1 text-center">Quran Course (Standard)</td>
-                    <td className="border border-gray-300 p-1 text-center">1</td>
-                    <td className="border border-gray-300 p-1 text-center">$45</td>
-                    <td className="border border-gray-300 p-1 text-center">$0.00</td>
-                    <td className="border border-gray-300 p-1 text-center">$45</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+
 
             {/* Payment Summary */}
             <div className="w-[23%] p-2 text-right ml-[730px] rounded-lg text-xs bg-[#efefef] border border-[#223857] justify-end">
@@ -200,7 +239,6 @@ const Invoice = () => {
               <p className="text-[10px]">ACCOUNT NUMBER: 12-1234-123456-12</p>
               <p className="text-[10px]"><strong>PLEASE USE INV-0205 AS A REFERENCE NUMBER</strong></p>
               <p className="text-[9px]">For any questions, please contact us at <span className="font-bold">contact@alfurqan.academy</span>.</p>
-            
 
             {/* Toggle Payment Form */}
               
@@ -210,47 +248,48 @@ const Invoice = () => {
 
 
           {!isGeneratingPDF && (
+            <div className="w-[1030px] bg-white p-2 rounded-lg shadow mt-10 -ml-5">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-sm font-bold text-gray-800">Latest Transactions</h3>
+                <a href="/transactions" className="text-xs text-blue-500 hover:underline">View all</a>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="table-auto w-full border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-600">
+                      <th className="text-left px-3 py-1">Invoice Date</th>
+                      <th className="text-left px-3 py-1">Invoice Number</th>
+                      <th className="text-left px-3 py-1">Course Name</th>
+                      <th className="text-left px-3 py-1">Payment Date</th>
+                      <th className="text-left px-3 py-1">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoiceData.map((invoice) => {
+                      const invoiceDate = new Date(invoice.createdDate).toLocaleDateString();
+                      const paymentDate = new Date(invoice.lastUpdatedDate).toLocaleDateString();
+                      const invoiceStatus =
+                        invoice.invoiceStatus === 'Completed' ? (
+                          <span className="bg-green-100 text-green-600 py-0.5 px-2 rounded-full text-[10px]">Completed</span>
+                        ) : (
+                          <span className="bg-yellow-100 text-yellow-600 py-0.5 px-2 rounded-full text-[10px]">Pending</span>
+                        );
 
-<div className="w-[990px] bg-white p-1 rounded-lg shadow mr-20">
-  <div className="flex justify-between items-center mb-3">
-    <h3 className="text-sm font-bold text-gray-800">Latest Transactions</h3>
-    <a href="/transactions" className="text-xs text-blue-500 hover:underline">View all</a>
-  </div>
-  <div className="overflow-x-auto">
-    <table className="table-auto w-full border-collapse text-xs">
-      <thead>
-        <tr className="bg-gray-100 text-gray-600">
-          <th className="text-left px-3 py-1">Invoice Date</th>
-          <th className="text-left px-3 py-1">Invoice Number</th>
-          <th className="text-left px-3 py-1">Course Name</th>
-          <th className="text-left px-3 py-1">Payment Date</th>
-          <th className="text-left px-3 py-1">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr className="hover:bg-gray-50">
-          <td className="px-3 py-1 text-gray-700">October 15, 2024</td>
-          <td className="px-3 py-1 text-gray-700">INV-0204</td>
-          <td className="px-3 py-1 text-gray-700">Arabic - Basic</td>
-          <td className="px-3 py-1 text-gray-700">October 25, 2024</td>
-          <td className="px-3 py-1">
-            <span className="bg-green-100 text-green-600 py-0.5 px-2 rounded-full text-[10px]">Completed</span>
-          </td>
-        </tr>
-        <tr className="hover:bg-gray-50">
-          <td className="px-3 py-1 text-gray-700">October 14, 2024</td>
-          <td className="px-3 py-1 text-gray-700">INV-0203</td>
-          <td className="px-3 py-1 text-gray-700">Tajweed - Standard</td>
-          <td className="px-3 py-1 text-gray-700">October 24, 2024</td>
-          <td className="px-3 py-1">
-            <span className="bg-yellow-100 text-yellow-600 py-0.5 px-2 rounded-full text-[10px]">Pending</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-              )}
+                      return (
+                        <tr key={invoice._id} className="hover:bg-gray-50">
+                          <td className="px-3 py-1 text-gray-700">{invoiceDate}</td>
+                          <td className="px-3 py-1 text-gray-700">{invoice._id}</td>
+                          <td className="px-3 py-1 text-gray-700">{invoice.courseName}</td>
+                          <td className="px-3 py-1 text-gray-700">{paymentDate}</td>
+                          <td className="px-3 py-1">{invoiceStatus}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
           {/* Modal for Payment Form */}
           {showModal && (
             <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
@@ -274,4 +313,4 @@ const Invoice = () => {
   );
 };
 
-export default Invoice;
+export default Invoice;

@@ -23,30 +23,23 @@ const SignIn: React.FC = () => {
   }, [error]);
   const signIn = async (username: string, password: string) => {
     try {
-      // Your actual API call logic for signIn
-      // Uncomment and implement the actual API call below if needed
-      // return await actualSignInApiCall(username, password);
+      const response = await axios.post('http://localhost:5001/signin', { username, password });
   
-      // Simulating an API failure for demonstration
-      throw new Error("API call failed");  // Simulate an API failure
-  
-    } catch (error) {
-      // Fallback to hardcoded values if API fails
-      console.log("API failed, using hardcoded values");
-  
-      const hardcodedUsername = "testTeacher";
-      const hardcodedPassword = "123456";
-  
-      if (username === hardcodedUsername && password === hardcodedPassword) {
-        // Simulate successful login with hardcoded values
-        return {
-          accessToken: "hardcodedAccessToken123",
-          role: ["TEACHER"],
-        };
+      // Handle successful login response
+      if (response.status === 200) {
+        return response.data;
       }
   
-      throw new Error("Invalid credentials");
-    }
+      throw new Error('Unexpected error occurred');
+    } catch (error: any) {
+      // Handle backend errors, e.g., user not found
+      if (error.response && error.response.status === 404) {
+        throw new Error('Email not found'); // Specific error message
+      }
+  
+      // Handle other errors
+      throw new Error(error.message || 'Login failed');
+    }
   };
   
   const setLoginError = (message: string) => {
@@ -59,8 +52,10 @@ const SignIn: React.FC = () => {
     setError(''); // Clear previous errors
     try {
       const data = await signIn(username, password);
-      const { accessToken, role } = data;
+      const { accessToken, role,_id,userName } = data;
       localStorage.setItem('TeacherAuthToken', accessToken);
+      localStorage.setItem('TeacherPortalId', _id);
+      localStorage.setItem('TeacherPortalName', userName);
       const authToken = localStorage.getItem('TeacherAuthToken');
       console.log(accessToken);
       console.log(authToken);
@@ -129,6 +124,8 @@ const SignIn: React.FC = () => {
       // Handle result based on the returned message
       if (result?.message === 'Email exists') {
         localStorage.setItem('TeacherAuthToken', result.data.accessToken);
+        localStorage.setItem('TeacherPortalId', result.data.id);
+        localStorage.setItem('TeacherPortalName', result.data.username);
         const authToken = localStorage.getItem('TeacherAuthToken');
         console.log(authToken);
         router.push('/teacher/ui/dashboard'); // Redirect to dashboard

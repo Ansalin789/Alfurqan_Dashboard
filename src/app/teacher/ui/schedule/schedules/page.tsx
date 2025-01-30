@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from "react";
+import React, {  useState } from "react";
 import { Calendar, dateFnsLocalizer, View, Views } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import BaseLayout from "@/components/BaseLayout";
+
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),
@@ -35,7 +36,6 @@ const events = [
     end: new Date(2024, 0, 17, 11, 0),
   },
 ];
-
 // Custom Toolbar Component
 const CustomToolbar = ({ label, onViewChange, view }: any) => {
   return (
@@ -77,7 +77,7 @@ const Schedules: React.FC = () => {
   const [showSchedulePopup, setShowSchedulePopup] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-
+  
   const handleViewChange = (newView: string) => {
     setView(newView);
   };

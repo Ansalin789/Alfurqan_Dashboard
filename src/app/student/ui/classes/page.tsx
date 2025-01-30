@@ -1,13 +1,14 @@
 "use client";
 
 import BaseLayout2 from "@/components/BaseLayout2";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaCalendarAlt, FaSort } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import MyClass from "./MyClass";
+import axios from "axios";
 
 type UpcomingClass = {
   [x: string]: any;
@@ -39,28 +40,67 @@ const Classes = () => {
   const [popupVisible, setPopupVisible] = useState<number | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [sortKey, setSortKey] = useState<SortableKeys>("classID");
-  const [isPremiumUser, setIsPremiumUser] = useState(true); // Replace with actual role determination logic
+  const [isPremiumUser, setIsPremiumUser] = useState(true);
+  const [upcomingClasses, setUpcomingClasses] = useState<UpcomingClass[]>([]);
+  const [completedClasses, setCompletedClasses] = useState<CompletedClass[]>([]);
   const itemsPerPage = 10;
-  console.log('set premium user ....', setIsPremiumUser);
+  console.log(setIsPremiumUser);
+  const fetchClasses = async () => {
+    try {
+     const studentId='676d4ed5866b9b37ff1fdc8f';
+      const response = await axios.get(
+        "http://localhost:5001/classShedule/students",
+        {
+          headers: {
+            Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6InZpZCIsInN1YiI6IjY3NmU3NjVmMjVkNDg5ZTBlNGJjNzc4MyIsImlhdCI6MTczNzc4NTI0MywiZXhwIjoxNzM3ODcxNjQzfQ.hy0jzbVvoD6tka9Z3OKu9DTRTK_L4s87McZTgnzaHYk"
+          },params:{
+            studentId,
+          }
+        }
+      );
 
-  const upcomingClasses: UpcomingClass[] = Array.from({ length: 25 }, (_, index) => ({
-    classID: 1000 + index,
-    name: `Student ${index + 1}`,
-    teacherName: `Teacher ${index + 1}`,
-    course: `Course ${index + 1}`,
-    date: "January 15, 2025",
-    scheduled: "10:00 AM - 11:30 AM",
-  }));
+      const classSchedule = response.data.classSchedule;
+      const upcoming = classSchedule.filter((item: any) => item.scheduleStatus === "Active");
+      const completed = classSchedule.filter((item: any) => item.scheduleStatus === "Completed");
 
-  const completedClasses: CompletedClass[] = Array.from({ length: 18 }, (_, index) => ({
-    classID: 2000 + index,
-    name: `Student ${index + 1}`,
-    teacherName: `Teacher ${index + 1}`,
-    course: `Course ${index + 1}`,
-    date: "December 25, 2024",
-    scheduled: "9:00 AM - 10:30 AM",
-    status: "Completed",
-  }));
+      // Map the data to the required format
+      const mappedUpcomingClasses = upcoming.map((item: any, index: number) => ({
+        classID: item._id,
+        name: `${item.student.studentFirstName} ${item.student.studentLastName}`,
+        teacherName: item.teacher.teacherName,
+        course: item.package,
+        date: new Date(item.startDate).toLocaleDateString("en-US", {
+          year: "numeric",  // Display the full year (e.g., 2025)
+          month: "long",    // Display the full month name (e.g., January)
+          day: "numeric"    // Display the day of the month (e.g., 20)
+        }),
+        scheduled:item.scheduleStatus,
+      }));
+
+      const mappedCompletedClasses = completed.map((item: any, index: number) => ({
+        classID: item._id,
+        name: `${item.student.studentFirstName} ${item.student.studentLastName}`,
+        teacherName: item.teacher.teacherName,
+        course: item.package,
+        date: new Date(item.startDate).toLocaleDateString("en-US", {
+          year: "numeric",  // Display the full year (e.g., 2025)
+          month: "long",    // Display the full month name (e.g., January)
+          day: "numeric"    // Display the day of the month (e.g., 20)
+        }),
+        scheduled:item.scheduleStatus,
+        status: item.status
+      }));
+
+      setUpcomingClasses(mappedUpcomingClasses);
+      setCompletedClasses(mappedCompletedClasses);
+    } catch (error) {
+      console.error("Error fetching classes", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchClasses();
+  }, []);
 
   const sortClasses = (classes: UpcomingClass[] | CompletedClass[]) => {
     return classes.sort((a, b) => {
@@ -264,7 +304,7 @@ const Classes = () => {
                               </>
                             ) : (
                               <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-                                  <div className="bg-[#fff5f3] p-10 rounded shadow border border-[#F4B0A1] flex">
+                                <div className="bg-[#fff5f3] p-10 rounded shadow border border-[#F4B0A1] flex">
                                   <p className="text-[#27303A] text-lg font">Switch to a higher plan for extended benefits...</p>
                                   <button
                                     className="bg-[#1C3557] text-white px-4 py-2 rounded text-center ml-10"
@@ -272,8 +312,7 @@ const Classes = () => {
                                   >
                                     OK
                                   </button>
-                                  </div>
-                                  
+                                </div>
                               </div>
                             )}
                           </div>

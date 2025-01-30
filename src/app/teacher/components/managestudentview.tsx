@@ -93,7 +93,7 @@ const ManageStudentView = () => {
   };
 }
   useEffect(()=>{
-    const studentId=localStorage.getItem('studentManageID');
+    const studentId=localStorage.getItem('studentviewcontrol');
     console.log(">>>>>",studentId);
     if (studentId) {
       const fetchData = async () => {
@@ -138,26 +138,26 @@ const ManageStudentView = () => {
               />
             </div>
             <div className="justify-center text-center border border-b-black">
-              <h2 className="text-2xl font-semibold mb-2">{studentData?.studentEvaluationDetails?.student?.studentFirstName ?? "" }</h2>
+              <h2 className="text-2xl font-semibold mb-2">{studentData?.studentDetails?.username?? "" }</h2>
               <p className="text-gray-500 mb-4">Student</p>
             </div>
 
             <div className="text-left w-full p-2 pt-6">
               <h3 className="font-semibold mb-2">Personal Info</h3>
               <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Full Name: </span>{studentData?.studentEvaluationDetails?.student?.studentFirstName}
+                <span className="font-semibold text-[14px]">Full Name: </span>{studentData?.studentDetails?.username?? "" }
               </p>
               <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Email: </span>{studentData?.studentEvaluationDetails?.student?.studentEmail}
+                <span className="font-semibold text-[14px]">Email: </span>{studentData?.studentDetails?.student?.studentEmail}
               </p>
               <p className="text-gray-800 text-[13px] mb-1">
-                <span className="font-semibold text-[14px]">Phone Number: </span>{studentData?.studentEvaluationDetails?.student?.studentPhone}
+                <span className="font-semibold text-[14px]">Phone Number: </span>{studentData?.studentDetails?.student?.studentPhone}
               </p>
               <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Level: </span>
+                <span className="font-semibold text-[14px]">Level: 1 </span>
               </p>
               <p className="text-gray-800 text-[14px] mb-1">
-                <span className="font-semibold text-[14px]">Package: </span>{studentData?.studentEvaluationDetails?.subscription?.subscriptionName}
+                <span className="font-semibold text-[14px]">Package: </span>{studentData?.studentEvaluationDetails?.subscription?.subscriptionName ?? "NULL"}
               </p>
               
             </div>
