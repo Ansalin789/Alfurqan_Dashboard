@@ -3,30 +3,6 @@
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
-interface Assignment {
-  _id: string; // Unique identifier for the assignment
-  studentId: string; // ID of the student associated with the assignment
-  assignmentName: string; // Name of the assignment
-  assignedTeacher: string; // Teacher who assigned the task
-  assignmentType: string; // JSON string describing the assignment type, e.g., {"type": "Multiple Choice", "name": "Quiz"}
-  chooseType: boolean; // Flag to determine if the type of the assignment is chosen
-  trueorfalseType: boolean; // Flag for True/False type assignment
-  question: string; // The question or prompt for the assignment
-  hasOptions: boolean; // Whether the assignment has multiple choice options
-  options: {
-    optionOne: string; // First option
-    optionTwo: string; // Second option
-    optionThree: string; // Third option
-    optionFour: string; // Fourth option
-  };
-  uploadFile: string; // File associated with the assignment, possibly encoded as a base64 string
-  audioFile?: string; // Optional audio file, possibly encoded as a base64 string
-}
-
-interface ApiResponse {
-  assignments: Assignment[]; // List of assignments
-}
-
 
 const AssignmentList = () => {
   const router = useRouter();
