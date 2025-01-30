@@ -1,8 +1,5 @@
+"use client";
 
-
-
-
-"use client"; // Mark this as a client component
 
 import { FaUserAlt } from "react-icons/fa";
 import { AiOutlineClockCircle } from "react-icons/ai";
@@ -14,7 +11,7 @@ const MyClass = () => {
   const [time, setTime] = useState({ hours: 0, minutes: 1, seconds: 0 }); // Example: 4-minute countdown
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const router = useRouter(); // Initialize the router
+  const router = useRouter(); 
 
   useEffect(() => {
     if (time.hours === 0 && time.minutes === 0 && time.seconds === 0) {
@@ -46,6 +43,30 @@ const MyClass = () => {
 
   return (
     <div className="bg-[#1C3557] rounded-[25px] shadow flex items-center justify-between text-white">
+      <style>
+        {`
+          @keyframes wave {
+            0% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+            100% {
+              background-position: 0% 50%;
+            }
+          }
+
+          .animated-gradient {
+            background: linear-gradient(270deg, #10B981 10%, #FBBF24 30%, #8B5CF6 90%);
+            background-size: 400% 400%;
+            animation: wave 5s ease infinite;
+            -webkit-background-clip: background;
+            -webkit-text-fill-color: text;
+          }
+        `}
+      </style>
+
       <div className="items-center p-1 px-8">
         <h3 className="text-[15px] font-medium pt-3">Your Next Evaluation Class</h3>
         <div className="flex items-center space-x-8 py-2">
@@ -61,7 +82,7 @@ const MyClass = () => {
       </div>
 
       <div className="flex items-center space-x-2 px-14">
-        <p className="text-[15px] font-bold">Starts in</p>
+        <p className="text-[15px] font-medium">Starts in</p>
         <div className="relative flex items-center justify-center p-10">
           <svg className="absolute w-14 h-20" viewBox="0 0 36 36">
             <path
@@ -99,10 +120,10 @@ const MyClass = () => {
           />
         ) : (
           <button
-            className="bg-[#112644] text-white px-4 py-2 rounded-lg"
+            className="animated-gradient text-[15px] font-medium text-white px-4 py-2 rounded-full shadow-lg transition-transform transform active:scale-95 hover:scale-105"
             onClick={() => router.push("/student/ui/liveclass")} // Navigate to liveclass
           >
-            Start
+            Join Now
           </button>
         )}
 

@@ -2,12 +2,12 @@ import React from "react";
 
 const EarningAnalytics = () => {
   return (
-    <div className="bg-[#3E68A1] text-white p-6 rounded-2xl shadow-lg w-[100%] mx-auto">
+    <div className="bg-[#3E68A1] text-white p-4 rounded-2xl shadow-lg w-[100%] mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-[15px] font-semibold">Earning Analytics</h2>
+        <h2 className="text-[14px] font-medium">Earning Analytics</h2>
         {/* Dropdown for Weekly/Monthly selection */}
-        <select className="bg-[#F7F8FA] text-[#3E5E8A] py-[1px] px-1 rounded-md text-[12px] font-semibold">
+        <select className="bg-[#F7F8FA] text-[#3E5E8A] py-[1px] px-1 rounded-md text-[10px] font-semibold">
           <option value="weekly">This Week</option>
           <option value="monthly">This Month</option>
         </select>
@@ -16,12 +16,12 @@ const EarningAnalytics = () => {
       {/* Chart */}
       <div className="relative">
         {/* Vertical Lines */}
-        <div className="absolute left-8 top-[18px] w-full h-full flex">
+        <div className="absolute left-8 top-[15px] text-[15px] w-full h-full flex">
           {[0, 25, 50, 75, 100, 125, 150, 175, 200].map((value) => (
             <div
               key={value}
-              className="flex flex-col items-center"
-              style={{ width: `${100 / 5}%` }}
+              className="flex flex-col items-center text-[10px]"
+              style={{ width: `${100 / 10}%`, fontSize: '10px' }}
             >
               {/* Dotted Line */}
               <div className="h-full border-l border-dashed border-gray-400"></div>

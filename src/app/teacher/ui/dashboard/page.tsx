@@ -8,7 +8,7 @@ import { FaSearch } from "react-icons/fa";
 import { BiFilterAlt } from "react-icons/bi";
 import Calender from '@/app/teacher/components/Calender';
 import Total from '@/app/teacher/components/total';
-import NextClass from '@/app/teacher/components/NextScheduleclass';
+import NextScheduleClass from '@/app/teacher/components/NextScheduleclass';
 import ClassAnalyticsChart from '@/app/teacher/components/ClassAnalyticsChart';
 import EarningAnalytics from '../../components/EarningAnalytics';
 import TeachingActivity from '../../components/TeachingActivity';
@@ -56,12 +56,12 @@ export default function Academic() {
             </div>
           </header>
           
-            <main className="grid grid-cols-12 gap-4 pr-20">
+            <main className="grid grid-cols-12 gap-[4px] pr-20">
               <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
                 <Total />
               </div>
               <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
-                <NextClass />
+                <NextScheduleClass />
               </div>
 
               <div className="col-span-6 grid grid-cols-1 gap-4 p-0">
@@ -81,11 +81,11 @@ export default function Academic() {
             </main>
           </div>
           {/* calender sidebar */}
-          <div className=" lg:w-[250px] mt-6 lg:mt-0 rounded-[20px] h-[600px]">
-            <div className="col-span-4 pr-8 mb-8">
+          <div className=" lg:w-[250px] mt-6 lg:mt-0 rounded-[20px] h-[70vh]">
+            <div className="col-span-4 pr-8 rounded-lg">
               <Calender />
             </div>
-            <div className="col-span-4 pr-8 -ml-24 rounded-lg">
+            <div className="col-span-4 pr-8 rounded-lg mt-4">
               <UpcomingTask />
             </div>
           </div>

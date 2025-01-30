@@ -1,52 +1,86 @@
-'use client'
+'use client';
+
+
 import { FaUserAlt } from 'react-icons/fa';
 import { AiOutlineClockCircle } from 'react-icons/ai';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { BsThreeDotsVertical } from 'react-icons/bs';
 
 const NextEvalu = () => {
-  const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [classData, setClassData] = useState<{
+  const [time, setTime] = useState({ hours: 0, minutes: 1, seconds: 0 }); // Example: 1-minute countdown
+  const [isCountdownFinished, setIsCountdownFinished] = useState(false);
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const router = useRouter(); 
+
+  useEffect(() => {
+    if (time.hours === 0 && time.minutes === 0 && time.seconds === 0) {
+      setIsCountdownFinished(true); // Countdown finished
+    } else {
+      const interval = setInterval(() => {
+        setTime((prevTime) => {
+          let { hours, minutes, seconds } = prevTime;
+
+          if (seconds > 0) seconds--;
+          else if (minutes > 0) {
+            minutes--;
+            seconds = 59;
+          } else if (hours > 0) {
+            hours--;
+            minutes = 59;
+            seconds = 59;
+          }
+
+          return { hours, minutes, seconds };
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [time]);
+
+  const formatTime = (time: number) => (time < 10 ? `0${time}` : time);
+
+  
+  const [classData] = useState<{
     studentName: string;
     classStartTime: string;
     classStartDate: string;
   } | null>(null);
-  const [loading] = useState(false); // Set to false since we are no longer fetching data
-  const [error] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Hardcoded sample class data
-    const upcomingClass = {
-      studentName: 'John Doe',
-      classStartTime: '10:30 AM',
-      classStartDate: '2025-01-23T10:30:00Z', // Sample future date
-    };
+  // useEffect(() => {
+  //   // Hardcoded sample class data
+  //   const upcomingClass = {
+  //     studentName: 'John Doe',
+  //     classStartTime: '10:30 AM',
+  //     classStartDate: '2025-01-23T10:30:00Z', // Sample future date
+  //   };
 
-    setClassData(upcomingClass);
-  }, []);
+  //   setClassData(upcomingClass);
+  // }, []);
 
-  useEffect(() => {
-    if (classData?.classStartDate) {
-      const interval = setInterval(() => {
-        const now = new Date();
-        const classStartDate = new Date(classData.classStartDate);
-        const remainingTime = classStartDate.getTime() - now.getTime();
+  // useEffect(() => {
+  //   if (classData?.classStartDate) {
+  //     const interval = setInterval(() => {
+  //       const now = new Date();
+  //       const classStartDate = new Date(classData.classStartDate);
+  //       const remainingTime = classStartDate.getTime() - now.getTime();
 
-        if (remainingTime <= 0) {
-          clearInterval(interval);
-          setTime({ hours: 0, minutes: 0, seconds: 0 }); // Class has started
-        } else {
-          const hours = Math.floor(remainingTime / 1000 / 60 / 60);
-          const minutes = Math.floor((remainingTime / 1000 / 60) % 60);
-          const seconds = Math.floor((remainingTime / 1000) % 60);
-          setTime({ hours, minutes, seconds });
-        }
-      }, 1000);
+  //       if (remainingTime <= 0) {
+  //         clearInterval(interval);
+  //         setTime({ hours: 0, minutes: 0, seconds: 0 }); // Class has started
+  //       } else {
+  //         const hours = Math.floor(remainingTime / 1000 / 60 / 60);
+  //         const minutes = Math.floor((remainingTime / 1000 / 60) % 60);
+  //         const seconds = Math.floor((remainingTime / 1000) % 60);
+  //         setTime({ hours, minutes, seconds });
+  //       }
+  //     }, 1000);
 
-      return () => clearInterval(interval); // Cleanup on component unmount
-    }
-  }, [classData]);
+  //     return () => clearInterval(interval); // Cleanup on component unmount
+  //   }
+  // }, [classData]);
 
-  const formatTime = (time: number) => (time < 10 ? `0${time}` : time);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -56,15 +90,7 @@ const NextEvalu = () => {
     return `${day < 10 ? '0' + day : day}.${month < 10 ? '0' + month : month}.${year}`;
   };
 
-  const progress = ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) * 100;
 
-  if (loading) {
-    return <div className="text-center text-gray-600">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center text-red-500">Error: {error}</div>;
-  }
 
   return (
     <div>
@@ -75,11 +101,11 @@ const NextEvalu = () => {
           <div className="flex items-center space-x-8 py-2">
             <div className="flex items-center space-x-2">
               <FaUserAlt className="w-[10px]" />
-              <p className="text-[13px]">{classData?.studentName}</p>
+              <p className="text-[13px]">Student Name</p>
             </div>
             <div className="flex items-center space-x-2">
               <AiOutlineClockCircle className="w-[10px]" />
-              <p className="text-[13px]">{classData?.classStartTime}</p>
+              <p className="text-[13px]">Class Start Time</p>
             </div>
           </div>
           {classData?.classStartDate && (
@@ -101,7 +127,7 @@ const NextEvalu = () => {
               />
               <path
                 className="circle"
-                strokeDasharray={`${progress}, 100`}
+                strokeDasharray={`${100 - ((time.minutes * 60 + time.seconds) / (4 * 60)) * 100}, 100`}
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 fill="none"
                 stroke="#295CA0"
@@ -113,12 +139,40 @@ const NextEvalu = () => {
                 <div className="text-[#234878]">
                   <p className="text-[4px] font-bold">SESSION 13</p>
                   <p className="text-[8px] font-extrabold text-[#223857]">
-                    {formatTime(time.hours)}:{formatTime(time.minutes)}:{formatTime(time.seconds)}
+                  {formatTime(time.hours)}:{formatTime(time.minutes)}:{formatTime(time.seconds)}
                   </p>
                 </div>
               </div>
             </div>
           </div>
+          
+          {!isCountdownFinished ? (
+          <BsThreeDotsVertical
+            className="cursor-pointer"
+            onClick={() => setIsPopupVisible(true)}
+          />
+        ) : (
+          <button
+            className="bg-[#112644] text-white px-4 py-2 rounded-lg"
+            onClick={() => router.push("/student/ui/liveclass")} // Navigate to liveclass
+          >
+            Start
+          </button>
+        )}
+
+        {isPopupVisible && !isCountdownFinished && (
+          <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-10">
+            <div className="bg-white p-6 rounded shadow">
+              <p className="text-gray-800 mb-4">Please wait until your session starts...</p>
+              <button
+                className="bg-[#1C3557] text-white px-4 py-2 rounded text-center ml-28 justify-center"
+                onClick={() => setIsPopupVisible(false)}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        )}
         </div>
       </div>
     </div>

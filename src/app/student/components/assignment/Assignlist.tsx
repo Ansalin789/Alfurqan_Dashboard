@@ -30,8 +30,8 @@ class AssignList extends Component {
       },
     ];
     return (
-      <div className="p-6">
-        <h2 className="text-[17px] font-bold text-gray-800 px-4 -mt-3">
+      <div className="p-3 w-[1250px] mx-auto">
+        <h2 className="text-2xl font-semibold text-gray-800 p-2">
           Current Status
         </h2>
         <div className="flex justify-center gap-6 p-4">
@@ -43,7 +43,7 @@ class AssignList extends Component {
               {/* Circular Progress */}
               <div className="mr-6 flex justify-center items-center relative">
                 <svg
-                  className="w-[90px] h-[70px] transform rotate-[-90deg]"
+                  className="w-[100px] h-[90px] transform rotate-[-90deg]"
                   viewBox="0 0 36 36"
                 >
                   {/* Background Circle */}
@@ -78,7 +78,7 @@ class AssignList extends Component {
                   {c.name}
                 </p>
                 <p className="text-gray-600 text-[12px] font-medium flex items-center gap-2">
-                  {c.count} <span className="text-lg">{c.icon}</span>
+                  {c.count} <span className="text-2xl">{c.icon}</span>
                 </p>
               </div>
             </div>

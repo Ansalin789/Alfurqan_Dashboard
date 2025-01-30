@@ -6,15 +6,10 @@ import BaseLayout from '@/components/BaseLayout'
 const page = () => {
   return (
     <BaseLayout>
-    <div className=''>
-      <div className=''>
-        <Assignment />
+      <div className='mx-auto'>
+          <Assignment />
+          <StudentList />
       </div>
-      <div>
-        <StudentList />
-      </div>
-    </div>
-      
     </BaseLayout>
   )
 }

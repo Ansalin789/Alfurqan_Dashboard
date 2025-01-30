@@ -110,8 +110,8 @@ const Schedules: React.FC = () => {
         {/* Calendar Section */}
         <div className="w-full md:w-3/4">
         <h2 className="text-4xl font-semibold mb-4">Class Schedule</h2>
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <div className="flex justify-end items-center mb-4">
+        <div className="bg-white shadow-md rounded-lg p-5">
+          <div className="flex justify-end items-center mb-2">
             <div className="flex gap-2">
               <button 
                 onClick={() => setShowMeetingPopup(true)}
@@ -306,10 +306,10 @@ const Schedules: React.FC = () => {
           
         </div>
 
-        <div className="w-[200px] md:w-[320px] flex flex-col gap-6 shadow-2xl rounded-3xl bg-white overflow-y-auto h-[95vh] scrollbar-thin scrollbar-track-black ml-32">
+        <div className="w-100% md:w-[250px] flex flex-col gap-6 shadow-2xl rounded-3xl bg-white overflow-y-auto h-[85vh] mt-14 scrollbar-none ml-32">
           {/* Today's Schedules */}
-          <div className=" p-4">
-            <h3 className="text-xl font-semibold mb-4 text-center">Today's Schedules</h3>
+          <div className="p-4">
+            <h3 className="text-[15px] font-semibold mb-4 text-center">Today's Schedules</h3>
             <div
               className="space-y-4"
               style={{
@@ -323,25 +323,27 @@ const Schedules: React.FC = () => {
                   className="flex flex-col border rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow"
                 >
                   <span className="text-[11px] text-red-500 font-medium">Jan 5th, 2024</span>
-                  <span className="text-base font-semibold">Abinesh</span>
-                  <div className="flex items-center text-[11px] text-gray-600">
-                    <span className="material-icons text-gray-400 mr-1">schedule</span>
-                    {/* */}
-                    07:00 - 10:00 PM
+                  <div className="justify-between">
+                    <span className="text-sm font-semibold">Abinesh</span>
+                    <div className="flex items-center text-[9px] text-gray-600">
+                      <span className="material-icons text-gray-400 mr-1">schedule</span>
+                      {/* */}
+                      07:00 - 10:00 PM
+                    </div>
                   </div>
+                  
                 </div>
               ))}
             </div>
 
-            <div className="p-2 mt-10">
-            <h3 className="text-xl font-semibold mb-4 text-center">Today's Todo Task</h3>
+            <div className="p-2 mt-8">
+            <h3 className="text-[15px] font-semibold mb-4 text-center">Today's Todo Task</h3>
             <div className="flex flex-col border rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow">
               <span className="text-[11px] text-red-500 font-medium">Jan 5th, 2024</span>
-              <span className="text-base font-semibold">Meeting</span>
-              <div className="flex items-center text-[11px] text-gray-600">
+              <span className="text-sm font-semibold">Meeting</span>
+              <div className="flex items-center text-[10px] text-gray-600">
                 <span className="material-icons text-gray-400 mr-1">schedule</span>
                     {/* */}
-
                 07:00 - 10:00 PM
               </div>
             </div>

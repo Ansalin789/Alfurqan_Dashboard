@@ -12,7 +12,7 @@ class  Assignment extends Component {
         value: 80,
         count: 25,
         icon: "📋",
-        color: "#FFCC00",
+        color: "#FEC64F",
       },
       {
         id: "card2",
@@ -20,7 +20,7 @@ class  Assignment extends Component {
         value: 62,
         count: 10,
         icon: "📄",
-        color: "#00CC99",
+        color: "#00D9B0",
       },
       {
         id: "card3",
@@ -28,25 +28,22 @@ class  Assignment extends Component {
         value: 62,
         count: 15,
         icon: "⏳",
-        color: "#FF6666",
+        color: "#FC6B57",
       },
     ];
     return (
-      <div className="p-2">
-        <h1 className="text-[25px] font-semibold p-4 text-[#272835]">Assignment</h1>
-        <p className="text-[11px] font-semibold text-[#374557] px-4 -mt-3">
-          Current Status
-        </p>
-        <div className="flex justify-center gap-6 p-2 w-[100%]">
+      <div className="p-4 w-[1250px]">
+        <h1 className="text-2xl font-semibold text-gray-800 p-2">Assignment</h1>
+        <div className="flex justify-center gap-6 p-2 ml-16">
           {cards.map((c) => (
             <div
               key={c.id}
-              className="w-[330px] h-[150px] bg-white rounded-lg shadow-md flex items-center p-4"
+              className="w-[330px] h-[150px] bg-white rounded-2xl shadow-md flex items-center p-4"
             >
               {/* Circular Progress */}
               <div className="mr-6 flex justify-center items-center relative">
                 <svg
-                  className="w-[100px] h-[90px] transform rotate-[-90deg]"
+                  className="w-[90px] h-[80px] transform rotate-[-90deg]"
                   viewBox="0 0 36 36"
                 >
                   <path
@@ -56,7 +53,7 @@ class  Assignment extends Component {
                       a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="6" /* Background circle thickness */
+                    strokeWidth="4" /* Background circle thickness */
                   ></path>
                   <path
                     d="M18 2.0845
@@ -64,7 +61,7 @@ class  Assignment extends Component {
                       a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
                     stroke={c.color}
-                    strokeWidth="7" /* Progress circle thickness */
+                    strokeWidth="4" /* Progress circle thickness */
                     strokeDasharray={`${c.value}, 100`}
                   >
                   </path>
@@ -79,7 +76,7 @@ class  Assignment extends Component {
                   {c.name}
                 </p>
                 <p className="text-gray-600 text-[12px] font-medium flex items-center gap-2">
-                  {c.count} <span className="text-lg">{c.icon}</span>
+                  {c.count} <span className="text-2xl">{c.icon}</span>
                 </p>
               </div>
             </div>

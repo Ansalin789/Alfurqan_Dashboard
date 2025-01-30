@@ -108,7 +108,7 @@ const Classes = () => {
     setSelectedDate(date);
   };
 
-  const handleSort = (key: SortableKeys) => {
+  const handleSort = (key: SortableKeys): void => {
     const order = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(order);
     setSortKey(key);
@@ -121,11 +121,44 @@ const Classes = () => {
 
   return (
     <BaseLayout2>
+      <style>
+        {`
+          .custom-datepicker {
+            width: 80px; /* Adjust width as needed */
+            text-align: center;
+            border: 2px solid #1C3557; /* Border color */
+            border-radius: 8px; /* Rounded corners */
+            padding: 5px; /* Padding */
+            background-color: #f0f8ff; /* Background color */
+          }
+
+          .react-datepicker {
+            border-radius: 8px; /* Rounded corners */
+            background-color: white; /* Background color of the calendar */
+          }
+
+          .react-datepicker__header {
+            background-color: #1C3557; /* Header background color */
+            color: white !important; /* Ensure header text color is white */
+          }
+          .react-datepicker__header .react-datepicker__current-month,
+          .react-datepicker__header .react-datepicker__day-name {
+            color: white !important; /* Ensure month and day names are white */
+          }
+
+
+
+          .react-datepicker__day {
+            color: #1C3557 !important; /* Day text color */
+          }
+        `}
+      </style>
+
       <div className="p-4 mx-auto w-[1250px]">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-2">My Class</h1>
+        <h1 className="text-2xl font-semibold text-gray-800 p-2">My Class</h1>
         <MyClass />
 
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Scheduled Classes</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 p-2">Scheduled Classes</h2>
 
         <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px]">
           <div className="flex">
@@ -150,34 +183,19 @@ const Classes = () => {
               Completed ({completedClasses.length})
             </button>
           </div>
-          <div className="flex justify-end px-4 h-6">
-            <div className="flex items-center border border-[#1C3557] rounded-md overflow-hidden bg-[#1C3557]">
-              <div className="bg-[#1C3557] px-3 py-2 flex items-center">
-                <FaCalendarAlt className="text-white text-sm" />
+          <div className="flex justify-end px-[50px] h-6">
+            <div className="flex items-center border border-[#1C3557] rounded-md overflow-hidden">
+              <div className="px-3 py-2 flex items-center">
+                <FaCalendarAlt className="text-[#1C3557] text-sm" />
               </div>
               <DatePicker
                 selected={selectedDate}
                 onChange={handleDateChange}
                 dateFormat="MMMM d, yyyy"
-                className="w-40 text-sm text-gray-600 focus:outline-none"
-                placeholderText="Date"
+                className="w-20 text-[10px] text-gray-600 focus:outline-none"
+                placeholderText="ddmmyy"
+                
               />
-              <div className="px-0 text-white">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-4 h-4 text-gray-100"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19.5 9l-7.5 7.5L4.5 9"
-                  />
-                </svg>
-              </div>
             </div>
           </div>
 
@@ -214,6 +232,7 @@ const Classes = () => {
                     />
                   </th>
                   <th className="px-6 py-3 text-center">Scheduled</th>
+                  
                   {activeTab === "Completed" && (
                     <th className="px-6 py-3 text-center">Status</th>
                   )}
@@ -224,7 +243,7 @@ const Classes = () => {
                 {displayedClasses.map((item) => (
                   <tr
                     key={item.classID}
-                    className="text-[12px] font-medium"
+                    className="text-[12px] font-medium mt-2"
                     style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}
                   >
                     <td className="px-6 py-2 text-center">{item.classID}</td>
@@ -234,7 +253,7 @@ const Classes = () => {
                     <td className="px-6 py-2 text-center">{item.scheduled}</td>
                     {activeTab === "Completed" && (
                       <td className="px-6 py-1 text-center">
-                        <div className="px-2 py-1 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] opacity-55 text-[10px]">
+                        <div className="px-2 py-1 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] text-[10px]">
                           {String(item.status)}
                         </div>
                       </td>
@@ -286,7 +305,7 @@ const Classes = () => {
             </table>
           </div>
 
-          <div className="flex justify-end items-center px-6 py-4">
+          <div className="flex justify-end items-center px-6 py-3">
             <div className="flex space-x-2">
               {Array.from({ length: totalPages }).map((_, index) => {
                 const page = index + 1;

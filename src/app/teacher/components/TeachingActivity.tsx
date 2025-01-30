@@ -1,4 +1,5 @@
 'use client';
+
 import React from "react";
 
 const TeachingActivity: React.FC = () => {
@@ -7,7 +8,7 @@ const TeachingActivity: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-[13px] font-semibold ml-4">Teaching Activity</h2>
-        <select className="bg-white text-[#35537F] px-3 py-1 rounded-md text-[12px] font-medium shadow-md">
+        <select className="bg-white text-[#35537F] py-[1px] px-1 rounded-md text-[10px] font-semibold shadow-md">
           <option value="monthly">Monthly</option>
           <option value="weekly">Weekly</option>
         </select>
@@ -16,7 +17,7 @@ const TeachingActivity: React.FC = () => {
       {/* Graph Area */}
       <div className="relative flex-1">
         {/* Gradient Graph */}
-        <svg viewBox="0 0 500 200" className="w-full h-[140px]">
+        <svg viewBox="0 0 500 200" className="w-full h-[150px]">
           {/* Gradient */}
           <defs>
             <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
@@ -41,7 +42,7 @@ const TeachingActivity: React.FC = () => {
         </svg>
 
         {/* Tooltip */}
-        <div className="absolute left-[250px] -top-[7px] flex flex-col items-center">
+        <div className="absolute left-[40%] transform -translate-x-1/2 -top-[5%] flex flex-col items-center">
           {/* Gauge Icon */}
           <div className="w-[50px] h-[50px] rounded-full border-[3px] border-red-500 relative flex items-center justify-center">
             <div className="w-[6px] h-[6px] bg-red-500 rounded-full"></div>
