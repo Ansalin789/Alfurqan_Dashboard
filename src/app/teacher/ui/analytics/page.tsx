@@ -251,16 +251,14 @@ function Analytics() {
   };
   return (
     <BaseLayout>
-    <div className="h-screen w-screen">
+    <div className="p-4 mx-auto w-[1250px] pr-12">
       <div className="p-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-2xl font-semibold text-gray-800 p-2">Analytics</h1>
           </div>
 
-          {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-4 mb-6 w-[80%] ml-32">
-            {/* Total Students Card */}
             <button
               className={`bg-white ${activeView === 'students' ? 'border-[3px]' : 'border-[1px]'} border-[#1C3557] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow`}
               onClick={() => setActiveView('students')}
@@ -352,7 +350,6 @@ function Analytics() {
             </button>
           </div>
 
-          {/* List View */}
           <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[40vh] mt-16">
             <div className="p-4 flex justify-between items-center">
               <h2 className="text-[15px] font-semibold text-[#1e293b]">
@@ -578,7 +575,6 @@ function Analytics() {
         
       </div>
 
-      {/* Filter Modal */}
       {isFilterOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl w-[400px] p-6 relative">

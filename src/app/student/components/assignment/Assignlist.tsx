@@ -30,8 +30,8 @@ class AssignList extends Component {
       },
     ];
     return (
-      <div className="p-3 w-[1250px] mx-auto">
-        <h2 className="text-2xl font-semibold text-gray-800 p-2">
+      <div className="p-4 w-[1250px] mx-auto">
+        <h2 className="text-2xl font-semibold text-gray-800 p-2 -ml-4">
           Current Status
         </h2>
         <div className="flex justify-center gap-6 p-4">

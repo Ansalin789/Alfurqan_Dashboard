@@ -163,7 +163,7 @@ const ScheduledClasses = () => {
                             className={`${
                               item.status === "Re-Schedule Requested" 
                                 ? "bg-[#79d67a36] text-[#2a642b] border border-[#2a642b] px-3" 
-                                : "bg-[#1c355739] text-[#1C3557] border border-[#1C3557] px-5"
+                                : "bg-[#1c355739] text-[#1C3557] border border-[#1C3557] px-6"
                             } py-1 rounded-lg`}
                           >
                             {item.status}

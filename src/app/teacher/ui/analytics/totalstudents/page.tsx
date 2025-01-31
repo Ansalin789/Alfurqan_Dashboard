@@ -23,7 +23,7 @@ const Totalstudents = () => {
 
   return (
     <BaseLayout>
-    <div className="p-4 mx-auto w-[1250px]">
+    <div className="p-8 mx-auto w-[1250px] pr-16">
       <h1 className="text-2xl font-semibold text-gray-800 p-2 mb-10">Students List</h1>
       <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
         <div>

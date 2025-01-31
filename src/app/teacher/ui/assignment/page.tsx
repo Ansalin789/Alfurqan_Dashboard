@@ -6,7 +6,7 @@ import BaseLayout from '@/components/BaseLayout'
 const page = () => {
   return (
     <BaseLayout>
-      <div className='mx-auto'>
+      <div className='p-4 mx-auto w-[1250px] pr-16'>
           <Assignment />
           <StudentList />
       </div>

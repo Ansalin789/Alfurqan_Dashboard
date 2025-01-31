@@ -58,8 +58,7 @@ const NextClass = () => {
 
   return (
     
-    <div>
-      
+    <div className="p-4">
       <h2 className="text-2xl font-semibold text-gray-800 p-2">My Class</h2>
       <div className="bg-[#1C3557] rounded-[25px] shadow flex items-center justify-between text-white">
         <style>

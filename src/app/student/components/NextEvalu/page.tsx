@@ -94,7 +94,30 @@ const NextEvalu = () => {
 
   return (
     <div>
-      <h2 className="text-[16px] font-bold text-gray-800 p-[0px] px-4 -mt-[9px]">Your Next Classes</h2>
+      <style>
+            {`
+              @keyframes wave {
+                0% {
+                  background-position: 0% 50%;
+                }
+                50% {
+                  background-position: 100% 50%;
+                }
+                100% {
+                  background-position: 0% 50%;
+                }
+              }
+
+              .animated-gradient {
+                background: linear-gradient(270deg, #10B981 10%, #FBBF24 30%, #8B5CF6 90%);
+                background-size: 400% 400%;
+                animation: wave 5s ease infinite;
+                -webkit-background-clip: background;
+                -webkit-text-fill-color: text;
+              }
+            `}
+          </style>
+      <h2 className="text-[16px] font-bold text-gray-800 pb-[6px] px-4 -mt-[12px]">Your Next Classes</h2>
       <div className="bg-[#375074] rounded-[16px] shadow flex items-center justify-between text-white">
         <div className="items-center p-1 px-8">
           <h3 className="text-[15px] font-medium pt-3">Tajweed Masterclass Session - 12</h3>
@@ -153,10 +176,10 @@ const NextEvalu = () => {
           />
         ) : (
           <button
-            className="bg-[#112644] text-white px-4 py-2 rounded-lg"
+            className="animated-gradient text-[15px] font-medium text-white px-4 py-2 rounded-full shadow-lg transition-transform transform active:scale-95 hover:scale-105"
             onClick={() => router.push("/student/ui/liveclass")} // Navigate to liveclass
           >
-            Start
+            Join Now
           </button>
         )}
 

@@ -60,9 +60,9 @@ const AssignmentList = () => {
   const paginatedAssignments = getPaginatedAssignments();
 
   return (
-    <div className="p-3 mx-auto w-[1250px]">
+    <div className="p-4 mx-auto w-[1250px] pr-20">
       <h1 className="text-2xl font-semibold text-gray-800 p-2">Assignment List</h1>
-      <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[400px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
+      <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[340px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
         <div>
           <div className="flex">
             <button

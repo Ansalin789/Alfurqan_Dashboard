@@ -145,10 +145,10 @@ const ManageTeacher: React.FC = () => {
                 </button>
               </div>
               <div className='flex px-4'>
-                <button className={`border p-2 rounded-lg shadow flex items-center mx-4 bg-[#223857] text-white`} onClick={openModal}>
+                {/* <button className={`border p-2 rounded-lg shadow flex items-center mx-4 bg-[#223857] text-white`} onClick={openModal}>
                   <FaPlus className="mr-2" /> Add new
-                </button>
-                <select className={`border rounded-lg p-2 shadow `}>
+                </button> */}
+                <select className={`border rounded-lg p-2 shadow text-[14px] px-`}>
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
                   <option>Duration: Last year</option>

@@ -139,8 +139,8 @@ const AllStudents = () => {
 
   return (
     <BaseLayout>
-      <div className="p-4 mx-auto w-[1250px]">
-        <h1 className="text-2xl font-semibold text-gray-800 p-6 mt-5">Assignment</h1>
+      <div className="p-8 mx-auto w-[1250px] pr-16">
+        <h1 className="text-2xl font-semibold text-gray-800 p-2 mb-10">Assignment</h1>
         <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-center mb-4">

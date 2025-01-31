@@ -5,9 +5,9 @@ import React from "react";
 
 const StudentList = () => {
   return (
-    <div className="p-4 w-[1250px]">
+    <div className="p-4 w-[1250px] pr-20">
         <h2 className="text-2xl font-semibold text-gray-800 p-2">Students List</h2>
-        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[300px]">
+        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[340px]">
           <div className="overflow-x-auto">
             <table className="table-auto w-full">
               <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
@@ -33,7 +33,7 @@ const StudentList = () => {
                     assignedDate: "January 2, 2020",
                     dueDate: "January 8, 2020",
                     status: "Completed",
-                    statusColor: "bg-green-100 text-green-700",
+                    statusColor: "bg-green-100 text-green-700 px-5",
                   },
                   {
                     id: "1234567890",
@@ -44,7 +44,7 @@ const StudentList = () => {
                     assignedDate: "January 2, 2020",
                     dueDate: "January 8, 2020",
                     status: "Not Completed",
-                    statusColor: "bg-yellow-100 text-yellow-700",
+                    statusColor: "bg-yellow-100 text-yellow-700 px-3",
                   },
                   {
                     id: "1234567890",
@@ -55,7 +55,7 @@ const StudentList = () => {
                     assignedDate: "January 2, 2020",
                     dueDate: "January 8, 2020",
                     status: "Not Assigned",
-                    statusColor: "bg-red-100 text-red-700",
+                    statusColor: "bg-red-100 text-red-700 px-4",
                   },
                   {
                     id: "1234567890",
@@ -66,7 +66,7 @@ const StudentList = () => {
                     assignedDate: "January 2, 2020",
                     dueDate: "January 8, 2020",
                     status: "Not Assigned",
-                    statusColor: "bg-red-100 text-red-700",
+                    statusColor: "bg-red-100 text-red-700 px-4",
                   },
                   {
                     id: "1234567890",
@@ -77,7 +77,7 @@ const StudentList = () => {
                     assignedDate: "January 2, 2020",
                     dueDate: "January 8, 2020",
                     status: "Not Assigned",
-                    statusColor: "bg-red-100 text-red-700",
+                    statusColor: "bg-red-100 text-red-700 px-4",
                   },
                 ].map((student) => (
                   <tr
@@ -94,7 +94,7 @@ const StudentList = () => {
                     <td className="px-6 py-2 text-center">{student.dueDate}</td>
                     <td className="px-6 py-2 text-center">
                       <span
-                        className={`px-4 py-1 text-[#223857] rounded-lg border-[1px] border-[#1c355774] bg-[#D0FECA] text-[10px] ${student.statusColor}`}
+                        className={`py-1 text-[#223857] rounded-lg border-[1px] border-[#1c3557c0] bg-[#D0FECA] text-[10px] ${student.statusColor}`}
                       >
                         {student.status}
                       </span>

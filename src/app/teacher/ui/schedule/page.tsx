@@ -6,7 +6,7 @@ import ScheduledClasses from '../../components/ScheduledClasses'
 const Schedules = () => {
   return (
     <BaseLayout>
-        <div className='p-4 mx-auto w-[1250px]'>
+        <div className='p-4 mx-auto w-[1250px] pr-12'>
             <NextClass />
             <ScheduledClasses />
         </div>

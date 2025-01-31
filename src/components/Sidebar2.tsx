@@ -51,10 +51,10 @@ const SidebarItems = [
 
 export default function Sidebar2() {
     return (
-        <div className="sidebar__wrapper bg-[#012A4A] h-full">
+        <div className="sidebar__wrapper bg-[#012A4A] h-[100vh]">
             <aside className='sidebar bg-[#012A4A]'>
                 <div className='sidebar__top'>
-                    <Image src="/assets/images/whitelogo.png" width={100} height={100} className='sidebar__logo text-center bg-cover bg-center' alt='logo'/>
+                    <Image src="/assets/images/whitelogo.png" width={130} height={130} className='sidebar__logo text-center bg-cover bg-center' alt='logo'/>
                 </div>
                 <ul className="">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (

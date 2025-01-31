@@ -27,10 +27,10 @@ const Message = () => {
     ];
   return (
     <BaseLayout>
-    <div className='mx-auto'>
-        <h1 className='text-[30px] font-semibold'>Messages</h1>
+    <div className='mx-auto p-4'>
+        <h1 className='text-2xl font-semibold text-gray-800 p-2'>Messages</h1>
     
-        <div className="flex p-6 h-[93vh]">
+        <div className="flex p-4 h-[93vh]">
         
             <main className="flex">
                 <div className="w-[400px] bg-white p-6 ml-6 rounded-lg shadow-md flex flex-col justify-between">

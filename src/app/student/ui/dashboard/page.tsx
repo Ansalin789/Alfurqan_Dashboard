@@ -24,28 +24,30 @@ export default function Academic() {
         <div className="flex flex-col lg:flex-row p-2 w-[100%]">
           <div className="flex-1 p-2">
             <main className="grid grid-cols-12 gap-4 pr-6">
-              <div className="col-span-12 grid grid-cols-1 gap-2 p-0">
+              <div className="col-span-12 grid grid-cols-1 gap-2 p-2">
                 <NextEvalu />
               </div>
-              <div className="col-span-12 grid grid-cols-1 gap-2 p-0">
+              <div className="col-span-12 grid grid-cols-1 gap-2 p-2">
                 <DashboardStats />
               </div>
-              <div className="col-span-7 grid grid-cols-3 gap-4 p-0">
+              <div className="col-span-7 grid grid-cols-3 gap-2 p-2">
                 <Activity />
               </div>
-              <div className="col-span-5 grid grid-cols-3 gap-4 p-0">
+              <div className="col-span-5 grid grid-cols-3 gap-2 p-2">
                 <Totalhours />
               </div>
-              <Upcome />
+              <div className="col-span-12 grid grid-cols-1 gap-2 p-2">
+                <Upcome />
+              </div>
             </main>
           </div>
 
           {/* Calendar sidebar */}
           <div className="lg:w-[370px] mt-6 mr-6 lg:mt-4 border-[1px] border-[#727272] bg-white rounded-[8px] h-[622px]">
-            <div className="col-span-4 pr-2 mb-4">
+            <div className="col-span-4 gap-2 mb-4">
               <Profile />
             </div>
-            <div className="col-span-4 pr-2">
+            <div className="col-span-4 gap-2">
               <GeneratePage />
             </div>
           </div>

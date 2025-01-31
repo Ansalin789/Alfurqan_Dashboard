@@ -13,10 +13,10 @@ export default function App() {
     <div className="p-0">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <h2 className="text-[16px] px-4 font-bold text-gray-800 mb-0 md:mb-0">Course Overview</h2>
+        <h2 className="text-[16px] font-bold text-gray-800 p-[0px] px-4 -mt-[20px]">Course Overview</h2>
         <div className="relative">
           <select
-            className="block appearance-none text-[10px] w-full bg-white border rounded-xl border-gray-300 font-semibold text-gray-800 py-1 px-2 leading-tight focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+            className="block appearance-none text-[10px] w-full bg-white border rounded-lg border-gray-300 font-semibold text-gray-800 py-1 px-2 leading-tight focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 -mt-4"
             name="quranOptions"
             id="quranDropdown"
           >
@@ -24,7 +24,7 @@ export default function App() {
             <option value="Tajweed" className="text-[11px]">Tajweed</option>
             <option value="Islamic Studies" className="text-[11px]">Islamic Studies</option>
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 -mt-3">
             <svg
               className="fill-current h-4 w-4 text-gray-800"
               xmlns="http://www.w3.org/2000/svg"

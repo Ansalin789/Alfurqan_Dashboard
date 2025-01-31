@@ -62,9 +62,9 @@ const Upcome = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="col-span-12 -mt-4">
-      <h2 className="text-[13px] font-bold text-gray-800 px-4 mb-0">Upcoming Classes</h2>
-      <div className="bg-[#969DB2] p-1 rounded-lg shadow-md">
+    <div className="p-0">
+      <h2 className="text-[16px] font-bold text-gray-800 p-[0px] px-4 -mt-[20px]">Upcoming Classes</h2>
+      <div className="bg-[#375074] p-1 rounded-xl shadow-md mt-2">
         {evaluationList.map((item) => {
           let backgroundColor: string;
 
