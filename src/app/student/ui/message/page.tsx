@@ -28,7 +28,7 @@ const Message = () => {
   return (
     <BaseLayout2>
     <div className='mx-auto'>
-        <h1 className='text-[30px] font-semibold'>Messages</h1>
+        <h1 className='text-2xl font-semibold text-gray-800 p-2'>Messages</h1>
     
         <div className="flex p-6 h-[93vh]">
         

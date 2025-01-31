@@ -21,15 +21,15 @@ type ApiResponse = {
 
 // Initial data configuration
 const initialData: Omit<DataItem, 'value'>[] = [
-  { title: 'Total Classes', color: 'bg-[#0BF4C8]', icon: <FaUserGraduate size={20} color="#0BF4C8" />, iconBg: 'bg-[#fff]' },
-  { title: 'Total Students', color: 'bg-[#F2A0FF]', icon: <FaCheckCircle size={20} color="#F2A0FF" />, iconBg: 'bg-[#fff]' },
-  { title: 'Total Hours', color: 'bg-[#FAD85D]', icon: <FaClock size={20} color="#FAD85D" />, iconBg: 'bg-[#fff]' },
-  { title: 'Total Earnings', color: 'bg-[#0BF4C8]', icon: <FaHourglassHalf size={20} color="#0BF4C8" />, iconBg: 'bg-[#fff]' },
+  { title: 'Total Classes', color: 'bg-[#FAD85D]', icon: <img src="/assets/images/total-classes.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
+  { title: 'Total Students', color: 'bg-[#0BF4C8]', icon: <img src="/assets/images/total-students.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
+  { title: 'Total Hours', color: 'bg-[#85D8F2]', icon: <img src="/assets/images/total-hours.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
+  { title: 'Total Earnings', color: 'bg-[#F2A0FF]', icon: <img src="/assets/images/total-earnings.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
 ];
 
 // Card Component
 const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
-  <div className={`p-4 size-[100%] rounded-2xl py-5 shadow-lg flex flex-col items-start ${color} relative bg-pattern`}>
+  <div className={`p-4 size-[100%] rounded-2xl py-7 shadow-lg flex flex-col items-start ${color} relative bg-pattern`}>
     <div className={`absolute top-4 right-2 ${iconBg} p-2 rounded-[100%] shadow-md`}>
       {React.isValidElement(icon) ? (
         <div className="flex items-center justify-center w-4 h-4">{icon}</div>

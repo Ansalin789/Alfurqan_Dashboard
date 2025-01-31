@@ -109,7 +109,7 @@ const NextScheduledClass = () => {
 
       <div className="flex items-center space-x-2 p-3 rounded-lg">
         <div>
-          <p className="text-white text-[12px] font-semibold">Starts in</p>
+          <p className="text-white text-[13px] font-semibold">Starts in</p>
           <p className="text-white text-[10px]">Session - 12</p>
         </div>
         <div className="relative flex items-center justify-center p-2">

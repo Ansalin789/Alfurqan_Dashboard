@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FaFilter, FaPlus } from 'react-icons/fa';
+import { FaFilter } from 'react-icons/fa';
 
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from 'next/navigation';

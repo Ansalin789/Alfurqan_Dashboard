@@ -58,7 +58,7 @@ const ClassAnalyticsChart = () => {
         </div>
       </div>
       <div className="text-white text-sm w-[60%]">
-        <h3 className="text-[16px] font-semibold text-center justify-center">
+        <h3 className="text-[16px] font-semibold text-center justify-center mb-2">
           Class Analytics
         </h3>
         <div className="flex justify-between items-center mr-2">
