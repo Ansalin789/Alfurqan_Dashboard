@@ -1,8 +1,34 @@
 'use client';
 
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
+interface Assignment {
+  _id: string;
+  studentId:string;
+  assignmentName: string;
+  assignedTeacher: string;
+  assignmentType: string;
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question: string;
+  hasOptions: boolean;
+  audioFile: string;
+  uploadFile: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  level: string;
+  courses: string;
+  assignedDate: string;
+  dueDate: string;
+  __v: number;
+}
+
+
 
 const AssignmentList = () => {
   const router = useRouter();
@@ -10,36 +36,53 @@ const AssignmentList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isClient, setIsClient] = useState(false); // To ensure client-side rendering
   const [searchQuery, setSearchQuery] = useState('');
-  const [assignments, setAssignments] = useState([
-    { id: '1234567890', assignedBy: 'Will Jonto', course: 'Arabic', type: 'Quiz', assignedDate: 'January 2, 2020', dueDate: 'January 8, 2020', status: 'Not Assigned' },
-    { id: '1234567891', assignedBy: 'Will Jonto', course: 'Arabic', type: 'Quiz', assignedDate: 'January 2, 2020', dueDate: 'January 8, 2020', status: 'Pending' },
-    { id: '1234567892', assignedBy: 'Angela Moss', course: 'Quran', type: 'Writing', assignedDate: 'January 2, 2020', dueDate: 'January 8, 2020', status: 'Not Assigned' },
-    { id: '1234567893', assignedBy: 'Angela Moss', course: 'Quran', type: 'Writing', assignedDate: 'January 2, 2020', dueDate: 'January 8, 2020', status: 'Pending' },
-    { id: '1234567894', assignedBy: 'Chris', course: 'Tajweed', type: 'Reading', assignedDate: 'January 2, 2020', dueDate: 'January 8, 2020', status: 'Pending' },
-    { id: '1234567895', assignedBy: 'Chris', course: 'Tajweed', type: 'Image Identification', assignedDate: 'January 2, 2020', dueDate: 'January 8, 2020', status: 'Pending' },
-    { id: '1234567896', assignedBy: 'John', course: 'Arabic', type: 'Word Matching', assignedDate: 'January 2, 2020', dueDate: 'January 8, 2020', status: 'Pending' },
-    { id: '1234567897', assignedBy: 'Will Jonto', course: 'Arabic', type: 'Quiz', assignedDate: 'January 2, 2020', dueDate: 'January 8, 2020', status: 'Completed' },
-    { id: '1234567898', assignedBy: 'Angela Moss', course: 'Quran', type: 'Writing', assignedDate: 'January 2, 2020', dueDate: 'January 8, 2020', status: 'Completed' },
-  ]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
 
   useEffect(() => {
-    setIsClient(true); // Ensure client-side rendering
+    setIsClient(true);
+    const fetchAssignments = async () => {
+      const storedStudentId = localStorage.getItem('StudentPortalId');
+
+      try {
+        const response = await axios.get("http://localhost:5001/allAssignment", {
+          headers: {
+            Authorization: `Bearer YOUR_AUTH_TOKEN`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        console.log("Assignments:", response.data);
+        const filteredAssignments = response.data.assignments.filter(
+          (assignment: Assignment) => assignment.studentId === storedStudentId
+        );
+
+        setAssignments(filteredAssignments);
+        console.log(filteredAssignments);
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+      }
+    };
+
+    fetchAssignments(); // Ensure client-side rendering
   }, []);
 
-  console.log(setAssignments);
-
   const handleThreeDotsClick = (assignment: any) => {
-    if (isClient && assignment.status === 'Pending') {
+    if (isClient && assignment.status === 'Assigned') {
       router.push(
-        `/student/components/assignment/quizpage?id=${assignment.id}&type=${assignment.type}`
+        `/student/components/assignment/quizpage?id=${assignment._id}&type=${assignment.assignmentType}`
       );
     }
   };
 
   const getFilteredAssignments = () => {
-    const filtered = assignments.filter((assignment) =>
-      activeTab === 'Completed' ? assignment.status === 'Completed' : assignment.status !== 'Completed'
-    );
+    const filtered = assignments.filter((assignment) => {
+      if (activeTab === 'Completed') {
+        return assignment.status.toLowerCase() === 'completed'; // Case-insensitive check
+      }
+      return assignment.status.toLowerCase() === 'assigned'; // Only show Assigned in Upcoming
+    });
+  
+    // Search filter remains the same
     if (searchQuery.trim() !== '') {
       return filtered.filter((assignment) =>
         Object.values(assignment).some((value) =>
@@ -63,17 +106,17 @@ const AssignmentList = () => {
     <div className="p-4 sm:p-6 bg-gray-50 rounded-lg">
       <h1 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6">Assignment List</h1>
 
-    {/* Tabs and Search Bar in a Row */}
-    <div className="flex flex-wrap items-center justify-between mb-4 border-b-2 border-gray-300 pb-2">
-      {/* Tabs */}
-      <div className="flex gap-4">
+      {/* Tabs and Search Bar in a Row */}
+      <div className="flex flex-wrap items-center justify-between mb-4 border-b-2 border-gray-300 pb-2">
+        {/* Tabs */}
+        <div className="flex gap-4">
         <button
           className={`px-4 py-2 text-sm font-medium ${
             activeTab === 'Upcoming' ? 'text-red-600 border-b-2 border-red-600' : 'text-gray-500'
           }`}
           onClick={() => setActiveTab('Upcoming')}
         >
-          Upcoming ({assignments.filter((a) => a.status !== 'Completed').length})
+          Upcoming ({assignments.filter((a) => a.status === 'Assigned').length}) {/* Updated count */}
         </button>
         <button
           className={`px-4 py-2 text-sm font-medium ${
@@ -81,22 +124,21 @@ const AssignmentList = () => {
           }`}
           onClick={() => setActiveTab('Completed')}
         >
-          Completed ({assignments.filter((a) => a.status === 'Completed').length})
+          Completed ({assignments.filter((a) => a.status === 'completed').length})
         </button>
       </div>
 
-
-      {/* Search Bar */}
-      <div className="relative w-[40px] sm:w-1/3 ml-auto">
-        <input
-          type="text"
-          placeholder="Search"
-          className="w-full px-4 py-2 border rounded-md shadow-md focus:ring-2 focus:ring-red-500"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        {/* Search Bar */}
+        <div className="relative w-[40px] sm:w-1/3 ml-auto">
+          <input
+            type="text"
+            placeholder="Search"
+            className="w-full px-4 py-2 border rounded-md shadow-md focus:ring-2 focus:ring-red-500"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </div>
-    </div>
 
       {/* Table */}
       <div className="overflow-x-auto shadow-md rounded-lg">
@@ -118,7 +160,7 @@ const AssignmentList = () => {
               let statusClass = '';
               if (assignment.status === 'Not Assigned') {
                 statusClass = 'bg-yellow-100 text-yellow-600';
-              } else if (assignment.status === 'Pending') {
+              } else if (assignment.status === 'Assigned') {
                 statusClass = 'bg-red-100 text-red-600';
               } else {
                 statusClass = 'bg-green-100 text-green-600';
@@ -126,13 +168,13 @@ const AssignmentList = () => {
 
               return (
                 <tr
-                  key={assignment.id}
+                  key={assignment._id}
                   className="border-b last:border-b-0 hover:bg-gray-50"
                 >
-                  <td className="px-4 py-3">{assignment.id}</td>
-                  <td className="px-4 py-3">{assignment.assignedBy}</td>
-                  <td className="px-4 py-3">{assignment.course}</td>
-                  <td className="px-4 py-3">{assignment.type}</td>
+                  <td className="px-4 py-3">{assignment._id}</td>
+                  <td className="px-4 py-3">{assignment.assignedTeacher}</td>
+                  <td className="px-4 py-3">Quran</td>
+                  <td className="px-4 py-3">{assignment.assignmentType}</td>
                   <td className="px-4 py-3">{assignment.assignedDate}</td>
                   <td className="px-4 py-3">{assignment.dueDate}</td>
                   <td className="px-4 py-3">
@@ -143,12 +185,12 @@ const AssignmentList = () => {
                   <td className="px-4 py-3 text-center">
                     <button
                       className={`text-gray-500 hover:text-gray-700 ${
-                        assignment.status !== 'Pending'
+                        assignment.status !== 'Assigned'
                           ? 'cursor-not-allowed opacity-50'
                           : ''
                       }`}
                       onClick={() => handleThreeDotsClick(assignment)}
-                      disabled={assignment.status !== 'Pending'}
+                      disabled={assignment.status == 'Completed'}
                     >
                       <BsThreeDots />
                     </button>
@@ -187,5 +229,4 @@ const AssignmentList = () => {
     </div>
   );
 };
-
 export default AssignmentList;

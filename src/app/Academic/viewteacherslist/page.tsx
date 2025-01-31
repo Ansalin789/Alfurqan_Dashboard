@@ -133,29 +133,21 @@ const ViewTeachersList= () => {
   }
  const [teacherIdLocal, setTeacherIdLocal] = useState<string | null>(null);
    const [auth, setAuth] = useState<string | null>(null);
-   useEffect(() => {
-     // Access localStorage only on the client side
-     if (typeof window !== "undefined") {
-      const teacherId=localStorage.getItem('manageTeacherId');
-       setTeacherIdLocal(teacherId); 
-        const seauth=localStorage.getItem('authToken');
-        setAuth(seauth);
-     }
-   }, []);
    // Declare and initialize filteredStudents first
   
   const [teachers, setTeachers] = useState<Teacher>();
   useEffect(() => {
+    if (typeof window !== "undefined") {
+     
+        const seauth=localStorage.getItem('authToken');
+        setAuth(seauth);
+     }
         const fetchTeachers = async () => {
-          
-          
           console.log(">>>>"+auth);
           try {
-            const response = await fetch(`http://localhost:5001/users/${teacherIdLocal}`, {
-
-              headers: {
-                'Authorization': `Bearer ${auth}`,
-              },
+             const teacherId=localStorage.getItem('manageTeacherId');
+             setTeacherIdLocal(teacherId);
+            const response = await fetch(`http://localhost:5001/users/${teacherId}`, {
             });
             const data = await response.json();
     
