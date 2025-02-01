@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, {useState } from 'react';
 import Calendar from 'react-calendar';
 import "react-calendar/dist/Calendar.css";
 import "@/components/Academic/Calender";
@@ -10,37 +10,37 @@ interface Event {
   end: Date;
 }
 
-interface AcademicCoachItem {
-  subject: string;
-  scheduledStartDate: string; // Assuming this is a string in the API
-  scheduledEndDate: string;   // Assuming this is a string in the API
-}
+// interface AcademicCoachItem {
+//   subject: string;
+//   scheduledStartDate: string;
+//   scheduledEndDate: string;  
+// }
 
 const Calender: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [value, setValue] = useState<Date>(new Date());
 
-  useEffect(() => {
-    const auth = localStorage.getItem('authToken');
-    fetch('http://alfurqanacademy.tech:5001/meetingSchedulelist', {
-      headers: {
-        'Authorization': `Bearer ${auth}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const mappedEvents = data.academicCoach.map((item: AcademicCoachItem) => ({
-          title: item.subject,
-          start: new Date(item.scheduledStartDate),
-          end: new Date(item.scheduledEndDate),
-        }));
-        setEvents(mappedEvents);
-        console.log("Fetched Events: ", mappedEvents);
-      })
-      .catch((error) => {
-        console.error('Error fetching data: ', error);
-      });
-  }, []);
+  // useEffect(() => {
+  //   const auth = localStorage.getItem('authToken');
+  //   fetch('http://alfurqanacademy.tech:5001/meetingSchedulelist', {
+  //     headers: {
+  //       'Authorization': `Bearer ${auth}`,
+  //     },
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       const mappedEvents = data.academicCoach.map((item: AcademicCoachItem) => ({
+  //         title: item.subject,
+  //         start: new Date(item.scheduledStartDate),
+  //         end: new Date(item.scheduledEndDate),
+  //       }));
+  //       setEvents(mappedEvents);
+  //       console.log("Fetched Events: ", mappedEvents);
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error fetching data: ', error);
+  //     });
+  // }, []);
 
   const isMeetingDate = (date: Date) => {
     return events.some((event) => {
