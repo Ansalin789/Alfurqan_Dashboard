@@ -78,7 +78,7 @@ const Message = () => {
                                 }`}
                                 onClick={() => setActiveTab("Private")}
                             >
-                                Private chat
+                                Students
                             </button>
                             </div>
                             {/* Chat List */}

@@ -5,6 +5,7 @@ import BaseLayout from "@/components/BaseLayout";
 import React, { useState } from "react";
 import { BsSearch, BsThreeDots } from "react-icons/bs";
 import { useRouter } from "next/navigation";
+import { IoArrowBackCircleSharp } from "react-icons/io5";
 
 
 const AllStudents = () => {
@@ -140,6 +141,12 @@ const AllStudents = () => {
   return (
     <BaseLayout>
       <div className="p-8 mx-auto w-[1250px] pr-16">
+      <div className="p-2">
+          <IoArrowBackCircleSharp 
+            className="text-[25px] bg-[#fff] rounded-full text-[#012a4a] cursor-pointer" 
+            onClick={() => router.push('assignment')}
+          />
+        </div>
         <h1 className="text-2xl font-semibold text-gray-800 p-2 mb-10">Assignment</h1>
         <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
           <div>

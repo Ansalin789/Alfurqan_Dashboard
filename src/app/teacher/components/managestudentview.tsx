@@ -118,7 +118,7 @@ const ManageStudentView = () => {
         
   return (
     <BaseLayout>
-      <div className="flex flex-col md:flex-row pt-14 pl-4 min-h-screen">
+      <div className="flex flex-col md:flex-row pt-14 mt-8">
         <div className="p-2">
           <IoArrowBackCircleSharp 
             className="text-[25px] bg-[#fff] rounded-full text-[#012a4a] cursor-pointer" 
@@ -130,33 +130,33 @@ const ManageStudentView = () => {
             
             <div className="justify-center">
               <Image
-                src="/assets/images/proff.jpg"
+                src="/assets/images/student-profile.png"
                 alt="Profile"
-                className="rounded-full justify-center align-middle text-center ml-20 w-24 h-24 mb-4 mt-[45px]"
+                className="rounded-full justify-center align-middle text-center ml-20 w-24 h-24 mb-4 mt-[73px]"
                 width={150}
                 height={150}
               />
             </div>
-            <div className="justify-center text-center border border-b-black">
+            <div className="justify-center text-center border-b-2 border-b-black">
               <h2 className="text-2xl font-semibold mb-2">{studentData?.studentEvaluationDetails?.student?.studentFirstName ?? "" }</h2>
-              <p className="text-gray-500 mb-4">Student</p>
+              <p className="text-[#012A4A] mb-4">Student</p>
             </div>
 
             <div className="text-left w-full p-2 pt-6">
               <h3 className="font-semibold mb-2">Personal Info</h3>
-              <p className="text-gray-800 text-[14px] mb-1">
+              <p className="text-gray-800 text-[14px] mt-4">
                 <span className="font-semibold text-[14px]">Full Name: </span>{studentData?.studentEvaluationDetails?.student?.studentFirstName}
               </p>
-              <p className="text-gray-800 text-[14px] mb-1">
+              <p className="text-gray-800 text-[14px] mt-3">
                 <span className="font-semibold text-[14px]">Email: </span>{studentData?.studentEvaluationDetails?.student?.studentEmail}
               </p>
-              <p className="text-gray-800 text-[13px] mb-1">
+              <p className="text-gray-800 text-[13px] mt-3">
                 <span className="font-semibold text-[14px]">Phone Number: </span>{studentData?.studentEvaluationDetails?.student?.studentPhone}
               </p>
-              <p className="text-gray-800 text-[14px] mb-1">
+              <p className="text-gray-800 text-[14px] mt-3">
                 <span className="font-semibold text-[14px]">Level: </span>
               </p>
-              <p className="text-gray-800 text-[14px] mb-1">
+              <p className="text-gray-800 text-[14px] mt-3">
                 <span className="font-semibold text-[14px]">Package: </span>{studentData?.studentEvaluationDetails?.subscription?.subscriptionName}
               </p>
               
@@ -164,7 +164,7 @@ const ManageStudentView = () => {
           </div>
         </div>
      
-            </div>
+      </div>
 
      
     </BaseLayout>

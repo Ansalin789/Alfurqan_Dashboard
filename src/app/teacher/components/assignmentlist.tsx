@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from "react";
-import { BsSearch, BsThreeDots } from "react-icons/bs";
+import { BsThreeDots } from "react-icons/bs";
 
 const AssignmentList = () => {
   const [activeTab, setActiveTab] = useState("Pending");
@@ -171,194 +171,186 @@ const AssignmentList = () => {
   };
 
   return (
-    <div className="p-4 bg-white shadow-md rounded-lg w-[900px] ml-56 mt-48">
+    <div className="w-[900px] ml-56 mt-[30px] pr-10">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-lg font-semibold text-gray-700">Assignment List</h1>
-        <div className="relative w-40">
-                <span className="absolute inset-y-0 left-4 text-[12px] flex items-center text-gray-400">
-                <BsSearch />
-                </span>
-                <input
-                type="text"
-                placeholder="Search"
-                className="w-full pl-10 pr-2 py-1 rounded-xl shadow-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-300 text-[12px] text-gray-600 placeholder-gray-400"
-                />
-            </div>
+        <h1 className="text-2xl font-semibold text-gray-800 p-2">Assignment List</h1>
       </div>
+      <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[295px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
+        <div>
 
-      {/* Tabs */}
-      <div className="flex border-b mb-4 text-sm">
-        <button
-          className={`px-3 py-2 ${
-            activeTab === "Pending"
-              ? "border-b-2 border-blue-500 text-blue-500 font-medium"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("Pending")}
-        >
-          Pending (05)
-        </button>
-        <button
-          className={`px-3 py-2 ${
-            activeTab === "Completed"
-              ? "border-b-2 border-blue-500 text-blue-500 font-medium"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("Completed")}
-        >
-          Completed (12)
-        </button>
-      </div>
+          <div className="flex">
+            <button
+              className={`py-3 px-2 ml-5 ${
+                activeTab === "Pending"
+                  ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold"
+                  : "text-gray-600"
+              } focus:outline-none text-[13px]`}
+              onClick={() => setActiveTab("Pending")}
+            >
+              Pending (05)
+            </button>
+            <button
+              className={`px-3 py-2 ${
+                activeTab === "Completed"
+                  ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold"
+                  : "text-gray-600"
+              } focus:outline-none text-[13px]`}
+              onClick={() => setActiveTab("Completed")}
+            >
+              Completed (12)
+            </button>
+          </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
-                Topic
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
-                Assignment ID
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
-                Course
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
-                Assigned Date
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
-                Due Date
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
-                Status
-              </th>
-              <th className="px-3 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.map((assignment,index) => (
-              <tr
-                key={assignment.assignmentId}
-                className={`border-b ${
-                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
+          <div className="overflow-x-auto">
+            <table className="table-auto w-full">
+              <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
+                <tr>
+                  <th className="px-6 py-3 text-center">
+                    Topic
+                  </th>
+                  <th className="px-6 py-3 text-center">
+                    Assignment ID
+                  </th>
+                  <th className="px-6 py-3 text-center">
+                    Course
+                  </th>
+                  <th className="px-6 py-3 text-center">
+                    Assigned Date
+                  </th>
+                  <th className="px-6 py-3 text-center">
+                    Due Date
+                  </th>
+                  <th className="px-6 py-3 text-center">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-center"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.map((assignment,index) => (
+                  <tr
+                    key={assignment.assignmentId}
+                    className="text-[12px] font-medium mt-2"
+                    style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
+                    <td className="px-3 py-2 text-center">{assignment.topic}</td>
+                    <td className="px-3 py-2 text-center">{assignment.assignmentId}</td>
+                    <td className="px-3 py-2 text-center">{assignment.course}</td>
+                    <td className="px-3 py-2 text-center">{assignment.assignedDate}</td>
+                    <td className="px-3 py-2 text-center">{assignment.dueDate}</td>
+                    <td className="px-3 py-2 text-center">
+                      <span
+                        className={`px-2 py-1 text-[10px] rounded-lg ${
+                          assignment.status === "Assigned"
+                            ? "bg-green-100 text-green-700 px-6 border border-green-700"
+                            : "bg-red-100 text-red-700 px-3 border border-red-700"
+                        }`}
+                      >
+                        {assignment.status}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-center relative">
+                      <button
+                        className="text-gray-800 hover:underline"
+                        onClick={() =>
+                          setOpenDropdownIndex(openDropdownIndex === index ? null : index)
+                        }
+                      >
+                        <BsThreeDots />
+
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {openDropdownIndex === index && (
+                        <div className="absolute right-10 -mt-[30px] bg-white border rounded-md shadow-lg z-10 w-40">
+                          <button
+                            className={`block w-full text-left px-4 py-2 text-[12px] ${
+                              assignment.status === "Assigned"
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "hover:bg-gray-100"
+                            }`}
+                            onClick={() => {
+                              if (assignment.status !== "Assigned") {
+                                setOpenDropdownIndex(null);
+                                setIsFormOpen(true);
+                              }
+                            }}
+                            disabled={assignment.status === "Assigned"}
+                          >
+                            Assign
+                          </button>
+                          <button
+                            className={`block w-full text-left px-4 py-2 text-[12px] ${
+                              assignment.status === "Assigned"
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "hover:bg-gray-100"
+                            }`}
+                            onClick={() => {
+                              if (assignment.status !== "Assigned") {
+                                setOpenDropdownIndex(null);
+                              }
+                            }}
+                            disabled={assignment.status === "Assigned"}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          {/* Pagination */}
+          <div className="flex justify-between items-center mt-3 px-4">
+            <span className="text-[10px] text-gray-600 mb-2">
+              Showing {indexOfFirstItem + 1}–{Math.min(indexOfLastItem, filteredAssignments.length)} of {filteredAssignments.length} items
+            </span>
+            <div className="flex space-x-2">
+              <button 
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`px-2 py-1 text-[10px] rounded ${
+                  currentPage === 1 
+                    ? 'text-gray-500 bg-gray-100' 
+                    : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
                 }`}
               >
-                <td className="px-3 py-2 text-xs">{assignment.topic}</td>
-                <td className="px-3 py-2 text-xs">{assignment.assignmentId}</td>
-                <td className="px-3 py-2 text-xs">{assignment.course}</td>
-                <td className="px-3 py-2 text-xs">{assignment.assignedDate}</td>
-                <td className="px-3 py-2 text-xs">{assignment.dueDate}</td>
-                <td className="px-3 py-2 text-xs">
-                  <span
-                    className={`px-2 py-1 text-xs rounded-full ${
-                      assignment.status === "Assigned"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {assignment.status}
-                  </span>
-                </td>
-                <td className="px-3 py-2 text-xs relative">
-                  <button
-                    className="text-blue-500 hover:underline"
-                    onClick={() =>
-                      setOpenDropdownIndex(openDropdownIndex === index ? null : index)
-                    }
-                  >
-                    <BsThreeDots />
-
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {openDropdownIndex === index && (
-                    <div className="absolute right-10 -mt-[30px] bg-white border rounded-md shadow-lg z-10 w-40">
-                      <button
-                        className={`block w-full text-left px-4 py-2 text-[12px] ${
-                          assignment.status === "Assigned"
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }`}
-                        onClick={() => {
-                          if (assignment.status !== "Assigned") {
-                            setOpenDropdownIndex(null);
-                            setIsFormOpen(true);
-                          }
-                        }}
-                        disabled={assignment.status === "Assigned"}
-                      >
-                        Assign
-                      </button>
-                      <button
-                        className={`block w-full text-left px-4 py-2 text-[12px] ${
-                          assignment.status === "Assigned"
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }`}
-                        onClick={() => {
-                          if (assignment.status !== "Assigned") {
-                            setOpenDropdownIndex(null);
-                          }
-                        }}
-                        disabled={assignment.status === "Assigned"}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex justify-between items-center mt-4">
-        <span className="text-xs text-gray-600">
-          Showing {indexOfFirstItem + 1}–{Math.min(indexOfLastItem, filteredAssignments.length)} of {filteredAssignments.length} items
-        </span>
-        <div className="flex space-x-2">
-          <button 
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`px-3 py-1 text-xs rounded ${
-              currentPage === 1 
-                ? 'text-gray-400 bg-gray-100' 
-                : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
-            }`}
-          >
-            Previous
-          </button>
-          
-          {[...Array(totalPages)].map((_, index) => (
-            <button
-              key={index + 1}
-              onClick={() => handlePageChange(index + 1)}
-              className={`px-3 py-1 text-xs rounded ${
-                currentPage === index + 1
-                  ? 'text-white bg-[#223857]'
-                  : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-          
-          <button 
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`px-3 py-1 text-xs rounded ${
-              currentPage === totalPages 
-                ? 'text-gray-400 bg-gray-100' 
-                : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
-            }`}
-          >
-            Next
-          </button>
+                Previous
+              </button>
+              
+              {[...Array(totalPages)].map((_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() => handlePageChange(index + 1)}
+                  className={`px-3 py-[1px] text-[9px] rounded ${
+                    currentPage === index + 1
+                      ? 'text-white bg-[#223857]'
+                      : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+              
+              <button 
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`px-2 py-1 text-[10px] rounded ${
+                  currentPage === totalPages 
+                    ? 'text-gray-400 bg-gray-100' 
+                    : 'text-gray-600 bg-gray-200 hover:bg-gray-300'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
 
       {/* Assign Form Modal */}
       {isFormOpen && (

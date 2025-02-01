@@ -34,7 +34,7 @@ class AssignList extends Component {
         <h2 className="text-2xl font-semibold text-gray-800 p-2 -ml-4">
           Current Status
         </h2>
-        <div className="flex justify-center gap-6 p-4">
+        <div className="flex justify-center gap-6 p-4 -ml-14">
           {cards.map((c) => (
             <div
               key={c.id}
