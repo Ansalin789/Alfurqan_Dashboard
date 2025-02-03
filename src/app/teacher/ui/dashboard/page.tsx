@@ -13,7 +13,7 @@ import ClassAnalyticsChart from '@/app/teacher/components/ClassAnalyticsChart';
 import EarningAnalytics from '../../components/EarningAnalytics';
 import TeachingActivity from '../../components/TeachingActivity';
 import StudentsCard from '../../components/Students';
-import UpcomingTask from '../../components/UpcomingTask';
+import UpcomingClasses from '../../components/UpcomingTask';
 
 
 // Register Chart.js components
@@ -85,8 +85,13 @@ export default function Academic() {
             <div className="col-span-4 pr-8 rounded-lg">
               <Calender />
             </div>
+<<<<<<< HEAD
             <div className="col-span-4 pr-8 rounded-lg mt-4">
               <UpcomingTask />
+=======
+            <div className="col-span-4 pr-8 -ml-24 rounded-lg">
+              <UpcomingClasses />
+>>>>>>> 3015535774ca1c58c524ae8b46dcd48893cb376a
             </div>
           </div>
         </div>
