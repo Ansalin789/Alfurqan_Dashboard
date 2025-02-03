@@ -28,6 +28,16 @@ const UpcomingClasses: React.FC = () => {
     },
     
   ]);
+  const getBorderColor = (color: string) => {
+    switch (color) {
+      case 'blue-500':
+        return 'border-blue-500';
+      case 'red-500':
+        return 'border-red-500';
+      default:
+        return 'border-green-500';
+    }
+  };
 
   return (
     <div className="bg-gray-100 p-4 rounded-lg shadow-lg">
@@ -40,15 +50,9 @@ const UpcomingClasses: React.FC = () => {
         ) : (
           classes.map((classItem) => (
             <div
-              key={classItem.id} // Use the unique ID as the key
-              className={`relative border-l-4 bg-white p-4 rounded-md shadow-md ${
-                classItem.color === 'blue-500'
-                  ? 'border-blue-500'
-                  : classItem.color === 'red-500'
-                  ? 'border-red-500'
-                  : 'border-green-500'
-              }`}
-            >
+            key={classItem.id} // Use the unique ID as the key
+            className={`relative border-l-4 bg-white p-4 rounded-md shadow-md ${getBorderColor(classItem.color)}`}
+          >
               <div className="flex justify-between items-center">
                 <p className="text-[12px] text-gray-600">{classItem.date}</p>
                 <p className="text-[12px] text-gray-600">{classItem.time}</p>

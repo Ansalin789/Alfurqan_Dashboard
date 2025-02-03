@@ -4,7 +4,7 @@ import axios from "axios";
 import { CircularProgress, Card, CardBody } from "@nextui-org/react";
 
 // Component
-export default function App({ studentId }: { studentId: string }) {
+export default function App() {
   const [data, setData] = useState({
     totalLevel: 0,
     totalAttendance: 0,
@@ -13,20 +13,23 @@ export default function App({ studentId }: { studentId: string }) {
   });
 
   // Fetch data with dynamic studentId using axios
-  const fetchData = async (studentId: string) => {
-    try {
-      const response = await axios.get('http://localhost:5001/dashboard/student/counts', {
-        params: { studentId },
-      });
-      setData(response.data); // Set the fetched data into the state
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
+  
   useEffect(() => {
-    fetchData(studentId); // Fetch data when component mounts, passing dynamic studentId
-  }, [studentId]);
+   
+    const fetchData = async () => {
+      try {
+        const studentId =localStorage.getItem('StudentPortalId');
+        const response = await axios.get('http://localhost:5001/dashboard/student/counts', {
+          params: { studentId },
+        });
+        setData(response.data); // Set the fetched data into the state
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData(); // Fetch data when component mounts, passing dynamic studentId
+  }, []);
 
   // Cards data with dynamic values
   const cards = [

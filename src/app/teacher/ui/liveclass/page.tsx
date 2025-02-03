@@ -206,12 +206,31 @@ function LiveClass() {
     console.log('Recording stopped');
     setIsRecording(false);
   };
+  useEffect(()=>{
+    const fetchtrail=async()=>{
+      const studentId =localStorage.getItem('StudentPortalId');
+       try{
+          const response =await fetch(`http://localhost:5001/evaluationlist?studentId=${studentId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          const data = await response.json();
+            console.log(data);
+       }catch(error){
+         console.log(error);
+       }
+    };
+    fetchtrail();
+  },[]);
   const [student, setStudent] = useState({
-    firstName: 'Samantha',
-    lastName: 'William',
-    city: 'Texas',
-    country: 'USA',
-    trialId: '#098367',
+    firstName: 'Raghul',
+    lastName: 'RM',
+    city: 'Coimbatore',
+    country: 'India',
+    trialId: '#098cgthtyjh55367',
     course: 'Arabic',
     classStatus: 'Joining',
     sessionDate: '2024-05-06',
