@@ -71,25 +71,34 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess,
       alert('Something went wrong while processing the payment.');
     }
   };
-  const handlePaymentClick = async () => {
-    try {
-      const auth =localStorage.getItem('StudentAuthToken');
-      const response = await fetch("http://localhost:5001/student/create-payment-intent", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${auth}`
-        },
-        body: JSON.stringify({ amount: amount12, currency: "usd" })
-      });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch payment data");
-      } 
-    } catch (error) {
-      console.error("Error fetching payment data:", error);
+  const handlePaymentClick = async () => {
+    const auth = localStorage.getItem('authToken');
+    let amountInCents = Math.round((amount12 ?? 0) * 100); // Ensure it's in cents
+  
+    // Ensure amount is at least the minimum allowed (e.g., 50 cents for USD)
+    if (amountInCents < 50) {
+      amountInCents = 50; // Set to the minimum charge amount
     }
+  
+    const response = await fetch("http://localhost:5001/student/create-payment-intent", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${auth}`,
+      },
+      body: JSON.stringify({ amount: amountInCents, currency: 'usd' }),
+    });
+  
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  
+    const data = await response.json();
+    console.log('Fetch response:', data);
   };
+  
+  
 
 
   useEffect(() => {
