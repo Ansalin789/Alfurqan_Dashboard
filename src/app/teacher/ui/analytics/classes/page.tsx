@@ -34,14 +34,14 @@ const Classes = () => {
         <h1 className="text-2xl font-semibold text-gray-800 p-2 mb-10">My Classes</h1>
         <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
           <div>
-            <div className="p-4 justify-between flex">
-              <h2 className="text-lg font-semibold text-[#1e293b] mb-3">My Classes</h2>
-              <div className="relative shadow-ld rounded-xl">
+            <div className="p-4 pt-6 justify-between flex">
+              <h2 className="text-lg pl-10 font-semibold text-[#1e293b] mb-3">صفي</h2>
+              <div className="relative">
                 <Search className="absolute left-3 top-4 -translate-y-1/2 text-gray-500 w-3 h-3" />
                 <input
                   type="text"
                   placeholder="Search"
-                  className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] shadow-lg rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#374557] w-56"
+                  className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] shadow-md rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#223857] w-56"
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>

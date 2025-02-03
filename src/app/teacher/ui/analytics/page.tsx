@@ -364,21 +364,21 @@ function Analytics() {
               })()}
 
               </h2>
-              <div className="items-center gap-3 -mt-16">
+              <div className="items-center gap-3 -mt-16 ml-10">
                 <button
-                  className="flex items-center gap-2 ml-36 shadow-lg bg-[#FAFAFA] px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 text-sm"
+                  className="flex items-center gap-2 ml-40 justify-end border-[1px] border-[#223857] shadow-lg bg-[#fff] px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 text-sm"
                   onClick={() => setIsFilterOpen(true)}
                 >
                   <Filter className="w-4 h-4" />
                   <span>Filter</span>
                 </button>
-                <div className="relative shadow-lg mt-4 rounded-xl p-1">
+                <div className="relative mt-8 p-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
                   <input
                     type="text"
                     placeholder="Search"
                     onChange={(e) => handleFilterChange('name', e.target.value)}
-                    className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] text-sm focus:outline-none focus:ring-2 rounded-xl focus:ring-[#1C3557] w-56"
+                    className="pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:ring-1 shadow-md rounded-lg focus:ring-[#223857] "
                   />
                 </div>
                 
