@@ -132,9 +132,11 @@ const Message = () => {
 
     // Function to load messages when a student is selected
     const loadMessages = async (teacherId: string) => {
+        console.log(teacherId);
         try {
-            const auth = localStorage.getItem('TeacherAuthToken');
+            const auth = localStorage.getItem('StudentAuthToken');
             const teacherIdToFilter = localStorage.getItem('StudentPortalId');
+            console.log(teacherIdToFilter);
             // Fetch messages from backend (Mock API or Database)
             const response = await axios.get(`http://localhost:5001/message/studentmessage`,{
                 params: {
@@ -161,7 +163,7 @@ const Message = () => {
         if (!selectedTeacher || !messageText.trim()) return;
     
         try {
-            const auth = localStorage.getItem('TeacherAuthToken');
+            const auth = localStorage.getItem('StudentAuthToken');
             const response = await fetch("http://localhost:5001/message", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" ,
