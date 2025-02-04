@@ -47,14 +47,13 @@ const Classes = () => {
   console.log(setIsPremiumUser);
   const fetchClasses = async () => {
     try {
-      const auth = localStorage.getItem('StudentAuthToken');
      const studentId='676d4ed5866b9b37ff1fdc8f';
       const response = await axios.get(
         "http://localhost:5001/classShedule/students",
         {
           headers: {
-            Authorization: `Bearer ${auth}`,
-         },params:{
+            Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6InZpZCIsInN1YiI6IjY3NmU3NjVmMjVkNDg5ZTBlNGJjNzc4MyIsImlhdCI6MTczNzc4NTI0MywiZXhwIjoxNzM3ODcxNjQzfQ.hy0jzbVvoD6tka9Z3OKu9DTRTK_L4s87McZTgnzaHYk"
+          },params:{
             studentId,
           }
         }

@@ -1,59 +1,65 @@
 import { FaUserAlt } from 'react-icons/fa';
 import { AiOutlineClockCircle } from 'react-icons/ai';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const NextClass = () => {
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [classData, setClassData] = useState<{
-    studentName: string;
-    classStartTime: string;
-    classStartDate: string;
-  } | null>(null);
+  const [classData, setClassData] = useState<ClassSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  interface ClassSchedule {
+    student: {
+      studentId: string;
+      studentFirstName: string;
+      studentLastName: string;
+      studentEmail: string;
+    };
+    teacher: {
+      teacherId: string;
+      teacherName: string;
+      teacherEmail: string;
+    };
+    _id: string;
+    classDay: string[];
+    package: string;
+    preferedTeacher: string;
+    totalHours: number;
+    startDate: string;
+    endDate: string;
+    startTime: string[];
+    endTime: string[];
+    scheduleStatus: string;
+    status: string;
+    createdBy: string;
+    createdDate: string;
+    lastUpdatedDate: string;
+    __v: number;
+  }
+
+  interface ClassScheduleResponse {
+    totalCount: number;
+    classSchedule: ClassSchedule[];
+  }
 
   useEffect(() => {
     const fetchNextEvaluationClass = async () => {
       try {
+        const teacherId = localStorage.getItem('TeacherPortalId');
         const auth = localStorage.getItem('TeacherAuthToken');
-        const response = await fetch('http://localhost:5001/evaluationlist', {
+        const response = await axios.get('http://localhost:5001/classShedule/teacher', {
           method: 'GET',
+          params: { teacherId:teacherId },
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth}`, // Corrected here
+            'Authorization': `Bearer ${auth}`,
           },
         });
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch data: ${response.statusText}`);
-        }
+     
 
-        const data = await response.json();
-
-        if (!data.evaluation || !Array.isArray(data.evaluation)) {
-          throw new Error('Invalid data format from API');
-        }
-
-        const upcomingClass = data.evaluation
-          .filter((item: any) => {
-            const classStartDate = new Date(item.classStartDate);
-            const now = new Date();
-            return classStartDate > now; // Filter for future classes
-          })
-          .sort((a: any, b: any) => {
-            return (
-              new Date(a.classStartDate).getTime() -
-              new Date(b.classStartDate).getTime()
-            );
-          })
-          .slice(0, 1) // Take only the first upcoming class
-          .map((item: any) => ({
-            studentName: `${item.student.studentFirstName} ${item.student.studentLastName}`,
-            classStartTime: item.classStartTime,
-            classStartDate: item.classStartDate, // Store class start date for countdown
-          }))[0]; // Get the first element from the sliced array
-
-        setClassData(upcomingClass || null);
+        setClassData(response.data.classSchedule);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -68,11 +74,14 @@ const NextClass = () => {
     fetchNextEvaluationClass();
   }, []);
 
+  // Find the next class (the one with the closest start date)
+  const sortedClassData = classData.toSorted((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  const nextClass = sortedClassData.length > 0 ? sortedClassData[0] : null;
   useEffect(() => {
-    if (classData?.classStartDate) {
+    if (nextClass) {
       const interval = setInterval(() => {
         const now = new Date();
-        const classStartDate = new Date(classData.classStartDate);
+        const classStartDate = new Date(nextClass.startDate);
         const remainingTime = classStartDate.getTime() - now.getTime();
 
         if (remainingTime <= 0) {
@@ -88,7 +97,7 @@ const NextClass = () => {
 
       return () => clearInterval(interval); // Cleanup on component unmount
     }
-  }, [classData]);
+  }, [nextClass]);
 
   const formatTime = (time: number) => (time < 10 ? `0${time}` : time);
 
@@ -135,7 +144,7 @@ const NextClass = () => {
     return <div className="text-center text-red-500">Error: {error}</div>;
   }
 
-  if (!classData) {
+  if (!nextClass) {
     return <div className="text-center text-gray-600">No upcoming class</div>;
   }
 
@@ -144,20 +153,20 @@ const NextClass = () => {
       <h3 className="text-[16px] font-medium pt-3 p-4 underline">Your Next Evaluation Class</h3>
 
       <div className="items-center p-1 px-8">
-        <h3 className="text-[18px] font-medium pt-3 ml-4">{formatDate(classData.classStartDate)}</h3>
+        <h3 className="text-[18px] font-medium pt-3 ml-4">{formatDate(nextClass.startDate)}</h3>
         <div className="flex items-center space-x-6 py-2">
           <div className="flex items-center space-x-2">
             <FaUserAlt className="w-[10px]" />
-            <p className="text-[13px]">{classData.studentName}</p>
+            <p className="text-[13px]">{`${nextClass.student.studentFirstName} ${nextClass.student.studentLastName}`}</p>
           </div>
           <div className="flex items-center space-x-2">
             <AiOutlineClockCircle className="w-[10px]" />
-            <p className="text-[13px]">{classData.classStartTime} 9:00 AM - 10:30 AM</p>
+            <p className="text-[13px]">{`${nextClass.startTime} - ${nextClass.endTime}`}</p>
           </div>
         </div>
-        {classData?.classStartDate && (
+        {nextClass?.startDate && (
           <p className="text-[13px] mt-2 text-gray-300 hidden">
-            Class Date: {formatDate(classData.classStartDate)}
+            Class Date: {formatDate(nextClass.startDate)}
           </p>
         )}
       </div>
@@ -165,7 +174,7 @@ const NextClass = () => {
       <div className="flex items-center space-x-2 p-6 rounded-lg">
         <div>
           <p className="text-white text-lg font-bold">Starts in</p>
-          <p className="text-white text-sm">Session - 12</p>
+          {/* <p className="text-white text-sm">Session </p> */}
         </div>
 
         <div className="relative flex items-center justify-center p-2">

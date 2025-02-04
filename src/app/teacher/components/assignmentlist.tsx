@@ -15,12 +15,6 @@ const AssignmentList = () => {
   const [quizData, setQuizData] = useState({
     assignmentName: '',
     question: '',
-    options: {
-      optionOne: '',
-      optionTwo: '',
-      optionThree: '',
-      optionFour: ''
-    } as { [key: string]: string },
     answers: [
       { id: 'a', text: '', isCorrect: false },
       { id: 'b', text: '', isCorrect: false },
@@ -59,12 +53,6 @@ const AssignmentList = () => {
     setQuizData({
       assignmentName: '',
       question: '',
-      options: {
-        optionOne: '',
-        optionTwo: '',
-        optionThree: '',
-        optionFour: ''
-      },
       answers: [
         { id: 'a', text: '', isCorrect: false },
         { id: 'b', text: '', isCorrect: false },
@@ -164,7 +152,7 @@ const AssignmentList = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredAssignments.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
@@ -181,7 +169,7 @@ formData.append("chooseType", questionType.choose.toString());
 formData.append("trueorfalseType", questionType.trueOrFalse.toString());
 formData.append("question", quizData.question);
 formData.append("hasOptions", (!showNoOptions.writing && !showNoOptions.reading && !showNoOptions.image).toString());
-formData.append("options", JSON.stringify(quizData.options));
+formData.append("options", JSON.stringify(quizData.answers));
 formData.append("status", "Assigned");
 formData.append("createdDate", new Date().toISOString());
 formData.append("createdBy", "System");
@@ -191,8 +179,7 @@ formData.append("level", "0");
 formData.append("courses", "");
 formData.append("assignedDate", assignedDate || new Date().toISOString());
 formData.append("dueDate", dueDate || new Date().toISOString());
-formData.append('answer', selectedAnswer ?? "");
-formData.append("answerValidation", "");
+
 if (selectedFile) {
   formData.append("uploadFile", selectedFile);
 }
@@ -279,26 +266,6 @@ if (selectedAudio) {
     if (file) {
       setImageAudio(file);
     }
-  };
-  const handleOptionChange = (optionKey: string, value: string) => {
-    setQuizData(prev => ({
-      ...prev,
-      options: {
-        ...prev.options,
-        [optionKey]: value,
-      },
-      answers: prev.answers.map(ans =>
-        ans.id === optionKey.charAt(optionKey.length - 1) ? { ...ans, text: value } : ans
-      ),
-    }));
-  };
-
-  // Function to handle checkbox change and toggle isCorrect for each answer
-  const handleAnswerChange = (optionKey: string) => {
-    const optionValue = quizData.options[optionKey];  // Get the value of the selected option
-    setSelectedAnswer(optionValue);  // Update the selected answer with the option's value
-
-    console.log("Selected Answer:", optionValue);  // Debugging: log the selected answer value
   };
 
   return (
@@ -664,27 +631,33 @@ if (selectedAudio) {
             </div>
 
             <div className="space-y-3">
-            {['optionOne', 'optionTwo', 'optionThree', 'optionFour'].map((optionKey, index) => (
-      <div key={optionKey} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
-        {/* Checkbox for answer */}
-        <input
-            type="checkbox"
-            checked={selectedAnswer === quizData.options[optionKey]}  // Check if this option value is selected
-            onChange={() => handleAnswerChange(optionKey)}
-            className="w-5 h-3"
-          />
-        {/* Input for the option */}
-        <input
-          type="text"
-          className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
-          placeholder={`Option ${index + 1}`}
-          value={quizData.options[optionKey]}
-          onChange={(e) => handleOptionChange(optionKey, e.target.value)}
-        />
-      </div>
-    ))}
-
-
+              {quizData.answers.map((answer, index) => (
+                <div key={answer.id} className="flex items-center space-x-2 text-[12px] w-1/2 justify-center ml-32">
+                  <input
+                    type="checkbox"
+                    checked={answer.isCorrect}
+                    onChange={() => setQuizData(prev => ({
+                      ...prev,
+                      answers: prev.answers.map(ans => 
+                        ans.id === answer.id ? { ...ans, isCorrect: !ans.isCorrect } : ans
+                      )
+                    }))}
+                    className="w-5 h-3"
+                  />
+                  <input
+                    type="text"
+                    className="flex-1 rounded-lg p-1 w-1/2 text-[14px] border border-[#808FA4] text-center"
+                    placeholder={`${answer.id}) Answer ${index + 1}`}
+                    value={answer.text}
+                    onChange={(e) => setQuizData(prev => ({
+                      ...prev,
+                      answers: prev.answers.map(ans => 
+                        ans.id === answer.id ? { ...ans, text: e.target.value } : ans
+                      )
+                    }))}
+                  />
+                </div>
+              ))}
             </div>
 
             <div className="flex justify-center space-x-3 mt-6">
