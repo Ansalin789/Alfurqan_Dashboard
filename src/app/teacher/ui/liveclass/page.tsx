@@ -1,30 +1,170 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Send,
   Settings2,
   Mic,
+  MicOff,
   Video,
-  MonitorStop,
-  PhoneOff,Disc,Timer, ChevronDown
+  VideoOff,
+  Monitor,
+  PhoneOff,
+  Timer,
+  ChevronDown
 } from 'lucide-react';
+import { JitsiMeeting } from '@jitsi/react-sdk';
 import BaseLayout from '@/components/BaseLayout';
+import axios from 'axios';
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
+
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+interface ClassData {
+  _id: string;
+  student: Student;
+  teacher: Teacher;
+  classDay: string[]; // Keep this as an array of strings
+  package: string;
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];  // Array of strings for startTime
+  endTime: string[];    // Array of strings for endTime
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+interface ApiResponse {
+  totalCount: number;
+  classSchedule: ClassData[];
+}
 
 function LiveClass() {
-  const [isVideoCallActive, setIsVideoCallActive] = useState(false);
-  const [isMuted, setIsMuted] = useState(false); // State to manage microphone mute
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  const localStreamRef = useRef<MediaStream | null>(null);
-  const remoteStreamRef = useRef<MediaStream | null>(null);
-  const [ratings, setRatings] = useState([0, 0, 0]);
-  const [feedback, setFeedback] = useState('');
-  const[showfeedback,SetShowFeedback]=useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const[isScreenSharing,setIsScreenSharing]=useState(false);
+  // const [roomName] = useState(`Tajweed-Class-${Math.random().toString(36).substr(2, 9)}`);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isVideoOn, setIsVideoOn] = useState(true);
+    const [isScreenSharing, setIsScreenSharing] = useState(false);
+    const [showFeedback, setShowFeedback] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
+    const [ratings, setRatings] = useState([0, 0, 0]);
+    const [feedback, setFeedback] = useState('');
+    const apiRef = useRef<any>(null);
+    const [classData, setClassData] = useState<ClassData | null>(null);
   const[isFormData,setIsFormData]=useState(true);
+  const filterUpcomingClass = (response: { totalCount: number, classSchedule: any[] }): ClassData | null => {
+    const classes = response.classSchedule;
+  
+    if (!Array.isArray(classes)) {
+      console.log('Expected an array, but received:', classes);
+      return null;
+    }
+  
+    // Find the next class
+    const nextClass = classes.find((cls) => {
+      const now = new Date();
+      const classStartDate = new Date(cls.startDate);
+      return classStartDate > now;
+    });
+  
+    return nextClass || null;  // Return the next class or null if not found
+  };
+  // Fetch class data
+  
+  useEffect(() => {
+    const fetchClassData = async () => {
+      try {
+        const teacherId = localStorage.getItem('TeacherPortalId');
+        const authToken = localStorage.getItem('TeacherAuthToken');
+        // Ensure studentId and authToken are valid
+        if (!teacherId || !authToken) {
+          console.log('Missing studentId or authToken');
+          return;
+        }
+  
+        const response = await axios.get<ApiResponse>(`http://localhost:5001/classShedule/teacher`, {
+          params: { teacherId },
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+        
+        console.log('API Response:', response.data);  // Log the response data
+  
+        const nextClass = filterUpcomingClass(response.data);
+        console.log('Filtered Next Class:', nextClass);  // Log the filtered data
+        setClassData(nextClass);
+  
+      } catch (err) {
+        console.log('Error loading class details:', err);
+      }
+    };
+  
+    fetchClassData();
+  }, []);
+  
+  useEffect(() => {
+    // Use optional chaining to check for `classData` and `endTime` in one step
+    if (!classData?.endTime?.length) return;
+  
+    const now = new Date();
+    
+    // Assuming endTime is an array of strings, we'll use the first value (classData.endTime[0]) for comparison
+    const endTime = new Date(classData.endTime[0]);
+    
+    const timeUntilEnd = endTime.getTime() - now.getTime();
+  
+    if (timeUntilEnd > 0) {
+      const timer = setTimeout(() => {
+        
+        setClassData(null);
+      }, timeUntilEnd);
+  
+      return () => clearTimeout(timer);
+    }
+  }, [classData]);
+  
+  
+  
+
+  const handleJitsiControl = (action: string) => {
+    if (!apiRef.current) return;
+
+    switch (action) {
+      case 'toggleAudio':
+        apiRef.current.executeCommand('toggleAudio');
+        setIsMuted(!isMuted);
+        break;
+      case 'toggleVideo':
+        apiRef.current.executeCommand('toggleVideo');
+        setIsVideoOn(!isVideoOn);
+        break;
+      case 'toggleShareScreen':
+        apiRef.current.executeCommand('toggleShareScreen');
+        setIsScreenSharing(!isScreenSharing);
+        break;
+    }
+  };
+
+  const handleEndCall = () => {
+    if (apiRef.current) {
+      apiRef.current.dispose();
+      setShowFeedback(true);
+    }
+  };
   function StarRating({
     value,
     onChange,
@@ -69,149 +209,38 @@ function LiveClass() {
     return () => {
       if (timeoutId) clearTimeout(timeoutId)
     }
-  }, [showPopup])
-
-  useEffect(() => {
-    if (isVideoCallActive) {
-      startVideoCall();
-    } else {
-      endVideoCall();
-    }
+  }, [showPopup]);
+  const handleSubmit = () => {
+    console.log({ ratings, feedback });
+    setShowPopup(true);
+    setTimeout(() => setShowPopup(false), 3000);
+  };
   
-    // Cleanup on unmount or when the call ends
-    return () => {
-      endVideoCall();
+  useEffect(()=>{
+    const fetchtrail=async()=>{
+      const studentId =localStorage.getItem('StudentPortalId');
+       try{
+          const response =await fetch(`http://localhost:5001/evaluationlist?studentId=${studentId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          const data = await response.json();
+            console.log(data);
+       }catch(error){
+         console.log(error);
+       }
     };
-  }, [isVideoCallActive]);
-  const handleSubmitrate = () => {
-    console.log({ ratings, feedback })
-    setShowPopup(true)
-  }
-
-  const startVideoCall = async () => {
-    try {
-      // Get local media stream (audio + video)
-      const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      localStreamRef.current = localStream;
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = localStream;
-      }
-
-      // Set up peer connection
-      const peerConnection = new RTCPeerConnection();
-      peerConnectionRef.current = peerConnection;
-
-      // Add local stream to peer connection
-      localStream.getTracks().forEach((track) => {
-        peerConnection.addTrack(track, localStream);
-      });
-
-      // Handle incoming stream (remote stream)
-      peerConnection.ontrack = (event) => {
-        if (event.streams[0]) {
-          remoteStreamRef.current = event.streams[0];
-          if (remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = event.streams[0];
-          }
-        }
-      };
-
-      // Create offer and set local description
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-
-      // Here you would send the offer to the remote peer and handle the signaling process
-      // This could involve using WebSockets, Firebase, or another signaling mechanism
-      // await sendOfferToRemotePeer(offer);
-
-    } catch (err) {
-      console.error('Error starting video call:', err);
-    }
-  };
-
-  const endVideoCall = () => {
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
-    }
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((track) => track.stop());
-      localStreamRef.current = null;
-    }
-    if (remoteStreamRef.current) {
-      remoteStreamRef.current.getTracks().forEach((track) => track.stop());
-      remoteStreamRef.current = null;
-    }
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = null;
-    }
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = null;
-    }
-  };
-
-  const toggleMute = () => {
-    if (localStreamRef.current) {
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMuted(!audioTrack.enabled);
-      }
-    }
-  };
-
-  const endCall = () => {
-    setIsVideoCallActive(false);
-    SetShowFeedback(true); 
-  };
-  const toggleScreenShare = async () => {
-    if (isScreenSharing) {
-      // Stop screen sharing
-      const tracks = localStreamRef.current?.getTracks();
-      tracks?.forEach((track) => {
-        if (track.kind === 'video') {
-          track.stop();
-        }
-      });
-      localStreamRef.current!.getVideoTracks()[0].enabled = true;
-            setIsScreenSharing(false);
-    } else {
-      try {
-        // Start screen sharing
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
-        });
-        const screenTrack = screenStream.getTracks()[0];
-        const localStream = localStreamRef.current;
-        if (localStream) {
-          localStream.getTracks().forEach((track) => track.stop());
-          localStream.addTrack(screenTrack);
-        }
-        localStreamRef.current = localStream;
-        setIsScreenSharing(true);
-      } catch (err) {
-        console.error('Error starting screen share:', err);
-      }
-    }
-  };
-  
-  const startRecording = () => {
-    // Logic to start recording
-    console.log('Recording started');
-    setIsRecording(true);
-  };
-  
-  const stopRecording = () => {
-    // Logic to stop recording
-    console.log('Recording stopped');
-    setIsRecording(false);
-  };
+    fetchtrail();
+  },[]);
   const [student, setStudent] = useState({
-    firstName: 'Samantha',
-    lastName: 'William',
-    city: 'Texas',
-    country: 'USA',
-    trialId: '#098367',
+    firstName: 'Raghul',
+    lastName: 'RM',
+    city: 'Coimbatore',
+    country: 'India',
+    trialId: '#098cgthtyjh55367',
     course: 'Arabic',
     classStatus: 'Joining',
     sessionDate: '2024-05-06',
@@ -224,10 +253,7 @@ function LiveClass() {
     setStudent(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', student);
-  };
+  
 
   const handleStartSession = () => {
     console.log('Starting session for student:', student);
@@ -469,7 +495,7 @@ function LiveClass() {
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-4xl font-bold text-[#1C3557]">My Class</h1>
             </div>
-            {showfeedback ? (
+            {showFeedback ? (
               <div className="flex items-center justify-center gap-10 mb-6">
             <div className="bg-white rounded-3xl shadow-lg w-full max-w-sm">
         <div className="relative ">
@@ -531,7 +557,7 @@ function LiveClass() {
         <button 
           className="w-full bg-[#1C3557] text-white py-3 px-6 rounded-xl font-semibold text-sm
                    hover:bg-primary/90 transition-colors"
-          onClick={handleSubmitrate}
+          onClick={handleSubmit}
         >
           Submit feedback
         </button>
@@ -539,94 +565,81 @@ function LiveClass() {
         </div>):(
             <div className="flex gap-6">
               {/* Left Column - Video */}
-              <div className="flex-1">
-                <div className="bg-white rounded-lg shadow-sm p-5">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h2 className="text-lg font-medium">Tajweed</h2>
-                      <p className="text-sm text-gray-500">Angelina Crispy</p>
-                    </div>
-                    <span className="text-sm text-gray-500">08/05/2024</span>
-                  </div>
-
-                  {/* Video Container */}
-                  <div className="bg-black aspect-video rounded-lg mb-4 relative">
-                    <div className="absolute top-3 left-3">
-                      <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs">Live</span>
-                    </div>
-
-                    {/* Local Video Stream */}
-                    <video ref={localVideoRef} autoPlay muted={isMuted} className="absolute top-0 left-0 w-full h-full object-cover">
-                               <track kind="captions" />
-                               </video>
-                    {/* Remote Video Stream */}
-                    <video ref={remoteVideoRef} autoPlay muted={isMuted} className="absolute top-0 left-0 w-full h-full object-cover">
-                       <track kind="captions" />
-                      </video>
-                  </div>
-                  {/* Controls */}
-                  <div className="flex justify-center items-center gap-4 ">
-                  <div className="flex gap-4 mb-2">
-  {/* Mute Button */}
-  <button
-    className={`p-2.5 rounded-full ${
-      isMuted ? 'bg-gray-200 hover:bg-gray-300' : 'bg-gray-100 hover:bg-gray-200'
-    }`}
-    onClick={toggleMute} // Toggle microphone mute/unmute
-  >
-    <Mic size={18} className={isMuted ? 'text-gray-500' : 'text-gray-700'} />
-  </button>
-
-  {/* Video Button */}
-  <button
-    className={`p-2.5 rounded-full ${
-      isVideoCallActive ? 'bg-green-200 hover:bg-green-300' : 'bg-gray-100 hover:bg-gray-200'
-    }`}
-    onClick={() => setIsVideoCallActive(!isVideoCallActive)}
-  >
-    <Video size={18} className={isVideoCallActive ? 'text-green-600' : 'text-gray-700'} />
-  </button>
-
-  {/* Screen Share Button */}
-  <button
-    className={`p-2.5 rounded-full ${
-      isScreenSharing ? 'bg-blue-200 hover:bg-blue-300' : 'bg-gray-100 hover:bg-gray-200'
-    }`}
-    onClick={toggleScreenShare}
-  >
-    <MonitorStop size={18} className={isScreenSharing ? 'text-blue-600' : 'text-gray-700'} />
-  </button>
-
-  {/* End Call Button */}
-  <button
-    className="p-2.5 rounded-full bg-red-100 hover:bg-red-200"
-    onClick={endCall} // End call functionality
-  >
-    <PhoneOff size={18} className="text-red-600" />
-  </button>
-
-  {/* Recording Button */}
-  <button
-    className={`p-2.5 rounded-full ${
-      isRecording ? 'bg-red-200 hover:bg-red-300' : 'bg-gray-100 hover:bg-gray-200'
-    }`}
-    onClick={() => {
-      if (isRecording) {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-      setIsRecording(!isRecording);
-    }}
-  >
-    <Disc size={18} className={isRecording ? 'text-red-600' : 'text-gray-700'} />
-  </button>
-</div>
-
-                    
-                  </div>
-                </div>
-              </div>
+                             <div className="flex-1 bg-white rounded-lg shadow-sm p-5">
+                               <h2 className="text-lg font-medium">{classData?.teacher.teacherName}</h2>
+                               <span className="text-sm text-gray-500">{new Date(classData?.startDate ?? '2022-01-01').toLocaleDateString()} - 
+                               {classData?.startTime[0]} to {classData?.endTime[0]}</span>
+                               
+                               <div className="mt-4 rounded-lg overflow-hidden">
+                                 <JitsiMeeting
+                                   roomName={classData?.classLink ?? ''}
+                                   configOverwrite={{
+                                     startWithAudioMuted: false,
+                                     startWithVideoMuted: false,
+                                     disableTileView: true,
+                                     toolbarButtons: [
+                                       'microphone',
+                                       'camera',
+                                       'closedcaptions',
+                                       'desktop',
+                                       'fullscreen',
+                                       'fodeviceselection',
+                                       'hangup',
+                                       'profile',
+                                       'chat',
+                                       'settings',
+                                       'raisehand',
+                                       'videoquality',
+                                       'filmstrip',
+                                       'shortcuts',
+                                       'tileview'
+                                     ]
+                                   }}
+                                   getIFrameRef={(iframeRef) => {
+                                     iframeRef.style.height = '500px';
+                                     iframeRef.style.borderRadius = '0.5rem';
+                                   }}
+                                   onApiReady={(apiObj) => {
+                                     apiRef.current = apiObj;
+                                   }}
+                                 />
+                               </div>
+             
+                               <div className="flex justify-center gap-4 mt-4">
+                                 <button 
+                                   className="p-3 bg-gray-100 rounded-full"
+                                   onClick={() => handleJitsiControl('toggleAudio')}
+                                 >
+                                   {isMuted ? (
+                                     <MicOff className="text-gray-500" size={20} />
+                                   ) : (
+                                     <Mic className="text-gray-700" size={20} />
+                                   )}
+                                 </button>
+                                 <button
+                                   className="p-3 bg-gray-100 rounded-full"
+                                   onClick={() => handleJitsiControl('toggleVideo')}
+                                 >
+                                   {isVideoOn ? (
+                                     <Video className="text-green-600" size={20} />
+                                   ) : (
+                                     <VideoOff className="text-gray-700" size={20} />
+                                   )}
+                                 </button>
+                                 <button
+                                   className="p-3 bg-gray-100 rounded-full"
+                                   onClick={() => handleJitsiControl('toggleShareScreen')}
+                                 >
+                                   <Monitor className="text-gray-700" size={20} />
+                                 </button>
+                                 <button
+                                   className="p-3 bg-red-100 rounded-full"
+                                   onClick={handleEndCall}
+                                 >
+                                   <PhoneOff className="text-red-600" size={20} />
+                                 </button>
+                               </div>
+                             </div>
 
               {/* Right Column - Course Content & Live Chat */}
               <div className="w-80">

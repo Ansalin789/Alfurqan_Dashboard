@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import BaseLayout2 from '@/components/BaseLayout2';
 import { BiSolidSkipNextCircle } from "react-icons/bi";
 import { IoPlaySkipBackCircle, IoMicCircleSharp, IoStopCircleSharp } from "react-icons/io5";
-import { FaStar, FaStarHalf , FaImages  } from "react-icons/fa";
+import { FaStar, FaImages } from "react-icons/fa";
+import axios from 'axios';
 
 type QuizData = {
   question: string;
@@ -16,30 +17,101 @@ type QuizData = {
   imageUrl?: string;
   audioUrl?: string;
   correctAnswer?: string;
-  words?: string[]; // For Word Matching
-  matches?: string[]; // For Word Matching
+  words?: string[];
+  matches?: string[];
 };
 
-const QuizPage = () => {
+interface Assignment {
+  _id: string;
+  assignmentName: string;
+  assignmentType: string;
+  assignedTeacher: string;
+  assignedDate: string; // ISO date string
+  dueDate: string; // ISO date string
+  createdBy: string;
+  createdDate: string; // ISO date string
+  updatedBy?: string;
+  updatedDate?: string; // ISO date string
+  studentId: string;
+  status: string; // e.g., "Assigned"
+  level: string;
+  question: string;
+  hasOptions: boolean;
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  options?: string[]; // Only if `hasOptions: true`
+  correctAnswer?: string; // Only if `hasOptions: true`
+  answer?: string;
+  answerValidation?: string;
+  audioFile?: string; // Base64 or URL
+  uploadFile?: string; // Base64 or URL (for images)
+  passage?: string;
+  words?: string[];
+  matches?: string[];
+  courses?: string;
+}
+
+const QuizPage = async () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const type = searchParams.get('type');
+  const assignmentId = searchParams.get('id');
   const [quizData, setQuizData] = useState<QuizData[]>([]);
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null); // Allow both string and null
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null); // Allow MediaRecorder or null
-  const audioChunks = useRef<Blob[]>([]); // Correct the type here
-  const [selectedFile, setSelectedFile] = useState<File | null>(null); // Allow both File and null
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunks = useRef<Blob[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [writtenAnswer, setWrittenAnswer] = useState('');
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [isQuizCompleted, setIsQuizCompleted] = useState(false);
+  const currentQuestion = quizData[currentQuestionIndex];
+  useEffect(() => {
+    const fetchAssignment = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5001/allAssignment`);
+        // Use find() instead of filter() to get single assignment
+        const assignmentData = response.data.assignments.find(
+          (assignment: Assignment) => assignment._id === assignmentId
+        );
+        
+        setAssignment(assignmentData || null); // Handle case when not found
+      } catch (error) {
+        console.error("Error fetching assignment:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (assignmentId) fetchAssignment();
+  }, [assignmentId]);
+  useEffect(() => {
+    if (!assignment) return;
 
-  const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-    }
-  };
+    // Properly map all assignment fields to quizData
+    const formattedQuizData: QuizData = {
+      question: assignment.question || "No question available",
+      options: assignment.options,
+      correctAnswer: assignment.correctAnswer ?? assignment.answer,
+      answer: assignment.answer,
+      audioUrl: assignment.audioFile 
+        ? `data:audio/mp3;base64,${assignment.audioFile}`
+        : undefined,
+      imageUrl: assignment.uploadFile
+        ? `data:image/jpeg;base64,${assignment.uploadFile}`
+        : undefined,
+      passage: assignment.passage,
+      words: assignment.words,
+      matches: assignment.matches
+    };
 
-const handleStartRecording = async () => {
+    setQuizData([formattedQuizData]);
+  }, [assignment]);
+  const handleStartRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -64,137 +136,125 @@ const handleStartRecording = async () => {
   };
 
   const handleStopRecording = () => {
-    if (mediaRecorderRef.current) { // Ensure it's not null
-      mediaRecorderRef.current.stop();
-    }
+    mediaRecorderRef.current?.stop();
     setIsRecording(false);
   };
-  
-
-
-
-  const mockQuizData: Record<string, QuizData[]> = {
-    Quiz: [
-      { question: 'What is the capital of France?', options: ['Paris', 'Rome', 'Berlin', 'Madrid'], answer: 'Paris' },
-      { question: 'What is 5 + 3?', options: ['5', '8', '10', '12'], answer: '8' },
-    ],
-    Writing: [
-      {
-        question: 'Listen to the audio and write what you hear.',
-        audioUrl: '/assets/audio/Ending.mp3',
-        placeholder: 'Type your answer here...',
-        correctAnswer: 'The quick brown fox jumps over the lazy dog',
-      },
-      {
-        question: 'Listen to the audio and write what you hear.',
-        audioUrl: '/assets/audio/Ending.mp3',
-        placeholder: 'Type your description here...',
-        correctAnswer: 'A beautiful sunset over the mountains',
-      },
-    ],
-    Reading: [
-      {
-        passage: 'Once upon a time, there was a brave knight...',
-        question: 'What was the knight’s defining trait?',
-        answer: 'Bravery',
-      },
-      {
-        passage: 'In a small village, there lived a clever fox...',
-        question: 'What made the fox special?',
-        answer: 'Cleverness',
-      },
-    ],
-    'Image Identification': [
-      { 
-        imageUrl: '/assets/images/cat.jpeg', 
-        question: 'Identify the animal', 
-        options: ['(أ) قطة', '(ب) كلب', '(ج) أرنب', '(د) حصان'], 
-        answer: '(أ) قطة' 
-      },
-      { 
-        imageUrl: '/assets/images/dog.jpeg', 
-        question: 'Identify the animal', 
-        options: ['(أ) قطة', '(ب) كلب', '(ج) أرنب', '(د) حصان'], 
-        answer: '(أ) قطة' 
-      },
-    ],
-    'Word Matching': [
-      {
-        question: 'Write this in English',
-        audioUrl: '/assets/audio/sample.mp3',
-        placeholder: 'Write your answer here...',
-        options: ['Man', 'I am', 'water', 'The', 'cow'],
-        correctAnswer: 'I am The Man',
-      },
-    ],
-  };
-
-  useEffect(() => {
-    if (type && mockQuizData[type]) {
-      setQuizData(mockQuizData[type]);
-    } else {
-      setQuizData([]); 
-    }
-    setIsLoading(false); 
-  }, [type]);
-
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [writtenAnswer, setWrittenAnswer] = useState('');
-  const [score, setScore] = useState(0);
-  const [isQuizCompleted, setIsQuizCompleted] = useState(false);
-
-  const currentQuestion = quizData[currentQuestionIndex];
-
   const handleOptionClick = (option: string) => {
     setSelectedOption(option);
   };
 
-  const handleNextClick = () => {
-    if (currentQuestion.options && selectedOption === currentQuestion.answer) {
+  const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) setSelectedFile(file);
+  };
+
+  const handleNextClick = async () => {
+    // Check if the selected option matches the correct answer
+    if (assignment?.assignmentType === 'Quiz' && selectedOption === assignment.answer) {
       setScore((prev) => prev + 1);
     }
-
-    if (type === 'Writing' && writtenAnswer) {
-      const writtenScore = calculateWritingScore(writtenAnswer, currentQuestion.correctAnswer ?? '');
-      setScore((prev) => prev + writtenScore); 
+  
+    // Add this block for writing questions
+    if (assignment?.assignmentType === 'Writing' && currentQuestion?.correctAnswer) {
+      const writingScore = calculateWritingScore(writtenAnswer, currentQuestion.correctAnswer);
+      setScore((prev) => prev + writingScore);
     }
-
+  
+    // Move to the next question or submit the quiz
     if (currentQuestionIndex < quizData.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
-      setSelectedOption(null);
-      setWrittenAnswer('');
     } else {
       setIsQuizCompleted(true);
     }
+    
+    // Reset state after the user has selected an option
+    
   };
-
+ 
   const handleBackClick = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1);
+      setCurrentQuestionIndex(prev => prev - 1);
       setSelectedOption(null);
       setWrittenAnswer('');
     }
   };
+const handleSubmitClick=async()=>{
+  let audioFileBuffer: ArrayBuffer | undefined; // Define these variables if they are missing
+let uploadFileBuffer: ArrayBuffer | undefined;
 
-  const handleSubmitClick = () => {
-    const assignmentId = searchParams.get('id');
-    const targetOrigin = "https://your-trusted-domain.com"; // Replace with the actual domain of the target
+if (assignment) {
+  const formData = new FormData();
   
-    if (assignmentId) {
-      window.opener?.postMessage({ id: assignmentId, action: 'complete' }, targetOrigin);
-    }
-    router.push('/student/ui/assignment');
+  const assignmentData = {
+    studentId: assignment.studentId ?? "",  // Using nullish coalescing for safer fallback
+    assignmentName: assignment.assignmentName ?? "",
+    assignedTeacher: assignment.assignedTeacher ?? "",
+    assignmentType: assignment.assignmentType ?? "",
+    chooseType: assignment.chooseType ?? false,
+    trueorfalseType: assignment.trueorfalseType ?? false,
+    question: assignment.question ?? "",
+    hasOptions: assignment.hasOptions ?? false,
+    options: JSON.stringify(assignment.options ?? []),
+    audioFile: audioFileBuffer ? Buffer.from(audioFileBuffer) : undefined,
+    uploadFile: uploadFileBuffer ? Buffer.from(uploadFileBuffer) : undefined,
+    status: "completed",
+    createdDate: assignment.createdDate ?? new Date(),
+    createdBy: assignment.createdBy ?? "",
+    updatedDate: assignment.updatedDate ?? new Date(),
+    updatedBy: "Student",
+    level: score,
+    courses: assignment.courses ?? "",
+    assignedDate: assignment.assignedDate ?? new Date(),
+    dueDate: assignment.dueDate ?? new Date(),
+    answer: assignment.answer ??  "",
+    answerValidation: selectedOption ?? "",
   };
-  
 
-  
+  // Make sure all the values are correct types before appending to FormData
+  Object.entries(assignmentData).forEach(([key, value]) => {
+    if (value instanceof Date) {
+      formData.append(key, value.toISOString());  // Convert Date to ISO string
+    } else if (typeof value === "boolean") {
+      formData.append(key, value.toString());  // Convert boolean to string
+    } else if (value !== undefined) {
+      formData.append(key, value as string);  // Ensure value is string
+    }
+  });
+
+  // Handle file uploads if they exist
+  if (audioFileBuffer) {
+    formData.append('audioFile', new Blob([audioFileBuffer]), 'audio.wav');
+  }
+
+  if (uploadFileBuffer) {
+    formData.append('uploadFile', new Blob([uploadFileBuffer]), 'file.png');
+  }
+
+  try {
+   const response= await axios.put(`http://localhost:5001/assignments/${assignmentId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+   
+    // Redirect after successful submission
+    router.push('/student/ui/assignment');
+    console.log(response);
+    resetState();
+  } catch (error) {
+    console.error('Submission failed:', error);
+  }
+}
+};
+
+  const resetState = () => {
+    setSelectedOption(null);
+    setWrittenAnswer('');
+    setSelectedFile(null);
+    setAudioUrl(null);
+  };
 
   const calculateStarRating = (score: number) => {
     if (score === 1)
-      return [<FaStar key="full-1" />, <FaStarHalf key="half-1" />];
-    if (score === 2)
-      return [<FaStar key="full-1" />, <FaStar key="full-2" />, <FaStar key="full-3" />];
+      return [<FaStar key="full-1" />, <FaStar key="full-2" />, <FaStar key="full-3"/>];
     return [
       <FaStar key="empty-1" className="text-gray-200" />,
       <FaStar key="empty-2" className="text-gray-200" />,
@@ -205,24 +265,17 @@ const handleStartRecording = async () => {
   };
 
   const calculateWritingScore = (writtenAnswer: string, correctAnswer: string) => {
-    const sanitizedWrittenAnswer = writtenAnswer.trim().toLowerCase();
-    const sanitizedCorrectAnswer = correctAnswer.trim().toLowerCase();
-
-    if (sanitizedWrittenAnswer === sanitizedCorrectAnswer) {
-      return 3;
-    }
-
-    const writtenWords = sanitizedWrittenAnswer.split(/\s+/);
-    const correctWords = sanitizedCorrectAnswer.split(/\s+/);
-
+    const sanitizedWritten = writtenAnswer.trim().toLowerCase();
+    const sanitizedCorrect = correctAnswer.trim().toLowerCase();
+    
+    if (sanitizedWritten === sanitizedCorrect) return 3;
+    
+    const writtenWords = sanitizedWritten.split(/\s+/);
+    const correctWords = sanitizedCorrect.split(/\s+/);
     const matchedWords = writtenWords.filter(word => correctWords.includes(word)).length;
     const accuracy = matchedWords / correctWords.length;
 
-    if (accuracy >= 0.5) {
-      return 1.5;
-    }
-
-    return 0;
+    return accuracy >= 0.5 ? 1.5 : 0;
   };
 
   const stars = calculateStarRating(score);
@@ -371,20 +424,20 @@ const handleStartRecording = async () => {
     // Default content for other question types
     return (
       <div className="text-center">
-        {currentQuestion.imageUrl && (
-          <img
-            src={currentQuestion.imageUrl}
-            alt={currentQuestion.question || 'Quiz question'}
-            className="rounded-lg w-44 max-w-xs mx-auto mb-4 h-32" // Adjusted image size
-          />
-        )}
-        <p className="text-lg font-semibold text-gray-800 mb-4"> {/* Reduced margin-bottom */}
-          {currentQuestion.question}
-        </p>
+        {currentQuestion?.imageUrl && (
+      <img
+        src={currentQuestion.imageUrl}
+        alt={currentQuestion?.question || 'Quiz question'}
+        className="rounded-lg w-44 max-w-xs mx-auto mb-4 h-32"
+      />
+    )}
+       <p className="text-lg font-semibold text-gray-800 mb-4">
+      {currentQuestion?.question || "No question available"}
+    </p>
 
-        {currentQuestion.options && (
+        {currentQuestion?.options && (
           <div className="space-y-4 grid"> {/* Reduced spacing between buttons */}
-            {currentQuestion.options.map((option) => (
+           {Object.values(currentQuestion.options).map((option: string, index: number) => (
               <button
                 key={option} // Use the option value as the key
                 onClick={() => handleOptionClick(option)}

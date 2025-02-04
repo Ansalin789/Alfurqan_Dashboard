@@ -9,6 +9,7 @@ const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1
 
 type StripePaymentFormProps = {
   onPaymentSuccess: (token: any) => void;
+  amount12:number;
 };
 
 interface Student {
@@ -36,7 +37,7 @@ interface InvoiceResponse {
   invoice: Invoice[];
 }
 
-const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }) => {
+const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess,amount12 }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [invoiceData, setInvoiceData] = useState<Invoice[]>([]); // Initialize with an empty array
@@ -71,6 +72,35 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
     }
   };
 
+  const handlePaymentClick = async () => {
+    const auth = localStorage.getItem('authToken');
+    let amountInCents = Math.round((amount12 ?? 0) * 100); // Ensure it's in cents
+  
+    // Ensure amount is at least the minimum allowed (e.g., 50 cents for USD)
+    if (amountInCents < 50) {
+      amountInCents = 50; // Set to the minimum charge amount
+    }
+  
+    const response = await fetch("http://localhost:5001/student/create-payment-intent", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${auth}`,
+      },
+      body: JSON.stringify({ amount: amountInCents, currency: 'usd' }),
+    });
+  
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  
+    const data = await response.json();
+    console.log('Fetch response:', data);
+  };
+  
+  
+
+
   useEffect(() => {
     const fetchInvoiceData = async () => {
       const response = await fetch('http://localhost:5001/studentinvoice');
@@ -88,6 +118,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
       </div>
       <button
         type="submit"
+        onClick={handlePaymentClick}
         disabled={!stripe}
         className="bg-blue-600 text-white px-4 py-2 rounded-lg"
       >
@@ -100,8 +131,8 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess 
 const Invoice = () => {
   const [showModal, setShowModal] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [invoiceData, setInvoiceData] = useState<Invoice[]>([]); // Ensure invoiceData is correctly declared
-
+  const [invoiceData, setInvoiceData] = useState<Invoice[]>([]); 
+  const [amountset, setAmountSet] = useState<number | undefined>(undefined);
   const handlePaymentSuccess = async (token: any) => {
     console.log('Payment successful! Token:', token);
     alert('Payment was successful!');
@@ -133,11 +164,18 @@ const Invoice = () => {
     const fetchInvoiceData = async () => {
       const response = await fetch('http://localhost:5001/studentinvoice');
       const data: InvoiceResponse = await response.json();
-      setInvoiceData(data.invoice); // Set invoiceData after fetching
+      setInvoiceData(data.invoice);
+      if (data.invoice && data.invoice.length > 0) {
+        setAmountSet(data.invoice[2].amount);  // Set amount from the first invoice
+      }
+       // Set invoiceData after fetching
     };
 
     fetchInvoiceData();
   }, []);
+  const handleshow=()=>{
+  setShowModal(true);
+  };
 
   return (
     <BaseLayout2>
@@ -221,16 +259,18 @@ const Invoice = () => {
               </p>
 
             </div>
+
             <div className='flex mt-2'>
             {!isGeneratingPDF && (
                 <button
-                  onClick={() => setShowModal(true)}
-                  className="bg-[#223857] text-white py-1 rounded-2xl px-3 text-xs ml-[850px] hover:bg-blue-600 transform hover:-translate-y-1 transition duration-300"
-                >
-                  Pay Online
-                </button>
+               onClick={handleshow}
+                className="bg-[#223857] text-white py-1 rounded-2xl px-3 text-xs ml-[850px] hover:bg-blue-600 transform hover:-translate-y-1 transition duration-300"
+              >
+                Pay Online
+              </button>
               )}
              </div>
+
             <div className="mb-4">
               <h3 className="text-xs font-bold mb-1">Payment Instructions:</h3>
               <p className="text-[11px]"><strong>AL FURQAN ACADEMY</strong></p>
@@ -296,7 +336,7 @@ const Invoice = () => {
               <div className="bg-white p-4 rounded-lg shadow-lg w-96">
                 <h2 className="text-lg font-bold mb-4">Complete Your Payment</h2>
                 <Elements stripe={stripePromise}>
-                  <StripePaymentForm onPaymentSuccess={handlePaymentSuccess} />
+                  <StripePaymentForm onPaymentSuccess={handlePaymentSuccess} amount12={amountset ?? 0} />
                 </Elements>
                 <button
                   onClick={() => setShowModal(false)}

@@ -53,7 +53,8 @@ const Classes = () => {
       try {
         const auth = localStorage.getItem("TeacherAuthToken");
         const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
-
+         
+        console.log(auth);
         if (!teacherIdToFilter) {
           console.error("No teacher ID found in localStorage.");
           return;
