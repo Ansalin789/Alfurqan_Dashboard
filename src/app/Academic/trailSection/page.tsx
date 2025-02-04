@@ -1,5 +1,4 @@
-
-"use client"
+"use client";
 
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
@@ -46,6 +45,7 @@ interface ApiResponse {
 // Define the transformed user structure
 interface TransformedUser {
   _id: string;
+  users:string;
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
@@ -136,134 +136,219 @@ const FilterModal = ({
 }: { 
   isOpen: boolean;  
   onClose: () => void; 
-  onApplyFilters: (filters: { country: string; course: string; teacher: string; status: string; }) => void;
-  users: User[];
+  onApplyFilters: (filters: { 
+    trailId: string; 
+    studentName: string; 
+    mobile: string; 
+    country: string; 
+    course: string; 
+    preferredTeacher: string; 
+    assignedTeacher: string; 
+    time: string; 
+    classStatus: string; 
+    paymentStatus: string; 
+    studentStatus: string; 
+  }) => void;
+  users: TransformedUser[];
 }) => {
   const [filters, setFilters] = useState({
+    trailId: '',
+    studentName: '',
+    mobile: '',
     country: '',
     course: '',
-    teacher: '',
-    status: ''
+    preferredTeacher: '',
+    assignedTeacher: '',
+    time: '',
+    classStatus: '',
+    paymentStatus: '',
+    studentStatus: ''
   });
 
-    // Get unique values for each filter
-    const uniqueCountries = Array.from(new Set(users.map(user => user.country)));
-    const uniqueCourses = Array.from(new Set(users.map(user => user.course)));
-    const uniqueTeachers = Array.from(new Set(users.map(user => user.preferredTeacher)));
+  // Get unique values for each filter
+  const uniqueCountries = Array.from(new Set(users.map(user => user.country)));
+  const uniqueCourses = Array.from(new Set(users.map(user => user.course)));
+  const uniqueTeachers = Array.from(new Set(users.map(user => user.preferredTeacher)));
   
-    const handleApply = () => {
-      onApplyFilters(filters);
-      onClose();
-    };
+  const handleApply = () => {
+    onApplyFilters(filters);
+    onClose();
+  };
   
-    const handleReset = () => {
-      setFilters({
-        country: '',
-        course: '',
-        teacher: '',
-        status: ''
-      });
-    };
+  const handleReset = () => {
+    setFilters({
+      trailId: '',
+      studentName: '',
+      mobile: '',
+      country: '',
+      course: '',
+      preferredTeacher: '',
+      assignedTeacher: '',
+      time: '',
+      classStatus: '',
+      paymentStatus: '',
+      studentStatus: ''
+    });
+  };
 
-    return (
-      <Modal
-        isOpen={isOpen}
-        onRequestClose={onClose}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-lg w-[500px]"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Filter Options</h2>
-          <button 
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+  return (
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onClose}
+      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-lg w-[500px]"
+      overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+    >
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-[18px] font-semibold">Filter Options</h2>
+        <button 
+          onClick={onClose}
+          className="text-[#223857] hover:text-gray-700 font-semibold text-[20px]"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-5">
+        {/* Add input fields for each filter */}
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Trail ID</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.trailId}
+            onChange={(e) => setFilters({...filters, trailId: e.target.value})}
+          />
+        </div>
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Student Name</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.studentName}
+            onChange={(e) => setFilters({...filters, studentName: e.target.value})}
+          />
+        </div>
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Mobile</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.mobile}
+            onChange={(e) => setFilters({...filters, mobile: e.target.value})}
+          />
+        </div>
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Country</label>
+          <select
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.country}
+            onChange={(e) => setFilters({...filters, country: e.target.value})}
           >
-            ×
+            <option value="">All Countries</option>
+            {uniqueCountries.map((country) => (
+              <option key={country} value={country}>{country}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Course</label>
+          <select
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.course}
+            onChange={(e) => setFilters({...filters, course: e.target.value})}
+          >
+            <option value="">All Courses</option>
+            {uniqueCourses.map((course) => (
+              <option key={course} value={course}>{course}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Preferred Teacher</label>
+          <select
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.preferredTeacher}
+            onChange={(e) => setFilters({...filters, preferredTeacher: e.target.value})}
+          >
+            <option value="">All Teachers</option>
+            {uniqueTeachers.map((teacher) => (
+              <option key={teacher} value={teacher}>{teacher}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Assigned Teacher</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.assignedTeacher}
+            onChange={(e) => setFilters({...filters, assignedTeacher: e.target.value})}
+          />
+        </div>
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Time</label>
+          <input
+            type="text"
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.time}
+            onChange={(e) => setFilters({...filters, time: e.target.value})}
+          />
+        </div>
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Class Status</label>
+          <select
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.classStatus}
+            onChange={(e) => setFilters({...filters, classStatus: e.target.value})}
+          >
+            <option value="">All Class Statuses</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="PENDING">Pending</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Payment Status</label>
+          <select
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.paymentStatus}
+            onChange={(e) => setFilters({...filters, paymentStatus: e.target.value})}
+          >
+            <option value="">All Payment Statuses</option>
+            <option value="PAID">Paid</option>
+            <option value="PENDING">Pending</option>
+            <option value="FAILED">Failed</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[14px] font-medium text-gray-700 mb-1">Student Status</label>
+          <select
+            className="w-full p-2 border rounded-lg text-[12px]"
+            value={filters.studentStatus}
+            onChange={(e) => setFilters({...filters, studentStatus: e.target.value})}
+          >
+            <option value="">All Student Statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </div>
+        <div className="flex justify-end space-x-4 mt-20">
+          <button
+            onClick={handleReset}
+            className="px-4 py-[2px] border rounded-lg hover:bg-gray-50 text-[13px] font-medium shadow bg-[#fff]"
+          >
+            Reset
+          </button>
+          <button
+            onClick={handleApply}
+            className="px-4 py-[2px] bg-gray-800 text-white rounded-lg shadow hover:bg-gray-900 text-[13px] font-medium"
+          >
+            Apply
           </button>
         </div>
-  
-        <div className="space-y-4">
-          <div>
-            <label htmlFor='ayvayv' className="block text-sm font-medium text-gray-700 mb-1">
-              Country
-            </label>
-            <select
-              className="w-full p-2 border rounded-lg"
-              value={filters.country}
-              onChange={(e) => setFilters({...filters, country: e.target.value})}
-            >
-              <option value="">All Countries</option>
-              {uniqueCountries.map((country) => (
-                <option key={country} value={country}>{country}</option>
-              ))}
-            </select>
-          </div>
-  
-          <div>
-            <label htmlFor='ciuviuva' className="block text-sm font-medium text-gray-700 mb-1">
-              Course
-            </label>
-            <select
-              className="w-full p-2 border rounded-lg"
-              value={filters.course}
-              onChange={(e) => setFilters({...filters, course: e.target.value})}
-            >
-              <option value="">All Courses</option>
-              {uniqueCourses.map((course) => (
-                <option key={course} value={course}>{course}</option>
-              ))}
-            </select>
-          </div>
-  
-          <div>
-            <label htmlFor='ivbiucv' className="block text-sm font-medium text-gray-700 mb-1">
-              Teacher
-            </label>
-            <select
-              className="w-full p-2 border rounded-lg"
-              value={filters.teacher}
-              onChange={(e) => setFilters({...filters, teacher: e.target.value})}
-            >
-              <option value="">All Teachers</option>
-              {uniqueTeachers.map((teacher) => (
-                <option key={teacher} value={teacher}>{teacher}</option>
-              ))}
-            </select>
-          </div>
-  
-          <div>
-            <label htmlFor='daiuiauv' className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select
-              className="w-full p-2 border rounded-lg"
-              value={filters.status}
-              onChange={(e) => setFilters({...filters, status: e.target.value})}
-            >
-              <option value="">All Statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="COMPLETED">Completed</option>
-            </select>
-          </div>
-  
-          <div className="flex justify-end space-x-4 mt-6">
-            <button
-              onClick={handleReset}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50"
-            >
-              Reset
-            </button>
-            <button
-              onClick={handleApply}
-              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-blue-700"
-            >
-              Apply Filters
-            </button>
-          </div>
-        </div>
-      </Modal>
-    );
-  };
+      </div>
+    </Modal>
+  );
+};
 
 
 
@@ -286,28 +371,28 @@ const TrailSection = () => {
   
 
    
-   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const allData = await getAllUsers();
-      if (allData.success && allData.data) {
-        setUsers(allData.data); // Cast TransformedUser[] to User[]
-        setFilteredUsers(allData.data); // Initialize filtered users
-      } else {
-        setErrorMessage(allData.message ?? 'Failed to fetch users');
-      }
-    } catch (error) {
-      setErrorMessage('An unexpected error occurred');
-      console.error('An unexpected error occurred', error);
-    }
-  };
+  // useEffect(() => {
+  // const fetchData = async () => {
+  //     try {
+  //       const allData = await getAllUsers();
+  //       if (allData.success && allData.data) {
+  //         setUsers(allData.data); // Cast TransformedUser[] to User[]
+  //         setFilteredUsers(allData.data); // Initialize filtered users
+  //       } else {
+  //         setErrorMessage(allData.message ?? 'Failed to fetch users');
+  //       }
+  //     } catch (error) {
+  //       setErrorMessage('An unexpected error occurred');
+  //       console.error('An unexpected error occurred', error);
+  //     }
+  //   };
 
-  fetchData();
-}, []);
+  //   fetchData();
+  // }, []);
 
-useEffect(() => {
-  Modal.setAppElement('body');
-}, []);
+  // useEffect(() => {
+  //   Modal.setAppElement('body');
+  // }, []);
 
   
    const [options, setOptions] = useState({
@@ -667,6 +752,26 @@ const handleClick = async (id:string) => {
     );
   };
 
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  const handleApplyFilters = (filters: {
+    trailId: string; 
+    studentName: string; 
+    mobile: string; 
+    country: string; 
+    course: string; 
+    preferredTeacher: string; 
+    assignedTeacher: string; 
+    time: string; 
+    classStatus: string; 
+    paymentStatus: string; 
+    studentStatus: string; 
+  }) => {
+    // Implement filtering logic here based on the filters received
+    console.log('Applied Filters:', filters);
+    // Example: setFilteredUsers(filteredUsers.filter(user => user.trialId.includes(filters.trialId)));
+  };
+
   if (errorMessage) {
     return (
       <BaseLayout1>
@@ -677,17 +782,17 @@ const handleClick = async (id:string) => {
 
   return (
     <BaseLayout1>
-      <div className={`min-h-screen p-4 bg-[#EDEDED]`}>
+      <div className={`min-h-screen p-4 bg-[#EDEDED] mx-auto`}>
         <div className="flex justify-between items-center">
             <div className='flex items-center space-x-2'>
-              <h2 className="text-[20px] font-semibold">Scheduled Trail Session</h2>
+              <h2 className="text-[18px] font-semibold p-2">Scheduled Trail Session</h2>
               <button className="bg-gray-800 text-white p-[4px] rounded-full shadow-2xl" onClick={handleSyncClick}>
                 <FaSyncAlt />
               </button>
             </div>
           </div>
         <div className={`p-6 rounded-lg bg-[#EDEDED]`}>
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-4">
             <div className="flex flex-1 items-center justify-between">
               <div className='flex'>
                 <input
@@ -696,8 +801,8 @@ const handleClick = async (id:string) => {
                   className={`border rounded-lg px-2 text-[13px] mr-4 shadow`}
                 />
                 <button 
-                  // onClick={() => setIsFilterModalOpen(true)}
-                  className="flex items-center bg-gray-200 p-2 rounded-lg text-[12px] shadow"
+                  onClick={() => setIsFilterModalOpen(true)}
+                  className="flex items-center bg-gray-200 p-2 rounded-lg text-[12px] shadow font-medium"
                 >
                   <FaFilter className="mr-2" /> Filter
                 </button>
@@ -705,11 +810,11 @@ const handleClick = async (id:string) => {
               <div className='flex'>
                 <button 
                   onClick={() => openModal(null)}
-                  className={`border text-[14px] p-2 rounded-lg shadow flex bg-[#223857] text-[#fff] items-center mx-4`}
+                  className={`text-[12px] p-2 rounded-lg shadow flex bg-[#223857] text-[#fff] items-center mx-4`}
                 >
                   <FaPlus className="mr-2" /> Add new
                 </button>
-                <select className={`border rounded-lg p-2 shadow text-[14px]`}>
+                <select className={`border rounded-lg p-2 shadow text-[12px]`}>
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
                   <option>Duration: Last year</option>
@@ -717,96 +822,98 @@ const handleClick = async (id:string) => {
               </div>
             </div>
           </div>
-          <table className={`min-w-full rounded-lg shadow bg-white`} style={{ width: '100%', tableLayout: 'fixed' }}>
-            <thead>
-              <tr>
-                <th className="p-3 text-[12px] text-center"style={{ width: '26%' }}>Trail ID</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '22%' }}>Student Name</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '15%' }}>Mobile</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '12%' }}>Country</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '13%' }}>Course</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '10%' }}>Preferred Teacher</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '18%' }}>Assigned Teacher</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '14%' }}>Time</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '25%' }}>Class Status</th>
-                <th className="p-3 text-[12px] text-center"style={{ width:'15%'}}>payment Status</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '13%' }}>Student Status</th>
-                <th className="p-3 text-[12px] text-center"style={{ width: '10%' }}>Action</th>
-                {/* <th
-                    className="shadow-md p-2 text-left font-medium text-gray-700"
-                >
-                </th> */}
-              </tr>
-            </thead>
-            <tbody>
-              {currentItems.length > 0 ? (
-                currentItems.map((item) => (
-                  <tr key={item._id} className={`border-t`}>
-                    <td className="p-2 px-6 text-[11px] text-center">{item._id}</td>
-                    <td className="p-2 text-[11px] text-center">{item.studentFirstName} {item.studentLastName}</td>
-                    <td className="p-2 text-[11px] text-center">{item.number}</td>
-                    <td className="p-2 text-[11px] text-center">{item.country}</td>
-                    <td className="p-2 text-[11px] text-center">{item.course}</td>
-                    <td className="p-2 text-[11px] text-center">{item.preferredTeacher}</td>
-                    <td className="p-2 text-[11px] text-center">{item.assignedTeacher}</td>
-                    <td className="p-2 text-[11px] text-center">{item.time}</td>
-                    <td className="p-2 text-[11px] text-center">
-                      <span className={`px-2 text-[9px] text-center py-1 rounded-full ${
-                        item.classStatus === 'COMPLETED' 
-                          ? 'bg-yellow-100 text-yellow-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {item.classStatus ?? 'COMPLETED'}
-                      </span>
-                        
-          <span>/</span>
-                      <span className={`px-2 text-[9px] text-center py-1 rounded-full ${
-                        item.trialClassStatus === 'COMPLETED' 
-                          ? 'bg-yellow-100 text-yellow-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {item.trialClassStatus ?? 'COMPLETED'}
-                      </span>
+          <div className="rounded-lg shadow bg-white overflow-x-scroll scrollbar-none w-full">
+            <table className={`rounded-lg shadow bg-white`} style={{ width: '100%', tableLayout: 'fixed' }}>
+              <thead>
+                <tr>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '40%' }}>Trail ID</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '40%' }}>Student Name</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '20%' }}>Mobile</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '20%' }}>Country</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '20%' }}>Course</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '40%' }}>Preferred Teacher</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '40%' }}>Assigned Teacher</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '25%' }}>Time</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '25%' }}>Class Status</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width:'30%'}}>payment Status</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '30%' }}>Student Status</th>
+                  <th className="p-3 text-[12px] text-center whitespace-nowrap"style={{ width: '10%' }}>Action</th>
+                  {/* <th
+                      className="shadow-md p-2 text-left font-medium text-gray-700"
+                  >
+                  </th> */}
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.length > 0 ? (
+                  currentItems.map((item) => (
+                    <tr key={item._id} className={`border-t`}>
+                      <td className="p-2 px-6 text-[11px] text-center">{item._id}</td>
+                      <td className="p-2 text-[11px] text-center">{item.studentFirstName} {item.studentLastName}</td>
+                      <td className="p-2 text-[11px] text-center">{item.number}</td>
+                      <td className="p-2 text-[11px] text-center">{item.country}</td>
+                      <td className="p-2 text-[11px] text-center">{item.course}</td>
+                      <td className="p-2 text-[11px] text-center">{item.preferredTeacher}</td>
+                      <td className="p-2 text-[11px] text-center">{item.assignedTeacher}</td>
+                      <td className="p-2 text-[11px] text-center">{item.time}</td>
+                      <td className="p-2 text-[11px] text-center">
+                        <span className={`px-2 text-[9px] text-center py-1 rounded-full ${
+                          item.classStatus === 'COMPLETED' 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {item.classStatus ?? 'COMPLETED'}
+                        </span>
+                          
+            <span>/</span>
+                        <span className={`px-2 text-[9px] text-center py-1 rounded-full ${
+                          item.trialClassStatus === 'COMPLETED' 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {item.trialClassStatus ?? 'COMPLETED'}
+                        </span>
 
-                    </td>
-                    <td className="p-2 text-[11px] text-center">
-                      <span className={`px-2 text-[11px] text-center py-1 rounded-full ${
-                        item.paymentStatus === 'PAID' 
-                          ? 'bg-yellow-100 text-yellow-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {item.paymentStatus ?? 'PAID'}
-                      </span>
-                    </td>
-                    <td className="p-2 text-[11px] text-center">
-                      <span className={`px-2 text-[13px] text-center py-1 rounded-full ${
-                        item.status === 'Active' 
-                          ? 'bg-yellow-100 text-yellow-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {item.status ?? 'Active'}
-                      </span>
-                    </td>
-                    <td className="p-2 px-8">
-                    <button
-                        onClick={() => handleClick(item._id.toString())} // Convert number to string
-                        className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
-                      >
-                        <FaEdit size={10} />
-                      </button>
+                      </td>
+                      <td className="p-2 text-[11px] text-center">
+                        <span className={`px-2 text-[11px] text-center py-1 rounded-full ${
+                          item.paymentStatus === 'PAID' 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {item.paymentStatus ?? 'PAID'}
+                        </span>
+                      </td>
+                      <td className="p-2 text-[11px] text-center">
+                        <span className={`px-2 text-[13px] text-center py-1 rounded-full ${
+                          item.status === 'Active' 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {item.status ?? 'Active'}
+                        </span>
+                      </td>
+                      <td className="p-2 px-8">
+                      <button
+                          onClick={() => handleClick(item._id.toString())} // Convert number to string
+                          className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
+                        >
+                          <FaEdit size={10} />
+                        </button>
 
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={10} className="p-4 text-center">
+                      No data available
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={10} className="p-4 text-center">
-                    No data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
           <Pagination />
         </div>
       </div>
@@ -829,11 +936,12 @@ const handleClick = async (id:string) => {
           closeModal();
         }}
       />
-      {/* <FilterModal
+      <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         onApplyFilters={handleApplyFilters}
-      /> */}
+        users={users}
+      />
 
 {showModal && (
   

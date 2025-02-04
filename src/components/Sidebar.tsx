@@ -53,8 +53,8 @@ export default function Sidebar() {
     return (
         <div className="sidebar__wrapper h-[100vh] bg-[#223857]">
             <aside className='sidebar'>
-                <div className='sidebar__top'>
-                    <Image src="/assets/images/whitelogo.png" width={130} height={130} className='bg-cover bg-center' alt='logo'/>
+                <div className='sidebar__top shadow-lg'>
+                    <Image src="/assets/images/whitelogo.png" width={150} height={150} className='bg-cover bg-center' alt='logo'/>
                 </div>
                 <ul className="sidebar__list">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (

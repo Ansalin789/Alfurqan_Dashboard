@@ -240,10 +240,10 @@ gardianLanguage: '',
       onRequestClose={onRequestClose}
       className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50"
     >
-      <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl p-8 w-[800px] max-h-[90vh] overflow-y-auto border border-gray-100">
-        <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+      <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl p-6 w-[600px] max-h-[100vh] border border-gray-100">
+        <div className="flex justify-between items-center mb-4 pb-2 border-gray-100">
           <div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-[#293552] to-[#1e273c] text-transparent bg-clip-text">
+            <h2 className="text-[18px] font-bold bg-gradient-to-r from-[#415075] via-[#1e273c] to-[#1e273c] text-transparent bg-clip-text">
               {isEditMode ? 'Edit Student' : 'Add Trail Student'}
             </h2>
           </div>
@@ -253,15 +253,15 @@ gardianLanguage: '',
               onClick={onRequestClose} 
               className="text-gray-400 hover:text-gray-600 hover:rotate-90 transition-all duration-300"
             >
-              <FaTimes size={24} />
+              <FaTimes size={15} />
             </button>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 max-h-[80vh] overflow-y-auto scrollbar-none">
           <div className="grid grid-cols-3 gap-5">
             <div className="form-group">
-              <label htmlFor="first-name" className="block text-xs font-medium text-gray-700">First Name</label>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">First Name</label>
               <div className="relative">
                 <input
                   type="text"
@@ -269,7 +269,7 @@ gardianLanguage: '',
                   value={formData.student.studentFirstName}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm
+                  className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-[10px]
                            transition-all duration-300 ease-in-out
                            focus:border-[#293552] focus:ring-2 focus:ring-[#293552]/20 focus:outline-none
                            hover:border-[#293552]/50"
@@ -280,82 +280,82 @@ gardianLanguage: '',
               </div>
             </div>
             <div className="form-group">
-              <label  htmlFor="last-name" className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
+              <label  htmlFor="last-name" className="block mb-1 text-[12px] font-medium text-gray-700">Last Name</label>
               <input 
                 type="text"
                 name="student.studentLastName"
                 value={formData.student.studentLastName}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="email" className="block mb-1 text-xs font-medium text-gray-700">Email</label>
+              <label htmlFor="email" className="block mb-1 text-[12px] font-medium text-gray-700">Email</label>
               <input
                 type="email"
                 name="student.studentEmail"
                 value={formData.student.studentEmail}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="phone-number" className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
+              <label htmlFor="phone-number" className="block mb-1 text-[12px] font-medium text-gray-700">Phone Number</label>
               <input
                 type="number"
                 name="student.studentPhone"
                 value={formData.student.studentPhone}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="city" className="block mb-1 text-xs font-medium text-gray-700">City</label>
+              <label htmlFor="city" className="block mb-1 text-[12px] font-medium text-gray-700">City</label>
               <input
                 type="text"
                 name="student.studentCity"
                 value={formData.student.studentCity}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="country" className="block mb-1 text-xs font-medium text-gray-700">Country</label>
+              <label htmlFor="country" className="block mb-1 text-[12px] font-medium text-gray-700">Country</label>
               <input
                 type="text"
                 name="student.studentCountry"
                 value={formData.student.studentCountry}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Time Zone</label>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Time Zone</label>
               <input
                 type="text"
                 name="student.timeZone"
                 value={formData.student.timeZone}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Trial ID</label>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Trial ID</label>
               <input
                 type="text"
                 name="trailId"
                 value={formData.trailId}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Course</label>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Course</label>
               <select
                 name="Select Course"
                 value={formData.student.learningInterest}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="Select Course">Select Course</option>
@@ -365,12 +365,12 @@ gardianLanguage: '',
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Preferred Teacher</label>
               <select
                 name="Select Teacher"
                 value={formData.student.preferredTeacher}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="">Select Teacher</option>
@@ -380,12 +380,12 @@ gardianLanguage: '',
               </select>
             </div>
             <div className="form-group">
-              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Level</label>
+              <label  htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Level</label>
               <select
                 name="languageLevel"
                 value={formData.languageLevel}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="">Level</option>
@@ -397,27 +397,27 @@ gardianLanguage: '',
             
             
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Date</label>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Preferred Date</label>
               <input
                 type="date"
                 name="student.preferredDate"
                 value={formData.student.preferredDate.split('T')[0]}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Time</label>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Preferred Time</label>
               <input
                 type="time"
                 name="time"
                 value={formData.student.preferredFromTime}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Hours</label>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Preferred Hours</label>
               <input
                 type="number"
                 name="hours"
@@ -425,16 +425,16 @@ gardianLanguage: '',
                 onChange={handleChange}
                 min="0"
                 step="1"
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Package</label>
+              <label  htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Preferred Package</label>
               <select
                 name="student.preferredTeacher"
                 value={formData.student.preferredTeacher}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="Basic">Basic</option>
@@ -444,32 +444,32 @@ gardianLanguage: '',
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Guardians Name</label>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Guardians Name</label>
               <input
                 type="text"
                 name="gardianName"
                 value={formData.gardianName}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Guardians Phone Number</label>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Guardians Phone Number</label>
               <input
                 type="text"
                 name="gardianPhone"
                 value={formData.gardianPhone}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
-            <div className="col-span-2">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Class Status</label>
+            <div className="form-group">
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Class Status</label>
               <select
                 name="student.evaluationStatus"
                 value={formData.student.evaluationStatus}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="PENDING">Pending</option>
@@ -477,13 +477,13 @@ gardianLanguage: '',
                 <option value="COMPLETED">Completed</option>
               </select>
             </div>
-            <div className="col-span-2">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Student Status</label>
+            <div className="form-group">
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Student Status</label>
               <select
                 name="studentStatus"
                 value={formData.studentStatus}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="PENDING">Joining</option>
@@ -491,13 +491,13 @@ gardianLanguage: '',
                 <option value="COMPLETED">Not Joining</option>
               </select>
             </div>
-            <div>
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Comment</label>
+            <div className='col-span-2'>
+              <label htmlFor="first-name" className="block mb-1 text-[12px] font-medium text-gray-700">Comment</label>
               <textarea
                 name="comment"
                 value={formData.comment}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none resize-none h-[38px]"
+                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none resize-none h-[38px]"
               />
             </div>
           </div>
@@ -506,13 +506,13 @@ gardianLanguage: '',
             <button
               type="button"
               onClick={onRequestClose}
-              className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+              className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-[12px] font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 bg-[#293552] text-white rounded-lg hover:bg-[#1e273c] text-sm"
+              className="px-4 py-1.5 bg-[#293552] text-white rounded-lg hover:bg-[#1e273c] text-[12px] font-medium"
             >
               {isEditMode ? 'Save Changes' : 'Save'}
             </button>
