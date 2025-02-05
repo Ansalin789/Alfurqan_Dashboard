@@ -1,17 +1,14 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
-import { useSearchParams } from 'next/navigation';  // Correct import from next/navigation
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-
 
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
 
-// Interfaces
 interface Student {
   studentFirstName: string;
   studentLastName: string;
@@ -36,16 +33,16 @@ interface InvoiceData {
 }
 
 const Invoice = () => {
-  const searchParams = useSearchParams();  // Use useSearchParams to access query params
-  const studentId = searchParams.get('id');  // Get the student ID from the query string
-  const [invoiceshow, setInvoiceShow] = useState(true);
-  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [evaluationData, setEvaluationData] = useState<any>(null);
-  const [clientSecret, setClientSecret] = useState('');
-  const [showPayment, setShowPayment] = useState(false); // State to control when payment form should be shown
-  const invoiceDate = new Date().toLocaleDateString(); 
+  const searchParams = useSearchParams(); // Use useSearchParams to access query params
+  const studentId = searchParams.get('id'); // Get the student ID from the query string
+  const [invoiceshow, setInvoiceShow] = useState(true); // Value and setter pair
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null); // Value and setter pair
+  const [loading, setLoading] = useState(true); // Value and setter pair
+  const [error, setError] = useState<string | null>(null); // Value and setter pair
+  const [evaluationData, setEvaluationData] = useState<any>(null); // Value and setter pair
+  const [clientSecret, setClientSecret] = useState(''); // Value and setter pair
+  const [showPayment, setShowPayment] = useState(false); // Value and setter pair
+  const invoiceDate = new Date().toLocaleDateString();
 
   const fetchInvoiceData = async (studentId: string) => {
     if (!studentId) {
@@ -55,10 +52,11 @@ const Invoice = () => {
     }
 
     try {
-      const auth=localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5001/evaluationlist/${studentId}`,{
-        headers: { 'Content-Type': 'application/json' ,
-          'Authorization': `Bearer ${auth}` ,
+      const auth = localStorage.getItem('authToken');
+      const response = await fetch(`http://localhost:5001/evaluationlist/${studentId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${auth}`,
         },
       });
       if (!response.ok) {
@@ -120,48 +118,33 @@ const Invoice = () => {
   const handleClick = async () => {
     const evaluationid = evaluationData._id; // Replace with your actual evaluation ID
     const totalprice = evaluationData.planTotalPrice;
-    const auth=localStorage.getItem('authToken');
+    const auth = localStorage.getItem('authToken');
     const response = await fetch(`http://localhost:5001/create-payment-intent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth}`,
+        Authorization: `Bearer ${auth}`,
       },
-      body: JSON.stringify({ amount: totalprice*100, currency: 'usd', evaluationId: evaluationid, paymentIntentResponse: "" }),
+      body: JSON.stringify({ amount: totalprice * 100, currency: 'usd', evaluationId: evaluationid, paymentIntentResponse: '' }),
     });
     const data = await response.json();
     setClientSecret(data.clientSecret);
     setShowPayment(true);
     setInvoiceShow(false);
   };
-  console.log(feesPerDay);
+
   return (
     <div className="invoice-container">
       {invoiceshow && (
-        <div style={{ fontFamily: "Arial, sans-serif" }} className="bg-[#f9f9f9] p-6 rounded-lg w-[900px] ml-72">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "20px",
-            }}
-          >
-            <Image
-              src="/assets/images/alf2.png" width={150} height={150} className="p-6 w-52"
-              alt="AL FURQAN Academy"
-            />
+        <div style={{ fontFamily: 'Arial, sans-serif' }} className="bg-[#f9f9f9] p-6 rounded-lg w-[900px] ml-72">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <Image src="/assets/images/alf2.png" width={150} height={150} className="p-6 w-52" alt="AL FURQAN Academy" />
             <div className="text-right p-10">
               <h2 className="text-right text-[30px]">INVOICE</h2>
               <p className="text-right text-[13px]">Invoice# AFA-24E928E-869</p>
             </div>
           </div>
-          <div
-            style={{
-              backgroundColor: "#f9f9f9",
-              padding: "30px",
-            }}
-          >
+          <div style={{ backgroundColor: '#f9f9f9', padding: '30px' }}>
             <p>
               <strong>BILL TO:</strong>
             </p>
@@ -179,61 +162,58 @@ const Invoice = () => {
               <br />
               Invoice Due Date: {subscriptionDuration}
             </p>
-
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                marginTop: "20px",
-              }}
-            >
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
               <thead>
                 <tr className="bg-[#273450] text-white text-center">
-                  <th style={{ padding: "10px" }}>#</th>
-                  <th style={{ padding: "10px" }}>Item & Description</th>
-                  <th style={{ padding: "10px" }}>Country</th>
-                  <th style={{ padding: "10px" }}>Amount</th>
+                  <th style={{ padding: '10px' }}>#</th>
+                  <th style={{ padding: '10px' }}>Item & Description</th>
+                  <th style={{ padding: '10px' }}>Country</th>
+                  <th style={{ padding: '10px' }}>Amount</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td style={{ padding: "10px" }} className="text-center border-b-2">1</td>
-                  <td style={{ padding: "10px" }} className="text-center border-b-2">
+                  <td style={{ padding: '10px' }} className="text-center border-b-2">
+                    1
+                  </td>
+                  <td style={{ padding: '10px' }} className="text-center border-b-2">
                     {courseName} / {packageName}
                   </td>
-                  <td style={{ padding: "10px" }} className="text-center border-b-2">
+                  <td style={{ padding: '10px' }} className="text-center border-b-2">
                     {country}
                   </td>
-                  <td style={{ padding: "10px" }} className="text-center border-b-2">${totalAmount}</td>
+                  <td style={{ padding: '10px' }} className="text-center border-b-2">
+                    ${totalAmount}
+                  </td>
                 </tr>
               </tbody>
             </table>
-            <p className="ml-[610px]"
-              style={{
-                fontWeight: "bold",
-                marginTop: "10px",
-              }}
-            >
+            <p className="ml-[610px]" style={{ fontWeight: 'bold', marginTop: '10px' }}>
               Sub Total &nbsp;&nbsp;&nbsp;${totalAmount}
             </p>
 
-            <p className="ml-[645px]"
-              style={{
-                fontWeight: "bold",
-                marginTop: "10px",
-              }}
-            >
+            <p className="ml-[645px]" style={{ fontWeight: 'bold', marginTop: '10px' }}>
               Total &nbsp;&nbsp;&nbsp;${totalAmount}
             </p>
 
             {/* Payment Button */}
             <div className="ml-[630px] mt-6">
-              <button onClick={handleClick} style={{ padding: "10px 20px", backgroundColor: "#2c3e50", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+              <button
+                onClick={handleClick}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#2c3e50',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                }}
+              >
                 Pay Now
               </button>
             </div>
           </div>
-          <div style={{ textAlign: "center", marginTop: "20px", fontSize: "12px" }}>
+          <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '12px' }}>
             <p>Powered by AL Furqan</p>
           </div>
         </div>
@@ -242,7 +222,7 @@ const Invoice = () => {
       {showPayment && clientSecret && (
         <div className="payment-form-container mt-6">
           <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <CheckoutForm clientSecret={clientSecret} evaluationId={evaluationData._id} />
+            <CheckoutForm clientSecret={clientSecret} />
           </Elements>
         </div>
       )}

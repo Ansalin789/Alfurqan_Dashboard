@@ -2,62 +2,11 @@
 
 import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import BaseLayout2 from "@/components/BaseLayout2";
+import StripePaymentForm from './StripePaymentForm';
 
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
-
-type StripePaymentFormProps = {
-  onPaymentSuccess: (token: any) => void;
-};
-
-const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-
-  const handleSubmit = async (event: { preventDefault: () => void }) => {
-    event.preventDefault();
-
-    if (!stripe || !elements) return;
-
-    const cardElement = elements.getElement(CardElement);
-
-    if (!cardElement) {
-      console.error('Card element not found');
-      alert('Payment element is not available. Please try again.');
-      return;
-    }
-
-    try {
-      const { token, error } = await stripe.createToken(cardElement);
-
-      if (error) {
-        console.error(error);
-        alert(error.message);
-      } else {
-        onPaymentSuccess(token);
-      }
-    } catch (err) {
-      console.error('Payment processing error:', err);
-      alert('Something went wrong while processing the payment.');
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <div className="mb-4">
-        <CardElement />
-      </div>
-      <button
-        type="submit"
-        disabled={!stripe}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-      >
-        Pay Now
-      </button>
-    </form>
-  );
-};
 
 const Invoice = () => {
   const [showModal, setShowModal] = useState(false);
@@ -70,7 +19,7 @@ const Invoice = () => {
   };
 
   const downloadInvoice = () => {
-    if (typeof window === 'undefined') return; // Ensure this runs only in the browser
+    if (typeof window === 'undefined') return;
 
     setIsGeneratingPDF(true);
     const invoiceElement = document.getElementById('invoic');
@@ -180,7 +129,6 @@ const Invoice = () => {
               <p className="whitespace-nowrap">
                 Amount due on 20 Nov 2024: <span className="font-bold">$125</span>
               </p>
-
             </div>
 
             <div className='flex justify-between p-1'>
@@ -194,112 +142,14 @@ const Invoice = () => {
                 <p className="text-[9px]">For any questions, please contact us at <span className="font-bold">contact@alfurqan.academy</span>.</p>
               </div>
 
-              <div className='mt-2 justify-end'>
-                {!isGeneratingPDF && (
-                    <button
-                      onClick={() => setShowModal(true)}
-                      className="bg-[#223857] text-white text-end py-1 rounded-lg px-3 text-xs hover:bg-blue-600 transform hover:-translate-y-1 transition duration-300"
-                    >
-                      Pay Online
-                    </button>
-                  )}
+              <div>
+                {/* Stripe Payment Form */}
+                <Elements stripe={stripePromise}>
+                  <StripePaymentForm onPaymentSuccess={handlePaymentSuccess} />
+                </Elements>
               </div>
             </div>
-
-            
-            
-            
           </div>
-
-
-          {!isGeneratingPDF && (
-
-            <div className="w-full px-10 rounded-lg">
-              <div className="flex justify-between items-center">
-                <h3 className="text-sm font-bold text-gray-800">Latest Transactions</h3>
-                <a href="/transactions" className="text-xs text-blue-500 hover:underline">View all</a>
-              </div>
-              <div className='bg-white rounded-lg border-2 border-[#1C3557] h-auto'>
-                <div className="overflow-y-auto max-h-24 scrollbar-none">
-                  <table className="table-auto w-full">
-                    <thead className='border-b-[1px] border-[#1C3557] text-[12px] font-semibold'>
-                      <tr>
-                        <th className="px-6 py-3 text-center">Invoice Date</th>
-                        <th className="px-6 py-3 text-center">Invoice Number</th>
-                        <th className="px-6 py-3 text-center">Course Name</th>
-                        <th className="px-6 py-3 text-center">Payment Date</th>
-                        <th className="px-6 py-3 text-center">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="text-[12px] text-center font-medium" style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
-                        <td className="px-3 py-1 text-gray-700">October 15, 2024</td>
-                        <td className="px-3 py-1 text-gray-700">INV-0204</td>
-                        <td className="px-3 py-1 text-gray-700">Arabic - Basic</td>
-                        <td className="px-3 py-1 text-gray-700">October 25, 2024</td>
-                        <td className="px-3 py-1">
-                          <span className="bg-green-100 text-green-600 border-[1px] border-green-600 py-0.5 px-2 rounded-lg text-[10px]">Completed</span>
-                        </td>
-                      </tr>
-                      <tr className="text-[12px] text-center font-medium" style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
-                        <td className="px-3 py-1 text-gray-700">October 14, 2024</td>
-                        <td className="px-3 py-1 text-gray-700">INV-0203</td>
-                        <td className="px-3 py-1 text-gray-700">Tajweed - Standard</td>
-                        <td className="px-3 py-1 text-gray-700">October 24, 2024</td>
-                        <td className="px-3 py-1">
-                          <span className="text-yellow-600 border-[1px] border-yellow-600 bg-yellow-100 py-0.5 px-4 rounded-lg text-[10px] w-24 text-center">Pending</span>
-                        </td>
-                      </tr>
-                      <tr className="text-[12px] text-center font-medium" style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
-                        <td className="px-3 py-1 text-gray-700">October 14, 2024</td>
-                        <td className="px-3 py-1 text-gray-700">INV-0203</td>
-                        <td className="px-3 py-1 text-gray-700">Tajweed - Standard</td>
-                        <td className="px-3 py-1 text-gray-700">October 24, 2024</td>
-                        <td className="px-3 py-1">
-                          <span className="text-yellow-600 border-[1px] border-yellow-600 bg-yellow-100 py-0.5 px-4 rounded-lg text-[10px] w-24 text-center">Pending</span>
-                        </td>
-                      </tr>
-                      <tr className="text-[12px] text-center font-medium" style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
-                        <td className="px-3 py-1 text-gray-700">October 14, 2024</td>
-                        <td className="px-3 py-1 text-gray-700">INV-0203</td>
-                        <td className="px-3 py-1 text-gray-700">Tajweed - Standard</td>
-                        <td className="px-3 py-1 text-gray-700">October 24, 2024</td>
-                        <td className="px-3 py-1">
-                          <span className="text-yellow-600 border-[1px] border-yellow-600 bg-yellow-100 py-0.5 px-4 rounded-lg text-[10px] w-24 text-center">Pending</span>
-                        </td>
-                      </tr>
-                      <tr className="text-[12px] text-center font-medium" style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
-                        <td className="px-3 py-1 text-gray-700">October 14, 2024</td>
-                        <td className="px-3 py-1 text-gray-700">INV-0203</td>
-                        <td className="px-3 py-1 text-gray-700">Tajweed - Standard</td>
-                        <td className="px-3 py-1 text-gray-700">October 24, 2024</td>
-                        <td className="px-3 py-1">
-                          <span className="text-yellow-600 border-[1px] border-yellow-600 bg-yellow-100 py-0.5 px-4 rounded-lg text-[10px] w-24 text-center">Pending</span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>  
-            </div>
-          )}
-          {/* Modal for Payment Form */}
-            {showModal && (
-              <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
-                <div className="bg-white p-4 rounded-lg shadow-lg w-96">
-                  <h2 className="text-lg font-bold mb-4">Complete Your Payment</h2>
-                  <Elements stripe={stripePromise}>
-                    <StripePaymentForm onPaymentSuccess={handlePaymentSuccess} />
-                  </Elements>
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            )}
         </div>
       </div>
     </BaseLayout2>

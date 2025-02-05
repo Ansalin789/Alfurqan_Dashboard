@@ -30,13 +30,13 @@ const UpcomingClasses = () => {
   ];
 
   return (
-    <div className="p-0">
-      <h2 className="text-[16px] font-bold text-gray-800 p-[0px] px-4 -mt-[20px]">Upcoming classes</h2>
-      <div className="bg-[#375074] p-1 rounded-xl shadow-md mt-2">
+    <div>
+      <h2 className="text-[16px] font-bold text-gray-800 p-[0px] px-4 -mt-[21px]">Upcoming classes</h2>
+      <div className="bg-[#375074] p-1 rounded-xl shadow-md mt-[4px]">
         {classes.map((cls, index) => (
           <div
             key={index}
-            className="flex flex-col md:flex-row justify-between items-center text-white rounded-xl px-4 py-[4px] mb-2 md:mb-0"
+            className="flex flex-col md:flex-row justify-between items-center text-white rounded-xl px-4 py-[3px] mb-0 md:mb-0"
           >
             <div className="flex items-center gap-2">
               <span className="font-medium text-[12px]">{cls.id} - {cls.title}</span>

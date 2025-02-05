@@ -4,7 +4,7 @@ import React from 'react';
 import 'react-calendar/dist/Calendar.css';
 import dynamic from 'next/dynamic';
 import BaseLayout2 from '@/components/BaseLayout2';
-import { Search, Sun, Bell, Settings } from "lucide-react";
+import { Search, Sun, Bell } from "lucide-react";
 import Link from 'next/link';
 
 
@@ -26,7 +26,6 @@ export default function Academic() {
         
         <div className="p-2 w-[100%]">
           <div className="bg-white p-1 flex items-center justify-between shadow-md rounded-lg ml-4 mr-7">
-            {/* Search Bar */}
             <div className="relative w-1/4 left-3">
               <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400" size={13} />
               <input
@@ -36,7 +35,6 @@ export default function Academic() {
               />
             </div>
 
-            {/* Icons and Profile */}
             <div className="flex items-center gap-4">
               <button className="p-2 bg-white rounded-lg shadow hover:bg-gray-200">
                 <Sun size={18} className="text-gray-600" />
@@ -44,15 +42,15 @@ export default function Academic() {
               <button className="p-2 bg-white rounded-lg shadow hover:bg-gray-200">
                 <Bell size={18} className="text-gray-600" />
               </button>
-              <button className="p-2 bg-white rounded-lg shadow hover:bg-gray-200">
+              {/* <button className="p-2 bg-white rounded-lg shadow hover:bg-gray-200">
                 <Settings size={18} className="text-gray-600" />
-              </button>
+              </button> */}
               {/* Profile Image */}
-              <Link href="/student/ui/dashboard/student-profile">
+              <Link href="/student/ui/student-profile">
                 <img
                   src="/assets/images/student-profile.png" // Replace with the actual image URL
                   alt="Profile"
-                  className="w-10 h-10 rounded-lg border border-gray-300 shadow"
+                  className="w-9 h-9 rounded-lg border border-gray-300 shadow"
                 />
               </Link>
             </div>
@@ -72,14 +70,14 @@ export default function Academic() {
               <div className="col-span-5 grid grid-cols-3 gap-2 p-2">
                 <Totalhours />
               </div>
-              <div className="col-span-12 grid grid-cols-1 gap-1 p-2">
+              <div className="col-span-12 grid grid-cols-1 gap-2 p-2">
                 <Upcome />
               </div>
             </main>
           </div>
 
           {/* Calendar sidebar */}
-          <div className="lg:w-[280px] mt-6 mr-6 lg:mt-[35px] border-[1px] border-[#727272] bg-white rounded-[8px] h-[634px]">
+          <div className="lg:w-[280px] mr-6 lg:mt-[35px] border-[1px] border-[#727272] bg-white rounded-[8px] h-[630px]">
             <div className="col-span-2 gap-2">
               <Profile />
             </div>

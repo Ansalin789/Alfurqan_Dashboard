@@ -2,7 +2,7 @@
 import { CircularProgress, Card, CardBody } from "@nextui-org/react";
 
 const cards = [
-  { id: "card1", name: "Level", value: 70, color: "#C1F0FF" },
+  { id: "card1", name: "Level", value: 70, color: "#85D8F2" },
   { id: "card2", name: "Attendance", value: 10, color: "#F6C5FE" },
   { id: "card3", name: "Total Classes", value: 30, color: "#FFECA7" },
   { id: "card4", name: "Duration", value: 60, color: "#93FFEB" },
@@ -24,7 +24,7 @@ export default function App() {
             <option value="Tajweed" className="text-[11px]">Tajweed</option>
             <option value="Islamic Studies" className="text-[11px]">Islamic Studies</option>
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 -mt-3">
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 -mt-4">
             <svg
               className="fill-current h-4 w-4 text-gray-800"
               xmlns="http://www.w3.org/2000/svg"
@@ -37,7 +37,7 @@ export default function App() {
       </div>
 
       {/* Cards Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((card) => (
           <Card
             key={card.id}
@@ -47,16 +47,16 @@ export default function App() {
               borderTop: `4px solid ${card.color}`,
             }}
           >
-            <CardBody className="flex flex-col justify-center items-center p-4">
-              <p className="text-white text-sm font-semibold">{card.name}</p>
+            <CardBody className="flex flex-col justify-center items-center p-2">
+              <p className="text-white text-[12px] font-semibold">{card.name}</p>
               <CircularProgress
                 classNames={{
-                  svg: "w-16 h-16 drop-shadow-md mt-3",
+                  svg: "w-32 [height:97px] drop-shadow-md",
                   track: "stroke-white/10",
-                  value: "text-base font-semibold text-white",
+                  value: "text-[13px] font-semibold text-white",
                 }}
                 showValueLabel={true}
-                strokeWidth={3}
+                strokeWidth={6}
                 value={card.value}
                 style={{ stroke: card.color }}
               />

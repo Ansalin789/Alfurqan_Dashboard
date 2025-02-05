@@ -7,6 +7,7 @@ import { MdContactSupport, MdOutlinePayment, MdAssignment } from "react-icons/md
 import { IoPeopleSharp } from "react-icons/io5";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { FaFolderOpen } from "react-icons/fa";
+import { LuMessagesSquare } from "react-icons/lu";
 
 
 import "@/styles/globals.css";
@@ -40,7 +41,7 @@ const SidebarItems = [
     {
         name: 'Message',
         href: '/student/ui/message',
-        icon: FaFolderOpen,
+        icon: LuMessagesSquare,
     },
     {
         name: 'Support',
