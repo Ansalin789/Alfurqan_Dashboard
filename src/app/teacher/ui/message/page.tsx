@@ -1,30 +1,254 @@
-'use client'
+'use client';
 
-
-import React, {useState} from 'react';
+import BaseLayout from '@/components/BaseLayout';
+import React, { useState, useEffect } from 'react';
 import { GrAttachment } from "react-icons/gr";
 import { FaTelegramPlane } from "react-icons/fa";
-import BaseLayout from '@/components/BaseLayout';
-
-
+import axios from 'axios';
 
 const Message = () => {
+    interface Student {
+        studentId: string;
+        studentFirstName: string;
+        studentLastName: string;
+        studentEmail: string;
+    }
 
-    const [activeTab, setActiveTab] = useState("Private"); // State to track active tab
+    interface Teacher {
+        teacherId: string;
+        teacherName: string;
+        teacherEmail: string;
+    }
 
-    const privateChats = [
-      { name: "Samantha William", message: "Lorem ipsum...", time: "12:45 PM", notifications: 2 },
-      { name: "Tony Soap", message: "Lorem ipsum...", time: "12:45 PM", notifications: 2 },
-      { name: "Karen Hope", message: "Lorem ipsum...", time: "12:45 PM", notifications: 1 },
-      { name: "Johnny Ahmad", message: "Lorem ipsum...", time: "12:45 PM", notifications: 0 },
-      { name: "Nadila Adja", message: "Lorem ipsum...", time: "12:45 PM", notifications: 4 },
-    ];
-  
-    const groupChats = [
-      { name: "Project Alpha", message: "Team meeting at 4 PM", time: "11:30 AM", notifications: 3 },
-      { name: "Family Group", message: "Let's plan the weekend", time: "9:15 AM", notifications: 1 },
-      { name: "Gym Buddies", message: "New workout schedule", time: "8:00 AM", notifications: 0 },
-    ];
+    interface Schedule {
+        student: Student;
+        teacher: Teacher;
+        _id: string;
+        classDay: string[];
+        package: string;
+        preferedTeacher: string;
+        totalHourse: number;
+        startDate: string;
+        endDate: string;
+        startTime: string[];
+        endTime: string[];
+        scheduleStatus: string;
+        status: string;
+        createdBy: string;
+        createdDate: string;
+        lastUpdatedDate: string;
+        __v: number;
+    }
+
+    interface ApiResponse {
+        totalCount: number;
+        students: Schedule[];
+    }
+     interface IMessage {
+        _id: string;
+        roomId: string;
+        teacher: {
+          teacherId: string;
+          teacherName: string;
+          teacherEmail: string;
+        };
+        student: {
+          studentId: string;
+          studentFirstName: string;
+          studentLastName: string;
+          studentEmail: string;
+        };
+        message: string;
+        attachmentsType: { fileName?: string; fileType?: string; fileUrl?: string }[];
+        sender: string;
+        receiver: string;
+        group: {
+          groupId: string;
+          groupName: string;
+          members: { userId: string; userName: string; _id: string }[];
+          _id: string;
+        }[];
+        status: string;
+        createdDate: string; // Date as string
+        createdBy: string;
+        updatedDate: string;
+        updatedBy: string;
+      }
+      
+
+    const [uniqueStudents, setUniqueStudents] = useState<Student[]>([]);
+    const [teacherPortalName, setTeacherPortalName] = useState<string | null>(null);
+    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+    const [messages, setMessages] = useState<IMessage[]>([]);
+    const [messageText, setMessageText] = useState<string>("");
+    useEffect(() => {
+        const teacherPortal = localStorage.getItem('TeacherPortalName');
+        setTeacherPortalName(teacherPortal);
+
+        const fetchData = async () => {
+            try {
+                const auth = localStorage.getItem('TeacherAuthToken');
+                const teacherIdToFilter = localStorage.getItem('TeacherPortalId');
+
+                if (!teacherIdToFilter) {
+                    console.error("No teacher ID found in localStorage.");
+                    return;
+                }
+
+                const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+                    headers: {
+                        Authorization: `Bearer ${auth}`,
+                    },
+                });
+
+                const filteredData = response.data.students.filter(
+                    (item) => item.teacher.teacherId === teacherIdToFilter
+                );
+
+                const studentMap = new Map<string, Student>();
+
+                filteredData.forEach((item) => {
+                    studentMap.set(item.student.studentId, item.student);
+                });
+
+                const studentList = Array.from(studentMap.values());
+                setUniqueStudents(studentList);
+
+                // Automatically select the first student if available
+                if (studentList.length > 0) {
+                    setSelectedStudent(studentList[0]);
+                    loadMessages(studentList[0].studentId);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    // Function to load messages when a student is selected
+    const loadMessages = async (studentId: string) => {
+        try {
+            const auth = localStorage.getItem('TeacherAuthToken');
+            const teacherIdToFilter = localStorage.getItem('TeacherPortalId');
+            // Fetch messages from backend (Mock API or Database)
+            const response = await axios.get(`http://localhost:5001/message/studentmessage`,{
+                params: {
+                    studentId: studentId,
+                    teacherId: teacherIdToFilter,
+                },
+                headers: {
+                    Authorization: `Bearer ${auth}`,
+                },
+            });
+            setMessages(response.data.Message || []);
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+        }
+    };
+
+    // Function to handle student click
+    const handleStudentClick = (student: Student) => {
+        setSelectedStudent(student);
+        loadMessages(student.studentId);
+    };
+    const handleSendMessage = async () => {
+        if (!selectedStudent || !messageText.trim()) return;
+    
+        try {
+            const auth = localStorage.getItem('TeacherAuthToken');
+            const response = await fetch("http://localhost:5001/message", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" ,
+                    Authorization: `Bearer ${auth}`, 
+                },
+                body: JSON.stringify({
+                    teacher: {
+                        teacherId: localStorage.getItem("TeacherPortalId"),
+                        teacherName: teacherPortalName,
+                         teacherEmail: "johndoe@example.com"
+                    },
+                    student: {
+                        studentId: selectedStudent.studentId,
+                        studentFirstName: selectedStudent.studentFirstName,
+                        studentLastName: selectedStudent.studentLastName,
+                        studentEmail: selectedStudent.studentEmail,
+                        studentPhone: 9876543210,
+                    createdBy: "system"
+                    },
+                    attachmentsType: [
+                        {
+                            fileName: "document.pdf",
+                            fileType: "application/pdf",
+                            fileUrl: "https://example.com/document.pdf"
+                        },
+                        {
+                            fileName: "image.png",
+                            fileType: "image/png",
+                            fileUrl: "https://example.com/image.png"
+                        }
+                    ],
+                    group: [
+                        {
+                            groupId: "G123",
+                            groupName: "Arabic Group",
+                            members: [
+                                { userId: "U001", userName: "Alice" },
+                                { userId: "U002", userName: "Bob" }
+                            ]
+                        },
+                        {
+                            groupId: "G124",
+                            groupName: "Quran Study Group",
+                            members: [
+                                { userId: "U003", userName: "Charlie" },
+                                { userId: "U004", userName: "David" }
+                            ]
+                        }
+                    ],
+                    message: messageText,
+                    sender: "teacher",
+                    receiver: "student",
+                    status: "sent",
+                    createdBy: "system",
+                    timeZone: "UTC+5:30"
+                }),
+            });
+    
+            const data = await response.json();
+        if (response.ok) {
+            const newMessage: IMessage = {
+                _id: data._id || Math.random().toString(), // API response ID or fallback
+                roomId: data.roomId || "", // Ensure roomId is set
+                teacher: data.teacher || {
+                    teacherId: localStorage.getItem("TeacherPortalId") ?? "",
+                    teacherName: teacherPortalName,
+                    teacherEmail: "johndoe@example.com",
+                },
+                student: data.student || selectedStudent,
+                message: messageText,
+                attachmentsType: data.attachmentsType || [],
+                sender: "teacher",
+                receiver: "student",
+                group: data.group || [],
+                status: "sent",
+                createdDate: new Date().toISOString(), // Add timestamp
+                createdBy: "system",
+                updatedDate: new Date().toISOString(),
+                updatedBy: "system",
+            };
+
+            setMessages((prevMessages: IMessage[]) => [...prevMessages, newMessage]);
+            setMessageText(""); // Clear input field
+        }else {
+                console.error("Failed to send message");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
+
   return (
     <BaseLayout>
     <div className='mx-auto'>
@@ -33,7 +257,7 @@ const Message = () => {
         <div className="flex p-4 h-[93vh]">
         
             <main className="flex">
-                <div className="w-[400px] bg-white p-6 ml-6 rounded-lg shadow-md flex flex-col justify-between">
+                <div className="w-[400px] bg-white p-6 ml-6 rounded-lg shadow-md flex flex-col ">
                     {/* Profile Section */}
                     <div>
                         <div className="flex items-center space-x-4">
@@ -43,137 +267,98 @@ const Message = () => {
                             className="w-14 h-14 rounded-lg border border-[#dbdbdb]"
                             />
                             <div>
-                            <h3 className="text-lg font-semibold text-[#374557]">Allen border</h3>
+                            <h3 className="text-lg font-semibold text-[#374557]">{teacherPortalName}</h3>
                             <p className="text-sm text-gray-500">Student</p>
                             </div>
                         </div>
+                    </div>
+                        
 
-                        {/* Contacts Section */}
-                        <div className="mt-6">
-                            <div className="flex justify-between items-center">
-                            <h4 className="text-base font-semibold text-[#374557]">Contacts</h4>
-                            <span className="text-sm text-[#374557] cursor-pointer">View All</span>
-                            </div>
-                            <div className="grid grid-cols-5 gap-3 mt-4">
-                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                    <div className="mt-3">
+                            <h2 className="text-[19px] font-semibold text-[#06030c]">Private</h2>
+                            <div className="mt-4 max-h-[300px] overflow-y-auto">
+                                <ul className="space-y-4">
+                                    {uniqueStudents.map((student) => (
+                                        <button 
+                                            key={student.studentId} 
+                                            className={`flex items-center justify-between border-b-2 p-1 cursor-pointer ${
+                                                selectedStudent?.studentId === student.studentId ? 'bg-gray-200' : ''
+                                            }`} 
+                                            onClick={() => handleStudentClick(student)}
+                                        >
+                                            <div className="flex space-x-3">
+                                                <div className="w-10 h-10 bg-gray-300 rounded-lg"></div>
+                                                <div>
+                                                    <h5 className="font-semibold text-sm text-[#374557]">
+                                                        {student.studentFirstName} {student.studentLastName}
+                                                    </h5>
+                                                    <p className="text-[10px] text-[#A098AE]">{student.studentEmail}</p>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </ul>
                             </div>
                         </div>
                     </div>
 
-                    {/* Chats Section */}
-                    <div>
-                        <div className="">
-                            <h4 className="text-base font-semibold text-[#374557]">Chats</h4>
-                            {/* Tabs */}
-                            <div className="flex mt-2 border-b justify-between px-4">
-                            <button
-                                className={`pb-2 px-4 text-[13px] font-semibold ${
-                                activeTab === "Private"
-                                    ? "text-[#4CBC9A] border-b-2 border-[#4CBC9A] transition p-0.5"
-                                    : "text-gray-500"
-                                }`}
-                                onClick={() => setActiveTab("Private")}
-                            >
-                                Students
-                            </button>
-                            </div>
-                            {/* Chat List */}
-                            <ul className="mt-4 space-y-4">
-                            {privateChats.map((chat, index) => (
-                                <li key={index} className="flex items-center justify-between border-b-2 p-1">
-                                    <div className="flex items-center space-x-3">
-                                    <div className="w-7 h-7 bg-gray-300 rounded-lg"></div>
-                                    <div>
-                                        <h5 className="font-semibold text-[10px] text-[#374557]">{chat.name}</h5>
-                                        <p className="text-[10px] text-[#A098AE]">{chat.message}</p>
-                                    </div>
-                                    </div>
-                                    <div className="flex flex-col items-center space-y-1">
-                                    <span className="text-[10px] text-gray-400">{chat.time}</span>
-                                    {chat.notifications > 0 && (
-                                        <span className="text-[8px] bg-[#4CBC9A] text-[#fff] font-bold w-3 h-3 flex items-center justify-center rounded-[4px]">
-                                        {chat.notifications}
-                                        </span>
-                                    )}
-                                    </div>
-                                </li>
-                            ))}
-
-                            </ul>
-                        </div>
-                    </div>
-                </div>  
+                   
+                   
 
                 {/* Chat Panel */}
                 <div className="w-[600px] bg-white p-4 rounded-lg shadow-md ml-6 flex flex-col justify-between">
                     {/* Header Section */}
-                    <div>
-                        <div className="flex items-center space-x-4 border-b border-b-[#dbdbdb] p-2">
-                            <img
-                            src="/assets/images/account1.png"
-                            alt="Karen Hope"
-                            className="w-14 h-14 rounded-full"
-                            />
-                            <div>
-                            <h3 className="text-base font-semibold">Sai Hope</h3>
-                            <p className="text-sm text-green-500">Online</p>
-                            </div>
-                        </div>
+                    {selectedStudent ? (
+                            <>
+                                <div>
+                                    <div className="flex items-center space-x-4 border-b border-b-[#dbdbdb] p-2">
+                                        <img
+                                            src="/assets/images/account1.png"
+                                            alt={selectedStudent.studentFirstName}
+                                            className="w-14 h-14 rounded-full"
+                                        />
+                                        <div>
+                                            <h3 className="text-base font-semibold">
+                                                {selectedStudent.studentFirstName} {selectedStudent.studentLastName}
+                                            </h3>
+                                            <p className="text-sm text-green-500">Online</p>
+                                        </div>
+                                    </div>
 
-                        {/* Chat Messages */}
-                        <div className="mt-6 space-y-4">
-                            {/* Received Message */}
-                            <div className="flex flex-col items-start">
-                                <div className="bg-gray-100 p-3 rounded-t-xl rounded-br-xl">
-                                    <p className="text-[12px]">Hello Nella!</p>
+                                    {/* Chat Messages */}
+                                    <div className="mt-6 space-y-4 overflow-y-auto max-h-[60vh]">
+                                    {messages.map((msg, index) => (
+                                 <div key={msg._id || index} className={`flex flex-col ${msg.sender === 'teacher' ? 'items-end' : 'items-start'}`}>
+                               <div className={`${msg.sender === 'teacher' ? 'bg-[#4CBC9A] text-white' : 'bg-gray-100'} p-3 rounded-t-xl ${msg.sender === 'teacher' ? 'rounded-bl-xl' : 'rounded-br-xl'}`}>
+                                    <p className="text-[12px]">{msg.message}</p>
+                             <p className="text-[10px] text-gray-500">{new Date(msg.createdDate).toLocaleString()}</p>
+                                  </div>
+                             </div>
+                                 ))}
+
+                                    </div>
                                 </div>
-                                <div className="bg-gray-100 p-3 rounded-t-xl rounded-br-xl mt-2">
-                                    <p className="text-[12px]">Can you arrange schedule for next class?</p>
+
+                                {/* Input Section */}
+                                <div>
+                                    <div className="flex items-center border border-gray-300 rounded-xl p-1 bg-white shadow-sm">
+                                    <input
+                                 type="text"
+                          placeholder="Write your message..."
+                              className="flex-1 pl-4 text-gray-500 text-[11px] outline-none bg-transparent"
+                            value={messageText}
+                              onChange={(e) => setMessageText(e.target.value)}
+                                    />
+                                        <button className="mx-3 text-[11px]"><GrAttachment /></button>
+                                        <button onClick={handleSendMessage} className="bg-[#4CBC9A] text-white px-2 py-1 rounded-lg flex items-center text-[12px] font-medium">
+                                            Send&nbsp;<FaTelegramPlane />
+                                        </button>
+                                    </div>
                                 </div>
-                            <span className="text-[10px] text-gray-400 mt-1">12:45 PM</span>
-                            </div>
-
-                            {/* Sent Message */}
-                            <div className="flex flex-col items-end">
-                                <div className="bg-[#4CBC9A] text-white p-3 rounded-t-xl rounded-bl-xl">
-                                    <p className="text-[12px]">Hello Karen!</p>
-                                </div>
-                                <div className="bg-[#4CBC9A] text-white p-3 rounded-t-xl rounded-bl-xl mt-2">
-                                    <p className="text-[12px]">
-                                    Okay, I'll arrange it soon. I'll notify you when it's done.
-                                    </p>
-                                </div>
-                            <span className="text-[10px] text-gray-400 mt-1">12:45 PM</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Input Section */}
-                    <div>
-                        <div className="flex items-center border border-gray-300 rounded-xl p-2 bg-white shadow-sm">
-                            {/* Input field */}
-                            <input
-                                type="text"
-                                placeholder="Write your message..."
-                                className="flex-1 pl-4 text-gray-500 text-sm outline-none bg-transparent"
-                            />
-
-                            {/* Attachment Icon */}
-                            <button className="mx-3">
-                            <GrAttachment />
-                            </button>
-
-                            {/* Send Button */}
-                            <button className="bg-[#4CBC9A] text-white px-5 py-2 rounded-xl flex items-center text-sm font-medium">
-                                Send
-                                <FaTelegramPlane />
-                            </button>
-                        </div>
-                    </div>
+                            </>
+                        ) : (
+                            <p className="text-center text-gray-500">Select a student to start chatting.</p>
+                        )}
                 </div>
             </main>
 
