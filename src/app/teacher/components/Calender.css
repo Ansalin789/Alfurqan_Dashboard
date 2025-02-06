@@ -1,0 +1,100 @@
+.custom-calendar {
+    width: 300px !important;
+    border: none !important;
+    background: #ced4dc !important;
+  }
+  
+  /* Navigation area (month and year) */
+  .custom-calendar .react-calendar__navigation {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    height: auto;
+    background: #ced4dc;
+  }
+  
+  .custom-calendar .react-calendar__navigation button {
+    min-width: 32px;
+    background: none;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .custom-calendar .react-calendar__navigation__label {
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    color: #333;
+  }
+  
+  /* Weekday labels */
+  .custom-calendar .react-calendar__month-view__weekdays {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+  }
+  
+  .custom-calendar .react-calendar__month-view__weekdays__weekday {
+    padding: 8px 0;
+  }
+  
+  .custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
+    text-decoration: none;
+    font-weight: normal;
+  }
+  
+  /* Calendar days */
+  .custom-calendar .react-calendar__month-view__days__day {
+    font-size: 14px;
+    padding: 8px;
+    color: #333;
+  }
+  
+  .custom-calendar .react-calendar__tile {
+    padding: 12px 0;
+    font-weight: normal;
+    background: none;
+  }
+  
+  /* Weekend days */
+  .custom-calendar .react-calendar__month-view__days__day--weekend:last-child {
+    color: #2563eb;
+  }
+  
+  /* Current day */
+  .custom-calendar .react-calendar__tile--now {
+    background: #2563eb !important;
+    color: white !important;
+    border-radius: 4px;
+  }
+  
+  /* Selected date */
+  .custom-calendar .react-calendar__tile--active {
+    background: #223857 !important;
+    color: white !important;
+    border-radius: 4px;
+  }
+  
+  /* Hover state */
+  .custom-calendar .react-calendar__tile:enabled:hover {
+    background-color: #f0f0f0;
+    border-radius: 4px;
+  }
+  
+  /* Neighboring month dates */
+  .custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
+    color: #ccc;
+  }
+  
+  /* Navigation arrows */
+  .custom-calendar .react-calendar__navigation__arrow {
+    font-size: 20px;
+    color: #666;
+  }
+  
+  .event-day {
+  
+    background-image: linear-gradient(to right, #30507c, #5792e2) !important;
+    color: white !important;
+    border-radius: 6px !important;
+  }
+  
