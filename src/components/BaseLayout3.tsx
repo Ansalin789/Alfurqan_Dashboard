@@ -1,5 +1,6 @@
-import { ReactNode } from "react";
+import React,{ ReactNode } from "react";
 import Sidebar3 from "./Sidebar3";
+
 
 interface Props {
     readonly children: ReactNode | ReactNode [];
@@ -7,7 +8,7 @@ interface Props {
 export default function BaseLayout3({ children }: Props) {
     return (
     <div className="layout">
-        <Sidebar3 /> 
+        <Sidebar3/> 
         {children}
     </div>
     ) ;
