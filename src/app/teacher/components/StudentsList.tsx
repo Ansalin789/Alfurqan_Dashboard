@@ -1,9 +1,87 @@
 'use client';
 
+import axios from "axios";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
+
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+interface Schedule {
+  student: Student;
+  teacher: Teacher;
+  _id: string;
+  classDay: string[];
+  package: string;
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+
+interface ApiResponse {
+  totalCount: number;
+  students: Schedule[];
+}
+
 
 const StudentList = () => {
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("TeacherAuthToken");
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+
+        if (!teacherIdToFilter) {
+          console.error("No teacher ID found in localStorage.");
+          return;
+        }
+
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+
+        const filteredData = response.data.students.filter(
+          (item) => item.teacher.teacherId === teacherIdToFilter
+        );
+
+        const studentScheduleMap = new Map<string, Schedule>();
+
+        filteredData.forEach((item) => {
+          studentScheduleMap.set(item.student.studentId, item);
+        });
+
+        const uniqueSchedules = Array.from(studentScheduleMap.values());
+
+        setUniqueStudentSchedules(uniqueSchedules);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div className="p-4 w-[1250px] pr-20">
         <h2 className="text-2xl font-semibold text-gray-800 p-2">Students List</h2>
@@ -23,78 +101,22 @@ const StudentList = () => {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  {
-                    id: "1234567890",
-                    name: "Samantha William",
-                    studentId: "1234567890",
-                    level: 2,
-                    course: "Arabic",
-                    assignedDate: "January 2, 2020",
-                    dueDate: "January 8, 2020",
-                    status: "Completed",
-                    statusColor: "bg-green-100 text-green-700 px-5",
-                  },
-                  {
-                    id: "1234567890",
-                    name: "Jordan Nico",
-                    studentId: "1234567890",
-                    level: 1,
-                    course: "Tajweed",
-                    assignedDate: "January 2, 2020",
-                    dueDate: "January 8, 2020",
-                    status: "Not Completed",
-                    statusColor: "bg-yellow-100 text-yellow-700 px-3",
-                  },
-                  {
-                    id: "1234567890",
-                    name: "Nadila Adja",
-                    studentId: "1234567890",
-                    level: 2,
-                    course: "Quran",
-                    assignedDate: "January 2, 2020",
-                    dueDate: "January 8, 2020",
-                    status: "Not Assigned",
-                    statusColor: "bg-red-100 text-red-700 px-4",
-                  },
-                  {
-                    id: "1234567890",
-                    name: "Nadila Adja",
-                    studentId: "1234567890",
-                    level: 2,
-                    course: "Quran",
-                    assignedDate: "January 2, 2020",
-                    dueDate: "January 8, 2020",
-                    status: "Not Assigned",
-                    statusColor: "bg-red-100 text-red-700 px-4",
-                  },
-                  {
-                    id: "1234567890",
-                    name: "Nadila Adja",
-                    studentId: "1234567890",
-                    level: 2,
-                    course: "Quran",
-                    assignedDate: "January 2, 2020",
-                    dueDate: "January 8, 2020",
-                    status: "Not Assigned",
-                    statusColor: "bg-red-100 text-red-700 px-4",
-                  },
-                ].map((student) => (
+                {uniqueStudentSchedules.slice(0,3).map((student) => (
                   <tr
-                    key={student.id}
+                  key={student.student.studentId}
                     className="text-[12px] font-medium mt-2"
                     style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}
                   >
-                    <td className="px-6 py-2 text-center">{student.id}</td>
-                    <td className="px-6 py-2 text-center">{student.name}</td>
-                    <td className="px-6 py-2 text-center">{student.studentId}</td>
-                    <td className="px-6 py-2 text-center">{student.level}</td>
-                    <td className="px-6 py-2 text-center">{student.course}</td>
-                    <td className="px-6 py-2 text-center">{student.assignedDate}</td>
-                    <td className="px-6 py-2 text-center">{student.dueDate}</td>
+                    <td className="px-6 py-2 text-center">{student._id}</td>
+                    <td className="px-6 py-2 text-center">{student.student.studentFirstName}</td>
+                    <td className="px-6 py-2 text-center">{student.student.studentId}</td>
+                    <td className="px-6 py-2 text-center">1</td>
+                    <td className="px-6 py-2 text-center">{student.package}</td>
+                    <td className="px-6 py-2 text-center">{new Date(student.startDate).toLocaleDateString()}</td>
+                    <td className="px-6 py-2 text-center">{new Date(student.endDate).toLocaleDateString()}</td>
                     <td className="px-6 py-2 text-center">
                       <span
-                        className={`py-1 text-[#223857] rounded-lg border-[1px] border-[#1c3557c0] bg-[#D0FECA] text-[10px] ${student.statusColor}`}
+                        className={`py-1 text-[#223857] rounded-lg border-[1px] border-[#1c3557c0] bg-[#D0FECA] text-[10px] ${student.status}`}
                       >
                         {student.status}
                       </span>

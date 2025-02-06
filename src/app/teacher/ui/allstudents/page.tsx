@@ -2,136 +2,101 @@
 
 
 import BaseLayout from "@/components/BaseLayout";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BsSearch, BsThreeDots } from "react-icons/bs";
 import { useRouter } from "next/navigation";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
+import axios from "axios";
 
+
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
+
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+interface Schedule {
+  student: Student;
+  teacher: Teacher;
+  _id: string;
+  classDay: string[];
+  package: string;
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+
+interface ApiResponse {
+  totalCount: number;
+  students: Schedule[];
+}
 
 const AllStudents = () => {
   const router = useRouter();
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // Set the number of items per page to 5
+  const itemsPerPage = 10;
 
-  // Example student data - replace this with your actual data fetching logic
-  const students = [
-    {
-      id: "1",
-      name: "Samantha William",
-      studentId: "1234567890",
-      level: 2,
-      course: "Arabic",
-      assignedDate: "January 2, 2020",
-      dueDate: "January 8, 2020",
-      status: "Completed",
-      statusColor: "bg-green-100 text-green-700 border border-green-700 px-4",
-    },
-    {
-      id: "2",
-      name: "Jordan Nico",
-      studentId: "1234567891",
-      level: 1,
-      course: "Tajweed",
-      assignedDate: "January 2, 2020",
-      dueDate: "January 8, 2020",
-      status: "Not Completed",
-      statusColor: "bg-yellow-100 text-yellow-700 border border-yellow-700 px-1",
-    },
-    {
-      id: "3",
-      name: "Nadila Adja",
-      studentId: "1234567892",
-      level: 2,
-      course: "Quran",
-      assignedDate: "January 2, 2020",
-      dueDate: "January 8, 2020",
-      status: "Not Assigned",
-      statusColor: "bg-red-100 text-red-700 border border-red-700 px-3",
-    },
-    {
-        id: "4",
-        name: "Nadila Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700 border border-red-700 px-3",
-      },
-      {
-        id: "5",
-        name: "Nadila Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700 border border-red-700 px-3",
-      },
-      {
-        id: "6",
-        name: "Nadila Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700 border border-red-700 px-3",
-      },
-      {
-        id: "7",
-        name: "Nadila Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700 border border-red-700 px-3",
-      },
-      {
-        id: "8",
-        name: "Nadila Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700 border border-red-700 px-3",
-      },
-      {
-        id: "9",
-        name: "Tom crr",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700 border border-red-700 px-3",
-      },
-      {
-        id: "10",
-        name: "alya Adja",
-        studentId: "1234567890",
-        level: 2,
-        course: "Quran",
-        assignedDate: "January 2, 2020",
-        dueDate: "January 8, 2020",
-        status: "Not Assigned",
-        statusColor: "bg-red-100 text-red-700 border border-red-700 px-3",
-      },
-  ];
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("TeacherAuthToken");
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+
+        if (!teacherIdToFilter) {
+          console.error("No teacher ID found in localStorage.");
+          return;
+        }
+
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+
+        const filteredData = response.data.students.filter(
+          (item) => item.teacher.teacherId === teacherIdToFilter
+        );
+
+        const studentScheduleMap = new Map<string, Schedule>();
+
+        filteredData.forEach((item) => {
+          studentScheduleMap.set(item.student.studentId, item);
+        });
+
+        const uniqueSchedules = Array.from(studentScheduleMap.values());
+
+        setUniqueStudentSchedules(uniqueSchedules);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Calculate the current students to display based on the current page
   const indexOfLastStudent = currentPage * itemsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - itemsPerPage;
-  const currentStudents = students.slice(indexOfFirstStudent, indexOfLastStudent);
 
   // Function to handle page change
   const handlePageChange = (pageNumber: number) => {
@@ -180,22 +145,22 @@ const AllStudents = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentStudents.map((student) => (
+                  {uniqueStudentSchedules.slice(0,3).map((student) => (
                     <tr
-                      key={student.id}
+                      key={student._id}
                       className="text-[12px] font-medium mt-2"
                         style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}
                     >
-                      <td className="px-6 py-2 text-center">{student.id}</td>
-                      <td className="px-6 py-2 text-center">{student.name}</td>
-                      <td className="px-6 py-2 text-center">{student.studentId}</td>
-                      <td className="px-6 py-2 text-center">{student.level}</td>
-                      <td className="px-6 py-2 text-center">{student.course}</td>
-                      <td className="px-6 py-2 text-center">{student.assignedDate}</td>
-                      <td className="px-6 py-2 text-center">{student.dueDate}</td>
+                      <td className="px-6 py-2 text-center">{student._id}</td>
+                      <td className="px-6 py-2 text-center">{student.student.studentFirstName}</td>
+                      <td className="px-6 py-2 text-center">{student._id}</td>
+                      <td className="px-6 py-2 text-center">1</td>
+                      <td className="px-6 py-2 text-center">{student.package}</td>
+                      <td className="px-6 py-2 text-center">{new Date(student.startDate).toLocaleDateString()}</td>
+                      <td className="px-6 py-2 text-center">{new Date(student.endDate).toLocaleDateString()}</td>
                       <td className="px-6 py-2 text-center">
                         <span
-                          className={`text-green-600 border bg-green-100 px-1 py-[3px] rounded-lg text-[11px] ${student.statusColor}`}
+                          className={`text-green-600 border bg-green-100 px-1 py-[3px] rounded-lg text-[11px] ${student.status}`}
                         >
                           {student.status}
                         </span>
@@ -206,12 +171,12 @@ const AllStudents = () => {
                             className="text-gray-500 hover:text-gray-700"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setOpenDropdownId(openDropdownId === student.id ? null : student.id);
+                              setOpenDropdownId(openDropdownId === student._id ? null : student._id);
                             }}
                           >
                             <BsThreeDots />
                           </button>
-                          {openDropdownId === student.id && (
+                          {openDropdownId === student._id && (
                             <button 
                               className="absolute right-0 mr-10 w-24 shadow-2xl bg-white rounded-md  z-10 border border-gray-200"
                               onClick={(e) => e.stopPropagation()}
@@ -242,9 +207,11 @@ const AllStudents = () => {
             </div>
           </div>
           <div className="flex items-center justify-between align-bottom px-4 mb-1">
-            <p className="text-[10px] text-gray-600">Showing {indexOfFirstStudent + 1}-{Math.min(indexOfLastStudent, students.length)} of {students.length} data</p>
+            <p className="text-[10px] text-gray-600">
+              Showing {indexOfFirstStudent + 1}-{Math.min(indexOfLastStudent, uniqueStudentSchedules.length)} of {uniqueStudentSchedules.length} data
+            </p>
             <div className="flex space-x-2 text-[10px]">
-              {Array.from({ length: Math.ceil(students.length / itemsPerPage) }, (_, index) => (
+              {Array.from({ length: Math.ceil(uniqueStudentSchedules.length / itemsPerPage) }, (_, index) => (
                 <button
                   key={index + 1}
                   className={`px-3 py-1 border rounded-md ${currentPage === index + 1 ? 'bg-[#223857] text-white' : 'text-gray-600 border-gray-300 hover:bg-gray-200'}`}
@@ -254,7 +221,8 @@ const AllStudents = () => {
                 </button>
               ))}
             </div>
-          </div>  
+          </div>
+ 
         </div>
       </div>
     </BaseLayout>
