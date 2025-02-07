@@ -1,17 +1,94 @@
 'use client';
 
 import BaseLayout from "@/components/BaseLayout";
+import axios from "axios";
 import { Search } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaSort } from "react-icons/fa";
 
 const Classes = () => {
+  interface Student {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+  }
+
+  interface Teacher {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  }
+
+  interface Schedule {
+    student: Student;
+    teacher: Teacher;
+    _id: string;
+    classDay: string[];
+    package: string;
+    preferedTeacher: string;
+    totalHourse: number;
+    startDate: string;
+    endDate: string;
+    startTime: string[];
+    endTime: string[];
+    scheduleStatus: string;
+    status: string;
+    createdBy: string;
+    createdDate: string;
+    lastUpdatedDate: string;
+    __v: number;
+  }
+
+  interface ApiResponse {
+    totalCount: number;
+    students: Schedule[];
+  }
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("TeacherAuthToken");
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+         
+        console.log(auth);
+        if (!teacherIdToFilter) {
+          console.error("No teacher ID found in localStorage.");
+          return;
+        }
 
-  const filteredData = data.filter(row =>
-    row.name.toLowerCase().includes(searchTerm.toLowerCase())
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+
+        const filteredData = response.data.students.filter(
+          (item:any) => item.teacher.teacherId === teacherIdToFilter
+        );
+
+        const studentScheduleMap = new Map<string, Schedule>();
+
+        filteredData.forEach((item:any) => {
+          studentScheduleMap.set(item.student.studentId, item);
+        });
+
+        const uniqueSchedules = Array.from(studentScheduleMap.values());
+
+        setUniqueStudentSchedules(uniqueSchedules);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const filteredData = uniqueStudentSchedules.filter(row =>
+    row.student.studentFirstName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -77,9 +154,10 @@ const Classes = () => {
                   </tr>
                 </thead>
                 <tbody className="text-[11px]">
-                  {Array.from({ length: 5 }).map((_, index) => {
-                    const status = getStatus(index);
-                    const uniqueKey = `row-${index}`; // Generate a unique key
+                {filteredData.map((schedule, index) => {
+    const { student,scheduleStatus, startTime,endTime } = schedule;
+    const uniqueKey = `row-${index}`; // Generate a unique key for each row
+
 
                     return (
                       <tr key={uniqueKey} className="text-[12px] font-medium mt-2"
@@ -87,19 +165,19 @@ const Classes = () => {
                         <td className="px-3 py-2 text-center">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-[#DBDBDB] rounded-md"></div>
-                            <span className="px-6 py-2 text-center">Samantha William</span>
+                            <span className="px-6 py-2 text-center">Trail Class</span>
                           </div>
                         </td>
-                        <td className="px-3 py-2 text-center">1234567890</td>
+                        <td className="px-3 py-2 text-center">{student.studentId}</td>
                         <td className="px-3 py-2 text-center">Quran</td>
-                        <td className="px-3 py-2 text-center">Trial Class</td>
-                        <td className="px-3 py-2 text-center">30 minutes</td>
+                        <td className="px-3 py-2 text-center">{schedule.package}</td>
+                        <td className="px-3 py-2 text-center">{`${schedule.totalHourse} hours`}</td>
                         <td className="px-3 py-2 text-center">
-                          January 2, 2020 - 9:00–10:30 AM
+                        {`${new Date(schedule.startDate).toLocaleDateString()} - ${startTime.join("–")} to ${new Date(schedule.endDate).toLocaleDateString()} - ${endTime.join("–")}`}
                         </td>
                         <td className="px-3 py-2 text-center">
-                          <span className={`px-3 py-1 font-medium ${status.style} rounded-full`}>
-                            {status.text}
+                          <span className={`px-3 py-1 font-medium ${getStatus} rounded-full`}>
+                          {scheduleStatus}
                           </span>
                         </td>
                         <td className="px-3 py-2 text-center">
@@ -117,9 +195,9 @@ const Classes = () => {
           <div className="flex items-center justify-between p-4 mt-5">
             <p className="text-[11px] text-gray-600">Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} data</p>
             <div className="flex items-center space-x-2">
-              {[...Array(totalPages)].map((_, index) => (
+              {[...Array(totalPages)].map((i, index) => (
                 <button
-                  key={index}
+                  key={i}
                   className={`px-3 py-1 text-[10px] ${currentPage === index + 1 ? 'text-white bg-[#1C3557]' : 'text-gray-600 bg-gray-200'} rounded-md hover:bg-gray-800`}
                   onClick={() => setCurrentPage(index + 1)}
                 >

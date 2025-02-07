@@ -1,25 +1,101 @@
 'use client'
 
 import BaseLayout from "@/components/BaseLayout";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search } from "lucide-react";
+import axios from "axios";
 
+  interface Student {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+  }
+
+  interface Teacher {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  }
+
+  interface Schedule {
+    student: Student;
+    teacher: Teacher;
+    _id: string;
+    classDay: string[];
+    package: string;
+    preferedTeacher: string;
+    totalHourse: number;
+    startDate: string;
+    endDate: string;
+    startTime: string[];
+    endTime: string[];
+    scheduleStatus: string;
+    status: string;
+    createdBy: string;
+    createdDate: string;
+    lastUpdatedDate: string;
+    __v: number;
+  }
+
+  interface ApiResponse {
+    totalCount: number;
+    students: Schedule[];
+  }
 
 
 
 const Totalstudents = () => {
-
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("TeacherAuthToken");
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
 
-  const filteredData = data.filter(row =>
-    row.name.toLowerCase().includes(searchTerm.toLowerCase())
+        if (!teacherIdToFilter) {
+          console.error("No teacher ID found in localStorage.");
+          return;
+        }
+
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+
+        const filteredData = response.data.students.filter(
+          (item) => item.teacher.teacherId === teacherIdToFilter
+        );
+
+        const studentScheduleMap = new Map<string, Schedule>();
+
+        filteredData.forEach((item) => {
+          studentScheduleMap.set(item.student.studentId, item);
+        });
+
+        const uniqueSchedules = Array.from(studentScheduleMap.values());
+
+        setUniqueStudentSchedules(uniqueSchedules);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const filteredData = uniqueStudentSchedules.filter((row) =>
+    `${row.student.studentFirstName} ${row.student.studentLastName}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const currentData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  console.log(currentData);
 
   return (
     <BaseLayout>
@@ -54,44 +130,48 @@ const Totalstudents = () => {
                 </tr>
               </thead>
               <tbody className="text-[11px]">
-                {Array.from({ length: 5 }).map((_, index) => {
-                  const uniqueKey = `row-${index}`; // Create a unique key for each row
-
-                  return (
-                    <tr
-                      key={uniqueKey}
-                      className="text-[12px] font-medium mt-2"
-                      style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}
-                    >
-                      <td className="px-6 py-2 text-center">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-[#DBDBDB] rounded-md"></div>
-                          <span className="px-6 py-2 text-center">Samantha William</span>
+              {currentData.length > 0 ? (
+                  currentData.map((student) => (
+                    <tr key={student.student.studentId} className="bg-gray-100  hover:bg-gray-50">
+                      <td className="p-3" style={{ width: "190px" }}>
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-[#DBDBDB] rounded-full"></div>
+                          <span className="text-center">
+                            {student.student.studentFirstName} {student.student.studentLastName}
+                          </span>
                         </div>
                       </td>
-                      <td className="px-6 py-2 text-center" >
-                        1234567890
-                      </td>
-                      <td className="px-6 py-2 text-center" >
-                        Arabic
-                      </td>
-                      <td className="px-6 py-2 text-center" >
-                        Regular Class
-                      </td>
-                      <td className="px-6 py-2 text-center" >
-                        January 2, 2020
-                      </td>
-                      <td className="px-6 py-2 text-center" >
-                        Level 2
-                      </td>
-                      <td className="px-6 py-2 text-center">
-                        <span className="px-3 py-1 font-medium bg-[#4ade80]/10 text-[#4ade80] border border-[#4ade80] bg-green-100 rounded-lg">
-                          Active
+                      <td className="p-3 text-center">{student.student.studentId}</td>
+                      <td className="p-3 text-center">{student.package}</td>
+                      <td className="p-3 text-center">{student.scheduleStatus}</td>
+                      <td className="p-3 text-center">{new Date(student.startDate).toLocaleDateString()}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2 ml-7">
+                               <span className=" text-sm">Level 1</span>
+                                  <div className="w-5 h-5 bg-[#1e293b] rounded-full text-white flex items-center justify-center text-xs">
+                                  </div>
+                                   </div>
+                               </td>
+                      <td className="p-3">
+                        <span
+                          className={`px-3 py-1 justify-center ml-7 font-medium ${
+                            student.status === "Active"
+                              ? "text-green-600 bg-green-100"
+                              : "text-red-600 bg-red-100"
+                          } rounded-full`}
+                        >
+                          {student.status}
                         </span>
                       </td>
                     </tr>
-                  );
-                })}
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center p-4 text-gray-500">
+                      No students found.
+                    </td>
+                  </tr>
+                )}
               </tbody>
 
             </table>
@@ -100,9 +180,9 @@ const Totalstudents = () => {
         <div className="flex items-center justify-between align-bottom p-4 mt-5">
           <p className="text-[11px] text-gray-600">Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} data</p>
           <div className="flex items-center space-x-2">
-            {[...Array(totalPages)].map((_, index) => (
+            {[...Array(totalPages)].map((i, index) => (
               <button
-                key={index}
+                key={i}
                 className={`px-3 py-1 text-[10px] ${currentPage === index + 1 ? 'text-white bg-[#1C3557]' : 'text-gray-600 bg-gray-200'} rounded-md hover:bg-gray-800`}
                 onClick={() => setCurrentPage(index + 1)}
               >

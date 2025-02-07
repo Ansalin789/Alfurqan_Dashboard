@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Filter, Search, X } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
 import BaseLayout from '@/components/BaseLayout';
 import { FaSort } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 interface Student {
   id: string;
@@ -55,24 +56,9 @@ function Analytics() {
   });
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [sortKey, setSortKey] = useState<keyof Student | keyof Class | keyof Earning>("name"); // Default sort key
-
-  const studentData = [
-    { month: 'Jan', students: 8000 },
-    { month: 'Feb', students: 6000 },
-    { month: 'Mar', students: 4000 },
-    { month: 'Apr', students: 7500 },
-    { month: 'May', students: 5000 },
-    { month: 'Jun', students: 6500 },
-  ];
-
-  const classData = [
-    { month: 'Jan', classes: 65 },
-    { month: 'Feb', classes: 75 },
-    { month: 'Mar', classes: 85 },
-    { month: 'Apr', classes: 70 },
-    { month: 'May', classes: 80 },
-    { month: 'Jun', classes: 100 },
-  ];
+  const [studentData, setStudentData] = useState<{ month: string, students: number }[]>([]);
+  const [classData, setClassData] = useState<{ month: string; classes: number }[]>([]);
+  
 
   const earningsData = [
     { month: 'Jan', earnings: 30000 },
@@ -83,71 +69,7 @@ function Analytics() {
     { month: 'Jun', earnings: 45741 },
   ];
 
-  const students: Student[] = [
-    {
-      id: '1234567890',
-      name: 'Samantha William',
-      course: 'Tajweed',
-      courseType: 'Trial Class',
-      courseDuration: '4',
-      classDateTime: '4',
-      joinDate: 'January 2, 2020',
-      level: 2,
-      status: 'Active'
-    },
-    {
-      id: '1234567891',
-      name: 'Jordan Nico',
-      course: 'Arabic',
-      courseType: 'Group Class',
-      courseDuration:'4',
-      classDateTime:'4',
-      joinDate: 'January 2, 2020',
-      level: 2,
-      status: 'Active'
-    },
-    {
-      id: '1234567892',
-      name: 'Nadila Adja',
-      course: 'Quran',
-      courseType: 'Regular Class',
-      courseDuration: '4',
-      classDateTime: '4',
-      joinDate: 'January 2, 2020',
-      level: 2,
-      status: 'Active'
-    }
-  ];
-
-  const classes: Class[] = [
-    {
-      id: 'CLS001',
-      name: 'Basic Arabic',
-      instructor: 'Ahmed Hassan',
-      schedule: 'Mon, Wed 10:00 AM',
-      students: 15,
-      type: 'Group Class',
-      status: 'Ongoing'
-    },
-    {
-      id: 'CLS002',
-      name: 'Advanced Tajweed',
-      instructor: 'Sarah Ahmad',
-      schedule: 'Tue, Thu 2:00 PM',
-      students: 10,
-      type: 'Group Class',
-      status: 'Ongoing'
-    },
-    {
-      id: 'CLS003',
-      name: 'Quran Memorization',
-      instructor: 'Mohammad Ali',
-      schedule: 'Fri 9:00 AM',
-      students: 8,
-      type: 'Regular Class',
-      status: 'Ongoing'
-    }
-  ];
+  
 
   const earnings: Earning[] = [
     {
@@ -184,23 +106,150 @@ function Analytics() {
       status: 'Paid'
     }
   ];
+  interface Student {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+}
 
-  const filteredStudents = students.filter(student => {
-    return (
-      student.name.toLowerCase().includes(filters.name.toLowerCase()) &&
-      student.id.includes(filters.id) &&
-      (filters.course === '' || student.course === filters.course) &&
-      (filters.status === '' || student.status === filters.status)
-    );
-  });
+interface Teacher {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+}
 
-  const filteredClasses = classes.filter(cls => {
-    return (
-      cls.name.toLowerCase().includes(filters.name.toLowerCase()) &&
-      cls.id.includes(filters.id) &&
-      (filters.status === '' || cls.status === filters.status)
-    );
-  });
+interface Schedule {
+    student: Student;
+    teacher: Teacher;
+    _id: string;
+    classDay: string[];
+    package: string;
+    preferedTeacher: string;
+    totalHourse: number;
+    startDate: string;
+    endDate: string;
+    startTime: string[];
+    endTime: string[];
+    scheduleStatus: string;
+    status: string;
+    createdBy: string;
+    createdDate: string;
+    lastUpdatedDate: string;
+    __v: number;
+}
+
+interface ApiResponse {
+    totalCount: number;
+    students: Schedule[];
+}
+const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
+const[TotalStudents,setTotalStudents]=useState<number>();
+const[TotalClasses,setTotalClasses]=useState<number>();
+useEffect(() => {
+  const fetchData = async () => {
+      try {
+          const auth = localStorage.getItem('TeacherAuthToken');
+          const teacherIdToFilter = localStorage.getItem('TeacherPortalId');
+
+          if (!teacherIdToFilter) {
+              console.error("No teacher ID found in localStorage.");
+              return;
+          }
+
+          const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+              headers: {
+                  Authorization: `Bearer ${auth}`,
+              },
+          });
+
+          const filteredData = response.data.students.filter(
+              (item) => item.teacher.teacherId === teacherIdToFilter
+          );
+
+          // Create a Map to store unique students based on studentId
+          const studentScheduleMap = new Map<string, Schedule>();
+          const uniqueStudents = new Set<string>(); // To count total unique students
+
+          filteredData.forEach((item) => {
+              studentScheduleMap.set(item.student.studentId, item);
+              uniqueStudents.add(item.student.studentId);
+          });
+
+          // Convert Map values (unique Schedule objects) to an array
+          const uniqueSchedules = Array.from(studentScheduleMap.values());
+
+          setUniqueStudentSchedules(uniqueSchedules);
+
+          // Group students by month, ensuring uniqueness of students per month
+          const monthlyStudentCount: { [key: string]: Set<string> } = {}; // Set to ensure uniqueness
+          const monthlyClassCount: { [key: string]: number } = {};
+
+          filteredData.forEach((item) => {
+              const month = new Date(item.startDate).toLocaleString('default', { month: 'short' });
+              const studentId = item.student.studentId;
+
+              // Count unique students per month
+              if (!monthlyStudentCount[month]) {
+                  monthlyStudentCount[month] = new Set();
+              }
+              monthlyStudentCount[month].add(studentId);
+
+              // Count classes per month
+              if (!monthlyClassCount[month]) {
+                  monthlyClassCount[month] = 0;
+              }
+              monthlyClassCount[month] += 1;
+          });
+
+          // Convert Set of unique students per month into an array
+          const formattedStudentData = Object.keys(monthlyStudentCount).map((month) => ({
+              month,
+              students: monthlyStudentCount[month].size,
+          }));
+
+          // Convert class count per month into an array
+          const formattedClassData = Object.keys(monthlyClassCount).map((month) => ({
+              month,
+              classes: monthlyClassCount[month],
+          }));
+
+          setStudentData(formattedStudentData);
+          setClassData(formattedClassData);
+
+          // Calculate Total Students and Total Classes
+          const totalStudents = uniqueStudents.size; // Unique student count
+          const totalClasses = filteredData.length; // Total number of classes
+
+          setTotalStudents(totalStudents);
+          setTotalClasses(totalClasses);
+      } catch (error) {
+          console.error("Error fetching data:", error);
+      }
+  };
+
+  fetchData();
+}, []);
+
+
+
+
+const filteredStudents = uniqueStudentSchedules.filter((schedule) => {
+  return (
+    schedule.student.studentFirstName.toLowerCase().includes(filters.name.toLowerCase()) &&
+    schedule.student.studentId.includes(filters.id) &&
+    (filters.course === '' || schedule.package ) &&
+    (filters.status === '' || schedule.status === filters.status)
+  );
+});
+
+const filteredClasses = uniqueStudentSchedules.filter((cls) => {
+  return (
+    cls.student.studentFirstName.toLowerCase().includes(filters.name.toLowerCase()) &&
+    cls.student.studentId.includes(filters.id) &&
+    (filters.status === "" || cls.status === filters.status)
+  );
+});
 
   const filteredEarnings = earnings.filter(earning => {
     return (
@@ -219,18 +268,37 @@ function Analytics() {
 
   // Sorting logic for filtered data
   const sortedStudents = [...filteredStudents].sort((a, b) => {
-    if (sortOrder === "asc") {
-      return a[sortKey as keyof Student].toString().localeCompare(b[sortKey as keyof Student].toString());
-    }
-    return b[sortKey as keyof Student].toString().localeCompare(a[sortKey as keyof Student].toString());
-  });
+    const aValue = a.student[sortKey as keyof Student]?.toString() || "";
+    const bValue = b.student[sortKey as keyof Student]?.toString() || "";
 
-  const sortedClasses = [...filteredClasses].sort((a, b) => {
     if (sortOrder === "asc") {
-      return a[sortKey as keyof Class].toString().localeCompare(b[sortKey as keyof Class].toString());
+        return aValue.localeCompare(bValue);
     }
-    return b[sortKey as keyof Class].toString().localeCompare(a[sortKey as keyof Class].toString());
-  });
+    return bValue.localeCompare(aValue);
+});
+
+const sortedClasses = [...filteredClasses].sort((a, b) => {
+  const aValue = a[sortKey as keyof Schedule];
+  const bValue = b[sortKey as keyof Schedule];
+
+  if (aValue == null || bValue == null) return 0; // Handle null/undefined
+
+  if (typeof aValue === "number" && typeof bValue === "number") {
+    return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+  }
+
+  // Handle non-string values (objects, arrays, etc.)
+  if (typeof aValue === "object" || typeof bValue === "object") {
+    // Convert objects to a meaningful string representation (e.g., JSON.stringify or specific properties)
+    return sortOrder === "asc"
+      ? JSON.stringify(aValue).localeCompare(JSON.stringify(bValue))
+      : JSON.stringify(bValue).localeCompare(JSON.stringify(aValue));
+  }
+
+  return sortOrder === "asc"
+    ? aValue.toString().localeCompare(bValue.toString())
+    : bValue.toString().localeCompare(aValue.toString());
+});
 
   const sortedEarnings = [...filteredEarnings].sort((a, b) => {
     const aValue = a[sortKey as keyof Earning];
@@ -276,7 +344,7 @@ function Analytics() {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-                <p className="text-xl font-bold text-[#1e293b]">12,345</p>
+                <p className="text-xl font-bold text-[#1e293b]">{TotalStudents}</p>
                 <p className="text-xs text-[#4ade80] font-medium">5.4% than last year</p>
               </div>
             </button>
@@ -310,7 +378,7 @@ function Analytics() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
-                <p className="text-xl font-bold text-[#1e293b]">100</p>
+                <p className="text-xl font-bold text-[#1e293b]">{TotalClasses}</p>
                 <p className="text-xs text-[#4ade80] font-medium">+15% than last month</p>
               </div>
             </button>
@@ -402,37 +470,37 @@ function Analytics() {
                       Course Type <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('courseType')} />
                     </th>
                     <th className="px-6 py-3 text-center">
-                      Join Date <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('joinDate')} />
+                      Join Date <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('date')} />
                     </th>
                     <th className="px-6 py-3 text-center">Level</th>
                     <th className="px-6 py-3 text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedStudents.map((student) => (
-                    <tr key={student.id} className="text-[11px] font-medium mt-2"
+                {sortedStudents.slice(0, 3).map((schedule) => (
+                    <tr key={schedule.student.studentId} className="text-[11px] font-medium mt-2"
                     style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
                       <td className="px-4 py-2 text-center">
                         <div className="flex items-center gap-3">
                           <div className="w-5 h-5 bg-[#DBDBDB] rounded-md"></div>
-                          <span className="px-6 py-2 text-center">{student.name}</span>
+                          <span className="px-6 py-2 text-center">{schedule.student.studentFirstName} {schedule.student.studentLastName}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-2 text-center">{student.id}</td>
-                      <td className="px-6 py-2 text-center">{student.course}</td>
-                      <td className="px-6 py-2 text-center">{student.courseType}</td>
-                      <td className="px-6 py-2 text-center">{student.joinDate}</td>
+                      <td className="px-6 py-2 text-center">{schedule.student.studentId}</td>
+                      <td className="px-6 py-2 text-center">{schedule.package}</td>
+                      <td className="px-6 py-2 text-center">{schedule.scheduleStatus}</td>
+                      <td className="px-6 py-2 text-center">{new Date(schedule.startDate).toLocaleDateString()}</td>
                       <td className="px-6 py-2 text-center">
                         <div className="flex items-center gap-2">
-                          <span className="text-[#1e293b] text-[11px]">Level {student.level}</span>
+                          <span className="text-[#1e293b] text-[11px]">Level 1</span>
                           <div className="w-3 h-3 bg-[#1e293b] rounded-full text-white flex items-center justify-center text-[7px]">
-                            {student.level}
+                            1
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
                         <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] border border-[#299350] rounded-lg text-[11px]">
-                          {student.status}
+                        {schedule.status}
                         </span>
                       </td>
                     </tr>
@@ -469,20 +537,20 @@ function Analytics() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedClasses.map((cls) => (
-                    <tr key={cls.id} className="text-[11px] font-medium mt-2"
+                {sortedClasses.slice(0,3).map((cls) => (
+                    <tr key={cls._id} className="text-[11px] font-medium mt-2"
                     style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
                       <td className="px-4 py-2">
                         <div className="flex items-center gap-3">
                           <div className="w-5 h-5 bg-[#DBDBDB] rounded-md"></div>
-                          <span className="px-6 py-2 text-center">{cls.name}</span>
+                          <span className="px-6 py-2 text-center">Trail Class</span>
                         </div>
                       </td>
-                      <td className="px-6 py-2 text-center">{cls.id}</td>
-                      <td className="px-6 py-2 text-center">{cls.instructor}</td>
-                      <td className="px-6 py-2 text-center">{cls.schedule}</td>
-                      <td className="px-6 py-2 text-center">{cls.students}</td>
-                      <td className="px-6 py-2 text-center">{cls.type}</td>
+                      <td className="px-6 py-2 text-center">{cls._id}</td>
+                      <td className="px-6 py-2 text-center">{cls.package}</td>
+                      <td className="px-6 py-2 text-center">{cls.scheduleStatus}</td>
+                      <td className="px-6 py-2 text-center">{cls.totalHourse}</td>
+                      <td className="px-6 py-2 text-center">{new Date(cls.startDate).toLocaleDateString()}</td>
                       <td className="px-6 py-1 text-center">
                         <span className={`px-2.5 py-1 ${
                           cls.status === 'Ongoing' ? 'bg-[#4ade80]/10 text-[#4ade80]' : 'bg-gray-100 text-[#1e293b]'
