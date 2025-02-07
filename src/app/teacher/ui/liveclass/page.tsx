@@ -109,7 +109,7 @@ function LiveClass() {
         const nextClass = filterUpcomingClass(response.data);
         console.log('Filtered Next Class:', nextClass);  // Log the filtered data
         setClassData(nextClass);
-        ClassTimer(nextClass?.startTime ? nextClass.startTime[0] : "00:00");
+      
   
       } catch (err) {
         console.log('Error loading class details:', err);
@@ -253,73 +253,47 @@ function LiveClass() {
   };
   
   
-  const [student, setStudent] = useState({
-    firstName: classData?.student.studentFirstName,
-    lastName: classData?.student.studentLastName,
-    city: classData?.student.city ,
-    country: classData?.student.country,
-    trialId: classData?.student.trailId,
-    course: classData?.student.course,
-    classStatus: classData?.student.classStatus,
-    sessionDate: classData?.startDate,
-    sessionTime: classData?.startTime ? classData.startTime[0] : "00:00",
-    comments: '',
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setStudent(prev => ({ ...prev, [name]: value }));
-  };
+  
 
   
 
   const handleStartSession = () => {
-    console.log('Starting session for student:', student);
     setIsFormData(false);
   };
-
-  const handleClear = () => {
-    setStudent({
-      firstName: '',
-      lastName: '',
-      city: '',
-      country: '',
-      trialId: '',
-      course: '',
-      classStatus: 'Joining',
-      sessionDate: '',
-      sessionTime: '',
-      comments: '',
-    });
-  };
-  const [timeRemaining, setTimeRemaining] = useState("");
   const categories = ["Listening Ability", "Reading Ability", " Overall Performance"];
-  const ClassTimer = ( startTime: string ) => {
+  const [timeRemaining, setTimeRemaining] = useState("");
+  useEffect(() => {
+    if (!classData) return;
+
+    const updateRemainingTime = () => {
+      const now = new Date();
+
+      // Extract class date and time
+      const classDate = new Date(classData.startDate);
+      const [hours, minutes] = classData.startTime[0].split(":").map(Number);  // Assuming startTime is an array
+
+      classDate.setHours(hours, minutes, 0, 0);  // Set time for the class
+
+      const diff = classDate.getTime() - now.getTime();
+
+      if (diff > 0) {
+        const remainingDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const remainingHours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const remainingMinutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        setTimeRemaining(`${remainingDays}d ${remainingHours}h ${remainingMinutes}m`);
+      } else {
+        setTimeRemaining("Started");
+      }
+    };
+
+    updateRemainingTime();  // Initial call
+
+    const timer = setInterval(updateRemainingTime, 60000);  // Update every minute
+
+    return () => clearInterval(timer);  // Cleanup on unmount
+  }, [classData]);
   
-    useEffect(() => {
-      const updateRemainingTime = () => {
-        const now = new Date();
-        const classTime = new Date();
-        const [hours, minutes] = startTime.split(":").map(Number);
-        classTime.setHours(hours, minutes, 0, 0);
-  
-        const diff = classTime.getTime() - now.getTime();
-  
-        if (diff > 0) {
-          const remainingHours = Math.floor(diff / (1000 * 60 * 60));
-          const remainingMinutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          setTimeRemaining(`${remainingHours}h ${remainingMinutes}m`);
-        } else {
-          setTimeRemaining("Started");
-        }
-      };
-  
-      updateRemainingTime(); // Initial update
-      const timer = setInterval(updateRemainingTime, 60000); // Update every minute
-  
-      return () => clearInterval(timer);
-    }, [startTime]);
-  }
   return (
     <BaseLayout>
       <div className="flex h-screen bg-[#E6E9ED]">
@@ -339,8 +313,8 @@ function LiveClass() {
                          <input
                            type="text"
                            name="firstName"
-                           value={student.firstName}
-                           onChange={handleInputChange}
+                           value={classData?.student.studentFirstName}
+                           
                            className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
@@ -351,8 +325,8 @@ function LiveClass() {
                          <input
                            type="text"
                            name="lastName"
-                           value={student.lastName}
-                           onChange={handleInputChange}
+                           value={classData?.student.studentLastName}
+                           
                            className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
@@ -363,14 +337,11 @@ function LiveClass() {
                          <div className="relative">
                            <select
                              name="city"
-                             value={student.city}
-                             onChange={handleInputChange}
+                             value={classData?.student.city}
                              className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
-                             <option value="Texas">Texas</option>
-                             <option value="New York">New York</option>
-                             <option value="California">California</option>
+                             
                            </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
@@ -381,14 +352,11 @@ function LiveClass() {
                          <div className="relative">
                            <select
                              name="country"
-                             value={student.country}
-                             onChange={handleInputChange}
+                             value={classData?.student.country}
                              className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
-                             <option value="USA">USA</option>
-                             <option value="Canada">Canada</option>
-                             <option value="UK">UK</option>
+                             
                            </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
@@ -399,8 +367,8 @@ function LiveClass() {
                          <input
                            type="text"
                            name="trialId"
-                           value={student.trialId}
-                           onChange={handleInputChange}
+                           value={classData?.student.trailId}
+                          
                            className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
@@ -411,14 +379,10 @@ function LiveClass() {
                          <div className="relative">
                            <select
                              name="course"
-                             value={student.course}
-                             onChange={handleInputChange}
+                             value={classData?.student.course}
                              className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
-                             <option value="Arabic">Arabic</option>
-                             <option value="Islamic Studies">Islamic Studies</option>
-                             <option value="Quran">Quran</option>
                            </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
@@ -430,8 +394,8 @@ function LiveClass() {
                        <div className="relative">
                          <select
                            name="classStatus"
-                           value={student.classStatus}
-                           onChange={handleInputChange}
+                           value={classData?.student.classStatus}
+                         
                            className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                            required
                          >
@@ -447,8 +411,6 @@ function LiveClass() {
                        <label htmlFor='fiiugigrtname'  className="block text-[12px] mb-2">Additional Comments (Optional)</label>
                        <textarea
                          name="comments"
-                         value={student.comments}
-                         onChange={handleInputChange}
                          placeholder="Write your comment here..."
                          className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 h-24 resize-none"
                        />
@@ -457,7 +419,6 @@ function LiveClass() {
                      <div className="mt-6 flex justify-end gap-4">
                        <button
                          type="button"
-                         onClick={handleClear}
                          className="px-6 py-2 rounded-lg text-[12px] border border-white/20 hover:bg-white/10 transition-colors"
                        >
                          Clear
@@ -488,14 +449,13 @@ function LiveClass() {
                      </h2>
                      <div className="flex items-center justify-center gap-2 mt-2 text-gray-600">
                        <Timer size={16} />
-                       <span>{classData?.classDay[0]} - {classData?.startDate}</span>
+                       <span>{classData?.classDay[0]} - {new Date(classData?.startDate ?? '2022-01-01').toLocaleDateString()}</span>
                      </div>
-                     
                      <div className="mt-6 text-center">
                        <p className="text-gray-600 mb-2">Trial Session<br />is Due in</p>
                        <div className="inline-block relative">
                          <div className="w-16 h-16 rounded-full border-4 border-blue-500 flex items-center justify-center">
-                           <span className="font-bold">{timeRemaining}</span>
+                           <span className="font-bold text-[10px]">{timeRemaining}</span>
                          </div>
                          <span className="text-xs text-gray-500 mt-1 block">Mins</span>
                        </div>

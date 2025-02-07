@@ -1,12 +1,55 @@
 'use client';
 
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { IoMdArrowDropdownCircle } from "react-icons/io";
 import { useRouter } from 'next/navigation';
-import { table } from "console";
+import axios from "axios";
+
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  city:string;
+  country:string;
+  trailId:string;
+  course:string;
+  classStatus:string;
+}
+
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+interface Schedule {
+  student: Student;
+  teacher: Teacher;
+  _id: string;
+  classDay: string[];
+  package: string;
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+
+interface ApiResponse {
+  totalCount: number;
+  students: Schedule[];
+}
+
 
 const ScheduledClasses = () => {
   const router = useRouter();
@@ -19,23 +62,40 @@ const ScheduledClasses = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const [upcomingClasses, setUpcomingClasses] = useState([
-    { id: 798, name: "Samantha William", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 7:30 AM" },
-    { id: 799, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 8:30 AM" },
-    { id: 800, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Re-Schedule Requested" },
-    { id: 801, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 8:30 AM" },
-    { id: 802, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 8:30 AM" },
-    { id: 803, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 8:30 AM" },
-    { id: 804, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 8:30 AM" },
-    { id: 805, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Available at 8:30 AM" },
-  ]);
+  const [upcomingClasses, setUpcomingClasses] = useState<Schedule[]>([]);
+  const[completedData,setCompletedData]=useState<Schedule[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("TeacherAuthToken");
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
 
-  const completedData = [
-    { id: 803, name: "Samantha William", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Completed" },
-    { id: 804, name: "Jordan Nico", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Completed" },
-    { id: 805, name: "Nadila Adja", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Completed" },
-    { id: 806, name: "Nadila Adja", course: "Tajweed Masterclass", date: "January 2, 2020", status: "Completed" },
-  ];
+        if (!teacherIdToFilter) {
+          console.error("No teacher ID found in localStorage.");
+          return;
+        }
+
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+        const teacherClasses = response.data.students.filter(
+          (classItem) => classItem.teacher.teacherId === teacherIdToFilter
+        );
+  
+        // Set filtered data to state
+        setUpcomingClasses(teacherClasses.filter((classItem) => classItem.status === "Active"));
+        setCompletedData(teacherClasses.filter((classItem) => classItem.status === "completed"));
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+ 
 
   const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
 
@@ -55,27 +115,29 @@ const ScheduledClasses = () => {
   };
 
   const handleRescheduleSubmit = () => {
-    if (rescheduleReason.trim()) {
+    if (rescheduleReason.trim() && selectedItemId) {
       setShowSuccess(true);
-      setUpcomingClasses(prevClasses => 
-        prevClasses.map(item => 
-          item.id === selectedItemId 
-            ? { ...item, status: "Re-Schedule Requested" }
+      setUpcomingClasses((prevClasses : Schedule[]) =>
+        prevClasses.map(item =>
+          Number(item._id) === selectedItemId // Convert item._id to a number
+            ? { ...item, status: 'Re-Schedule Requested' }
             : item
         )
       );
-      
-      setTimeout(() => {
-        setShowSuccess(false);
-        setIsRescheduleModalOpen(false);
-        setRescheduleReason("");
-      }, 2000);
+    } else {
+      alert('Please provide a reason and select a class to reschedule.');
     }
+
+    setTimeout(() => {
+      setShowSuccess(false);
+      setIsRescheduleModalOpen(false);
+      setRescheduleReason("");
+    }, 2000);
   };
 
   const handleStatusClick = (status: string) => {
     if (status.includes('Available')) {
-      router.push('/teacher/ui/liveclass'); // Replace with your desired route
+      router.push('/teacher/ui/liveclass');
     }
   };
 
@@ -148,12 +210,12 @@ const ScheduledClasses = () => {
                 </thead>
                 <tbody>
                   {currentItems.map((item) => (
-                    <tr key={item.id} className="text-[12px] font-medium mt-2"
+                    <tr key={item._id} className="text-[12px] font-medium mt-2"
                     style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
-                      <td className="px-6 py-2 text-center">{item.id}</td>
-                      <td className="px-6 py-2 text-center">{item.name}</td>
-                      <td className="px-6 py-2 text-center">{item.course}</td>
-                      <td className="px-6 py-2 text-center">{item.date}</td>
+                      <td className="px-6 py-2 text-center">{item._id}</td>
+                      <td className="px-6 py-2 text-center">{item.student.studentFirstName}</td>
+                      <td className="px-6 py-2 text-center">{item.student.course ?? "Quran"}</td>
+                      <td className="px-6 py-2 text-center">{new Date(item?.startDate ?? '2022-01-01').toLocaleDateString()} </td>
                       <td className="px-6 py-2 text-center">
                         {activeTab === "completed" ? (
                           <span className="text-green-600 border text-[12px] border-green-600 bg-green-100 px-3 py-1 rounded-lg">{item.status}</span>
@@ -175,18 +237,18 @@ const ScheduledClasses = () => {
                           <>
                             <button 
                               className="text-xl"
-                              onClick={() => handleOptionsClick(item.id)}
+                              onClick={() => handleOptionsClick(Number(item._id))}
                             >
                               ...
                             </button>
-                            {selectedItemId === item.id && (
+                            {selectedItemId === Number(item._id) && (
                               <div className="absolute right-0 mt-1 w-24 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                                 <div className="py-1">
                                   <button
                                     className="block w-full text-left px-4 py-2 text-[12px] text-gray-700 hover:bg-gray-100"
                                     onClick={() => {
                                       setIsRescheduleModalOpen(true);
-                                      setSelectedItemId(item.id);
+                                      setSelectedItemId(Number(item._id));
                                     }}
                                   >
                                     Request

@@ -5,132 +5,185 @@ import { FaUser } from "react-icons/fa";
 import { MdDateRange } from "react-icons/md";
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  city: string;
+  country: string;
+  trailId: string;
+  course: string;
+  classStatus: string;
+}
+
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+interface ClassData {
+  _id: string;
+  student: Student;
+  teacher: Teacher;
+  classDay: string[]; // Keep this as an array of strings
+  package: string;
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];  // Array of strings for startTime
+  endTime: string[];    // Array of strings for endTime
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+
+interface ApiResponse {
+  totalCount: number;
+  classSchedule: ClassData[];
+}
 
 const NextClass = () => {
-
-  const [time, setTime] = useState({ hours: 0, minutes: 1, seconds: 0 }); // Example: 4-minute countdown
+  const [classData, setClassData] = useState<ClassData | null>(null);
+  
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const router = useRouter(); // Initialize the router
 
-  useEffect(() => {
-    if (time.hours === 0 && time.minutes === 0 && time.seconds === 0) {
-      setIsCountdownFinished(true); // Countdown finished
-    } else {
-      const interval = setInterval(() => {
-        setTime((prevTime) => {
-          let { hours, minutes, seconds } = prevTime;
-
-          if (seconds > 0) seconds--;
-          else if (minutes > 0) {
-            minutes--;
-            seconds = 59;
-          } else if (hours > 0) {
-            hours--;
-            minutes = 59;
-            seconds = 59;
-          }
-
-          return { hours, minutes, seconds };
-        });
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [time]);
-
-  const formatTime = (time: number) => (time < 10 ? `0${time}` : time);
-  const [classData] = useState<{
-    studentName: string;
-    classStartTime: string;
-    classStartDate: string;
-  } | null>(null);
+  const filterUpcomingClass = (response: { totalCount: number, classSchedule: any[] }): ClassData | null => {
+    const classes = response.classSchedule;
   
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1; // Months are zero-indexed
-    const year = date.getFullYear();
-    return `${day < 10 ? '0' + day : day}.${month < 10 ? '0' + month : month}.${year}`;
+    if (!Array.isArray(classes)) {
+      console.log('Expected an array, but received:', classes);
+      return null;
+    }
+  
+    // Find the next class
+    const nextClass = classes.find((cls) => {
+      const now = new Date();
+      const classStartDate = new Date(cls.startDate);
+      return classStartDate > now;
+    });
+  
+    return nextClass || null;  // Return the next class or null if not found
   };
 
+  const [timeRemaining, setTimeRemaining] = useState("");
+  
+  useEffect(() => {
+    const fetchClassData = async () => {
+      try {
+        const teacherId = localStorage.getItem('TeacherPortalId');
+        const authToken = localStorage.getItem('TeacherAuthToken');
+        if (!teacherId || !authToken) {
+          console.log('Missing studentId or authToken');
+          return;
+        }
+  
+        const response = await axios.get<ApiResponse>(`http://localhost:5001/classShedule/teacher`, {
+          params: { teacherId },
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+        
+        const nextClass = filterUpcomingClass(response.data);
+        setClassData(nextClass);
+      } catch (err) {
+        console.log('Error loading class details:', err);
+      }
+    };
+  
+    fetchClassData();
+  }, []);
+
+  useEffect(() => {
+    if (!classData) return;
+
+    const updateRemainingTime = () => {
+      const now = new Date();
+  
+      // Extract class date and time
+      const classDate = new Date(classData.startDate);
+      const [hours, minutes] = classData.startTime[0].split(":").map(Number);
+  
+      classDate.setHours(hours, minutes, 0, 0);  // Set time for the class
+  
+      const diff = classDate.getTime() - now.getTime();
+  
+      if (diff > 0) {
+        const remainingDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const remainingHours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const remainingMinutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+        setTimeRemaining(`${remainingDays}d ${remainingHours}h ${remainingMinutes}m`);
+      } else {
+        setTimeRemaining("Started");
+        setIsCountdownFinished(true);
+      }
+    };
+  
+    updateRemainingTime();  // Initial call
+  
+    const timer = setInterval(updateRemainingTime, 60000);  // Update every minute
+  
+    return () => clearInterval(timer);  // Cleanup on unmount
+  }, [classData]);
   return (
-    
     <div className="p-4">
       <h2 className="text-2xl font-semibold text-gray-800 p-2">My Class</h2>
       <div className="bg-[#1C3557] rounded-[25px] shadow flex items-center justify-between text-white">
-        <style>
-          {`
-            @keyframes wave {
-              0% {
-                background-position: 0% 50%;
-              }
-              50% {
-                background-position: 100% 50%;
-              }
-              100% {
-                background-position: 0% 50%;
-              }
-            }
-
-            .animated-gradient {
-              background: linear-gradient(270deg, #10B981 10%, #FBBF24 30%, #8B5CF6 90%);
-              background-size: 400% 400%;
-              animation: wave 5s ease infinite;
-              -webkit-background-clip: background;
-              -webkit-text-fill-color: text;
-            }
-          `}
-        </style>
         <div className="items-center p-1 px-8">
           <div className='flex text-[15px] font-medium pt-3'>
-              <h3 className="items-center">Tajweed Masterclass &nbsp; </h3> |&nbsp;
-              <FaUser className='mt-1 w-[10px] h-4'/>&nbsp; <p className='text-[13px] mt-1'>Prof.Smith</p>
+            <h3 className="items-center">Tajweed Masterclass &nbsp; </h3> |&nbsp;
+            <FaUser className='mt-1 w-[10px] h-4'/>&nbsp; <p className='text-[13px] mt-1'>{classData?.teacher.teacherName}</p>
           </div>
           <div className="flex items-center space-x-8 py-2">
             <div className="flex items-center space-x-2">
               <MdDateRange className="w-[15px]" />
-              <p className="text-[13px]">{classData?.studentName}Monday - 06.05.2024</p>
+              <p className="text-[13px]">{classData?.student.studentFirstName} {classData?.classDay[0]} - {new Date(classData?.startDate ?? '2022-01-01').toLocaleDateString()}</p>
             </div>
             <div className="flex items-center space-x-2">
               <AiOutlineClockCircle className="w-[15px]" />
-              <p className="text-[13px]">{classData?.classStartTime}9:00 AM - 10:30 AM</p>
+              <p className="text-[13px]">{classData?.startTime[0]}-{classData?.endTime[0]}</p>
             </div>
           </div>
-          {classData?.classStartDate && (
-            <p className="text-[13px] mt-2 text-gray-300 hidden" >
-              Class Date: {formatDate(classData.classStartDate)}
-            </p>
-          )}
         </div>
         <div className="flex items-center space-x-2 px-14">
           <p className="text-[15px] font-bold">Starts in</p>
           <div className="relative flex items-center justify-center p-10">
-            <svg className="absolute w-14 h-20" viewBox="0 0 36 36">
-              <path
-                className="circle-bg"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none"
-                stroke="#fff"
-                strokeWidth="2"
-              />
-              <path
-                className="circle"
-                strokeDasharray={`${100 - ((time.minutes * 60 + time.seconds) / (4 * 60)) * 100}, 100`}
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none"
-                stroke="#295CA0"
-                strokeWidth="3"
-              />
-            </svg>
+          <svg className="absolute w-14 h-20" viewBox="0 0 36 36">
+  <path
+    className="circle-bg"
+    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+    fill="none"
+    stroke="#fff"
+    strokeWidth="2"
+  />
+  <path
+    className="circle"
+    strokeDasharray={`${100 - (isCountdownFinished ? 100 : ((parseInt(timeRemaining) || 1) / 100) * 100)}, 100`}
+    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+    fill="none"
+    stroke={isCountdownFinished ? "#10B981" : "#295CA0"} 
+    strokeWidth="3"
+  />
+</svg>
+
             <div className="relative flex items-center justify-center w-2 rounded-full bg-[#234878] text-center">
               <div className="absolute flex items-center justify-center w-10 h-10 rounded-full bg-white">
                 <div className="text-[#234878]">
                   <p className="text-[4px] font-bold">SESSION 13</p>
                   <p className="text-[8px] font-extrabold text-[#223857]">
-                  {formatTime(time.hours)}:{formatTime(time.minutes)}:{formatTime(time.seconds)}
+                           <span className="font-bold text-[10px]">{timeRemaining}</span>
                   </p>
                 </div>
               </div>

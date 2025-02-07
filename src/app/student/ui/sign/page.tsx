@@ -3,13 +3,12 @@ import Image from "next/image";
 import React, { useState,useEffect } from "react";
 import { GrApple } from "react-icons/gr";
 import { useRouter } from 'next/navigation';
-
 import { GoogleLogin,CredentialResponse } from '@react-oauth/google';
 import axios from "axios";
 const SignIn: React.FC = () => {
   const [emailNotExist, setEmailNotExist] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [username, setUsername] = useState('');
+  const [username1, setUsername1] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showError, setShowError] = useState(false);
@@ -24,30 +23,23 @@ const SignIn: React.FC = () => {
   }, [error]);
   const signIn = async (username: string, password: string) => {
     try {
-      // Your actual API call logic for signIn
-      // Uncomment and implement the actual API call below if needed
-      // return await actualSignInApiCall(username, password);
+      const response = await axios.post('http://localhost:5001/studentsignin', { username, password });
   
-      // Simulating an API failure for demonstration
-      throw new Error("API call failed");  // Simulate an API failure
-  
-    } catch (error) {
-      // Fallback to hardcoded values if API fails
-      console.log("API failed, using hardcoded values");
-  
-      const hardcodedUsername = "testStudent";
-      const hardcodedPassword = "123456";
-  
-      if (username === hardcodedUsername && password === hardcodedPassword) {
-        // Simulate successful login with hardcoded values
-        return {
-          accessToken: "hardcodedAccessToken123",
-          role: ["Student"],
-        };
+      // Handle successful login response
+      if (response.status === 200) {
+        return response.data;
       }
   
-      throw new Error("Invalid credentials");
-    }
+      throw new Error('Unexpected error occurred');
+    } catch (error: any) {
+      // Handle backend errors, e.g., user not found
+      if (error.response && error.response.status === 404) {
+        throw new Error('Email not found'); // Specific error message
+      }
+  
+      // Handle other errors
+      throw new Error(error.message || 'Login failed');
+    }
   };
   
 
@@ -55,9 +47,11 @@ const SignIn: React.FC = () => {
     e.preventDefault();
     setError(''); 
     try {
-      const data = await signIn(username, password);
-      const { accessToken, role } = data;
+      const data = await signIn(username1, password);
+      const { accessToken, role,_id ,username} = data;
       localStorage.setItem('StudentAuthToken', accessToken);
+      localStorage.setItem('StudentPortalId', _id);
+      localStorage.setItem('StudentPortalName',username);
       const authToken=localStorage.getItem('StudentAuthToken');
       console.log(accessToken);
       console.log(authToken);
@@ -85,7 +79,7 @@ const SignIn: React.FC = () => {
    const checkEmail = async (email: string) => {
     try {
       // Send a POST request to the backend to check if the email exists
-      const response = await axios.post(`http://localhost:5001/allcheck-email`, { email});
+      const response = await axios.post(`http://localhost:5001/check-email`, {email});
   
       // If the response status is 200, the email exists
       if (response.status === 200) {
@@ -96,11 +90,13 @@ const SignIn: React.FC = () => {
       // Handle errors based on status code if available
       if (error.response) {
         if (error.response.status === 404) {
+          setEmailNotExist(true);
           console.log('Email not found');
           return { message: 'Email not found' }; // Email not found
         }
         
         if (error.response.status === 500) {
+          setEmailNotExist(true);
           console.log('Internal Server Error');
           return { message: 'Internal Server Error' }; // Handle server errors
         }
@@ -126,6 +122,8 @@ const SignIn: React.FC = () => {
       // Handle result based on the returned message
       if (result?.message === 'Email exists') {
         localStorage.setItem('StudentAuthToken',result.data.accessToken);
+        localStorage.setItem('StudentPortalId', result.data.id);
+        localStorage.setItem('StudentPortalName', result.data.username);
         const authToken=localStorage.getItem('StudentAuthToken');
         console.log(authToken);
         router.push('/student/ui/dashboard'); // Redirect to dashboard
@@ -239,8 +237,8 @@ const SignIn: React.FC = () => {
                   type="text"
                   placeholder="Username"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={username1}
+                  onChange={(e) => setUsername1(e.target.value)}
                   required
                 />
               </div>
