@@ -1,14 +1,41 @@
 "use client";
 import { CircularProgress, Card, CardBody } from "@nextui-org/react";
-
-const cards = [
-  { id: "card1", name: "Level", value: 70, color: "#85D8F2" },
-  { id: "card2", name: "Attendance", value: 10, color: "#F6C5FE" },
-  { id: "card3", name: "Total Classes", value: 30, color: "#FFECA7" },
-  { id: "card4", name: "Duration", value: 60, color: "#93FFEB" },
-];
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function App() {
+  const [data, setData] = useState({
+    totalLevel: 0,
+    totalAttendance: 0,
+    totalClasses: 0,
+    totalDuration: 0,
+  });
+
+  // Fetch data with dynamic studentId using axios
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const studentId = localStorage.getItem('StudentPortalId');
+        const response = await axios.get('http://localhost:5001/dashboard/student/counts', {
+          params: { studentId },
+        });
+        setData(response.data); // Set the fetched data into the state
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData(); // Fetch data when component mounts, passing dynamic studentId
+  }, []);
+
+  const cards = [
+    { id: "card1", name: "Level", value: data.totalLevel, color: "#85D8F2" },
+    { id: "card2", name: "Attendance", value: data.totalAttendance, color: "#F6C5FE" },
+    { id: "card3", name: "Total Classes", value: data.totalClasses, color: "#FFECA7" },
+    { id: "card4", name: "Duration", value: data.totalDuration, color: "#93FFEB" },
+  ];
+
   return (
     <div className="p-0">
       {/* Header Section */}
