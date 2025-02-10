@@ -1,54 +1,84 @@
 'use client';
 
+import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
 
-type Assignment = {
-  id: string;
-  assignedBy: string;
-  course: string;
-  type: string;
+interface Assignment {
+  _id: string;
+  studentId: string;
+  assignmentName: string;
+  assignedTeacher: string;
+  assignmentType: string;
   assignedDate: string;
   dueDate: string;
   status: string;
-  statusColor: string;
-};
+  courses: string;
+}
 
 const AssignmentList = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Upcoming');
   const [currentPage, setCurrentPage] = useState(1);
   const [isClient, setIsClient] = useState(false); 
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
 
-  const assignments: Assignment[] = Array.from({ length: 10 }, (_, index) => ({
-    id: `assignment-${index + 1}`,
-    assignedBy: `Instructor ${index + 1}`,
-    course: `Course ${index + 1}`,
-    type: index % 2 === 0 ? 'Quiz' : 'Writing',
-    assignedDate: `January ${index + 1}, 2023`,
-    dueDate: `January ${index + 5}, 2023`, 
-    status: index % 3 === 0 ? 'Completed' : 'Pending', 
-    statusColor: index % 3 === 0 ? 'bg-green-100 text-green-400 border border-green-600' : 'bg-red-100 text-red-400 border border-red-600', 
-  }));
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    const fetchAssignments = async () => {
+      const storedStudentId = localStorage.getItem('StudentPortalId');
+      console.log( ">>>>>>>>>>",storedStudentId);
+      
+      try {
+        const response = await axios.get("http://localhost:5001/allAssignment", {
+          headers: {
+            Authorization: `Bearer YOUR_AUTH_TOKEN`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        console.log("Full API Response:", response.data); // Log full API response
+
+        const filteredAssignments = response.data.assignments.filter(
+          (assignment: Assignment) => assignment.studentId === storedStudentId
+        );
+
+        console.log("Filtered Assignments:", filteredAssignments); // Log filtered assignments
+
+        setAssignments(filteredAssignments);
+
+        console.log("filteredAssignments>>>>", filteredAssignments )
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+      }
+    };
+  
+    fetchAssignments();
+  }, [])
+
+
+
 
 
   const handleThreeDotsClick = (assignment: any) => {
-    if (isClient && assignment.status === 'Pending') {
+    if (isClient && assignment.status === 'Assigned') {
       router.push(
-        `/student/components/assignment/quizpage?id=${assignment.id}&type=${assignment.type}`
+        `/student/components/assignment/quizpage?id=${assignment._id}&type=${assignment.assignmentType}`
       );
     }
   };
 
-  const getFilteredAssignments = () =>
-    assignments.filter((assignment) =>
-      activeTab === 'Completed' ? assignment.status === 'Completed' : assignment.status !== 'Completed'
-    );
+  const getFilteredAssignments = () => {
+    return assignments.filter((assignment) => {
+      if (activeTab === 'Completed') {
+        return assignment.status.toLowerCase() === 'completed'; // ✅ Include only completed
+      }
+      return assignment.status.toLowerCase() === 'assigned'; // ✅ Include only assigned (upcoming)
+    });
+  };
+  
 
   const getPaginatedAssignments = () => {
     const filtered = getFilteredAssignments();
@@ -58,30 +88,35 @@ const AssignmentList = () => {
   };
 
   const paginatedAssignments = getPaginatedAssignments();
+  
+  console.log("Pagination>>>>>>>>>>>",paginatedAssignments )
+
 
   return (
     <div className="p-4 mx-auto w-[1250px] pr-20">
       <h1 className="text-2xl font-semibold text-gray-800 p-2 py-4">Assignment List</h1>
       <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[340px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
         <div>
-          <div className="flex">
-            <button
-              className={`py-3 px-2 ml-5 ${
-                activeTab === 'Upcoming' ? 'text-[#1C3557] border-b-2 border-[#1C3557] font-semibold' : 'text-gray-500'
-              } focus:outline-none text-[13px]`}
-              onClick={() => setActiveTab('Upcoming')}
-            >
-              Upcoming ({assignments.filter((a) => a.status !== 'Completed').length})
-            </button>
-            <button
-              className={`py-3 px-6 ${
-                activeTab === 'Completed' ? 'text-[#1C3557] border-b-2 border-[#1C3557] font-semibold' : 'text-gray-500'
-              } focus:outline-none text-[13px]`}
-              onClick={() => setActiveTab('Completed')}
-            >
-              Completed ({assignments.filter((a) => a.status === 'Completed').length})
-            </button>
-          </div>
+        <div className="flex">
+          <button
+            className={`py-3 px-2 ml-5 ${
+              activeTab === 'Upcoming' ? 'text-[#1C3557] border-b-2 border-[#1C3557] font-semibold' : 'text-gray-500'
+            } focus:outline-none text-[13px]`}
+            onClick={() => setActiveTab('Upcoming')}
+          >
+            Upcoming ({assignments.filter((a) => a.status.toLowerCase() === 'assigned').length})
+          </button>
+          <button
+            className={`py-3 px-6 ${
+              activeTab === 'Completed' ? 'text-[#1C3557] border-b-2 border-[#1C3557] font-semibold' : 'text-gray-500'
+            } focus:outline-none text-[13px]`}
+            onClick={() => setActiveTab('Completed')}
+          >
+            Completed ({assignments.filter((a) => a.status.toLowerCase() === 'completed').length})
+          </button>
+        </div>
+
+
 
           <div className="overflow-x-auto">
             <table className="table-auto w-full">
@@ -98,18 +133,18 @@ const AssignmentList = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedAssignments.map((assignment) => (
-                  <tr key={assignment.id} className="text-[12px] font-medium mt-2"
+              {paginatedAssignments.map((assignment: Assignment) => (
+                  <tr key={assignment._id} className="text-[12px] font-medium mt-2"
                   style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
-                    <td className="px-6 py-2 text-center">{assignment.id}</td>
-                    <td className="px-6 py-2 text-center">{assignment.assignedBy}</td>
-                    <td className="px-6 py-2 text-center">{assignment.course}</td>
-                    <td className="px-6 py-2 text-center">{assignment.type}</td>
+                    <td className="px-6 py-2 text-center">{assignment._id}</td>
+                    <td className="px-6 py-2 text-center">{assignment.assignedTeacher}</td>
+                    <td className="px-6 py-2 text-center">{assignment.courses}</td>
+                    <td className="px-6 py-2 text-center">{assignment.assignmentType}</td>
                     <td className="px-6 py-2 text-center">{assignment.assignedDate}</td>
                     <td className="px-6 py-2 text-center">{assignment.dueDate}</td>
                     <td className="px-6 py-1 text-center">
                       <span
-                        className={`px-2 py-1 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] text-[10px] ${assignment.statusColor}`}
+                        className={`px-2 py-1 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] text-[10px] ${assignment.status}`}
                       >
                         {assignment.status}
                       </span>
@@ -117,11 +152,13 @@ const AssignmentList = () => {
                     <td className="relative px-6 py-2 text-center">
                       <button
                         className={`text-gray-500 hover:text-gray-700 ${
-                          assignment.status !== 'Pending' ? 'cursor-not-allowed opacity-50' : ''
-                        }`}
-                        onClick={() => handleThreeDotsClick(assignment)}
-                        disabled={assignment.status !== 'Pending'}
-                      >
+                          assignment.status !== 'Assigned'
+                          ? 'cursor-not-allowed opacity-50'
+                          : ''
+                      }`}
+                      onClick={() => handleThreeDotsClick(assignment)}
+                      disabled={assignment.status == 'Completed'}
+                    >
                         <BsThreeDots />
                       </button>
                     </td>
