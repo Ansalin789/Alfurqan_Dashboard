@@ -1,21 +1,124 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Doughnut } from "react-chartjs-2";
-import { Chart, ArcElement, Tooltip, Legend,ChartOptions, ChartData, TooltipItem  } from "chart.js";
+import {
+  Chart,
+  ArcElement,
+  Tooltip,
+  Legend,
+  ChartOptions,
+  ChartData,
+  TooltipItem,
+} from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-
 
 Chart.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
+
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+interface Schedule {
+  student: Student;
+  teacher: Teacher;
+  _id: string;
+  classDay: string[];
+  package: string;
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  classStatus:string;
+  scheduleStatus: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+
+interface ApiResponse {
+  totalCount: number;
+  students: Schedule[];
+}
+
+const API_URL = "http://localhost:5001/classShedule";
+
 const ClassAnalyticsChart = () => {
+  const [chartData, setChartData] = useState<number[]>([0, 0, 0]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("TeacherAuthToken");
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+
+        if (!teacherIdToFilter) {
+          console.error("No teacher ID found in localStorage.");
+          return;
+        }
+
+        const response = await axios.get<ApiResponse>(API_URL, {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+
+        const filteredData = response.data.students.filter(
+          (item) => item.teacher.teacherId === teacherIdToFilter
+        );
+
+        const studentScheduleMap = new Map<string, Schedule>();
+
+        filteredData.forEach((item) => {
+          studentScheduleMap.set(item.student.studentId, item);
+        });
+
+        const uniqueSchedules = Array.from(studentScheduleMap.values());
+
+        // Count schedule statuses
+        const scheduledCount = uniqueSchedules.filter(
+          (item) => item.scheduleStatus === "Scheduled"
+        ).length;
+        const completedCount = uniqueSchedules.filter(
+          (item) => item.scheduleStatus === "Completed"
+        ).length;
+        const absentCount = uniqueSchedules.filter(
+          (item) => item.scheduleStatus === "Absent"
+        ).length;
+
+        setChartData([scheduledCount, completedCount, absentCount]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const data: ChartData<"doughnut"> = {
     labels: ["Scheduled", "Completed", "Absent"],
     datasets: [
       {
-        data: [60, 28, 12],
+        data: chartData,
         backgroundColor: ["#FEC64F", "#0BF4C8", "#F2A0FF"],
         borderWidth: 0,
       },
     ],
   };
+
+  const total = chartData.reduce((sum, value) => sum + value, 0);
 
   const options: ChartOptions<"doughnut"> = {
     cutout: "50%",
@@ -26,12 +129,12 @@ const ClassAnalyticsChart = () => {
       tooltip: {
         callbacks: {
           label: (tooltipItem: TooltipItem<"doughnut">) => {
-            return `${tooltipItem.label}: ${tooltipItem.raw}%`;
+            return `${tooltipItem.label}: ${tooltipItem.raw}`;
           },
         },
       },
       datalabels: {
-        formatter: (value: number) => `${value}%`,
+        formatter: (value: number) => `${value}`,
         color: "white",
         font: {
           weight: 600,
@@ -44,8 +147,6 @@ const ClassAnalyticsChart = () => {
       animateScale: true,
     },
   };
-
-  const total = data.datasets[0].data.reduce((sum, value) => sum + value, 0);
 
   return (
     <div className="w-[100%] bg-[#3E68A1] p-4 rounded-[17px] shadow-lg flex justify-between">
@@ -64,30 +165,22 @@ const ClassAnalyticsChart = () => {
         <div className="flex justify-between items-center mr-2">
           <span className="flex items-center">
             <div className="w-2 h-2 rounded-full bg-[#FEC64F] mr-2"></div>
-            <p className="text-[#6BF4FD] font-semibold text-[11px]">TOTAL CLASS ASSIGNED</p>
+            <p className="text-[#6BF4FD] font-semibold text-[11px]">
+              TOTAL CLASS ASSIGNED
+            </p>
           </span>
           <span>{total}</span>
         </div>
-        <div className="flex justify-between items-center ml-4 mt-3 text-[10px] text-[#A098AE]">
-          <span className="flex items-center">
-            <div className="w-2 h-2 rounded-sm bg-[#FEC64F] mr-2"></div>
-            Scheduled (70%)
-          </span>
-          <span>28</span>
-        </div>
-        <div className="flex justify-between items-center ml-4 mt-0 text-[10px] text-[#A098AE]">
-          <span className="flex items-center">
-            <div className="w-2 h-2 rounded-sm bg-[#0BF4C8] mr-2"></div>
-            Completed (28%)
-          </span>
-          <span>15</span>
-        </div>
-        <div className="flex justify-between items-center ml-4 mt-0 text-[10px] text-[#A098AE]">
-          <span className="flex items-center">
-            <div className="w-2 h-2 rounded-sm bg-[#F2A0FF] mr-2"></div>
-            Absent (2%)
-          </span>
-          <span>2</span>
+        <div className="flex flex-col ml-4 mt-3 text-[10px] text-[#A098AE]">
+          {data.labels?.map((label, index) => (
+            <div key={label} className="flex justify-between items-center">
+              <span className="flex items-center">
+                <div className={`w-2 h-2 rounded-sm bg-[${data.datasets[0].backgroundColor[index]}] mr-2`}></div>
+                {label} ({chartData[index]})
+              </span>
+              <span>{chartData[index]}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

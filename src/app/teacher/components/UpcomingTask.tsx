@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { FaBook, FaUsers, FaChalkboardTeacher } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaBook } from 'react-icons/fa';
+import axios from 'axios';
 
 interface ClassItem {
   id: string;
@@ -12,44 +13,57 @@ interface ClassItem {
 }
 
 const UpcomingTask: React.FC = () => {
-  const [classes] = useState<ClassItem[]>([
-    {
-      id: '1',
-      date: '06 May 2024',
-      time: '10:00 AM - 11:30 AM',
-      title: 'Quran Class',
-      color: 'bg-[#FAD85D] opacity-[90%]',
-      icon: <FaBook className="text-yellow-700" />, 
-      teacher: 'Rahim',
-    },
-    {
-      id: '2',
-      date: '06 May 2024',
-      time: '12:00 PM - 01:30 PM',
-      title: 'Teachers Meeting',
-      color: 'bg-[#0BF4C8] opacity-[90%]',
-      icon: <FaChalkboardTeacher className="text-teal-700" />, 
-      teacher: '',
-    },
-    {
-      id: '3',
-      date: '06 May 2024',
-      time: '02:00 PM - 02:30 PM',
-      title: 'Trial Class',
-      color: 'bg-[#85D8F2] opacity-[90%]',
-      icon: <FaUsers className="text-blue-700" />, 
-      teacher: 'Abdullah',
-    },
-    {
-      id: '4',
-      date: '07 May 2024',
-      time: '11:00 AM - 12:30 PM',
-      title: 'BI- Weekly Meeting',
-      color: 'bg-[#F2A0FF] opacity-[90%]',
-      icon: <FaUsers className="text-purple-700" />, 
-      teacher: '',
-    },
-  ]);
+  const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch class data from the API
+  useEffect(() => {
+    const fetchClassData = async () => {
+      try {
+        const teacherId = localStorage.getItem('TeacherPortalId');
+        const auth = localStorage.getItem('TeacherAuthToken');
+
+        const response = await axios.get('http://localhost:5001/classShedule/teacher', {
+          params: { teacherId: teacherId },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth}`,
+          },
+        });
+
+        const fetchedClasses = response.data.classSchedule.map((classItem: any) => ({
+          id: classItem._id,
+          date: classItem.startDate,
+          time: `${classItem.startTime[0]} - ${classItem.endTime[0]}`,
+          title: classItem.package,
+          color: 'bg-[#FAD85D] opacity-[90%]', // Customize based on your requirements
+          icon: <FaBook className="text-yellow-700" />, // Customize based on your requirements
+          teacher: classItem.teacher.teacherName,
+        }));
+
+        setClasses(fetchedClasses);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClassData();
+  }, []);
+
+  if (loading) {
+    return <div className="text-center text-gray-600">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div className="bg-gray-100 p-4 rounded-lg shadow-lg -ml-24 h-[33vh] overflow-y-scroll scrollbar-none">
@@ -58,7 +72,7 @@ const UpcomingTask: React.FC = () => {
       </div>
       <div className="space-y-3">
         {classes.map((classItem) => (
-          <div key={classItem.id} className={`relative ${classItem.color} p-4 rounded-md shadow-md`}> 
+          <div key={classItem.id} className={`relative ${classItem.color} p-4 rounded-md shadow-md`}>
             <div className="flex items-center space-x-2">
               {classItem.icon}
               <h4 className="text-[13px] font-medium text-gray-800">{classItem.title}</h4>
@@ -66,7 +80,9 @@ const UpcomingTask: React.FC = () => {
             <p className="text-[10px] text-gray-600 mt-1">{classItem.date}</p>
             <p className="text-[10px] text-gray-600">{classItem.time}</p>
             {classItem.teacher && (
-              <p className="absolute right-3 bottom-2 text-gray-700 text-[12px] font-medium">{classItem.teacher}</p>
+              <p className="absolute right-3 bottom-2 text-gray-700 text-[12px] font-medium">
+                {classItem.teacher}
+              </p>
             )}
           </div>
         ))}
