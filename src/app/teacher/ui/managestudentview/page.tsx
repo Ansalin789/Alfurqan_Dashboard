@@ -88,6 +88,7 @@ const Page = () => {
           </div>
 
           {/* Assignment List */}
+          
           <div className="mt-8 mx-auto">
             <AssignmentList />
           </div>

@@ -94,6 +94,11 @@ const AllStudents = () => {
     fetchData();
   }, []);
 
+  const handleviewcontrol=(studentId:string)=>{
+    router.push(`/teacher/ui/managestudentview`);
+    setOpenDropdownId(null);
+    localStorage.setItem('studentviewcontrol',studentId);
+  };
   // Calculate the current students to display based on the current page
   const indexOfLastStudent = currentPage * itemsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - itemsPerPage;
@@ -184,8 +189,8 @@ const AllStudents = () => {
                               <button
                                 className="block w-full text-center px-4 py-1 text-[12px] text-black hover:bg-gray-100 cursor-pointer"
                                 onClick={() => {
-                                  router.push(`/teacher/ui/managestudentview`);
-                                  setOpenDropdownId(null);
+                                  handleviewcontrol(student.student.studentId)
+
                                 }}
                               >
                                 View
@@ -214,7 +219,7 @@ const AllStudents = () => {
               {Array.from({ length: Math.ceil(uniqueStudentSchedules.length / itemsPerPage) }, (_, index) => (
                 <button
                   key={index + 1}
-                  className={`px-3 py-1 border rounded-md ${currentPage === index + 1 ? 'bg-[#223857] text-white' : 'text-gray-600 border-gray-300 hover:bg-gray-200'}`}
+                  className={`px-3 py-1 border rounded-md ${currentPage === index + 1 ? 'bg-[#223857] text-white p-3' : 'text-gray-600 border-gray-300 hover:bg-gray-200'}`}
                   onClick={() => handlePageChange(index + 1)}
                 >
                   {index + 1}

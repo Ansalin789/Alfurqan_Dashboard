@@ -9,6 +9,7 @@ import { IoArrowBackCircleSharp } from 'react-icons/io5';
 const ManageStudentView = () => {
   const router = useRouter();
  const [studentData, setStudentData] = useState<StudentData>();
+  
  interface StudentData {
   studentDetails: {
     _id: string;
@@ -93,8 +94,9 @@ const ManageStudentView = () => {
   };
 }
   useEffect(()=>{
-    const studentId=localStorage.getItem('studentManageID');
+    const studentId=localStorage.getItem('studentviewcontrol');
     console.log(">>>>>",studentId);
+    
     if (studentId) {
       const fetchData = async () => {
         try {
@@ -138,14 +140,14 @@ const ManageStudentView = () => {
               />
             </div>
             <div className="justify-center text-center border-b-2 border-b-black">
-              <h2 className="text-2xl font-semibold mb-2">{studentData?.studentEvaluationDetails?.student?.studentFirstName ?? "" }</h2>
+              <h2 className="text-2xl font-semibold mb-2"> </h2>
               <p className="text-[#012A4A] mb-4">Student</p>
             </div>
 
             <div className="text-left w-full p-2 pt-6">
               <h3 className="font-semibold mb-2">Personal Info</h3>
               <p className="text-gray-800 text-[14px] mt-4">
-                <span className="font-semibold text-[14px]">Full Name: </span>{studentData?.studentEvaluationDetails?.student?.studentFirstName}
+                <span className="font-semibold text-[14px]">Full Name: </span>{studentData?.studentDetails.username}
               </p>
               <p className="text-gray-800 text-[14px] mt-3">
                 <span className="font-semibold text-[14px]">Email: </span>{studentData?.studentEvaluationDetails?.student?.studentEmail}
