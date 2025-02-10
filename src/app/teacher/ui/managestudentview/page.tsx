@@ -1,23 +1,85 @@
-import React from 'react';
+'use client';
+import React, { useEffect, useState } from 'react';
 import ManageStudentView from '../../components/managestudentview';
 import AssignmentList from '../../components/assignmentlist';
+import axios from 'axios';
+
+interface Assignment {
+  _id: string;
+  studentId: string;
+  assignmentName: string;
+  assignedTeacher: string;
+  assignmentType: string;
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question: string;
+  hasOptions: boolean;
+  audioFile: string;
+  uploadFile: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  level: string;
+  courses: string;
+  assignedDate: string;
+  dueDate: string;
+  __v: number;
+}
 
 const Page = () => {
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      const storedStudentId = localStorage.getItem('studentviewcontrol');
+      const auth = localStorage.getItem('TeacherAuthToken');
+      try {
+        const response = await axios.get("http://localhost:5001/allAssignment", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const filteredAssignments = response.data.assignments.filter(
+          (assignment: Assignment) => assignment.studentId === storedStudentId
+        );
+
+        setAssignments(filteredAssignments);
+        console.log(filteredAssignments);
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+      }
+    };
+
+    fetchAssignments();
+  }, []);
+
+  // Calculate total and completed assignments
+  const totalAssignments = assignments.length;
+  const completedAssignments = assignments.filter(
+    (assignment:Assignment) => assignment.status === "completed"
+  ).length;
+
+  // Calculate percentage of completed assignments
+  const completedPercentage = totalAssignments > 0 ? (completedAssignments / totalAssignments) * 100 : 0;
 
   const cards = [
     {
       id: "card1",
       name: "Total Assignment Assigned",
-      value: 80,
-      count: 25,
+      value: totalAssignments,  // Total assignments
+      count: totalAssignments,  // Total count (assigned)
       icon: "📋",
       color: "#FEC64F",
     },
     {
       id: "card2",
       name: "Total Assignment Completed",
-      value: 62,
-      count: 10,
+      value: completedPercentage, // Completed percentage
+      count: completedAssignments, // Completed count
       icon: "📄",
       color: "#00D9B0",
     },
@@ -98,3 +160,5 @@ const Page = () => {
 };
 
 export default Page;
+
+

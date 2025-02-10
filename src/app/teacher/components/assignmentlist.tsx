@@ -31,24 +31,23 @@ const AssignmentList = () => {
   const [activeTab, setActiveTab] = useState("Pending");
   const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isFormOpen1, setIsFormOpen1] = useState(false);
   const [title, setTitle] = useState("");
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [showWritingModal, setShowWritingModal] = useState(false);
   const [showReadingModal, setShowReadingModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
-  const [isClient, setIsClient] = useState(false);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
 
   useEffect(() => {
-    setIsClient(true);
     const fetchAssignments = async () => {
-      const storedStudentId = localStorage.getItem('StudentPortalId');
-
+      const storedStudentId = localStorage.getItem('studentviewcontrol');
+      const auth = localStorage.getItem('TeacherAuthToken');
       try {
         const response = await axios.get("http://localhost:5001/allAssignment", {
           headers: {
-            Authorization: `Bearer YOUR_AUTH_TOKEN`,
+            Authorization: `Bearer ${auth}`,
             "Content-Type": "application/json",
           },
         });
@@ -107,6 +106,9 @@ const AssignmentList = () => {
   const [assignedDate, setAssignedDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [comment, setComment] = useState("");
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>('');
+ 
+
   const handleFinalAssign = () => {
     setTitle("");
     setShowTypeDropdown(false);
@@ -157,8 +159,8 @@ const AssignmentList = () => {
 
   const filteredAssignments = assignments.filter((assignment) =>
     activeTab === "Pending"
-      ? assignment.status !== "Completed"
-      : assignment.status === "Completed"
+      ? assignment.status !== "completed"
+      : assignment.status === "completed"
   );
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -183,7 +185,7 @@ formData.append("trueorfalseType", questionType.trueOrFalse.toString());
 formData.append("question", quizData.question);
 formData.append("hasOptions", (!showNoOptions.writing && !showNoOptions.reading && !showNoOptions.image).toString());
 formData.append("options", JSON.stringify(quizData.options));
-formData.append("status", "Assigned");
+formData.append("status", "Not assigned");
 formData.append("createdDate", new Date().toISOString());
 formData.append("createdBy", "System");
 formData.append("updatedDate", new Date().toISOString());
@@ -231,6 +233,68 @@ formData.forEach((value, key) => {
     } catch (error) {
       console.error("Error assigning assignment:", error);
     }
+  };
+  const handleAssign1=async()=>{
+    try {
+      // **Step 1: GET REQUEST** (Fetch assignment details)
+      const response = await axios.get(`http://localhost:5001/assignments/${selectedAssignmentId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("TeacherAuthToken")}`,
+        },
+      });
+  console.log(response.data);
+      const data = response.data;
+      // **Step 2: PUT REQUEST** (Update assignment)
+      const formData = new FormData();
+      // Define the type of 'date' explicitly as 'string'
+const formatDate = (date: string): string => {
+  const [day, month, year] = date.split('/'); // Assuming "13/2/25"
+  
+  // Convert 'year' to a number before comparing
+  const formattedYear = parseInt(year, 10); // Convert to number
+
+  return `${formattedYear < 1000 ? '20' + formattedYear : formattedYear}-${month}-${day}`; // Converts to YYYY-MM-DD format
+};
+      
+      // Example usage
+      const formattedAssignedDate = formatDate(assignedDate);
+      const formattedDueDate = formatDate(dueDate);
+
+      // Append all fields from the assignment data into FormData
+      formData.append("assignmentName", data.assignmentName);
+      formData.append("assignedTeacher", data.assignedTeacher);
+      formData.append("assignmentType", JSON.stringify(data.assignmentType));
+      formData.append("chooseType", data.chooseType);
+      formData.append("trueorfalseType", data.trueorfalseType);
+      formData.append("question", data.question);
+      formData.append("hasOptions", data.hasOptions);
+      formData.append("options", JSON.stringify(data.options));  // Ensure it's JSON formatted if needed
+      formData.append("audioFile", data.audioFile);  // For file uploads
+      formData.append("uploadFile", data.uploadFile);  // For file uploads
+      formData.append("status","Assigned");
+      formData.append("createdDate", data.createdDate);
+      formData.append("createdBy", data.createdBy);
+      formData.append("updatedDate", data.updatedDate);
+      formData.append("updatedBy", data.updatedBy);
+      formData.append("level", data.level);
+      formData.append("courses", data.courses);
+      formData.append("assignedDate", formattedAssignedDate);
+      formData.append("dueDate", formattedDueDate);
+      formData.append("answer", data.answer);
+      formData.append("answerValidation", data.answerValidation);
+      formData.append("studentId", data.studentId);
+      console.log(formData);
+      await axios.put(`http://localhost:5001/assignments/${selectedAssignmentId}`, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("TeacherAuthToken")}`,
+        },
+      });
+      setIsFormOpen1(false);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Operation failed.");
+    } 
+     
   };
 
   // const toBuffer = async (file: File) => {
@@ -319,27 +383,27 @@ formData.forEach((value, key) => {
 
       {/* Tabs */}
       <div className="flex border-b mb-4 text-sm">
-        <button
-          className={`px-3 py-2 ${
-            activeTab === "Pending"
-              ? "border-b-2 border-blue-500 text-blue-500 font-medium"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("Pending")}
-        >
-          Pending (05)
-        </button>
-        <button
-          className={`px-3 py-2 ${
-            activeTab === "Completed"
-              ? "border-b-2 border-blue-500 text-blue-500 font-medium"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("Completed")}
-        >
-          Completed (12)
-        </button>
-      </div>
+  <button
+    className={`px-3 py-2 ${
+      activeTab === "Pending"
+        ? "border-b-2 border-blue-500 text-blue-500 font-medium"
+        : "text-gray-500"
+    }`}
+    onClick={() => setActiveTab("Pending")}
+  >
+    Pending ({filteredAssignments.filter(a => a.status !== "completed").length})
+  </button>
+  <button
+    className={`px-3 py-2 ${
+      activeTab === "Completed"
+        ? "border-b-2 border-blue-500 text-blue-500 font-medium"
+        : "text-gray-500"
+    }`}
+    onClick={() => setActiveTab("Completed")}
+  >
+    Completed ({filteredAssignments.filter(a => a.status === "completed").length})
+  </button>
+</div>
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -377,12 +441,12 @@ formData.forEach((value, key) => {
               >
                 <td className="px-3 py-2 text-xs text-center">{assignment.assignmentName}</td>
                 <td className="px-3 py-2 text-xs text-center">{assignment._id}</td>
-                <td className="px-3 py-2 text-xs text-center">{assignment.assignmentType}</td>
-                <td className="px-3 py-2 text-xs text-center">{assignment.assignedDate}</td>
-                <td className="px-3 py-2 text-xs text-center">{assignment.dueDate}</td>
+                <td className="px-2 py-2 text-xs text-center">{assignment.assignmentType}</td>
+                <td className="px-3 py-2 text-xs text-center">{new Date(assignment.assignedDate).toLocaleDateString()}</td>
+                <td className="px-3 py-2 text-xs text-center">{new Date(assignment.dueDate).toLocaleDateString()}</td>
                 <td className="px-3 py-2 text-xs text-center">
                   <span
-                    className={`px-2 py-1 text-[10px] rounded-lg  ${
+                    className={`px-2 py-1 text-[8px] rounded-lg  ${
                       assignment.status === "Assigned"
                         ? "bg-green-100 text-green-700 px-6 border border-green-700"
                         :  "bg-red-100 text-red-700 px-3 border border-red-700"
@@ -404,41 +468,43 @@ formData.forEach((value, key) => {
 
                   {/* Dropdown Menu */}
                   {openDropdownIndex === index && (
-                    <div className="absolute right-10 -mt-[30px] bg-white border rounded-md shadow-lg z-10 w-40">
-                      <button
-                        className={`block w-full text-left px-4 py-2 text-[12px] ${
-                          assignment.status === "Assigned"
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }`}
-                        onClick={() => {
-                          if (assignment.status !== "Assigned") {
-                            setOpenDropdownIndex(null);
-                            setIsFormOpen(true);
-                            handleFinalAssign();
-                          }
-                        }}
-                        disabled={assignment.status === "Assigned"}
-                      >
-                        Assign
-                      </button>
-                      <button
-                        className={`block w-full text-left px-4 py-2 text-[12px] ${
-                          assignment.status === "Assigned"
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "hover:bg-gray-100"
-                        }`}
-                        onClick={() => {
-                          if (assignment.status !== "Assigned") {
-                            setOpenDropdownIndex(null);
-                          }
-                        }}
-                        disabled={assignment.status === "Assigned"}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
+  <div className="absolute right-10 -mt-[30px] bg-white border rounded-md shadow-lg z-10 w-40">
+    <button
+      className={`block w-full text-left px-4 py-2 text-[12px] ${
+        assignment.status === "Not assigned"
+          ? "hover:bg-gray-100"
+          : "text-gray-400 cursor-not-allowed"
+      }`}
+      onClick={() => {
+        if (assignment.status === "Not assigned") {
+          setSelectedAssignmentId(assignment._id);
+          setOpenDropdownIndex(null);
+          setIsFormOpen1(true);
+          handleFinalAssign();
+        }
+      }}
+      disabled={assignment.status !== "Not assigned"}
+    >
+      Assign
+    </button>
+    <button
+      className={`block w-full text-left px-4 py-2 text-[12px] ${
+        assignment.status === "Not assigned"
+          ? "hover:bg-gray-100"
+          : "text-gray-400 cursor-not-allowed"
+      }`}
+      onClick={() => {
+        if (assignment.status === "Not assigned") {
+          setOpenDropdownIndex(null);
+        }
+      }}
+      disabled={assignment.status !== "Not assigned"}
+    >
+      Cancel
+    </button>
+  </div>
+)}
+
                 </td>
               </tr>
             ))}
@@ -491,7 +557,42 @@ formData.forEach((value, key) => {
           </button>
         </div>
       </div>
-
+      {isFormOpen1 &&(
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-md shadow-md w-[400px]">
+          <div className="flex space-x-2 mb-4">
+              <input
+                type="text"
+                className="w-1/2 border-b-2 p-2 rounded text-[14px]"
+                placeholder="Assigned Date"
+                value={assignedDate}
+                onChange={(e) => setAssignedDate(e.target.value)}
+              />
+              <input
+                type="text"
+                className="w-1/2 border-b-2 p-2 rounded text-[14px]"
+                placeholder="Due Date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+              />
+            </div>
+            <div className="flex ml-40">
+              <button
+                className="text-[#223857] flex items-center text-[13px] justify-center text-center py-2 rounded-lg p-4 border border-grey bg-[#fff] shadow-lg"
+                onClick={() => setIsFormOpen1(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="text-white font-semibold flex items-center text-[13px] justify-center text-center py-2 rounded-lg ml-2 p-4 border border-grey bg-[#223857]"
+                onClick={handleAssign1}
+              >
+                Assign
+              </button>
+            </div> 
+            </div>
+          </div>
+      )}
 
       {/* Assign Form Modal */}
       {isFormOpen && (
@@ -560,7 +661,7 @@ formData.forEach((value, key) => {
                 </div>
               )}
             </div>
-            <div className="flex space-x-2 mb-4">
+            {/* <div className="flex space-x-2 mb-4">
               <input
                 type="text"
                 className="w-1/2 border-b-2 p-2 rounded text-[14px]"
@@ -575,7 +676,7 @@ formData.forEach((value, key) => {
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
               />
-            </div>
+            </div> */}
             <textarea
               placeholder="Comment"
               className="w-full border-b-2 p-2 rounded mb-4 text-[14px]"
@@ -1289,6 +1390,8 @@ formData.forEach((value, key) => {
                 </div>
               </div>
             )}
+
+     
 
       {/* Add Success Modal */}
       {showSuccessModal && (
