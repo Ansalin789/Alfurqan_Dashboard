@@ -41,10 +41,11 @@ const ManageTeacher: React.FC = () => {
       const fetchTeachers = async () => {
         try {
           const auth=localStorage.getItem('authToken');
-          const response = await fetch(`http://localhost:5001/users?role=TEACHER`, {
+          const response = await fetch(`https://alfurqanacademy.tech/users?role=TEACHER`, {
             headers: {
               'Authorization': `Bearer ${auth}`,        
                 },
+                credentials:'include',
           });
           const data = await response.json();
   
@@ -109,12 +110,13 @@ const ManageTeacher: React.FC = () => {
     console.log('New Teacher Data:', newTeacher);
    try{
     const auth=localStorage.getItem('authToken');
-    const response = await fetch(`http://localhost:5001/users`, {
+    const response = await fetch(`https://alfurqanacademy.tech/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
          'Authorization': `Bearer ${auth}`,
       },
+      credentials:'include',
       body: JSON.stringify(newTeacher),
     });
     const responseData = await response.json();

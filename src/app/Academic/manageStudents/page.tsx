@@ -75,10 +75,11 @@ const TrailManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       const auth = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5001/alstudents`, {
+      const response = await fetch(`https://alfurqanacademy.tech/alstudents`, {
         headers: {
           Authorization: `Bearer ${auth}`,
         },
+        credentials:'include',
       });
       const data = await response.json();
       console.log(auth);

@@ -77,12 +77,13 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
     const studentlist = async () => {
       try {
         const auth = localStorage.getItem('authToken');
-        const response = await fetch(`http://localhost:5001/classShedule`, {
+        const response = await fetch(`https://alfurqanacademy.tech/classShedule`, {
           method: 'GET',
           headers: {
             "Content-Type": "application/json",
             'Authorization': `Bearer ${auth}`,
-          }
+          },
+          credentials:'include',
         });
         const data = await response.json();
         console.log(data);
@@ -94,7 +95,7 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
     studentlist();
 
     const auth = localStorage.getItem('authToken');
-    fetch(`http://localhost:5001/shiftschedule?role=TEACHER`, {
+    fetch(`https://alfurqanacademy.tech/shiftschedule?role=TEACHER`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${auth}`,
@@ -217,7 +218,7 @@ const requestData = {
 
       console.log(requestData); 
       console.log(filteredItem._id);
-      const response = await fetch(`http://localhost:5001/classSchedule/${filteredItem._id}`, {
+      const response = await fetch(`https://alfurqanacademy.tech/classSchedule/${filteredItem._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

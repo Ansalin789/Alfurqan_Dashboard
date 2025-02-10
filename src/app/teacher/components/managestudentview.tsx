@@ -1,176 +1,164 @@
 'use client';
+import React, { useEffect, useState } from 'react';
+import ManageStudentView from '../../components/managestudentview';
+import AssignmentList from '../../components/assignmentlist';
+import axios from 'axios';
 
-import { useRouter } from 'next/navigation';
-import BaseLayout from '@/components/BaseLayout';
-import Image from 'next/image';
-import React, { useState, useEffect } from 'react';
-import { IoArrowBackCircleSharp } from 'react-icons/io5';
-
-const ManageStudentView = () => {
-  const router = useRouter();
- const [studentData, setStudentData] = useState<StudentData>();
-  
- interface StudentData {
-  studentDetails: {
-    _id: string;
-    student: {
-      studentId: string;
-      studentEmail: string;
-      studentPhone: number;
-    };
-    username: string;
-    password: string;
-    role: string;
-    status: string;
-    createdDate: string;
-    createdBy: string;
-    updatedDate: string;
-    __v: number;
-  };
-  studentEvaluationDetails: {
-    student: {
-      studentId: string;
-      studentFirstName: string;
-      studentLastName: string;
-      studentEmail: string;
-      studentPhone: number;
-      studentCountry: string;
-      studentCountryCode: string;
-      learningInterest: string;
-      numberOfStudents: number;
-      preferredTeacher: string;
-      preferredFromTime: string;
-      preferredToTime: string;
-      timeZone: string;
-      referralSource: string;
-      preferredDate: string;
-      evaluationStatus: string;
-      status: string;
-      createdDate: string;
-      createdBy: string;
-    };
-    subscription: {
-      subscriptionName: string;
-    };
-    _id: string;
-    isLanguageLevel: boolean;
-    languageLevel: string;
-    isReadingLevel: boolean;
-    readingLevel: string;
-    isGrammarLevel: boolean;
-    grammarLevel: string;
-    hours: number;
-    planTotalPrice: number;
-    classStartDate: string;
-    classEndDate: string;
-    classStartTime: string;
-    classEndTime: string;
-    accomplishmentTime: string;
-    studentRate: number;
-    gardianName: string;
-    gardianEmail: string;
-    gardianPhone: string;
-    gardianCity: string;
-    gardianCountry: string;
-    gardianTimeZone: string;
-    gardianLanguage: string;
-    assignedTeacher: string;
-    studentStatus: string;
-    classStatus: string;
-    comments: string;
-    trialClassStatus: string;
-    invoiceStatus: string;
-    paymentLink: string;
-    paymentStatus: string;
-    status: string;
-    createdDate: string;
-    createdBy: string;
-    updatedDate: string;
-    updatedBy: string;
-    expectedFinishingDate: number;
-    assignedTeacherId: string;
-    assignedTeacherEmail: string;
-    __v: number;
-  };
+interface Assignment {
+  _id: string;
+  studentId: string;
+  assignmentName: string;
+  assignedTeacher: string;
+  assignmentType: string;
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question: string;
+  hasOptions: boolean;
+  audioFile: string;
+  uploadFile: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  level: string;
+  courses: string;
+  assignedDate: string;
+  dueDate: string;
+  __v: number;
 }
-  useEffect(()=>{
-    const studentId=localStorage.getItem('studentviewcontrol');
-    console.log(">>>>>",studentId);
-    
-    if (studentId) {
-      const fetchData = async () => {
-        try {
-          const auth=localStorage.getItem('TeacherAuthToken');
-          const response = await fetch(`http://localhost:5001/alstudents/${studentId}`,
-            {
-              headers: {
-                     'Authorization': `Bearer ${auth}`,
-              },
-            });
-          const data = await response.json();
-          setStudentData(data);
-          console.log(data);
-        } catch (error) {
-          console.error('Error fetching student data:', error);
-        }
-      };
-      fetchData();
-    }
-  },[]);
-        
-  return (
-    <BaseLayout>
-      <div className="flex flex-col md:flex-row pt-14 mt-8">
-        <div className="p-2">
-          <IoArrowBackCircleSharp 
-            className="text-[25px] bg-[#fff] rounded-full text-[#012a4a] cursor-pointer" 
-            onClick={() => router.push('allstudents')}
-          />
-        </div>
-        <div className="flex flex-col items-center bg-[#fff] shadow-lg rounded-2xl md:w-[300px] h-[600px]">
-          <div className="bg-[#012a4a] align-middle p-6 w-full h-1/4 rounded-t-2xl">
-            
-            <div className="justify-center">
-              <Image
-                src="/assets/images/student-profile.png"
-                alt="Profile"
-                className="rounded-full justify-center align-middle text-center ml-20 w-24 h-24 mb-4 mt-[73px]"
-                width={150}
-                height={150}
-              />
-            </div>
-            <div className="justify-center text-center border-b-2 border-b-black">
-              <h2 className="text-2xl font-semibold mb-2"> </h2>
-              <p className="text-[#012A4A] mb-4">Student</p>
-            </div>
 
-            <div className="text-left w-full p-2 pt-6">
-              <h3 className="font-semibold mb-2">Personal Info</h3>
-              <p className="text-gray-800 text-[14px] mt-4">
-                <span className="font-semibold text-[14px]">Full Name: </span>{studentData?.studentDetails.username}
-              </p>
-              <p className="text-gray-800 text-[14px] mt-3">
-                <span className="font-semibold text-[14px]">Email: </span>{studentData?.studentEvaluationDetails?.student?.studentEmail}
-              </p>
-              <p className="text-gray-800 text-[13px] mt-3">
-                <span className="font-semibold text-[14px]">Phone Number: </span>{studentData?.studentEvaluationDetails?.student?.studentPhone}
-              </p>
-              <p className="text-gray-800 text-[14px] mt-3">
-                <span className="font-semibold text-[14px]">Level: </span>
-              </p>
-              <p className="text-gray-800 text-[14px] mt-3">
-                <span className="font-semibold text-[14px]">Package: </span>{studentData?.studentEvaluationDetails?.subscription?.subscriptionName}
-              </p>
-              
+const Page = () => {
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      const storedStudentId = localStorage.getItem('studentviewcontrol');
+      const auth = localStorage.getItem('TeacherAuthToken');
+      try {
+        const response = await axios.get("http://localhost:5001/allAssignment", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const filteredAssignments = response.data.assignments.filter(
+          (assignment: Assignment) => assignment.studentId === storedStudentId
+        );
+
+        setAssignments(filteredAssignments);
+        console.log(filteredAssignments);
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+      }
+    };
+
+    fetchAssignments();
+  }, []);
+
+  // Calculate total and completed assignments
+  const totalAssignments = assignments.length;
+  const completedAssignments = assignments.filter(
+    (assignment:Assignment) => assignment.status === "completed"
+  ).length;
+
+  // Calculate percentage of completed assignments
+  const completedPercentage = totalAssignments > 0 ? (completedAssignments / totalAssignments) * 100 : 0;
+
+  const cards = [
+    {
+      id: "card1",
+      name: "Total Assignment Assigned",
+      value: totalAssignments,  // Total assignments
+      count: totalAssignments,  // Total count (assigned)
+      icon: "📋",
+      color: "#FEC64F",
+    },
+    {
+      id: "card2",
+      name: "Total Assignment Completed",
+      value: completedPercentage, // Completed percentage
+      count: completedAssignments, // Completed count
+      icon: "📄",
+      color: "#00D9B0",
+    },
+  ];
+  return (
+   
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mx-auto">
+        {/* Left Section - Student Info */}
+        <div className="md:col-span-1 md:mx-auto">
+          <ManageStudentView />
+        </div>
+
+        {/* Right Section - Statistics and Assignment List */}
+        <div className="md:col-span-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 mx-auto w-[1100px]">
+              <h1 className="text-2xl font-semibold text-gray-800 p-2 -ml-32">Assignment</h1>
+              <div className="flex justify-center gap-6 p-2 ml-[230px] mt-[50px]">
+                {cards.map((c) => (
+                  <div
+                    key={c.id}
+                    className="w-[500px] h-[150px] bg-white rounded-2xl shadow-md flex items-center p-4"
+                  >
+                    {/* Circular Progress */}
+                    <div className="mr-6 flex justify-center items-center relative">
+                      <svg
+                        className="w-[90px] h-[80px] transform rotate-[-90deg]"
+                        viewBox="0 0 36 36"
+                      >
+                        <path
+                          className="text-gray-300"
+                          d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="4" /* Background circle thickness */
+                        ></path>
+                        <path
+                          d="M18 2.0845
+                            a 15.9155 15.9155 0 0 1 0 31.831
+                            a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke={c.color}
+                          strokeWidth="4" /* Progress circle thickness */
+                          strokeDasharray={`${c.value}, 100`}
+                        >
+                        </path>
+                      </svg>
+                      {/* Percentage Value */}  
+                      <div className="absolute text-[14px] font-bold text-gray-800">
+                        {c.value}%
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-gray-800 text-[14px] font-semibold mb-2">
+                        {c.name}
+                      </p>
+                      <p className="text-gray-600 text-[12px] font-medium flex items-center gap-2">
+                        {c.count} <span className="text-2xl">{c.icon}</span>
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+          
+          </div>
+
+          {/* Assignment List */}
+          
+          <div className="mt-8 mx-auto">
+            <AssignmentList />
           </div>
         </div>
-     
-      </div>
-
-     
-    </BaseLayout>
+    </div>
   );
 };
 
-export default ManageStudentView;
+export default Page;
+
+

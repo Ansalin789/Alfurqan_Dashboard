@@ -61,7 +61,7 @@ const Earnings = () => {
               </thead>
               <tbody className="text-[11px]">
                 {currentData.map((row, index) => (
-                  <tr key={index} className="text-[12px] font-medium mt-2"
+                  <tr key={row.id} className="text-[12px] font-medium mt-2"
                   style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
                     <td className="px-5 py-2 text-center"><div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-[#DBDBDB] rounded-md"></div>
@@ -107,9 +107,9 @@ const Earnings = () => {
           <div className="flex items-center justify-between p-4">
             <p className="text-[11px] text-gray-600">Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} data</p>
             <div className="flex items-center space-x-2">
-              {[...Array(totalPages)].map((_, index) => (
+              {[...Array(totalPages)].map((i, index) => (
                 <button
-                  key={index}
+                  key={i}
                   className={`px-3 py-1 text-[10px] ${currentPage === index + 1 ? 'text-white bg-[#374557]' : 'text-gray-600 bg-gray-200'} rounded-md hover:bg-gray-800`}
                   onClick={() => setCurrentPage(index + 1)}
                 >
