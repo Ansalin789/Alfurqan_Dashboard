@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
@@ -91,8 +92,8 @@ const Page = () => {
                   stroke="#f7f7f9"
                   strokeWidth={0}
                 >
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {data.map((entry) => (
+                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
                   ))}
                 </Pie>
               </PieChart>
@@ -104,8 +105,8 @@ const Page = () => {
 
           {/* Legends */}
           <div className="flex flex-col items-start text-sm -mt-2">
-            {data.map((entry, index) => (
-              <div key={index} className="flex items-center space-x-2">
+            {data.map((entry) => (
+              <div key={entry.name} className="flex items-center space-x-2">
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></span>
                 <span className="text-gray-600 text-[11px]">{entry.name}</span>
               </div>
