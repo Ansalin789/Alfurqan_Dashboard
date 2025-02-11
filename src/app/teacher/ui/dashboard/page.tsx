@@ -5,10 +5,10 @@ import 'react-calendar/dist/Calendar.css'
 import BaseLayout from '@/components/BaseLayout'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { FaSearch } from "react-icons/fa";
-import { BiFilterAlt } from "react-icons/bi";
+// import { BiFilterAlt } from "react-icons/bi";
 import Calender from '@/app/teacher/components/Calender';
 import Total from '@/app/teacher/components/total';
-import NextClass from '@/app/teacher/components/NextScheduleclass';
+import NextScheduleClass from '@/app/teacher/components/NextScheduleclass';
 import ClassAnalyticsChart from '@/app/teacher/components/ClassAnalyticsChart';
 import EarningAnalytics from '../../components/EarningAnalytics';
 import TeachingActivity from '../../components/TeachingActivity';
@@ -43,25 +43,25 @@ export default function Academic() {
                 </div>
               </div>
             </div>
-            <div className="flex space-x-4 ml-[540px]">
+            {/* <div className="flex space-x-4 ml-[590px]">
               <div className="flex items-center space-x-4">
                 <div className="relative">
                 <button
-                  className="flex items-center bg-[#D5D7DA] p-[4px] rounded-[10px] text-[14px]  shadow-[0_4px_6px_rgba(0,0,0,0.2)] outline-none focus:ring-2 focus:ring-[#9CA3AF]"
+                  className="flex items-center bg-[#D5D7DA] p-[4px] rounded-lg text-[14px]  shadow-[0_4px_6px_rgba(0,0,0,0.2)] outline-none focus:ring-2 focus:ring-[#9CA3AF]"
                 >
-                  <BiFilterAlt className="mr-2" /><span className='text-[#223857]'>Filter</span> 
+                  <BiFilterAlt className="mr-2 p-2" /><span className='text-[#223857]'>Filter</span> 
                 </button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </header>
           
-            <main className="grid grid-cols-12 gap-4 pr-20">
+            <main className="grid grid-cols-12 gap-5 pr-20">
               <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
                 <Total />
               </div>
               <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
-                <NextClass />
+                <NextScheduleClass />
               </div>
 
               <div className="col-span-6 grid grid-cols-1 gap-4 p-0">
@@ -81,11 +81,11 @@ export default function Academic() {
             </main>
           </div>
           {/* calender sidebar */}
-          <div className=" lg:w-[250px] mt-6 lg:mt-0 rounded-[20px] h-[600px]">
-            <div className="col-span-4 pr-8 mb-8">
+          <div className=" lg:w-[250px] mt-8 lg:mt-1 rounded-[20px] h-[70vh]">
+            <div className="col-span-4 pr-8 rounded-lg">
               <Calender />
             </div>
-            <div className="col-span-4 pr-8 -ml-24 rounded-lg">
+            <div className="col-span-4 pr-8 rounded-lg mt-4">
               <UpcomingTask />
             </div>
           </div>

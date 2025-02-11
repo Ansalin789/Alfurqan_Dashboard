@@ -1,22 +1,49 @@
 "use client";
 import { CircularProgress, Card, CardBody } from "@nextui-org/react";
-
-const cards = [
-  { id: "card1", name: "Level", value: 70, color: "#C1F0FF" },
-  { id: "card2", name: "Attendance", value: 10, color: "#F6C5FE" },
-  { id: "card3", name: "Total Classes", value: 30, color: "#FFECA7" },
-  { id: "card4", name: "Duration", value: 60, color: "#93FFEB" },
-];
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function App() {
+  const [data, setData] = useState({
+    totalLevel: 0,
+    totalAttendance: 0,
+    totalClasses: 0,
+    totalDuration: 0,
+  });
+
+  // Fetch data with dynamic studentId using axios
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const studentId = localStorage.getItem('StudentPortalId');
+        const response = await axios.get('http://localhost:5001/dashboard/student/counts', {
+          params: { studentId },
+        });
+        setData(response.data); // Set the fetched data into the state
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData(); // Fetch data when component mounts, passing dynamic studentId
+  }, []);
+
+  const cards = [
+    { id: "card1", name: "Level", value: data.totalLevel, color: "#85D8F2" },
+    { id: "card2", name: "Attendance", value: data.totalAttendance, color: "#F6C5FE" },
+    { id: "card3", name: "Total Classes", value: data.totalClasses, color: "#FFECA7" },
+    { id: "card4", name: "Duration", value: data.totalDuration, color: "#93FFEB" },
+  ];
+
   return (
     <div className="p-0">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <h2 className="text-[16px] px-4 font-bold text-gray-800 mb-0 md:mb-0">Course Overview</h2>
+        <h2 className="text-[16px] font-bold text-gray-800 p-[0px] px-4 -mt-[20px]">Course Overview</h2>
         <div className="relative">
           <select
-            className="block appearance-none text-[10px] w-full bg-white border rounded-xl border-gray-300 font-semibold text-gray-800 py-1 px-2 leading-tight focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+            className="block appearance-none text-[10px] w-full bg-white border rounded-lg border-gray-300 font-semibold text-gray-800 py-1 px-2 leading-tight focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 -mt-4"
             name="quranOptions"
             id="quranDropdown"
           >
@@ -24,7 +51,7 @@ export default function App() {
             <option value="Tajweed" className="text-[11px]">Tajweed</option>
             <option value="Islamic Studies" className="text-[11px]">Islamic Studies</option>
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 -mt-4">
             <svg
               className="fill-current h-4 w-4 text-gray-800"
               xmlns="http://www.w3.org/2000/svg"
@@ -37,7 +64,7 @@ export default function App() {
       </div>
 
       {/* Cards Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((card) => (
           <Card
             key={card.id}
@@ -47,16 +74,16 @@ export default function App() {
               borderTop: `4px solid ${card.color}`,
             }}
           >
-            <CardBody className="flex flex-col justify-center items-center p-4">
-              <p className="text-white text-sm font-semibold">{card.name}</p>
+            <CardBody className="flex flex-col justify-center items-center p-2">
+              <p className="text-white text-[12px] font-semibold">{card.name}</p>
               <CircularProgress
                 classNames={{
-                  svg: "w-16 h-16 drop-shadow-md mt-3",
+                  svg: "w-32 [height:97px] drop-shadow-md",
                   track: "stroke-white/10",
-                  value: "text-base font-semibold text-white",
+                  value: "text-[13px] font-semibold text-white",
                 }}
                 showValueLabel={true}
-                strokeWidth={3}
+                strokeWidth={6}
                 value={card.value}
                 style={{ stroke: card.color }}
               />

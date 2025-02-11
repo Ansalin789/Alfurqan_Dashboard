@@ -29,31 +29,32 @@ class AssignList extends Component {
         color: "#FF6666",
       },
     ];
-
     return (
-      <div className="p-4 md:p-6">
-        <h2 className="text-lg font-bold text-gray-800 mb-4">Current Status</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="p-4 w-[1250px] mx-auto">
+        <h2 className="text-2xl font-semibold text-gray-800 p-2 -ml-4">
+          Current Status
+        </h2>
+        <div className="flex justify-center gap-6 p-4 -ml-14">
           {cards.map((c) => (
             <div
               key={c.id}
-              className="w-full bg-white rounded-lg shadow-lg flex items-center p-4"
+              className="w-[330px] h-[150px] bg-white rounded-lg shadow-md flex items-center p-4"
             >
               {/* Circular Progress */}
-              <div className="mr-4 md:mr-6 flex justify-center items-center relative">
+              <div className="mr-6 flex justify-center items-center relative">
                 <svg
-                  className="w-[70px] h-[70px] sm:w-[90px] sm:h-[90px] transform rotate-[-90deg]"
+                  className="w-[100px] h-[90px] transform rotate-[-90deg]"
                   viewBox="0 0 36 36"
                 >
                   {/* Background Circle */}
                   <path
-                    className="text-gray-200"
+                    className="text-gray-300"
                     d="M18 2.0845
                       a 15.9155 15.9155 0 0 1 0 31.831
                       a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="4.5"
+                    strokeWidth="4" /* Background circle thickness */
                   ></path>
                   {/* Progress Circle */}
                   <path
@@ -62,22 +63,22 @@ class AssignList extends Component {
                       a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
                     stroke={c.color}
-                    strokeWidth="5"
+                    strokeWidth="4.5" /* Progress circle thickness */
                     strokeDasharray={`${c.value}, 100`}
                   ></path>
                 </svg>
                 {/* Percentage Value */}
-                <div className="absolute text-sm sm:text-base font-bold text-gray-800">
+                <div className="absolute text-[14px] font-bold text-gray-800">
                   {c.value}%
                 </div>
               </div>
               {/* Text and Icon */}
-              <div className="flex flex-col justify-center">
-                <p className="text-gray-800 text-sm sm:text-base font-semibold mb-1">
+              <div>
+                <p className="text-gray-800 text-[14px] font-semibold mb-2">
                   {c.name}
                 </p>
-                <p className="text-gray-600 text-xs sm:text-sm font-medium flex items-center gap-2">
-                  {c.count} <span className="text-lg">{c.icon}</span>
+                <p className="text-gray-600 text-[12px] font-medium flex items-center gap-2">
+                  {c.count} <span className="text-2xl">{c.icon}</span>
                 </p>
               </div>
             </div>

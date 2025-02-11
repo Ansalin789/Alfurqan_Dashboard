@@ -124,12 +124,11 @@ const ManageStudentView = () => {
       const fetchData = async () => {
         try {
           const auth=localStorage.getItem('authToken');
-          const response = await fetch(`https://alfurqanacademy.tech/alstudents/${studentId}`,
+          const response = await fetch(`http://localhost:5001/alstudents/${studentId}`,
             {
               headers: {
                      'Authorization': `Bearer ${auth}`,
               },
-              credentials:'include',
             });
           const data = await response.json();
           setStudentData(data);
@@ -143,12 +142,11 @@ const ManageStudentView = () => {
           const fetchTeachers = async () => {
             try {
               const auth=localStorage.getItem('authToken');
-              const response = await fetch(`https://alfurqanacademy.tech/users?role=TEACHER`, {
+              const response = await fetch(`http://localhost:5001/users?role=TEACHER`, {
 
                 headers: {
                        'Authorization': `Bearer ${auth}`,
                 },
-                credentials:'include',
               });
               const data = await response.json();
       
@@ -347,13 +345,12 @@ const ManageStudentView = () => {
     }
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`https://alfurqanacademy.tech/createclassschedule/${studentId}`, {
+      const response = await fetch(`http://localhost:5001/createclassschedule/${studentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           'Authorization': `Bearer ${auth}`,
         },
-        credentials:'include',
         body: JSON.stringify(requestData),
       });
   
@@ -432,14 +429,12 @@ const ManageStudentView = () => {
   const studentlist=async()=>{
       try{
         const auth=localStorage.getItem('authToken');
-           const response=await fetch(`https://alfurqanacademy.tech/classShedule`,{
+           const response=await fetch(`http://localhost:5001/classShedule`,{
             method:'GET',
             headers:{
               "Content-Type":"application/json",
               'Authorization': `Bearer ${auth}`,
-            },
-          credentials:'include',
-          }
+            }}
           );
           const data=await response.json();
            console.log(">>>>>>>>"+data);

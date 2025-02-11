@@ -34,7 +34,7 @@ const UpcomingClasses: React.FC = () => {
         const auth=localStorage.getItem('authToken');
         const academicId=localStorage.getItem('academicId');
         console.log("academicId>>",academicId);
-        const response = await axios.get(`https://alfurqanacademy.tech/evaluationlist`, {
+        const response = await axios.get(`http://localhost:5001/evaluationlist`, {
           method: 'GET',
           params:{academicCoachId:academicId },
           headers: {

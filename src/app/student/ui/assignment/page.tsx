@@ -9,7 +9,7 @@ import Assignlist from '../../components/assignment/Assignlist';
 const CurrentStatus = () => {
   return (
     <BaseLayout2>
-      <div>
+      <div className='p-4 mx-auto w-[1250px] pr-20'>
         <Assignlist />
         <Assignmentlist />
         

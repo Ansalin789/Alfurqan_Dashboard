@@ -74,7 +74,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }: Ad
 
       console.log('Sending data:', studentData);
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`https://alfurqanacademy.tech/student`, {
+      const response = await fetch(`http://localhost:5001/student`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

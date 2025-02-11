@@ -43,21 +43,21 @@ const RecordedClassesBase: React.FC = () => {
   };
 
   return (
-    <section className="bg-[#ffffff] p-6 py-3 rounded-xl mt-4">
+    <section className="bg-[#ffffff] p-2 rounded-xl mt-2">
       <div className="flex items-center justify-between mb-2 p-1 border-b-2 border-b-[#525151]">
-        <h2 className="text-[25px] font-bold text-[#5C5F85]">Recorded Classes Base</h2>
+        <h2 className="text-[18px] font-semibold text-[#5C5F85]">Recorded Classes Base</h2>
         {/* Date and Filter */}
         <div className="flex items-center space-x-2">
           <div className="relative">
             <input
               type="text"
               placeholder="MM/DD/YYYY"
-              className="border border-gray-300 rounded-lg px-4 py-2 text-sm w-full pr-10"
+              className="border border-gray-300 rounded-lg px-2 py-1 text-[10px] w-full"
             />
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-gray-500"
+                className="h-4 w-4 text-gray-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -72,7 +72,7 @@ const RecordedClassesBase: React.FC = () => {
             </div>
           </div>
           <button>
-            <FiFilter className="w-6 h-6 text-[#687E9C]" />
+            <FiFilter className="w-4 h-4 text-[#687E9C]" />
           </button>
         </div>
       </div>

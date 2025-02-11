@@ -27,7 +27,7 @@ export default function Academic() {
     >
         <div className="col-span-12 bg-[#3e68a1] p-4 py-3 rounded-[25px] shadow-xl">
             <h3 className="text-[15px] font-semibold text-white mb-2">Teachers - Students</h3>
-            <div className="max-h-40 overflow-y-scroll scrollbar-thin">
+            <div className="max-h-40 overflow-y-scroll scrollbar-none">
                 <table className="min-w-full">
                     <thead>
                         <tr>

@@ -22,14 +22,14 @@ const TeachingActivity = () => {
       {
         label: "Teaching Activity",
         data: [5, 10, 15, 20, 10, 15, 12, 18, 10, 8, 15, 20],
-        borderColor: "#012A4A",
+        borderColor: "#ffffff", // Line color
         backgroundColor: (context: any) => {
           const chart = context.chart;
           const { ctx, chartArea } = chart;
           if (!chartArea) return null;
           const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-          gradient.addColorStop(0, "rgba(54, 64, 96, 1)");
-          gradient.addColorStop(1, "rgba(255, 255, 255, 0.1)");
+          gradient.addColorStop(0, "#536680");
+          gradient.addColorStop(1, "#FEFEFE");
           return gradient;
         },
         fill: true,
@@ -38,6 +38,7 @@ const TeachingActivity = () => {
         pointBackgroundColor: "white",
         pointRadius: 0,
         hoverRadius: 6,
+        borderWidth: 2, // Line width only
       },
     ],
   };
@@ -110,22 +111,22 @@ const TeachingActivity = () => {
     },
     elements: {
       line: {
-        borderWidth: 2,
+        borderWidth: 2, // Line thickness
       },
     },
   };
 
   return (
     <div
-      className="col-span-12 p-6 py-2 rounded-sm border-gray-950 -mt-3"
+      className="col-span-12 p-6 py-2 rounded-sm -mt-3"
       style={{
         background: "linear-gradient(180deg, #FFFFFF, #F4F4F4)",
         height: "240px",
-        border: "1px solid #979595",
+        border: "1px solid #c8c8c8",
         borderRadius: "15px",
       }}
     >
-      <div className="flex items-center justify-between mb-2 border-black">
+      <div className="flex items-center justify-between mb-2">
         <h2
           className="text-[16px] font-semibold text-gray-700"
           style={{ fontFamily: "Arial, sans-serif" }}

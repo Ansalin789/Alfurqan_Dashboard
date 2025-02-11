@@ -29,7 +29,7 @@ export default function SignInSignUp(): JSX.Element {
       );
 
       // Send the Google token to your backend
-      const response = await axios.post(`https://alfurqanacademy.tech/google-signin`, {
+      const response = await axios.post(`http://localhost:5001/google-signin`, {
         googleToken: tokenResponse.access_token,
         email: userInfo.data.email
       });
@@ -88,9 +88,7 @@ export default function SignInSignUp(): JSX.Element {
     event.preventDefault();
     setError('');
     try {
-      const response = await axios.post(`https://alfurqanacademy.tech/signin`, { username, password },  {
-        withCredentials:true,
-      });
+      const response = await axios.post(`http://localhost:5001/signin`, { username, password });
       const {accessToken, role,_id } = response.data;
            console.log(response.data);
            console.log(accessToken);

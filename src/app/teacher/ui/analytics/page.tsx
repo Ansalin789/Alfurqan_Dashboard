@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Filter, Search, X } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
 import BaseLayout from '@/components/BaseLayout';
 import { FaSort } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 interface Student {
   id: string;
@@ -55,24 +56,9 @@ function Analytics() {
   });
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [sortKey, setSortKey] = useState<keyof Student | keyof Class | keyof Earning>("name"); // Default sort key
-
-  const studentData = [
-    { month: 'Jan', students: 8000 },
-    { month: 'Feb', students: 6000 },
-    { month: 'Mar', students: 4000 },
-    { month: 'Apr', students: 7500 },
-    { month: 'May', students: 5000 },
-    { month: 'Jun', students: 6500 },
-  ];
-
-  const classData = [
-    { month: 'Jan', classes: 65 },
-    { month: 'Feb', classes: 75 },
-    { month: 'Mar', classes: 85 },
-    { month: 'Apr', classes: 70 },
-    { month: 'May', classes: 80 },
-    { month: 'Jun', classes: 100 },
-  ];
+  const [studentData, setStudentData] = useState<{ month: string, students: number }[]>([]);
+  const [classData, setClassData] = useState<{ month: string; classes: number }[]>([]);
+  
 
   const earningsData = [
     { month: 'Jan', earnings: 30000 },
@@ -83,71 +69,7 @@ function Analytics() {
     { month: 'Jun', earnings: 45741 },
   ];
 
-  const students: Student[] = [
-    {
-      id: '1234567890',
-      name: 'Samantha William',
-      course: 'Tajweed',
-      courseType: 'Trial Class',
-      courseDuration: '4',
-      classDateTime: '4',
-      joinDate: 'January 2, 2020',
-      level: 2,
-      status: 'Active'
-    },
-    {
-      id: '1234567891',
-      name: 'Jordan Nico',
-      course: 'Arabic',
-      courseType: 'Group Class',
-      courseDuration:'4',
-      classDateTime:'4',
-      joinDate: 'January 2, 2020',
-      level: 2,
-      status: 'Active'
-    },
-    {
-      id: '1234567892',
-      name: 'Nadila Adja',
-      course: 'Quran',
-      courseType: 'Regular Class',
-      courseDuration: '4',
-      classDateTime: '4',
-      joinDate: 'January 2, 2020',
-      level: 2,
-      status: 'Active'
-    }
-  ];
-
-  const classes: Class[] = [
-    {
-      id: 'CLS001',
-      name: 'Basic Arabic',
-      instructor: 'Ahmed Hassan',
-      schedule: 'Mon, Wed 10:00 AM',
-      students: 15,
-      type: 'Group Class',
-      status: 'Ongoing'
-    },
-    {
-      id: 'CLS002',
-      name: 'Advanced Tajweed',
-      instructor: 'Sarah Ahmad',
-      schedule: 'Tue, Thu 2:00 PM',
-      students: 10,
-      type: 'Group Class',
-      status: 'Ongoing'
-    },
-    {
-      id: 'CLS003',
-      name: 'Quran Memorization',
-      instructor: 'Mohammad Ali',
-      schedule: 'Fri 9:00 AM',
-      students: 8,
-      type: 'Regular Class',
-      status: 'Ongoing'
-    }
-  ];
+  
 
   const earnings: Earning[] = [
     {
@@ -184,23 +106,150 @@ function Analytics() {
       status: 'Paid'
     }
   ];
+  interface Student {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+}
 
-  const filteredStudents = students.filter(student => {
-    return (
-      student.name.toLowerCase().includes(filters.name.toLowerCase()) &&
-      student.id.includes(filters.id) &&
-      (filters.course === '' || student.course === filters.course) &&
-      (filters.status === '' || student.status === filters.status)
-    );
-  });
+interface Teacher {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+}
 
-  const filteredClasses = classes.filter(cls => {
-    return (
-      cls.name.toLowerCase().includes(filters.name.toLowerCase()) &&
-      cls.id.includes(filters.id) &&
-      (filters.status === '' || cls.status === filters.status)
-    );
-  });
+interface Schedule {
+    student: Student;
+    teacher: Teacher;
+    _id: string;
+    classDay: string[];
+    package: string;
+    preferedTeacher: string;
+    totalHourse: number;
+    startDate: string;
+    endDate: string;
+    startTime: string[];
+    endTime: string[];
+    scheduleStatus: string;
+    status: string;
+    createdBy: string;
+    createdDate: string;
+    lastUpdatedDate: string;
+    __v: number;
+}
+
+interface ApiResponse {
+    totalCount: number;
+    students: Schedule[];
+}
+const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
+const[TotalStudents,setTotalStudents]=useState<number>();
+const[TotalClasses,setTotalClasses]=useState<number>();
+useEffect(() => {
+  const fetchData = async () => {
+      try {
+          const auth = localStorage.getItem('TeacherAuthToken');
+          const teacherIdToFilter = localStorage.getItem('TeacherPortalId');
+
+          if (!teacherIdToFilter) {
+              console.error("No teacher ID found in localStorage.");
+              return;
+          }
+
+          const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+              headers: {
+                  Authorization: `Bearer ${auth}`,
+              },
+          });
+
+          const filteredData = response.data.students.filter(
+              (item) => item.teacher.teacherId === teacherIdToFilter
+          );
+
+          // Create a Map to store unique students based on studentId
+          const studentScheduleMap = new Map<string, Schedule>();
+          const uniqueStudents = new Set<string>(); // To count total unique students
+
+          filteredData.forEach((item) => {
+              studentScheduleMap.set(item.student.studentId, item);
+              uniqueStudents.add(item.student.studentId);
+          });
+
+          // Convert Map values (unique Schedule objects) to an array
+          const uniqueSchedules = Array.from(studentScheduleMap.values());
+
+          setUniqueStudentSchedules(uniqueSchedules);
+
+          // Group students by month, ensuring uniqueness of students per month
+          const monthlyStudentCount: { [key: string]: Set<string> } = {}; // Set to ensure uniqueness
+          const monthlyClassCount: { [key: string]: number } = {};
+
+          filteredData.forEach((item) => {
+              const month = new Date(item.startDate).toLocaleString('default', { month: 'short' });
+              const studentId = item.student.studentId;
+
+              // Count unique students per month
+              if (!monthlyStudentCount[month]) {
+                  monthlyStudentCount[month] = new Set();
+              }
+              monthlyStudentCount[month].add(studentId);
+
+              // Count classes per month
+              if (!monthlyClassCount[month]) {
+                  monthlyClassCount[month] = 0;
+              }
+              monthlyClassCount[month] += 1;
+          });
+
+          // Convert Set of unique students per month into an array
+          const formattedStudentData = Object.keys(monthlyStudentCount).map((month) => ({
+              month,
+              students: monthlyStudentCount[month].size,
+          }));
+
+          // Convert class count per month into an array
+          const formattedClassData = Object.keys(monthlyClassCount).map((month) => ({
+              month,
+              classes: monthlyClassCount[month],
+          }));
+
+          setStudentData(formattedStudentData);
+          setClassData(formattedClassData);
+
+          // Calculate Total Students and Total Classes
+          const totalStudents = uniqueStudents.size; // Unique student count
+          const totalClasses = filteredData.length; // Total number of classes
+
+          setTotalStudents(totalStudents);
+          setTotalClasses(totalClasses);
+      } catch (error) {
+          console.error("Error fetching data:", error);
+      }
+  };
+
+  fetchData();
+}, []);
+
+
+
+
+const filteredStudents = uniqueStudentSchedules.filter((schedule) => {
+  return (
+    schedule.student.studentFirstName.toLowerCase().includes(filters.name.toLowerCase()) &&
+    schedule.student.studentId.includes(filters.id) &&
+    (filters.course === '' || schedule.package ) &&
+    (filters.status === '' || schedule.status === filters.status)
+  );
+});
+
+const filteredClasses = uniqueStudentSchedules.filter((cls) => {
+  return (
+    cls.student.studentFirstName.toLowerCase().includes(filters.name.toLowerCase()) &&
+    cls.student.studentId.includes(filters.id) &&
+    (filters.status === "" || cls.status === filters.status)
+  );
+});
 
   const filteredEarnings = earnings.filter(earning => {
     return (
@@ -219,18 +268,37 @@ function Analytics() {
 
   // Sorting logic for filtered data
   const sortedStudents = [...filteredStudents].sort((a, b) => {
-    if (sortOrder === "asc") {
-      return a[sortKey as keyof Student].toString().localeCompare(b[sortKey as keyof Student].toString());
-    }
-    return b[sortKey as keyof Student].toString().localeCompare(a[sortKey as keyof Student].toString());
-  });
+    const aValue = a.student[sortKey as keyof Student]?.toString() || "";
+    const bValue = b.student[sortKey as keyof Student]?.toString() || "";
 
-  const sortedClasses = [...filteredClasses].sort((a, b) => {
     if (sortOrder === "asc") {
-      return a[sortKey as keyof Class].toString().localeCompare(b[sortKey as keyof Class].toString());
+        return aValue.localeCompare(bValue);
     }
-    return b[sortKey as keyof Class].toString().localeCompare(a[sortKey as keyof Class].toString());
-  });
+    return bValue.localeCompare(aValue);
+});
+
+const sortedClasses = [...filteredClasses].sort((a, b) => {
+  const aValue = a[sortKey as keyof Schedule];
+  const bValue = b[sortKey as keyof Schedule];
+
+  if (aValue == null || bValue == null) return 0; // Handle null/undefined
+
+  if (typeof aValue === "number" && typeof bValue === "number") {
+    return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+  }
+
+  // Handle non-string values (objects, arrays, etc.)
+  if (typeof aValue === "object" || typeof bValue === "object") {
+    // Convert objects to a meaningful string representation (e.g., JSON.stringify or specific properties)
+    return sortOrder === "asc"
+      ? JSON.stringify(aValue).localeCompare(JSON.stringify(bValue))
+      : JSON.stringify(bValue).localeCompare(JSON.stringify(aValue));
+  }
+
+  return sortOrder === "asc"
+    ? aValue.toString().localeCompare(bValue.toString())
+    : bValue.toString().localeCompare(aValue.toString());
+});
 
   const sortedEarnings = [...filteredEarnings].sort((a, b) => {
     const aValue = a[sortKey as keyof Earning];
@@ -251,18 +319,16 @@ function Analytics() {
   };
   return (
     <BaseLayout>
-    <div className="h-screen w-screen">
-      <div className="p-8">
+    <div className="p-4 mx-auto w-[1250px] pr-12">
+      <div className="p-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-[#1e293b]">Analytics</h1>
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-semibold text-gray-800 p-2">Analytics</h1>
           </div>
 
-          {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-4 mb-6 w-[80%] ml-32">
-            {/* Total Students Card */}
             <button
-              className={`bg-white ${activeView === 'students' ? 'border-4' : 'border-2'} border-[#1C3557] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow`}
+              className={`bg-white ${activeView === 'students' ? 'border-[3px]' : 'border-[1px]'} border-[#1C3557] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow`}
               onClick={() => setActiveView('students')}
             >
               <h3 className="text-base font-semibold text-[#1e293b] mb-3">Total Students</h3>
@@ -278,14 +344,14 @@ function Analytics() {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-                <p className="text-xl font-bold text-[#1e293b]">12,345</p>
+                <p className="text-xl font-bold text-[#1e293b]">{TotalStudents}</p>
                 <p className="text-xs text-[#4ade80] font-medium">5.4% than last year</p>
               </div>
             </button>
 
             {/* Classes Card */}
             <button
-              className={`bg-white ${activeView === 'classes' ? 'border-4' : 'border-2'} border-[#1C3557] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow`}
+              className={`bg-white ${activeView === 'classes' ? 'border-[3px]' : 'border-[1px]'} border-[#1C3557] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow`}
               onClick={() => setActiveView('classes')}
             >
               <h3 className="text-base font-semibold text-[#1e293b] mb-3">Classes</h3>
@@ -312,14 +378,14 @@ function Analytics() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
-                <p className="text-xl font-bold text-[#1e293b]">100</p>
+                <p className="text-xl font-bold text-[#1e293b]">{TotalClasses}</p>
                 <p className="text-xs text-[#4ade80] font-medium">+15% than last month</p>
               </div>
             </button>
 
             {/* Earnings Card */}
             <button
-              className={`bg-white ${activeView === 'earnings' ? 'border-4' : 'border-2'} border-[#1C3557] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow`}
+              className={`bg-white ${activeView === 'earnings' ? 'border-[3px]' : 'border-[1px]'} border-[#1C3557] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow`}
               onClick={() => setActiveView('earnings')}
             >
               <h3 className="text-base font-semibold text-[#1e293b] mb-3">Earnings</h3>
@@ -352,10 +418,9 @@ function Analytics() {
             </button>
           </div>
 
-          {/* List View */}
-          <div className="bg-white rounded-xl shadow-sm mt-24">
+          <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[40vh] mt-16">
             <div className="p-4 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-[#1e293b]">
+              <h2 className="text-[15px] font-semibold text-[#1e293b]">
               {(() => {
                 if (activeView === 'students') {
                   return 'Students List';
@@ -367,21 +432,21 @@ function Analytics() {
               })()}
 
               </h2>
-              <div className="items-center gap-3 -mt-12">
+              <div className="items-center gap-3 -mt-16 ml-10">
                 <button
-                  className="flex items-center -mt-3 gap-2 ml-36 shadow-lg bg-[#FAFAFA] px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 text-sm"
+                  className="flex items-center gap-2 ml-40 justify-end border-[1px] border-[#223857] shadow-lg bg-[#fff] px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 text-sm"
                   onClick={() => setIsFilterOpen(true)}
                 >
                   <Filter className="w-4 h-4" />
                   <span>Filter</span>
                 </button>
-                <div className="relative shadow-ld mt-4 rounded-xl">
+                <div className="relative mt-8 p-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
                   <input
                     type="text"
                     placeholder="Search"
                     onChange={(e) => handleFilterChange('name', e.target.value)}
-                    className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] shadow-lg rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4ade80] w-56"
+                    className="pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:ring-1 shadow-md rounded-lg focus:ring-[#223857] "
                   />
                 </div>
                 
@@ -389,52 +454,53 @@ function Analytics() {
             </div>
 
             {activeView === 'students' && (
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-[#374557]">
-                    <th className="px-4 py-3 font-medium text-sm">
+              <table className="table-auto w-full">
+                <thead className='border-b-[1px] border-[#1C3557] text-[11px] font-semibold'>
+                  <tr>
+                    <th className="px-6 py-3 text-center">
                       Name <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('name')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
+                    <th className="px-6 py-3 text-center">
                       Student ID <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('id')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
+                    <th className="px-6 py-3 text-center">
                       Courses <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('course')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
+                    <th className="px-6 py-3 text-center">
                       Course Type <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('courseType')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
-                      Join Date <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('joinDate')} />
+                    <th className="px-6 py-3 text-center">
+                      Join Date <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('date')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">Level</th>
-                    <th className="px-4 py-3 font-medium text-sm">Status</th>
+                    <th className="px-6 py-3 text-center">Level</th>
+                    <th className="px-6 py-3 text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedStudents.map((student) => (
-                    <tr key={student.id} className="border-b border-gray-100 last:border-b-0">
-                      <td className="px-4 py-3">
+                {sortedStudents.slice(0, 3).map((schedule) => (
+                    <tr key={schedule.student.studentId} className="text-[11px] font-medium mt-2"
+                    style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
+                      <td className="px-4 py-2 text-center">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-[#DBDBDB] rounded-lg"></div>
-                          <span className="font-medium text-[#1e293b] text-sm">{student.name}</span>
+                          <div className="w-5 h-5 bg-[#DBDBDB] rounded-md"></div>
+                          <span className="px-6 py-2 text-center">{schedule.student.studentFirstName} {schedule.student.studentLastName}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{student.id}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{student.course}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{student.courseType}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{student.joinDate}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-2 text-center">{schedule.student.studentId}</td>
+                      <td className="px-6 py-2 text-center">{schedule.package}</td>
+                      <td className="px-6 py-2 text-center">{schedule.scheduleStatus}</td>
+                      <td className="px-6 py-2 text-center">{new Date(schedule.startDate).toLocaleDateString()}</td>
+                      <td className="px-6 py-2 text-center">
                         <div className="flex items-center gap-2">
-                          <span className="text-[#1e293b] text-sm">Level {student.level}</span>
-                          <div className="w-5 h-5 bg-[#1e293b] rounded-full text-white flex items-center justify-center text-xs">
-                            {student.level}
+                          <span className="text-[#1e293b] text-[11px]">Level 1</span>
+                          <div className="w-3 h-3 bg-[#1e293b] rounded-full text-white flex items-center justify-center text-[7px]">
+                            1
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] rounded-full text-xs">
-                          {student.status}
+                        <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] border border-[#299350] rounded-lg text-[11px]">
+                        {schedule.status}
                         </span>
                       </td>
                     </tr>
@@ -444,50 +510,51 @@ function Analytics() {
             )}
 
             {activeView === 'classes' && (
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-[#374557] border-y border-gray-100">
-                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+              <table className="table-auto w-full">
+                <thead className='border-b-[1px] border-[#1C3557] text-[11px] font-semibold'>
+                  <tr>
+                    <th className="px-6 py-3 text-center">
                       Class Name <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('name')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                    <th className="px-6 py-3 text-center">
                       Student ID <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('id')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                    <th className="px-6 py-3 text-center">
                       Courses <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('instructor')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                    <th className="px-6 py-3 text-center">
                       Course Type <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('schedule')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                    <th className="px-6 py-3 text-center">
                       Course Duration <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('students')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                    <th className="px-6 py-3 text-center">
                       Class-Date & time <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('type')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm text-[#1e293b]">
+                    <th className="px-6 py-3 text-center">
                       Status <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('status')} />
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedClasses.map((cls) => (
-                    <tr key={cls.id} className="border-b border-gray-100 last:border-b-0">
-                      <td className="px-4 py-3">
+                {sortedClasses.slice(0,3).map((cls) => (
+                    <tr key={cls._id} className="text-[11px] font-medium mt-2"
+                    style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
+                      <td className="px-4 py-2">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gray-100 rounded-full"></div>
-                          <span className="font-medium text-[#1e293b] text-sm">{cls.name}</span>
+                          <div className="w-5 h-5 bg-[#DBDBDB] rounded-md"></div>
+                          <span className="px-6 py-2 text-center">Trail Class</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{cls.id}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{cls.instructor}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{cls.schedule}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{cls.students}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{cls.type}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-2 text-center">{cls._id}</td>
+                      <td className="px-6 py-2 text-center">{cls.package}</td>
+                      <td className="px-6 py-2 text-center">{cls.scheduleStatus}</td>
+                      <td className="px-6 py-2 text-center">{cls.totalHourse}</td>
+                      <td className="px-6 py-2 text-center">{new Date(cls.startDate).toLocaleDateString()}</td>
+                      <td className="px-6 py-1 text-center">
                         <span className={`px-2.5 py-1 ${
                           cls.status === 'Ongoing' ? 'bg-[#4ade80]/10 text-[#4ade80]' : 'bg-gray-100 text-[#1e293b]'
-                        } rounded-full text-xs`}>
+                        } rounded-lg text-[10px] border border-[#4ade80]`}>
                           {cls.status}
                         </span>
                       </td>
@@ -498,54 +565,55 @@ function Analytics() {
             )}
 
             {activeView === 'earnings' && (
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-[#374557] border-y border-gray-100">
-                    <th className="px-4 py-3 font-medium text-sm">
+              <table className="table-auto w-full">
+                <thead className='border-b-[1px] border-[#1C3557] text-[11px] font-semibold'>
+                  <tr>
+                    <th className="px-6 py-3 text-center">
                       Name <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('studentName')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
+                    <th className="px-6 py-3 text-center">
                       Student ID <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('id')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
+                    <th className="px-6 py-3 text-center">
                       Courses <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('course')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
+                    <th className="px-6 py-3 text-center">
                       Course Type <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('courseType')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
+                    <th className="px-6 py-3 text-center">
                       Course Duration <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('courseDuration')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
+                    <th className="px-6 py-3 text-center">
                       Class Date-Time <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('classDateTime')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
+                    <th className="px-6 py-3 text-center">
                       Amount <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('amount')} />
                     </th>
-                    <th className="px-4 py-3 font-medium text-sm">
+                    <th className="px-6 py-3 text-center">
                       Status <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort('status')} />
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedEarnings.map((earning) => (
-                    <tr key={earning.id} className="border-b border-gray-100 last:border-b-0">
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{earning.id}</td>
-                      <td className="px-4 py-3">
+                    <tr key={earning.id} className="text-[11px] font-medium mt-2"
+                    style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
+                      <td className="px-4 py-2">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gray-100 rounded-full"></div>
-                          <span className="font-medium text-[#1e293b] text-sm">{earning.studentName}</span>
+                          <div className="w-5 h-5 bg-[#DBDBDB] rounded-md"></div>
+                          <span className="px-6 py-2 text-center">{earning.id}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{earning.course}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{earning.courseType}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{earning.courseDuration}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">{earning.classDateTime}</td>
-                      <td className="px-4 py-3 text-[#1e293b] text-sm">${earning.amount}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-2 text-center">{earning.studentName}</td>
+                      <td className="px-6 py-2 text-center">{earning.course}</td>
+                      <td className="px-6 py-2 text-center">{earning.courseType}</td>
+                      <td className="px-6 py-2 text-center">{earning.courseDuration}</td>
+                      <td className="px-6 py-2 text-center">{earning.classDateTime}</td>
+                      <td className="px-6 py-2 text-center">${earning.amount}</td>
+                      <td className="px-6 py-2 text-center">
                         <span className={`px-2.5 py-1 ${
-                          earning.status === 'Paid' ? 'bg-[#4ade80]/10 text-[#4ade80]' : 'bg-yellow-100 text-yellow-600'
-                        } rounded-full text-xs`}>
+                          earning.status === 'Paid' ? 'bg-[#4ade80]/10 text-[#4ade80] border border-[#4ade80] px-5' : 'bg-yellow-100 border border-yellow-600 text-yellow-600 px-2.5'
+                        } rounded-lg text-[10px]`}>
                           {earning.status}
                         </span>
                       </td>
@@ -557,7 +625,7 @@ function Analytics() {
           </div>
           <div className="flex justify-end">
           <button
-            className="text-green-500 mt-4 underline cursor-pointer bg-transparent border-none p-0"
+            className="text-[#fff] mt-4 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
             onClick={() => {
               if (activeView === 'students') {
                 router.push('/teacher/ui/analytics/totalstudents');
@@ -573,11 +641,8 @@ function Analytics() {
         </div>
         </div>
         
-
-
       </div>
 
-      {/* Filter Modal */}
       {isFilterOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl w-[400px] p-6 relative">

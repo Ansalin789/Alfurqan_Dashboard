@@ -1,64 +1,189 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  Send,
-  Settings2,
   Mic,
+  MicOff,
   Video,
-  MonitorStop,
-  PhoneOff,Disc,Timer, ChevronDown
+  VideoOff,
+  Monitor,
+  PhoneOff,
+  Timer,
+  ChevronDown
 } from 'lucide-react';
+import { JitsiMeeting } from '@jitsi/react-sdk';
 import BaseLayout from '@/components/BaseLayout';
+import axios from 'axios';
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  city:string;
+  country:string;
+  trailId:string;
+  course:string;
+  classStatus:string;
+}
+
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+interface ClassData {
+  _id: string;
+  student: Student;
+  teacher: Teacher;
+  classDay: string[]; // Keep this as an array of strings
+  package: string;
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];  // Array of strings for startTime
+  endTime: string[];    // Array of strings for endTime
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+interface ApiResponse {
+  totalCount: number;
+  classSchedule: ClassData[];
+}
 
 function LiveClass() {
-  const [isVideoCallActive, setIsVideoCallActive] = useState(false);
-  const [isMuted, setIsMuted] = useState(false); // State to manage microphone mute
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  const localStreamRef = useRef<MediaStream | null>(null);
-  const remoteStreamRef = useRef<MediaStream | null>(null);
-  const [ratings, setRatings] = useState([0, 0, 0]);
-  const [feedback, setFeedback] = useState('');
-  const[showfeedback,SetShowFeedback]=useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const[isScreenSharing,setIsScreenSharing]=useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isVideoOn, setIsVideoOn] = useState(true);
+    const [isScreenSharing, setIsScreenSharing] = useState(false);
+    const [showFeedback, setShowFeedback] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
+    const [ratings, setRatings] = useState([0, 0, 0]);
+    const [feedback, setFeedback] = useState('');
+    const apiRef = useRef<any>(null);
+    const [classData, setClassData] = useState<ClassData | null>(null);
   const[isFormData,setIsFormData]=useState(true);
-  function StarRating({
-    value,
-    onChange,
-  }: {
-    readonly value: number;
-    readonly onChange: (rating: number) => void;
-  }) {
+  const filterUpcomingClass = (response: { totalCount: number, classSchedule: any[] }): ClassData | null => {
+    const classes = response.classSchedule;
+  
+    if (!Array.isArray(classes)) {
+      console.log('Expected an array, but received:', classes);
+      return null;
+    }
+  
+    // Find the next class
+    const nextClass = classes.find((cls) => {
+      const now = new Date();
+      const classStartDate = new Date(cls.startDate);
+      return classStartDate > now;
+    });
+  
+    return nextClass || null;  // Return the next class or null if not found
+  };
+  // Fetch class data
+  
+  useEffect(() => {
+    const fetchClassData = async () => {
+      try {
+        const teacherId = localStorage.getItem('TeacherPortalId');
+        const authToken = localStorage.getItem('TeacherAuthToken');
+        // Ensure studentId and authToken are valid
+        if (!teacherId || !authToken) {
+          console.log('Missing studentId or authToken');
+          return;
+        }
+  
+        const response = await axios.get<ApiResponse>(`http://localhost:5001/classShedule/teacher`, {
+          params: { teacherId },
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+        
+        console.log('API Response:', response.data);  // Log the response data
+  
+        const nextClass = filterUpcomingClass(response.data);
+        console.log('Filtered Next Class:', nextClass);  // Log the filtered data
+        setClassData(nextClass);
+      
+  
+      } catch (err) {
+        console.log('Error loading class details:', err);
+      }
+    };
+  
+    fetchClassData();
+  }, []);
+    
+  
+  useEffect(() => {
+    // Use optional chaining to check for `classData` and `endTime` in one step
+    if (!classData?.endTime?.length) return;
+  
+    const now = new Date();
+    
+    // Assuming endTime is an array of strings, we'll use the first value (classData.endTime[0]) for comparison
+    const endTime = new Date(classData.endTime[0]);
+    
+    const timeUntilEnd = endTime.getTime() - now.getTime();
+  
+    if (timeUntilEnd > 0) {
+      const timer = setTimeout(() => {
+        
+        setClassData(null);
+      }, timeUntilEnd);
+  
+      return () => clearTimeout(timer);
+    }
+  }, [classData]);
+  
+  
+  
+
+  const handleJitsiControl = (action: string) => {
+    if (!apiRef.current) return;
+
+    switch (action) {
+      case 'toggleAudio':
+        apiRef.current.executeCommand('toggleAudio');
+        setIsMuted(!isMuted);
+        break;
+      case 'toggleVideo':
+        apiRef.current.executeCommand('toggleVideo');
+        setIsVideoOn(!isVideoOn);
+        break;
+      case 'toggleShareScreen':
+        apiRef.current.executeCommand('toggleShareScreen');
+        setIsScreenSharing(!isScreenSharing);
+        break;
+    }
+  };
+
+  const handleEndCall = () => {
+    if (apiRef.current) {
+      apiRef.current.dispose();
+      setShowFeedback(true);
+    }
+  };
+  const StarRating = ({ value, onChange }: { value: number; onChange: (rating: number) => void }) => {
     return (
-      <div className="flex gap-1" role="radiogroup" aria-label="Star Rating">
+      <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
-          <label
+          <button
             key={star}
-            className="text-xl cursor-pointer flex items-center"
+            className={`cursor-pointer text-xl ${star <= value ? "text-yellow-400" : "text-gray-300"}`}
+            onClick={() => onChange(star)}
           >
-            <input
-              type="radio"
-              name="rating"
-              value={star}
-              checked={star === value}
-              onChange={() => onChange(star)}
-              className="hidden"
-            />
-            <span
-              className={`${
-                star <= value ? 'text-yellow-400' : 'text-gray-200'
-              }`}
-            >
-              ★
-            </span>
-          </label>
+            ★
+          </button>
         ))}
       </div>
     );
-  }
+  };
   useEffect(() => {
     let timeoutId: number | undefined
     if (showPopup) {
@@ -69,186 +194,106 @@ function LiveClass() {
     return () => {
       if (timeoutId) clearTimeout(timeoutId)
     }
-  }, [showPopup])
+  }, [showPopup]);
+  const handleSubmit = async () => {
+   
 
-  useEffect(() => {
-    if (isVideoCallActive) {
-      startVideoCall();
-    } else {
-      endVideoCall();
-    }
-  
-    // Cleanup on unmount or when the call ends
-    return () => {
-      endVideoCall();
+    // Create request body
+    const feedbackData = {
+      student: {
+        studentId: classData?.student.studentId,
+        studentFirstName: classData?.student.studentFirstName,
+        studentLastName: classData?.student.studentLastName,
+        studentEmail: classData?.student.studentEmail,
+      },
+      teacher: {
+        teacherId: classData?.teacher.teacherId,
+        teacherName: classData?.teacher.teacherName,
+        teacherEmail: classData?.teacher.teacherEmail,
+      },
+      classDay: classData?.classDay[0],
+      preferedTeacher: classData?.preferedTeacher,
+      course: {
+        courseId: "course123",
+        courseName: "Math 101",
+      },
+      studentsRating: {
+        classUnderstanding: ratings[0],
+        engagement: ratings[1],
+        homeworkCompletion: ratings[2],
+      },
+      startDate: classData?.startDate,
+      endDate: classData?.endDate,
+      startTime: classData?.startTime[0],
+      endTime: classData?.endTime[0],
+      feedbackmessage: feedback,
+      createdDate: new Date().toISOString(),
+      createdBy: "User",
+      lastUpdatedDate: new Date().toISOString(),
+      lastUpdatedBy: "User",
     };
-  }, [isVideoCallActive]);
-  const handleSubmitrate = () => {
-    console.log({ ratings, feedback })
-    setShowPopup(true)
-  }
 
-  const startVideoCall = async () => {
     try {
-      // Get local media stream (audio + video)
-      const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      localStreamRef.current = localStream;
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = localStream;
-      }
-
-      // Set up peer connection
-      const peerConnection = new RTCPeerConnection();
-      peerConnectionRef.current = peerConnection;
-
-      // Add local stream to peer connection
-      localStream.getTracks().forEach((track) => {
-        peerConnection.addTrack(track, localStream);
+      const response = await axios.post("http://localhost:5001/feedback", feedbackData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
-      // Handle incoming stream (remote stream)
-      peerConnection.ontrack = (event) => {
-        if (event.streams[0]) {
-          remoteStreamRef.current = event.streams[0];
-          if (remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = event.streams[0];
-          }
-        }
-      };
-
-      // Create offer and set local description
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-
-      // Here you would send the offer to the remote peer and handle the signaling process
-      // This could involve using WebSockets, Firebase, or another signaling mechanism
-      // await sendOfferToRemotePeer(offer);
-
-    } catch (err) {
-      console.error('Error starting video call:', err);
-    }
-  };
-
-  const endVideoCall = () => {
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
-    }
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((track) => track.stop());
-      localStreamRef.current = null;
-    }
-    if (remoteStreamRef.current) {
-      remoteStreamRef.current.getTracks().forEach((track) => track.stop());
-      remoteStreamRef.current = null;
-    }
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = null;
-    }
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = null;
-    }
-  };
-
-  const toggleMute = () => {
-    if (localStreamRef.current) {
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMuted(!audioTrack.enabled);
+      if (response.status === 201 || response.status === 200) {
+        setShowPopup(true);
+        setTimeout(() => setShowPopup(false), 3000);
+      } else {
+        console.log("Failed to submit feedback. Please try again.");
       }
-    }
-  };
-
-  const endCall = () => {
-    setIsVideoCallActive(false);
-    SetShowFeedback(true); 
-  };
-  const toggleScreenShare = async () => {
-    if (isScreenSharing) {
-      // Stop screen sharing
-      const tracks = localStreamRef.current?.getTracks();
-      tracks?.forEach((track) => {
-        if (track.kind === 'video') {
-          track.stop();
-        }
-      });
-      localStreamRef.current!.getVideoTracks()[0].enabled = true;
-            setIsScreenSharing(false);
-    } else {
-      try {
-        // Start screen sharing
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
-        });
-        const screenTrack = screenStream.getTracks()[0];
-        const localStream = localStreamRef.current;
-        if (localStream) {
-          localStream.getTracks().forEach((track) => track.stop());
-          localStream.addTrack(screenTrack);
-        }
-        localStreamRef.current = localStream;
-        setIsScreenSharing(true);
-      } catch (err) {
-        console.error('Error starting screen share:', err);
-      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      console.log("Error submitting feedback. Please try again.");
     }
   };
   
-  const startRecording = () => {
-    // Logic to start recording
-    console.log('Recording started');
-    setIsRecording(true);
-  };
   
-  const stopRecording = () => {
-    // Logic to stop recording
-    console.log('Recording stopped');
-    setIsRecording(false);
-  };
-  const [student, setStudent] = useState({
-    firstName: 'Samantha',
-    lastName: 'William',
-    city: 'Texas',
-    country: 'USA',
-    trialId: '#098367',
-    course: 'Arabic',
-    classStatus: 'Joining',
-    sessionDate: '2024-05-06',
-    sessionTime: '04:23',
-    comments: '',
-  });
+  
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setStudent(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', student);
-  };
+  
 
   const handleStartSession = () => {
-    console.log('Starting session for student:', student);
     setIsFormData(false);
   };
+  const categories = ["Listening Ability", "Reading Ability", " Overall Performance"];
+  const [timeRemaining, setTimeRemaining] = useState("");
+  useEffect(() => {
+    if (!classData) return;
 
-  const handleClear = () => {
-    setStudent({
-      firstName: '',
-      lastName: '',
-      city: '',
-      country: '',
-      trialId: '',
-      course: '',
-      classStatus: 'Joining',
-      sessionDate: '',
-      sessionTime: '',
-      comments: '',
-    });
-  };
+    const updateRemainingTime = () => {
+      const now = new Date();
 
+      // Extract class date and time
+      const classDate = new Date(classData.startDate);
+      const [hours, minutes] = classData.startTime[0].split(":").map(Number);  // Assuming startTime is an array
+
+      classDate.setHours(hours, minutes, 0, 0);  // Set time for the class
+
+      const diff = classDate.getTime() - now.getTime();
+
+      if (diff > 0) {
+        const remainingDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const remainingHours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const remainingMinutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        setTimeRemaining(`${remainingDays}d ${remainingHours}h ${remainingMinutes}m`);
+      } else {
+        setTimeRemaining("Started");
+      }
+    };
+
+    updateRemainingTime();  // Initial call
+
+    const timer = setInterval(updateRemainingTime, 60000);  // Update every minute
+
+    return () => clearInterval(timer);  // Cleanup on unmount
+  }, [classData]);
+  
   return (
     <BaseLayout>
       <div className="flex h-screen bg-[#E6E9ED]">
@@ -259,7 +304,7 @@ function LiveClass() {
                  
                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                    {/* Form Section */}
-                   <form onSubmit={handleSubmit} className="lg:col-span-2 bg-[#1E3F6C] h-[100%] w-[80%] rounded-3xl opacity-[90%] text-white p-5 justify-center ml-28">
+                   <form className="lg:col-span-2 bg-[#1E3F6C] h-[100%] w-[80%] rounded-3xl opacity-[90%] text-white p-5 justify-center ml-28">
                      <h2 className="text-[14px] font-medium mb-4">Student Details</h2>
                      
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -268,8 +313,8 @@ function LiveClass() {
                          <input
                            type="text"
                            name="firstName"
-                           value={student.firstName}
-                           onChange={handleInputChange}
+                           value={classData?.student.studentFirstName}
+                           
                            className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
@@ -280,8 +325,8 @@ function LiveClass() {
                          <input
                            type="text"
                            name="lastName"
-                           value={student.lastName}
-                           onChange={handleInputChange}
+                           value={classData?.student.studentLastName}
+                           
                            className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
@@ -292,14 +337,11 @@ function LiveClass() {
                          <div className="relative">
                            <select
                              name="city"
-                             value={student.city}
-                             onChange={handleInputChange}
+                             value={classData?.student.city}
                              className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
-                             <option value="Texas">Texas</option>
-                             <option value="New York">New York</option>
-                             <option value="California">California</option>
+                             
                            </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
@@ -310,14 +352,11 @@ function LiveClass() {
                          <div className="relative">
                            <select
                              name="country"
-                             value={student.country}
-                             onChange={handleInputChange}
+                             value={classData?.student.country}
                              className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
-                             <option value="USA">USA</option>
-                             <option value="Canada">Canada</option>
-                             <option value="UK">UK</option>
+                             
                            </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
@@ -328,8 +367,8 @@ function LiveClass() {
                          <input
                            type="text"
                            name="trialId"
-                           value={student.trialId}
-                           onChange={handleInputChange}
+                           value={classData?.student.trailId}
+                          
                            className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
@@ -340,14 +379,10 @@ function LiveClass() {
                          <div className="relative">
                            <select
                              name="course"
-                             value={student.course}
-                             onChange={handleInputChange}
+                             value={classData?.student.course}
                              className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
-                             <option value="Arabic">Arabic</option>
-                             <option value="Islamic Studies">Islamic Studies</option>
-                             <option value="Quran">Quran</option>
                            </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
@@ -359,8 +394,8 @@ function LiveClass() {
                        <div className="relative">
                          <select
                            name="classStatus"
-                           value={student.classStatus}
-                           onChange={handleInputChange}
+                           value={classData?.student.classStatus}
+                         
                            className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                            required
                          >
@@ -376,8 +411,6 @@ function LiveClass() {
                        <label htmlFor='fiiugigrtname'  className="block text-[12px] mb-2">Additional Comments (Optional)</label>
                        <textarea
                          name="comments"
-                         value={student.comments}
-                         onChange={handleInputChange}
                          placeholder="Write your comment here..."
                          className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 h-24 resize-none"
                        />
@@ -386,7 +419,6 @@ function LiveClass() {
                      <div className="mt-6 flex justify-end gap-4">
                        <button
                          type="button"
-                         onClick={handleClear}
                          className="px-6 py-2 rounded-lg text-[12px] border border-white/20 hover:bg-white/10 transition-colors"
                        >
                          Clear
@@ -413,18 +445,17 @@ function LiveClass() {
                        </div>
                      </div>
                      <h2 className="text-xl font-semibold text-center mt-4">
-                       {student.firstName} {student.lastName}
+                       {classData?.student.studentFirstName} {classData?.student.studentLastName}
                      </h2>
                      <div className="flex items-center justify-center gap-2 mt-2 text-gray-600">
                        <Timer size={16} />
-                       <span>Monday - {student.sessionDate}</span>
+                       <span>{classData?.classDay[0]} - {new Date(classData?.startDate ?? '2022-01-01').toLocaleDateString()}</span>
                      </div>
-                     
                      <div className="mt-6 text-center">
                        <p className="text-gray-600 mb-2">Trial Session<br />is Due in</p>
                        <div className="inline-block relative">
                          <div className="w-16 h-16 rounded-full border-4 border-blue-500 flex items-center justify-center">
-                           <span className="font-bold">{student.sessionTime}</span>
+                           <span className="font-bold text-[10px]">{timeRemaining}</span>
                          </div>
                          <span className="text-xs text-gray-500 mt-1 block">Mins</span>
                        </div>
@@ -469,7 +500,7 @@ function LiveClass() {
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-4xl font-bold text-[#1C3557]">My Class</h1>
             </div>
-            {showfeedback ? (
+            {showFeedback ? (
               <div className="flex items-center justify-center gap-10 mb-6">
             <div className="bg-white rounded-3xl shadow-lg w-full max-w-sm">
         <div className="relative ">
@@ -481,14 +512,13 @@ function LiveClass() {
         </div>
         <div className="p-8">
           <div className="text-center">
-          <h3 className="text-2xl text-primary font-bold mb-3">Tajweed Masterclass</h3>
-            <h2 className="text-base text-gray-600 font-medium mb-1">Monday - 06.05.2024</h2>
+          <h3 className="text-2xl text-primary font-bold mb-3"> Masterclass</h3>
+            <h2 className="text-base text-gray-600 font-medium mb-1">{classData?.classDay[0]} - {new Date(classData?.startDate ?? '2022-01-01').toLocaleDateString()}</h2>
             <div className="text-gray-600 mb-6 font-medium">
-              <span>9:00 AM - 10:30 AM</span>
+              <span>{classData?.startTime[0]} to {classData?.endTime[0]}</span>
             </div>
             <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-primary rounded-full"></div>
-              <span className="text-gray-700 font-medium">Prof. Smith</span>
+              <span className="text-gray-900 font-bold">{classData?.student.studentFirstName}</span>
             </div>
             <div className="text-gray-500 text-sm font-medium">Session - 12</div>
           </div>
@@ -503,20 +533,19 @@ function LiveClass() {
           </svg>
           <h2 className="text-lg text-gray-700 font-semibold">Rating for the Class</h2>
         </div>
-        
-        {[0, 1, 2].map((index) => (
-          <div key={index} className="mb-6">
-            <p className="text-gray-600 text-sm font-medium mb-2">Your rating for this class</p>
-            <StarRating
-              value={ratings[index]}
-              onChange={(rating) => {
-                const newRatings = [...ratings]
-                newRatings[index] = rating
-                setRatings(newRatings)
-              }}
-            />
-          </div>
-        ))}
+        {categories.map((category,index) => (
+        <div key={category} className="mb-4">
+          <p className="text-gray-600 text-sm font-medium mb-2">Rate {category}</p>
+          <StarRating
+            value={ratings[index]}
+            onChange={(rating) => {
+              const newRatings = [...ratings];
+              newRatings[index] = rating;
+              setRatings(newRatings);
+            }}
+          />
+        </div>
+      ))}
 
         <div className="mt-8">
           <h3 className="text-gray-700 text-sm font-medium mb-3">Additional feedback</h3>
@@ -531,7 +560,7 @@ function LiveClass() {
         <button 
           className="w-full bg-[#1C3557] text-white py-3 px-6 rounded-xl font-semibold text-sm
                    hover:bg-primary/90 transition-colors"
-          onClick={handleSubmitrate}
+          onClick={handleSubmit}
         >
           Submit feedback
         </button>
@@ -539,101 +568,88 @@ function LiveClass() {
         </div>):(
             <div className="flex gap-6">
               {/* Left Column - Video */}
-              <div className="flex-1">
-                <div className="bg-white rounded-lg shadow-sm p-5">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h2 className="text-lg font-medium">Tajweed</h2>
-                      <p className="text-sm text-gray-500">Angelina Crispy</p>
-                    </div>
-                    <span className="text-sm text-gray-500">08/05/2024</span>
-                  </div>
-
-                  {/* Video Container */}
-                  <div className="bg-black aspect-video rounded-lg mb-4 relative">
-                    <div className="absolute top-3 left-3">
-                      <span className="bg-red-500 text-white px-2 py-0.5 rounded-full text-xs">Live</span>
-                    </div>
-
-                    {/* Local Video Stream */}
-                    <video ref={localVideoRef} autoPlay muted={isMuted} className="absolute top-0 left-0 w-full h-full object-cover">
-                               <track kind="captions" />
-                               </video>
-                    {/* Remote Video Stream */}
-                    <video ref={remoteVideoRef} autoPlay muted={isMuted} className="absolute top-0 left-0 w-full h-full object-cover">
-                       <track kind="captions" />
-                      </video>
-                  </div>
-                  {/* Controls */}
-                  <div className="flex justify-center items-center gap-4 ">
-                  <div className="flex gap-4 mb-2">
-  {/* Mute Button */}
-  <button
-    className={`p-2.5 rounded-full ${
-      isMuted ? 'bg-gray-200 hover:bg-gray-300' : 'bg-gray-100 hover:bg-gray-200'
-    }`}
-    onClick={toggleMute} // Toggle microphone mute/unmute
-  >
-    <Mic size={18} className={isMuted ? 'text-gray-500' : 'text-gray-700'} />
-  </button>
-
-  {/* Video Button */}
-  <button
-    className={`p-2.5 rounded-full ${
-      isVideoCallActive ? 'bg-green-200 hover:bg-green-300' : 'bg-gray-100 hover:bg-gray-200'
-    }`}
-    onClick={() => setIsVideoCallActive(!isVideoCallActive)}
-  >
-    <Video size={18} className={isVideoCallActive ? 'text-green-600' : 'text-gray-700'} />
-  </button>
-
-  {/* Screen Share Button */}
-  <button
-    className={`p-2.5 rounded-full ${
-      isScreenSharing ? 'bg-blue-200 hover:bg-blue-300' : 'bg-gray-100 hover:bg-gray-200'
-    }`}
-    onClick={toggleScreenShare}
-  >
-    <MonitorStop size={18} className={isScreenSharing ? 'text-blue-600' : 'text-gray-700'} />
-  </button>
-
-  {/* End Call Button */}
-  <button
-    className="p-2.5 rounded-full bg-red-100 hover:bg-red-200"
-    onClick={endCall} // End call functionality
-  >
-    <PhoneOff size={18} className="text-red-600" />
-  </button>
-
-  {/* Recording Button */}
-  <button
-    className={`p-2.5 rounded-full ${
-      isRecording ? 'bg-red-200 hover:bg-red-300' : 'bg-gray-100 hover:bg-gray-200'
-    }`}
-    onClick={() => {
-      if (isRecording) {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-      setIsRecording(!isRecording);
-    }}
-  >
-    <Disc size={18} className={isRecording ? 'text-red-600' : 'text-gray-700'} />
-  </button>
-</div>
-
-                    
-                  </div>
-                </div>
-              </div>
+                             <div className="flex-1 bg-white rounded-lg shadow-sm p-5">
+                               <h2 className="text-lg font-medium">{classData?.teacher.teacherName}</h2>
+                               <span className="text-sm text-gray-500">{new Date(classData?.startDate ?? '2022-01-01').toLocaleDateString()} - 
+                               {classData?.startTime[0]} to {classData?.endTime[0]}</span>
+                               
+                               <div className="mt-4 rounded-lg overflow-hidden">
+                                 <JitsiMeeting
+                                   roomName={classData?.classLink ?? ''}
+                                   configOverwrite={{
+                                     startWithAudioMuted: false,
+                                     startWithVideoMuted: false,
+                                     disableTileView: true,
+                                     toolbarButtons: [
+                                       'microphone',
+                                       'camera',
+                                       'closedcaptions',
+                                       'desktop',
+                                       'fullscreen',
+                                       'fodeviceselection',
+                                       'hangup',
+                                       'profile',
+                                       'chat',
+                                       'settings',
+                                       'raisehand',
+                                       'videoquality',
+                                       'filmstrip',
+                                       'shortcuts',
+                                       'tileview'
+                                     ]
+                                   }}
+                                   getIFrameRef={(iframeRef) => {
+                                     iframeRef.style.height = '500px';
+                                     iframeRef.style.borderRadius = '0.5rem';
+                                   }}
+                                   onApiReady={(apiObj) => {
+                                     apiRef.current = apiObj;
+                                   }}
+                                 />
+                               </div>
+             
+                               <div className="flex justify-center gap-4 mt-4">
+                                 <button 
+                                   className="p-3 bg-gray-100 rounded-full"
+                                   onClick={() => handleJitsiControl('toggleAudio')}
+                                 >
+                                   {isMuted ? (
+                                     <MicOff className="text-gray-500" size={20} />
+                                   ) : (
+                                     <Mic className="text-gray-700" size={20} />
+                                   )}
+                                 </button>
+                                 <button
+                                   className="p-3 bg-gray-100 rounded-full"
+                                   onClick={() => handleJitsiControl('toggleVideo')}
+                                 >
+                                   {isVideoOn ? (
+                                     <Video className="text-green-600" size={20} />
+                                   ) : (
+                                     <VideoOff className="text-gray-700" size={20} />
+                                   )}
+                                 </button>
+                                 <button
+                                   className="p-3 bg-gray-100 rounded-full"
+                                   onClick={() => handleJitsiControl('toggleShareScreen')}
+                                 >
+                                   <Monitor className="text-gray-700" size={20} />
+                                 </button>
+                                 <button
+                                   className="p-3 bg-red-100 rounded-full"
+                                   onClick={handleEndCall}
+                                 >
+                                   <PhoneOff className="text-red-600" size={20} />
+                                 </button>
+                               </div>
+                             </div>
 
               {/* Right Column - Course Content & Live Chat */}
-              <div className="w-80">
+              <div className="w-80 ">
                 {/* Course Content */}
                 <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
                   <h3 className="text-base font-medium mb-3">Course Content</h3>
-                  <div className="space-y-2 h-[calc(100%-2rem)] overflow-y-auto pr-2">
+                  <div className="space-y-2 h-[600px] overflow-y-auto pr-2">
                     <div>
                       <p className="text-sm font-medium">Title: Arabic</p>
                       <p className="text-sm text-gray-600">Session: 12</p>
@@ -649,48 +665,7 @@ function LiveClass() {
                   </div>
                 </div>
 
-                {/* Live Chat */}
-                <div className="bg-white rounded-lg shadow-sm p-4 flex-1 overflow-hidden flex flex-col">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-base font-medium">Live Chat</h3>
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <Settings2 size={16} />
-                    </button>
-                  </div>
-                  <div className="space-y-3 mb-3 h-[200px] overflow-y-auto">
-                    <div className="flex gap-2">
-                      <img
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100"
-                        alt="Samantha"
-                        className="w-6 h-6 rounded-full"
-                      />
-                      <div>
-                        <p className="text-xs font-medium">Samantha</p>
-                        <p className="bg-gray-50 rounded-lg p-2 mt-1 text-xs">
-                          Lorem ipsum dolor sit amet ut labore et
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 justify-end">
-                      <div className="text-right">
-                        <p className="text-xs font-medium">You</p>
-                        <p className="bg-blue-50 text-gray-800 rounded-lg p-2 mt-1 text-xs">
-                          Lorem ipsum dolor sit amet ut labore et dolore magna
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Type here..."
-                      className="flex-1 border rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                    <button className="bg-blue-500 text-white p-1.5 rounded-full">
-                      <Send size={16} />
-                    </button>
-                  </div>
-                </div>
+                
               </div>
             </div>
               )} 

@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import React, {  useState } from 'react';
-import { FaUserGraduate, FaCheckCircle, FaClock, FaHourglassHalf } from "react-icons/fa";
+import React, {  useEffect, useState } from 'react';
+import axios from 'axios';
 
 // Define the type for the data items
 type DataItem = {
@@ -13,23 +13,22 @@ type DataItem = {
 
 // Define the type for the API response
 type ApiResponse = {
-  classtype: number;
-  status: number;
-  totalPending: number;
-  totalActive: number;
-};
-
+  totalclasses: number;
+  totalstudents: number;
+  totalhours: number;
+  totalearnings: number;
+}
 // Initial data configuration
 const initialData: Omit<DataItem, 'value'>[] = [
-  { title: 'Total Classes', color: 'bg-[#0BF4C8]', icon: <FaUserGraduate size={20} color="#0BF4C8" />, iconBg: 'bg-[#fff]' },
-  { title: 'Total Students', color: 'bg-[#F2A0FF]', icon: <FaCheckCircle size={20} color="#F2A0FF" />, iconBg: 'bg-[#fff]' },
-  { title: 'Total Hours', color: 'bg-[#FAD85D]', icon: <FaClock size={20} color="#FAD85D" />, iconBg: 'bg-[#fff]' },
-  { title: 'Total Earnings', color: 'bg-[#0BF4C8]', icon: <FaHourglassHalf size={20} color="#0BF4C8" />, iconBg: 'bg-[#fff]' },
+  { title: 'Total Classes', color: 'bg-[#FAD85D]', icon: <img src="/assets/images/total-classes.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
+  { title: 'Total Students', color: 'bg-[#0BF4C8]', icon: <img src="/assets/images/total-students.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
+  { title: 'Total Hours', color: 'bg-[#85D8F2]', icon: <img src="/assets/images/total-hours.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
+  { title: 'Total Earnings', color: 'bg-[#F2A0FF]', icon: <img src="/assets/images/total-earnings.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
 ];
 
 // Card Component
 const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
-  <div className={`p-4 size-[100%] rounded-2xl py-5 shadow-lg flex flex-col items-start ${color} relative bg-pattern`}>
+  <div className={`p-4 size-[100%] rounded-2xl py-7 shadow-lg flex flex-col items-start ${color} relative bg-pattern`}>
     <div className={`absolute top-4 right-2 ${iconBg} p-2 rounded-[100%] shadow-md`}>
       {React.isValidElement(icon) ? (
         <div className="flex items-center justify-center w-4 h-4">{icon}</div>
@@ -48,22 +47,41 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
   </div>
 );
 
+const fetchDashboardData = async (teacherId: string, authToken: string | null): Promise<ApiResponse> => {
+  try {
+    const response = await axios.get(`http://localhost:5001/dashboard/teacher/counts`, {
+      params: {
+        teacherId: teacherId
+      },
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw new Error('HTTP Error');
+  }
+};
+
+
 // Map API response to dashboard data
 const mapApiResponseToData = (apiResponse: ApiResponse): DataItem[] => {
   return initialData.map(item => {
     let value = 0;
     switch (item.title) {
-      case 'Trail Classes':
-        value = apiResponse.classtype || 0;
+      case 'Total Classes':
+        value = apiResponse.totalclasses || 0;
         break;
       case 'Total Students':
-        value = apiResponse.status || 0;
+        value = apiResponse.totalstudents || 0;
         break;
-      case 'Total Hour':
-        value = apiResponse.totalPending || 0;
+      case 'Total Hours':
+        value = apiResponse.totalhours || 0;
         break;
       case 'Total Earnings':
-        value = apiResponse.totalActive || 0;
+        value = apiResponse.totalearnings || 0;
         break;
     }
     return { ...item, value };
@@ -72,9 +90,39 @@ const mapApiResponseToData = (apiResponse: ApiResponse): DataItem[] => {
 
 // Dashboard Component
 const Dash = () => {
-  const [data] = useState<DataItem[]>(initialData.map(item => ({ ...item, value: 0 })));
-  const [error] = useState<string | null>(null);
+  const [data, setData] = useState<DataItem[]>(initialData.map(item => ({ ...item, value: 0 })));
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const authToken = localStorage.getItem('TeacherAuthToken');
+        const teacherId = localStorage.getItem('TeacherPortalId'); // Retrieve teacherId from localStorage
+
+        if (!teacherId) {
+          throw new Error('Teacher ID is not available');
+        }
+
+        const apiResponse = await fetchDashboardData(teacherId, authToken);
+        const updatedData = mapApiResponseToData(apiResponse);
+        setData(updatedData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   if (error) {
     return <div>Error: {error}</div>;
   }

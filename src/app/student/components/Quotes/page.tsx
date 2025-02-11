@@ -6,7 +6,7 @@ const GeneratePage = () => {
 
   // Array of image URLs
   const imageUrls = [
-    "/assets/images/image1.jpg",
+    "/assets/images/quote.jpg",
     // "/assets/images/image2.jpg",
     // "/assets/images/image3.jpg",
     // "/assets/images/image4.jpg",
@@ -31,13 +31,13 @@ const GeneratePage = () => {
   }, []); // Runs only once when the component is mounted
 
   return (
-    <div className=" p-2  max-w-xl mx-auto">
+    <div className=" p-6 mx-auto">
       <div className=" flex justify-center">
         {image ? (
           <img
             src={image}
             alt="Generated"
-            className="rounded-lg shadow-lg w-full object-cover border border-[#727272] "
+            className="rounded-lg shadow-lg w-full object-cover border border-[#727272]"
             style={{ maxWidth: "500px", height: "240px" }} // Increased maxWidth and added height: auto
             onError={(e) => {
               console.error("Image failed to load:", image);

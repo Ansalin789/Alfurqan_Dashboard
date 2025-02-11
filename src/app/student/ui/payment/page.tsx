@@ -2,62 +2,11 @@
 
 import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import BaseLayout2 from "@/components/BaseLayout2";
+import StripePaymentForm from './StripePaymentForm';
 
 const stripePromise = loadStripe('pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE');
-
-type StripePaymentFormProps = {
-  onPaymentSuccess: (token: any) => void;
-};
-
-const StripePaymentForm: React.FC<StripePaymentFormProps> = ({ onPaymentSuccess }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-
-  const handleSubmit = async (event: { preventDefault: () => void }) => {
-    event.preventDefault();
-
-    if (!stripe || !elements) return;
-
-    const cardElement = elements.getElement(CardElement);
-
-    if (!cardElement) {
-      console.error('Card element not found');
-      alert('Payment element is not available. Please try again.');
-      return;
-    }
-
-    try {
-      const { token, error } = await stripe.createToken(cardElement);
-
-      if (error) {
-        console.error(error);
-        alert(error.message);
-      } else {
-        onPaymentSuccess(token);
-      }
-    } catch (err) {
-      console.error('Payment processing error:', err);
-      alert('Something went wrong while processing the payment.');
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <div className="mb-4">
-        <CardElement />
-      </div>
-      <button
-        type="submit"
-        disabled={!stripe}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-      >
-        Pay Now
-      </button>
-    </form>
-  );
-};
 
 const Invoice = () => {
   const [showModal, setShowModal] = useState(false);
@@ -70,7 +19,7 @@ const Invoice = () => {
   };
 
   const downloadInvoice = () => {
-    if (typeof window === 'undefined') return; // Ensure this runs only in the browser
+    if (typeof window === 'undefined') return;
 
     setIsGeneratingPDF(true);
     const invoiceElement = document.getElementById('invoic');
@@ -92,10 +41,10 @@ const Invoice = () => {
 
   return (
     <BaseLayout2>
-      <div id="invoic" className="p-3 flex justify-center ml-10 h-[570px]">
-        <div className="w-[1900px] max-w-5xl bg-white p-4 rounded-lg shadow ml-5">
+      <div id="invoic" className="px-8 py-8 flex justify-center w-full h-full">
+        <div className="w-full bg-white py-4 px-4 rounded-lg shadow">
           {/* Header Section */}
-          <div className="p-3">
+          <div className="p-2">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
               <div className="flex items-center mb-2 md:mb-0">
                 <img
@@ -132,8 +81,8 @@ const Invoice = () => {
             )}
 
             {/* Invoice Table */}
-            <div className="overflow-x-auto mb-4 bg-[#e6e6e6]">
-              <table className="table-auto w-full border-collapse border border-gray-200 rounded-sm text-xs">
+            <div className="overflow-x-auto mb-4 bg-[#efefef] rounded-lg border border-[#223857]">
+              <table className="table-auto w-full h-full border-collapse border border-gray-200 text-xs">
                 <thead>
                   <tr>
                     <th className="border border-gray-300 p-2">Description</th>
@@ -170,7 +119,7 @@ const Invoice = () => {
             </div>
 
             {/* Payment Summary */}
-            <div className="w-[23%] p-2 text-right ml-[730px] rounded-lg text-xs bg-[#efefef] border border-[#223857] justify-end">
+            <div className="w-[100%] p-2 text-right rounded-lg text-xs bg-[#efefef] border border-[#223857] justify-end">
               <p>
                 Sub total (Excl. GST): <span className="font-bold">$125</span>
               </p>
@@ -180,94 +129,27 @@ const Invoice = () => {
               <p className="whitespace-nowrap">
                 Amount due on 20 Nov 2024: <span className="font-bold">$125</span>
               </p>
-
             </div>
-            <div className='flex mt-2'>
-            {!isGeneratingPDF && (
-                <button
-                  onClick={() => setShowModal(true)}
-                  className="bg-[#223857] text-white py-1 rounded-2xl px-3 text-xs ml-[850px] hover:bg-blue-600 transform hover:-translate-y-1 transition duration-300"
-                >
-                  Pay Online
-                </button>
-              )}
-             </div>
-            <div className="mb-4">
-              <h3 className="text-xs font-bold mb-1">Payment Instructions:</h3>
-              <p className="text-[11px]"><strong>AL FURQAN ACADEMY</strong></p>
-              <p className="text-[10px]">BANK NAME: ABC BANK LIMITED</p>
-              <p className="text-[10px]">SWIFT/IBAN: GB0021030012</p>
-              <p className="text-[10px]">ACCOUNT NUMBER: 12-1234-123456-12</p>
-              <p className="text-[10px]"><strong>PLEASE USE INV-0205 AS A REFERENCE NUMBER</strong></p>
-              <p className="text-[9px]">For any questions, please contact us at <span className="font-bold">contact@alfurqan.academy</span>.</p>
-            
 
-            {/* Toggle Payment Form */}
-              
-            
-            </div>
-          </div>
+            <div className='flex justify-between p-1'>
+              <div className="mb-2">
+                <h3 className="text-xs font-bold mb-1 text-[#223857]">Payment Instructions:</h3>
+                <p className="text-[11px]"><strong>AL FURQAN ACADEMY</strong></p>
+                <p className="text-[10px]">BANK NAME: ABC BANK LIMITED</p>
+                <p className="text-[10px]">SWIFT/IBAN: GB0021030012</p>
+                <p className="text-[10px]">ACCOUNT NUMBER: 12-1234-123456-12</p>
+                <p className="text-[10px]"><strong>PLEASE USE INV-0205 AS A REFERENCE NUMBER</strong></p>
+                <p className="text-[9px]">For any questions, please contact us at <span className="font-bold">contact@alfurqan.academy</span>.</p>
+              </div>
 
-
-          {!isGeneratingPDF && (
-
-<div className="w-[990px] bg-white p-1 rounded-lg shadow mr-20">
-  <div className="flex justify-between items-center mb-3">
-    <h3 className="text-sm font-bold text-gray-800">Latest Transactions</h3>
-    <a href="/transactions" className="text-xs text-blue-500 hover:underline">View all</a>
-  </div>
-  <div className="overflow-x-auto">
-    <table className="table-auto w-full border-collapse text-xs">
-      <thead>
-        <tr className="bg-gray-100 text-gray-600">
-          <th className="text-left px-3 py-1">Invoice Date</th>
-          <th className="text-left px-3 py-1">Invoice Number</th>
-          <th className="text-left px-3 py-1">Course Name</th>
-          <th className="text-left px-3 py-1">Payment Date</th>
-          <th className="text-left px-3 py-1">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr className="hover:bg-gray-50">
-          <td className="px-3 py-1 text-gray-700">October 15, 2024</td>
-          <td className="px-3 py-1 text-gray-700">INV-0204</td>
-          <td className="px-3 py-1 text-gray-700">Arabic - Basic</td>
-          <td className="px-3 py-1 text-gray-700">October 25, 2024</td>
-          <td className="px-3 py-1">
-            <span className="bg-green-100 text-green-600 py-0.5 px-2 rounded-full text-[10px]">Completed</span>
-          </td>
-        </tr>
-        <tr className="hover:bg-gray-50">
-          <td className="px-3 py-1 text-gray-700">October 14, 2024</td>
-          <td className="px-3 py-1 text-gray-700">INV-0203</td>
-          <td className="px-3 py-1 text-gray-700">Tajweed - Standard</td>
-          <td className="px-3 py-1 text-gray-700">October 24, 2024</td>
-          <td className="px-3 py-1">
-            <span className="bg-yellow-100 text-yellow-600 py-0.5 px-2 rounded-full text-[10px]">Pending</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-              )}
-          {/* Modal for Payment Form */}
-          {showModal && (
-            <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
-              <div className="bg-white p-4 rounded-lg shadow-lg w-96">
-                <h2 className="text-lg font-bold mb-4">Complete Your Payment</h2>
+              <div>
+                {/* Stripe Payment Form */}
                 <Elements stripe={stripePromise}>
                   <StripePaymentForm onPaymentSuccess={handlePaymentSuccess} />
                 </Elements>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg"
-                >
-                  Close
-                </button>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </BaseLayout2>

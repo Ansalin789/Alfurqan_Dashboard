@@ -1,15 +1,94 @@
 'use client';
 
 import BaseLayout from "@/components/BaseLayout";
+import axios from "axios";
 import { Search } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { FaSort } from "react-icons/fa";
+
 const Classes = () => {
+  interface Student {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+  }
+
+  interface Teacher {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  }
+
+  interface Schedule {
+    student: Student;
+    teacher: Teacher;
+    _id: string;
+    classDay: string[];
+    package: string;
+    preferedTeacher: string;
+    totalHourse: number;
+    startDate: string;
+    endDate: string;
+    startTime: string[];
+    endTime: string[];
+    scheduleStatus: string;
+    status: string;
+    createdBy: string;
+    createdDate: string;
+    lastUpdatedDate: string;
+    __v: number;
+  }
+
+  interface ApiResponse {
+    totalCount: number;
+    students: Schedule[];
+  }
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("TeacherAuthToken");
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+         
+        console.log(auth);
+        if (!teacherIdToFilter) {
+          console.error("No teacher ID found in localStorage.");
+          return;
+        }
 
-  const filteredData = data.filter(row =>
-    row.name.toLowerCase().includes(searchTerm.toLowerCase())
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+
+        const filteredData = response.data.students.filter(
+          (item:any) => item.teacher.teacherId === teacherIdToFilter
+        );
+
+        const studentScheduleMap = new Map<string, Schedule>();
+
+        filteredData.forEach((item:any) => {
+          studentScheduleMap.set(item.student.studentId, item);
+        });
+
+        const uniqueSchedules = Array.from(studentScheduleMap.values());
+
+        setUniqueStudentSchedules(uniqueSchedules);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const filteredData = uniqueStudentSchedules.filter(row =>
+    row.student.studentFirstName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -18,87 +97,108 @@ const Classes = () => {
 
   const getStatus = (index: number) => {
     if (index % 3 === 0) {
-      return { text: "Completed", style: "text-green-600 bg-green-50 border-[1px] border-green-600 rounded-lg" };
+      return { text: "Completed", style: "text-green-600 bg-green-100 border-[1px] border-green-600 rounded-lg px-4" };
     } else if (index % 3 === 1) {
-      return { text: "Re Schedule", style: "text-yellow-600 bg-yellow-50 border-[1px] border-yellow-600 rounded-lg" };
+      return { text: "Re Schedule", style: "text-yellow-600 bg-yellow-100 border-[1px] border-yellow-600 rounded-lg px-3" };
     } else {
-      return { text: "Canceled", style: "text-red-600 bg-red-50 border-[1px] border-red-600 rounded-lg" };
+      return { text: "Canceled", style: "text-red-600 bg-red-100 border-[1px] border-red-600 rounded-lg px-5" };
     }
   };
 
   return (
     <BaseLayout>
-      <div className="p-8 min-h-screen">
-        <h1 className="text-3xl font-bold mb-6">My Classes</h1>
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="p-4 justify-between flex">
-            <h2 className="text-[17px] font-semibold text-[#374557]">My Classes List</h2>
-            <div className="relative shadow-ld rounded-xl">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#374557] w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search"
-                className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] shadow-lg rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#374557] w-56"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+      <div className="p-8 mx-auto w-[1250px] pr-16">
+        <h1 className="text-2xl font-semibold text-gray-800 p-2 mb-10">My Classes</h1>
+        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
+          <div>
+            <div className="p-4 pt-6 justify-between flex">
+              <h2 className="text-lg pl-10 font-semibold text-[#1e293b] mb-3">صفي</h2>
+              <div className="relative">
+                <Search className="absolute left-3 top-4 -translate-y-1/2 text-gray-500 w-3 h-3" />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] shadow-md rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#223857] w-56"
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="table-auto w-full">
+                <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
+                  <tr>
+                    <th className="px-3 py-3 text-center">
+                      Name <FaSort className="inline w-3 h-3" />
+                    </th>
+                    <th className="px-3 py-3 text-center">
+                      Student ID <FaSort className="inline w-3 h-3" />
+                    </th>
+                    <th className="px-3 py-3 text-center">
+                      Courses <FaSort className="inline w-3 h-3" />
+                    </th>
+                    <th className="px-3 py-3 text-center">
+                      Course Type <FaSort className="inline w-3 h-3" />
+                    </th>
+                    <th className="px-3 py-3 text-center">
+                      Course Duration <FaSort className="inline w-3 h-3" />
+                    </th>
+                    <th className="px-3 py-3 text-center">
+                      Class - Date & Time <FaSort className="inline w-3 h-3" />
+                    </th>
+                    <th className="px-3 py-3 text-center">
+                      Status <FaSort className="inline w-3 h-3" />
+                    </th>
+                    <th className="px-3 py-3 text-center">
+                      Action <FaSort className="inline w-3 h-3" />
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-[11px]">
+                {filteredData.map((schedule, index) => {
+    const { student,scheduleStatus, startTime,endTime } = schedule;
+    const uniqueKey = `row-${index}`; // Generate a unique key for each row
+
+
+                    return (
+                      <tr key={uniqueKey} className="text-[12px] font-medium mt-2"
+                      style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
+                        <td className="px-3 py-2 text-center">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-[#DBDBDB] rounded-md"></div>
+                            <span className="px-6 py-2 text-center">Trail Class</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-center">{student.studentId}</td>
+                        <td className="px-3 py-2 text-center">Quran</td>
+                        <td className="px-3 py-2 text-center">{schedule.package}</td>
+                        <td className="px-3 py-2 text-center">{`${schedule.totalHourse} hours`}</td>
+                        <td className="px-3 py-2 text-center">
+                        {`${new Date(schedule.startDate).toLocaleDateString()} - ${startTime.join("–")} to ${new Date(schedule.endDate).toLocaleDateString()} - ${endTime.join("–")}`}
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <span className={`px-3 py-1 font-medium ${getStatus} rounded-full`}>
+                          {scheduleStatus}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <span className="cursor-pointer text-xl">...</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+
+              </table>
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr>
-                  <th className="p-3 text-gray-600 text-[11px]">Name</th>
-                  <th className="p-3 text-gray-600 text-[11px]">Student ID</th>
-                  <th className="p-3 text-gray-600 text-[11px]">Courses</th>
-                  <th className="p-3 text-gray-600 text-[11px]">Course Type</th>
-                  <th className="p-3 text-gray-600 text-[11px]">Course Duration</th>
-                  <th className="p-3 text-gray-600 text-[11px]">Class - Date & Time</th>
-                  <th className="p-3 text-gray-600 text-[11px]">Status</th>
-                  <th className="p-3 text-gray-600 text-[11px]">Action</th>
-                </tr>
-              </thead>
-              <tbody className="text-[11px]">
-                {Array.from({ length: 5 }).map((_, index) => {
-                  const status = getStatus(index);
-                  const uniqueKey = `row-${index}`; // Generate a unique key
-
-                  return (
-                    <tr key={uniqueKey}>
-                      <td className="p-3" style={{ width: '190px' }}>
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-gray-300 rounded-xl"></div>
-                          <span className="text-gray-700">Samantha William</span>
-                        </div>
-                      </td>
-                      <td className="p-3 text-gray-600" style={{ width: '130px' }}>1234567890</td>
-                      <td className="p-3 text-gray-600" style={{ width: '100px' }}>Quran</td>
-                      <td className="p-3 text-gray-600" style={{ width: '130px' }}>Trial Class</td>
-                      <td className="p-3 text-gray-600" style={{ width: '150px' }}>30 minutes</td>
-                      <td className="p-3 text-gray-600" style={{ width: '250px' }}>
-                        January 2, 2020 - 9:00–10:30 AM
-                      </td>
-                      <td className="p-3" style={{ width: '150px' }}>
-                        <span className={`px-3 py-1 font-medium ${status.style} rounded-full`}>
-                          {status.text}
-                        </span>
-                      </td>
-                      <td className="p-3 text-gray-600 text-sm">
-                        <span className="cursor-pointer text-xl">...</span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-
-            </table>
-          </div>
-          <div className="flex items-center justify-between p-4">
-            <p className="text-[10px] text-gray-600">Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} data</p>
+          
+          <div className="flex items-center justify-between p-4 mt-5">
+            <p className="text-[11px] text-gray-600">Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} data</p>
             <div className="flex items-center space-x-2">
               {[...Array(totalPages)].map((i, index) => (
                 <button
                   key={i}
-                  className={`px-3 py-1 text-[11px] ${currentPage === index + 1 ? 'text-white bg-blue-600' : 'text-gray-600 bg-gray-200'} rounded-md hover:bg-gray-300`}
+                  className={`px-3 py-1 text-[10px] ${currentPage === index + 1 ? 'text-white bg-[#1C3557]' : 'text-gray-600 bg-gray-200'} rounded-md hover:bg-gray-800`}
                   onClick={() => setCurrentPage(index + 1)}
                 >
                   {index + 1}
