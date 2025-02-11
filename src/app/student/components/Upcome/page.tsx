@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useState } from "react";
 import { Calendar, User } from "lucide-react";
 import axios from "axios";
@@ -55,7 +56,7 @@ const UpcomingClasses = () => {
           },
         });
 
-        const sortedClasses = response.data.classSchedule.sort(
+        const sortedClasses = response.data.classSchedule.toSorted(
           (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
         );
         
