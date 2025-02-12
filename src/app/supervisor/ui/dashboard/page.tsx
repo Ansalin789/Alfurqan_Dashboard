@@ -191,7 +191,7 @@ export default function Dashboard() {
   </div>
 
   {/* Bar Chart */}
-  <div className="h-36 w-120">
+  <div className="h-40 w-120">
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={barData} barCategoryGap="25%">
         <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} />

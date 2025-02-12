@@ -1,0 +1,583 @@
+'use client';
+import { useState } from "react"
+import { Star, MoreHorizontal, FileText, X } from "lucide-react"
+import BaseLayout3 from "@/components/BaseLayout3"
+
+type Status = "Shortlisted" | "Rejected" | "Waiting"
+type Position = "Arabic Teacher" | "Quran Teacher"
+
+interface Applicant {
+  id: number
+  date: string
+  name: string
+  contact: string
+  email: string
+  position: Position
+  status: Status
+  level: number
+  linkedin?: string
+  experience?: {
+    title: string
+    company: string
+    duration: string
+    location: string
+    description: string[]
+  }
+  skills?: string[]
+  languageProficiency?: {
+    quranReading: "Basic" | "Medium" | "Advanced"
+    tajweed: "Basic" | "Medium" | "Advanced"
+    arabicSpeaking: "Basic" | "Medium" | "Advanced"
+    arabicWriting: "Basic" | "Medium" | "Advanced"
+    englishSpeaking: "Basic" | "Medium" | "Advanced"
+  }
+  workingPreferences?: {
+    days: string
+    hours: string
+    expectedSalary: string
+  }
+}
+
+const generateApplicants = (): Applicant[] => {
+  return Array.from({ length: 20 }, (_, i) => ({
+    id: i + 1,
+    date: "Sep, 12 2023",
+    name: "Brendan Bradt",
+    contact: "123456789",
+    email: "b.bradtke@example.com",
+    position: i % 2 === 0 ? "Arabic Teacher" : "Quran Teacher",
+    status: i % 3 === 0 ? "Shortlisted" : i % 3 === 1 ? "Rejected" : "Waiting",
+    level: Math.floor(Math.random() * 3) + 3,
+    linkedin: "linkedin.com/in/b.bradtke",
+    experience: {
+      title: "Professor",
+      company: "BS INSTITUTIONS",
+      duration: "Jan, 2023 - Present",
+      location: "United States",
+      description: [
+        "Developed React.js components for improved user engagement",
+        "Collaborated on RESTful APIs for seamless data exchange",
+        "Optimized performance through efficient algorithms"
+      ]
+    },
+    skills: [
+      "JavaScript", "Python", "HTML5", "CSS3", "React.js",
+      "Node.js", "Express.js", "MongoDB", "Git", "MySQL",
+      "Scrum", "VS Code, JIRA, Slack"
+    ],
+    languageProficiency: {
+      quranReading: "Medium",
+      tajweed: "Medium",
+      arabicSpeaking: "Advanced",
+      arabicWriting: "Advanced",
+      englishSpeaking: "Advanced"
+    },
+    workingPreferences: {
+      days: "Monday-Saturday",
+      hours: "9AM - 3PM",
+      expectedSalary: "$40"
+    }
+  }))
+}
+
+interface RadioOptionProps {
+  label: string
+  checked: boolean
+  onChange: () => void
+}
+
+const RadioOption: React.FC<RadioOptionProps> = ({ label, checked, onChange }) => (
+  <label className="inline-flex items-center mr-4">
+    <input
+      type="radio"
+      className="form-radio h-4 w-4 text-blue-600"
+      checked={checked}
+      onChange={onChange}
+    />
+    <span className="ml-2 text-sm text-gray-700">{label}</span>
+  </label>
+)
+
+interface SkillBadgeProps {
+  name: string
+}
+
+const SkillBadge: React.FC<SkillBadgeProps> = ({ name }) => (
+  <span className="px-3 py-1 text-sm bg-gray-100 rounded-full text-gray-700 mr-2 mb-2">
+    {name}
+  </span>
+)
+
+export default function ApplicantsPage() {
+  const [activeTab, setActiveTab] = useState("All")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null)
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  
+  const tabs = ["All", "New Candidate", "Shortlisted", "Rejected", "Waiting"]
+  const applicants = generateApplicants()
+  const itemsPerPage = 10
+
+  const filteredApplicants = activeTab === "All" 
+    ? applicants 
+    : applicants.filter(applicant => applicant.status === activeTab)
+  
+  const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentApplicants = filteredApplicants.slice(startIndex, endIndex)
+
+  const getStatusColor = (status: Status) => {
+    switch (status) {
+      case "Shortlisted": return "bg-green-500 text-white"
+      case "Rejected": return "bg-red-500 text-white"
+      case "Waiting": return "bg-yellow-500 text-white"
+    }
+  }
+
+  const renderPaginationButtons = () => {
+    const buttons = []
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) buttons.push(i)
+    } else {
+      if (currentPage <= 3) {
+        buttons.push(1, 2, 3, "...", totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        buttons.push(1, "...", totalPages - 2, totalPages - 1, totalPages)
+      } else {
+        buttons.push(1, "...", currentPage, "...", totalPages)
+      }
+    }
+    return buttons
+  }
+
+  const handleMenuClick = (id: number) => {
+    setOpenMenuId(openMenuId === id ? null : id)
+  }
+
+  const handleViewDetails = (applicant: Applicant) => {
+    setSelectedApplicant(applicant)
+    setOpenMenuId(null)
+  }
+
+  return (
+    <BaseLayout3>
+      <div className="min-h-screen">
+        <div className="p-6 max-w-screen-2xl mx-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-semibold text-slate-800">Applicants</h1>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md">
+            <div className="p-4">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
+                <div className="flex flex-wrap gap-2 bg-white p-1 rounded-lg">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`px-4 py-2 rounded-md transition-colors ${
+                        activeTab === tab ? "text-[#05445E] bg-blue-50" : "text-slate-500 hover:bg-gray-50"
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-500">Sort by:</span>
+                    <select className="w-40 px-3 py-2 border rounded-md bg-white text-sm">
+                      <option>Designation</option>
+                      <option>Date</option>
+                      <option>Status</option>
+                    </select>
+                  </div>
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
+                    + Add Applicant
+                  </button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full table-auto">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="text-center px-2  text-sm font-medium text-[#343942]">Application Date</th>
+                      <th className="text-center px-2  text-sm font-medium text-[#343942]">Applicant Name</th>
+                      <th className="text-center px-2  text-sm font-medium text-[#343942]">Contact</th>
+                      <th className="text-center px-2  text-sm font-medium text-[#343942]">E-Mail</th>
+                      <th className="text-center px-2  text-sm font-medium text-[#343942]">Position Applied</th>
+                      <th className="text-center px-2  text-sm font-medium text-[#343942]">Resume</th>
+                      <th className="text-center px-2  text-sm font-medium text-[#343942]">Status</th>
+                      <th className="text-center px-2  text-sm font-medium text-[#343942]">Level</th>
+                      <th className="text-center px-2  text-sm font-medium text-[#343942]"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentApplicants.map((applicant) => (
+                      <tr key={applicant.id} className="border-b border-gray-200">
+                        <td className="px-4 py-2 text-sm text-[#17243E]">{applicant.date}</td>
+                        <td className="px-4 py-2">
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                              <span className="text-purple-600 font-medium">
+                                {applicant.name.charAt(0)}
+                              </span>
+                            </div>
+                            <span className="text-sm font-medium text-slate-800">
+                              {applicant.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2 text-sm text-[#17243E]">{applicant.contact}</td>
+                        <td className="px-4 py-2 text-sm text-[#17243E]">{applicant.email}</td>
+                        <td className="px-4 py-2">
+                          <span className="px-3 py-1 text-sm rounded-full bg-amber-100 text-amber-900">
+                            {applicant.position}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2">
+                          <button className="text-[#17243E] hover:text-blue-700 flex items-center text-sm">
+                            <FileText className="w-4 h-4 mr-2" />
+                            Resume
+                          </button>
+                        </td>
+                        <td className="px-4 py-2">
+                          <span className={`px-3 py-1 text-sm rounded-full ${getStatusColor(applicant.status)}`}>
+                            {applicant.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2">
+                          <div className="flex gap-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < applicant.level 
+                                    ? "text-amber-400 fill-amber-400" 
+                                    : "text-gray-200 fill-gray-200"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-4 py-2">
+                          <div className="relative">
+                            <button 
+                              onClick={() => handleMenuClick(applicant.id)}
+                              className="hover:bg-gray-100 p-2 rounded-md"
+                            >
+                              <MoreHorizontal className="w-4 h-4 text-slate-600" />
+                            </button>
+                            {openMenuId === applicant.id && (
+                              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10">
+                                <button 
+                                  onClick={() => handleViewDetails(applicant)}
+                                  className="block w-full px-4 py-2 text-left text-sm text-slate-600 hover:bg-gray-50"
+                                >
+                                  View Details
+                                </button>
+                                <button className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50">
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex flex-col md:flex-row items-center justify-between px-4 py-4 border-t space-y-4 md:space-y-0">
+                <div className="text-sm text-slate-500">
+                  Showing {startIndex + 1} - {Math.min(endIndex, filteredApplicants.length)} of {filteredApplicants.length} entries
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border rounded-md text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  >
+                    Previous
+                  </button>
+                  {renderPaginationButtons().map((button) => (
+                    <button
+                      key={button}
+                      onClick={() => typeof button === "number" && setCurrentPage(button)}
+                      disabled={typeof button !== "number"}
+                      className={`px-3 py-1 border rounded-md ${
+                        button === currentPage
+                          ? "bg-blue-50 border-blue-600 text-blue-600"
+                          : "text-slate-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {button}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border rounded-md text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Application Details Popup */}
+      {selectedApplicant && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl relative max-h-[90vh] overflow-y-auto">
+            <button 
+              onClick={() => setSelectedApplicant(null)}
+              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="p-8">
+              {/* Header Section */}
+              <div className="flex items-start mb-8">
+                <img
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full mr-4"
+                />
+                <div>
+                  <h2 className="text-xl font-semibold">{selectedApplicant.name}</h2>
+                  <div className="flex items-center text-sm text-gray-600 mt-1">
+                    <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-medium">
+                      {selectedApplicant.position}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600 mt-2">
+                    <FileText className="w-4 h-4 mr-1" />
+                    CV.pdf
+                  </div>
+                </div>
+                <div className="ml-auto">
+                  <div className="text-sm text-gray-600">STATUS</div>
+                  <div className="text-sm font-medium">New Application</div>
+                </div>
+              </div>
+
+              {/* Main Content Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Personal Details</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="adviayvuya" className="text-xs text-gray-500 block">FULL NAME</label>
+                        <input
+                          type="text"
+                          value={selectedApplicant.name}
+                          readOnly
+                          className="block w-full mt-1 p-2 border rounded"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="adviayvuya" className="text-xs text-gray-500 block">E-MAIL</label>
+                        <input
+                          type="email"
+                          value={selectedApplicant.email}
+                          readOnly
+                          className="block w-full mt-1 p-2 border rounded"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="adviayvuya" className="text-xs text-gray-500 block">PHONE</label>
+                        <input
+                          type="tel"
+                          value={selectedApplicant.contact}
+                          readOnly
+                          className="block w-full mt-1 p-2 border rounded"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="adviayvuya" className="text-xs text-gray-500 block">LINKEDIN</label>
+                        <input
+                          type="text"
+                          value={selectedApplicant.linkedin}
+                          readOnly
+                          className="block w-full mt-1 p-2 border rounded"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="adviayvuya" className="text-xs text-gray-500 block">APPLIED</label>
+                        <input
+                          type="text"
+                          value={selectedApplicant.date}
+                          readOnly
+                          className="block w-full mt-1 p-2 border rounded"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Professional Experience</h3>
+                    <div className="border rounded-lg p-4">
+                      <div className="flex justify-between mb-2">
+                        <div>
+                          <h4 className="font-medium">{selectedApplicant.experience?.title}</h4>
+                          <p className="text-sm text-gray-600">{selectedApplicant.experience?.duration}</p>
+                        </div>
+                        <div className="text-sm text-gray-600">{selectedApplicant.experience?.location}</div>
+                      </div>
+                      <div className="text-sm text-gray-600 mt-4">
+                        <h5 className="font-medium mb-2">{selectedApplicant.experience?.company}</h5>
+                        <ul className="list-disc pl-4 space-y-1">
+                          {selectedApplicant.experience?.description.map((desc) => (
+                            <li key={desc}>{desc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                    <h3 className="text-lg font-semibold mb-4">Language Proficiency</h3>
+                    <div className="space-y-4">
+                    
+                    <p className="text-sm text-indigo-600 mb-2">Quran Reading</p>
+                    <div className="flex">
+                      <RadioOption label="Basic" checked={false} onChange={() => {}} />
+                      <RadioOption label="Medium" checked={true} onChange={() => {}} />
+                      <RadioOption label="Advanced" checked={false} onChange={() => {}} />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-indigo-600 mb-2">Tajweed</p>
+                    <div className="flex">
+                      <RadioOption label="Basic" checked={false} onChange={() => {}} />
+                      <RadioOption label="Medium" checked={true} onChange={() => {}} />
+                      <RadioOption label="Advanced" checked={false} onChange={() => {}} />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-indigo-600 mb-2">Arabic Speaking</p>
+                    <div className="flex">
+                      <RadioOption label="Basic" checked={false} onChange={() => {}} />
+                      <RadioOption label="Medium" checked={false} onChange={() => {}} />
+                      <RadioOption label="Advanced" checked={true} onChange={() => {}} />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-indigo-600 mb-2">Arabic Writing</p>
+                    <div className="flex">
+                      <RadioOption label="Basic" checked={false} onChange={() => {}} />
+                      <RadioOption label="Medium" checked={false} onChange={() => {}} />
+                      <RadioOption label="Advanced" checked={true} onChange={() => {}} />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-indigo-600 mb-2">English Speaking</p>
+                    <div className="flex">
+                      <RadioOption label="Basic" checked={false} onChange={() => {}} />
+                      <RadioOption label="Medium" checked={false} onChange={() => {}} />
+                      <RadioOption label="Advanced" checked={true} onChange={() => {}} />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 className="text-sm text-indigo-600 mb-2">Preferred Working Days</h3>
+                      <select className="block w-full p-2 border rounded" disabled>
+                        <option>{selectedApplicant.workingPreferences?.days}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <h3 className="text-sm text-indigo-600 mb-2">Preferred Working Hours</h3>
+                      <select className="block w-full p-2 border rounded" disabled>
+                        <option>{selectedApplicant.workingPreferences?.hours}</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 className="text-sm text-indigo-600 mb-2">Expected salary per Hour</h3>
+                      <input
+                        type="text"
+                        value={selectedApplicant.workingPreferences?.expectedSalary}
+                        readOnly
+                        className="block w-full p-2 border rounded"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-sm text-indigo-600 mb-2">Overall Rating</h3>
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-5 h-5 ${
+                              star <= selectedApplicant.level 
+                                ? "text-yellow-400 fill-yellow-400" 
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm text-indigo-600 mb-2">Comments</h3>
+                    <textarea
+                      className="block w-full p-2 border rounded h-32 resize-none"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+
+            {/* Footer */}
+            <div className="flex flex-col items-end gap-4 px-4 py-3 border-b ">
+              {/* Skills Section */}
+              <div className="w-full">
+  <h3 className="text-lg font-semibold mb-2 ml-3">Skills</h3>
+  <div className="bg-gray-100 p-4 rounded-md flex flex-wrap gap-2">
+    {selectedApplicant.skills?.map((skill) => (
+      <SkillBadge key={skill} name={skill} />
+    ))}
+  </div>
+</div>
+
+  {/* Buttons Section */}
+  <div className="flex gap-3">
+    <button className="px-6 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded">
+      Reject
+    </button>
+    <button className="px-6 py-2 text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 rounded">
+      Waiting
+    </button>
+    <button className="px-6 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded">
+      Shortlist
+    </button>
+    <button className="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded">
+      Send for Approval
+    </button>
+  </div>
+</div>
+
+          </div>
+        </div>
+      )}
+    </BaseLayout3>
+  )
+}

@@ -16,12 +16,12 @@ import "@/styles/globals.css";
 const SidebarItems = [
     {
         name: 'Dashboard',
-        href: '/supervisor',
+        href: '/supervisor/ui/dashboard',
         icon: RiDashboardFill,    
     },
     {
         name: 'Recruitment',
-        href: '/supervisor/recruitment',
+        href: '/supervisor/ui/recruitment',
         icon: IoPeopleSharp,
     },
     {
