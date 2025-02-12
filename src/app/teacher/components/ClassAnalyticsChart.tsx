@@ -172,16 +172,24 @@ const ClassAnalyticsChart = () => {
           <span>{total}</span>
         </div>
         <div className="flex flex-col ml-4 mt-3 text-[10px] text-[#A098AE]">
-          {data.labels?.map((label, index) => (
-            <div key={label} className="flex justify-between items-center">
-              <span className="flex items-center">
-                <div className={`w-2 h-2 rounded-sm bg-[${data.datasets[0].backgroundColor[index]}] mr-2`}></div>
-                {label} ({chartData[index]})
-              </span>
-              <span>{chartData[index]}</span>
-            </div>
-          ))}
-        </div>
+            {(data.labels as string[])?.map((label, index) => (
+              <div key={label} className="flex justify-between items-center">
+                <span className="flex items-center">
+                  <div
+                    className="w-2 h-2 rounded-sm mr-2"
+                    style={{
+                      backgroundColor: Array.isArray(data.datasets?.[0]?.backgroundColor)
+                        ? data.datasets[0].backgroundColor[index] || "#000"
+                        : "#000",
+                    }}
+                  ></div>
+                  {label} ({chartData[index]})
+                </span>
+                <span>{chartData[index]}</span>
+              </div>
+            ))}
+          </div>
+
       </div>
     </div>
   );
