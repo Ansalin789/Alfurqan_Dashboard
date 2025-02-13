@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { FaFilter, FaLaptop, FaStar } from 'react-icons/fa';
 
@@ -25,6 +25,7 @@ const ManageTeacher: React.FC = () => {
   const router = useRouter();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [menuVisible, setMenuVisible] = useState<boolean[]>([]);
+
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTeacher, setNewTeacher] = useState({
@@ -68,9 +69,7 @@ const ManageTeacher: React.FC = () => {
     setMenuVisible(Array(teachers.length).fill(false));
   }, [teachers]);
   
-//   const handleViewTeachersList = () => {
-//     router.push('/Academic/viewTeacherSchedule');
-//   };
+
 
   const handleViewTeacherSchedule = (teacherId:string) => {
     if (!teacherId) {
@@ -90,13 +89,13 @@ const ManageTeacher: React.FC = () => {
     });
   };
 
-//   const openModal = () => {
-//     setIsModalOpen(true);
-//   };
+
 
   const closeModal = () => {
     setIsModalOpen(false);
   };
+
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -130,41 +129,44 @@ const ManageTeacher: React.FC = () => {
       <div className="flex h-screen">
         {/* Main Content */}
         <div className="flex-1 p-2">
-  <div className='flex items-center space-x-2 p-4'>
-    <h2 className="text-2xl font-semibold text-[#223857]">Teachers List</h2>
-  </div>
-  <div className="flex justify-between items-center mb-2">
-    <div className="flex flex-1 space-x-4 items-center justify-between">
-      <div className='flex'>
-        <input
-          type="text"
-          placeholder="Search here..."
-          className={`border rounded-lg p-2 mx-4 shadow`}
-        />
-        <button className="flex items-center bg-white px-4 rounded-lg shadow">
-          <FaFilter className="mr-2 text-[#223857]" /> Filter
-        </button>
-      </div>
-      <div className='flex px-4 space-x-4'>
-        <button className="bg-[#223857] text-white px-4 py-2 rounded-lg shadow"
-         onClick={() => router.push("/supervisor/ui/feedback")}>
-          Feedback
-        </button>
-        <button className="bg-[#223857] text-white px-4 py-2 rounded-lg shadow flex items-center"
-         onClick={() => router.push("/supervisor/ui/viewschedule")}>
-          View Scheduled Classes
-          <span className="ml-2 text-red-500">
-            <FaLaptop />
-          </span>
-        </button>
-        <select className={`border rounded-lg p-2 shadow text-[14px]`}>
-          <option>Duration: Last month</option>
-          <option>Duration: Last week</option>
-          <option>Duration: Last year</option>
-        </select>
+          <div className='flex items-center space-x-2 p-4'>
+            <h2 className="text-2xl font-semibold text-[#223857]">Teachers List</h2>
+          </div>
+    <div className="flex justify-between items-center mb-2">
+      <div className="flex flex-1 space-x-4 items-center justify-between">
+        <div className='flex'>
+          <input
+            type="text"
+            placeholder="Search here..."
+            className={`border rounded-lg p-2 mx-4 shadow`}
+          />
+          <button className="flex items-center bg-white px-4 rounded-lg shadow">
+            <FaFilter className="mr-2 text-[#223857]" /> Filter
+          </button>
+        </div>
+        <div className='flex px-4 space-x-4'>
+          <button className="bg-[#223857] text-white px-4 py-2 rounded-lg shadow"
+           onClick={() => router.push("/supervisor/ui/feedback")}
+           >
+            Feedback
+          </button>
+          <button className="bg-[#223857] text-white px-4 py-2 rounded-lg shadow flex items-center"
+          onClick={() => router.push("/supervisor/ui/viewschedule")}>
+            View Scheduled Classes
+            <span className="ml-2 text-red-500">
+              <FaLaptop />
+            </span>
+          </button>
+          <select className={`border rounded-lg p-2 shadow text-[14px]`}>
+            <option>Duration: Last month</option>
+            <option>Duration: Last week</option>
+            <option>Duration: Last year</option>
+          </select>
+        </div>
       </div>
     </div>
-  </div>
+
+
   {/* Cards */}
   <div className="grid grid-cols-6 gap-4 p-6" style={{ width: '100%' }}>
     {teachers.map((teacher, index) => (
@@ -204,10 +206,13 @@ const ManageTeacher: React.FC = () => {
         </div>
       </div>
     ))}
-  </div>
-</div>
+     </div>
+   </div>
+ </div>
 
-      </div>
+
+
+ 
       <Modal
         isOpen={isModalOpen}
         onRequestClose={closeModal}
