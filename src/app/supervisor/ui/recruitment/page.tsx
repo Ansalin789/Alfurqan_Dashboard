@@ -1,6 +1,6 @@
 'use client';
 import { useState } from "react"
-import { Star, MoreHorizontal, FileText, X } from "lucide-react"
+import { Star, MoreHorizontal, FileText, X, Upload, Calendar } from "lucide-react"
 import BaseLayout3 from "@/components/BaseLayout3"
 
 type Status = "Shortlisted" | "Rejected" | "Waiting"
@@ -79,6 +79,20 @@ const generateApplicants = (): Applicant[] => {
     }
   }))
 }
+interface AddApplicantFormData {
+  applicationDate: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  country: string
+  city: string
+  position: string
+  expectedSalary: string
+  workingHours: string
+  resume: string
+  comment: string
+}
 
 interface RadioOptionProps {
   label: string
@@ -113,6 +127,21 @@ export default function ApplicantsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null)
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [showAddApplicant, setShowAddApplicant] = useState(false)
+  const [addApplicantForm, setAddApplicantForm] = useState<AddApplicantFormData>({
+    applicationDate: new Date().toISOString().split('T')[0],
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    country: 'USA',
+    city: '',
+    position: 'Arabic Teacher',
+    expectedSalary: '',
+    workingHours: '',
+    resume: '',
+    comment: ''
+  })
   
   const tabs = ["All", "New Candidate", "Shortlisted", "Rejected", "Waiting"]
   const applicants = generateApplicants()
@@ -159,51 +188,57 @@ export default function ApplicantsPage() {
     setSelectedApplicant(applicant)
     setOpenMenuId(null)
   }
+  const handleAddApplicantSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Handle form submission here
+    setShowAddApplicant(false)
+  }
 
   return (
     <BaseLayout3>
       <div className="min-h-screen">
-        <div className="p-6 max-w-screen-2xl mx-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-semibold text-slate-800">Applicants</h1>
+      <div className="p-4 md:p-6 max-w-screen-2xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+      <h1 className="text-xl md:text-2xl font-semibold text-slate-800">Applicants</h1>
           </div>
 
           <div className="bg-white rounded-lg shadow-md">
             <div className="p-4">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
-                <div className="flex flex-wrap gap-2 bg-white p-1 rounded-lg">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`px-4 py-2 rounded-md transition-colors ${
-                        activeTab === tab ? "text-[#05445E] bg-blue-50" : "text-slate-500 hover:bg-gray-50"
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-500">Sort by:</span>
-                    <select className="w-40 px-3 py-2 border rounded-md bg-white text-sm">
-                      <option>Designation</option>
-                      <option>Date</option>
-                      <option>Status</option>
-                    </select>
-                  </div>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors">
-                    + Add Applicant
-                  </button>
-                </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-3 py-1 md:px-4 md:py-2 rounded-md text-sm ${
+                  activeTab === tab ? "text-[#05445E] bg-blue-50" : "text-slate-500 hover:bg-gray-50"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+              <div className="flex items-center gap-2 w-full md:w-48">
+                <span className="text-sm text-slate-500 whitespace-nowrap">Sort by:</span>
+                <select className="w-full px-3 py-2 border rounded-md bg-white text-sm">
+                  <option>Designation</option>
+                  <option>Date</option>
+                  <option>Status</option>
+                </select>
               </div>
+              <button
+              onClick={() => setShowAddApplicant(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors w-full md:w-auto">
+                + Add Applicant
+              </button>
+            </div>
+          </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full table-auto">
                   <thead>
-                    <tr className="bg-gray-50">
+                    <tr className="bg-gray-50 mb-5">
                       <th className="text-center px-2  text-sm font-medium text-[#343942]">Application Date</th>
                       <th className="text-center px-2  text-sm font-medium text-[#343942]">Applicant Name</th>
                       <th className="text-center px-2  text-sm font-medium text-[#343942]">Contact</th>
@@ -279,7 +314,9 @@ export default function ApplicantsPage() {
                                 >
                                   View Details
                                 </button>
-                                <button className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50">
+                                <button 
+                                onClick={() => setOpenMenuId(null)}
+                                className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50">
                                   Cancel
                                 </button>
                               </div>
@@ -331,6 +368,193 @@ export default function ApplicantsPage() {
           </div>
         </div>
       </div>
+      {showAddApplicant && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl relative">
+            <div className="p-6">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-6">Add Applicant</h2>
+              
+              <form onSubmit={handleAddApplicantSubmit} className="space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="addappname"  className="block text-sm font-medium text-gray-700 mb-1">Application Date</label>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        value={addApplicantForm.applicationDate}
+                        onChange={(e) => setAddApplicantForm({...addApplicantForm, applicationDate: e.target.value})}
+                        className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <Calendar className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">First name</label>
+                      <input
+                        type="text"
+                        value={addApplicantForm.firstName}
+                        onChange={(e) => setAddApplicantForm({...addApplicantForm, firstName: e.target.value})}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Robert"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">Last name</label>
+                      <input
+                        type="text"
+                        value={addApplicantForm.lastName}
+                        onChange={(e) => setAddApplicantForm({...addApplicantForm, lastName: e.target.value})}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="James"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={addApplicantForm.email}
+                        onChange={(e) => setAddApplicantForm({...addApplicantForm, email: e.target.value})}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="robert@gmail.com"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">Phone number</label>
+                      <input
+                        type="tel"
+                        value={addApplicantForm.phone}
+                        onChange={(e) => setAddApplicantForm({...addApplicantForm, phone: e.target.value})}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="8784673891"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                      <select
+                        value={addApplicantForm.country}
+                        onChange={(e) => setAddApplicantForm({...addApplicantForm, country: e.target.value})}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="USA">USA</option>
+                        <option value="Canada">Canada</option>
+                        <option value="UK">UK</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                      <input
+                        type="text"
+                        value={addApplicantForm.city}
+                        onChange={(e) => setAddApplicantForm({...addApplicantForm, city: e.target.value})}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Texas"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label  htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">Position Applied</label>
+                      <select
+                        value={addApplicantForm.position}
+                        onChange={(e) => setAddApplicantForm({...addApplicantForm, position: e.target.value})}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="Arabic Teacher">Arabic Teacher</option>
+                        <option value="Quran Teacher">Quran Teacher</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">Expected Salary per Hour</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={addApplicantForm.expectedSalary}
+                          onChange={(e) => setAddApplicantForm({...addApplicantForm, expectedSalary: e.target.value})}
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="$40"
+                        />
+                        <span className="absolute right-3 top-2 text-sm text-red-500">Est</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">Preferred Working Hours</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={addApplicantForm.workingHours}
+                          onChange={(e) => setAddApplicantForm({...addApplicantForm, workingHours: e.target.value})}
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="9:00 AM - 20:00 PM"
+                        />
+                        <span className="absolute right-3 top-2 text-sm text-blue-600">Select</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">Upload Resume</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={addApplicantForm.resume}
+                          onChange={(e) => setAddApplicantForm({...addApplicantForm, resume: e.target.value})}
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Robert.cv"
+                          readOnly
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-2 text-blue-600 flex items-center"
+                        >
+                          <Upload className="h-5 w-5" />
+                          <span className="ml-1">Upload</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">Comment</label>
+                    <textarea
+                      value={addApplicantForm.comment}
+                      onChange={(e) => setAddApplicantForm({...addApplicantForm, comment: e.target.value})}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 resize-none"
+                      rows={4}
+                      placeholder="Write your comment here..."
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-4 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddApplicant(false)}
+                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Application Details Popup */}
       {selectedApplicant && (

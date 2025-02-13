@@ -36,12 +36,12 @@ const SidebarItems = [
     },
     {
         name: 'Messages',
-        href: '/supervisor/messages',
+        href: '/supervisor/ui/message',
         icon: LuMessagesSquare,
     },
     {
         name: 'Support',
-        href: '/supervisor/support',
+        href: '/supervisor/ui/support',
         icon: MdContactSupport,
     }
 ];
