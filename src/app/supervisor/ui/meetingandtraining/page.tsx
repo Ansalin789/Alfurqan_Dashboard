@@ -8,7 +8,7 @@ import { IoMdArrowDropdownCircle, IoMdClose } from "react-icons/io";
 import { useRouter } from 'next/navigation';
 import { FaCalendarAlt,  FaPlus, FaUserCircle } from "react-icons/fa";
 import { User } from "lucide-react";
-
+import BaseLayout3 from "@/components/BaseLayout3";
 
 const ScheduledClasses = () => {
   const router = useRouter();
@@ -206,7 +206,8 @@ const [schedule] = useState(
   };
   
   return (
-    <div className="p-4">
+    <BaseLayout3>
+    <div className="p-4 w-full h-full">
       <div className={`${isRescheduleModalOpen ? 'blur-sm' : ''} transition-all duration-200`}>
         <h1 className="text-2xl font-semibold text-gray-800 p-2">Scheduled Classes</h1>
         <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
@@ -775,6 +776,7 @@ const [schedule] = useState(
 
 
     </div>
+    </BaseLayout3>
   );
 };
 
