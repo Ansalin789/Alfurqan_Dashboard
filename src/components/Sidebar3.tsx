@@ -31,7 +31,7 @@ const SidebarItems = [
     },
     {
         name: 'Teachers',
-        href: '/supervisor/teachers',
+        href: '/supervisor/ui/teachers',
         icon: FaBookOpenReader,
     },
     {
