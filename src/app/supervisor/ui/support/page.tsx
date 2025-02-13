@@ -10,7 +10,7 @@ const Support = () => {
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="col-span-1 p-0 h-[100vh]">
+          <div className="col-span-1 p-0 h-[10vh]">
             <div className="bg-[#4CBC9A] shadow-lg rounded-xl p-2">
               <h2 className="text-[18px] font-semibold text-gray-800 mb-1 p-6">Contact Details</h2>
               <div className="text-gray-800 space-y-4 justify-evenly px-6">
@@ -77,7 +77,7 @@ const Support = () => {
               <p className="p-2">
                 My question is not here
               </p>
-              <button className="bg-slate-950 p-2 rounded-lg">
+              <button className="bg-white text-[#020617] hover:bg-[#020617] hover:text-white p-2 rounded-lg">
                 Connect Us
               </button>
             </div>

@@ -83,7 +83,7 @@ const Message = () => {
                             {/* Chat List */}
                             <ul className="mt-4 space-y-4 overflow-scroll h-96 scrollbar-none">
                             {privateChats.map((chat, index) => (
-                                <li key={index} className="flex items-center justify-between border-b-2 p-1 cursor-pointer">
+                                <li key={chat.name} className="flex items-center justify-between border-b-2 p-1 cursor-pointer">
                                     <div className="flex items-center space-x-3">
                                         <div className="w-7 h-7 bg-gray-300 rounded-lg"></div>
                                         <div>

@@ -1,7 +1,8 @@
 'use client';
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Star, MoreHorizontal, FileText, X, Upload, Calendar } from "lucide-react"
 import BaseLayout3 from "@/components/BaseLayout3"
+import axios from "axios";
 
 type Status = "Shortlisted" | "Rejected" | "Waiting"
 type Position = "Arabic Teacher" | "Quran Teacher"
@@ -90,7 +91,7 @@ interface AddApplicantFormData {
   position: string
   expectedSalary: string
   workingHours: string
-  resume: string
+  resume:File | null | undefined; 
   comment: string
 }
 
@@ -128,6 +129,7 @@ export default function ApplicantsPage() {
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null)
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
   const [showAddApplicant, setShowAddApplicant] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [addApplicantForm, setAddApplicantForm] = useState<AddApplicantFormData>({
     applicationDate: new Date().toISOString().split('T')[0],
     firstName: '',
@@ -139,7 +141,7 @@ export default function ApplicantsPage() {
     position: 'Arabic Teacher',
     expectedSalary: '',
     workingHours: '',
-    resume: '',
+    resume: null,
     comment: ''
   })
   
@@ -188,11 +190,68 @@ export default function ApplicantsPage() {
     setSelectedApplicant(applicant)
     setOpenMenuId(null)
   }
-  const handleAddApplicantSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle form submission here
-    setShowAddApplicant(false)
-  }
+  
+  const handleAddApplicantSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    const formData = new FormData();
+    formData.append("applicationDate", addApplicantForm.applicationDate);
+    formData.append("candidateFirstName", addApplicantForm.firstName);  // Changed
+    formData.append("candidateLastName", addApplicantForm.lastName);    // Changed
+    formData.append("candidateEmail", addApplicantForm.email);          // Changed
+    formData.append("candidatePhoneNumber", addApplicantForm.phone);    // Changed
+    formData.append("candidateCountry", addApplicantForm.country);      // Changed
+    formData.append("candidateCity", addApplicantForm.city);            // Changed
+    formData.append("positionApplied", addApplicantForm.position); 
+    formData.append("currency", "$");                          // Changed
+    formData.append("expectedSalary", addApplicantForm.expectedSalary);       // Changed
+    formData.append("preferedWorkingHours", addApplicantForm.workingHours);  // Changed
+    formData.append("comments", addApplicantForm.comment);              // Changed
+    formData.append("applicationStatus", "NEWAPPLICATION");
+    formData.append("status", "Active");
+    
+    if (addApplicantForm.resume) {
+      formData.append("uploadResume", addApplicantForm.resume);
+    }
+    formData.forEach((value, key) => {
+      console.log(key + ": " + value);
+    });
+    try {
+      const response = await axios.post("http://localhost:5001/recruit", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+     
+      if (response.status === 201) {
+        alert("Applicant added successfully!");
+        setShowAddApplicant(false);
+        setAddApplicantForm({
+          applicationDate: new Date().toISOString().split('T')[0],
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          country: 'USA',
+          city: '',
+          position: 'Arabic Teacher',
+          expectedSalary: '',
+          workingHours: '',
+          resume: null,
+          comment: '',
+        });
+      }
+    } catch (error) {
+      console.error("Error adding applicant:", error);
+      alert("Failed to add applicant");
+    }
+    setShowAddApplicant(false);
+  };
+ 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setAddApplicantForm({ ...addApplicantForm, resume: e.target.files[0] });
+    }
+  };
+
 
   return (
     <BaseLayout3>
@@ -502,25 +561,40 @@ export default function ApplicantsPage() {
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="addappname" className="block text-sm font-medium text-gray-700 mb-1">Upload Resume</label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={addApplicantForm.resume}
-                          onChange={(e) => setAddApplicantForm({...addApplicantForm, resume: e.target.value})}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Robert.cv"
-                          readOnly
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-3 top-2 text-blue-600 flex items-center"
-                        >
-                          <Upload className="h-5 w-5" />
-                          <span className="ml-1">Upload</span>
-                        </button>
-                      </div>
-                    </div>
+      <label
+        htmlFor="resume"
+        className=" text-sm font-medium text-gray-700 mb-1 flex items-center"
+      >
+        <Upload className="h-5 w-5 mr-2" /> {/* Upload icon */}
+        Upload Resume
+      </label>
+      <div className="relative">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          id="resume"
+          type="file"
+          accept=".pdf,.doc,.docx"
+          className="absolute opacity-0 w-full h-full cursor-pointer" // Hidden but clickable
+          onChange={handleFileChange}
+        />
+
+        {/* Custom Upload Button */}
+        <button
+          type="button"
+          className="absolute right-3 top-2 text-blue-600 flex items-center"
+          onClick={() => fileInputRef.current?.click()} // Trigger file input
+        >
+          <Upload className="h-5 w-5" />
+          <span className="ml-1">Upload</span>
+        </button>
+      </div>
+
+      {/* Display selected file name (optional) */}
+      {addApplicantForm.resume && (
+        <p className="mt-2 text-sm text-gray-500">{addApplicantForm.resume.name}</p>
+      )}
+    </div>
                   </div>
 
                   <div>
@@ -545,6 +619,7 @@ export default function ApplicantsPage() {
                   </button>
                   <button
                     type="submit"
+                    onClick={handleAddApplicantSubmit}
                     className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                   >
                     Save
