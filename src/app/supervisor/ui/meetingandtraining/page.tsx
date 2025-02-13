@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 import { FaCalendarAlt,  FaPlus, FaUserCircle } from "react-icons/fa";
 import { User } from "lucide-react";
 import BaseLayout3 from "@/components/BaseLayout3";
+import { button } from "@nextui-org/react";
+
 
 const ScheduledClasses = () => {
   const router = useRouter();
@@ -22,7 +24,7 @@ const ScheduledClasses = () => {
   const [meetingTitle, setMeetingTitle] = useState("");
 
   const [description, setDescription] = useState("");
-  const [activeTab, setActiveTab] = useState("");
+  const [activeTab, setActiveTab] = useState<string>("upcoming");
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [rescheduleReason, setRescheduleReason] = useState("");
@@ -129,11 +131,7 @@ const colorOptions = [
     }
   };
 
-  const handleStatusClick = (status: string) => {
-    if (status.includes('Available')) {
-      router.push('/teacher/ui/liveclass'); // Replace with your desired route
-    }
-  };
+
 
   const handleDateSelect = (date: Date | null) => {
     if (date) {
@@ -186,7 +184,7 @@ const [schedule] = useState(
       id: 123456789,
       name: "Weekly Meeting",
       course: "Arabic",
-      date: "January 2, 2025",
+      date: "12/02/2025",
       status: "Completed",
       attendance: [
         { name: "Lucas Johnson", present: true },
@@ -207,10 +205,10 @@ const [schedule] = useState(
   
   return (
     <BaseLayout3>
-    <div className="p-4 w-full h-full">
+    <div className="p-4 mx-auto w-[1250px]">
       <div className={`${isRescheduleModalOpen ? 'blur-sm' : ''} transition-all duration-200`}>
         <h1 className="text-2xl font-semibold text-gray-800 p-2">Scheduled Classes</h1>
-        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
+        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px]  overflow-y-scroll scrollbar-none flex flex-col justify-between">
           {/* Tabs */}
           <div>
             <div className="flex">
@@ -268,7 +266,7 @@ const [schedule] = useState(
               <table className="table-auto w-full">
                 <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
                   <tr>
-                    {["Id", "Name", "Courses", "Date", "Status"].map((header) => (
+                    {["Id", "Name", "Courses", "Date", "Status","Action"].map((header) => (
                       <th key={header} className="px-6 py-3 text-center">
                         {header}
                       </th>
@@ -283,185 +281,186 @@ const [schedule] = useState(
                       <td className="px-6 py-2 text-center">{item.name}</td>
                       <td className="px-6 py-2 text-center">{item.course}</td>
                       <td className="px-6 py-2 text-center">{item.date}</td>
-                      <td className="px-6 py-2 text-center relative">
+                      
+                      <td className="px-6 py-2 text-center ">
                         {activeTab === "completed" ? (
                            <>
                           <span className="text-green-600 border text-[12px] border-green-600 bg-green-100 px-3 py-1 rounded-lg">
-                     {item.status}
-              </span>
-              <button 
-                 className="text-xl ml-2"
-                  onClick={() => handleOptionsClick(item.id)}>...</button>
-      {selectedItemId === item.id && (
-        <div className="absolute right-0 mt-1 w-24 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-          <div className="py-1">
-          <button
-  className="block w-full text-left px-4 py-2 text-[12px] text-gray-700 hover:bg-gray-100"
-  onClick={() => {
-    setSelectedMeeting(meetings[0]); // Store meeting details
-    setIsDetailsModalOpen(true); // Open modal
-  }}
->
-  View Details
-</button>
-            <button
-              className="block w-full text-left px-4 py-2 text-[12px] text-gray-700 hover:bg-gray-100"
-              onClick={() => {
-                // Example action: Download Report
-                console.log("Cancel");
-                setSelectedItemId(null);
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+                                {item.status}
+                          </span>
+            
+             
+                {selectedItemId === item.id && (
+              <div className="absolute right-10 mt-1 w-24 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                <div className="py-1">
+                  <button
+                  className="block w-[200px] text-left px-4 py-2 text-[12px] text-gray-700 hover:bg-gray-100"
+                  onClick={() => {
+                    setSelectedMeeting(meetings[0]); // Store meeting details
+                      setIsDetailsModalOpen(true); // Open modal
+                        }}>
+                    View Details
+                  </button>
+                  <button
+                    className="block w-full text-left px-4 py-2 text-[12px] text-gray-700 hover:bg-gray-100"
+                    onClick={() => {
+                      // Example action: Download Report
+                      console.log("Cancel");
+                      setSelectedItemId(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
       )}
     </>
-  ) : (
-    <button 
-      onClick={() => handleStatusClick(item.status)}
-      className={`${
-        item.status === "Re-Schedule Requested" 
-          ? "bg-[#79d67a36] text-[#2a642b] border border-[#2a642b] px-3" 
-          : "bg-[#1c355739] text-[#1C3557] border border-[#1C3557] px-6"
-      } py-1 rounded-lg`}
-    >
-      {item.status}
-    </button>
-  )}
-</td>
-{isDetailsModalOpen && selectedMeeting && (
-  <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center z-50 text-sm">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-[500px] max-h-[90vh] overflow-auto relative">
-      
-      {/* Close Button */}
-      <button 
-        className="absolute top-2 right-2 text-gray-500 hover:text-black text-sm"
-        onClick={() => setIsDetailsModalOpen(false)}
-      >
-        ❌
-      </button>
+                        ) : (
+                          <button 
 
-      {/* Title */}
-      <h2 className="text-lg font-semibold text-center mb-4">Meeting Details</h2>
+                            className={`${
+                              item.status === "Re-Schedule Requested" 
+                                ? "bg-[#79d67a36] text-[#2a642b] border border-[#2a642b] px-3" 
+                                : "bg-[#1c355739] text-[#1C3557] border border-[#1C3557] px-6"
+                            } py-1 rounded-lg`}
+                          >
+                            {item.status}
+                          </button>
+                        )}
+                      </td>
+                      <td className="px-6 py-2 text-center">
+                      <button 
+                 className="text-xl ml-15"
+                  onClick={() => handleOptionsClick(item.id)}>...</button>
+                      {isDetailsModalOpen && selectedMeeting && (
+                        <div className="fixed inset-0 bg-black bg-opacity-10 flex justify-center items-center z-50 text-sm">
+                            <div className="bg-white p-4 rounded-lg shadow-lg w-[650px] max-h-[90vh]  relative">
+                              
+                              {/* Close Button */}
+                              <button
+                                className="absolute top-2 right-2 text-gray-500 hover:text-black text-sm"
+                                onClick={() => setIsDetailsModalOpen(false)}
+                              >
+                                ❌
+                              </button>
 
-      {/* Attendance Info */}
-      <div className="border rounded-lg p-4 bg-gray-100">
-  <h3 className="text-base font-semibold mb-2">Attendance</h3>
+                              {/* Title */}
+                              <h2 className="text-[15px] font-semibold text-center mb-4">
+                                Meeting Details
+                              </h2>
 
-  {/* Table for Proper Alignment */}
-  <table className="w-full border-collapse text-sm">
-    <tbody>
-      {/* Meeting ID & Date */}
-      <tr>
-        <th className="text-left text-[13px] pr-2">Meeting ID:</th>
-        <td className="bg-blue-900 text-white px-2 py-[2px] rounded-lg font-medium text-[10px]">
-          {selectedMeeting.id}
-        </td>
-        
-        <th className="text-left text-[13px] pr-2">Date:</th>
-        <td className="bg-blue-900 text-white px-2 py-[2px] rounded-lg font-medium text-[10px]">
-          {selectedMeeting.date}
-        </td>
-      </tr>
-<br />
-      {/* Meeting Name & Duration */}
-      <tr>
-        <th className="text-left text-[13px] pr-2">Meeting Name:</th>
-        <td className="bg-blue-900 text-white px-2 py-[2px] rounded-lg font-medium text-[10px]">
-          Weekly Meeting
-        </td>
-        <th className="text-left text-[13px] pr-2">Duration:</th>
-        <td className="bg-blue-900 text-white px-2 py-[2px] rounded-lg font-medium text-[10px]">
-          60 Minutes
-        </td>
-      </tr>
-      <br />
-      {/* Course */}
-      <tr>
-        <th className="text-left text-[13px] pr-2">Course:</th>
-        <td className="bg-blue-900 text-white px-2 py-[2px] rounded-lg font-medium text-[10px]" >
-          Arabic
-        </td>
-      </tr>
-      <br />
-      {/* Start Time & End Time */}
-      <tr>
-        <th className="text-left text-[13px] pr-2">Start Time:</th>
-        <td className="bg-blue-900 text-white px-2 py-[2px] rounded-lg font-medium text-[10px]">
-          9:00 AM
-        </td>
-        <th className="text-left text-[13px] pr-2">End Time:</th>
-        <td className="bg-blue-900 text-white px-2 py-[2px] rounded-lg font-medium text-[10px]">
-          10:00 AM
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+                              {/* Attendance Info */}
+                              <div className="rounded-lg p-4 w-full">
+                                <h3 className="text-[15px] font-semibold mb-2">Attendance</h3>
 
+                                {/* Grid for Proper Alignment */}
+                                <div className="grid grid-cols-6 gap-2 p-2 rounded-lg">
+                                  <div className="font-medium text-[10px]">Meeting ID:</div>
+                                  <div className="bg-[#012A4A] text-white px-2 py-1 rounded-lg text-center text-[10px] col-span-2">
+                                    {selectedMeeting.id}
+                                  </div>
 
-      {/* Attendance Table */}
-      <div className="mt-4">
-        <h3 className="text-base font-medium">Attendance</h3>
-        <div className="border rounded-lg p-2 bg-white max-h-40 overflow-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-slate-200">
-                <th className="text-left p-2">Name</th>
-                <th className="text-center p-2">Attendance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selectedMeeting?.attendance?.map((attendee) => (
-                <tr key={attendee.name} className="border-b text-sm">
-                  <td className="p-2">{attendee.name}</td>
-                  <td className="p-2 text-center">
-                    {attendee.present ? (
-                      <span className="w-5 h-5 bg-blue-500 text-white font-bold rounded-full flex items-center justify-center text-xs">
-                        ✔
-                      </span>
-                    ) : (
-                      <span className="w-5 h-5 bg-red-500 text-white font-bold rounded-full flex items-center justify-center text-xs">
-                        ✖
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                                  <div className="font-medium text-[10px]">Date:</div>
+                                  <div className="bg-[#012A4A] text-white px-2 py-1 rounded-lg text-center text-[10px] col-span-2">
+                                    {selectedMeeting.date}
+                                  </div>
 
-      {/* Meeting Minutes */}
-      <div className="mt-4">
-        <h3 className="text-base font-medium">Meeting Minutes</h3>
-        <textarea 
-          className="w-full h-20 border rounded-lg p-2 text-sm bg-slate-300"
-          placeholder="Enter meeting minutes..."
-        ></textarea>
-      </div>
+                                  <div className="font-medium text-[10px]">Meeting Name:</div>
+                                  <div className="bg-[#012A4A] text-white px-2 py-1 rounded-lg text-center text-[10px] col-span-2">
+                                    Weekly Meeting
+                                  </div>
 
-    </div>
-  </div>
-)}
+                                  <div className="font-medium text-[10px]">Duration:</div>
+                                  <div className="bg-[#012A4A] text-white px-2 py-1 rounded-lg text-center text-[10px] col-span-2">
+                                    60 Minutes
+                                  </div>
 
+                                  <div className="font-medium text-[10px]">Course:</div>
+                                  <div className="bg-[#012A4A] text-white px-2 py-1 rounded-lg text-center text-[10px]">
+                                    Arabic
+                                  </div>
 
+                                  <div className="font-medium text-[10px]">Start Time:</div>
+                                  <div className="bg-[#012A4A] text-white px-2 py-1 rounded-lg text-center text-[10px]">
+                                    9:00 AM
+                                  </div>
 
+                                  <div className="font-medium text-[10px]">End Time:</div>
+                                  <div className="bg-[#012A4A] text-white px-2 py-1 rounded-lg text-center text-[10px]">
+                                    10:00 AM
+                                  </div>
+                                </div>
+                              </div>
 
+                              {/* Attendance Table */}
+                              <div className="mt-4">
+                                {/* <h3 className="text-base font-medium">Attendance</h3> */}
 
+                                <div className="border rounded-lg p-0  bg-white max-h-60 overflow-auto scrollbar-thin">
+                                <table className="w-full text-sm">
+                        {/* Table Header */}
+                        <thead>
+                          <tr className="border-b bg-[#c3ebfa85] text-gray-700">
+                            <th className="text-left p-3 w-3/4">Name</th>
+                            <span className="-ml-10"><th className="text-center p-3 w-1/3">Attendance</th></span>
+                          </tr>
+                        </thead>
 
+                        {/* Table Body */}
+                        <tbody>
+                          {selectedMeeting.attendance.map((attendee) => (
+                            <tr key={attendee.name} className="border-b text-[13px]">
+                              {/* Name with Profile Icon - Justify Between Applied Here */}
+                              <td className="p-3 flex items-center space-x-2 w-3/4">
+                                <span className="w-4 h-4 bg-blue-900 text-white rounded-full flex items-center justify-center">
+                                  🧑‍💼 {/* Replace with an actual profile icon */}
+                                </span>
+                                <span className="flex-grow text-[12px]">{attendee.name}</span>
+                              </td>
+
+                              {/* Attendance Status - Centered */}
+                              <td className="p-3 text-center w-1/3">
+                                {attendee.present ? (
+                                  <span className="w-4 h-4 bg-[#4ABDE8] text-white font-bold rounded-full flex items-center justify-center text-[8px]">
+                                    ✔
+                                  </span>
+                                ) : (
+                                  <span className="w-4 h-4 bg-red-500 text-white font-bold rounded-full flex items-center justify-center text-[8px]">
+                                    ✖
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                                </div>
+                              </div>
+
+                              {/* Meeting Minutes */}
+                              <div className="mt-4">
+                                <h3 className="text-[15px] font-medium mb-2">Meeting Minutes</h3>
+                                <textarea
+                                  className="w-full h-20 border rounded-lg p-2 text-xs bg-[#D9D9D9]"
+                                  placeholder="Enter meeting minutes..."
+                                ></textarea>
+                              </div>
+                            </div>
+                          </div>
+                      )}
+                      </td>
+
+                      
                       <td className="px-6 py-2 text-center">
                         {activeTab === "upcoming" && (
                           <>
-                            <button 
+                            {/* <button 
                               className="text-xl"
                               onClick={() => handleOptionsClick(item.id)}
                             >
-                              ...
-                            </button>
+                              .
+                            </button> */}
                             {selectedItemId === item.id && (
                               <div className="absolute right-0 mt-1 w-24 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                                 <div className="py-1">
