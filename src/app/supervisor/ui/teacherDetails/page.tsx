@@ -3,8 +3,7 @@ import React from "react";
 import Image from "next/image";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import { useRouter } from "next/navigation";
-import { FaSave } from "react-icons/fa";
-import { MdCancel } from "react-icons/md";
+
 import BaseLayout3 from "@/components/BaseLayout3";
 
 const TeacherDetails = () => {
