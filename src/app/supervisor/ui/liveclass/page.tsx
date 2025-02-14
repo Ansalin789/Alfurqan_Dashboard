@@ -9,10 +9,12 @@ import {
   VideoOff,
   Monitor,
   PhoneOff,
+  LogOut,
 } from 'lucide-react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import axios from 'axios';
 import BaseLayout3 from '@/components/BaseLayout3';
+import Link from 'next/link';
 
 interface Student {
   studentId: string;
@@ -272,8 +274,11 @@ function LiveClass() {
         {/* Main Content */}
         <div className="flex-1 overflow-auto  w-[1200px] mt-5 ml-5 h-[800px]">
           <div className="p-6 w-[100%]">
+           <Link  href="/supervisor/ui/viewschedule" className="absolute top-4 right-4 cursor-pointer" >
+                <LogOut className="w-6 h-6 text-red-500 hover:text-red-500 transition" />
+            </Link>
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-4xl font-bold text-[#1C3557]">My Class</h1>
+              <h1 className="text-2xl font-bold text-[#1C3557]">Live Class</h1>
             </div>
             {showFeedback ? (
               <div className="flex items-center justify-center gap-10 mb-6">
