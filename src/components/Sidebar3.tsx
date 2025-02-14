@@ -26,7 +26,7 @@ const SidebarItems = [
     },
     {
         name: 'Meeting & Training',
-        href: '/supervisor/meeting&training',
+        href: '/supervisor/ui/meetingandtraining',
         icon: MdAssignment,
     },
     {
@@ -36,7 +36,7 @@ const SidebarItems = [
     },
     {
         name: 'Messages',
-        href: '/supervisor/ui/message',
+        href: '/supervisor/ui/message', 
         icon: LuMessagesSquare,
     },
     {
