@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { FaFilter, FaLaptop, FaStar } from 'react-icons/fa';
 
@@ -76,7 +76,7 @@ const ManageTeacher: React.FC = () => {
       console.error('Teacher ID is undefined.');
       return;
     }
-    localStorage.setItem('manageTeacherId', teacherId);
+    localStorage.setItem('supervisormanageTeacherId', teacherId);
     console.log('Teacher ID:', teacherId); // Debugging
     router.push('/supervisor/ui/teacherDetails');
   };
@@ -153,6 +153,7 @@ const ManageTeacher: React.FC = () => {
           <button className="bg-[#223857] text-white px-4 py-2 rounded-lg shadow flex items-center"
           onClick={() => router.push("/supervisor/ui/viewschedule")}>
             View Scheduled Classes
+            {/** */}
             <span className="ml-2 text-red-500">
               <FaLaptop />
             </span>

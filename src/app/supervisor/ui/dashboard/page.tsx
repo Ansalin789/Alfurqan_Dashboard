@@ -3,16 +3,35 @@ import React, { useEffect, useState } from 'react';
 import { Search, Filter, Bell, Sun, Moon, User } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import BaseLayout3 from '../../../../components/BaseLayout3';
+import moment from "moment"; 
+import axios from 'axios';
+interface Applicant {
+  _id: string;
+  candidateFirstName: string;
+  candidateLastName: string;
+  applicationDate: string;
+  candidateEmail: string;
+  candidatePhoneNumber: number;
+  candidateCountry: string;
+  candidateCity: string;
+  positionApplied: string;
+  currency: string;
+  expectedSalary: number;
+  preferedWorkingHours: string;
+  uploadResume: { type: string; data: number[] };
+  comments: string;
+  applicationStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+}
 
-const barData = [
-  { name: '08 Nov', Applied: 20, Shortlisted: 12 },
-  { name: '09 Nov', Applied: 15, Shortlisted: 8 },
-  { name: '10 Nov', Applied: 12, Shortlisted: 6 },
-  { name: '11 Nov', Applied: 10, Shortlisted: 5 },
-  { name: '12 Nov', Applied: 8, Shortlisted: 4 },
-  { name: '13 Nov', Applied: 15, Shortlisted: 8 },
-  { name: '14 Nov', Applied: 18, Shortlisted: 10 },
-];
+interface DashboardCounts {
+  totalApplication: number;
+  shortlisted: number;
+  rejected: number;
+}
+
 
 const pieData = [
   { name: 'Arabic', value: 70, color: '#1e40af', female: 48, male: 22 },
@@ -26,26 +45,101 @@ const scheduleData = [
   { time: '01:30 AM', title: 'Interview', type: 'interview', color: 'bg-blue-100 text-blue-800' },
   { time: '03:00 AM', title: 'Weekly Meeting', type: 'weekly', color: 'bg-purple-100 text-purple-800' }
 ];
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString();
+};
 
-const applicantsData = Array(6).fill(null).map((_, index) => ({
-  id: index + 1,
-  name: 'Samantha',
-  contact: '123456789',
-  country: 'UAE',
-  course: 'Tajweed',
-  gender: 'Male',
-  date: '15 Dec 2024',
-  time: '04:00 PM',
-  status: 'New Applicant'
-}));
+
 
 export default function Dashboard() {
+  
   const [mounted, setMounted] = useState(false);
-
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [barData, setBarData] = useState<any[]>([]);
+  const [selectedWeek, setSelectedWeek] = useState<string>(""); // Store the selected week label
+  const [weekRange, setWeekRange] = useState<{ startDate: Date; endDate: Date }>({
+    startDate: moment().startOf("week").toDate(), // Start of the current week (Sunday)
+    endDate: moment().endOf("week").toDate(), // End of the current week (Saturday)
+  });
+  const [dashboardCounts, setDashboardCounts] = useState<DashboardCounts>({
+    totalApplication: 0,
+    shortlisted: 0,
+    rejected: 0,
+  });
+ 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    const auth = localStorage.getItem('SupervisorAuthToken');
+    axios
+      .get("http://localhost:5001/applicants", {
+        headers: {
+          Authorization: `Bearer ${auth}`, // Add Authorization header with the Bearer token
+        }
+      })
+      .then((response) => setApplicants(response.data.applicants))
+      .catch((error) => console.error("Error fetching applicants:", error));
 
+      axios
+      .get("http://localhost:5001/dashboard/supervisor/counts")
+      .then((response) => {
+        console.log("Dashboard Counts Response:", response.data); // Log response correctly
+        setDashboardCounts(response.data);
+      })
+      .catch((error) => console.error("Error fetching dashboard counts:", error));
+  }, []);
+  useEffect(() => {
+    // Update the week range label (e.g., "08-14 Nov") dynamically
+    const start = moment(weekRange.startDate);
+    const end = moment(weekRange.endDate);
+    const weekLabel = `${start.format("DD MMM")} - ${end.format("DD MMM")}`;
+    setSelectedWeek(weekLabel);
+  
+    // Process applicants data based on the selected week range
+    const processedData: any = [];
+    const { startDate, endDate } = weekRange;
+  
+    applicants.forEach((applicant) => {
+      const applicationDate = new Date(applicant.applicationDate);
+  
+      // Convert startDate and endDate to JavaScript Date objects for comparison
+      const startDateObject = moment(startDate).toDate();
+      const endDateObject = moment(endDate).toDate();
+  
+      // Filter applicants based on the selected week
+      if (applicationDate >= startDateObject && applicationDate <= endDateObject) {
+        const formattedDate = `${applicationDate.getDate()} ${applicationDate.toLocaleString("default", {
+          month: "short",
+        })}`;
+  
+        // Find if the date already exists in the processedData
+        let existingData = processedData.find((data: any) => data.name === formattedDate);
+  
+        if (!existingData) {
+          // If not, add a new entry for the date
+          existingData = { name: formattedDate, Applied: 0, Shortlisted: 0 };
+          processedData.push(existingData);
+        }
+  
+        // Increment Applied count for each applicant
+        existingData.Applied += 1;
+  
+        // Increment Shortlisted count if the applicant is shortlisted
+        if (applicant.applicationStatus === "SHORTLISTED") {
+          existingData.Shortlisted += 1;
+        }
+      }
+    });
+  
+    setBarData(processedData);
+  }, [applicants, weekRange]);
+  
+
+  const handleWeekChange = (startDate: Date, endDate: Date) => {
+    setWeekRange({ startDate, endDate });
+  };
+
+  
   if (!mounted) return null;
   const data = [
     { name: "Islamic Studies", value: 60, color: "#fbbf24" },
@@ -53,8 +147,20 @@ export default function Dashboard() {
     { name: "Quran", value: 80, color: "#a855f7" },
   ];
   
-  const totalTeachers = 250;
+  const totalApplications = dashboardCounts.totalApplication || 0;
+  const totalShortlisted = dashboardCounts.shortlisted || 0;
+  const totalRejected = dashboardCounts.rejected || 0;
 
+  const total = totalApplications + totalShortlisted + totalRejected + 100; // Adjusted to account for total applications, shortlisted, and rejected
+
+  const percentageApplications = (totalApplications / total) * 100;
+  const percentageShortlisted = (totalShortlisted / total) * 100;
+  const percentageRejected = (totalRejected / total) * 100;
+
+  const remainingApplications = 100 - percentageApplications;
+  const remainingShortlisted = 100 - percentageShortlisted;
+  const remainingRejected = 100 - percentageRejected;
+  console.log(remainingApplications);
   return (
     <BaseLayout3>
       <div className='flex flex-col h-screen w-full mr-5 '>
@@ -98,19 +204,21 @@ export default function Dashboard() {
           <div className="bg-[#D0E0EC] p-2 rounded-lg shadow-lg">
     <h3 className="text-gray-500 text-sm mb-2">TOTAL APPLICATIONS</h3>
     <div className="flex justify-between items-center">
-      <span className="text-lg font-bold">100</span>
+      <span className="text-lg font-bold">{dashboardCounts.totalApplication}</span>
       <div className="w-10 h-10">
-        <PieChart width={40} height={40}>
-          <Pie
-            data={[{ value: 76 }]}
-            innerRadius={15}
-            outerRadius={20}
-            fill="#8b5cf6"
-            startAngle={90}
-            endAngle={-270}
-            dataKey="value"
-          />
-        </PieChart>
+      <PieChart width={40} height={40}>
+        <Pie
+          data={[
+            { name: "Applications", value: percentageApplications, fill: "#8b5cf6" }, // Purple
+            { name: "Remaining", value: remainingApplications, fill: "#f59e0b" }, // Orange
+          ]}
+          innerRadius={15}
+          outerRadius={20}
+          startAngle={90}
+          endAngle={-270}
+          dataKey="value"
+        />
+      </PieChart>
       </div>
     </div>
     <span className="text-green-500 text-xs flex items-center gap-1">
@@ -121,19 +229,21 @@ export default function Dashboard() {
   <div className="bg-[#D0E0EC] p-2 rounded-lg shadow-lg">
     <h3 className="text-gray-500 text-sm mb-2">SHORTLISTED CANDIDATES</h3>
     <div className="flex justify-between items-center">
-      <span className="text-lg font-bold">25</span>
+      <span className="text-lg font-bold">{dashboardCounts.shortlisted}</span>
       <div className="w-10 h-10">
-        <PieChart width={40} height={40}>
-          <Pie
-            data={[{ value: 63 }]}
-            innerRadius={15}
-            outerRadius={20}
-            fill="#3b82f6"
-            startAngle={90}
-            endAngle={-270}
-            dataKey="value"
-          />
-        </PieChart>
+      <PieChart width={40} height={40}>
+        <Pie
+          data={[
+            { name: "Shortlisted", value: percentageShortlisted, fill: "#34d399" }, // Green
+            { name: "Remaining", value: remainingShortlisted, fill: "#f59e0b" }, // Orange
+          ]}
+          innerRadius={15}
+          outerRadius={20}
+          startAngle={90}
+          endAngle={-270}
+          dataKey="value"
+        />
+      </PieChart>
       </div>
     </div>
     <span className="text-red-500 text-xs flex items-center gap-1">
@@ -144,19 +254,21 @@ export default function Dashboard() {
   <div className="bg-[#D0E0EC] p-2 rounded-lg shadow-lg">
     <h3 className="text-gray-500 text-sm mb-2">REJECTED CANDIDATES</h3>
     <div className="flex justify-between items-center">
-      <span className="text-lg font-bold ">75</span>
+      <span className="text-lg font-bold ">{dashboardCounts.rejected}</span>
       <div className="w-10 h-10">
-        <PieChart width={40} height={40}>
-          <Pie
-            data={[{ value: 28 }]}
-            innerRadius={15}
-            outerRadius={20}
-            fill="#f59e0b"
-            startAngle={90}
-            endAngle={-270}
-            dataKey="value"
-          />
-        </PieChart>
+      <PieChart width={40} height={40}>
+        <Pie
+          data={[
+            { name: "Rejected", value: percentageRejected, fill: "#f87171" }, // Red
+            { name: "Remaining", value: remainingRejected, fill: "#f59e0b" }, // Orange
+          ]}
+          innerRadius={15}
+          outerRadius={20}
+          startAngle={90}
+          endAngle={-270}
+          dataKey="value"
+        />
+      </PieChart>
       </div>
     </div>
     <span className="text-green-500 text-xs flex items-center gap-1">
@@ -181,26 +293,35 @@ export default function Dashboard() {
         <span className="text-xs text-gray-600">Shortlisted</span>
       </div>
       {/* Calendar Button */}
-      <button className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 rounded-md">
+      <div className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 rounded-md">
         <svg className="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none">
           <path d="M3 7H21M7 3V7M17 3V7M7 11H17M7 15H14M7 19H10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        08-14 Nov
+        <button
+        className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 rounded-md"
+        onClick={() => handleWeekChange(
+          moment().startOf("week").toDate(), // Start of the current week
+          moment().endOf("week").toDate()    // End of the current week
+        )}
+      >
+        {selectedWeek} {/* Display the selected week */}
       </button>
+        {/* You can add more buttons for other weeks */}
+      </div>
     </div>
   </div>
 
   {/* Bar Chart */}
   <div className="h-40 w-120">
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={barData} barCategoryGap="25%">
-        <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} />
-        <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
-        <Tooltip />
-        <Bar dataKey="Shortlisted" stackId="a" fill="#1e40af" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="Applied" stackId="a" fill="#e0e7ff" radius={[4, 4, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+      <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={barData} barCategoryGap="25%">
+            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} />
+            <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+            <Tooltip />
+            <Bar dataKey="Shortlisted" stackId="a" fill="#1e40af" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Applied" stackId="a" fill="#e0e7ff" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
   </div>
 </div>
 
@@ -289,8 +410,8 @@ export default function Dashboard() {
       <thead>
         <tr className="bg-[#CAC7C7] text-gray-800">
           {[
-            "Name", "Contact", "Country", "Course", "Gender", 
-            "Date", "Time", "Resume", "Status"
+            "Name", "Contact", "Country", "Course",
+            "Date", "Hours", "Resume", "Status"
           ].map((col) => (
             <th key={col} className="py-2 px-2 text-left font-medium">
               {col} <span className="text-gray-600 text-[10px]">▲▼</span>
@@ -301,15 +422,14 @@ export default function Dashboard() {
 
       {/* Table Body */}
       <tbody className="divide-y divide-gray-200 ">
-        {applicantsData.map((applicant) => (
-          <tr key={applicant.id} className="hover:bg-gray-100 border-b ">
-            <td className="py-2 px-2">{applicant.name}</td>
-            <td className="py-2 px-2">{applicant.contact}</td>
-            <td className="py-2 px-2">{applicant.country}</td>
-            <td className="py-2 px-2">{applicant.course}</td>
-            <td className="py-2 px-2">{applicant.gender}</td>
-            <td className="py-2 px-2">{applicant.date}</td>
-            <td className="py-2 px-2">{applicant.time}</td>
+        {applicants.map((applicant) => (
+          <tr key={applicant._id} className="hover:bg-gray-100 border-b ">
+            <td className="py-2 px-2">{applicant.candidateFirstName}</td>
+            <td className="py-2 px-2">{applicant.candidateEmail}</td>
+            <td className="py-2 px-2">{applicant.candidatePhoneNumber}</td>
+            <td className="py-2 px-2">{applicant.positionApplied}</td>
+            <td className="py-2 px-2">{formatDate(applicant.applicationDate)}</td>
+            <td className="py-2 px-2 text-center">{applicant.preferedWorkingHours}</td>
             <td className="py-2 px-2">
               <button className="text-blue-600  flex items-center gap-1 text-xs">
                 📎 Resume
@@ -317,7 +437,7 @@ export default function Dashboard() {
             </td>
             <td className="py-2 px-2">
               <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded-full text-xs">
-                {applicant.status}
+                {applicant.applicationStatus}
               </span>
             </td>
           </tr>
@@ -387,7 +507,7 @@ export default function Dashboard() {
 
       {/* Centered Total Teachers Count */}
       <div className="absolute flex flex-col items-center justify-center">
-        <span className="mt-3 ml-2 text-xs font-bold text-gray-900 ">{totalTeachers}</span>
+        <span className="mt-3 ml-2 text-xs font-bold text-gray-900 ">250</span>
         <p className="ml-3 text-[8px] text-gray-500">Teachers</p>
       </div>
     </div>
