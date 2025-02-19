@@ -4,36 +4,121 @@ import BaseLayout3 from "@/components/BaseLayout3";
 import React, { useState, useRef, useEffect } from "react";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+
 
 const ViewSchedule = () => {
+  interface Student {
+      studentId: string;
+      studentFirstName: string;
+      studentLastName: string;
+      studentEmail: string;
+    }
+  
+    interface Teacher {
+      teacherId: string;
+      teacherName: string;
+      teacherEmail: string;
+    }
+  
+    interface Schedule {
+      student: Student;
+      teacher: Teacher;
+      _id: string;
+      classDay: string[];
+      package: string;
+      preferedTeacher: string;
+      totalHourse: number;
+      startDate: string;
+      endDate: string;
+      startTime: string[];
+      endTime: string[];
+      scheduleStatus: string;
+      status: string;
+      createdBy: string;
+      createdDate: string;
+      lastUpdatedDate: string;
+      __v: number;
+    }
+  
+    interface ApiResponse {
+      totalCount: number;
+      students: Schedule[];
+    }
+    const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
   const [selectedMenu, setSelectedMenu] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const data = [
-    { id: 798, name: "Samantha William", course: "Tajweed Masterclass", classType: "Trial Class", date: "January 2, 2020", status: "Ongoing class", statusColor: "bg-[#F66969]", paddingLeft: "40px", paddingRight: "40px" },
-    { id: 799, name: "Jordan Nico", course: "Tajweed Masterclass", classType: "Trial Class", date: "January 2, 2020", status: "Starts at 7:30 AM", statusColor: "bg-[#1C3557]", paddingLeft: "33px", paddingRight: "33px" },
-    { id: 800, name: "Nadila Adja", course: "Tajweed Masterclass", classType: "Group Class", date: "January 2, 2020", status: "Re-Schedule Requested", statusColor: "bg-[#79D67B]", paddingLeft: "10px", paddingRight: "10px" },
-    { id: 801, name: "Ayesha Khan", course: "Arabic Grammar", classType: "One-on-One", date: "January 3, 2020", status: "Ongoing class", statusColor: "bg-[#F66969]", paddingLeft: "40px", paddingRight: "40px" },
-    { id: 802, name: "Mohammad Ali", course: "Islamic Studies", classType: "Group Class", date: "January 4, 2020", status: "Starts at 7:30 AM", statusColor: "bg-[#1C3557]", paddingLeft: "33px", paddingRight: "33px" },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("SupervisorAuthToken");
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+          },
+        });
+  
+        const now = new Date(); // Current date & time
+  
+        // Filter schedules where startDate & startTime are in the future
+        const upcomingSchedules = response.data.students
+          .filter((schedule) => {
+            if (!schedule.startDate || schedule.startTime.length === 0) return false;
+  
+            return schedule.startTime.some((time) => {
+              const [hours, minutes] = time.split(":").map(Number);
+              const scheduleDateTime = new Date(schedule.startDate);
+              scheduleDateTime.setHours(hours, minutes, 0, 0);
+  
+              return scheduleDateTime > now; // Keep only future schedules
+            });
+          })
+          .sort((a, b) => {
+            const dateA = new Date(a.startDate);
+            const dateB = new Date(b.startDate);
+  
+            // Sort by date first
+            if (dateA.getTime() !== dateB.getTime()) {
+              return dateA.getTime() - dateB.getTime();
+            }
+  
+            // Sort by time if dates are the same
+            const timeA = Math.min(...a.startTime.map(time => {
+              const [h, m] = time.split(":").map(Number);
+              return h * 60 + m; // Convert to total minutes
+            }));
+  
+            const timeB = Math.min(...b.startTime.map(time => {
+              const [h, m] = time.split(":").map(Number);
+              return h * 60 + m;
+            }));
+  
+            return timeA - timeB;
+          });
+  
+        setUniqueStudentSchedules(upcomingSchedules);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, []);
+  
+  
+  
 
-//   const totalPages = Math.ceil(data.length / itemsPerPage);
-  const dataToShow = data;
-  const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const dataToShow = uniqueStudentSchedules;
+  const paginatedData = uniqueStudentSchedules.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = dataToShow.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
-
-
-  const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
 
   const handlePageChange = (pageNumber: number) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
@@ -84,14 +169,14 @@ const ViewSchedule = () => {
             </thead>
             <tbody>
               {paginatedData.map((item, index) => (
-                <tr key={item.id} className={`text-[12px] font-medium mt-2 ${
+                <tr key={item._id} className={`text-[12px] font-medium mt-2 ${
                     index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
                   }`}>
-                  <td className="px-6 py-3 text-center">{item.id}</td>
-                  <td className="px-6 py-3 text-center">{item.name}</td>
-                  <td className="px-6 py-3 text-center">{item.course}</td>
-                  <td className="px-6 py-3 text-center">{item.classType}</td>
-                  <td className="px-6 py-3 text-center">{item.date}</td>
+                  <td className="px-6 py-3 text-center">{item._id}</td>
+                  <td className="px-6 py-3 text-center">{item.teacher.teacherName}</td>
+                  <td className="px-6 py-3 text-center">Quran</td>
+                  <td className="px-6 py-3 text-center">MasterClass</td>
+                  <td className="px-6 py-3 text-center">{item.startDate}</td>
                   <td className="px-6 py-3 text-center">
                     {item.status === "Ongoing class" ? (
                       <button

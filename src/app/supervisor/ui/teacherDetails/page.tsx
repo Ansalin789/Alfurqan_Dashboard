@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,40 @@ import BaseLayout3 from "@/components/BaseLayout3";
 
 const TeacherDetails = () => {
   const router = useRouter();
+  interface Teacher {
+      _id:string;
+      userId: string;
+      userName: string;
+      email: string;
+      profileImage?: string | null;
+      level: string;
+      subject: string;
+      rating: number;
+    }
+  
+    const [teachers, setTeachers] = useState<Teacher>();
+    useEffect(() => {
+      
+          const fetchTeachers = async () => {
+            try {
+              const response = await fetch(`http://localhost:5001/users/${localStorage.getItem('supervisormanageTeacherId')}`, {
+  
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('SupervisorAuthToken')}`,
+                },
+              });
+              const data = await response.json();
+      
+              console.log('Fetched data:', data);
+                 setTeachers(data);
+            } catch (error) {
+              console.error('Error fetching teachers:', error);
+    
+          }
+        };
+    
+        fetchTeachers();
+      }, []);
 
   return (
     <BaseLayout3>
@@ -41,12 +75,12 @@ const TeacherDetails = () => {
             <div className="p-6 text-gray-800">
               <h3 className="text-lg font-semibold mb-4">Personal Info</h3>
               <ul className="space-y-2 text-sm">
-                <li><strong>Full Name:</strong> Will Jonto</li>
+                <li><strong>Full Name:</strong> {teachers?.userName}</li>
                 <li><strong>Time Zone:</strong> USA (time)</li>
                 <li><strong>Country:</strong> USA</li>
-                <li><strong>Level:</strong> 2</li>
+                <li><strong>Level:</strong> {teachers?.level}</li>
                 <li><strong>Date of Joining:</strong> 06/10/2023</li>
-                <li><strong>Course Handling:</strong> Arabic</li>
+                <li><strong>Course Handling:</strong> {teachers?.subject}</li>
                 <li><strong>Biodata:</strong> <a href="/" className="text-blue-600 underline">Resume</a></li>
               </ul>
             </div>
@@ -82,7 +116,7 @@ const TeacherDetails = () => {
                 { title: "Total Attendance", value: "97%", sub: "90% Progressive than Last Month" },
                 { title: "Total Working Hours", value: "32h 40m", sub: "95% Progressive than Last Month" }
               ].map((item, index) => (
-                <div key={index} className="bg-[#012A4A] text-white p-6 rounded-2xl shadow-lg">
+                <div key={item.title} className="bg-[#012A4A] text-white p-6 rounded-2xl shadow-lg">
                   <h4 className="text-lg font-semibold">{item.title}</h4>
                   <p className="text-3xl font-bold mt-2">{item.value}</p>
                   <p className="text-xs mt-1">{item.sub}</p>
