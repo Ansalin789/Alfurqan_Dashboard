@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar, dateFnsLocalizer, View, Views } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { format, parse, startOfWeek, getDay } from "date-fns";
-import BaseLayout from "@/components/BaseLayout"
+import BaseLayout3 from "@/components/BaseLayout3"
 import { IoMdClose } from "react-icons/io";
 import { FaCalendarAlt, FaUserCircle } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import { User } from "lucide-react";
+import axios from "axios";
+import moment from "moment";
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),
@@ -22,23 +24,18 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const events = [
-  {
-    title: "Evaluation Class",
-    start: new Date(2024, 0, 2, 10, 0),
-    end: new Date(2024, 0, 2, 12, 0),
-  },
-  {
-    title: "Meeting",
-    start: new Date(2024, 0, 5, 19, 0),
-    end: new Date(2024, 0, 5, 22, 0),
-  },
-  {
-    title: "To-Do Task",
-    start: new Date(2024, 0, 17, 9, 0),
-    end: new Date(2024, 0, 17, 11, 0),
-  },
-];
+
+interface Event {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  description?: string;
+  meetingStatus: string;
+  supervisorName: string;
+  meetingId: string;
+  teacherName: string;
+}
 
 // Custom Toolbar Component
 const CustomToolbar = ({ label, onViewChange, view }: any) => {
@@ -147,9 +144,86 @@ console.log(view)
      );
    };
 const [description, setDescription] = useState("");
-    
+const [events, setEvents] = useState<Event[]>([]);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/allMeetings');
+
+      // Extract meetings array safely
+      const meetings = response.data?.data?.meetings;
+
+      if (!Array.isArray(meetings)) {
+        console.error("Error: Response data does not contain a meetings array", response.data);
+        return;
+      }
+
+      const formattedEvents: Event[] = meetings
+        .map((item): Event | null => {
+          if (!item.selectedDate || !item.startTime || !item.endTime) {
+            console.warn("Skipping event due to missing date/time:", item);
+            return null; // Skip invalid events
+          }
+
+          const selectedDate = moment(item.selectedDate);
+          const startTimeParts = item.startTime.split(":");
+          const endTimeParts = item.endTime.split(":");
+
+          const startDate = selectedDate.clone().set({
+            hour: parseInt(startTimeParts[0], 10),
+            minute: parseInt(startTimeParts[1], 10),
+            second: 0,
+          }).toDate();
+
+          const endDate = selectedDate.clone().set({
+            hour: parseInt(endTimeParts[0], 10),
+            minute: parseInt(endTimeParts[1], 10),
+            second: 0,
+          }).toDate();
+
+          return {
+            id: item.id,
+            title: item.meetingName || "Untitled Meeting",
+            start: startDate,
+            end: endDate,
+            description: item.description ?? "No description", // ✅ Handle missing values
+            meetingStatus: item.status || "Unknown",
+            supervisorName: item.supervisor?.supervisorName || "Unknown",
+            meetingId: item.id,
+            teacherName: item.teacher?.[0]?.teacherName || "Unknown",
+          };
+        })
+        .filter((event): event is Event => event !== null); // ✅ Type-safe filtering
+
+      setEvents(formattedEvents);
+    } catch (error) {
+      console.error("Error fetching schedule data:", error);
+    }
+  };
+
+  fetchData();
+}, []);
+
+const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+const [filteredMeetings, setFilteredMeetings] = useState<Event[]>([]);
+
+const handleDateClick = (slotInfo: { start: Date }) => {
+  const clickedDate = moment(slotInfo.start).startOf("day"); // Normalize the date
+  setSelectedDate(clickedDate.toDate());
+
+  // Filter meetings by exact date
+  const filtered = events.filter((event) =>
+    moment(event.start).isSame(clickedDate, "day")
+  );
+
+  setFilteredMeetings(filtered);
+};
+
+
+
+ 
   return (
-    <BaseLayout>
+    <BaseLayout3>
       <div className="flex flex-col md:flex-row items-start gap-6 p-6 min-h-screen">
         {/* Success Message Toast */}
         {showSuccess && (
@@ -160,7 +234,7 @@ const [description, setDescription] = useState("");
 
         {/* Calendar Section */}
         <div className="w-full md:w-3/4">
-          <h2 className="text-2xl font-semibold text-gray-800 p-2">Class Schedule</h2>
+          <h2 className="text-2xl font-semibold text-gray-800 p-2">Calender</h2>
           <div className="bg-white shadow-md rounded-lg p-4">
             <div className="flex justify-end items-center mb-2">
               <div className="flex gap-2">
@@ -338,7 +412,7 @@ const [description, setDescription] = useState("");
           </div>
         </div>
       )}
-<div className="flex mt-2 space-x-2">
+         <div className="flex mt-2 space-x-2">
                {selectedTeachers.map((teacher) => (
                  <span key={teacher} className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm">
                    {teacher}
@@ -356,7 +430,7 @@ const [description, setDescription] = useState("");
                value={description}
                onChange={(e) => setDescription(e.target.value)}
              ></textarea>
-          {isSuccessMessageVisible && (
+             {isSuccessMessageVisible && (
                <div className="fixed  flex items-center bg-[#dde0dd] border border-[#cdcfcd] text-[#191919] px-6 py-3 rounded-lg shadow-lg">
               {/* Green Check Icon */}
              <div className="w-8 h-8 flex items-center justify-center bg-[#4CAF50] rounded-full">
@@ -372,92 +446,91 @@ const [description, setDescription] = useState("");
       <div className="flex justify-between mt-4">
         <button
           className="w-[45%] border border-gray-400 text-gray-700 py-2 rounded-md hover:bg-gray-100"
-          onClick={() => setIsMeetingModalOpen(false)}
-        >
+          onClick={() => setIsMeetingModalOpen(false)}>
           Cancel
         </button>
         <button 
           className="w-[45%] bg-[#1C3557] text-white py-2 rounded-md hover:bg-[#15294a]"
-          onClick={handleScheduleMeeting}
-        >
+          onClick={handleScheduleMeeting}>
           Schedule
         </button>
       </div>
     </div>
   </div>
 )}
-
-              </div>
             </div>
-
-          
-
+            </div>
             <Calendar
               localizer={localizer}
               events={events}
               startAccessor="start"
               endAccessor="end"
-              style={{ height: 540, width: 850 }}
+              style={{ height: 640, width: 950 }}
               views={["month", "week", "day"]}
               view={"month" as View}
+              selectable
               onView={handleViewChange}
+              onSelectSlot={handleDateClick} // Handle date clicks
+              onSelectEvent={(event) => console.log("Event clicked:", event)}
               components={{
                 toolbar: (props) => (
                   <CustomToolbar {...props} onViewChange={handleViewChange} />
                 ),
               }}
               popup
-              eventPropGetter={(event) => {
-                if (event.title.includes("Evaluation")) {
-                  return { style: { backgroundColor: "#cfe8fc", color: "#000" } };
-                } else if (event.title.includes("Meeting")) {
-                  return { style: { backgroundColor: "#fcd4d4", color: "#000" } };
+              eventPropGetter={(event: Event) => {
+                console.log("Event:", event); // Debugging output
+              
+                if (event.title.includes("Meeting")) {
+                  return { style: { backgroundColor: "#fcd4d4", color: "#000",fontSize:"12px" } };
                 } else {
                   return { style: { backgroundColor: "#e8fcd8", color: "#000" } };
                 }
               }}
+              
             />
           </div>
         </div>
-
         <div className="w-100% md:w-[250px] flex flex-col gap-6 shadow-2xl rounded-lg bg-white overflow-y-auto h-[85vh] mt-12 scrollbar-none ml-12">
-          {/* Today's Schedules */}
+          {/* List Schedules */}
           <div className="p-4">
-            <h3 className="text-[15px] font-semibold mb-4 text-center">Today's Schedules</h3>
-            <div
-              className="space-y-4"
-              style={{
-                scrollbarWidth: "thin",
-                scrollbarColor: "#d1d5db #f3f4f6", // Custom scrollbar color for Firefox
-              }}
-            >
-              {[...Array(4)].map((items) => (
-                <div
-                  key={items}
-                  className="flex flex-col border rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow"
-                >
-                  <span className="text-[11px] text-red-500 font-medium">Jan 5th, 2024</span>
-                  <div className="justify-between">
-                    <span className="text-sm font-semibold">Abinesh</span>
-                    <div className="flex items-center text-[9px] text-gray-600">
-                      <span className="material-icons text-gray-400 mr-1">schedule</span>
-                      {/* */}
-                      07:00 - 10:00 PM
-                    </div>
-                  </div>
-                  
-                </div>
-              ))}
+             <h3 className="text-[15px] font-semibold mb-4 text-center">
+    {selectedDate
+      ? `Meetings Schedules for ${moment(selectedDate).format("MMMM Do, YYYY")}`
+      : "Select a Date to View Meetings"}
+  </h3>
+
+  <div
+    className="space-y-4"
+    style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db #f3f4f6" }}
+  >
+    {filteredMeetings.length > 0 ? (
+      filteredMeetings.map((meeting) => (
+        <div
+          key={meeting.id}
+          className="flex flex-col border rounded-2xl p-4 shadow-md hover:shadow-lg transition-shadow"
+        >
+          <span className="text-[11px] text-red-500 font-medium">
+            {moment(meeting.start).format("MMM Do, YYYY")}
+          </span>
+          <div className="justify-between">
+            <span className="text-sm font-semibold">{meeting.teacherName}</span>
+            <div className="flex items-center text-[9px] text-gray-600">
+              <span className="material-icons text-gray-400 mr-1">schedule</span>
+              {moment(meeting.start).format("hh:mm A")} - {moment(meeting.end).format("hh:mm A")}
             </div>
-
-           
           </div>
-
-          
         </div>
+      ))
+    ) : (
+      <p className="text-center text-gray-500">No meetings scheduled for this day.</p>
+    )}
+  </div>
+</div>
 
+        </div>
       </div>
-    </BaseLayout>
+    </BaseLayout3>
   );
 };
 
