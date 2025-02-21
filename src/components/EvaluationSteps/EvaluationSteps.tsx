@@ -22,7 +22,8 @@ interface StudentData {
   lastName: string;
   academicCoach: AcademicCoach;
   email: string;
-  phoneNumber: string; // If it's a number, you can change this to `number`
+  phoneNumber: string; 
+  city:string;// If it's a number, you can change this to `number`
   country: string;
   countryCode: string; // Assuming it's a string
   learningInterest: string; // Assuming it's a string, could be an array of strings if needed
@@ -49,6 +50,7 @@ interface EvaluationData {
   studentFirstName: string;
   studentLastName: string;
   studentEmail: string;
+  studentCity: string;
   studentPhone: number;
   studentCountry: string;
   studentCountryCode: string;
@@ -278,6 +280,7 @@ const Step2: React.FC<{ prevStep: () => void;
         {[
           { label: 'Email', value: studentData.email || 'N/A', icon: '📧' },
           { label: 'Phone Number', value: studentData.phoneNumber?.toString() || 'N/A', icon: '📞' },
+          { label: 'City', value: studentData.city || 'N/A', icon: '🌍' },
           { label: 'Country', value: studentData.country || 'N/A', icon: '🌍' },
           { label: 'Country Code', value: studentData.countryCode || 'N/A', icon: '🌍' },
           { label: 'Learning Interest', value: studentData.learningInterest || 'N/A', icon: '📚' },
@@ -1561,6 +1564,7 @@ const Step9 = ({ prevStep, nextStep,updatedStudentDatass }: { prevStep: () => vo
           studentLastName: updatedStudentDatass.lastName,
           studentEmail: updatedStudentDatass.email,
           studentPhone: updatedStudentDatass.phoneNumber,
+          studentCity: updatedStudentDatass.city,
           studentCountry: updatedStudentDatass.country,
           studentCountryCode: updatedStudentDatass.countryCode,
           learningInterest: updatedStudentDatass.learningInterest,
