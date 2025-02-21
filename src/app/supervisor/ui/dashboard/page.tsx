@@ -31,7 +31,29 @@ interface DashboardCounts {
   shortlisted: number;
   rejected: number;
 }
-
+interface Meeting {
+  _id: string;
+  meetingId: string;
+  meetingName: string;
+  meetingStatus: "Scheduled" | "Reschedule" | "Completed";
+  selectedDate: string;
+  startTime: string;
+  endTime: string;
+  description: string;
+  createdDate: string;
+  createdBy: string;
+  supervisor: {
+      supervisorId: string;
+      supervisorName: string;
+      supervisorEmail: string;
+      supervisorRole: string;
+  };
+  teacher: {
+      teacherId: string;
+      teacherName: string;
+      teacherEmail: string;
+  }[];
+}
 
 const pieData = [
   { name: 'Arabic', value: 70, color: '#1e40af', female: 48, male: 22 },
@@ -39,12 +61,7 @@ const pieData = [
   { name: 'Tajweed', value: 6, color: '#93c5fd', female: 2, male: 4 }
 ];
 
-const scheduleData = [
-  { time: '10:00 AM', title: 'Teachers Meeting', type: 'teachers', color: 'bg-amber-100 text-amber-800' },
-  { time: '12:00 AM', title: 'Group Meeting', type: 'group', color: 'bg-green-100 text-green-800' },
-  { time: '01:30 AM', title: 'Interview', type: 'interview', color: 'bg-blue-100 text-blue-800' },
-  { time: '03:00 AM', title: 'Weekly Meeting', type: 'weekly', color: 'bg-purple-100 text-purple-800' }
-];
+
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString();
@@ -67,26 +84,48 @@ export default function Dashboard() {
     shortlisted: 0,
     rejected: 0,
   });
- 
+  const [filteredPositions, setFilteredPositions] = useState<{ name: string; color: string; count: number }[]>([]);
+
   useEffect(() => {
     setMounted(true);
-    const auth = localStorage.getItem('SupervisorAuthToken');
-    axios
-      .get("http://localhost:5001/applicants", {
-        headers: {
-          Authorization: `Bearer ${auth}`, // Add Authorization header with the Bearer token
-        }
+  
+    const auth = localStorage.getItem("SupervisorAuthToken");
+  
+    const fetchApplicants = axios.get("http://localhost:5001/applicants", {
+      headers: { Authorization: `Bearer ${auth}` },
+    });
+  
+    const fetchDashboardCounts = axios.get("http://localhost:5001/dashboard/supervisor/counts");
+  
+    Promise.all([fetchApplicants, fetchDashboardCounts])
+      .then(([applicantsResponse, dashboardResponse]) => {
+        const applicants = applicantsResponse.data.applicants;
+  
+        // ✅ Filter and count applicants by position
+        const positionCounts = applicants.reduce(
+          (acc: Record<string, number>, applicant: { positionApplied: string }) => {
+            const position = applicant.positionApplied;
+            acc[position] = (acc[position] || 0) + 1;
+            return acc;
+          }, 
+          {} as Record<string, number>
+        );
+        
+  
+        // ✅ Convert to array format (for UI rendering)
+        const filteredData = Object.entries(positionCounts).map(([name, count], index) => ({
+          name,
+          count: count as number, // ✅ Explicitly cast count to number
+          color: ["#fbbf24", "#3b82f6", "#a855f7", "#ef4444", "#10b981"][index % 5],
+        }));
+  
+        setApplicants(applicants);
+        setFilteredPositions(filteredData); // ✅ Store filtered positions
+        setDashboardCounts(dashboardResponse.data);
       })
-      .then((response) => setApplicants(response.data.applicants))
-      .catch((error) => console.error("Error fetching applicants:", error));
-
-      axios
-      .get("http://localhost:5001/dashboard/supervisor/counts")
-      .then((response) => {
-        console.log("Dashboard Counts Response:", response.data); // Log response correctly
-        setDashboardCounts(response.data);
-      })
-      .catch((error) => console.error("Error fetching dashboard counts:", error));
+      .catch((error) => {
+        console.error("🚨 Error fetching data:", error);
+      });
   }, []);
   useEffect(() => {
     // Update the week range label (e.g., "08-14 Nov") dynamically
@@ -133,6 +172,69 @@ export default function Dashboard() {
   
     setBarData(processedData);
   }, [applicants, weekRange]);
+  const [meetingDays, setMeetingDays] = useState<number[]>([]);
+  const [todayMeetings, setTodayMeetings] = useState<
+    { time: string; title: string; type: string; color: string }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        const response = await axios.get("http://localhost:5001/allMeetings", {
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const allMeetings: Meeting[] = response.data.data.meetings;
+
+        console.log("✅ Full Meetings Data:", allMeetings);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // ✅ Extract all meeting dates
+        const allMeetingDays = allMeetings.map(
+          (meeting) => new Date(meeting.selectedDate).getDate()
+        );
+
+        setMeetingDays(allMeetingDays);
+
+        // ✅ Filter today's meetings
+        const todayMeetings = allMeetings
+          .filter((meeting) => {
+            const meetingDate = new Date(meeting.selectedDate);
+            return meetingDate.toDateString() === today.toDateString();
+          })
+          .map((meeting) => {
+            let color = "bg-blue-100 text-blue-800"; // Default color
+          
+            if (meeting.meetingStatus === "Scheduled") {
+              color = "bg-amber-100 text-amber-800";
+            } else if (meeting.meetingStatus === "Reschedule") {
+              color = "bg-green-100 text-green-800";
+            }
+          
+            return {
+              time: meeting.startTime,
+              title: meeting.meetingName,
+              type: meeting.meetingStatus.toLowerCase(),
+              color,
+            };
+          });
+
+        setTodayMeetings(todayMeetings);
+      } catch (error) {
+        console.error("🚨 Error fetching meetings:", error);
+      }
+    };
+
+    fetchMeetings();
+  }, []);
+
+  const today = new Date();
+  const currentMonth = today.toLocaleString("default", { month: "long" }).toUpperCase();
+  const currentYear = today.getFullYear();
+
+
   
 
   const handleWeekChange = (startDate: Date, endDate: Date) => {
@@ -454,31 +556,37 @@ export default function Dashboard() {
   {/* Calendar Section */}
   <div className="bg-[#D0E0EC] p-2 rounded-lg">
     {/* Calendar Header */}
-    <div className="relative flex flex-col items-center pb-2">
-      <div className="w-full h-5 bg-gray-300 rounded-t-md"></div> {/* Spiral Binding Effect */}
-      <h3 className="text-sm font-semibold text-gray-700 mt-1">JANUARY, 2022</h3>
-    </div>
+    {/* Calendar Section */}
+    <div className="bg-[#D0E0EC] p-2 rounded-lg">
+        {/* Calendar Header */}
+        <div className="relative flex flex-col items-center pb-2">
+          <div className="w-full h-5 bg-gray-300 rounded-t-md"></div>
+          <h3 className="text-sm font-semibold text-gray-700 mt-1">
+            {`${currentMonth}, ${currentYear}`}
+          </h3>
+        </div>
 
-    {/* Days of the Week */}
-    <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mt-2">
-      {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day) => (
-        <div key={day}>{day}</div>
-      ))}
-    </div>
+        {/* Days of the Week */}
+        <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mt-2">
+          {["M", "T", "W", "T", "F", "S", "S"].map((day) => (
+            <div key={day}>{day}</div>
+          ))}
+        </div>
 
-    {/* Calendar Dates */}
-    <div className="grid grid-cols-7 gap-1 text-center mt-1">
-      {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => (
-        <button
-          key={date}
-          className={`p-2 text-xs rounded-md ${
-            date === 5 || date === 17 ? 'bg-blue-900 text-white font-semibold' : 'text-gray-700'
-          }`}
-        >
-          {date}
-        </button>
-      ))}
-    </div>
+        {/* Calendar Dates */}
+        <div className="grid grid-cols-7 gap-1 text-center mt-1">
+          {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => (
+            <button
+              key={date}
+              className={`p-2 text-xs rounded-md ${
+                meetingDays.includes(date) ? "bg-blue-900 text-white font-semibold" : "text-gray-700"
+              }`}
+            >
+              {date}
+            </button>
+          ))}
+        </div>
+        </div>
   </div>
 
   {/* Teachers Section */}
@@ -507,20 +615,20 @@ export default function Dashboard() {
 
       {/* Centered Total Teachers Count */}
       <div className="absolute flex flex-col items-center justify-center">
-        <span className="mt-3 ml-2 text-xs font-bold text-gray-900 ">250</span>
+        <span className="mt-3 ml-2 text-xs font-bold text-gray-900 "></span>
         <p className="ml-3 text-[8px] text-gray-500">Teachers</p>
       </div>
     </div>
 
     {/* Teacher Stats */}
     <div className="space-y-2">
-      {data.map((item) => (
+      {filteredPositions.map((item) => (
         <div key={item.name} className="flex items-center justify-between w-32 bg-gray-100 p-1 rounded-lg">
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
             <span className="text-xs font-semibold text-gray-800">{item.name}</span>
           </div>
-          <span className="text-gray-600 text-xs font-medium">{item.value}</span>
+          <span className="text-gray-600 text-xs font-medium">{item.count}</span>
         </div>
       ))}
     </div>
@@ -538,7 +646,7 @@ export default function Dashboard() {
     </div>
 
     <div className="space-y-3">
-      {scheduleData.map((item) => (
+      {todayMeetings.map((item) => (
         <div key={item.title} className="flex items-start gap-3">
           <span className="text-xs text-gray-500 w-16">{item.time}</span>
           <div className={`flex items-center px-3 py-2 rounded-lg flex-1 ${item.color} text-xs font-medium`}>

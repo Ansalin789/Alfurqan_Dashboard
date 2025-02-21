@@ -51,7 +51,7 @@ interface ClassData {
 }
 interface ApiResponse {
   totalCount: number;
-  classSchedule: ClassData[];
+  classSchedule: ClassData;
 }
 
 
@@ -61,71 +61,58 @@ function LiveClass() {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const [ratings, setRatings] = useState([0, 0, 0]);
+  const [ratings, setRatings] = useState([0, 0, 0, 0]);
   const [feedback, setFeedback] = useState('');
   const apiRef = useRef<any>(null);
   const [classData, setClassData] = useState<ClassData | null>(null);
-  
-  const filterUpcomingClass = (response: { totalCount: number, classSchedule: any[] }): ClassData | null => {
-    const classes = response.classSchedule;
-  
-    if (!Array.isArray(classes)) {
-      console.log('Expected an array, but received:', classes);
-      return null;
-    }
-  
-    // Find the next class
-    const nextClass = classes.find((cls) => {
-      const now = new Date();
-      const classStartDate = new Date(cls.startDate);
-      return classStartDate > now;
-    });
-  
-    return nextClass || null;  // Return the next class or null if not found
-  };
-  // Fetch class data
-  
+   
   useEffect(() => {
     const datafeedshow =localStorage.getItem('showfeedbackdirect');
+    const classScheduleid=localStorage.getItem('showfeedbackid');
+    console.log(classScheduleid);
     setShowFeedback(datafeedshow === "true"); 
     const fetchClassData = async () => {
       try {
-        const studentId = localStorage.getItem('StudentPortalId');
-        const authToken = localStorage.getItem('StudentAuthToken');
+       
+        const authToken = localStorage.getItem('SupervisorAuthToken');
         
         // Ensure studentId and authToken are valid
-        if (!studentId || !authToken) {
+        if (!authToken) {
           console.log('Missing studentId or authToken');
           return;
         }
   
-        const response = await axios.get<ApiResponse>(`http://localhost:5001/classShedule/students`, {
-          params: { studentId },
+        const response = await axios.get<ClassData>(`http://localhost:5001/classShedule/${classScheduleid}`, {
+          
           headers: {
             'Authorization': `Bearer ${authToken}`
           }
         });
-        
-        console.log('API Response:', response.data);  // Log the response data
-  
-        const nextClass = filterUpcomingClass(response.data);
-        console.log('Filtered Next Class:', nextClass);  // Log the filtered data
-        setClassData(nextClass);
-  
+        console.log('Full API Response:', response.data);  // ✅ Log full response
+
+      if (response.data) {
+        console.log('Setting classData:', response.data); // ✅ Log before setting state
+        setClassData(response.data);
+      } else {
+        console.log('Error: classSchedule is missing in API response');
+      }
       } catch (err) {
         console.log('Error loading class details:', err);
       }
     };
     fetchClassData();
   }, []);
+  useEffect(() => {
+    console.log('Updated classData:', classData); // ✅ Log changes to classData
+  }, [classData]);
     const handleSubmitfeed = async () => {
       // Create request body
       const feedbackData = {
-        student: {
-          studentId: classData?.student.studentId,
-          studentFirstName: classData?.student.studentFirstName,
-          studentLastName: classData?.student.studentLastName,
-          studentEmail: classData?.student.studentEmail,
+        supervisor: {
+          supervisorId: localStorage.getItem('SupervisorPortalId'),
+          supervisorFirstName:localStorage.getItem('SupervisorPortalName'), 
+          supervisorLastName: localStorage.getItem('SupervisorPortalName'), 
+         supervisorEmail: "john.doe@example.com",
         },
         teacher: {
           teacherId: classData?.teacher.teacherId,
@@ -139,9 +126,10 @@ function LiveClass() {
           courseName: "Math 101",
         },
         studentsRating: {
-          classUnderstanding: ratings[0],
-          engagement: ratings[1],
-          homeworkCompletion: ratings[2],
+          knowledgeofstudentsandcontent: ratings[0],
+          assessmentofstudents: ratings[1],
+          communicationandcollaboration: ratings[2],
+          professionalism: ratings[3],
         },
         startDate: classData?.startDate,
         endDate: classData?.endDate,
@@ -153,9 +141,9 @@ function LiveClass() {
         lastUpdatedDate: new Date().toISOString(),
         lastUpdatedBy: "User",
       };
-  
+       console.log(feedbackData);
       try {
-        const response = await axios.post("http://localhost:5001/feedback", feedbackData, {
+        const response = await axios.post("http://localhost:5001/supervisorfeedback", feedbackData, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -173,32 +161,6 @@ function LiveClass() {
       }
     };
   
-    
-  
-  useEffect(() => {
-    // Use optional chaining to check for `classData` and `endTime` in one step
-    if (!classData?.endTime?.length) return;
-  
-    const now = new Date();
-    
-    // Assuming endTime is an array of strings, we'll use the first value (classData.endTime[0]) for comparison
-    const endTime = new Date(classData.endTime[0]);
-    
-    const timeUntilEnd = endTime.getTime() - now.getTime();
-  
-    if (timeUntilEnd > 0) {
-      const timer = setTimeout(() => {
-        
-        setClassData(null);
-      }, timeUntilEnd);
-  
-      return () => clearTimeout(timer);
-    }
-  }, [classData]);
-  
-  
-  
-
   const handleJitsiControl = (action: string) => {
     if (!apiRef.current) return;
 
@@ -251,7 +213,7 @@ function LiveClass() {
     }
   }, [showPopup]);
   
-  const categories = ["Listening Ability", "Reading Ability", " Overall Performance"];
+  const categories = ["knowledge of students and content", "Assessment of Students", " Communication and Collaboration","Professionalism"];
 
   return (
     <BaseLayout3>
@@ -293,12 +255,12 @@ function LiveClass() {
           <div className="p-8">
             <div className="text-center">
             <h3 className="text-2xl text-primary font-bold mb-3"> Masterclass</h3>
-              <h2 className="text-base text-gray-600 font-medium mb-1">{classData?.classDay[0]} - {new Date(classData?.startDate ?? '2022-01-01').toLocaleDateString()}</h2>
+              <h2 className="text-base text-gray-600 font-medium mb-1">{classData?.classDay} - {new Date(classData?.startDate ?? '2022-01-01').toLocaleDateString()}</h2>
               <div className="text-gray-600 mb-6 font-medium">
                 <span>{classData?.startTime[0]} to {classData?.endTime[0]}</span>
               </div>
               <div className="flex items-center justify-center gap-3 mb-6">
-                <span className="text-gray-900 font-bold">{classData?.teacher.teacherName}</span>
+                <span className="text-gray-900 font-bold">{classData?.teacher?.teacherName}</span>
               </div>
               <div className="text-gray-500 text-sm font-medium">Session - 12</div>
             </div>
