@@ -1575,7 +1575,7 @@ const Step9 = ({ prevStep, nextStep,updatedStudentDatass }: { prevStep: () => vo
           timeZone: updatedStudentDatass.timeZone,
           referralSource: updatedStudentDatass.referralSource,
           preferredDate: updatedStudentDatass.startDate,
-          evaluationStatus: updatedStudentDatass.evaluationStatus,
+          evaluationStatus:'Completed',
           status: updatedStudentDatass.status,
           createdDate: updatedStudentDatass.createdDate,
           createdBy: updatedStudentDatass.createdBy,
