@@ -3,6 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { CountryDropdown } from "react-country-region-selector";
+import ISO6391 from "iso-639-1";
+
+import TimezoneSelect from "react-timezone-select";
+
+
+
 // Define the return type of the getAllUsers function
 
 
@@ -1192,8 +1199,22 @@ const Step7 = ({ prevStep, nextStep, updatedStudentDatas }: { prevStep: () => vo
   const [guardianPhone, setGuardianPhone] = useState<string>('');
   const [guardianCountry, setGuardianCountry] = useState<string>('');
   const [guardianCity, setGuardianCity] = useState<string>('');
-  const [guardianLanguage, setGuardianLanguage] = useState<string>('');
-  const [guardianTimeZone, setGuardianTimeZone] = useState<string>('');
+  const defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const [guardianTimeZone, setGuardianTimeZone] = useState<string>(defaultTimezone);
+  const [cities, setCities] = useState ([]);
+  const countriesCities = require("countries-cities");
+  const [guardianLanguage, setGuardianLanguage] = useState("");
+
+  
+  
+
+
+
+
+  // Get all languages
+  const languages = ISO6391.getAllNames();
+  const languageCodes = ISO6391.getAllCodes();
+
     console.log(updatedStudentDatas);
     const handleNextStep = () => {
       const updatedStudentDatass = {
@@ -1208,6 +1229,13 @@ const Step7 = ({ prevStep, nextStep, updatedStudentDatas }: { prevStep: () => vo
       };
       nextStep(updatedStudentDatass); // Pass updated data to nextStep
     };
+
+    useEffect(() => {
+      const fetchedCities = countriesCities.getCities(guardianCountry);
+      setCities(fetchedCities);
+      setGuardianCity("")
+    }, [guardianCountry]);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative">
@@ -1305,102 +1333,141 @@ const Step7 = ({ prevStep, nextStep, updatedStudentDatas }: { prevStep: () => vo
               </div>
 
               {/* Country */}
-              <div className="group">
-                <label htmlFor='guardianCountry' className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
-                  <span className="flex items-center gap-2">
-                    <span>🌍</span>
-                    <span>Country</span>
-                  </span>
-                <select
-                  value={guardianCountry}
-                  onChange={(e) => setGuardianCountry(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
-                               focus:bg-white/10 focus:border-white/20 focus:ring-2 
-                               focus:ring-purple-500/20 transition-all duration-200"
-                              aria-labelledby="guardian-country" 
-                           >
-                  <option value="" className="bg-gray-900">Select country</option>
-                  <option value="us" className="bg-gray-900">United States</option>
-                  <option value="uk" className="bg-gray-900">United Kingdom</option>
-                  <option value="ca" className="bg-gray-900">Canada</option>
-                </select>
-                </label>
-              </div>
-            </div>
+              <div className="group relative">
+                    <label
+                      htmlFor="guardianCountry" aria-label="Select your country"
+                      className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-0 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span>🌍</span>
+                        <span>Country</span>
+                      </span>
+                    </label>
+                    <CountryDropdown
+                      value={guardianCity}
+                      onChange={(val) => setGuardianCountry(val)}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
+                                placeholder-white/30 focus:bg-white/10 focus:border-white/20 
+                                focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 
+                                text-[13px] font-semibold appearance-none cursor-pointer"
+                      style={{
+                        backgroundColor: "", // Background of the select
+                        color: "white", // Text color of the select
+                      }}
+                    />
+                    {/* Inline styles for options (workaround using JS) */}
+                    <style>
+                      {`
+                        select option {
+                          background-color: black !important; 
+                          color: white !important;
+                        }
+                      `}
+                    </style>
+                  </div>
+              </div>  
 
             {/* City and Language Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* City */}
               <div className="group">
-                <label  htmlFor='guardianCity'
-                    className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
+                <label  htmlFor='guardianCity' aria-label="Select your countrys"
+                    className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-0 transition-colors">
                   <span className="flex items-center gap-2">
                     <span>🏙️</span>
                     <span>City</span>
                   </span>
+                
+                </label>
                 <select
+                  id="city"
                   value={guardianCity}
                   onChange={(e) => setGuardianCity(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
-                               focus:bg-white/10 focus:border-white/20 focus:ring-2 
-                               focus:ring-purple-500/20 transition-all duration-200"
-                              aria-labelledby="guardian-city" 
-                              >
-                  <option value="" className="bg-gray-900">Select city</option>
-                  <option value="ny" className="bg-gray-900">New York</option>
-                  <option value="ld" className="bg-gray-900">London</option>
-                  <option value="tk" className="bg-gray-900">Tokyo</option>
+                              focus:bg-white/10 focus:border-white/20 focus:ring-2 
+                              focus:ring-purple-500/20 transition-all duration-200"
+                              aria-labelledby="city"
+                >
+                  <option value="" className="bg-gray-900">
+                      Select a city
+                    </option>
+                  {cities?.map((cityName) => (
+                    <option key={cityName} value={cityName} className="bg-gray-900">
+                      {cityName}
+                    </option>
+                  ))}
                 </select>
-                </label>
               </div>
 
               {/* Language */}
               <div className="group">
-                <label htmlFor='guardianLanguage'
-                   className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
+                <label
+                  htmlFor="guardianLanguage"
+                  className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors"
+                >
                   <span className="flex items-center gap-2">
                     <span>🗣️</span>
                     <span>Preferred Language</span>
                   </span>
-                <select
-                  value={guardianLanguage}
-                  onChange={(e) => setGuardianLanguage(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
-                               focus:bg-white/10 focus:border-white/20 focus:ring-2 
-                               focus:ring-purple-500/20 transition-all duration-200"
-                              aria-labelledby="guardian-language" 
-                              >
-                  <option value="" className="bg-gray-900">Select language</option>
-                  <option value="en" className="bg-gray-900">Arabic</option>
-                  <option value="ar" className="bg-gray-900">Quran</option>
-                  <option value="fr" className="bg-gray-900">Islamic Studies</option>
-                </select>
+                  <select
+                    value={guardianLanguage}
+                    onChange={(e) => setGuardianLanguage(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
+                              focus:bg-white/10 focus:border-white/20 focus:ring-2 
+                              focus:ring-purple-500/20 transition-all duration-200"
+                    aria-labelledby="guardian-language"
+                  >
+                    <option value="" className="bg-gray-900">
+                      Select language
+                    </option>
+                    {languages.map((lang, index) => (
+                      <option key={languageCodes[index]} value={languageCodes[index]} className="bg-gray-900">
+                        {lang}
+                      </option>
+                    ))}
+                  </select>
                 </label>
-
+                
               </div>
             </div>
 
             {/* Time Zone Section */}
-            <div className="group">
-              <label  htmlFor='guardianTimeZone'
-                 className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors">
-                <span className="flex items-center gap-2">
-                  <span>🕒</span>
-                  <span>Time Zone</span>
-                </span>
-              <select 
-                  value={guardianTimeZone}
-                  onChange={(e) => setGuardianTimeZone(e.target.value)}className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
-                             focus:bg-white/10 focus:border-white/20 focus:ring-2 
-                             focus:ring-purple-500/20 transition-all duration-200"
-                             aria-labelledby="guardian-timezone" 
-                             >
-                <option value="" className="bg-gray-900">Select time zone</option>
-                <option value="est" className="bg-gray-900">Eastern Time (ET)</option>
-                <option value="pst" className="bg-gray-900">Pacific Time (PT)</option>
-                <option value="gmt" className="bg-gray-900">Greenwich Mean Time (GMT)</option>
-              </select>
-              </label>
+            <div className="group relative">
+                <label
+                  htmlFor="guardianTimeZone" aria-label="Select your countrzczy"
+                  className="block text-white/60 group-hover:text-white/90 text-sm font-semibold mb-2 transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <span>🕒</span>
+                    <span>Time Zone</span>
+                  </span>
+                </label>
+
+                <TimezoneSelect
+                    value={{ value: guardianTimeZone, label: guardianTimeZone.replace("_", " ") }}
+                    onChange={(timezone) => setGuardianTimeZone(timezone.value)} // ✅ Store only string
+                    styles={{
+                      control: (provided) => ({
+                        ...provided,
+                        backgroundColor: "#444A60", // ✅ Input box background color
+                        borderColor: "#444A60", // ✅ Border color
+                        color: "#fff", // ✅ Text color inside input
+                      }),
+                      menu: (provided) => ({
+                        ...provided,
+                        backgroundColor: "#444A60", // ✅ Dropdown menu background color
+                      }),
+                      option: (provided, state) => ({
+                        ...provided,
+                        backgroundColor: state.isFocused ? "#5A6080" : "#444A60", // ✅ Hover & default color
+                        color: "#fff", // ✅ Text color
+                      }),
+                      singleValue: (provided) => ({
+                        ...provided,
+                        color: "#fff", // ✅ Selected value text color
+                      }),
+                    }}
+                  />
             </div>
 
             {/* Terms and Conditions */}
@@ -1575,7 +1642,7 @@ const Step9 = ({ prevStep, nextStep,updatedStudentDatass }: { prevStep: () => vo
           timeZone: updatedStudentDatass.timeZone,
           referralSource: updatedStudentDatass.referralSource,
           preferredDate: updatedStudentDatass.startDate,
-          evaluationStatus:'Completed',
+          evaluationStatus:'COMPLETED',
           status: updatedStudentDatass.status,
           createdDate: updatedStudentDatass.createdDate,
           createdBy: updatedStudentDatass.createdBy,
