@@ -171,7 +171,9 @@ const MultiStepForm = () => {
             }
             // Clean and format the phone number - remove any non-numeric characters
             // const cleanPhoneNumber = phoneNumber.toString().replace(/\D/g, '');
-
+            const specialChars = '@#$%&*!';
+            const randomNum = Math.floor(Math.random() * 1000);
+            const refId = specialChars + randomNum
             const formattedData = {
                 id: uuidv4(),
                 firstName: firstName.trim().padEnd(3),
@@ -191,6 +193,7 @@ const MultiStepForm = () => {
                 startDate: startDate.toISOString(),
                 endDate: toDate.toISOString(),
                 evaluationStatus: 'PENDING',
+                refernceId: refId,
                 status: 'Active',
                 createdBy: 'SYSTEM',
                 lastUpdatedBy: 'SYSTEM',
