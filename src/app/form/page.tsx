@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import Calendar from 'react-calendar';
@@ -40,7 +40,6 @@ const MultiStepForm = () => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
-    const [referral, setReferral] = useState("");
     const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [country, setCountry] = useState("");
     const [city, setCity] = useState("");
@@ -61,7 +60,18 @@ const MultiStepForm = () => {
     const [preferredToTime, setPreferredToTime] = useState("");
     const [availableTimes, setAvailableTimes] = useState<string[]>([]);
 
-    const [cities, setCities] = useState<string[]>([]); // State to hold cities based on selected country
+    const [cities, setCities] = useState<string[]>([]);
+     // Function to generate a unique 5-digit referral ID
+     const generateReferralId = () => {
+        const specialChars = 'ALF-REFID-';
+        const randomNum = Math.floor(10000 + Math.random() * 90000); // Ensures a 5-digit number
+        return specialChars + randomNum;
+    };
+
+    // Initialize the referral ID when the component is loaded
+    const [referral, setReferral] = useState(generateReferralId());
+
+  
 
     const handlePhoneChange = (value: string, data: PhoneChangeData) => {
         // Log the value to understand what is being passed
@@ -171,9 +181,14 @@ const MultiStepForm = () => {
             }
             // Clean and format the phone number - remove any non-numeric characters
             // const cleanPhoneNumber = phoneNumber.toString().replace(/\D/g, '');
-            const specialChars = '@#$%&*!';
-            const randomNum = Math.floor(Math.random() * 1000);
-            const refId = specialChars + randomNum
+
+
+           
+            const specialChars = 'ALF-REFID-';
+            const randomNum = Math.floor(10000 + Math.random() * 90000); // 5-digit random number
+            const referral = specialChars + randomNum;
+        
+
             const formattedData = {
                 id: uuidv4(),
                 firstName: firstName.trim().padEnd(3),
@@ -189,11 +204,10 @@ const MultiStepForm = () => {
                 preferredFromTime: preferredFromTime,
                 preferredToTime: preferredToTime,
                 referralSource: referralSource,
-                referralDetails: referralSourceOther || referral || '',
                 startDate: startDate.toISOString(),
                 endDate: toDate.toISOString(),
                 evaluationStatus: 'PENDING',
-                refernceId: refId,
+                refernceId: referral,
                 status: 'Active',
                 createdBy: 'SYSTEM',
                 lastUpdatedBy: 'SYSTEM',
@@ -453,16 +467,17 @@ const MultiStepForm = () => {
                             
                         </div>
                             
-                            <div>
-                                <label htmlFor="Referral Code" className='text-[14px]'>Referral Code</label><br />
-                                <input
+                        <div>
+                            <label htmlFor="Referral Code" className='text-[14px]'>Referral Code</label><br />
+                            <input
                                 type="text"
                                 placeholder="Referral Code"
                                 value={referral}
-                                onChange={(e) => setReferral(e.target.value)}
                                 className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 w-1/2"
+                                readOnly // Users cannot change it
                             />
-                            </div>
+                        </div>
+
                         <button
                             type="button"
                             onClick={nextStep}

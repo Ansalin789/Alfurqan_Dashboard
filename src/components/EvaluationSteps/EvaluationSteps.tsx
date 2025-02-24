@@ -22,7 +22,8 @@ interface StudentData {
   lastName: string;
   academicCoach: AcademicCoach;
   email: string;
-  phoneNumber: string; // If it's a number, you can change this to `number`
+  phoneNumber: string; 
+  city:string;// If it's a number, you can change this to `number`
   country: string;
   countryCode: string; // Assuming it's a string
   learningInterest: string; // Assuming it's a string, could be an array of strings if needed
@@ -49,6 +50,7 @@ interface EvaluationData {
   studentFirstName: string;
   studentLastName: string;
   studentEmail: string;
+  studentCity: string;
   studentPhone: number;
   studentCountry: string;
   studentCountryCode: string;
@@ -278,6 +280,7 @@ const Step2: React.FC<{ prevStep: () => void;
         {[
           { label: 'Email', value: studentData.email || 'N/A', icon: '📧' },
           { label: 'Phone Number', value: studentData.phoneNumber?.toString() || 'N/A', icon: '📞' },
+          { label: 'City', value: studentData.city || 'N/A', icon: '🌍' },
           { label: 'Country', value: studentData.country || 'N/A', icon: '🌍' },
           { label: 'Country Code', value: studentData.countryCode || 'N/A', icon: '🌍' },
           { label: 'Learning Interest', value: studentData.learningInterest || 'N/A', icon: '📚' },
@@ -928,6 +931,16 @@ const Step5 = ({ prevStep, nextStep ,studentData}: { prevStep: () => void; nextS
 };
 const Step6 = ({ prevStep, nextStep,updatedStudentData }: { prevStep: (updatedStudentData:any) => void; nextStep: (updatedStudentDatas: any) => void;updatedStudentData:any }) => {
   console.log(updatedStudentData);
+  interface TimeSlot {
+  startTime: string;
+  endTime: string;
+}
+
+interface ScheduleItem {
+  day: string;
+  times: TimeSlot[];
+  isSelected: boolean;
+}
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   interface Teacher {
     _id: string;
@@ -971,62 +984,81 @@ const Step6 = ({ prevStep, nextStep,updatedStudentData }: { prevStep: (updatedSt
 },[]);
 const handleNextStep = () => {
   const updatedStudentDatas = {
-    ...updatedStudentData
+    ...updatedStudentData,
+    teacher: {
+      teacherId: selectedTeacher?._id ?? "",
+      teacherName: selectedTeacher?.userName ?? "",
+      teacherEmail: selectedTeacher?.email ?? "",
+    },
+    classDay: schedule.filter((item) => item.isSelected).map((item) => ({
+      label: item.day,
+      value: item.day,
+    })),
+    startTime: schedule
+      .filter((item) => item.isSelected)
+      .flatMap((item) =>
+        item.times.map((time) => ({
+          label: time.startTime,
+          value: time.startTime,
+        }))
+      ),
+    endTime: schedule
+      .filter((item) => item.isSelected)
+      .flatMap((item) =>
+        item.times.map((time) => ({
+          label: time.endTime,
+          value: time.endTime,
+        }))
+      ),
   };
   nextStep(updatedStudentDatas); // Pass updated data to nextStep
 };
-  const [schedule, setSchedule] = useState(
-      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => ({
-        day,
-        startTime: "",
-        duration: "", // Initial duration in hours from API
-        endTime: "",
-        isSelected: false, // Track if the day is selected
-      }))
-    );
-    const handleStartTimeChange = (index:number, newStartTime:string) => {
-      const updatedSchedule = [...schedule];
-  
-      // Set the start time for the selected day
-      updatedSchedule[index].startTime = newStartTime;
-      updatedSchedule[index].isSelected = true; // Mark as selected
-  
-      // Calculate the end time based on the start time and duration
-      const [hours, minutes] = newStartTime.split(":").map(Number);
-      const startDate = new Date();
-      startDate.setHours(hours);
-      startDate.setMinutes(minutes);
-  
-      // Calculate the end time by adding the duration in hours (converted to minutes)
-      const endDate = new Date(startDate.getTime());
-      endDate.setMinutes(startDate.getMinutes() + 30); // Adding 30 minutes
-      updatedSchedule[index].endTime = endDate.toTimeString().slice(0, 5);
-  
-      // Reduce duration by 30 minutes (0.5 hours) for all subsequent selected days (below the selected index)
-      for (let i = index + 1; i < updatedSchedule.length; i++) {
-        if (!updatedSchedule[i].isSelected) {
-          // Ensure 'duration' is treated as a number
-          updatedSchedule[i].duration = Math.max(0, (Number(updatedSchedule[i].duration) - 0.25)).toString(); // Convert to number before performing arithmetic
-        }
-      }
-      
-  
-      // Update the schedule
-      setSchedule(updatedSchedule);
-    };
-  
-    const handleCheckboxChange = (index: number) => {
-      const updatedSchedule = [...schedule];
-      
-      // Toggle selection of the day
-      updatedSchedule[index].isSelected = !updatedSchedule[index].isSelected;
-      
-      // Reset the duration when unselected
-      // if (!updatedSchedule[index].isSelected) {
-      //   updatedSchedule[index].duration = defaultDuration; // Reset to default duration
-      // }
-      setSchedule(updatedSchedule);
-    };
+interface TimeSlot {
+  startTime: string;
+  endTime: string;
+}
+
+interface ScheduleItem {
+  day: string;
+  times: TimeSlot[];
+  isSelected: boolean;
+}
+const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+
+const [schedule, setSchedule] = useState<ScheduleItem[]>(
+  ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => ({
+    day,
+    times: [], // Array of start and end times
+    isSelected: false,
+  }))
+);
+const handleAddTimeSlot = (index: number) => {
+  const updatedSchedule = [...schedule];
+
+  // Prevent duplicate empty slots
+  if (
+    updatedSchedule[index].times.some((slot) => slot.startTime === "" || slot.endTime === "")
+  ) {
+    return;
+  }
+
+  // Add an empty time slot (user must fill it manually)
+  updatedSchedule[index].times.push({ startTime: "", endTime: "" });
+  setSchedule(updatedSchedule);
+};
+
+const handleTimeChange = (
+  dayIndex: number,
+  timeIndex: number,
+  field: "startTime" | "endTime",
+  value: string
+) => {
+  const updatedSchedule = [...schedule];
+  updatedSchedule[dayIndex].times[timeIndex][field] = value;
+  setSchedule(updatedSchedule);
+};
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative overflow-hidden">
       {/* Background Effects */}
@@ -1046,110 +1078,81 @@ const handleNextStep = () => {
       <div className="relative z-10 w-full max-w-4xl">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
           <h2 className="text-xl font-semibold mb-4">Schedule Classes</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-            {schedule.map((item, index) => (
-        <div key={item.day} className="flex items-center mb-2 w-96">
-          <div className="flex items-center border-1 p-2 rounded-xl border border-[#D4D6D9] bg-[#f7f7f8] w-60 justify-between">
-            <label className="block font-medium text-[#333B4C] rounded-xl text-[11px]">
-              {item.day}
-            </label>
+          <div className="grid grid-cols-3 grid-rows-3 gap-2">
+  {/* Schedule Selection */}
+  {schedule.map((item, index) => (
+  <div key={item.day} className="flex flex-col justify-between p-1 border rounded-lg border-[#D4D6D9] bg-[#f7f7f8] w-50 min-h-16">
+    {/* Day Name + Checkbox */}
+    <div className="flex items-center justify-between">
+      <label className="font-medium text-[#333B4C] text-xs">{item.day}</label>
+      <input
+        type="checkbox"
+        className="w-3 h-3"
+        checked={item.isSelected}
+        onChange={() => {
+          const updatedSchedule = [...schedule];
+          updatedSchedule[index].isSelected = !updatedSchedule[index].isSelected;
+          setSchedule(updatedSchedule);
+        }}
+      />
+    </div>
+
+    {/* Time Slots (Shown Only If Day is Selected) */}
+    {item.isSelected && (
+      <div className="mt-1 flex flex-col gap-1 overflow-y-auto max-h-24 scrollbar-hidden scroll-smooth">
+        {item.times.map((time, timeIndex) => (
+          <div key={timeIndex} className="flex items-center space-x-1 text-xs">
             <input
-              type="checkbox"
-              className="form-checkbox border border-[#D4D6D9] bg-[#f7f7f8] mr-2 rounded-2xl text-[11px]"
-              checked={item.isSelected}
-              onChange={() => handleCheckboxChange(index)} // Trigger selection when checkbox is clicked
+              type="time"
+              value={time.startTime}
+              onChange={(e) => handleTimeChange(index, timeIndex, "startTime", e.target.value)}
+              className="form-input p-1 border rounded-lg w-20 h-6 text-xs"
+            />
+            <span>-</span>
+            <input
+              type="time"
+              value={time.endTime}
+              onChange={(e) => handleTimeChange(index, timeIndex, "endTime", e.target.value)}
+              className="form-input p-1 border rounded-lg w-20 h-6 text-xs"
             />
           </div>
-          <input
-            type="time"
-            className="form-input w-[100px] p-2 border border-[#D4D6D9] bg-[#f7f7f8] rounded-xl text-[11px] ml-4"
-            value={item.startTime}
-            onChange={(e) => handleStartTimeChange(index, e.target.value)}
-            // Disable start time input if day is selected
-          />
-          
-          {/* Display the duration only if the day is selected */}
-          
-              <input
-                type="number"
-                className="form-input w-[100px] text-center ml-4 text-[11px] p-2 border border-[#D4D6D9] bg-[#f7f7f8] text-[#333B4C] rounded-xl"
-                value={item.duration} // Display duration as a floating-point number (in hours)
-                readOnly
-              />
-            
-        </div>
-      ))}
-            </div>
-            <div className="grid grid-cols-4 gap-4">
-            
-              <div className="col-span-2">
-                <label htmlFor="total hous"className="block font-medium text-[13px] text-white">Total Hours</label>
-                <input type="number" className="form-input w-full border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl text-[12px]"   readOnly/>
-              </div>
-             
-              <div className="col-span-2">
-                     <label htmlFor="start date" className="block font-medium text-white text-[12px]">Start Date</label>
-                             <input
-                       type="text"
-                    className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
-                        //      value={
-                        //     studentData?.studentDetails?.createdDate
-                        //  ? new Date(studentData.studentDetails.createdDate).toISOString().slice(0, 10) // Extract YYYY-MM-DD
-                        //           : "Invalid Date" // Fallback if createdDate is invalid or missing
-                        //               }
-                                   readOnly
-                                     />
-                                   </div>
-                             <div className="col-span-2">
-                                 <label htmlFor='end date' className="block font-medium text-white text-[12px]">End Date</label>
-                                 <input
-                         type="text"
-  className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
-  // value={
-  //   studentData?.studentDetails?.createdDate
-  //     ? (() => {
-  //         const date = new Date(studentData.studentDetails.createdDate);
-  //         date.setDate(date.getDate() + 28); // Add 28 days
-  //         return date.toISOString().slice(0, 10); // Format as YYYY-MM-DD
-  //       })()
-  //     : "N/A" // Fallback if createdDate is invalid or missing
-  // }
-  readOnly
-/>
-                          </div>
+        ))}
+        <button
+          onClick={() => handleAddTimeSlot(index)}
+          className="mt-1 px-2 py-0.5 bg-blue-500 text-white rounded-lg text-xs"
+        >
+          + Add
+        </button>
+      </div>
+    )}
+  </div>
+))}
 
-                          <div className="col-span-2">
-                     <label htmlFor='start time' className="block font-medium text-white text-[12px]">Start Time</label>
-                       <input
-                     type="time"
-                         className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
-                        defaultValue="09:00" // Set default start time to 09:00
-                        disabled={schedule.some(item => item.isSelected)}
-                         />
-                        </div>
-                     <div className="col-span-2">
-                         <label htmlFor='end time' className="block font-medium text-white text-[12px]">End Time</label>
-                           <input
-                        type="time"
-                           className="form-input w-full text-[11px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl"
-              defaultValue="09:30" // Set default end time to 09:30
-              disabled={schedule.some(item => item.isSelected)}
-                 />
-                  </div>
+    
 
-              <div className="col-span-2">
-                <label htmlFor='select tetacher' className="block font-medium text-white text-[12px]">SelectTeacher</label>
-                <select className="form-select w-full text-[12px] border border-[#D4D6D9] bg-[#f7f7f8] p-2 rounded-xl" onChange={(e)=>e.target.selectedOptions}>
-                 {teachers.map((teacher) => (
-                     <option key={teacher.userId} value={teacher.userId}>
-                      {teacher.userName}
-                      </option>
-                         ))}
-                  </select>
-              </div>
-            </div>
-          </div>
+  {/* Teacher Selection */}
+  <div className="col-span-3 flex justify-center">
+    <div className="w-40 min-h-16 flex flex-col justify-center">
+      <label htmlFor="select-teacher" className="block font-medium text-black text-xs">Select Teacher</label>
+      <select 
+  className="form-select w-full text-xs border border-[#D4D6D9] bg-[#f7f7f8] p-1 rounded-lg"
+  onChange={(e) => {
+    const selected = teachers.find((teacher) => teacher.userId === e.target.value);
+    setSelectedTeacher(selected || null);
+  }}
+>
+  <option value="">Select a Teacher</option>
+  {teachers.map((teacher) => (
+    <option key={teacher.userId} value={teacher.userId}>
+      {teacher.userName}
+    </option>
+  ))}
+</select>
+    </div>
+  </div>
+</div>
+
+
          
           </div>
         </div>
@@ -1561,6 +1564,7 @@ const Step9 = ({ prevStep, nextStep,updatedStudentDatass }: { prevStep: () => vo
           studentLastName: updatedStudentDatass.lastName,
           studentEmail: updatedStudentDatass.email,
           studentPhone: updatedStudentDatass.phoneNumber,
+          studentCity: updatedStudentDatass.city ?? 'N/A',
           studentCountry: updatedStudentDatass.country,
           studentCountryCode: updatedStudentDatass.countryCode,
           learningInterest: updatedStudentDatass.learningInterest,
@@ -1586,6 +1590,14 @@ const Step9 = ({ prevStep, nextStep,updatedStudentDatass }: { prevStep: () => vo
         subscription: {
           subscriptionName: updatedStudentDatass.subscriptionName,
         },
+        teacher:{
+          teacherId:updatedStudentDatass.teacher.teacherId,
+          teacherName:updatedStudentDatass.teacher.teacherName,
+          teacherEmail:updatedStudentDatass.teacher.teacherEmail,
+        },
+        classDay:updatedStudentDatass.classDay,
+        startTime:updatedStudentDatass.startTime,
+        endTime:updatedStudentDatass.endTime,
         planTotalPrice: updatedStudentDatass.planTotalPrice,
         classStartDate: updatedStudentDatass.startDate,
         classEndDate: updatedStudentDatass.classEndDate,
