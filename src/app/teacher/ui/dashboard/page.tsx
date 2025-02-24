@@ -12,8 +12,8 @@ import NextScheduleClass from '@/app/teacher/components/NextScheduleclass';
 import ClassAnalyticsChart from '@/app/teacher/components/ClassAnalyticsChart';
 import EarningAnalytics from '../../components/EarningAnalytics';
 import TeachingActivity from '../../components/TeachingActivity';
-import StudentsCard from '../../components/Students';
 import UpcomingTask from '../../components/UpcomingTask';
+import StudentsCard from '../../components/Students';
 
 
 // Register Chart.js components
@@ -74,8 +74,9 @@ export default function Academic() {
               <div className="col-span-9 grid grid-cols-1 gap-4 p-0">
                 <TeachingActivity />
               </div>
+              
               <div className="col-span-3 grid grid-cols-1 gap-4 p-0">
-              <StudentsCard />
+                <StudentsCard />
               </div>
               
             </main>
