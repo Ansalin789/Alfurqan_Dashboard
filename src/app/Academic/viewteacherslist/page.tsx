@@ -12,6 +12,7 @@ import StudentList from '@/components/Academic/ViewTeachersList/StudentList';
 
 
 
+
 interface Class {
   name: string;
   course: string;
@@ -150,7 +151,8 @@ const ViewTeachersList= () => {
           
           console.log(">>>>"+auth);
           try {
-            const response = await fetch(`http://alfurqanacademy.tech:5001/users/${teacherIdLocal}`, {
+            const response = await fetch(`http://localhost:5001/users/${teacherIdLocal}`, {
+
               headers: {
                 'Authorization': `Bearer ${auth}`,
               },
@@ -248,8 +250,8 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
     };
 
     try {
-      
-      const response = await fetch('http://alfurqanacademy.tech:5001/shiftschedule',
+      const auth=localStorage.getItem('authToken');
+      const response = await fetch(`http://localhost:5001/shiftschedule`,
          {
           method: 'POST',
           headers: {
@@ -263,32 +265,29 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
       console.log(data);
       closeModal();
       setIsScheduled(true);
-      studentList();
+      studentlist();
     } catch (error) {
       console.error('Error saving schedule:', error);
     }
   };
 
-  const studentList = async () => {
-    try {
-    
-      const response = await fetch('http://alfurqanacademy.tech:5001/shiftschedule?role=TEACHER', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth}`,
-        },
-      });
-      const data = await response.json();
-      setStudentListData(data); // Update with actual data
-    } catch (error) {
-      console.error('Error fetching student data:', error);
-    }
+  const studentlist=async()=>{
+      try{
+        const auth=localStorage.getItem('authToken');
+           const response=await fetch(`http://localhost:5001/shiftschedule?role=TEACHER`,{
+            method:'GET',
+            headers:{
+              "Content-Type":"application/json",
+              'Authorization': `Bearer ${auth}`,
+            }}
+          );
+          const data=await response.json();
+           console.log(data);
+            setStudentListData(data);
+      }catch(error){
+            console.log(error);
+      }
   };
-
-
-
-  
 
   const filteredStudents: Student[] | undefined = studentListData?.users?.filter((item: User) => {
     return item.teacherId === teacherIdLocal;

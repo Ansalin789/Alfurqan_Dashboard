@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Modal from 'react-modal';
 import { FaTimes } from 'react-icons/fa';
 
+
 if (typeof window !== 'undefined') {
   Modal.setAppElement('body');
 }
@@ -73,7 +74,7 @@ const AddTrailStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }: Ad
 
       console.log('Sending data:', studentData);
       const auth=localStorage.getItem('authToken');
-      const response = await fetch('http://alfurqanacademy.tech:5001/student', {
+      const response = await fetch(`http://localhost:5001/student`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FaFilter, FaPlus } from 'react-icons/fa';
+import { FaFilter } from 'react-icons/fa';
 
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from 'next/navigation';
 import BaseLayout1 from '@/components/BaseLayout1';
 import Modal from 'react-modal';
+
 
 interface Teacher {
   _id:string;
@@ -40,7 +41,7 @@ const ManageTeacher: React.FC = () => {
       const fetchTeachers = async () => {
         try {
           const auth=localStorage.getItem('authToken');
-          const response = await fetch('http://alfurqanacademy.tech:5001/users?role=TEACHER', {
+          const response = await fetch(`http://localhost:5001/users?role=TEACHER`, {
             headers: {
               'Authorization': `Bearer ${auth}`,        
                 },
@@ -108,7 +109,7 @@ const ManageTeacher: React.FC = () => {
     console.log('New Teacher Data:', newTeacher);
    try{
     const auth=localStorage.getItem('authToken');
-    const response = await fetch('http://alfurqanacademy.tech:5001/users', {
+    const response = await fetch(`http://localhost:5001/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -144,10 +145,10 @@ const ManageTeacher: React.FC = () => {
                 </button>
               </div>
               <div className='flex px-4'>
-                <button className={`border p-2 rounded-lg shadow flex items-center mx-4 bg-[#223857] text-white`} onClick={openModal}>
+                {/* <button className={`border p-2 rounded-lg shadow flex items-center mx-4 bg-[#223857] text-white`} onClick={openModal}>
                   <FaPlus className="mr-2" /> Add new
-                </button>
-                <select className={`border rounded-lg p-2 shadow `}>
+                </button> */}
+                <select className={`border rounded-lg p-2 shadow text-[14px] px-`}>
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
                   <option>Duration: Last year</option>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import Calendar from 'react-calendar';
@@ -10,6 +10,7 @@ import { getCountries } from 'react-phone-number-input/input'
 import en from 'react-phone-number-input/locale/en.json'
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
+
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -23,6 +24,13 @@ type PhoneChangeData = {
     countryCode: string;
   };
 
+const countryCityMap: { [key: string]: string[] } = {
+    'us': ['New York', 'Los Angeles', 'Chicago'],
+    'ca': ['Toronto', 'Vancouver', 'Montreal'],
+    'gb': ['London', 'Manchester', 'Birmingham'],
+    // Add more countries and their cities as needed
+};
+
 const MultiStepForm = () => {
     const router = useRouter();
     const [step, setStep] = useState(1);
@@ -32,7 +40,6 @@ const MultiStepForm = () => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
-    const [referral, setReferral] = useState("");
     const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [country, setCountry] = useState("");
     const [city, setCity] = useState("");
@@ -53,11 +60,20 @@ const MultiStepForm = () => {
     const [preferredToTime, setPreferredToTime] = useState("");
     const [availableTimes, setAvailableTimes] = useState<string[]>([]);
 
+    const [cities, setCities] = useState<string[]>([]);
+     // Function to generate a unique 5-digit referral ID
+     const generateReferralId = () => {
+        const specialChars = 'ALF-REFID-';
+        const randomNum = Math.floor(10000 + Math.random() * 90000); // Ensures a 5-digit number
+        return specialChars + randomNum;
+    };
 
+    // Initialize the referral ID when the component is loaded
+    const [referral, setReferral] = useState(generateReferralId());
 
+  
 
-
-        const handlePhoneChange = (value: string, data: PhoneChangeData) => {
+    const handlePhoneChange = (value: string, data: PhoneChangeData) => {
         // Log the value to understand what is being passed
         console.log('Phone input value:', value);
     
@@ -166,6 +182,13 @@ const MultiStepForm = () => {
             // Clean and format the phone number - remove any non-numeric characters
             // const cleanPhoneNumber = phoneNumber.toString().replace(/\D/g, '');
 
+
+           
+            const specialChars = 'ALF-REFID-';
+            const randomNum = Math.floor(10000 + Math.random() * 90000); // 5-digit random number
+            const referral = specialChars + randomNum;
+        
+
             const formattedData = {
                 id: uuidv4(),
                 firstName: firstName.trim().padEnd(3),
@@ -181,10 +204,10 @@ const MultiStepForm = () => {
                 preferredFromTime: preferredFromTime,
                 preferredToTime: preferredToTime,
                 referralSource: referralSource,
-                referralDetails: referralSourceOther || referral || '',
                 startDate: startDate.toISOString(),
                 endDate: toDate.toISOString(),
                 evaluationStatus: 'PENDING',
+                refernceId: referral,
                 status: 'Active',
                 createdBy: 'SYSTEM',
                 lastUpdatedBy: 'SYSTEM',
@@ -194,7 +217,8 @@ const MultiStepForm = () => {
             // Debug log to check the data being sent
             console.log('Sending data:', formattedData);
             const auth=localStorage.getItem('authToken');
-            const response = await fetch('http://alfurqanacademy.tech:5001/student', {
+            const response = await fetch(`http://localhost:5001/student`, {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -291,6 +315,12 @@ const MultiStepForm = () => {
 
         setCountry(selectedCountry);
         setCountryCode(selectedCountryCode);
+        
+        // Update cities based on selected country
+        const selectedCities = countryCityMap[selectedCountry.toLowerCase()] || [];
+        console.log('Selected Cities:', selectedCities); // Debugging line
+        setCities(selectedCities);
+        setCity(""); // Reset city when country changes
     };
 
     const formatTime = (hours: number, minutes: number): string => {
@@ -330,7 +360,7 @@ const MultiStepForm = () => {
             <form onSubmit={handleSubmit}>
                 {step === 1 && (
                     <div>
-                        <div className="flex items-center justify-center mb-4 p-6">
+                        <div className="flex items-center justify-center mb-4 p-4">
                             <Image src="/assets/images/alf.png" alt="Logo" width={160} height={160} className="mr-10" />
                         </div>
                         <div className="flex gap-6 mb-6">
@@ -343,22 +373,21 @@ const MultiStepForm = () => {
                                 onChange={(e) => setFirstName(e.target.value)}
                                 required
                                 minLength={3}
-                                className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100`}
+                                className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100`}
                             />
                             </div>
                             
-                            
                             <div>
-                            <label htmlFor="Last Name" className='text-[14px]'>Last Name</label>
-                            <input
-                                type="text"
-                                placeholder="Last Name"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                required
-                                minLength={3}
-                                className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100`}
-                            />
+                                <label htmlFor="Last Name" className='text-[14px]'>Last Name</label>
+                                <input
+                                    type="text"
+                                    placeholder="Last Name"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    required
+                                    minLength={3}
+                                    className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100`}
+                                />
                             </div>
                         </div>
                         <div className="flex gap-6 mb-6">
@@ -370,11 +399,45 @@ const MultiStepForm = () => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
+                                    className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
                                 />
                             </div>
+                            <div className="w-1/2">
+                                <label htmlFor="Country" className='text-[14px]'>Country</label>
+                                <select
+                                    className="w-full p-2 text-[13px] border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
+                                    value={country}
+                                    onChange={handleCountryChange}
+                                >
+                                    <option value="" className='text-[12px]'>Select Your Country</option>
+                                    {Object.keys(countryCityMap).map((countryKey) => (
+                                        <option key={countryKey} value={countryKey}>
+                                            {countryKey.toUpperCase()} {/* Display country code for testing */}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                            <div>
+                            <div className="w-1/2">
+                                <label htmlFor="City" className='text-[14px]'>City</label>
+                                <select
+                                    className="w-full p-2 text-[13px] border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                    disabled={cities.length === 0} // Disable if no cities are available
+                                >
+                                    <option value="" className='text-[12px]'>Select Your City</option>
+                                    {cities.map((city) => (
+                                        <option key={city} value={city}>
+                                            {city}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div className="flex gap-6 mb-6">
+                        <div>
                                 <label htmlFor="First Name" className='text-[14px]'>city</label>
                                 <input
                                     type="text"
@@ -383,12 +446,9 @@ const MultiStepForm = () => {
                                     onChange={(e) => setCity(e.target.value)}
                                     required
                                     minLength={3}
-                                    className={`w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100`}
+                                    className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100`}
                                 />
                             </div>
-                        </div>
-                        
-                        <div className="flex gap-6 mb-6">
                             
                             <div className="w-1/2">
                                 <label htmlFor="Phone Number" className='text-[14px]'>Phone Number</label>
@@ -396,41 +456,28 @@ const MultiStepForm = () => {
                                     country={countryCode.toLowerCase()}
                                     value={phoneNumber ? String(phoneNumber) : ""}
                                     onChange={handlePhoneChange}
-                                    inputClass="w-full p-3 py-6 rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
+                                    inputClass="w-full p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
                                     containerClass="w-full"
                                     buttonStyle={{ backgroundColor: 'rgb(243 244 246)', borderColor: '#e5e7eb' }}
                                     inputStyle={{ backgroundColor: 'rgb(243 244 246)', width: '100%', borderColor: '#e5e7eb' }}
                                     placeholder="Phone Number"
                                 />
                             </div>
-                            <div className="w-1/2">
-                                <label htmlFor="Country" className='text-[14px]'>Country</label>
-                                <select
-                                    className="w-full p-3 text-[13px] border rounded appearance-none focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100"
-                                    value={country}
-                                    onChange={handleCountryChange}
-                                >
-                                    <option value="" className='text-[12px]'>Please Select Your Country</option>
-                                    {getCountries().map((country) => (
-                                        <option key={country} value={country}>
-                                            {en[country]}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            
                             
                         </div>
                             
-                            <div>
-                                <label htmlFor="Referral Code" className='text-[14px]'>Referral Code</label><br />
-                                <input
+                        <div>
+                            <label htmlFor="Referral Code" className='text-[14px]'>Referral Code</label><br />
+                            <input
                                 type="text"
                                 placeholder="Referral Code"
                                 value={referral}
-                                onChange={(e) => setReferral(e.target.value)}
-                                className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 w-1/2"
+                                className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#293552] bg-gray-100 w-1/2"
+                                readOnly // Users cannot change it
                             />
-                            </div>
+                        </div>
+
                         <button
                             type="button"
                             onClick={nextStep}

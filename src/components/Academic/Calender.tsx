@@ -4,6 +4,7 @@ import Calendar from 'react-calendar';
 import "react-calendar/dist/Calendar.css";
 import "./Calendar.css";
 
+
 interface Event {
   title: string;
   start: Date;
@@ -21,8 +22,9 @@ const Academic: React.FC = () => {
   const [value, setValue] = useState<Date>(new Date());
 
   useEffect(() => {
-    const auth = localStorage.getItem('authToken');
-    fetch('http://alfurqanacademy.tech:5001/meetingSchedulelist', {
+    const auth=localStorage.getItem('authToken');
+   
+    fetch(`http://localhost:5001/meetingSchedulelist`,{
       headers: {
         'Authorization': `Bearer ${auth}`,
       },

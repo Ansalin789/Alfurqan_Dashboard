@@ -3,49 +3,56 @@
 import Image from "next/image";
 import Link from 'next/link';
 import React from 'react';
-import { RiDashboardFill } from "react-icons/ri";
 import { MdContactSupport } from "react-icons/md";
 import { IoPeopleSharp } from "react-icons/io5";
+import { TbLayoutDashboardFilled } from "react-icons/tb";
+import { FaFolderOpen } from "react-icons/fa";
+import { LuMessagesSquare } from "react-icons/lu";
 import { MdAssignment } from "react-icons/md";
 import { MdOutlinePayment } from "react-icons/md";
-import { GiGiftOfKnowledge } from "react-icons/gi";
 import "@/styles/globals.css";
 
 const SidebarItems = [
     {
         name: 'Dashboard',
-        href: '/Student',
-        icon: RiDashboardFill,    
+        href: '/student/ui/dashboard',
+        icon: TbLayoutDashboardFilled,    
     },
     {
         name: 'Classes',
-        href: '/Student/classes',
+        href: '/student/ui/classes',
         icon: IoPeopleSharp,
     },
     {
         name: 'Assignment',
-        href: '/Student/assignment',
+        href: '/student/ui/assignment',
         icon: MdAssignment,
     },
     {
         name: 'Payments',
-        href: '/Student/payments',
+        href: '/student/ui/payment',
         icon: MdOutlinePayment,
     },
     {
         name: 'Knowledge',
-        href: '/Student/knowledge',
-        icon: GiGiftOfKnowledge,
+        href: '/student/ui/knowledge',
+        icon: FaFolderOpen,
+    },
+    {
+        name: 'Message',
+        href: '/student/ui/message',
+        icon: LuMessagesSquare,
     },
     {
         name: 'Support',
-        href: '/Student/support',
+        href: '/student/ui/support',
         icon: MdContactSupport,
     }
 ];
 
 export default function Sidebar2() {
     return (
+
         <div className="sidebar__wrapper">
             <aside className='sidebar'>
                 <div className='sidebar__top'>
@@ -54,11 +61,11 @@ export default function Sidebar2() {
                         <Image src="/assets/images/alf2.png" width={130} height={50} alt='logo'/>
                     </p>
                 </div>
-                <ul className="sidebar__list">
+                <ul className="">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (
-                        <li className="sidebar__item" key={name}>
-                            <Link href={href} className='sidebar__link'>
-                                <span className="sidebar__icon">
+                        <li className="text-center justify-center ml-6 hover:no-underline hover:flex hover:bg-[#476a9b] hover:text-[#fff] hover:align-middle hover:justify-center] hover:pl-2 pl-2 hover:rounded-lg" key={name}>
+                            <Link href={href} className='no-underline flex align-middle justify-start w-[100%] text-[#fff] pt-[15px] pb-[15px] text-[15px]'>
+                                <span className="text-[20px] inline-block mr-[10px]">
                                     <Icon />
                                 </span>
                                 <span className="sidebar__name">{name}</span>

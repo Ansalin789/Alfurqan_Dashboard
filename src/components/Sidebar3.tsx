@@ -4,62 +4,60 @@ import Image from "next/image";
 import Link from 'next/link';
 import React from 'react';
 import { RiDashboardFill } from "react-icons/ri";
-import { MdContactSupport } from "react-icons/md";
+import { MdContactSupport, MdAssignment } from "react-icons/md";
 import { IoPeopleSharp } from "react-icons/io5";
-import { MdAssignment } from "react-icons/md";
-import { MdOutlinePayment } from "react-icons/md";
-import { GiGiftOfKnowledge } from "react-icons/gi";
+import { FaBookOpenReader } from "react-icons/fa6";
+import { LuMessagesSquare } from "react-icons/lu";
+
+
 
 import "@/styles/globals.css";
 
 const SidebarItems = [
     {
         name: 'Dashboard',
-        href: '/Supervisor',
+        href: '/supervisor/ui/dashboard',
         icon: RiDashboardFill,    
     },
     {
-        name: 'Classes',
-        href: '/Supervisor/recruitment',
+        name: 'Recruitment',
+        href: '/supervisor/ui/recruitment',
         icon: IoPeopleSharp,
     },
     {
-        name: 'Assignment',
-        href: '/Supervisor/meeting&training',
+        name: 'Meeting & Training',
+        href: '/supervisor/ui/meetingandtraining',
         icon: MdAssignment,
     },
     {
-        name: 'Payments',
-        href: '/Supervisor/teachers',
-        icon: MdOutlinePayment,
+        name: 'Teachers',
+        href: '/supervisor/ui/teachers',
+        icon: FaBookOpenReader,
     },
     {
-        name: 'Knowledge',
-        href: '/Supervisor/messages',
-        icon: GiGiftOfKnowledge,
+        name: 'Messages',
+        href: '/supervisor/ui/message', 
+        icon: LuMessagesSquare,
     },
     {
         name: 'Support',
-        href: '/Supervisor/support',
+        href: '/supervisor/ui/support',
         icon: MdContactSupport,
     }
 ];
 
 export default function Sidebar3() {
     return (
-        <div className="sidebar__wrapper">
-            <aside className='sidebar'>
+        <div className="sidebar__wrapper bg-[#012A4A] h-[100vh]">
+            <aside className='sidebar bg-[#012A4A] shadow-lg'>
                 <div className='sidebar__top'>
-                    <Image src="/assets/images/alfwhite.png" width={100} height={100} className='sidebar__logo text-center bg-cover bg-center' alt='logo'/>
-                    <p className='sidebar__logo-name'>
-                        <Image src="/assets/images/alf2.png" width={130} height={50} alt='logo'/>
-                    </p>
+                <Image src="/assets/images/whitelogo.png" width={150} height={150} className='bg-cover bg-center' alt='logo'/>
                 </div>
-                <ul className="sidebar__list">
+                <ul className="mt-10">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (
-                        <li className="sidebar__item" key={name}>
-                            <Link href={href} className='sidebar__link'>
-                                <span className="sidebar__icon">
+                        <li className="text-center justify-center hover:no-underline hover:flex hover:bg-[#476a9b] hover:text-[#fff] hover:align-middle hover:justify-center] hover:pl-2 pl-2 py-2 hover:rounded-lg" key={name}>
+                            <Link href={href} className='no-underline flex align-middle justify-start w-[100%] text-[#fff] pt-[15px] pb-[15px] text-[15px]'>
+                                <span className="text-[20px] inline-block mr-[10px]">
                                     <Icon />
                                 </span>
                                 <span className="sidebar__name">{name}</span>

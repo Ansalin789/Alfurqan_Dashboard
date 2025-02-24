@@ -8,6 +8,7 @@ import Modal from 'react-modal';
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
 import { FiCalendar, FiMoreVertical } from 'react-icons/fi';
 
+
 const ManageStudentView = () => {
   const router = useRouter();
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -123,7 +124,7 @@ const ManageStudentView = () => {
       const fetchData = async () => {
         try {
           const auth=localStorage.getItem('authToken');
-          const response = await fetch(`http://alfurqanacademy.tech:5001/alstudents/${studentId}`,
+          const response = await fetch(`http://localhost:5001/alstudents/${studentId}`,
             {
               headers: {
                      'Authorization': `Bearer ${auth}`,
@@ -141,7 +142,8 @@ const ManageStudentView = () => {
           const fetchTeachers = async () => {
             try {
               const auth=localStorage.getItem('authToken');
-              const response = await fetch('http://alfurqanacademy.tech:5001/users?role=TEACHER', {
+              const response = await fetch(`http://localhost:5001/users?role=TEACHER`, {
+
                 headers: {
                        'Authorization': `Bearer ${auth}`,
                 },
@@ -342,8 +344,8 @@ const ManageStudentView = () => {
       return;
     }
     try {
-      
-      const response = await fetch(`http://alfurqanacademy.tech:5001/createclassschedule/${studentId}`, {
+      const auth=localStorage.getItem('authToken');
+      const response = await fetch(`http://localhost:5001/createclassschedule/${studentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -426,8 +428,8 @@ const ManageStudentView = () => {
   const [studentllistdata, setStudentllistdata]=useState<StudentListData>();
   const studentlist=async()=>{
       try{
-        
-           const response=await fetch('http://alfurqanacademy.tech:5001/classShedule',{
+        const auth=localStorage.getItem('authToken');
+           const response=await fetch(`http://localhost:5001/classShedule`,{
             method:'GET',
             headers:{
               "Content-Type":"application/json",

@@ -1,6 +1,8 @@
 import { FaUserAlt } from 'react-icons/fa';
 import { AiOutlineClockCircle } from 'react-icons/ai';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
+
 
 interface Student {
   studentFirstName: string;
@@ -28,20 +30,24 @@ const NextEvaluationClass = () => {
   useEffect(() => {
     const fetchNextEvaluationClass = async () => {
       try {
-        const auth = localStorage.getItem('authToken');
-        const response = await fetch('http://alfurqanacademy.tech:5001/evaluationlist', {
+        const auth=localStorage.getItem('authToken');
+        const academicId=localStorage.getItem('academicId');
+        console.log("academicId>>",academicId);
+        const response = await axios.get(`http://localhost:5001/evaluationlist`, {
+
           method: 'GET',
+          params:{academicCoachId:academicId },
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${auth}`,
           },
         });
 
-        if (!response.ok) {
+        if (!response.data) {
           throw new Error(`Failed to fetch data: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const data = await response.data;
 
         if (!data.evaluation || !Array.isArray(data.evaluation)) {
           throw new Error('Invalid data format from API');

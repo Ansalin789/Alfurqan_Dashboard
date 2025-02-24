@@ -9,6 +9,7 @@ import AddScheduleModal from '@/components/Academic/ViewTeachersList/AddSchedule
 import { FaCheck } from 'react-icons/fa';
 
 
+
 interface AcademicCoachItem {
   subject: string;
   scheduledStartDate: string;
@@ -38,7 +39,12 @@ const Teachereschedule = () => {
 
   // Fetch events data
   useEffect(() => {
-    fetch('/api/endpoint')
+    const auth=localStorage.getItem('authToken');
+    fetch(`http://localhost:5001/meetingSchedulelist`,{
+      headers: {
+         'Authorization': `Bearer ${auth}`,
+      },
+    })
       .then((response) => response.json())
       .then((data) => {
         const mappedEvents = data.academicCoach.map((item: AcademicCoachItem) => ({

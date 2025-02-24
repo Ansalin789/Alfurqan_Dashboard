@@ -48,12 +48,9 @@ const SidebarItems = [
 export default function Sidebar1() {
     return (
         <div className="sidebar__wrapper">
-            <aside className='sidebar shadow-xl'>
+            <aside className='sidebar shadow-lg'>
                 <div className='sidebar__top'>
-                    <Image src="/assets/images/whitelogo.png" width={100} height={100} className='sidebar__logo text-center bg-cover bg-center' alt='logo'/>
-                    {/* <p className='sidebar__logo-name'>
-                        <Image src="/assets/images/whitelogo.png" className="w-[300px]" width={150} height={150} alt='logo'/>
-                    </p> */}
+                    <Image src="/assets/images/whitelogo.png" width={150} height={150} className='bg-cover bg-center' alt='logo'/>
                 </div>
                 <ul className="sidebar__list text-center align-middle justify-center">
                     {SidebarItems.map(({ name, href, icon: Icon }) => (

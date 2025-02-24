@@ -8,6 +8,7 @@ import BaseLayout1 from '@/components/BaseLayout1';
 import { useRouter } from 'next/navigation';
 import AddEvaluationModal from '@/components/Academic/AddEvaluationModel';
 import { User } from '@/types';
+import axios from 'axios';
 
 
 
@@ -67,7 +68,10 @@ const getAllUsers = async (): Promise<{
 }> => {
   try {
     const auth = localStorage.getItem('authToken');
-    const response = await fetch('http://alfurqanacademy.tech:5001/evaluationlist', {
+    const academicId=localStorage.getItem('academicId');
+    console.log("academicId>>",academicId);
+    const response = await axios.get(`http://localhost:5001/evaluationlist`, {
+      params:{academicCoachId:academicId },
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${auth}`,
@@ -75,19 +79,18 @@ const getAllUsers = async (): Promise<{
     });
 
     // Check for response.ok to handle HTTP errors
-    if (!response.ok) {
+    if (!response.data) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const rawData: ApiResponse = await response.json();
 
     // Ensure rawData has the expected structure
-    if (!rawData.evaluation || !Array.isArray(rawData.evaluation)) {
+    if (!response.data.evaluation || !Array.isArray(response.data.evaluation)) {
       throw new Error('Invalid data structure received from API');
     }
 
     // Transform API data to match TransformedUser interface
-    const transformedData: TransformedUser[] = rawData.evaluation.map((item) => ({
+    const transformedData: TransformedUser[] = response.data.evaluation.map((item:any) => ({
       _id: item._id,
       studentId: item.student.studentId,
       studentFirstName: item.student.studentFirstName,
@@ -336,6 +339,7 @@ interface FormData {
     studentLastName: string;
     studentEmail: string;
     studentPhone: number;
+    studentCity: string;
     studentCountry: string;
     studentCountryCode: string;
     learningInterest: string;
@@ -427,7 +431,7 @@ const fetchStudents = async () => {
 const handleClick = async (id:string) => {
   try {
     const auth=localStorage.getItem('authToken');
-    const response = await fetch(`http://alfurqanacademy.tech:5001/evaluationlist/${id}`,{
+    const response = await fetch(`http://localhost:5001/evaluationlist/${id}`,{
       headers: {
         'Content-Type': 'application/json',
          'Authorization': `Bearer ${auth}`,
@@ -452,7 +456,7 @@ const handleClick = async (id:string) => {
     setStudentStatus(data.studentStatus);
     setPaymentStatus(data.paymentStatus);
     setPaymentLink(
-      `http://localhost:3000/invoice?id=${encodeURIComponent(data.student.studentId)}`);
+      `http://localhost:3000/invoice?id=${encodeURIComponent(data._id)}`);
     setFormData(data);
     console.log(data);
    
@@ -473,11 +477,12 @@ const handleClick = async (id:string) => {
     const formDataNames = {
       _id: formData?._id ?? "",
       student: {
-        studentId:formData?._id,
+        studentId:formData?.student.studentId,
         studentFirstName: formData?.student.studentFirstName,
         studentLastName: formData?.student.studentLastName,
         studentEmail: formData?.student.studentEmail,
         studentPhone: formData?.student.studentPhone,
+        studentCity: formData?.student.studentCity,
         studentCountry: formData?.student.studentCountry,
         studentCountryCode: formData?.student.studentCountryCode,
         learningInterest: formData?.student.learningInterest,
@@ -536,7 +541,7 @@ const handleClick = async (id:string) => {
   alert(JSON.stringify(formDataNames));
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`http://alfurqanacademy.tech:5001/evaluation/${id}`,
+      const response = await fetch(`http://localhost:5001/evaluation/${id}`,
         {
           method: 'PUT', 
           headers: {
@@ -892,7 +897,7 @@ const handleClick = async (id:string) => {
                   id="city"
                   type="text"
                   disabled
-                  value={formData?.student.city ?? ""} // Bind to formData
+                  value={formData?.student.studentCity} // Bind to formData
                   readOnly
                   className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
                 />
@@ -1064,7 +1069,7 @@ const handleClick = async (id:string) => {
           ))}
         </select>
       </div>
-      <div>
+      {/* <div>
         <label htmlFor="paymentStatus" className="block text-black text-xs font-medium">Payment Status</label>
         <select
           id="paymentStatus"
@@ -1078,7 +1083,7 @@ const handleClick = async (id:string) => {
             </option>
           ))}
         </select>
-      </div>
+      </div> */}
               <div className="col-span-2">
                 <label htmlFor="comment" className="block text-black text-xs font-medium">Comment</label>
                 <textarea

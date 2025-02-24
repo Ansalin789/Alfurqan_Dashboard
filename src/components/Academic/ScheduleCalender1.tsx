@@ -5,6 +5,7 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
+
 const localizer = momentLocalizer(moment);
 
 // Define types for events
@@ -27,8 +28,8 @@ const ScheduleCalender: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]); // Specify the event type here
 
   useEffect(() => {
-    const auth = localStorage.getItem('authToken');
-    fetch('http://alfurqanacademy.tech:5001/meetingSchedulelist', {
+    const auth=localStorage.getItem('authToken');
+    fetch(`http://localhost:5001/meetingSchedulelist`,{
       headers: {
         'Authorization': `Bearer ${auth}`,
       },

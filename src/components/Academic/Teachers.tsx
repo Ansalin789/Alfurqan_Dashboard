@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -7,128 +8,142 @@ import {
   Title,
   Tooltip,
   Legend
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-import Link from 'next/link'
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+import Link from "next/link";
 
+// Define user interface
+export interface User {
+  _id: string;
+  userName: string;
+  email: string;
+  role: string[];
+  gender: "MALE" | "FEMALE";
+  createdDate: string; // Store as string but convert when needed
+}
 
 // Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function Teachers() {
-    const data = {
-        labels: ['', '', ''],
-        datasets: [
-            {
-                label: 'Male',
-                data: [80, 50, 20],
-                backgroundColor: '#6fd4ff',
-                borderRadius: {
-                    topLeft: 6,
-                    topRight: 6,
-                    bottomLeft: 6,
-                    bottomRight: 6
-                },
-                barThickness: 11,
-            },
-            {
-                label: 'Female',
-                data: [50, 30, 12],
-                backgroundColor: '#ff82f5',
-                borderRadius: {
-                    topLeft: 6,
-                    topRight: 6,
-                    bottomLeft: 6,
-                    bottomRight: 6
-                },
-                barThickness: 11,
+  const [maleCount, setMaleCount] = useState<number>(0); // Male count for current month
+  const [femaleCount, setFemaleCount] = useState<number>(0); // Female count for current month
+
+  // Get current month index (0-11)
+  const currentMonthIndex = new Date().getMonth();
+
+  // Labels for X-axis (Only Current Month)
+  const currentMonth = new Date().toLocaleString("default", { month: "short" }); // Example: "Feb"
+
+  useEffect(() => {
+    const fetchTeacherData = async () => {
+      try {
+        const response = await axios.get("http://localhost:5001/users", {
+          params: { role: "TEACHER" },
+        });
+
+        const users: User[] = response.data.users;
+
+        // Count male and female teachers for the current month
+        let maleData = 0;
+        let femaleData = 0;
+
+        users.forEach((user) => {
+          const monthIndex = new Date(user.createdDate).getMonth(); // Get month index (0-11)
+
+          if (monthIndex === currentMonthIndex) {
+            if (user.gender === "MALE") {
+              maleData += 1;
+            } else {
+              femaleData += 1;
             }
-        ],
+          }
+        });
+
+        // Update state with current month’s counts
+        setMaleCount(maleData);
+        setFemaleCount(femaleData);
+      } catch (error) {
+        console.error("Error fetching teachers:", error);
+      }
     };
 
-    const options = {
-        scales: {
-            y: {
-                display: false,
-                beginAtZero: true,
-                grid: {
-                    display: false
-                },
-                ticks: {
-                    padding: 10
-                }
-            },
-            x: {
-                display: false,
-                grid: {
-                    display: false
-                }
-            },
-        },
-        plugins: {
-            legend: {
-                display: false,
-            },
-            tooltip: {
-                enabled: false,
-            },
-        },
-        responsive: true,
-        maintainAspectRatio: false,
-        layout: {
-            padding: {
-                left: 10,
-                right: 10,
-                top: 20,
-                bottom: 20,
-            },
-        },
-    };
+    fetchTeacherData();
+  }, []);
 
-    return (
-        <Link 
-        href="/Academic/manageTeachers"
-        className="block col-span-12 bg-[#3e68a1] p-4 py-3 rounded-[25px] shadow-xl 
+  // Chart Data (Only Current Month)
+  const data = {
+    labels: [currentMonth], // Show only the current month
+    datasets: [
+      {
+        label: "Male",
+        data: [maleCount], // Show only current month’s Male count
+        backgroundColor: "#6fd4ff",
+        borderRadius: 6,
+        barThickness: 11,
+      },
+      {
+        label: "Female",
+        data: [femaleCount], // Show only current month’s Female count
+        backgroundColor: "#ff82f5",
+        borderRadius: 6,
+        barThickness: 11,
+      },
+    ],
+  };
+
+  // Chart Options (Keep Styling Intact)
+  const options = {
+    scales: {
+      y: {
+        display: false, // Hide Y-axis labels
+        grid: { display: false }, // Remove background grid lines
+      },
+      x: {
+        grid: { display: false }, // Remove background lines for X-axis
+        ticks: {
+          color: "white", // Set month text color
+          font: { size: 12, weight: "normal" }, // Make font straight
+        },
+      },
+    },
+    plugins: {
+      legend: { display: false }, // Hide legend
+      tooltip: { enabled: true }, // Enable tooltips
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: { left: 10, right: 10, top: 20, bottom: 20 },
+    },
+  };
+
+  return (
+    <Link
+      href="/Academic/manageTeachers"
+      className="block col-span-12 bg-[#3e68a1] p-4 py-3 rounded-[25px] shadow-xl 
                  transition-transform hover:scale-[1.02] 
                  focus:outline-none focus:ring-2 focus:ring-blue-400"
-        aria-label="View Teachers and Students Management"
+      aria-label="View Teachers and Students Management"
     >
-        <div className="col-span-12 bg-[#3e68a1] p-4 rounded-[25px] shadow-lg">
-            <div className="flex justify-between items-center gap-6">
-                <h3 className="text-[15px] font-semibold text-white">Teachers</h3>
-                <div className="flex gap-2 -ml-2">
-                    <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-[#6fd4ff]"></div>
-                        <span className="text-white/60 text-[10px]">Male</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-[#ff82f5]"></div>
-                        <span className="text-white/60 text-[10px]">Female</span>
-                    </div>
-                </div>
+      <div className="col-span-12 bg-[#3e68a1] p-4 rounded-[25px] shadow-lg">
+        <div className="flex justify-between items-center gap-6">
+          <h3 className="text-[15px] font-semibold text-white">Teachers</h3>
+          <div className="flex gap-2 -ml-2">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-[#6fd4ff]"></div>
+              <span className="text-white/60 text-[10px]">Male</span>
             </div>
-            <div className="relative h-[120px]">
-                <Bar data={data} options={options} />
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-[#ff82f5]"></div>
+              <span className="text-white/60 text-[10px]">Female</span>
             </div>
-            <div className="flex justify-between mt-4">
-                <div className="text-center">
-                    <p className="text-white/60 text-[10px]">Total Teachers</p>
-                </div>
-                <div className="text-center">
-                    <p className="text-white/60 text-[10px]">Total Assigned</p>
-                </div>
-                <div className="text-center">
-                    <p className="text-white/60 text-[10px]">Total on leave</p>
-                </div>
-            </div>
+          </div>
         </div>
-        </Link>
-    );
+        <div className="relative h-[200px]">
+          <Bar data={data} options={options} />
+        </div>
+      </div>
+    </Link>
+  );
 }
