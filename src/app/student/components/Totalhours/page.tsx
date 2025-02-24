@@ -25,7 +25,7 @@ const Page = () => {
         const studentId = localStorage.getItem("StudentPortalId");
         const auth = localStorage.getItem("StudentAuthToken");
 
-        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+        const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule", {
           params: { studentId },
           headers: { Authorization: `Bearer ${auth}` },
         });

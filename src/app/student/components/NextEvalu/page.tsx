@@ -88,7 +88,7 @@ const NextClass = () => {
           return;
         }
   
-        const response = await axios.get<ApiResponse>(`http://localhost:5001/classShedule/students`, {
+        const response = await axios.get<ApiResponse>(`https://alfurqanacademy.tech/classShedule/students`, {
           params: { studentId },
           headers: {
             'Authorization': `Bearer ${authToken}`

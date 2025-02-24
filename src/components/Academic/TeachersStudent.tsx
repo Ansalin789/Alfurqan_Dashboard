@@ -21,7 +21,7 @@ export default function Academic() {
         const fetchTeachersData = async () => {
             try {
                 const teacherId = "some_teacher_id"; // Replace with actual teacherId
-                const response = await axios.get<ApiResponse>(`http://localhost:5001/teacher-student-count`, {
+                const response = await axios.get<ApiResponse>(`https://alfurqanacademy.tech/teacher-student-count`, {
                     params: { teacherId }
                 });
                 setTeachersData(response.data.data);

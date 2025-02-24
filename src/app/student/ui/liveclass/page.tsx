@@ -93,7 +93,7 @@ function LiveClass() {
           return;
         }
   
-        const response = await axios.get<ApiResponse>(`http://localhost:5001/classShedule/students`, {
+        const response = await axios.get<ApiResponse>(`https://alfurqanacademy.tech/classShedule/students`, {
           params: { studentId },
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -149,7 +149,7 @@ function LiveClass() {
       };
   
       try {
-        const response = await axios.post("http://localhost:5001/feedback", feedbackData, {
+        const response = await axios.post("https://alfurqanacademy.tech/feedback", feedbackData, {
           headers: {
             "Content-Type": "application/json",
           },

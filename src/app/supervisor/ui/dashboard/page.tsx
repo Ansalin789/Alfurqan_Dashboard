@@ -91,11 +91,11 @@ export default function Dashboard() {
   
     const auth = localStorage.getItem("SupervisorAuthToken");
   
-    const fetchApplicants = axios.get("http://localhost:5001/applicants", {
+    const fetchApplicants = axios.get("https://alfurqanacademy.tech/applicants", {
       headers: { Authorization: `Bearer ${auth}` },
     });
   
-    const fetchDashboardCounts = axios.get("http://localhost:5001/dashboard/supervisor/counts");
+    const fetchDashboardCounts = axios.get("https://alfurqanacademy.tech/dashboard/supervisor/counts");
   
     Promise.all([fetchApplicants, fetchDashboardCounts])
       .then(([applicantsResponse, dashboardResponse]) => {
@@ -180,7 +180,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get("http://localhost:5001/allMeetings", {
+        const response = await axios.get("https://alfurqanacademy.tech/allMeetings", {
           headers: { "Content-Type": "application/json" },
         });
 

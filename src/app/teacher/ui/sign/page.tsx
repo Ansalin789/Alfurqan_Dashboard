@@ -23,7 +23,7 @@ const SignIn: React.FC = () => {
   }, [error]);
   const signIn = async (username: string, password: string) => {
     try {
-      const response = await axios.post('http://localhost:5001/signin', { username, password });
+      const response = await axios.post('https://alfurqanacademy.tech/signin', { username, password });
   
       // Handle successful login response
       if (response.status === 200) {
@@ -90,7 +90,7 @@ const SignIn: React.FC = () => {
     const checkEmail = async (email: string) => {
       try {
         // Send a POST request to the backend to check if the email exists
-        const response = await axios.post(`http://localhost:5001/allcheck-email`, { email});
+        const response = await axios.post(`https://alfurqanacademy.tech/allcheck-email`, { email});
     
         // If the response status is 200, the email exists
         if (response.status === 200) {

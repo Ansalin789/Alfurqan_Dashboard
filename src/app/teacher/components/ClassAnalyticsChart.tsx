@@ -53,7 +53,7 @@ interface ApiResponse {
   students: Schedule[];
 }
 
-const API_URL = "http://localhost:5001/classShedule";
+const API_URL = "https://alfurqanacademy.tech/classShedule";
 
 const ClassAnalyticsChart = () => {
   const [chartData, setChartData] = useState<number[]>([0, 0, 0]);

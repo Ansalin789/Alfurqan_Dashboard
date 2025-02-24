@@ -56,7 +56,7 @@ const ViewSchedule = () => {
     const fetchData = async () => {
       try {
         const auth = localStorage.getItem("SupervisorAuthToken");
-        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+        const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule", {
           headers: { Authorization: `Bearer ${auth}` },
         });
   

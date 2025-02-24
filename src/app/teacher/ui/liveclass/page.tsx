@@ -97,7 +97,7 @@ function LiveClass() {
           return;
         }
   
-        const response = await axios.get<ApiResponse>(`http://localhost:5001/classShedule/teacher`, {
+        const response = await axios.get<ApiResponse>(`https://alfurqanacademy.tech/classShedule/teacher`, {
           params: { teacherId },
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -234,7 +234,7 @@ function LiveClass() {
     };
 
     try {
-      const response = await axios.post("http://localhost:5001/feedback", feedbackData, {
+      const response = await axios.post("https://alfurqanacademy.tech/feedback", feedbackData, {
         headers: {
           "Content-Type": "application/json",
         },
