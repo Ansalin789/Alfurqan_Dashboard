@@ -1,155 +1,183 @@
-"use client";
+"use client"
 
-import BaseLayout2 from "@/components/BaseLayout2";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { FaCalendarAlt, FaSort } from "react-icons/fa";
-import { BsThreeDots } from "react-icons/bs";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import MyClass from "./MyClass";
+import BaseLayout2 from "@/components/BaseLayout2"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { FaCalendarAlt, FaSort } from "react-icons/fa"
+import { BsThreeDots } from "react-icons/bs"
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
+import MyClass from "./MyClass"
+import axios from "axios"
 
-type UpcomingClass = {
-  [x: string]: any;
-  classID: number;
-  name: string;
-  teacherName: string;
-  course: string;
-  date: string;
-  scheduled: string;
-};
+interface Student {
+  studentId: string
+  studentFirstName: string
+  studentLastName: string
+  studentEmail: string
+}
 
-type CompletedClass = {
-  classID: number;
-  name: string;
-  teacherName: string;
-  course: string;
-  date: string;
-  scheduled: string;
-  status: string;
-};
+interface Teacher {
+  teacherId: string
+  teacherName: string
+  teacherEmail: string
+}
 
-type SortableKeys = "classID" | "name" | "teacherName" | "course" | "date" | "scheduled" | "status";
+interface ClassData {
+  _id: string
+  student: Student
+  teacher: Teacher
+  classDay: string[]
+  package: string
+  preferedTeacher: string
+  totalHourse: number
+  startDate: string
+  endDate: string
+  startTime: string[]
+  endTime: string[]
+  scheduleStatus: string
+  classLink: string
+  status: string
+  classStatus: string
+  createdBy: string
+  createdDate: string
+  lastUpdatedDate: string
+}
+
+interface ApiResponse {
+  totalCount: number
+  classSchedule: ClassData[]
+}
+
+type SortableKeys = "classID" | "teacherName" | "package" | "startDate" | "status"
 
 const Classes = () => {
-  const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<"Upcoming" | "Completed">("Upcoming");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [popupVisible, setPopupVisible] = useState<number | null>(null);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [sortKey, setSortKey] = useState<SortableKeys>("classID");
-  const [isPremiumUser, setIsPremiumUser] = useState(true); // Replace with actual role determination logic
-  const itemsPerPage = 5;
-  console.log('set premium user ....', setIsPremiumUser);
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState<"Upcoming" | "Completed">("Upcoming")
+  const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([])
+  const [completedClasses, setCompletedClasses] = useState<ClassData[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [popupVisible, setPopupVisible] = useState<string | null>(null)
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const [sortKey, setSortKey] = useState<SortableKeys>("classID")
+  const [isPremiumUser] = useState(true) // Replace with actual role determination logic
+  const itemsPerPage = 5
 
-  const upcomingClasses: UpcomingClass[] = Array.from({ length: 25 }, (_, index) => ({
-    classID: 1000 + index,
-    name: `Student ${index + 1}`,
-    teacherName: `Teacher ${index + 1}`,
-    course: `Course ${index + 1}`,
-    date: "January 15, 2025",
-    scheduled: "10:00 AM - 11:30 AM",
-  }));
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const studentId = localStorage.getItem("StudentPortalId")
+        const authToken = localStorage.getItem("StudentAuthToken")
+        if (!studentId || !authToken) {
+          console.log("Missing studentId or authToken")
+          return
+        }
 
-  const completedClasses: CompletedClass[] = Array.from({ length: 18 }, (_, index) => ({
-    classID: 2000 + index,
-    name: `Student ${index + 1}`,
-    teacherName: `Teacher ${index + 1}`,
-    course: `Course ${index + 1}`,
-    date: "December 25, 2024",
-    scheduled: "9:00 AM - 10:30 AM",
-    status: "Completed",
-  }));
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule/students", {
+          params: { studentId },
+          headers: { Authorization: `Bearer ${authToken}` },
+        })
+        const classes = response.data.classSchedule
 
-  const sortClasses = (classes: UpcomingClass[] | CompletedClass[]) => {
+        const now = new Date()
+        const upcoming = classes.filter((cls) => {
+          const classDate = new Date(cls.startDate)
+          const [startHours, startMinutes] = cls.startTime[0].split(":").map(Number)
+          classDate.setHours(startHours, startMinutes, 0, 0)
+          return now < classDate
+        })
+
+        const completed = classes.filter((cls) => new Date(cls.startDate) <= now)
+
+        setUpcomingClasses(upcoming)
+        setCompletedClasses(completed)
+      } catch (error) {
+        console.error("Error fetching class data:", error)
+      }
+    }
+    fetchClasses()
+  }, [])
+
+  const sortClasses = (classes: ClassData[]) => {
     return classes.sort((a, b) => {
       if (sortOrder === "asc") {
-        return a[sortKey as keyof UpcomingClass] > b[sortKey as keyof UpcomingClass] ? 1 : -1;
+        return a[sortKey as keyof ClassData] > b[sortKey as keyof ClassData] ? 1 : -1
       }
-      return a[sortKey as keyof UpcomingClass] < b[sortKey as keyof UpcomingClass] ? 1 : -1;
-    });
-  };
+      return a[sortKey as keyof ClassData] < b[sortKey as keyof ClassData] ? 1 : -1
+    })
+  }
 
-  const filteredClasses =
-    activeTab === "Upcoming"
-      ? sortClasses(upcomingClasses)
-      : sortClasses(completedClasses);
-
-  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
-  const displayedClasses = filteredClasses.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const filteredClasses = activeTab === "Upcoming" ? sortClasses(upcomingClasses) : sortClasses(completedClasses)
+  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage)
+  const displayedClasses = filteredClasses.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+    setCurrentPage(page)
+  }
 
   const handleTabChange = (tab: "Upcoming" | "Completed") => {
-    setActiveTab(tab);
-    setCurrentPage(1);
-  };
+    setActiveTab(tab)
+    setCurrentPage(1)
+  }
 
-  const handlePopupToggle = (classID: number) => {
-    setPopupVisible(popupVisible === classID ? null : classID);
-  };
+  const handlePopupToggle = (classId: string) => {
+    setPopupVisible(popupVisible === classId ? null : classId)
+  }
 
-  const handleReschedule = (classID: number) => {
-    router.push(`/student/ui/Reschedule`);
-  };
+  const handleReschedule = (classId: string) => {
+    router.push(`/student/ui/Reschedule?classId=${classId}`)
+  }
 
-  const handleCancel = (classID: number) => {
-    console.log(`Cancel clicked for classID: ${classID}`);
-    setPopupVisible(null);
-  };
+  const handleCancel = (classId: string) => {
+    console.log(`Cancel clicked for classId: ${classId}`)
+    setPopupVisible(null)
+  }
 
   const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
-  };
+    setSelectedDate(date)
+  }
 
   const handleSort = (key: SortableKeys): void => {
-    const order = sortOrder === "asc" ? "desc" : "asc";
-    setSortOrder(order);
-    setSortKey(key);
-  };
+    const order = sortOrder === "asc" ? "desc" : "asc"
+    setSortOrder(order)
+    setSortKey(key)
+  }
 
   const handleUpgradePlan = () => {
-    setPopupVisible(null); // Close the popup
-    console.log("User prompted to switch to a higher plan.");
-  };
+    setPopupVisible(null)
+    console.log("User prompted to switch to a higher plan.")
+  }
 
   return (
     <BaseLayout2>
       <style>
         {`
           .custom-datepicker {
-            width: 80px; /* Adjust width as needed */
+            width: 80px;
             text-align: center;
-            border: 2px solid #1C3557; /* Border color */
-            border-radius: 8px; /* Rounded corners */
-            padding: 5px; /* Padding */
-            background-color: #f0f8ff; /* Background color */
+            border: 2px solid #1C3557;
+            border-radius: 8px;
+            padding: 5px;
+            background-color: #f0f8ff;
           }
 
           .react-datepicker {
-            border-radius: 8px; /* Rounded corners */
-            background-color: white; /* Background color of the calendar */
+            border-radius: 8px;
+            background-color: white;
           }
 
           .react-datepicker__header {
-            background-color: #1C3557; /* Header background color */
-            color: white !important; /* Ensure header text color is white */
+            background-color: #1C3557;
+            color: white !important;
           }
           .react-datepicker__header .react-datepicker__current-month,
           .react-datepicker__header .react-datepicker__day-name {
-            color: white !important; /* Ensure month and day names are white */
+            color: white !important;
           }
 
-
-
           .react-datepicker__day {
-            color: #1C3557 !important; /* Day text color */
+            color: #1C3557 !important;
           }
         `}
       </style>
@@ -194,7 +222,6 @@ const Classes = () => {
                     dateFormat="MMMM d, yyyy"
                     className="w-20 text-[10px] text-gray-600 focus:outline-none"
                     placeholderText="ddmmyy"
-                    
                   />
                 </div>
               </div>
@@ -204,95 +231,78 @@ const Classes = () => {
                   <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
                     <tr>
                       <th className="px-6 py-3 text-center">
-                        Class ID{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("classID")}
-                        />
+                        Class ID <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("classID")} />
                       </th>
                       <th className="px-6 py-3 text-center">
                         Teacher Name{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("teacherName")}
-                        />
+                        <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("teacherName")} />
                       </th>
                       <th className="px-6 py-3 text-center">
-                        Course{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("course")}
-                        />
+                        time <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("startDate")} />
                       </th>
                       <th className="px-6 py-3 text-center">
-                        Date{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("date")}
-                        />
+                        Start Date{" "}
+                        <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("startDate")} />
                       </th>
                       <th className="px-6 py-3 text-center">Scheduled</th>
-                      
-                      {activeTab === "Completed" && (
-                        <th className="px-6 py-3 text-center">Status</th>
-                      )}
+
+                      {activeTab === "Completed" && <th className="px-6 py-3 text-center">Status</th>}
                       {activeTab === "Upcoming" && <th className="px-6 py-3 text-center"></th>}
                     </tr>
                   </thead>
                   <tbody>
                     {displayedClasses.map((item) => (
                       <tr
-                        key={item.classID}
+                        key={item._id}
                         className="text-[12px] font-medium mt-2"
                         style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}
                       >
-                        <td className="px-6 py-2 text-center">{item.classID}</td>
-                        <td className="px-6 py-2 text-center">{item.teacherName}</td>
-                        <td className="px-6 py-2 text-center">{item.course}</td>
-                        <td className="px-6 py-2 text-center">{item.date}</td>
-                        <td className="px-6 py-2 text-center">{item.scheduled}</td>
+                        <td className="px-6 py-3 text-center">{item._id}</td>
+                        <td className="px-6 py-3 text-center">{item.teacher.teacherName}</td>
+                        <td className="px-6 py-3 text-center">{`${item.startTime[0]} - ${item.endTime[0]}`}</td>
+                        <td className="px-6 py-3 text-center">{new Date(item.startDate).toLocaleDateString()}</td>
+                        <td className="px-6 py-3 text-center">{item.classStatus}</td>
+                        
                         {activeTab === "Completed" && (
-                          <td className="px-6 py-1 text-center">
-                            <div className="px-2 py-1 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] text-[10px]">
-                              {String(item.status)}
+                          <td className="px-6 py-2 text-center">
+                            <div className="px-2 py-2 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] text-[10px]">
+                              {item.status}
                             </div>
                           </td>
                         )}
                         {activeTab === "Upcoming" && (
-                          <td className="relative px-6 py-2 text-center">
-                            <BsThreeDots
-                              className="cursor-pointer"
-                              onClick={() => handlePopupToggle(item.classID)}
-                            />
-                            {popupVisible === item.classID && (
+                          <td className="relative px-6 py-3 text-center">
+                            <BsThreeDots className="cursor-pointer" onClick={() => handlePopupToggle(item._id)} />
+                            {popupVisible === item._id && (
                               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
                                 {isPremiumUser ? (
                                   <>
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                                      onClick={() => handleReschedule(item.classID)}
+                                      className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-100"
+                                      onClick={() => handleReschedule(item._id)}
                                     >
                                       Reschedule
                                     </button>
                                     <button
-                                      className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-gray-100"
-                                      onClick={() => handleCancel(item.classID)}
+                                      className="w-full px-4 py-3 text-left text-sm text-red-500 hover:bg-gray-100"
+                                      onClick={() => handleCancel(item._id)}
                                     >
                                       Cancel
                                     </button>
                                   </>
                                 ) : (
                                   <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-                                      <div className="bg-[#fff5f3] p-10 rounded shadow border border-[#F4B0A1] flex">
-                                      <p className="text-[#27303A] text-lg font">Switch to a higher plan for extended benefits...</p>
+                                    <div className="bg-[#fff5f3] p-10 rounded shadow border border-[#F4B0A1] flex">
+                                      <p className="text-[#27303A] text-lg font">
+                                        Switch to a higher plan for extended benefits...
+                                      </p>
                                       <button
                                         className="bg-[#1C3557] text-white px-4 py-2 rounded text-center ml-10"
                                         onClick={handleUpgradePlan}
                                       >
                                         OK
                                       </button>
-                                      </div>
-                                      
+                                    </div>
                                   </div>
                                 )}
                               </div>
@@ -310,20 +320,18 @@ const Classes = () => {
               <div className="flex justify-end items-center px-6 py-3">
                 <div className="flex space-x-2">
                   {Array.from({ length: totalPages }).map((_, index) => {
-                    const page = index + 1;
+                    const page = index + 1
                     return (
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
                         className={`w-5 h-5 text-[13px] flex items-center justify-center rounded ${
-                          page === currentPage
-                            ? "bg-[#1C3557] text-white"
-                            : "text-[#1C3557] border border-[#1C3557]"
+                          page === currentPage ? "bg-[#1C3557] text-white" : "text-[#1C3557] border border-[#1C3557]"
                         }`}
                       >
                         {page}
                       </button>
-                    );
+                    )
                   })}
                 </div>
               </div>
@@ -332,7 +340,8 @@ const Classes = () => {
         </div>
       </div>
     </BaseLayout2>
-  );
-};
+  )
+}
 
-export default Classes;
+export default Classes
+

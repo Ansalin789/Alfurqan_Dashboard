@@ -25,7 +25,7 @@ interface Teacher {
   teacherEmail: string;
 }
 
-interface Schedule {
+interface ClassData {
   student: Student;
   teacher: Teacher;
   _id: string;
@@ -46,8 +46,8 @@ interface Schedule {
 }
 
 interface ApiResponse {
-  totalCount: number;
-  students: Schedule[];
+  totalCount: number
+  classSchedule: ClassData[]
 }
 
 
@@ -62,38 +62,42 @@ const ScheduledClasses = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const [upcomingClasses, setUpcomingClasses] = useState<Schedule[]>([]);
-  const[completedData,setCompletedData]=useState<Schedule[]>([]);
+  const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([]);
+  const[completedData,setCompletedData]=useState<ClassData[]>([]);
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchClasses = async () => {
       try {
-        const auth = localStorage.getItem("TeacherAuthToken");
-        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
-
-        if (!teacherIdToFilter) {
-          console.error("No teacher ID found in localStorage.");
-          return;
+        const teacherId = localStorage.getItem("TeacherPortalId")
+        const authToken = localStorage.getItem("TeacherAuthToken")
+        if (!teacherId || !authToken) {
+          console.log("Missing studentId or authToken")
+          return
         }
 
-        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
-          headers: {
-            Authorization: `Bearer ${auth}`,
-          },
-        });
-        const teacherClasses = response.data.students.filter(
-          (classItem) => classItem.teacher.teacherId === teacherIdToFilter
-        );
-  
-        // Set filtered data to state
-        setUpcomingClasses(teacherClasses.filter((classItem) => classItem.status === "Active"));
-        setCompletedData(teacherClasses.filter((classItem) => classItem.status === "completed"));
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule/teacher", {
+          params: { teacherId },
+          headers: { Authorization: `Bearer ${authToken}` },
+        })
+        const classes = response.data.classSchedule
 
-    fetchData();
-  }, []);
+        const now = new Date()
+        const upcoming = classes.filter((cls) => {
+          const classDate = new Date(cls.startDate)
+          const [startHours, startMinutes] = cls.startTime[0].split(":").map(Number)
+          classDate.setHours(startHours, startMinutes, 0, 0)
+          return now < classDate
+        })
+
+        const completed = classes.filter((cls) => new Date(cls.startDate) <= now)
+
+        setUpcomingClasses(upcoming)
+        setCompletedData(completed)
+      } catch (error) {
+        console.error("Error fetching class data:", error)
+      }
+    }
+    fetchClasses()
+  }, [])
 
  
 
@@ -117,7 +121,7 @@ const ScheduledClasses = () => {
   const handleRescheduleSubmit = () => {
     if (rescheduleReason.trim() && selectedItemId) {
       setShowSuccess(true);
-      setUpcomingClasses((prevClasses : Schedule[]) =>
+      setUpcomingClasses((prevClasses : ClassData[]) =>
         prevClasses.map(item =>
           Number(item._id) === selectedItemId // Convert item._id to a number
             ? { ...item, status: 'Re-Schedule Requested' }
