@@ -12,34 +12,58 @@ import {
   ChartOptions,
   TooltipItem
 } from "chart.js";
+import axios from "axios";
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Filler);
 
 const TeachingActivity = () => {
-  const [chartData, setChartData] = useState<number[]>(new Array(12).fill(0)); 
+  const [chartData, setChartData] = useState<number[]>(Array(12).fill(0)); 
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchTeachingActivity = async () => {
       try {
-        const response = await fetch("http://localhost:5001/classShedule/activity");
-        const result = await response.json();
+        const studentId = localStorage.getItem("StudentPortalId");
+        const authToken = localStorage.getItem("StudentAuthToken");
 
-        if (!result || !result.classSchedule) {
-          console.warn("No class schedule data received.");
+        if (!studentId || !authToken) {
+          console.warn("Missing StudentPortalId or StudentAuthToken in localStorage.");
+          setLoading(false);
           return;
         }
 
-        // Extract total hours per month
-        const monthlyData = new Array(12).fill(0); 
-
-        result.classSchedule.forEach((schedule: any) => {
-          const startDate = new Date(schedule.startDate);
-          const monthIndex = startDate.getMonth(); 
-          monthlyData[monthIndex] += schedule.totalHourse || 0;
+        const response = await axios.get(`http://localhost:5001/classShedule/activity`, {
+          params: { studentId },
+          headers: { Authorization: `Bearer ${authToken}` },
         });
 
-        setChartData(monthlyData);
+        console.log("API Response Data:", response.data);
+
+        if (!response.data || !Array.isArray(response.data)) {
+          console.warn("No valid class schedule data received:", response.data);
+          setLoading(false);
+          return;
+        }
+
+        // Get the current year
+        const currentYear = new Date().getFullYear();
+        const monthlyData = Array(12).fill(0);
+
+        response.data.forEach((entry: any) => {
+          if (!entry.month || !entry.totalHours) return;
+
+          const [year, month] = entry.month.split("-"); // "2025-01" → ["2025", "01"]
+          const monthIndex = parseInt(month, 10) - 1; // Convert "01" to index 0
+          const entryYear = parseInt(year, 10);
+
+          if (entryYear === currentYear && monthIndex >= 0 && monthIndex < 12) {
+            monthlyData[monthIndex] = entry.totalHours; // Store total hours only for the current year
+          }
+        });
+
+        console.log(`📅 Filtered data for ${currentYear}:`, monthlyData);
+
+        setChartData([...monthlyData]); // Update state
       } catch (error) {
         console.error("Error fetching teaching activity:", error);
       } finally {
@@ -50,8 +74,8 @@ const TeachingActivity = () => {
     fetchTeachingActivity();
   }, []);
 
-  const data = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct","Nov","Dec"],
+  const chartConfig = {
+    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
     datasets: [
       {
         label: "Teaching Activity",
@@ -85,14 +109,12 @@ const TeachingActivity = () => {
         enabled: true,
         usePointStyle: true,
         callbacks: {
-          title: function() {
-            return 'April 30, 2024';
-          },
-          label: function(context: TooltipItem<'line'>) {
-            if (context.raw && typeof context.raw === 'number') {
-              return `${context.raw * 6} Hours`;
+          title: () => "Selected Date",
+          label: (context: TooltipItem<'line'>) => {
+            if (context.raw && typeof context.raw === "number") {
+              return `${context.raw} Hours`;
             }
-            return '';
+            return "";
           },
         },
         displayColors: false,
@@ -102,13 +124,8 @@ const TeachingActivity = () => {
         borderWidth: 1,
         borderColor: "#FF5C5C",
         padding: 10,
-        titleFont: {
-          size: 14,
-          weight: "bold",
-        },
-        bodyFont: {
-          size: 12,
-        },
+        titleFont: { size: 14, weight: "bold" },
+        bodyFont: { size: 12 },
         caretPadding: 10,
         caretSize: 6,
         cornerRadius: 8,
@@ -116,38 +133,17 @@ const TeachingActivity = () => {
     },
     scales: {
       x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: "#333",
-          font: {
-            size: 12,
-          },
-        },
+        grid: { display: false },
+        ticks: { color: "#333", font: { size: 12 } },
       },
       y: {
         min: 0,
-        max: 20,
-        ticks: {
-          stepSize: 5,
-          color: "#333",
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          color: "#E0E0E0",
-          borderDash: [5, 5],
-          drawBorder: false,
-        },
+        max: Math.max(...chartData) + 100, // Dynamic max value
+        ticks: { stepSize: 500, color: "#333", font: { size: 12 } },
+        grid: { color: "#E0E0E0", borderDash: [5, 5], drawBorder: false },
       },
     },
-    elements: {
-      line: {
-        borderWidth: 2, // Line thickness
-      },
-    },
+    elements: { line: { borderWidth: 2 } },
   };
 
   return (
@@ -165,7 +161,7 @@ const TeachingActivity = () => {
           className="text-[16px] font-semibold text-gray-700"
           style={{ fontFamily: "Arial, sans-serif" }}
         >
-          Teaching Activity
+          Teaching Activity ({new Date().getFullYear()})
         </h2>
         <select
           className="p-1 border border-gray-300 rounded-md text-[10px] text-gray-600"
@@ -176,7 +172,7 @@ const TeachingActivity = () => {
         </select>
       </div>
       <div style={{ height: "190px" }}>
-        {loading ? <p className="text-center">Loading...</p> : <Line data={data} options={options} />}
+        {loading ? <p className="text-center">Loading...</p> : <Line data={chartConfig} options={options} />}
       </div>
     </div>
   );

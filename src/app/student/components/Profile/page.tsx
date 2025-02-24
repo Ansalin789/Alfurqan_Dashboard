@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import axios from "axios"; // Added axios import
 
 interface Invoice {
   student: {
@@ -25,11 +26,19 @@ const Profile = () => {
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
-        const response = await fetch("http://localhost:5001/studentinvoice");
-        const result = await response.json();
+        const studentId = localStorage.getItem("StudentPortalId");
+        const auth = localStorage.getItem("StudentAuthToken");
 
-        if (result?.invoice?.length > 0) {
-          setInvoice(result.invoice[0]); // Get the latest invoice
+        const response = await axios.get<{ invoice: Invoice[] }>(
+          "http://localhost:5001/classShedule/totalhours",
+          {
+            params: { studentId },
+            headers: { Authorization: `Bearer ${auth}` },
+          }
+        );
+
+        if (response.data?.invoice?.length > 0) {
+          setInvoice(response.data.invoice[0]); // Get the latest invoice
         }
       } catch (error) {
         console.error("Error fetching invoice:", error);
@@ -41,11 +50,21 @@ const Profile = () => {
     fetchInvoice();
   }, []);
 
+  // Refactored message extraction
+  let message: string;
+  if (loading) {
+    message = "Loading...";
+  } else if (invoice?.invoiceStatus === "Paid") {
+    message = `Paid: ₹${invoice.amount}`;
+  } else {
+    message = "No recent payments";
+  }
+
   return (
     <div className="bg-white rounded-tl-lg rounded-tr-lg h-auto sm:h-[350px] overflow-hidden mr-0 sm:mr-6 mx-auto">
       <div className="text-center p-0">
-        <Image  
-          src="/assets/images/proff.png" 
+        <Image
+          src="/assets/images/proff.png"
           alt={invoice?.student?.studentName || "Student"}
           width={80}
           height={80}
@@ -71,15 +90,7 @@ const Profile = () => {
           <h3 className="text-[12px] font-semibold text-gray-700">
             Recent Payments
           </h3>
-          {loading ? (
-            <p className="text-[11px] text-gray-500 mt-1">Loading...</p>
-          ) : invoice?.invoiceStatus === "Paid" ? (
-            <p className="text-[11px] text-green-600 mt-1">
-              Paid: ₹{invoice.amount}
-            </p>
-          ) : (
-            <p className="text-[11px] text-gray-500 mt-1">No recent payments</p>
-          )}
+          <p className="text-[11px] text-gray-500 mt-1">{message}</p>
         </div>
 
         {/* Pending Fee Section */}
