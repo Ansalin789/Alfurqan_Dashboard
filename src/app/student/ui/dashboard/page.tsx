@@ -77,7 +77,7 @@ export default function Academic() {
           </div>
 
           {/* Calendar sidebar */}
-          <div className="lg:w-[280px] mr-6 lg:mt-[35px] border-[1px] border-[#727272] bg-white rounded-[8px] h-[630px]">
+          <div className="lg:w-[280px] mr-6 lg:mt-[79px] border-[1px] border-[#727272] bg-white rounded-[8px] h-[675px]">
             <div className="col-span-2 gap-2">
               <Profile />
             </div>

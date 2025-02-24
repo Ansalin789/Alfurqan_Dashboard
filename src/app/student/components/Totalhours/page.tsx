@@ -3,15 +3,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
-interface ClassEvent {
-  totalHours: number;
-  classStatus: string; // Either "Completed" or "Pending"
-}
-
-// API Response Interface
 interface ApiResponse {
-  totalCount: number;
-  classSchedule: ClassEvent[];
+  pendingPercentage: number;
+  completedPercentage: number;
+  totalHours: number;
 }
 
 const Page = () => {
@@ -20,49 +15,35 @@ const Page = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchClassHours = async () => {
       try {
         const studentId = localStorage.getItem("StudentPortalId");
         const auth = localStorage.getItem("StudentAuthToken");
 
-        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
+        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule/totalhours", {
           params: { studentId },
           headers: { Authorization: `Bearer ${auth}` },
         });
 
-        // Extract class schedule
-        const classSchedule = response.data.classSchedule;
+        const { pendingPercentage, completedPercentage, totalHours } = response.data;
 
-        // Calculate total completed and pending hours
-        const completedHours = classSchedule
-          .filter((event) => event.classStatus === "Completed")
-          .reduce((sum, event) => sum + event.totalHours, 0);
+        setTotalHours(totalHours);
 
-        const pendingHours = classSchedule
-          .filter((event) => event.classStatus === "Pending")
-          .reduce((sum, event) => sum + event.totalHours, 0);
-
-        const total = completedHours + pendingHours;
-
-        setTotalHours(total);
-
-        // Prepare chart data
+        // Prepare chart data using API values
         setData([
-          { name: "Pending hours", value: pendingHours, color: "#FACC15" },
-          { name: "Completed hours", value: completedHours, color: "#A78BFA" },
+          { name: "Pending hours", value: pendingPercentage, color: "#FACC15" },
+          { name: "Completed hours", value: completedPercentage, color: "#A78BFA" },
         ]);
 
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching class schedule:", error);
+        console.error("Error fetching class hours:", error);
         setLoading(false);
       }
     };
 
-    fetchEvents();
+    fetchClassHours();
   }, []);
-
-  const percentage = totalHours > 0 ? Math.round((data[0]?.value / totalHours) * 100) : 0;
 
   return (
     <div className="block col-span-12 bg-[#f7f7f9] p-4 py-3 rounded-[17px] h-60 -mt-3 border-[#c8c8c8] border-[1px]">
@@ -99,7 +80,9 @@ const Page = () => {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[16px] font-bold text-gray-700">{percentage}%</span>
+              <span className="text-[16px] font-bold text-gray-700">
+                {totalHours > 0 ? Math.round(data[0]?.value) : 0}%
+              </span>
             </div>
           </div>
 

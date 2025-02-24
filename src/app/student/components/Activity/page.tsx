@@ -1,5 +1,5 @@
-'use client';
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -16,13 +16,47 @@ import {
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Filler);
 
 const TeachingActivity = () => {
+  const [chartData, setChartData] = useState<number[]>(new Array(12).fill(0)); 
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchTeachingActivity = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/classShedule/activity");
+        const result = await response.json();
+
+        if (!result || !result.classSchedule) {
+          console.warn("No class schedule data received.");
+          return;
+        }
+
+        // Extract total hours per month
+        const monthlyData = new Array(12).fill(0); 
+
+        result.classSchedule.forEach((schedule: any) => {
+          const startDate = new Date(schedule.startDate);
+          const monthIndex = startDate.getMonth(); 
+          monthlyData[monthIndex] += schedule.totalHourse || 0;
+        });
+
+        setChartData(monthlyData);
+      } catch (error) {
+        console.error("Error fetching teaching activity:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeachingActivity();
+  }, []);
+
   const data = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct","Nov","Dec"],
     datasets: [
       {
         label: "Teaching Activity",
-        data: [5, 10, 15, 20, 10, 15, 12, 18, 10, 8, 15, 20],
-        borderColor: "#ffffff", // Line color
+        data: chartData,        
+        borderColor: "#ffffff",
         backgroundColor: (context: any) => {
           const chart = context.chart;
           const { ctx, chartArea } = chart;
@@ -38,7 +72,7 @@ const TeachingActivity = () => {
         pointBackgroundColor: "white",
         pointRadius: 0,
         hoverRadius: 6,
-        borderWidth: 2, // Line width only
+        borderWidth: 2,
       },
     ],
   };
@@ -138,11 +172,11 @@ const TeachingActivity = () => {
           defaultValue="monthly"
         >
           <option value="monthly">Monthly</option>
-          <option value="weekly">Weekly</option>
+          <option value="weekly" className="hidden">Weekly</option>
         </select>
       </div>
       <div style={{ height: "190px" }}>
-        <Line data={data} options={options} />
+        {loading ? <p className="text-center">Loading...</p> : <Line data={data} options={options} />}
       </div>
     </div>
   );
