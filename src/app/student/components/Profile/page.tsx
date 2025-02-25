@@ -65,13 +65,13 @@ const Profile = () => {
       <div className="text-center p-0">
         <Image
           src="/assets/images/proff.png"
-          alt={invoice?.student?.studentName || "Student"}
+          alt={invoice?.student?.studentName ?? "Student"}
           width={80}
           height={80}
           className="rounded-full mx-auto sm:w-[100px] sm:h-[100px]"
         />
         <h2 className="text-[16px] sm:text-[14px] font-semibold mt-2">
-          {invoice?.student?.studentName ?? "Student"}
+          {localStorage.getItem('StudentPortalName')}
         </h2>
         <p className="text-gray-500 text-[14px] sm:text-[12px]">Student</p>
         <div className="flex justify-center mt-2">

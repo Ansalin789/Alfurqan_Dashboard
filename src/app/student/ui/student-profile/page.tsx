@@ -11,8 +11,35 @@ import { FaUsers } from "react-icons/fa6";
 import { LuListTodo } from "react-icons/lu";
 import { MdAutoStories } from "react-icons/md";
 import { FaMedal, FaArrowCircleUp } from "react-icons/fa";
+import axios from 'axios';
 
-
+interface Student {
+    studentId: string;
+    studentEmail: string;
+    studentPhone: number;
+    gender: string;
+    package: string;
+  }
+  
+  interface StudentRecord {
+    student: Student;
+    _id: string;
+    username: string;
+    password: string;
+    role: string;
+    status: string;
+    createdDate: string;
+    createdBy: string;
+    updatedDate: string;
+    __v: number;
+    classScheduleCount: number;
+  }
+  
+  interface ApiResponse {
+    totalCount: number;
+    students: StudentRecord[];
+  }
+  
 
 
 
@@ -20,113 +47,62 @@ const StudentProfile = () => {
     const router = useRouter();
     
 
-    const [studentData, setStudentData] = useState<StudentData>();
+    const [studentData, setStudentData] = useState<StudentRecord>();
     interface StudentData {
-     studentDetails: {
-       _id: string;
-       student: {
-         studentId: string;
-         studentEmail: string;
-         studentPhone: number;
-       };
-       username: string;
-       password: string;
-       role: string;
-       status: string;
-       createdDate: string;
-       createdBy: string;
-       updatedDate: string;
-       __v: number;
-     };
-     studentEvaluationDetails: {
-       student: {
-         studentId: string;
-         studentFirstName: string;
-         studentLastName: string;
-         studentEmail: string;
-         studentPhone: number;
-         studentCountry: string;
-         studentCountryCode: string;
-         learningInterest: string;
-         numberOfStudents: number;
-         preferredTeacher: string;
-         preferredFromTime: string;
-         preferredToTime: string;
-         timeZone: string;
-         referralSource: string;
-         preferredDate: string;
-         evaluationStatus: string;
-         status: string;
-         createdDate: string;
-         createdBy: string;
-       };
-       subscription: {
-         subscriptionName: string;
-       };
-       _id: string;
-       isLanguageLevel: boolean;
-       languageLevel: string;
-       isReadingLevel: boolean;
-       readingLevel: string;
-       isGrammarLevel: boolean;
-       grammarLevel: string;
-       hours: number;
-       planTotalPrice: number;
-       classStartDate: string;
-       classEndDate: string;
-       classStartTime: string;
-       classEndTime: string;
-       accomplishmentTime: string;
-       studentRate: number;
-       gardianName: string;
-       gardianEmail: string;
-       gardianPhone: string;
-       gardianCity: string;
-       gardianCountry: string;
-       gardianTimeZone: string;
-       gardianLanguage: string;
-       assignedTeacher: string;
-       studentStatus: string;
-       classStatus: string;
-       comments: string;
-       trialClassStatus: string;
-       invoiceStatus: string;
-       paymentLink: string;
-       paymentStatus: string;
-       status: string;
-       createdDate: string;
-       createdBy: string;
-       updatedDate: string;
-       updatedBy: string;
-       expectedFinishingDate: number;
-       assignedTeacherId: string;
-       assignedTeacherEmail: string;
-       __v: number;
-     };
+        _id: string;
+        username: string;
+        role: string;
+        status: string;
+        createdDate: string;
+        createdBy: string;
+        updatedDate: string;
+        classScheduleCount: number;
+        student: {
+          studentId: string;
+          studentEmail: string;
+          studentPhone: number;
+          gender: string;
+          package:string;
+          course:string;
+        };
    }
-     useEffect(()=>{
-       const studentId=localStorage.getItem('studentManageID');
-       console.log(">>>>>",studentId);
-       if (studentId) {
-         const fetchData = async () => {
-           try {
-             const auth=localStorage.getItem('TeacherAuthToken');
-             const response = await fetch(`http://localhost:5001/alstudents/${studentId}`,
-               {
-                 headers: {
-                        'Authorization': `Bearer ${auth}`,
-                 },
-               });
-             const data = await response.json();
-             setStudentData(data);
-             console.log(data);
-           } catch (error) {
-             console.error('Error fetching student data:', error);
-           }
-         };
-         fetchData();
-       }
-     },[])
+   useEffect(() => {
+    const studentId = localStorage.getItem("StudentPortalId");
+    const auth = localStorage.getItem("StudentAuthToken");
+
+    console.log("Retrieved Student ID:", studentId);
+
+    if (studentId) {
+        const fetchData = async () => {
+            try {
+              const studentId = localStorage.getItem("StudentPortalId");
+              const response = await axios.get<ApiResponse>("http://localhost:5001/alstudents", {
+                headers: { Authorization: `Bearer ${auth}` },
+              });
+          
+              if (!studentId) {
+                console.warn("No StudentPortalId found in localStorage");
+                return;
+              }
+          
+              // Filter the student based on studentId
+              const filteredStudent = response.data.students.find(student => student._id === studentId);
+          
+              if (filteredStudent) {
+                setStudentData(filteredStudent);
+                console.log("Filtered Student Data:", filteredStudent);
+              } else {
+                console.warn("No matching student found for StudentPortalId:", studentId);
+              }
+            } catch (error) {
+              console.error("Error fetching student data:", error);
+            }
+          };
+          
+
+      fetchData();
+    }
+  }, []); 
      ;
 
   return (
@@ -134,55 +110,70 @@ const StudentProfile = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mx-auto">
             {/* Left Section - Student Info */}
             <div className="md:col-span-1 md:mx-auto">
-                <h1 className='text-2xl font-semibold text-gray-800 p-4'>My Profile</h1>
-                <div className="flex flex-col md:flex-row pt-4 mt-2">
-                    <div className="p-2">
-                    <IoArrowBackCircleSharp 
-                        className="text-[25px] bg-[#fff] rounded-full text-[#012a4a] cursor-pointer" 
-                        onClick={() => router.push('dashboard')}
-                    />
-                    </div>
-                    <div className="flex flex-col items-center bg-[#fff] shadow-lg rounded-2xl md:w-[350px] h-[600px]">
-                        <div className="bg-[#012a4a] align-middle p-6 w-full h-1/4 rounded-t-2xl">
-                            
-                            <div className="justify-center">
-                            <Image
-                                src="/assets/images/student-profile1.png"
-                                alt="Profile"
-                                className="rounded-full justify-center align-middle  text-center ml-24 w-24 h-24 mb-4 mt-[73px]"
-                                width={150}
-                                height={150}
-                            />
-                            </div>
-                            <div className="justify-center text-center border-b-2 border-b-black">
-                            <h2 className="text-2xl font-semibold mb-2">{studentData?.studentEvaluationDetails?.student?.studentFirstName ?? "" }</h2>
-                            <p className="text-[#012A4A] mb-4">Student</p>
-                            </div>
+  <h1 className="text-2xl font-semibold text-gray-800 p-4">My Profile</h1>
+  
+  <div className="flex flex-col md:flex-row pt-4 mt-2">
+    {/* Back Button */}
+    <div className="p-2">
+      <IoArrowBackCircleSharp 
+        className="text-[25px] bg-[#fff] rounded-full text-[#012a4a] cursor-pointer" 
+        onClick={() => router.push('/dashboard')}
+      />
+    </div>
 
-                            <div className="text-left w-full p-2 pt-6">
-                            <h3 className="font-semibold mb-2">Personal Info</h3>
-                            <p className="text-gray-800 text-[14px] mt-4">
-                                <span className="font-semibold text-[14px]">Full Name: </span>{studentData?.studentEvaluationDetails?.student?.studentFirstName}
-                            </p>
-                            <p className="text-gray-800 text-[14px] mt-3">
-                                <span className="font-semibold text-[14px]">Email: </span>{studentData?.studentEvaluationDetails?.student?.studentEmail}
-                            </p>
-                            <p className="text-gray-800 text-[13px] mt-3">
-                                <span className="font-semibold text-[14px]">Phone Number: </span>{studentData?.studentEvaluationDetails?.student?.studentPhone}
-                            </p>
-                            <p className="text-gray-800 text-[14px] mt-3">
-                                <span className="font-semibold text-[14px]">Level: </span>
-                            </p>
-                            <p className="text-gray-800 text-[14px] mt-3">
-                                <span className="font-semibold text-[14px]">Package: </span>{studentData?.studentEvaluationDetails?.subscription?.subscriptionName}
-                            </p>
-                            <p className='p-2 flex text-center items-center mt-10 bg-[#012a4a] rounded-2xl text-white'>Upgrade Your Package &nbsp;<FaArrowCircleUp className='mt-[6px]'/></p>
-                            
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    {/* Profile Card */}
+    <div className="flex flex-col items-center bg-[#fff] shadow-lg rounded-2xl md:w-[350px] h-[600px]">
+      <div className="bg-[#012a4a] align-middle p-6 w-full h-1/4 rounded-t-2xl">
+        
+        {/* Profile Image */}
+        <div className="justify-center">
+          <Image
+            src="/assets/images/student-profile1.png"
+            alt="Profile"
+            className="rounded-full mx-auto w-24 h-24 mb-4 mt-[73px]"
+            width={150}
+            height={150}
+          />
+        </div>
+
+        {/* Name & Role */}
+        <div className="justify-center text-center border-b-2 border-black pb-2">
+          <h2 className="text-2xl font-semibold mb-2">
+            {studentData?.username ?? ""} 
+          </h2>
+          <p className="text-[#012A4A] mb-4">Student</p>
+        </div>
+
+        {/* Personal Info */}
+        <div className="text-left w-full p-2 pt-6">
+          <h3 className="font-semibold mb-2">Personal Info</h3>
+          <p className="text-gray-800 text-[14px] mt-4">
+            <span className="font-semibold text-[14px]">Full Name: </span>
+            {studentData?.username ?? ""} 
+          </p>  
+          <p className="text-gray-800 text-[14px] mt-3">
+            <span className="font-semibold text-[14px]">Email: </span>{studentData?.student?.studentEmail}
+          </p>
+          <p className="text-gray-800 text-[14px] mt-3">
+            <span className="font-semibold text-[14px]">Phone Number: </span>{studentData?.student?.studentPhone}
+          </p>
+          {/* <p className="text-gray-800 text-[14px] mt-3 hidden">
+            <span className="font-semibold text-[14px]">Level: </span>{studentData?.student?.level ?? "N/A"}
+          </p> */}
+          <p className="text-gray-800 text-[14px] mt-3">
+            <span className="font-semibold text-[14px]">Package: </span>{studentData?.student?.package }
+          </p>
+
+          {/* Upgrade Button */}
+          <p className="p-2 flex justify-center items-center mt-10 bg-[#012a4a] rounded-2xl text-white">
+            Upgrade Your Package <FaArrowCircleUp className="ml-2 mt-1" />
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
             {/* Right Section - Statistics and Assignment List */}
             <div className="md:col-span-3">
@@ -216,7 +207,7 @@ const StudentProfile = () => {
                                 </div>
                                 <div>
                                     <div className="text-[24px] font-bold text-gray-800">
-                                        Gold
+                                    {studentData?.student?.package }
                                     </div>
                                     <p className="text-gray-800 text-[16px] font-semibold mb-2">
                                         Package
@@ -259,7 +250,7 @@ const StudentProfile = () => {
                     </div>
 
                     {/* Assignment List */}
-                    <div className="mt-[380px] -ml-[270px] mx-auto ">
+                    <div className="mt-[380px] -ml-[410px] mx-auto ">
                     <div className="w-[500px] mx-auto p-3 rounded-lg shadow-md bg-white border border-black">
                         <h2 className="text-[14px] font-bold text-orange-600 px-4">Terms and Conditions</h2>
                         <h3 className="text-[13px] font-semibold mt-2 px-4">Your Agreement</h3>
@@ -288,11 +279,11 @@ const StudentProfile = () => {
                     </div>
                     
                 </div>
-                <div className='ml-[770px] -mt-[200px]'>
-                        <img src="/assets/images/refera.png" alt="" width={150} height={150} className='w-24'/>
+                <div className='ml-[770px] -mt-[40px]'>
+                        <img src="/assets/images/refera.png" alt="" width={250} height={250} className='w-44'/>
                         <img src="/assets/images/refera1.png" alt="" width={150} height={150} className='w-24'/>
-                        <p className='text-[12px] font-semibold'>Ready to get more hours ?</p>
-                        <p className='text-[7px] text-gray-600'>Invite your friends now and unlock extra space for everyone!</p>
+                        <p className='text-[14px] font-semibold'>Ready to get more hours ?</p>
+                        <p className='text-[15px] text-gray-600'>Invite your friends now and unlock extra space for everyone!</p>
                     </div>
             </div>
         </div>
