@@ -1,10 +1,15 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import BaseLayout1 from '@/components/BaseLayout1';
-import { Calendar, momentLocalizer, View, ToolbarProps } from 'react-big-calendar';
-import moment from 'moment';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
+import React, { useEffect, useState } from "react";
+import BaseLayout1 from "@/components/BaseLayout1";
+import {
+  Calendar,
+  momentLocalizer,
+  View,
+  ToolbarProps,
+} from "react-big-calendar";
+import moment from "moment";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 
 const localizer = momentLocalizer(moment);
 
@@ -18,13 +23,17 @@ interface Event {
 }
 
 const SchedulePage = () => {
-  const [selectedDate, setSelectedDate] = useState<string>(moment().format('YYYY-MM-DD'));
-  const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>(
+    moment().format("YYYY-MM-DD")
+  );
+  const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>(
+    []
+  );
   const [events, setEvents] = useState<Event[]>([]);
-  const [view, setView] = useState<View>('month');
+  const [view, setView] = useState<View>("month");
 
   useEffect(() => {
-    const auth = localStorage.getItem('authToken');
+    const auth = localStorage.getItem("authToken");
     fetch(`http://localhost:5001/meetingSchedulelist`, {
       headers: {
         Authorization: `Bearer ${auth}`,
@@ -38,40 +47,43 @@ const SchedulePage = () => {
           start: new Date(item.scheduledStartDate),
           end: new Date(item.scheduledEndDate),
           description: item.description,
-          date: moment(item.scheduledStartDate).format('YYYY-MM-DD'),
+          date: moment(item.scheduledStartDate).format("YYYY-MM-DD"),
         }));
         setEvents(mappedEvents);
       })
-      .catch((error) => console.error('Error fetching data: ', error));
+      .catch((error) => console.error("Error fetching data: ", error));
   }, []);
 
   const handleDateClick = (date: Date) => {
-    const formattedDate = moment(date).format('YYYY-MM-DD');
+    const formattedDate = moment(date).format("YYYY-MM-DD");
     setSelectedDate(formattedDate);
 
-    const filteredEvents = events.filter((event) => event.date === formattedDate);
+    const filteredEvents = events.filter(
+      (event) => event.date === formattedDate
+    );
     setEventsForSelectedDate(filteredEvents);
   };
 
   return (
     <BaseLayout1>
-      <div className="flex flex-col">
-        <div className="flex-1 p-6 h-16">
+      <div className="flex flex-col mx-auto">
+        <div className="flex-1 p-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">{moment(selectedDate).format('MMMM YYYY')}</h1>
+            <h1 className="text-[20px] font-semibold">
+              {moment(selectedDate).format("MMMM YYYY")}
+            </h1>
           </div>
 
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-4 gap-8">
             {/* Calendar Component */}
             <div className="col-span-3">
-              <div className="bg-white p-6 rounded-lg shadow">
+              <div className="bg-white p-4 rounded-lg shadow overflow-hidden">
                 <Calendar
                   localizer={localizer}
                   events={events}
                   startAccessor="start"
                   endAccessor="end"
-                  style={{ height: 700, width: 1050 }}
-                  views={['month', 'week', 'day']}
+                  style={{ height: 500, width: "100%" }}
                   view={view}
                   onView={(newView) => setView(newView)}
                   onNavigate={handleDateClick}
@@ -79,12 +91,16 @@ const SchedulePage = () => {
                   selectable
                   popup
                   components={{
-                    toolbar: CustomToolbar, // Custom toolbar to remove next/back/today
+                    toolbar: CustomToolbar,
                   }}
                   eventPropGetter={(event) => ({
                     style: {
-                      backgroundColor: event.title.includes('Meeting') ? '#fcd4d4' : '#e8fcd8',
-                      color: '#000',
+                      backgroundColor: event.title.includes("Meeting")
+                        ? "#fcd4d4"
+                        : "#e8fcd8",
+                      color: "#000",
+                      fontSize: "8px",
+                      padding: "2px 4px",
                     },
                   })}
                 />
@@ -93,28 +109,35 @@ const SchedulePage = () => {
 
             {/* List Schedule */}
             <div className="col-span-1">
-              <div className="bg-white p-6 w-72 rounded-lg shadow overflow-y-scroll h-[747px] scrollbar-thin">
-                <h2 className="text-[18px] font-semibold mb-6">
-                 List Schedule for {moment(selectedDate).format('DD MMM YYYY')}
+              <div className="bg-white p-6 w-60 rounded-lg shadow overflow-y-scroll h-[530px] scrollbar-none">
+                <h2 className="text-[13px] font-semibold mb-6 text-center">
+                  List Schedule for {moment(selectedDate).format("DD MMM YYYY")}
                 </h2>
                 <div className="space-y-6">
                   {eventsForSelectedDate.length > 0 ? (
                     eventsForSelectedDate.map((item) => (
                       <div key={item.id} className="border-b pb-2">
                         <div className="flex justify-between">
-                          <h3 className="font-medium text-[14px]">{item.title}</h3>
-                          <span className="text-[11px] text-gray-500 text-end">
-                            {moment(item.start).format('DD MMM YYYY')}
+                          <h3 className="font-medium text-[12px]">
+                            {item.title}
+                          </h3>
+                          <span className="text-[9px] text-gray-500 text-end">
+                            {moment(item.start).format("DD MMM YYYY")}
                           </span>
                         </div>
-                        <div className="text-[12px] text-gray-500">
-                          {moment(item.start).format('h:mm A')} - {moment(item.end).format('h:mm A')}
+                        <div className="text-[10px] text-gray-500">
+                          {moment(item.start).format("h:mm A")} -{" "}
+                          {moment(item.end).format("h:mm A")}
                         </div>
-                        <p className="text-[13px] text-gray-600 mt-2">{item.description || ''}</p>
+                        <p className="text-[10px] text-gray-600 mt-2">
+                          {item.description || ""}
+                        </p>
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500">No events scheduled</p>
+                    <p className="text-gray-500 text-[12px] text-center">
+                      No events scheduled
+                    </p>
                   )}
                 </div>
               </div>
@@ -128,26 +151,42 @@ const SchedulePage = () => {
 
 export default SchedulePage;
 
-const CustomToolbar: React.FC<ToolbarProps<Event, object>> = ({ label, onView, view }) => {
+const CustomToolbar: React.FC<ToolbarProps<Event, object>> = ({
+  label,
+  onView,
+  view,
+}) => {
   return (
-    <div className="flex justify-center items-center p-3 gap-3">
-      <h2 className="text-lg font-semibold">{label}</h2>
-      <div className="flex gap-2 ml-[650px]">
+    <div className="flex justify-between items-center p-2">
+      <h2 className="text-sm font-semibold">{label}</h2>
+      <div className="flex gap-1">
         <button
-          onClick={() => onView('month')}
-          className={`px-3 py-1 rounded ${view === 'month' ? 'bg-blue-900 text-white' : 'bg-gray-200'}`}
+          onClick={() => onView("month")}
+          className={`px-2 py-1 rounded ${
+            view === "month"
+              ? "bg-gray-900 text-white text-[13px]"
+              : "bg-gray-200 text-[13px]"
+          }`}
         >
           Month
         </button>
         <button
-          onClick={() => onView('week')}
-          className={`px-3 py-1 rounded ${view === 'week' ? 'bg-blue-900 text-white' : 'bg-gray-200'}`}
+          onClick={() => onView("week")}
+          className={`px-2 py-1 rounded ${
+            view === "week"
+              ? "bg-gray-900 text-white text-[13px]"
+              : "bg-gray-200 text-[13px]"
+          }`}
         >
           Week
         </button>
         <button
-          onClick={() => onView('day')}
-          className={`px-3 py-1 rounded ${view === 'day' ? 'bg-blue-900 text-white' : 'bg-gray-200'}`}
+          onClick={() => onView("day")}
+          className={`px-2 py-1 rounded ${
+            view === "day"
+              ? "bg-gray-900 text-white text-[13px]"
+              : "bg-gray-200 text-[13px]"
+          }`}
         >
           Day
         </button>

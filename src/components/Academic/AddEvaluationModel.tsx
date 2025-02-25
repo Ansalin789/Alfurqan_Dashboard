@@ -240,7 +240,7 @@ gardianLanguage: '',
       onRequestClose={onRequestClose}
       className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50"
     >
-      <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl p-6 w-[600px] max-h-[100vh] border border-gray-100">
+      <div className=" rounded-xl shadow-2xl p-6 w-[600px] max-h-[100vh] bg-gray-100 border border-gray-300">
         <div className="flex justify-between items-center mb-4 pb-2 border-gray-100">
           <div>
             <h2 className="text-[18px] font-bold bg-gradient-to-r from-[#415075] via-[#1e273c] to-[#1e273c] text-transparent bg-clip-text">
@@ -269,7 +269,7 @@ gardianLanguage: '',
                   value={formData.student.studentFirstName}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-[10px]
+                  className="w-full px-4 py-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px]
                            transition-all duration-300 ease-in-out
                            focus:border-[#293552] focus:ring-2 focus:ring-[#293552]/20 focus:outline-none
                            hover:border-[#293552]/50"
@@ -286,7 +286,7 @@ gardianLanguage: '',
                 name="student.studentLastName"
                 value={formData.student.studentLastName}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -296,7 +296,7 @@ gardianLanguage: '',
                 name="student.studentEmail"
                 value={formData.student.studentEmail}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -306,7 +306,7 @@ gardianLanguage: '',
                 name="student.studentPhone"
                 value={formData.student.studentPhone}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -316,7 +316,7 @@ gardianLanguage: '',
                 name="student.studentCity"
                 value={formData.student.studentCity}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -326,7 +326,7 @@ gardianLanguage: '',
                 name="student.studentCountry"
                 value={formData.student.studentCountry}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -336,7 +336,7 @@ gardianLanguage: '',
                 name="student.timeZone"
                 value={formData.student.timeZone}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -346,7 +346,7 @@ gardianLanguage: '',
                 name="trailId"
                 value={formData.trailId}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -355,7 +355,7 @@ gardianLanguage: '',
                 name="Select Course"
                 value={formData.student.learningInterest}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="Select Course">Select Course</option>
@@ -370,7 +370,7 @@ gardianLanguage: '',
                 name="Select Teacher"
                 value={formData.student.preferredTeacher}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="">Select Teacher</option>
@@ -385,7 +385,7 @@ gardianLanguage: '',
                 name="languageLevel"
                 value={formData.languageLevel}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="">Level</option>
@@ -403,7 +403,7 @@ gardianLanguage: '',
                 name="student.preferredDate"
                 value={formData.student.preferredDate.split('T')[0]}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -413,7 +413,7 @@ gardianLanguage: '',
                 name="time"
                 value={formData.student.preferredFromTime}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -425,7 +425,7 @@ gardianLanguage: '',
                 onChange={handleChange}
                 min="0"
                 step="1"
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -434,7 +434,7 @@ gardianLanguage: '',
                 name="student.preferredTeacher"
                 value={formData.student.preferredTeacher}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="Basic">Basic</option>
@@ -450,7 +450,7 @@ gardianLanguage: '',
                 name="gardianName"
                 value={formData.gardianName}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -460,7 +460,7 @@ gardianLanguage: '',
                 name="gardianPhone"
                 value={formData.gardianPhone}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
@@ -469,7 +469,7 @@ gardianLanguage: '',
                 name="student.evaluationStatus"
                 value={formData.student.evaluationStatus}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="PENDING">Pending</option>
@@ -483,7 +483,7 @@ gardianLanguage: '',
                 name="studentStatus"
                 value={formData.studentStatus}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none"
                 required
               >
                 <option value="PENDING">Joining</option>
@@ -497,7 +497,7 @@ gardianLanguage: '',
                 name="comment"
                 value={formData.comment}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-200 rounded-lg text-[10px] focus:border-[#293552] outline-none resize-none h-[38px]"
+                className="w-full p-2 bg-gray-200 border border-gray-300 rounded-lg text-[10px] focus:border-[#293552] outline-none resize-none h-[38px]"
               />
             </div>
           </div>
@@ -506,7 +506,7 @@ gardianLanguage: '',
             <button
               type="button"
               onClick={onRequestClose}
-              className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-[12px] font-medium"
+              className="px-4 py-1.5 bg-gray-200 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-[12px] font-medium"
             >
               Cancel
             </button>

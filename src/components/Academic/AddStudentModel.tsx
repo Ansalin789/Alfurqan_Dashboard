@@ -1,14 +1,12 @@
+"use client";
 
+import React, { useState, useEffect } from "react";
+import Modal from "react-modal";
+import { FaTimes } from "react-icons/fa";
+import { CountryDropdown } from "react-country-region-selector";
 
-'use client';
-
-import React, { useState } from 'react';
-import Modal from 'react-modal';
-import { FaTimes } from 'react-icons/fa';
-
-
-if (typeof window !== 'undefined') {
-  Modal.setAppElement('body');
+if (typeof window !== "undefined") {
+  Modal.setAppElement("body");
 }
 interface AddStudentModalProps {
   isOpen: boolean;
@@ -17,25 +15,34 @@ interface AddStudentModalProps {
   onSave: () => void;
 }
 
-  const AddStudentModal = ({ isOpen, onRequestClose, isEditMode, onSave }: AddStudentModalProps) => {
+const AddStudentModal = ({
+  isOpen,
+  onRequestClose,
+  isEditMode,
+  onSave,
+}: AddStudentModalProps) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  // const [country, setCountry] = useState('');
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [country, setCountry] = useState('');
-  const [city, setCity] = useState('');
-  const [learningInterest, setLearningInterest] = useState('');
-  const [preferredToTime, setPreferredToTime] = useState('');
-  const [numberOfStudents, setNumberOfStudents] = useState('');
-  const [preferredTeacher, setPreferredTeacher] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [evaluationStatus, setEvaluationStatus] = useState('');
-  const [preferredFromTime, setPreferredFromTime] = useState('');
+  const [country, setCountry] = useState("USA");
+  // const [cities, setCities] = useState<string[]>([]);
+  const [cities, setCities] = useState([]);
+  const [city, setCity] = useState("");
+  const countriesCities = require("countries-cities");
 
- 
-    const handleSubmit = async (e: React.FormEvent) => {
+  const [learningInterest, setLearningInterest] = useState("");
+  const [preferredToTime, setPreferredToTime] = useState("");
+  const [numberOfStudents, setNumberOfStudents] = useState("");
+  const [preferredTeacher, setPreferredTeacher] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [evaluationStatus, setEvaluationStatus] = useState("");
+  const [preferredFromTime, setPreferredFromTime] = useState("");
+  // const [cities, setCities] = useState<string[]>([]);
 
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const studentData = {
@@ -44,7 +51,7 @@ interface AddStudentModalProps {
         email,
         phoneNumber: Number(phoneNumber),
         country,
-        countryCode:"+1",
+        countryCode: "+1",
         city,
         learningInterest,
         numberOfStudents: Number(numberOfStudents),
@@ -53,74 +60,88 @@ interface AddStudentModalProps {
         preferredToTime,
         startDate,
         evaluationStatus,
-        referralSource:"Google",
-        status: 'Active',
-        createdBy: 'SYSTEM',
-        lastUpdatedBy: 'SYSTEM',
+        referralSource: "Google",
+        status: "Active",
+        createdBy: "SYSTEM",
+        lastUpdatedBy: "SYSTEM",
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       };
 
       if (!firstName || firstName.length < 3) {
-        throw new Error('First name must be at least 3 characters long');
+        throw new Error("First name must be at least 3 characters long");
       }
       if (!lastName || lastName.length < 1) {
-        throw new Error('Last name is required');
+        throw new Error("Last name is required");
       }
       if (!email || !/\S+@\S+\.\S+/.test(email)) {
-        throw new Error('Valid email is required');
+        throw new Error("Valid email is required");
       }
       if (!phoneNumber || phoneNumber.toString().length < 10) {
-        throw new Error('Phone number must be at least 10 digits');
+        throw new Error("Phone number must be at least 10 digits");
       }
 
-      console.log('Sending data:', studentData);
-      
-      const auth=localStorage.getItem('authToken');
+      console.log("Sending data:", studentData);
+
+      const auth = localStorage.getItem("authToken");
       console.log(auth);
       const response = await fetch(`http://localhost:5001/student`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${auth}`,
         },
         body: JSON.stringify(studentData),
       });
 
       const responseData = await response.json();
-      console.log('Response:', response.status, responseData);
+      console.log("Response:", response.status, responseData);
 
       if (!response.ok) {
-        throw new Error(`Server error: ${responseData.status || 'Unknown error'}`);
+        throw new Error(
+          `Server error: ${responseData.status || "Unknown error"}`
+        );
       }
 
       onSave();
       onRequestClose();
-      alert('Student saved successfully!');
+      alert("Student saved successfully!");
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       alert(`Failed to save student: ${error}`);
     }
   };
   const calculatePreferredToTime = (fromTime: string) => {
     // Split time and period (AM/PM)
-    const [time, period] = fromTime.split(' ');
-    const [hours, minutes] = time.split(':').map(Number);
-  
+    const [time, period] = fromTime.split(" ");
+    const [hours, minutes] = time.split(":").map(Number);
+
     // Convert to 24-hour format for calculation
-    let hours24 = period === 'PM' && hours !== 12 ? hours + 12 : hours;
-    if (period === 'AM' && hours === 12) hours24 = 0;
-  
+    let hours24 = period === "PM" && hours !== 12 ? hours + 12 : hours;
+    if (period === "AM" && hours === 12) hours24 = 0;
+
     // Add 30 minutes
     const totalMinutes = hours24 * 60 + minutes + 30;
     const newHours24 = Math.floor(totalMinutes / 60) % 24; // Wrap around after 24 hours
     const newMinutes = totalMinutes % 60;
-  
+
     // Convert back to 12-hour format
-    const newPeriod = newHours24 >= 12 ? 'PM' : 'AM';
+    const newPeriod = newHours24 >= 12 ? "PM" : "AM";
     const adjustedHours = newHours24 % 12 || 12;
-  
-    return `${adjustedHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')} ${newPeriod}`;
+
+    return `${adjustedHours.toString().padStart(2, "0")}:${newMinutes
+      .toString()
+      .padStart(2, "0")} ${newPeriod}`;
   };
+
+  useEffect(() => {
+    if (country) {
+      const fetchedCities = countriesCities.getCities(country);
+      setCities(fetchedCities);
+      setCity("");
+    } else {
+      setCities([]);
+    }
+  }, [country]);
 
   return (
     <Modal
@@ -128,10 +149,10 @@ interface AddStudentModalProps {
       onRequestClose={onRequestClose}
       className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50"
     >
-      <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-2xl p-6 w-[600px] max-h-[100vh] overflow-y-auto">
+      <div className="bg-gray-100 border border-gray-300 rounded-xl shadow-2xl p-6 w-[600px] max-h-[100vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6 pb-4">
           <h2 className="text-[18px] font-bold bg-gradient-to-r from-[#415075] via-[#1e273c] to-[#1e273c] text-transparent bg-clip-text">
-            {isEditMode ? 'Edit Student' : 'Add Student'}
+            {isEditMode ? "Edit Student" : "Add Student"}
           </h2>
           <button
             onClick={onRequestClose}
@@ -141,77 +162,129 @@ interface AddStudentModalProps {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 max-h-[100vh] overflow-y-auto scrollbar-none">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6 max-h-[100vh] overflow-y-auto scrollbar-none"
+        >
           <div className="grid grid-cols-3 gap-5">
             <div className="form-group">
-              <label htmlFor="first-name" className="block text-xs font-medium text-gray-700 mb-1.5">First Name</label>
+              <label
+                htmlFor="first-name"
+                className="block text-xs font-medium text-gray-700 mb-1.5"
+              >
+                First Name
+              </label>
               <input
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
+                className="w-full px-4 py-2 bg-gray-200 border border-gray-300  rounded-lg text-xs focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Last Name</label>
+              <label
+                htmlFor="first-name"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                Last Name
+              </label>
               <input
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
+                className="w-full px-4 py-2 bg-gray-200 border border-gray-300  rounded-lg text-xs focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Email</label>
+              <label
+                htmlFor="first-name"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                Email
+              </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
+                className="w-full px-4 py-2 bg-gray-200 border border-gray-300  rounded-lg text-xs focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Phone Number</label>
+              <label
+                htmlFor="first-name"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                Phone Number
+              </label>
               <input
                 type="number"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
+                className="w-full px-4 py-2 bg-gray-200 border border-gray-300  rounded-lg text-xs focus:border-[#293552] outline-none"
+              />
+            </div>
+
+            <div className="form-group">
+              <label
+                htmlFor="country"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                Country
+              </label>
+              <CountryDropdown
+                value={country}
+                onChange={(val) => {
+                  setCountry(val);
+                }}
+                className="w-full px-2 py-2 rounded-lg text-[11px] text-[#293552] bg-gray-200 border border-gray-300 focus:ring-1 focus:ring-[#293552] focus:outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">City</label>
-              <input
-                type="text"
+              <label
+                htmlFor="city"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                City
+              </label>
+              <select
+                id="city"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
-              />
+                className="w-full px-4 py-2 rounded-lg text-[11px] text-[#293552] bg-gray-200 border border-gray-300  focus:ring-2 focus:ring-[#293552] focus:outline-none"
+              >
+                <option value="">Select a city</option>
+                {cities?.map((cityName) => (
+                  <option key={cityName} value={cityName}>
+                    {cityName}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-group">
-              <label  htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Country</label>
-              <input
-                type="text"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Number of Students</label>
+              <label
+                htmlFor="first-name"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                Number of Students
+              </label>
               <input
                 type="number"
                 value={numberOfStudents}
                 onChange={(e) => setNumberOfStudents(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
+                className="w-full px-4 py-2 bg-gray-200 border border-gray-300  rounded-lg text-[11px] focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Teacher</label>
+              <label
+                htmlFor="first-name"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                Preferred Teacher
+              </label>
               <select
                 value={preferredTeacher}
                 onChange={(e) => setPreferredTeacher(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
+                className="w-full px-4 py-2 bg-gray-200 border border-gray-300  rounded-lg text-[11px] focus:border-[#293552] outline-none"
               >
                 <option value="">Select Teacher</option>
                 <option value="Male">Male</option>
@@ -220,11 +293,16 @@ interface AddStudentModalProps {
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Learning Interest</label>
+              <label
+                htmlFor="first-name"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                Learning Interest
+              </label>
               <select
                 value={learningInterest}
                 onChange={(e) => setLearningInterest(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
+                className="w-full px-4 py-2 bg-gray-200 border border-gray-300  rounded-lg text-xs focus:border-[#293552] outline-none"
               >
                 <option value="">Select Course</option>
                 <option value="Quran">Quran</option>
@@ -233,39 +311,53 @@ interface AddStudentModalProps {
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Date</label>
+              <label
+                htmlFor="first-name"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                Preferred Date
+              </label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
+                className="w-full px-4 py-2 bg-gray-200 border border-gray-300  rounded-lg text-xs focus:border-[#293552] outline-none"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="first-name" className="block mb-1 text-xs font-medium text-gray-700">Preferred Time</label>
+              <label
+                htmlFor="first-name"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                Preferred Time
+              </label>
               <input
-              type="text"
-              placeholder="HH:MM AM/PM"
-              value={preferredFromTime}
-              onChange={(e) => {
-                const fromTime = e.target.value;
-            
-                
+                type="text"
+                placeholder="HH:MM AM/PM"
+                value={preferredFromTime}
+                onChange={(e) => {
+                  const fromTime = e.target.value;
+
                   setPreferredFromTime(fromTime);
                   const toTime = calculatePreferredToTime(fromTime);
                   setPreferredToTime(toTime);
-              }}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
-            />
+                }}
+                className="w-full px-4 py-2 bg-gray-200 border border-gray-300  rounded-lg text-xs focus:border-[#293552] outline-none"
+              />
             </div>
             <div className="form-group">
-              <label  htmlFor="first-name"className="block mb-1 text-xs font-medium text-gray-700">Evaluation Status</label>
+              <label
+                htmlFor="first-name"
+                className="block mb-1 text-xs font-medium text-gray-700"
+              >
+                Evaluation Status
+              </label>
               <select
                 value={evaluationStatus}
                 onChange={(e) => setEvaluationStatus(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-xs focus:border-[#293552] outline-none"
+                className="w-full px-4 py-2 bg-gray-200 border border-gray-300  rounded-lg text-xs focus:border-[#293552] outline-none"
               >
-                                <option value="">Status</option>
+                <option value="">Status</option>
                 <option value="PENDING">Pending</option>
                 <option value="INPROGRESS">In Progress</option>
                 <option value="COMPLETED">Completed</option>
@@ -277,7 +369,7 @@ interface AddStudentModalProps {
             <button
               type="button"
               onClick={onRequestClose}
-              className="px-4 py-1.5 bg-[#fff] text-gray-700 rounded-lg shadow hover:bg-gray-100 text-xs"
+              className="px-4 py-1.5 bg-gray-200 border border-gray-300 text-[#000] rounded-lg shadow hover:bg-gray-100 text-xs"
             >
               Cancel
             </button>
@@ -285,7 +377,7 @@ interface AddStudentModalProps {
               type="submit"
               className="px-4 py-1.5 bg-[#293552] text-white rounded-lg hover:bg-[#1e273c] text-xs"
             >
-              {isEditMode ? 'Save Changes' : 'Save'}
+              {isEditMode ? "Save Changes" : "Save"}
             </button>
           </div>
         </form>

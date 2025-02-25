@@ -1,6 +1,5 @@
-
-import axios from 'axios';
-import React, { useState, useEffect } from 'react';
+import axios from "axios";
+import React, { useState, useEffect } from "react";
 
 // Define interfaces for the API response
 interface Student {
@@ -31,17 +30,20 @@ const UpcomingClasses: React.FC = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const auth=localStorage.getItem('authToken');
-        const academicId=localStorage.getItem('academicId');
-        console.log("academicId>>",academicId);
-        const response = await axios.get(`http://localhost:5001/evaluationlist`, {
-          method: 'GET',
-          params:{academicCoachId:academicId },
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth}`, 
-          },
-        });
+        const auth = localStorage.getItem("authToken");
+        const academicId = localStorage.getItem("academicId");
+        console.log("academicId>>", academicId);
+        const response = await axios.get(
+          `http://localhost:5001/evaluationlist`,
+          {
+            method: "GET",
+            params: { academicCoachId: academicId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${auth}`,
+            },
+          }
+        );
 
         if (!response.data) {
           throw new Error(`Failed to fetch classes: ${response.statusText}`);
@@ -65,8 +67,11 @@ const UpcomingClasses: React.FC = () => {
             id: item._id, // Use the unique ID as the key
             date: new Date(item.classStartDate).toLocaleDateString(), // Format date
             time: `${item.classStartTime} - ${item.classEndTime}`, // Combine start and end time
-            title: item.student.learningInterest || 'Class', // Use learning interest as title
-            color: item.student.preferredTeacher === 'Female' ? 'blue-500' : 'red-500', // Example color logic
+            title: item.student.learningInterest || "Class", // Use learning interest as title
+            color:
+              item.student.preferredTeacher === "Female"
+                ? "blue-500"
+                : "red-500", // Example color logic
           }));
 
         setClasses(upcomingClasses);
@@ -74,7 +79,7 @@ const UpcomingClasses: React.FC = () => {
         if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError('An unexpected error occurred');
+          setError("An unexpected error occurred");
         }
       } finally {
         setLoading(false);
@@ -93,26 +98,32 @@ const UpcomingClasses: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow-lg">
-      <h3 className="text-[15px] font-semibold text-gray-800 mb-4 text-center">
+    <div className="items-center justify-center p-4 shadow-lg rounded-lg bg-slate-100">
+      <h3 className="text-[13px] font-semibold text-gray-800 mb-4 text-center">
         Upcoming Classes
       </h3>
       <div className="space-y-4">
         {classes.length === 0 ? (
-          <p className="text-center text-gray-600">No upcoming classes.</p>
+          <p className="text-center text-gray-600 text-[11px]">
+            No upcoming classes.
+          </p>
         ) : (
           classes.map((classItem) => (
             <div
               key={classItem.id} // Use the unique ID as the key
               className={`relative border-l-4 bg-white p-4 rounded-md shadow-md ${
-                classItem.color === 'blue-500' ? 'border-blue-500' : 'border-red-500'
+                classItem.color === "blue-500"
+                  ? "border-blue-500"
+                  : "border-red-500"
               }`}
             >
               <div className="flex justify-between items-center">
-                <p className="text-[12px] text-gray-600">{classItem.date}</p>
-                <p className="text-[12px] text-gray-600">{classItem.time}</p>
+                <p className="text-[11px] text-gray-600">{classItem.date}</p>
+                <p className="text-[11px] text-gray-600">{classItem.time}</p>
               </div>
-              <h4 className="mt-2 text-[13px] font-medium text-gray-800">{classItem.title}</h4>
+              <h4 className="mt-2 text-[13px] font-medium text-gray-800">
+                {classItem.title}
+              </h4>
             </div>
           ))
         )}
