@@ -93,22 +93,27 @@ const ClassAnalytics: React.FC = () => {
         };
     
         classSchedule.forEach((cls) => {
-          const status =
-            cls.classStatus?.toLowerCase() === "pending"
-              ? "Scheduled"
-              : cls.classStatus?.toLowerCase() === "completed"
-              ? "Completed"
-              : "Other";
-    
+          let status = "Other";
+        
+          if (cls.classStatus) {
+            const classStatusLower = cls.classStatus.toLowerCase();
+            if (classStatusLower === "pending") {
+              status = "Scheduled";
+            } else if (classStatusLower === "completed") {
+              status = "Completed";
+            }
+          }
+        
           if (status !== "Other") {
             statusCount[status] = (statusCount[status] || 0) + 1;
           }
-    
+        
           // Count Absent based on teacherAttendee field
           if (cls.teacherAttendee?.toLowerCase() === "absent") {
             statusCount["Absent"] += 1;
           }
         });
+        
     
         setLabels(Object.keys(statusCount));
         setChartData(Object.values(statusCount));

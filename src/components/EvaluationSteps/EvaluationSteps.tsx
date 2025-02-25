@@ -1344,8 +1344,10 @@ const Step7 = ({ prevStep, nextStep, updatedStudentDatas }: { prevStep: () => vo
                       </span>
                     </label>
                     <CountryDropdown
-                      value={guardianCity}
-                      onChange={(val) => setGuardianCountry(val)}
+                      value={guardianCountry}
+                      onChange={(val) => { 
+                        setGuardianCountry(val)
+                      }}
                       className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white
                                 placeholder-white/30 focus:bg-white/10 focus:border-white/20 
                                 focus:ring-2 focus:ring-purple-500/20 transition-all duration-200 
