@@ -5,7 +5,6 @@ import 'react-calendar/dist/Calendar.css'
 import BaseLayout from '@/components/BaseLayout'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { FaSearch } from "react-icons/fa";
-// import { BiFilterAlt } from "react-icons/bi";
 import Calender from '@/app/teacher/components/Calender';
 import Total from '@/app/teacher/components/total';
 import NextScheduleClass from '@/app/teacher/components/NextScheduleclass';

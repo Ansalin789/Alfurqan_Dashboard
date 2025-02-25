@@ -1,8 +1,82 @@
-'use client';
+"use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const TeachingActivity: React.FC = () => {
+  const [monthlyHours, setMonthlyHours] = useState<number[]>(Array(12).fill(0));
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("TeacherAuthToken");
+        const teacherId = localStorage.getItem("TeacherPortalId");
+
+        if (!auth || !teacherId) {
+          console.error("Missing authentication token or teacher ID.");
+          return;
+        }
+
+        const response = await axios.get("http://localhost:5001/classShedule", {
+          headers: { Authorization: `Bearer ${auth}` },
+        });
+
+        const filteredData = response.data.students.filter(
+          (item: any) => item.teacher.teacherId === teacherId
+        );
+
+        const monthlyData = Array(12).fill(0);
+
+        filteredData.forEach((schedule: any) => {
+          if (!schedule.startDate || !schedule.startTime || !schedule.endTime) return;
+
+          const startDate = new Date(schedule.startDate);
+          const monthIndex = startDate.getMonth();
+
+          schedule.classDay.forEach((_: any, index: number) => {
+            if (!schedule.startTime[index] || !schedule.endTime[index]) return;
+
+            const startHour = parseInt(schedule.startTime[index].split(":")[0], 10);
+            const endHour = parseInt(schedule.endTime[index].split(":")[0], 10);
+
+            if (isNaN(startHour) || isNaN(endHour)) return; // Prevent NaN values
+
+            const dailyHours = Math.max(0, endHour - startHour); // Ensure non-negative values
+
+            monthlyData[monthIndex] += dailyHours;
+          });
+        });
+
+        setMonthlyHours(monthlyData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Function to generate SVG path
+  const getGraphPath = (monthlyHours: number[]) => {
+    const width = 680;
+    const height = 160;
+    const padding = 10;
+    const maxHours = Math.max(...monthlyHours, 1); // Avoid division by zero
+
+    let path = `M0 ${height}`;
+
+    monthlyHours.forEach((hours, i) => {
+      const x = (i / 11) * width; // Spread points evenly
+      const y = height - (hours / maxHours) * (height - padding); // Scale correctly
+
+      path += ` L${x} ${y}`;
+    });
+
+    path += ` L${width} ${height} L0 ${height} Z`; // Close the shape properly
+
+    return path;
+  };
+
   return (
     <div className="bg-gradient-to-t from-[#5C92DE] to-[#324F78] border border-black text-white p-2 rounded-[15px] shadow-lg w-[100%] h-[205px]">
       {/* Header */}
@@ -14,58 +88,35 @@ const TeachingActivity: React.FC = () => {
         </select>
       </div>
 
-      {/* Graph Area */}
       <div className="relative flex-1">
-        {/* Gradient Graph */}
-        <svg viewBox="0 0 500 200" className="w-full h-[150px]">
-          {/* Gradient */}
-          <defs>
-            <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#fef08a" stopOpacity="1" />
-              <stop offset="100%" stopColor="#1e40af" stopOpacity="0.8" />
-            </linearGradient>
-          </defs>
-          {/* Area Path */}
-          <path
-            d="M0 160 C 50 100, 100 40, 150 60 
-               C 200 90, 250 150, 300 130 
-               C 350 110, 400 60, 450 90 
-               C 475 110, 500 160, 500 160 
-               L 0 160 Z"
-            fill="url(#gradient)"
-          />
-          {/* Horizontal Grid Lines */}
-          <line x1="0" y1="40" x2="500" y2="40" stroke="#94a3b8" strokeWidth="0.5" />
-          <line x1="0" y1="80" x2="500" y2="80" stroke="#94a3b8" strokeWidth="0.5" />
-          <line x1="0" y1="120" x2="500" y2="120" stroke="#94a3b8" strokeWidth="0.5" />
-          <line x1="0" y1="160" x2="500" y2="160" stroke="#94a3b8" strokeWidth="0.5" />
-        </svg>
+  <svg viewBox="0 0 1000 190" className="w-full h-full">
+    <defs>
+      <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#fef08a" stopOpacity="1" />
+        <stop offset="100%" stopColor="#1e40af" stopOpacity="0.8" />
+      </linearGradient>
+    </defs>
 
-        {/* Tooltip */}
-        <div className="absolute left-[40%] transform -translate-x-1/2 -top-[5%] flex flex-col items-center">
-          {/* Gauge Icon */}
-          <div className="w-[50px] h-[50px] rounded-full border-[3px] border-red-500 relative flex items-center justify-center">
-            <div className="w-[6px] h-[6px] bg-red-500 rounded-full"></div>
-            <div
-              className="absolute w-[25px] h-[3px] bg-red-500 origin-bottom transform rotate-[30deg]"
-              style={{ transformOrigin: "bottom" }}
-            ></div>
-          </div>
-          {/* Tooltip Text */}
-          <div className="bg-blue-700 text-[8px] p-1 rounded-md mt-1 shadow-lg">
-            April 15, 2024
-            <br />
-            121 Hours
-          </div>
-        </div>
-      </div>
+    {/* Ensure the graph starts at Jan by mapping data correctly */}
+    <path d={getGraphPath(monthlyHours)} fill="url(#gradient)" stroke="#ffffff" strokeWidth="2" />
 
-      <div className="flex justify-between text-[12px] text-gray-300">
-        {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"].map((month) => (
-          <span key={month} className="flex-1 text-center text-[11px]">
-            {month}
-          </span>
-        ))}
+    {/* Horizontal Grid Lines - Full Width */}
+    {[40, 80, 120, 160].map((y) => (
+      <line key={y} x1="0" y1={y} x2="1000" y2={y} stroke="#94a3b8" strokeWidth="0.5" />
+    ))}
+  </svg>
+</div>
+
+
+      {/* X-Axis Labels */}
+      <div className="flex  text-[12px] text-gray-300">
+        {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map(
+          (month) => (
+            <span key={month} className="flex-1 text-center text-[11px]">
+              {month}
+            </span>
+          )
+        )}
       </div>
     </div>
   );
