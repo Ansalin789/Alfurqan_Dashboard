@@ -1,32 +1,88 @@
 "use client";
-import React, { Component } from "react";
+import axios from "axios";
+import React, {  useEffect, useState } from "react";
+interface Assignment {
+  _id: string;
+  studentId: string;
+  assignmentName: string;
+  assignedTeacher: string;
+  assignmentType: string;
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question: string;
+  hasOptions: boolean;
+  audioFile: string;
+  uploadFile: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  level: string;
+  courses: string;
+  assignedDate: string;
+  dueDate: string;
+  __v: number;
+}
 
-class AssignList extends Component {
-  render() {
+function  AssignList(){
+
+    const [assignments, setAssignments] = useState<Assignment[]>([]);
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      const storedStudentId = localStorage.getItem('StudentPortalId');
+      const auth = localStorage.getItem('TeacherAuthToken');
+      try {
+        const response = await axios.get("http://localhost:5001/allAssignment", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const filteredAssignments = response.data.assignments.filter(
+          (assignment: Assignment) => assignment.studentId === storedStudentId
+        );
+
+        setAssignments(filteredAssignments);
+        console.log(filteredAssignments);
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+      }
+    };
+
+    fetchAssignments();
+  }, []);
+  const totalAssignments = assignments.length;
+  const completedAssignments = assignments.filter(
+    (assignment:Assignment) => assignment.status === "completed"
+  ).length;
+  const pendingAssignments = totalAssignments - completedAssignments;
     const cards = [
       {
         id: "card1",
         name: "Total Assignment Assigned",
-        value: 80,
-        count: 25,
+        value: totalAssignments,
+        count: totalAssignments,
         icon: "📋",
-        color: "#FFCC00",
+        color: "#FEC64F",
       },
       {
         id: "card2",
         name: "Total Assignment Completed",
-        value: 62,
-        count: 10,
+        value: completedAssignments ,
+        count: completedAssignments ,
         icon: "📄",
-        color: "#00CC99",
+        color: "#00D9B0",
       },
       {
         id: "card3",
         name: "Total Assignment Pending",
-        value: 62,
-        count: 15,
+        value: pendingAssignments,
+        count: pendingAssignments,
         icon: "⏳",
-        color: "#FF6666",
+        color: "#FC6B57",
       },
     ];
     return (
@@ -87,6 +143,6 @@ class AssignList extends Component {
       </div>
     );
   }
-}
+
 
 export default AssignList;

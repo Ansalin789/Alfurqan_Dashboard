@@ -3,6 +3,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 interface Assignment {
+assignedTeacherId:string;
   _id: string;
   studentId:string;
   assignmentName: string;
@@ -176,6 +177,7 @@ const AssignmentList = () => {
     const studentId11=localStorage.getItem('studentviewcontrol');
     const studentId1=localStorage.getItem('TeacherPortalName');
     const formData = new FormData();
+    formData.append("assignedTeacherId",localStorage.getItem('TeacherPortalId') ?? '');
  formData.append("studentId",studentId11 ?? "");
 formData.append("assignmentName", quizData.assignmentName);
 formData.append("assignedTeacher",studentId1 ?? " " );
@@ -235,6 +237,7 @@ formData.forEach((value, key) => {
     }
   };
   const handleAssign1=async()=>{
+    console.log("assigned is clicked");
     try {
       // **Step 1: GET REQUEST** (Fetch assignment details)
       const response = await axios.get(`http://localhost:5001/assignments/${selectedAssignmentId}`, {
@@ -247,23 +250,24 @@ formData.forEach((value, key) => {
       // **Step 2: PUT REQUEST** (Update assignment)
       const formData = new FormData();
       // Define the type of 'date' explicitly as 'string'
-const formatDate = (date: string): string => {
-  const [day, month, year] = date.split('/'); // Assuming "13/2/25"
-  
-  // Convert 'year' to a number before comparing
-  const formattedYear = parseInt(year, 10); // Convert to number
-
-  return `${formattedYear < 1000 ? '20' + formattedYear : formattedYear}-${month}-${day}`; // Converts to YYYY-MM-DD format
-};
+      const formatDate = (date: string): string => {
+        const [day, month, year] = date.split('/'); // Assuming "13/2/25"
+      
+        // Ensure correct year format
+        const formattedYear = year.length === 2 ? `20${year}` : year;
+      
+        // Return YYYY-MM-DD format
+        return `${formattedYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      };
       
       // Example usage
       const formattedAssignedDate = formatDate(assignedDate);
       const formattedDueDate = formatDate(dueDate);
-
+      formData.append("assignedTeacherId",data.assignedTeacherId);
       // Append all fields from the assignment data into FormData
       formData.append("assignmentName", data.assignmentName);
       formData.append("assignedTeacher", data.assignedTeacher);
-      formData.append("assignmentType", JSON.stringify(data.assignmentType));
+      formData.append("assignmentType", data.assignmentType);
       formData.append("chooseType", data.chooseType);
       formData.append("trueorfalseType", data.trueorfalseType);
       formData.append("question", data.question);
@@ -296,15 +300,6 @@ const formatDate = (date: string): string => {
     } 
      
   };
-
-  // const toBuffer = async (file: File) => {
-  //   return new Promise<ArrayBuffer>((resolve, reject) => {
-  //     const reader = new FileReader();
-  //     reader.onload = () => resolve(reader.result as ArrayBuffer);
-  //     reader.onerror = () => reject(new Error("Failed to read file"));
-  //     reader.readAsArrayBuffer(file);
-  //   });
-  // };
 
   const handleNoOptionsChange = (type: keyof typeof showNoOptions) => {
     setShowNoOptions(prev => ({ ...prev, [type]: !prev[type] }));

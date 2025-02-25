@@ -1,36 +1,113 @@
 "use client";
 
 
-import React, { Component } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+interface Assignment {
+  
+assignedTeacherId:string;
+  _id: string;
+  studentId: string;
+  assignmentName: string;
+  assignedTeacher: string;
+  assignmentType: string;
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question: string;
+  hasOptions: boolean;
+  audioFile: string;
+  uploadFile: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  level: string;
+  courses: string;
+  assignedDate: string;
+  dueDate: string;
+  __v: number;
+}
 
-class  Assignment extends Component {
-  render() {
-    const cards = [
-      {
-        id: "card1",
-        name: "Total Assignment Assigned",
-        value: 80,
-        count: 25,
-        icon: "📋",
-        color: "#FEC64F",
-      },
-      {
-        id: "card2",
-        name: "Total Assignment Completed",
-        value: 62,
-        count: 10,
-        icon: "📄",
-        color: "#00D9B0",
-      },
-      {
-        id: "card3",
-        name: "Total Assignment Pending",
-        value: 62,
-        count: 15,
-        icon: "⏳",
-        color: "#FC6B57",
-      },
-    ];
+function  Assignment(){
+
+    const [assignments, setAssignments] = useState<Assignment[]>([]);
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      const storedStudentId = localStorage.getItem('TeacherPortalId');
+      console.log(storedStudentId);
+      const auth = localStorage.getItem('TeacherAuthToken');
+      try {
+        const response = await axios.get("http://localhost:5001/allAssignment", {
+          headers: {
+            Authorization: `Bearer ${auth}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        console.log("API Response:", response.data); // Debugging
+
+      if (!response.data.assignments) {
+        console.error("No assignments found in API response");
+        return;
+      }
+
+      const filteredAssignments = response.data.assignments.filter(
+        (assignment: Assignment) => assignment.
+        assignedTeacherId === storedStudentId
+      );
+
+      setAssignments(filteredAssignments);
+      console.log(filteredAssignments);
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+      }
+    };
+
+    fetchAssignments();
+  }, []);
+  const totalAssignments = assignments.length;
+const completedAssignments = assignments.filter(
+  (assignment: Assignment) => assignment.status === "completed"
+).length;
+const pendingAssignments = totalAssignments - completedAssignments;
+
+// Avoid division by zero
+const completionPercentage = totalAssignments > 0
+  ? Math.round((completedAssignments / totalAssignments) * 100)
+  : 0;
+const pendingPercentage = totalAssignments > 0
+  ? Math.round((pendingAssignments / totalAssignments) * 100)
+  : 0;
+
+  const cards = [
+    {
+      id: "card1",
+      name: "Total Assignment Assigned",
+      value: 100,  // Always full
+      count: totalAssignments,
+      icon: "📋",
+      color: "#FEC64F",
+    },
+    {
+      id: "card2",
+      name: "Total Assignment Completed",
+      value: completionPercentage,  // Convert count to percentage
+      count: completedAssignments,
+      icon: "📄",
+      color: "#00D9B0",
+    },
+    {
+      id: "card3",
+      name: "Total Assignment Pending",
+      value: pendingPercentage,
+      count: pendingAssignments,
+      icon: "⏳",
+      color: "#FC6B57",
+    },
+  ];
+  
     return (
       <div className="p-4 mx-auto w-[1250px] pr-40">
         <h1 className="text-2xl font-semibold text-gray-800 p-2 -ml-4">Assignment</h1>
@@ -85,6 +162,6 @@ class  Assignment extends Component {
       </div>
     );
   }
-}
+
 
 export default Assignment;

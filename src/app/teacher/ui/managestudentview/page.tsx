@@ -64,7 +64,10 @@ const Page = () => {
   ).length;
 
   // Calculate percentage of completed assignments
-  const completedPercentage = totalAssignments > 0 ? (completedAssignments / totalAssignments) * 100 : 0;
+  const completedPercentage = totalAssignments > 0 
+  ? parseFloat(((completedAssignments / totalAssignments) * 100).toFixed(2)) 
+  : 0;
+
 
   const cards = [
     {

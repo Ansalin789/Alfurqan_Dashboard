@@ -140,8 +140,8 @@ const AssignmentList = () => {
                     <td className="px-6 py-2 text-center">{assignment.assignedTeacher}</td>
                     <td className="px-6 py-2 text-center">{assignment.courses}</td>
                     <td className="px-6 py-2 text-center">{assignment.assignmentType}</td>
-                    <td className="px-6 py-2 text-center">{assignment.assignedDate}</td>
-                    <td className="px-6 py-2 text-center">{assignment.dueDate}</td>
+                    <td className="px-6 py-2 text-center">{new Date(assignment.assignedDate).toLocaleDateString()}</td>
+                    <td className="px-6 py-2 text-center">{new Date(assignment.dueDate).toLocaleDateString()}</td>
                     <td className="px-6 py-1 text-center">
                       <span
                         className={`px-2 py-1 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] text-[10px] ${assignment.status}`}
