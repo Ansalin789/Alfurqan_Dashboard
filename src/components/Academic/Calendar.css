@@ -92,7 +92,19 @@
 }
 
 .event-day {
-  background-image: linear-gradient(to right, #739ad0, #5792e2) !important;
-  color: white !important;
+  position: relative;
+  color: #31517e !important;
   border-radius: 6px !important;
+}
+
+.event-day::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background-color: #223857;
+  border-radius: 50%;
 }

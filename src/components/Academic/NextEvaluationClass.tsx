@@ -135,7 +135,7 @@ const NextEvaluationClass = () => {
   }
 
   return (
-    <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] rounded-[25px] shadow flex items-center justify-between text-white">
+    <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] rounded-[20px] shadow flex items-center justify-between text-white">
       <div className="items-center p-1 px-8">
         <h3 className="text-[13px] font-medium pt-3">
           Your Next Evaluation Class

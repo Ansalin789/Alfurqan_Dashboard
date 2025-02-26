@@ -98,7 +98,7 @@ const UpcomingClasses: React.FC = () => {
   }
 
   return (
-    <div className="items-center justify-center p-4 shadow-lg rounded-lg bg-slate-100">
+    <div className="items-center justify-center p-4 shadow-lg rounded-[20px] bg-slate-100">
       <h3 className="text-[13px] font-semibold text-gray-800 mb-4 text-center">
         Upcoming Classes
       </h3>

@@ -74,13 +74,13 @@ const StudentEvaluation = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="col-span-12 bg-[#CED4DC] p-0 rounded-[30px] shadow mb-2">
+    <div className="col-span-12 bg-[#CED4DC] p-0 rounded-[20px] shadow mb-2">
       <h3 className="text-[13px] font-semibold ml-4 mt-2 text-[#000] mb-2">
         Student Evaluation
       </h3>
       <table className="w-full">
         <thead>
-          <tr className="text-center border-b text-[13px]">
+          <tr className="text-center border-b text-[11px] font-semibold">
             <th className="p-1">Trail</th>
             <th className="p-1">Name</th>
             <th className="p-1">Mobile</th>

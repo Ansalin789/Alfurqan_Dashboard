@@ -38,7 +38,7 @@ export default function Academic() {
   return (
     <Link
       href="/Academic/manageStudents"
-      className="block col-span-12 bg-[#3e68a1] p-4 py-3 rounded-[25px] shadow-xl"
+      className="block col-span-12 bg-[#3e68a1] p-4 py-3 rounded-[20px] shadow-xl"
     >
       <div className="col-span-12">
         <h3 className="text-[13px] font-medium text-white mb-1">

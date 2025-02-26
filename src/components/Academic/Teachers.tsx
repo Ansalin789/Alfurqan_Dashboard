@@ -128,7 +128,7 @@ export default function Teachers() {
   return (
     <Link
       href="/Academic/manageTeachers"
-      className="bg-[#3e68a1] p-4 py-3 rounded-[25px] shadow-xl"
+      className="bg-[#3e68a1] p-4 py-3 rounded-[20px] shadow-xl"
     >
       <div className="col-span-12 bg-[#3e68a1]">
         <div className="flex justify-between items-center">

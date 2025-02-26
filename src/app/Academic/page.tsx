@@ -57,7 +57,7 @@ export default function Academic() {
           </div>
           <div className="flex flex-col lg:flex-row mt-2">
             <div className="flex-1 p-2">
-              <main className="grid grid-cols-12 gap-2 pr-20">
+              <main className="grid grid-cols-12 gap-4 pr-20">
                 <div className="col-span-12 grid grid-cols-1 p-0">
                   <TotalList />
                 </div>
@@ -81,10 +81,10 @@ export default function Academic() {
             </div>
 
             <div className="lg:w-[250px] lg:mt-2 rounded-[20px] pr-14">
-              <div className="pr-0 mb-0 rounded-lg">
+              <div className="pr-0 mb-0 rounded-[20px]">
                 <Calender />
               </div>
-              <div className="pr-0 rounded-lg w-64 mt-3 -ml-12">
+              <div className="pr-0 rounded-lg w-64 mt-11 -ml-12">
                 <UpcomingClasses />
               </div>
             </div>

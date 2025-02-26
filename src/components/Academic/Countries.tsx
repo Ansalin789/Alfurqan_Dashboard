@@ -18,7 +18,7 @@ export default function Countries() {
   ];
 
   return (
-    <div className="col-span-12 bg-[#3e68a1] p-8 py-4 rounded-[25px] shadow-lg">
+    <div className="col-span-12 bg-[#3e68a1] p-8 py-4 rounded-[20px] shadow-lg">
       <h3 className="text-[13px] font-medium text-white mb-2">Countries</h3>
       <table className="min-w-full divide-y divide-gray-200 overflow-y-scroll scrollbar-hide">
         <tbody className="divide-y divide-gray-200">
