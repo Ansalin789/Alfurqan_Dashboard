@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { FaFilter } from "react-icons/fa";
 
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from "next/navigation";
@@ -24,6 +23,7 @@ const ManageTeacher: React.FC = () => {
   const router = useRouter();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [menuVisible, setMenuVisible] = useState<boolean[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTeacher, setNewTeacher] = useState({
@@ -135,15 +135,14 @@ const ManageTeacher: React.FC = () => {
           </div>
           <div className="flex justify-between items-center mb-2">
             <div className="flex flex-1 space-x-4 items-center justify-between">
-              <div className="flex">
+              <div className="flex ml-4">
                 <input
                   type="text"
                   placeholder="Search here..."
-                  className="border rounded-lg px-2 text-[12px] mr-4 shadow"
+                  className="border rounded-lg px-2 py-2 text-[12px] mr-4 shadow"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <button className="flex items-center bg-gray-200 p-2 rounded-lg shadow text-[12px]">
-                  <FaFilter className="mr-2 text-[#223857]" /> Filter
-                </button>
               </div>
               <div className="flex px-4">
                 {/* <button className={`border p-2 rounded-lg shadow flex items-center mx-4 bg-[#223857] text-white`} onClick={openModal}>
@@ -159,77 +158,84 @@ const ManageTeacher: React.FC = () => {
           </div>
           {/* Cards */}
           <div className="grid grid-cols-6 gap-4 p-6" style={{ width: "100%" }}>
-            {teachers.map((teacher, index) => (
-              <div
-                key={teacher._id}
-                className="bg-white shadow-md rounded-lg p-4 w-48"
-              >
-                <div className="flex justify-between items-center">
-                  <Image
-                    src={teacher.profileImage ?? "/assets/images/proff.jpg"}
-                    alt="Teacher"
-                    className="w-12 h-12 ml-12 mt-4 rounded-full"
-                    width={40}
-                    height={40}
-                  />
-                  <button
-                    className="text-gray-400"
-                    onClick={() => toggleMenu(index)}
-                  >
-                    <HiOutlineDotsVertical
-                      size={16}
-                      className="text-[#565b60]"
+            {teachers
+              .filter(
+                (teacher) =>
+                  teacher.userName
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase()) ||
+                  teacher.email
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase())
+              )
+              .map((teacher, index) => (
+                <div
+                  key={teacher._id}
+                  className="bg-white shadow-md rounded-lg p-4 w-48"
+                >
+                  <div className="flex justify-between items-center">
+                    <Image
+                      src={teacher.profileImage ?? "/assets/images/proff.jpg"}
+                      alt="Teacher"
+                      className="w-12 h-12 ml-12 mt-4 rounded-full"
+                      width={40}
+                      height={40}
                     />
-                  </button>
-                </div>
-                {menuVisible[index] && (
-                  <div className="absolute bg-white shadow-lg rounded-lg -mt-4 ml-36">
                     <button
-                      className="block text-left px-4 py-2 text-[12px] font-medium text-[#223857] hover:bg-gray-100"
-                      onClick={handleViewTeachersList}
-                    >
-                      View Schedule
-                    </button>
-                    {/* <button className="block text-left px-4 py-2 text-sm text-[#223857] hover:bg-gray-100" onClick={() => { handleViewStudentList(); router.push('/Academic/viewTeacherSchedule'); }}>
-                      View Schedule Classes
-                    </button> */}
-                    <button
-                      className="block text-left px-4 py-2 text-[12px] font-medium text-[#223857] hover:bg-gray-100"
-                      onClick={() => {
-                        handleViewTeachersList();
-                        router.push("/Academic/messages");
-                      }}
-                    >
-                      Chat
-                    </button>
-                    <button
-                      className="block text-left px-4 py-2 text-[12px] font-medium text-[#223857] hover:bg-gray-100"
+                      className="text-gray-400"
                       onClick={() => toggleMenu(index)}
                     >
-                      Cancel
+                      <HiOutlineDotsVertical
+                        size={16}
+                        className="text-[#565b60]"
+                      />
                     </button>
                   </div>
-                )}
-                <div className="mt-4 text-center">
-                  <h3 className="text-base font-bold text-[#223857] mb-2">
-                    {teacher.userName}
-                  </h3>
-                  <p className="text-[#717579] text-sm">
-                    Level: {teacher.level}
-                  </p>
-                  <p className="text-[#717579] p-1 text-sm">
-                    {teacher.subject}
-                  </p>
-                  <div className="flex text-center justify-center"></div>
-                  <button
-                    className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg"
-                    onClick={() => handleViewTeacherSchedule(teacher._id)}
-                  >
-                    View Teacher List
-                  </button>
+                  {menuVisible[index] && (
+                    <div className="absolute bg-white shadow-lg rounded-lg -mt-4 ml-36">
+                      <button
+                        className="block text-left px-4 py-2 text-[12px] font-medium text-[#223857] hover:bg-gray-100"
+                        onClick={handleViewTeachersList}
+                      >
+                        View Schedule
+                      </button>
+                      <button
+                        className="block text-left px-4 py-2 text-[12px] font-medium text-[#223857] hover:bg-gray-100"
+                        onClick={() => {
+                          handleViewTeachersList();
+                          router.push("/Academic/messages");
+                        }}
+                      >
+                        Chat
+                      </button>
+                      <button
+                        className="block text-left px-4 py-2 text-[12px] font-medium text-[#223857] hover:bg-gray-100"
+                        onClick={() => toggleMenu(index)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                  <div className="mt-4 text-center">
+                    <h3 className="text-base font-bold text-[#223857] mb-2">
+                      {teacher.userName}
+                    </h3>
+                    <p className="text-[#717579] text-sm">
+                      Level: {teacher.level}
+                    </p>
+                    <p className="text-[#717579] p-1 text-sm">
+                      {teacher.subject}
+                    </p>
+                    <div className="flex text-center justify-center"></div>
+                    <button
+                      className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg"
+                      onClick={() => handleViewTeacherSchedule(teacher._id)}
+                    >
+                      View Teacher List
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>

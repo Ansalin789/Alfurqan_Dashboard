@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
-import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from "react-icons/fa";
+import { FaSyncAlt, FaPlus, FaEdit } from "react-icons/fa";
 import BaseLayout1 from "@/components/BaseLayout1";
 import { useRouter } from "next/navigation";
 import AddEvaluationModal from "@/components/Academic/AddEvaluationModel";

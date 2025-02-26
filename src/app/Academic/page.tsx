@@ -13,7 +13,6 @@ import Calender from "@/components/Academic/Calender";
 import UpcomingClasses from "@/components/Academic/UpcommingClasses";
 import Dashboardevaluation from "@/components/Academic/Dashboardevaluation";
 import { Search, Sun, Bell } from "lucide-react";
-import Link from "next/link";
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);

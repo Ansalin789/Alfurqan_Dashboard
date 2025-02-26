@@ -1,10 +1,10 @@
-import BaseLayout from "@/components/BaseLayout";
+import BaseLayout1 from "@/components/BaseLayout1";
 import React from "react";
 
 
 const Support = () => {
   return (
-    <BaseLayout>
+    <BaseLayout1>
       <div className="p-2 mx-auto">
             {/* Page Title */}
         <h1 className="mb-0 p-2 text-[25px] font-semibold text-gray-800">
@@ -87,7 +87,7 @@ const Support = () => {
 
         </div>
       </div>
-    </BaseLayout>
+    </BaseLayout1>
   );
 };
 
