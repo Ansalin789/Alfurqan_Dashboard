@@ -224,7 +224,7 @@ const Invoice = () => {
       {showPayment && clientSecret && (
         <div className="payment-form-container mt-6">
           <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <CheckoutForm clientSecret={clientSecret} />
+            <CheckoutForm clientSecret={clientSecret} evaluationId={evaluationData._id} />
           </Elements>
         </div>
       )}
