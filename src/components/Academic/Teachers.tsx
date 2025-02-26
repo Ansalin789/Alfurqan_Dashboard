@@ -144,7 +144,7 @@ export default function Teachers() {
             </div>
           </div>
         </div>
-        <div className="relative h-[120px]">
+        <div className="relative h-[120px] mt-10">
           <Bar data={data} options={options} />
         </div>
       </div>

@@ -1006,285 +1006,377 @@ const TrailSection = () => {
         }}
       />
 
-{showModal && (
-  
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[720px]">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold">Student Details</h3>
-        <button
-          className="text-gray-600 hover:text-gray-800"
-          onClick={handleCloseModal}
-        >
-          ✖
-        </button>
-      </div>
-      <form className="grid grid-cols-3 gap-4">
-        <div>
-          <label htmlFor="firstName" className="block text-black text-xs font-medium">First Name</label>
-          <input
-            id="firstName"
-            type="text"
-            disabled
-            value={formData?.student.studentFirstName} // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[720px]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">Student Details</h3>
+              <button
+                className="text-gray-600 hover:text-gray-800"
+                onClick={handleCloseModal}
+              >
+                ✖
+              </button>
+            </div>
+            <form className="grid grid-cols-3 gap-4">
+              <div>
+                <label
+                  htmlFor="firstName"
+                  className="block text-black text-xs font-medium"
+                >
+                  First Name
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  disabled
+                  value={formData?.student.studentFirstName} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="lastName"
+                  className="block text-black text-xs font-medium"
+                >
+                  Last Name
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  disabled
+                  value={formData?.student.studentLastName} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-black text-xs font-medium"
+                >
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  disabled
+                  value={formData?.student.studentEmail} // Bind to formData
+                  readOnly
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="phoneNumber"
+                  className="block text-black text-xs font-medium"
+                >
+                  Phone Number
+                </label>
+                <input
+                  id="phoneNumber"
+                  type="number"
+                  disabled
+                  value={formData?.student.studentPhone} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="city"
+                  className="block text-black text-xs font-medium"
+                >
+                  City
+                </label>
+                <input
+                  id="city"
+                  type="text"
+                  disabled
+                  value={formData?.student.studentCity ?? ""} // Bind to formData
+                  readOnly
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="country"
+                  className="block text-black text-xs font-medium"
+                >
+                  Country
+                </label>
+                <input
+                  id="country"
+                  type="text"
+                  disabled
+                  value={formData?.student.studentCountry} // Bind to formData
+                  readOnly
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="preferredTime"
+                  className="block text-black text-xs font-medium"
+                >
+                  Preferred Time
+                </label>
+                <input
+                  id="preferredTime"
+                  type="text"
+                  disabled
+                  value={
+                    formData?.student.preferredFromTime +
+                    " TO " +
+                    formData?.student.preferredToTime
+                  } // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="trailId"
+                  className="block text-black text-xs font-medium"
+                >
+                  Trail ID
+                </label>
+                <input
+                  id="trailId"
+                  type="text"
+                  disabled
+                  value={formData?._id} // Bind to formData
+                  readOnly
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="course"
+                  className="block text-black text-xs font-medium"
+                >
+                  Course
+                </label>
+                <input
+                  id="course"
+                  type="text"
+                  disabled
+                  value={formData?.student.learningInterest} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="preferredTeacher"
+                  className="block text-black text-xs font-medium"
+                >
+                  Preferred Teacher
+                </label>
+                <input
+                  id="preferredTeacher"
+                  type="text"
+                  disabled
+                  value={formData?.student.preferredTeacher} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="level"
+                  className="block text-black text-xs font-medium"
+                >
+                  Level
+                </label>
+                <input
+                  id="level"
+                  type="text"
+                  disabled
+                  value={formData?.languageLevel} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="preferredDate"
+                  className="block text-black text-xs font-medium"
+                >
+                  Preferred Date
+                </label>
+                <input
+                  id="preferredDate"
+                  type="text"
+                  disabled
+                  value={formData?.student.preferredDate} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="preferredHours"
+                  className="block text-black text-xs font-medium"
+                >
+                  Preferred Hours
+                </label>
+                <input
+                  id="preferredHours"
+                  type="text"
+                  disabled
+                  value={formData?.hours} // Bind to formData
+                  readOnly
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="preferredPackage"
+                  className="block text-black text-xs font-medium"
+                >
+                  Preferred package
+                </label>
+                <input
+                  id="preferredPackage"
+                  type="text"
+                  disabled
+                  value={formData?.subscription.subscriptionName} // Check if subscription exists
+                  readOnly
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="guardianName"
+                  className="block text-black text-xs font-medium"
+                >
+                  Guardian&apos;s name
+                </label>
+                <input
+                  id="guardianName"
+                  type="text"
+                  disabled
+                  value={formData?.gardianName} // Bind to formDat
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="guardianEmail"
+                  className="block text-black text-xs font-medium"
+                >
+                  Guardian&apos;s email
+                </label>
+                <input
+                  id="guardianEmail"
+                  type="email"
+                  disabled
+                  value={formData?.gardianEmail} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="guardianPhone"
+                  className="block text-black text-xs font-medium"
+                >
+                  Guardian&apos;s phone Number
+                </label>
+                <input
+                  id="guardianPhone"
+                  type="text"
+                  disabled
+                  value={formData?.gardianPhone} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="evaluationStatus"
+                  className="block text-black text-xs font-medium"
+                >
+                  Evaluation status
+                </label>
+                <input
+                  id="evaluationStatus"
+                  type="text"
+                  disabled
+                  value={formData?.student.evaluationStatus} // Bind to formData
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="trialClassStatus"
+                  className="block text-black text-xs font-medium"
+                >
+                  Trial Class Status
+                </label>
+                <select
+                  id="trialClassStatus"
+                  value={trialClassStatus}
+                  onChange={handleChange("TrialClassStatus")}
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                >
+                  {options.trialClassStatus.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="studentStatus"
+                  className="block text-black text-xs font-medium"
+                >
+                  Student Status
+                </label>
+                <select
+                  id="studentStatus"
+                  value={studentStatus}
+                  onChange={handleChange("studentStatus")}
+                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                >
+                  {options.studentStatus.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label
+                  htmlFor="comment"
+                  className="block text-black text-xs font-medium"
+                >
+                  Comment
+                </label>
+                <textarea
+                  id="comment"
+                  placeholder="Write your comment here..."
+                  value={formData?.comments} // Bind to formData
+                  className="w-full mt-2 border rounded-md text-xs text-gray-800"
+                ></textarea>
+              </div>
+              {/* Save and Cancel Buttons */}
+              <div className="col-span-2 flex justify-end space-x-4 mt-0">
+                <button
+                  type="button"
+                  className="px-4 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-800"
+                  onClick={handleCloseModal}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => updateClick(formData?._id)}
+                  type="submit"
+                  className="px-4 py-1 bg-[#223857] text-white rounded-md hover:bg-[#1c2f49]"
+                >
+                  Update
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-        <div>
-          <label htmlFor="lastName" className="block text-black text-xs font-medium">Last Name</label>
-          <input
-            id="lastName"
-            type="text"
-            disabled
-            value={formData?.student.studentLastName} // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="email" className="block text-black text-xs font-medium">Email</label>
-          <input
-            id="email"
-            type="email"
-            disabled
-            value={formData?.student.studentEmail} // Bind to formData
-            readOnly
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="phoneNumber" className="block text-black text-xs font-medium">Phone Number</label>
-          <input
-            id="phoneNumber"
-            type="number"
-            disabled
-            value={formData?.student.studentPhone} // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="city" className="block text-black text-xs font-medium">City</label>
-          <input
-            id="city"
-            type="text"
-            disabled
-            value={formData?.student.city ?? ""} // Bind to formData
-            readOnly
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="country" className="block text-black text-xs font-medium">Country</label>
-          <input
-            id="country"
-            type="text"
-            disabled
-            value={formData?.student.studentCountry} // Bind to formData
-            readOnly
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="preferredTime" className="block text-black text-xs font-medium">Preferred Time</label>
-          <input
-            id="preferredTime"
-            type="text"
-            disabled
-            value={formData?.student.preferredFromTime +" TO "+  formData?.student.preferredToTime} // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="trailId" className="block text-black text-xs font-medium">Trail ID</label>
-          <input
-            id="trailId"
-            type="text"
-            disabled
-            value={formData?._id} // Bind to formData
-            readOnly
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="course" className="block text-black text-xs font-medium">Course</label>
-          <input
-            id="course"
-            type="text"
-            disabled
-            value={formData?.student.learningInterest} // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="preferredTeacher" className="block text-black text-xs font-medium">Preferred Teacher</label>
-          <input
-            id="preferredTeacher"
-            type="text"
-            disabled
-            value={formData?.student.preferredTeacher} // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="level" className="block text-black text-xs font-medium">Level</label>
-          <input
-            id="level"
-            type="text"
-            disabled
-            value={formData?.languageLevel} // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="preferredDate" className="block text-black text-xs font-medium">Preferred Date</label>
-          <input
-            id="preferredDate"
-            type="text"
-            disabled
-            value={formData?.student.preferredDate} // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="preferredHours" className="block text-black text-xs font-medium">Preferred Hours</label>
-          <input
-            id="preferredHours"
-            type="text"
-            disabled
-            value={formData?.hours} // Bind to formData
-            readOnly
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="preferredPackage" className="block text-black text-xs font-medium">Preferred package</label>
-          <input
-            id="preferredPackage"
-            type="text"
-            disabled
-            value={formData?.subscription.subscriptionName} // Check if subscription exists
-            readOnly
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="guardianName" className="block text-black text-xs font-medium">Guardian&apos;s name</label>
-          <input
-            id="guardianName"
-            type="text"
-            disabled
-            value={formData?.gardianName} // Bind to formDat
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="guardianEmail" className="block text-black text-xs font-medium">Guardian&apos;s email</label>
-          <input
-            id="guardianEmail"
-            type="email"
-            disabled
-            value={formData?.gardianEmail} // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-          <label htmlFor="guardianPhone" className="block text-black text-xs font-medium">Guardian&apos;s phone Number</label>
-          <input
-            id="guardianPhone"
-            type="text"
-            disabled
-            value={formData?.gardianPhone} // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        
-        <div>
-          <label htmlFor="evaluationStatus" className="block text-black text-xs font-medium">Evaluation status</label>
-          <input
-            id="evaluationStatus"
-            type="text"
-            disabled
-            value={formData?.student.evaluationStatus } // Bind to formData
-            className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-          />
-        </div>
-        <div>
-         <label htmlFor="trialClassStatus" className="block text-black text-xs font-medium">Trial Class Status</label>
-  <select
-    id="trialClassStatus"
-    value={trialClassStatus}
-    onChange={handleChange("TrialClassStatus")}
-    className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-  >
-    {options.trialClassStatus.map((status) => (
-      <option key={status} value={status}>
-        {status}
-      </option>
-    ))}
-  </select>
-</div>
-        
-        <div>
-  <label htmlFor="studentStatus" className="block text-black text-xs font-medium">Student Status</label>
-  <select
-    id="studentStatus"
-    value={studentStatus}
-    onChange={handleChange("studentStatus")}
-    className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-  >
-    {options.studentStatus.map((status) => (
-      <option key={status} value={status}>
-        {status}
-      </option>
-    ))}
-  </select>
-</div>
-<div>
-  <label htmlFor="paymentStatus" className="block text-black text-xs font-medium">Payment Status</label>
-  <select
-    id="paymentStatus"
-    value={paymentStatus}
-    onChange={handleChange("paymentStatus")}
-    className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
-  >
-    {options.paymentStatus.map((status) => (
-      <option key={status} value={status}>
-        {status}
-      </option>
-    ))}
-  </select>
-</div>
-        <div className="col-span-2">
-          <label htmlFor="comment" className="block text-black text-xs font-medium">Comment</label>
-          <textarea
-            id="comment"
-            placeholder="Write your comment here..."
-            value={formData?.comments} // Bind to formData
-            className="w-full mt-2 border rounded-md text-xs text-gray-800"
-          ></textarea>
-        </div>
-        {/* Save and Cancel Buttons */}
-        <div className="col-span-2 flex justify-end space-x-4 mt-0">
-          <button
-            type="button"
-            className="px-4 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-800"
-            onClick={handleCloseModal}
-          >
-            Cancel
-          </button>
-          <button
-           onClick={() => updateClick(formData?._id)}
-            type="submit"
-            className="px-4 py-1 bg-[#223857] text-white rounded-md hover:bg-[#1c2f49]"
-          >
-            Update
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
- 
-)}
+      )}
     </BaseLayout1>
   );
 };

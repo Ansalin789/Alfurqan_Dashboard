@@ -44,11 +44,11 @@ export default function Academic() {
         <h3 className="text-[13px] font-medium text-white mb-1">
           Teachers - Students
         </h3>
-        <div className="max-h-40 overflow-y-scroll scrollbar-none">
+        <div className="max-h-40 overflow-y-scroll scrollbar-none ml-6">
           <table className="min-w-full">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-center text-[12px] font-normal text-white underline underline-offset-2">
+                <th className="px-4 py-2 text-start text-[12px] font-normal text-white underline underline-offset-2">
                   Teachers
                 </th>
                 <th className="px-4 py-2 text-center text-[12px] font-normal text-white underline underline-offset-2">
@@ -59,7 +59,7 @@ export default function Academic() {
             <tbody className="mb-1">
               {teachersData.map((teacher) => (
                 <tr key={teacher._id || teacher.teacherEmail}>
-                  <td className="px-4 py-1 text-[11px] text-center flex text-white">
+                  <td className="px-4 py-1 text-[11px] text-center flex text-white ">
                     <FaUserCircle className="text-[#ffffff] mr-2 mt-1" />
                     {teacher.teacherName}
                   </td>
