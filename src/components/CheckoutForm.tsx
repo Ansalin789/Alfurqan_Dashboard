@@ -13,6 +13,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
+
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
@@ -28,6 +30,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId 
       },
     });
     console.log('Payment Intent:', paymentIntent);
+    console.log(evaluationId);
 
     if (error) {
       setMessage(error.message ?? 'An unexpected error occurred.');
@@ -43,10 +46,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId 
         body: JSON.stringify({
           amount: paymentIntent.amount,
           currency: paymentIntent.currency,
-          evaluationId: evaluationId,
+          evaluationId: evaluationId,         
           paymentIntentResponse: paymentIntent,
         }),
+        
       });
+    
       setMessage('Payment successful!');
     }
 
