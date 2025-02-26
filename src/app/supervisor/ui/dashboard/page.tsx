@@ -5,6 +5,8 @@ import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, 
 import BaseLayout3 from '../../../../components/BaseLayout3';
 import moment from "moment"; 
 import axios from 'axios';
+
+
 interface Applicant {
   _id: string;
   candidateFirstName: string;
@@ -24,6 +26,7 @@ interface Applicant {
   status: string;
   createdDate: string;
   createdBy: string;
+  gender: string;
 }
 
 interface DashboardCounts {
@@ -55,11 +58,6 @@ interface Meeting {
   }[];
 }
 
-const pieData = [
-  { name: 'Arabic', value: 70, color: '#1e40af', female: 48, male: 22 },
-  { name: 'Quran', value: 24, color: '#60a5fa', female: 12, male: 12 },
-  { name: 'Tajweed', value: 6, color: '#93c5fd', female: 2, male: 4 }
-];
 
 
 const formatDate = (dateString: string) => {
@@ -70,7 +68,13 @@ const formatDate = (dateString: string) => {
 
 
 export default function Dashboard() {
-  
+  const [pieData, setPieData] = useState<{ 
+    name: string; 
+    value: number; 
+    female: number; 
+    male: number; 
+    color: string; 
+  }[]>([]);
   const [mounted, setMounted] = useState(false);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
@@ -90,6 +94,14 @@ export default function Dashboard() {
     setMounted(true);
   
     const auth = localStorage.getItem("SupervisorAuthToken");
+    const fetchData = async () => {
+      const applicants = await fetchApplicantsData(auth ?? " ");
+      console.log("Fetched Applicants:", applicants); // ✅ Debugging
+      const filteredData = processApplicants(applicants);
+      console.log("Filtered Pie Data:", filteredData); // ✅ Debugging
+      setPieData(filteredData);
+    };
+    
   
     const fetchApplicants = axios.get("http://localhost:5001/applicants", {
       headers: { Authorization: `Bearer ${auth}` },
@@ -118,7 +130,7 @@ export default function Dashboard() {
           count: count as number, // ✅ Explicitly cast count to number
           color: ["#fbbf24", "#3b82f6", "#a855f7", "#ef4444", "#10b981"][index % 5],
         }));
-  
+        fetchData();
         setApplicants(applicants);
         setFilteredPositions(filteredData); // ✅ Store filtered positions
         setDashboardCounts(dashboardResponse.data);
@@ -127,6 +139,8 @@ export default function Dashboard() {
         console.error("🚨 Error fetching data:", error);
       });
   }, []);
+
+
   useEffect(() => {
     // Update the week range label (e.g., "08-14 Nov") dynamically
     const start = moment(weekRange.startDate);
@@ -233,7 +247,64 @@ export default function Dashboard() {
   const today = new Date();
   const currentMonth = today.toLocaleString("default", { month: "long" }).toUpperCase();
   const currentYear = today.getFullYear();
-
+  const fetchApplicantsData = async (auth: string) => {
+    try {
+      const response = await axios.get("http://localhost:5001/applicants", {
+        headers: { Authorization: `Bearer ${auth}` },
+      });
+  
+      console.log("API Response:", response.data);
+  
+      // Check if response.data has an 'applicants' property that is an array
+      if (response.data && Array.isArray(response.data.applicants)) {
+        return response.data.applicants;
+      } else {
+        console.error("Unexpected API response format:", response.data);
+        return []; // Return an empty array to prevent errors
+      }
+    } catch (error) {
+      console.error("Error fetching applicants:", error);
+      return []; // Return empty array on error
+    }
+  };
+  
+  
+  const processApplicants = (applicants: any[]) => {
+    if (!Array.isArray(applicants)) {
+      console.error("Unexpected data format:", applicants);
+      return []; // Prevent crash
+    }
+  
+    // ✅ Filter only approved applications
+    const approvedApplicants = applicants.filter(
+      (app) => app.applicationStatus === "APPROVED"
+    );
+  
+    const groupedData: { [key: string]: { value: number; female: number; male: number } } = {};
+  
+    approvedApplicants.forEach((app) => {
+      const key = app.positionApplied;
+      if (!groupedData[key]) {
+        groupedData[key] = { value: 0, female: 0, male: 0 };
+      }
+      groupedData[key].value += 1;
+      if (app.gender?.toLowerCase() === "female") {
+        groupedData[key].female += 1;
+      } else {
+        groupedData[key].male += 1;
+      }
+    });
+  
+    return Object.entries(groupedData).map(([name, data], index) => ({
+      name,
+      value: data.value,
+      female: data.female,
+      male: data.male,
+      color: ["#1e40af", "#60a5fa", "#93c5fd", "#2563eb"][index % 4], // Assign different colors
+    }));
+  };
+  
+  
 
   
 
@@ -428,57 +499,59 @@ export default function Dashboard() {
 </div>
 
 
-<div className="bg-[#D0E0EC] p-3 rounded-xl h-[calc(30vh-2rem)] shadow-lg">
-  <div className="flex justify-between items-center mb-2">
-    <h3 className="text-gray-800 font-medium text-xs sm:text-sm">Teachers By Subject</h3>
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1">
-        <div className="w-2 h-2 bg-pink-400 rounded"></div>
-        <span className="text-xs text-gray-600">Female</span>
-      </div>
-      <div className="flex items-center gap-1">
-        <div className="w-2 h-2 bg-blue-400 rounded"></div>
-        <span className="text-xs text-gray-600">Male</span>
-      </div>
-    </div>
-  </div>
-
-  <div className="flex">
-    {/* Pie Chart */}
-    <div className="w-1/2 flex justify-center">
-      <PieChart width={150} height={150}>
-        <Pie
-          data={pieData}
-          cx={75}
-          cy={75}
-          innerRadius={40}
-          outerRadius={60}
-          dataKey="value"
-        >
-          {pieData.map((entry) => (
-            <Cell key={`cell-${entry.name}`} fill={entry.color} />
-          ))}
-        </Pie>
-      </PieChart>
-    </div>
-
-    {/* Legend */}
-    <div className="w-1/2 flex flex-col justify-center gap-3 ">
-      {pieData.map((item) => (
-        <div key={item.name} className="flex items-center justify-between">
-          <div className="flex  gap-1">
-            <div className="w-2 h-2 rounded" style={{ backgroundColor: item.color }}></div>
-            <span className="text-xs text-gray-600">{item.name}</span>
+        <div className="bg-[#D0E0EC] p-3 rounded-xl h-[calc(30vh-2rem)] shadow-lg">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-gray-800 font-medium text-xs sm:text-sm">Teachers By Subject</h3>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-pink-400 rounded"></div>
+                <span className="text-xs text-gray-600">Female</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-blue-400 rounded"></div>
+                <span className="text-xs text-gray-600">Male</span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-4 mr-9">
-            <span className="text-xs text-pink-400">{item.female}%</span>
-            <span className="text-xs text-blue-400">{item.male}%</span>
+
+          <div className="flex">
+            {/* Pie Chart */}
+            <div className="w-1/2 flex justify-center">
+              <PieChart width={150} height={150}>
+                <Pie
+                  data={pieData}
+                  cx={75}
+                  cy={75}
+                  innerRadius={40}
+                  outerRadius={60}
+                  dataKey="value"
+                >
+                  {pieData.map((entry) => (
+                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </div>
+
+            {/* Legend */}
+            <div className="w-1/2 flex flex-col justify-center gap-3 ">
+              {pieData.map((item) => (
+                <div key={item.name} className="flex items-center justify-between">
+                  <div className="flex  gap-1">
+                    <div className="w-2 h-2 rounded" style={{ backgroundColor: item.color }}></div>
+                    <span className="text-xs text-gray-600">{item.name}</span>
+                  </div>
+                  <div className="flex items-center gap-4 mr-9">
+                    <span className="text-xs text-pink-400">{item.female}%</span>
+                    <span className="text-xs text-blue-400">{item.male}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      ))}
-    </div>
-  </div>
-</div>
+
+
           </div>
 
           <div className="bg-white p-3 rounded-lg">
