@@ -24,21 +24,24 @@ const Profile = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchInvoice = async () => {
+    const fetchInvoice = async (): Promise<void> => {
       try {
-        const studentId = localStorage.getItem("StudentPortalId");
-        const auth = localStorage.getItem("StudentAuthToken");
+        // Ensure this runs only in the browser
+        if (typeof window !== "undefined") {
+          const studentId = localStorage.getItem("StudentPortalId");
+          const auth = localStorage.getItem("StudentAuthToken");
 
-        const response = await axios.get<{ invoice: Invoice[] }>(
-          "http://localhost:5001/classShedule/totalhours",
-          {
-            params: { studentId },
-            headers: { Authorization: `Bearer ${auth}` },
+          const response = await axios.get<{ invoice: Invoice[] }>(
+            "http://localhost:5001/classShedule/totalhours",
+            {
+              params: { studentId },
+              headers: { Authorization: `Bearer ${auth}` },
+            }
+          );
+
+          if (response.data?.invoice?.length > 0) {
+            setInvoice(response.data.invoice[0]); // Get the latest invoice
           }
-        );
-
-        if (response.data?.invoice?.length > 0) {
-          setInvoice(response.data.invoice[0]); // Get the latest invoice
         }
       } catch (error) {
         console.error("Error fetching invoice:", error);
