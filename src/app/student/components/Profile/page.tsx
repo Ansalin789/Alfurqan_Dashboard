@@ -22,32 +22,37 @@ interface Invoice {
 const Profile = () => {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [studentName, setStudentName] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchInvoice = async () => {
-      try {
-        const studentId = localStorage.getItem("StudentPortalId");
-        const auth = localStorage.getItem("StudentAuthToken");
+    // Ensure code runs only in the browser
+    if (typeof window !== "undefined") {
+      const studentId = localStorage.getItem("StudentPortalId");
+      const auth = localStorage.getItem("StudentAuthToken");
+      setStudentName(localStorage.getItem("StudentPortalName"));
 
-        const response = await axios.get<{ invoice: Invoice[] }>(
-          "http://localhost:5001/classShedule/totalhours",
-          {
-            params: { studentId },
-            headers: { Authorization: `Bearer ${auth}` },
+      const fetchInvoice = async (): Promise<void> => {
+        try {
+          const response = await axios.get<{ invoice: Invoice[] }>(
+            "http://localhost:5001/classShedule/totalhours",
+            {
+              params: { studentId },
+              headers: { Authorization: `Bearer ${auth}` },
+            }
+          );
+
+          if (response.data?.invoice?.length > 0) {
+            setInvoice(response.data.invoice[0]); // Get the latest invoice
           }
-        );
-
-        if (response.data?.invoice?.length > 0) {
-          setInvoice(response.data.invoice[0]); // Get the latest invoice
+        } catch (error) {
+          console.error("Error fetching invoice:", error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error("Error fetching invoice:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchInvoice();
+      fetchInvoice();
+    }
   }, []);
 
   // Refactored message extraction
@@ -71,7 +76,7 @@ const Profile = () => {
           className="rounded-full mx-auto sm:w-[100px] sm:h-[100px]"
         />
         <h2 className="text-[16px] sm:text-[14px] font-semibold mt-2">
-          {localStorage.getItem('StudentPortalName')}
+          {studentName ?? "Loading..."}
         </h2>
         <p className="text-gray-500 text-[14px] sm:text-[12px]">Student</p>
         <div className="flex justify-center mt-2">
