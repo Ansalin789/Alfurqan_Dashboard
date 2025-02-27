@@ -68,9 +68,7 @@ const TrailManagement = () => {
     setModalIsOpen(false);
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value); // Update search query state

@@ -4,21 +4,20 @@ import { useRouter } from 'next/navigation';
 import BaseLayout1 from '@/components/BaseLayout1';
 import Image from 'next/image';
 import React, { useState, useEffect, useRef } from 'react';
-import Modal from 'react-modal';
+
 import { IoArrowBackCircleSharp } from 'react-icons/io5';
-import { FiCalendar, FiMoreVertical } from 'react-icons/fi';
+import {FiMoreVertical } from 'react-icons/fi';
 
 
 const ManageStudentView = () => {
   const router = useRouter();
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [isScheduled, setIsScheduled] = useState(false);
+ 
   const [activeTab, setActiveTab] = useState('scheduled');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLTableCellElement | null>(null);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
+ 
  const [studentData, setStudentData] = useState<StudentData>();
  interface Teachers {
   teacherId: string;
@@ -74,9 +73,9 @@ interface TimeSlot {
       subscriptionName: string;
     };
     teacher: Teachers;
-    classDay: TimeSlot[];
-    startTime: TimeSlot[];
-    endTime: TimeSlot[];
+    classDay: string[];  
+    startTime: string[];  
+    endTime: string[];
     _id: string;
     isLanguageLevel: boolean;
     languageLevel: string;
@@ -117,7 +116,8 @@ interface TimeSlot {
     assignedTeacherEmail: string;
     __v: number;
   };
-}interface Teacher {
+}
+interface Teacher {
     _id: string;
     userName: string;
     email: string;
@@ -132,6 +132,17 @@ interface TimeSlot {
     createdDate: string; // Creation timestamp
     lastUpdatedDate: string; // Last update timestamp
 }
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setActiveDropdown(null);
+    }
+  };
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
   useEffect(()=>{
     const studentId=localStorage.getItem('studentManageID');
     console.log(">>>>>",studentId);
@@ -147,44 +158,34 @@ interface TimeSlot {
             });
           const data = await response.json();
           setStudentData(data);
-          console.log(data);
+          console.log("student data form evalutional"+ JSON.stringify(data));
         } catch (error) {
           console.error('Error fetching student data:', error);
         }
       };
       fetchData();
     }
-          const fetchTeachers = async () => {
-            try {
-              const auth=localStorage.getItem('authToken');
-              const response = await fetch(`http://localhost:5001/users?role=TEACHER`, {
-
-                headers: {
-                       'Authorization': `Bearer ${auth}`,
-                },
-              });
-              const data = await response.json();
-      
-              console.log('Fetched data:', data);
-      
-              // Access `users` array in the response
-              if (data && Array.isArray(data.users)) {
-                setTeachers(data.users);
-              } else {
-                console.error('Unexpected API response structure:', data);
-              }
-            } catch (error) {
-              console.error('Error fetching teachers:', error);}
-            }
-            fetchTeachers();
+    const studentlist = async () => {
+      try {
+        const auth = localStorage.getItem('authToken');
+        const response = await fetch(`http://localhost:5001/classShedule`, {
+          method: 'GET',
+          headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${auth}`,
+          }
+        });
+        const data = await response.json();
+        setStudentllistdata(data);
+        console.log(JSON.stringify(data));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+  
+    studentlist();       
   },[]);
-  const openModal = () => {
-    setModalIsOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalIsOpen(false);
-  };
+  
 
   
   
@@ -225,207 +226,89 @@ interface TimeSlot {
         
     }, 100);
   };
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-      setActiveDropdown(null);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const [schedule, setSchedule] = useState(
-    ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => ({
-      day,
-      startTime: "",
-      duration: "", // Initial duration in hours from API
-      endTime: "",
-      isSelected: false, // Track if the day is selected
-    }))
-  );
-
-  useEffect(() => {
-    if (studentData?.studentEvaluationDetails?.accomplishmentTime) {
-      setSchedule((prevSchedule) =>
-        prevSchedule.map((item) => ({
-          ...item,
-          duration: studentData.studentEvaluationDetails.accomplishmentTime,
-        }))
-      );
-    }
-  }, [studentData]);
-
-
-  // Constructing the final request data with the necessary format
-  const requestData = {
-    classDay: studentData?.studentEvaluationDetails?.classDay,
-    startTime: studentData?.studentEvaluationDetails?.startTime,
-    endTime: studentData?.studentEvaluationDetails?.endTime,
-    student: {
-      studentId: studentData?.studentEvaluationDetails?.student?.studentId ?? '',
-      studentFirstName: studentData?.studentEvaluationDetails?.student?.studentFirstName ?? '',
-      studentLastName: studentData?.studentEvaluationDetails?.student?.studentLastName ?? '',
-      studentEmail: studentData?.studentEvaluationDetails?.student?.studentEmail ?? '',
-    },
-    package: studentData?.studentEvaluationDetails?.subscription?.subscriptionName ?? '', 
-    teacher: {
-      teacherName: studentData?.studentEvaluationDetails?.teacher.teacherName ?? '',
-      teacherEmail: studentData?.studentEvaluationDetails?.teacher.teacherEmail ?? '',
-    },
-    preferedTeacher: studentData?.studentEvaluationDetails?.student?.preferredTeacher ?? '', 
-    course: studentData?.studentEvaluationDetails?.student?.learningInterest ?? '', 
-    totalHourse: Number(studentData?.studentEvaluationDetails?.accomplishmentTime) || 0,
-    startDate: studentData?.studentDetails?.createdDate ? new Date(studentData.studentDetails.createdDate).toISOString().slice(0, 10) : '',
-    endDate: studentData?.studentDetails?.createdDate
-      ? (() => {
-          const date = new Date(studentData.studentDetails.createdDate);
-          date.setDate(date.getDate() + 28);
-          return date.toISOString().slice(0, 10);
-        })()
-      : '',
-    scheduleStatus: 'Active',
-  };
- 
-  
-  
-  
- 
-  const sendDataToAPI = async (): Promise<void> => {
-    console.log(requestData);
-    const studentId=localStorage.getItem('studentManageID')
-    console.log(studentId);
-    if (!studentId) {
-      console.error("Error: Student ID is missing.");
-      return;
-    }
-    try {
-      const auth=localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5001/createclassschedule/${studentId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          'Authorization': `Bearer ${auth}`,
-        },
-        body: JSON.stringify(requestData),
-      });
-  
-      if (!response.ok) {
-        // If the server responds but status is not OK
-        const errorDetails = await response.text(); // Read the response for debugging
-        throw new Error(`Failed to send data: ${response.status} - ${errorDetails}`);
-      }
-  
-      // Parse the response JSON
-      const responseData = await response.json();
-      console.log("Success:", responseData);
-        
-      setIsScheduled(true);
-    closeModal();
-    studentlist();
-    } catch (error) {
-      // Handle errors from fetch or thrown by your code
-      console.error("Error:", error);
-    }
-  };
   interface StudentListData {
-    students: {
+      _id: string;
+      classDay: string[];
+      classLink: string;
+      createdBy: string;
+      createdDate: string;
+      endDate: string;
+      endTime: string[];
+      lastUpdatedDate: string;
+      package: string;
+      preferedTeacher: string;
+      scheduleStatus: string;
+      startDate: string;
+      startTime: string[];
+      status: string;
       student: {
-        studentId: string;
-        studentFirstName: string;
-        studentLastName: string;
+        
+        gender: string;
         studentEmail: string;
+        studentFirstName: string;
+        studentId: string;
+        studentLastName: string;
       };
       teacher: {
+        teacherEmail: string;
         teacherId: string;
         teacherName: string;
-        teacherEmail: string;
       };
-      _id: string;
-      schedule: {
-        classDay: string[];
-        package: string;
-        preferedTeacher: string;
-        totalHourse: number;
-        startDate: string;
-        endDate: string;
-        startTime: string[];
-        endTime: string[];
-        scheduleStatus: string;
-        status: string;
-        createdBy: string;
-        createdDate: string;
-        lastUpdatedDate: string;
-      };
+      totalHourse: number;
       __v: number;
-    }[];
-  }
-  interface FilteredStudentItem {
-    student: {
-      studentId: string;
-      studentFirstName: string;
-      studentLastName?: string; // Optional if not used
-      studentEmail?: string;    // Optional if not used
     };
-    teacher?: {
-      teacherId: string;
-      teacherName: string;
-      teacherEmail?: string;    // Optional if not used
-    };
-    _id?: string;               // Optional if not used
-    schedule?: object;          // Add specific properties if required
-    __v?: number;               // Optional if not used
-    createdDate: string;        // Must be present
-    status: string;             // Must be present
-  }
   
+    interface StudentApiResponse {
+      totalCount: number;
+      students: StudentListData[]; // An array of StudentListData objects
+    }
   
-  
-  const [studentllistdata, setStudentllistdata]=useState<StudentListData>();
-  const studentlist=async()=>{
-      try{
-        const auth=localStorage.getItem('authToken');
-           const response=await fetch(`http://localhost:5001/classShedule`,{
-            method:'GET',
-            headers:{
-              "Content-Type":"application/json",
-              'Authorization': `Bearer ${auth}`,
-            }}
-          );
-          const data=await response.json();
-           console.log(">>>>>>>>"+data);
-            setStudentllistdata(data);
-      }catch(error){
-            console.log(error);
-      }
-  };
-  
+  const [filteredStudents, setFilteredStudents] = useState<StudentListData[]>([]);
   const [studentIdLocal, setStudentIdLocal] = useState<string | null>(null);
-  const [auth, setAuth] = useState<string | null>(null);
+  const [studentllistdata, setStudentllistdata] = useState<StudentApiResponse | null>(null); // ✅ Use StudentApiResponse type
   useEffect(() => {
-    // Access localStorage only on the client side
-    if (typeof window !== "undefined") {
-      const studentId = localStorage.getItem('studentManageID');
-      setStudentIdLocal(studentId); 
-       const seauth=localStorage.getItem('authToken');
-       setAuth(seauth);
-    }
+    const studentId = localStorage.getItem("studentManageID");
+    setStudentIdLocal(studentId);
   }, []);
-  // Declare and initialize filteredStudents first
-  const filteredStudents = studentllistdata?.students?.filter(
-    (item: { student: { studentId: string | null } }) => {
-      return item.student?.studentId === studentIdLocal;
+  
+  useEffect(() => {
+    console.log("studentIdLocal:", studentIdLocal);
+    console.log("Raw studentllistdata:", studentllistdata);
+  
+    if (!studentIdLocal) {
+      console.log("❌ studentIdLocal is null or undefined");
+      setFilteredStudents([]);
+      return;
     }
-  );
   
-  // Then cast it to the appropriate type
-  const typedFilteredStudents = filteredStudents as FilteredStudentItem[];
+    if (!studentllistdata || typeof studentllistdata !== "object") {
+      console.log("❌ studentllistdata is not an object:", studentllistdata);
+      setFilteredStudents([]);
+      return;
+    }
   
-  console.log(filteredStudents);
+    // Debugging students array
+    console.log("Checking students type:", typeof studentllistdata.students);
+    console.log("Is students an array?:", Array.isArray(studentllistdata.students));
+  
+    if (!studentllistdata.students || !Array.isArray(studentllistdata.students)) {
+      console.log("❌ studentllistdata.students is not an array OR is undefined:", studentllistdata.students);
+      setFilteredStudents([]);
+      return;
+    }
+  
+    console.log("✅ studentllistdata.students is an array with length:", studentllistdata.students.length);
+  
+    // Now filtering
+    const filtered = studentllistdata.students.filter(
+      (item) => item?.student?.studentId?.trim() === studentIdLocal.trim()
+    );
+  
+    console.log("✅ Filtered students:", filtered);
+    setFilteredStudents(filtered);
+  }, [studentIdLocal, studentllistdata]);
+  
+  
   
   return (
     <BaseLayout1>
@@ -498,58 +381,28 @@ interface TimeSlot {
             </div>
           </div>
 
-          {!isScheduled ? (
-            <div className="bg-white ml-7 shadow-lg rounded-lg p-6 flex items-center justify-center text-center align-middle w-[500px] h-32">
-              <button
-                className="bg-[#012a4a] text-white p-4 rounded-full w-12 h-12 flex items-center justify-center"
-                onClick={openModal}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-              </button>
-            </div>
-          ) : (
-            <div className="p-2">
-              <div className="bg-white shadow-lg rounded-lg p-4 -ml-20 mb-10 overflow-y-scroll h-[350px] scrollbar-hide">
-                <div className="flex justify-between items-center mb-1">
-                  <h3 className="text-[14px] font-semibold">Scheduled Classes</h3>
-                  <div className="flex space-x-4 items-center">
-                    <FiCalendar className="text-[14px]" />
-                    <button className="bg-gray-100 p-1 text-[11px] rounded-lg">Date</button>
-                  </div>
-                </div>
-
+         
+           <div className="bg-white rounded-lg p-6 w-[700px] h-[400px] overflow-auto overflow-y-scroll scrollbar-hide">
+           <h2 className="text-xl font-semibold mb-4">Schedule Classes</h2>
                 <div className="flex justify-start items-center border-b mb-2">
-                  <button 
-                    className={`py-2 px-4 text-[13px] ${activeTab === 'scheduled' ? 'border-b-2 border-blue-600' : ''}`}
-                    onClick={() => {
-                      setActiveTab('scheduled');
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Scheduled (10)
-                  </button>
-                  <button 
-                    className={`py-2 px-4 text-[13px] ${activeTab === 'completed' ? 'border-b-2 border-blue-600' : ''}`}
-                    onClick={() => {
-                      setActiveTab('completed');
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Completed (80)
-                  </button>
+                <button 
+  className={`py-2 px-4 text-[13px] ${activeTab === 'scheduled' ? 'border-b-2 border-blue-600' : ''}`}
+  onClick={() => {
+    setActiveTab('scheduled');
+    setCurrentPage(1);
+  }}
+>
+  Scheduled ({filteredStudents.filter(item => item.status !== 'Completed').length})
+</button>
+<button 
+  className={`py-2 px-4 text-[13px] ${activeTab === 'completed' ? 'border-b-2 border-blue-600' : ''}`}
+  onClick={() => {
+    setActiveTab('completed');
+    setCurrentPage(1);
+  }}
+>
+  Completed ({filteredStudents.filter(item => item.status === 'Completed').length})
+</button>
                 </div>
 
                 <table className="w-full table-auto">
@@ -564,20 +417,29 @@ interface TimeSlot {
                   </thead>
                   <tbody>
 
-      {typedFilteredStudents?.map((item: FilteredStudentItem, index: number) => (
-          <tr key={item.student.studentId} className="border-t">
+     
+       {filteredStudents
+        .filter(item => 
+          activeTab === 'scheduled' ? item.status !== 'Completed' : item.status === 'Completed'
+        )
+        .map((item, index) => (
+          <tr key={item._id} className="border-t">
             <td className="py-1 text-[12px] text-center">{item.student.studentFirstName}</td>
             <td className="py-1 text-[12px] text-center">{studentData?.studentEvaluationDetails?.student?.learningInterest}</td>
-            <td className="py-1 text-[12px] text-center">{new Date(item.createdDate).toISOString().slice(0, 10)}</td>
-            <td className="py-1 text-center">
-              <button
-                className={`px-4 py-1 rounded-lg text-[12px] text-center ${
-                  item.status === 'Completed' ? 'bg-green-600' : 'bg-gray-900'
-                } text-white`}
-              >
-                {item.status}
-              </button>
-            </td>
+            <td className="py-1 text-[12px] text-center">
+  {item.startDate
+    ? new Date(item.startDate).toISOString().slice(0, 10)
+    : "N/A"}
+</td>
+<td className="py-1 text-center">
+  <button
+    className={`px-4 py-1 rounded-lg text-[12px] text-center ${
+      item.status === 'Completed' ? 'bg-green-600' : 'bg-gray-900'
+    } text-white`}
+  >
+    {item.status || "N/A"}
+  </button>
+</td>
             <td className="py-1 text-right relative" ref={dropdownRef}>
               {activeTab === 'scheduled' && (
                 <button onClick={() => toggleDropdown(index)}>
@@ -648,197 +510,8 @@ interface TimeSlot {
                   </div>
                 </div>
               </div>
+              </div>      
               </div>
-                )}
-              </div>
-            </div>
-
-            <Modal
-      isOpen={modalIsOpen}
-      onRequestClose={closeModal}
-      contentLabel="Schedule Classes Modal"
-      className="fixed inset-0 flex items-center justify-center"
-      overlayClassName="fixed inset-0 bg-black bg-opacity-50"
-    >
-      <div className="bg-white rounded-lg p-6 w-[900px] h-[500px] overflow-auto">
-        <h2 className="text-xl font-semibold mb-4">Schedule Classes</h2>
-        <div className="grid grid-cols-2 gap-4">
-          {/* Schedule Section */}
-          <div>
-            {schedule.map((item, index) => (
-              <div key={item.day} className="flex items-center mb-2 w-96">
-                <div className="flex items-center border-1 p-2 rounded-xl border bg-[#f7f7f8] w-60 justify-between">
-                  <label className="font-medium text-[#333B4C] text-[11px]">
-                    {item.day}
-                  </label>
-                  <input
-                    type="checkbox"
-                    className="form-checkbox border bg-[#f7f7f8] rounded-2xl text-[11px]"
-                    checked={item.isSelected}
-                    disabled
-                  />
-                </div>
-                <input
-                  type="time"
-                  className="form-input w-[100px] p-2 border bg-[#f7f7f8] rounded-xl text-[11px] ml-4"
-                  value={item.startTime}
-                  readOnly
-                />
-                <input
-                  type="number"
-                  className="form-input w-[100px] text-center ml-4 text-[11px] p-2 border bg-[#f7f7f8] text-[#333B4C] rounded-xl"
-                  value={item.duration}
-                  readOnly
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Student Information Section */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="col-span-2">
-              <label htmlFor='habshchuvasb' className="block font-medium text-gray-700 text-[12px]">
-                Select Package
-              </label>
-              <input
-                type="text"
-                className="form-input w-full text-[11px] border bg-[#f7f7f8] p-2 rounded-xl"
-                value={studentData?.studentEvaluationDetails?.subscription?.subscriptionName}
-                readOnly
-              />
-            </div>
-            <div className="col-span-2">
-              <label htmlFor='habshchuvasb' className="block font-medium text-gray-700 text-[13px]">
-                Total Hours
-              </label>
-              <input
-                type="number"
-                className="form-input w-full border bg-[#f7f7f8] p-2 rounded-xl text-[12px]"
-                value={studentData?.studentEvaluationDetails?.accomplishmentTime}
-                readOnly
-              />
-            </div>
-            <div className="col-span-2">
-              <label htmlFor='habshchuvasb' className="block font-medium text-[13px] text-gray-700">
-                Preferred Teacher
-              </label>
-              <input
-                type="text"
-                className="form-input w-full text-[11px] border bg-[#f7f7f8] p-2 rounded-xl"
-                value={studentData?.studentEvaluationDetails?.student?.preferredTeacher}
-                readOnly
-              />
-            </div>
-            <div className="col-span-2">
-              <label htmlFor='habshchuvasb' className="block font-medium text-[13px] text-gray-700">
-                Course
-              </label>
-              <input
-                type="text"
-                className="form-input w-full text-[11px] border bg-[#f7f7f8] p-2 rounded-xl"
-                value={studentData?.studentEvaluationDetails?.student?.learningInterest}
-                readOnly
-              />
-            </div>
-
-            {/* Start Date & End Date */}
-            <div className="col-span-2">
-              <label htmlFor='habshchuvasb' className="block font-medium text-gray-700 text-[12px]">
-                Start Date
-              </label>
-              <input
-                type="text"
-                className="form-input w-full text-[11px] border bg-[#f7f7f8] p-2 rounded-xl"
-                value={
-                  studentData?.studentDetails?.createdDate
-                    ? new Date(studentData.studentDetails.createdDate)
-                        .toISOString()
-                        .slice(0, 10)
-                    : "Invalid Date"
-                }
-                readOnly
-              />
-            </div>
-            <div className="col-span-2">
-              <label htmlFor='habshchuvasb' className="block font-medium text-gray-700 text-[12px]">
-                End Date
-              </label>
-              <input
-                type="text"
-                className="form-input w-full text-[11px] border bg-[#f7f7f8] p-2 rounded-xl"
-                value={
-                  studentData?.studentDetails?.createdDate
-                    ? (() => {
-                        const date = new Date(studentData.studentDetails.createdDate);
-                        date.setDate(date.getDate() + 28);
-                        return date.toISOString().slice(0, 10);
-                      })()
-                    : "N/A"
-                }
-                readOnly
-              />
-            </div>
-
-            {/* Start Time & End Time */}
-            <div className="col-span-2">
-              <label htmlFor='habshchuvasb' className="block font-medium text-gray-700 text-[12px]">
-                Start Time
-              </label>
-              <input
-                type="time"
-                className="form-input w-full text-[11px] border bg-[#f7f7f8] p-2 rounded-xl"
-                defaultValue="09:00"
-                disabled
-              />
-            </div>
-            <div className="col-span-2">
-              <label htmlFor='habshchuvasb' className="block font-medium text-gray-700 text-[12px]">
-                End Time
-              </label>
-              <input
-                type="time"
-                className="form-input w-full text-[11px] border bg-[#f7f7f8] p-2 rounded-xl"
-                defaultValue="09:30"
-                disabled
-              />
-            </div>
-
-            {/* Select Teacher (Dropdown) */}
-            <div className="col-span-2">
-              <label htmlFor='habshchuvasb' className="block font-medium text-gray-700 text-[12px]">
-                Select Teacher
-              </label>
-              <select
-                className="form-select w-full text-[12px] border bg-[#f7f7f8] p-2 rounded-xl"
-                disabled
-              >
-                {teachers.map((teacher) => (
-                  <option key={teacher.userId} value={teacher.userId}>
-                    {teacher.userName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex justify-end mt-4">
-          <button
-            className="bg-[#012a4a] text-white py-2 px-4 rounded-lg"
-            onClick={closeModal}
-          >
-            Close
-          </button>
-          <button
-              className="bg-[#012a4a] text-white py-2 px-4 rounded-lg"
-              onClick={sendDataToAPI}
-            >
-              Save
-            </button>
-        </div>
-      </div>
-    </Modal>
     </BaseLayout1>
   );
 };
