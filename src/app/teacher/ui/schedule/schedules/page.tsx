@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import BaseLayout1 from "@/components/BaseLayout1";
+import BaseLayout from "@/components/BaseLayout";
 import {
   Calendar,
   momentLocalizer,
@@ -136,7 +136,7 @@ const SchedulePage = () => {
   };
 
   return (
-    <BaseLayout1>
+    <BaseLayout>
       <div className="flex flex-col mx-auto">
         <div className="flex-1 p-6">
           <div className="flex justify-between items-center mb-6">
@@ -203,7 +203,7 @@ const SchedulePage = () => {
           </div>
         </div>
       </div>
-    </BaseLayout1>
+    </BaseLayout>
   );
 };
 
