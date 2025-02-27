@@ -65,13 +65,13 @@ const ClassAnalytics: React.FC = () => {
       try {
         const teacherId = localStorage.getItem("TeacherPortalId");
         const auth = localStorage.getItem("TeacherAuthToken");
-    
+  
         if (!teacherId) {
           setError("Teacher ID not found");
           setLoading(false);
           return;
         }
-    
+  
         const response = await axios.get<{ classSchedule: ClassSchedule[] }>(
           "http://localhost:5001/classShedule/teacher",
           {
@@ -82,42 +82,44 @@ const ClassAnalytics: React.FC = () => {
             },
           }
         );
-    
+  
         const classSchedule = response.data.classSchedule;
-    
-        // Map classStatus and teacherAttendee
+  
         const statusCount: Record<string, number> = {
           Scheduled: 0,
           Completed: 0,
-          Absent: 0, // Add Absent field
+          Absent: 0,
         };
-    
+  
         classSchedule.forEach((cls) => {
-          let status = "Other";
-        
-          if (cls.classStatus) {
-            const classStatusLower = cls.classStatus.toLowerCase();
-            if (classStatusLower === "pending") {
-              status = "Scheduled";
-            } else if (classStatusLower === "completed") {
-              status = "Completed";
-            }
+          if (cls.classStatus?.toLowerCase() === "pending") {
+            statusCount["Scheduled"] += 1;
+          } else if (cls.classStatus?.toLowerCase() === "completed") {
+            statusCount["Completed"] += 1;
           }
-        
-          if (status !== "Other") {
-            statusCount[status] = (statusCount[status] || 0) + 1;
-          }
-        
-          // Count Absent based on teacherAttendee field
+  
           if (cls.teacherAttendee?.toLowerCase() === "absent") {
             statusCount["Absent"] += 1;
           }
         });
-        
-    
-        setLabels(Object.keys(statusCount));
+  
+        // Ensure total includes all statuses (Scheduled + Completed + Absent)
+        const total = statusCount["Scheduled"] + statusCount["Completed"] + statusCount["Absent"];
+
+      // Function to calculate percentage
+      const calculatePercentage = (count: number) =>
+        total > 0 ? ((count / total) * 100).toFixed(0) + "%" : "0%";
+
+      // Update labels with percentage values
+      const updatedLabels = [
+        `Scheduled (${calculatePercentage(statusCount["Scheduled"])})`,
+        `Completed (${calculatePercentage(statusCount["Completed"])})`,
+        `Absent (${calculatePercentage(statusCount["Absent"])})`,
+      ];
+  
+        setLabels(updatedLabels);
         setChartData(Object.values(statusCount));
-        setTotalClasses(classSchedule.length);
+        setTotalClasses(total); // Fix: This now correctly includes all statuses
         setClassData(classSchedule);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An unexpected error occurred");
@@ -125,21 +127,20 @@ const ClassAnalytics: React.FC = () => {
         setLoading(false);
       }
     };
-    
-    
-    
-    
-
+  
     fetchClassData();
   }, []);
+  
+  
 
   const data = {
     labels,
     datasets: [
       {
         data: chartData,
-        backgroundColor: ["#FEC64F", "#6BF4FD", "#F2A0FF"], // Ensure "Absent" has a color
-        hoverBackgroundColor: ["#FEC64F", "#6BF4FD", "#FF6384"],
+        backgroundColor: ["#FEC64F", "#0BF4C8", "#F2A0FF"], // Ensure "Absent" has a color
+        hoverBackgroundColor: ["#FEC64F", "#0BF4C8", "#FF6384"],
+        borderWidth: 0, // ✅ Removes the white border
       },
     ],
   };
@@ -151,8 +152,17 @@ const ClassAnalytics: React.FC = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
+      datalabels: {
+        color: "white",
+        formatter: (value: number, ctx: any) => {
+          let total = ctx.dataset.data.reduce((acc: number, val: number) => acc + val, 0);
+          return total > 0 ? ((value / total) * 100).toFixed(0) + "%" : "0%";
+        },
+        font: { weight: "bold" as const, size: 12 }, // ✅ Fix applied here
+      },
     },
   };
+  
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -192,7 +202,7 @@ const ClassAnalytics: React.FC = () => {
                       : "#000",
                   }}
                 ></div>
-                {label} ({chartData[index]})
+                {label}
               </span>
               <span>{chartData[index]}</span>
             </div>
