@@ -31,7 +31,7 @@ const Profile = () => {
       const auth = localStorage.getItem("StudentAuthToken");
       setStudentName(localStorage.getItem("StudentPortalName"));
 
-      const fetchInvoice = async (): Promise<void> => {
+      const fetchInvoice = async () => {
         try {
           const response = await axios.get<{ invoice: Invoice[] }>(
             "http://localhost:5001/classShedule/totalhours",
