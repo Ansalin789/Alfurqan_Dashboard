@@ -110,7 +110,7 @@ const pendingPercentage = totalAssignments > 0
   
     return (
       <div className="p-4 mx-auto w-[1250px] pr-40">
-        <h1 className="text-2xl font-semibold text-gray-800 p-2 -ml-4">Assignment</h1>
+        <h1 className="text-2xl font-semibold text-gray-800 p-2 ml-1">Assignment</h1>
         <div className="flex justify-center gap-6 p-2 ml-16">
           {cards.map((c) => (
             <div

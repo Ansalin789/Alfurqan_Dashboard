@@ -178,7 +178,7 @@ const ClassAnalytics: React.FC = () => {
         </div>
       </div>
       <div className="text-white text-sm w-[60%]">
-        <h3 className="text-[16px] font-semibold text-center justify-center mb-2">
+        <h3 className="text-[13px] font-semibold ml-4 justify-center">
           Class Analytics
         </h3>
         <div className="flex justify-between items-center mr-2">

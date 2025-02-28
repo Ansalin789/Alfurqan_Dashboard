@@ -28,7 +28,7 @@ export default function Academic() {
         <div className="flex flex-col lg:flex-row p-2 w-full">
           <div className="flex-1 pr-8 pl-4">
           <header className="flex p-2">
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 -pl-8">
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   {/* Search Icon */}
@@ -37,7 +37,7 @@ export default function Academic() {
                   <input
                     type="text"
                     placeholder="Search here..."
-                    className="h-9 w-60 pl-10 text-sm text-[#35324B] bg-[#E1E5EA] rounded-[10px] shadow-[0_4px_6px_rgba(0,0,0,0.2)] outline-none focus:ring-2 focus:ring-[#9CA3AF]"
+                    className="h-9 w-60 pl-14 text-sm text-[#35324B] bg-[#E1E5EA] rounded-[10px] shadow-[0_4px_6px_rgba(0,0,0,0.2)] outline-none focus:ring-2 focus:ring-[#9CA3AF]"
                   />
                 </div>
               </div>

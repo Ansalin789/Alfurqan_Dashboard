@@ -20,7 +20,14 @@ interface TeacherListProps {
 
 const fetchTeacherData = async (): Promise<Teacher[] | null> => {
   try {
-    const response = await axios.get("http://localhost:5001/teacher-student-count");
+    const studentId = localStorage.getItem("TeacherPortalId");
+    console.log(">>>>>", studentId);
+    const response = await axios.get("http://localhost:5001/teacher-student-count",
+      {
+        params:{teacherId: studentId}
+      }
+    );
+    
     return response.data.data;
   } catch (error) {
     console.error("Error fetching teacher data", error);
@@ -44,7 +51,7 @@ const StudentsCard: React.FC = () => {
       {teachers?.map((teacher) => (
         <div key={teacher._id} className="bg-[#324F78] text-white rounded-[15px] shadow-lg w-[100%] h-[205px] p-4">
           <div className="flex justify-center items-center mb-2 -mt-2 bg-[#fff] text-center rounded-md">
-            <h2 className="text-[14px] font-semibold text-[#242424] text-center py-[1px]">{teacher.teacherName}</h2>
+            <h2 className="text-[14px] font-semibold text-[#242424] text-center py-[1px]">{localStorage.getItem('TeacherPortalName')}</h2>
           </div>
 
           <div className="relative flex justify-center items-center">

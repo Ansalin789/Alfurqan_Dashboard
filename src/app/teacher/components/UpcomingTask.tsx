@@ -68,7 +68,7 @@ const UpcomingTask: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-100 p-4 w-[250px] rounded-lg shadow-lg -ml-14 h-[43vh] overflow-y-scroll scrollbar-none">
+    <div className="bg-gray-100 p-4 w-[250px] rounded-lg shadow-lg -ml-14 h-[40vh] overflow-y-scroll scrollbar-none">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-[14px] font-semibold text-gray-800">Upcoming Task</h3>
       </div>
