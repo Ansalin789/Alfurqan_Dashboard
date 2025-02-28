@@ -391,12 +391,12 @@ function LiveClass() {
                          <div className="relative">
                            <select
                              name="city"
-                             value={classData?.student.city}
+                             value="Coimbatote"
                              className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
-                             
-                           </select>
+                               <option value="Coimbatore">Coimbatore</option>
+                             </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
                        </div>
@@ -410,7 +410,7 @@ function LiveClass() {
                              className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
-                             
+                             <option value="Coimbatore">India</option>
                            </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
@@ -421,11 +421,12 @@ function LiveClass() {
                          <input
                            type="text"
                            name="trialId"
-                           value={classData?.student.trailId}
+                           value="67a06f973e286e72332e18d3"
                           
                            className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
+                          
                        </div>
          
                        <div>
@@ -433,10 +434,11 @@ function LiveClass() {
                          <div className="relative">
                            <select
                              name="course"
-                             value={classData?.student.course}
+                             value="Quran"
                              className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
+                              <option value="Coimbatore"> Quarn</option>
                            </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
