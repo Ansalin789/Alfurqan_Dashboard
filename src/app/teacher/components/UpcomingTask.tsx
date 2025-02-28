@@ -68,7 +68,7 @@ const UpcomingTask: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow-lg -ml-14 h-[43vh] overflow-y-scroll scrollbar-none">
+    <div className="bg-gray-100 p-4 w-[250px] rounded-lg shadow-lg -ml-14 h-[43vh] overflow-y-scroll scrollbar-none">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-[14px] font-semibold text-gray-800">Upcoming Task</h3>
       </div>
@@ -77,7 +77,7 @@ const UpcomingTask: React.FC = () => {
           <div key={classItem.id} className={`relative ${classItem.color} p-4 rounded-md shadow-md`}>
             <div className="flex items-center space-x-2">
               {classItem.icon}
-              <h4 className="text-[13px] font-medium text-gray-800">{classItem.title}</h4>
+              <h4 className="text-[13px] fontdd-medium text-gray-800">{classItem.title}</h4>
             </div>
             <p className="text-[10px] text-gray-600 mt-1">{classItem.date}</p>
             <p className="text-[10px] text-gray-600">{classItem.time}</p>
