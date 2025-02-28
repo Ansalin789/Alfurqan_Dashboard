@@ -396,14 +396,20 @@ export default function Dashboard() {
         <div className="flex flex-1 min-h-0">
           <main className="flex-1 p-2 sm:p-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <div className="bg-[#D0E0EC] p-2 rounded-lg shadow-lg">
-                <h3 className="text-gray-500 text-[13px] font-semibold mb-2">
-                  TOTAL APPLICATIONS
+              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg">
+                <h3 className="text-gray-800 text-[13px] font-semibold mb-2">
+                  Total Applications
                 </h3>
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold">
-                    {dashboardCounts.totalApplication}
-                  </span>
+                  <div className="flex mt-6 gap-4 ml-4">
+                    <span className="text-lg font-bold">
+                      {dashboardCounts.totalApplication}
+                    </span>
+                    <span className="text-green-500 text-xs flex items-center gap-1">
+                      <span className="text-[10px]">↑</span> 12%
+                    </span>
+                  </div>
+
                   <div className="w-10 h-10">
                     <PieChart width={40} height={40}>
                       <Pie
@@ -428,19 +434,21 @@ export default function Dashboard() {
                     </PieChart>
                   </div>
                 </div>
-                <span className="text-green-500 text-xs flex items-center gap-1">
-                  <span className="text-[10px]">↑</span> 12%
-                </span>
               </div>
 
-              <div className="bg-[#D0E0EC] p-2 rounded-lg shadow-lg">
-                <h3 className="text-gray-500 text-[13px] font-semibold mb-2">
-                  SHORTLISTED CANDIDATES
+              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg">
+                <h3 className="text-gray-800 text-[13px] font-semibold mb-2">
+                  Shortlisted Candidates
                 </h3>
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold">
-                    {dashboardCounts.shortlisted}
-                  </span>
+                  <div className="flex mt-6 gap-4 ml-4">
+                    <span className="text-lg font-bold">
+                      {dashboardCounts.shortlisted}
+                    </span>
+                    <span className="text-red-500 text-xs flex items-center gap-1">
+                      <span className="text-[10px]">↓</span> 16%
+                    </span>
+                  </div>
                   <div className="w-10 h-10">
                     <PieChart width={40} height={40}>
                       <Pie
@@ -465,19 +473,21 @@ export default function Dashboard() {
                     </PieChart>
                   </div>
                 </div>
-                <span className="text-red-500 text-xs flex items-center gap-1">
-                  <span className="text-[10px]">↓</span> 16%
-                </span>
               </div>
 
-              <div className="bg-[#D0E0EC] p-2 rounded-lg shadow-lg">
-                <h3 className="text-gray-500 text-[13px] font-semibold mb-2">
-                  REJECTED CANDIDATES
+              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg">
+                <h3 className="text-gray-800 text-[13px] font-semibold mb-2">
+                  Rejected Candidates
                 </h3>
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold ">
-                    {dashboardCounts.rejected}
-                  </span>
+                  <div className="flex mt-6 gap-4 ml-4">
+                    <span className="text-lg font-bold ">
+                      {dashboardCounts.rejected}
+                    </span>
+                    <span className="text-green-500 text-xs flex items-center gap-1">
+                      <span className="text-[10px]">↑</span> 14%
+                    </span>
+                  </div>
                   <div className="w-10 h-10">
                     <PieChart width={40} height={40}>
                       <Pie
@@ -502,14 +512,11 @@ export default function Dashboard() {
                     </PieChart>
                   </div>
                 </div>
-                <span className="text-green-500 text-xs flex items-center gap-1">
-                  <span className="text-[10px]">↑</span> 14%
-                </span>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-2">
-              <div className="bg-white p-3 rounded-xl h-[calc(30vh-2rem)] shadow-lg">
+              <div className="bg-white border border-[#BABABA] p-3 rounded-xl h-[calc(30vh-2rem)] shadow-lg">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
                   <h3 className="text-gray-800 text-[13px] font-semibold sm:text-sm">
@@ -518,18 +525,20 @@ export default function Dashboard() {
                   <div className="flex items-center gap-3 mt-2 sm:mt-0">
                     {/* Legend */}
                     <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-blue-100 rounded"></div>
-                      <span className="text-xs text-gray-600">Applied</span>
+                      <div className="w-2 h-2 bg-blue-100 rounded"></div>
+                      <span className="text-[12px] text-gray-600">Applied</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-blue-900 rounded"></div>
-                      <span className="text-xs text-gray-600">Shortlisted</span>
+                      <div className="w-2 h-2 bg-blue-900 rounded"></div>
+                      <span className="text-[12px] text-gray-600">
+                        Shortlisted
+                      </span>
                     </div>
                     {/* Calendar Button */}
-                    <div className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 rounded-md">
+                    <div className="flex items-center gap-1 px-2 py-1 text-[10px] bg-gray-100 rounded-md">
                       <svg
                         className="w-4 h-4 text-gray-500"
-                        viewBox="0 0 24 24"
+                        viewBox="0 0 20 20"
                         fill="none"
                       >
                         <path
@@ -541,7 +550,7 @@ export default function Dashboard() {
                         />
                       </svg>
                       <button
-                        className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 rounded-md"
+                        className="flex items-center gap-1 px-2 py-1 text-[11px] bg-gray-100 rounded-md"
                         onClick={() =>
                           handleWeekChange(
                             moment().startOf("week").toDate(), // Start of the current week
@@ -557,7 +566,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Bar Chart */}
-                <div className="h-40 w-120">
+                <div className="h-36 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barData} barCategoryGap="25%">
                       <XAxis
@@ -583,7 +592,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="bg-[#D0E0EC] p-3 rounded-xl h-[calc(30vh-2rem)] shadow-lg">
+              <div className="border border-[#BABABA] bg-[#D0E0EC] p-3 rounded-xl h-[calc(30vh-2rem)] shadow-lg">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-gray-800 text-[13px] font-semibold sm:text-sm">
                     Teachers By Subject
@@ -650,7 +659,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-white p-3 rounded-lg">
+            <div className="bg-white border border-[#BABABA] p-3 rounded-lg">
               {/* Header */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
                 <div className="flex items-center gap-2">
@@ -674,7 +683,7 @@ export default function Dashboard() {
               </div>
 
               {/* Table */}
-              <div className="overflow-x-auto rounded-xl h-[calc(40vh-2rem)] shadow-lg gap-5">
+              <div className="overflow-x-auto scrollbar-none rounded-xl h-[calc(40vh-2rem)] gap-5">
                 <table className="w-full text-xs border-collapse">
                   {/* Table Head */}
                   <thead>
@@ -691,47 +700,47 @@ export default function Dashboard() {
                       ].map((col) => (
                         <th
                           key={col}
-                          className="py-2 px-2 text-left font-medium"
+                          className="py-2 px-2 font-semibold text-center"
                         >
                           {col}{" "}
-                          <span className="text-gray-600 text-[10px]">▲▼</span>
+                          <span className="text-gray-900 text-[7px]">▲▼</span>
                         </th>
                       ))}
                     </tr>
                   </thead>
 
                   {/* Table Body */}
-                  <tbody className="divide-y divide-gray-200 ">
+                  <tbody>
                     {applicants.map((applicant) => (
                       <tr
                         key={applicant._id}
-                        className="hover:bg-gray-100 border-b "
+                        className="hover:bg-gray-100 text-[9px]"
                       >
-                        <td className="py-2 px-2">
+                        <td className="py-2 px-2 text-center">
                           {applicant.candidateFirstName}
                         </td>
-                        <td className="py-2 px-2">
+                        <td className="py-2 px-2 text-center">
                           {applicant.candidateEmail}
                         </td>
-                        <td className="py-2 px-2">
+                        <td className="py-2 px-2 text-center">
                           {applicant.candidatePhoneNumber}
                         </td>
-                        <td className="py-2 px-2">
+                        <td className="py-2 px-2 text-center">
                           {applicant.positionApplied}
                         </td>
-                        <td className="py-2 px-2">
+                        <td className="py-2 px-2 text-center">
                           {formatDate(applicant.applicationDate)}
                         </td>
                         <td className="py-2 px-2 text-center">
                           {applicant.preferedWorkingHours}
                         </td>
-                        <td className="py-2 px-2">
-                          <button className="text-blue-600  flex items-center gap-1 text-xs">
+                        <td className="py-2 px-2 text-center">
+                          <button className="text-blue-600  flex items-center gap-1">
                             📎 Resume
                           </button>
                         </td>
-                        <td className="py-2 px-2">
-                          <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded-full text-xs">
+                        <td className="py-2 px-2 text-center">
+                          <span className="px-2 py-1 text-gray-800 rounded-full">
                             {applicant.applicationStatus}
                           </span>
                         </td>
@@ -743,7 +752,7 @@ export default function Dashboard() {
             </div>
           </main>
 
-          <aside className="w-64 p-2 hidden lg:block space-y-2">
+          <aside className="w-64 p-2 hidden lg:block space-y-2 mt-1">
             {/* Calendar Section */}
             <div className="bg-[#D0E0EC] p-2 rounded-lg">
               {/* Calendar Header */}
@@ -851,7 +860,7 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              <div className="space-y-3 overflow-y-scroll h-[17vh] scrollbar-none">
+              <div className="space-y-3 overflow-y-scroll h-[15vh] scrollbar-none">
                 {todayMeetings.map((item) => (
                   <div key={item.title} className="flex items-start gap-2">
                     <span className="text-[10px] text-gray-500 w-8">

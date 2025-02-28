@@ -222,7 +222,7 @@ const ManageTeacher: React.FC = () => {
                       className="mt-4 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg"
                       onClick={() => handleViewTeacherSchedule(teacher._id)}
                     >
-                      View Teacher List
+                      View Profile
                     </button>
                   </div>
                 </div>
