@@ -24,7 +24,7 @@ const TeacherDetails = () => {
       
           const fetchTeachers = async () => {
             try {
-              const response = await fetch(`http://localhost:5001/users/${localStorage.getItem('supervisormanageTeacherId')}`, {
+              const response = await fetch(`https://alfurqanacademy.tech/users/${localStorage.getItem('supervisormanageTeacherId')}`, {
   
                 headers: {
                   'Authorization': `Bearer ${localStorage.getItem('SupervisorAuthToken')}`,

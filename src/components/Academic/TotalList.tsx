@@ -86,7 +86,7 @@ const fetchDashboardData = async (
   authToken: string | null
 ): Promise<ApiResponse> => {
   const response = await fetch(
-    `http://alfurqanacademy.tech:5001/dashboard/widgets`,
+    `https://alfurqanacademy.tech/dashboard/widgets`,
     {
       headers: {
         "Content-Type": "application/json",

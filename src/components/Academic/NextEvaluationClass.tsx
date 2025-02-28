@@ -33,7 +33,7 @@ const NextEvaluationClass = () => {
         const academicId = localStorage.getItem("academicId");
         console.log("academicId>>", academicId);
         const response = await axios.get(
-          `http://localhost:5001/evaluationlist`,
+          `https://alfurqanacademy.tech/evaluationlist`,
           {
             method: "GET",
             params: { academicCoachId: academicId },

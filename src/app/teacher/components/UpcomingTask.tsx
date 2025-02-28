@@ -23,7 +23,7 @@ const UpcomingTask: React.FC = () => {
         const teacherId = localStorage.getItem("TeacherPortalId");
         const auth = localStorage.getItem("TeacherAuthToken");
 
-        const response = await axios.get("http://localhost:5001/classShedule/teacher", {
+        const response = await axios.get("https://alfurqanacademy.tech/classShedule/teacher", {
           params: { teacherId: teacherId },
           headers: {
             "Content-Type": "application/json",

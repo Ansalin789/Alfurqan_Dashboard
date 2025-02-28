@@ -288,7 +288,7 @@ function LiveClass() {
     };
 
     try {
-      const response = await axios.post("http://localhost:5001/feedback", feedbackData, {
+      const response = await axios.post("https://alfurqanacademy.tech/feedback", feedbackData, {
         headers: {
           "Content-Type": "application/json",
         },

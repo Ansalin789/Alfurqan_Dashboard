@@ -84,7 +84,7 @@ const AddStudentModal = ({
 
       const auth = localStorage.getItem("authToken");
       console.log(auth);
-      const response = await fetch(`http://localhost:5001/student`, {
+      const response = await fetch(`https://alfurqanacademy.tech/student`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

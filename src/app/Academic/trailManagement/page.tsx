@@ -41,7 +41,7 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     const auth = localStorage.getItem("authToken");
     const academicId = localStorage.getItem("academicId");
     console.log("academicId>>", academicId);
-    const response = await axios.get(`http://localhost:5001/studentlist`, {
+    const response = await axios.get(`https://alfurqanacademy.tech/studentlist`, {
       params: { academicCoachId: academicId },
       headers: {
         "Content-Type": "application/json",

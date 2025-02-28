@@ -34,7 +34,7 @@ const Profile = () => {
       const fetchInvoice = async () => {
         try {
           const response = await axios.get<{ invoice: Invoice[] }>(
-            "http://localhost:5001/classShedule/totalhours",
+            "https://alfurqanacademy.tech/classShedule/totalhours",
             {
               params: { studentId },
               headers: { Authorization: `Bearer ${auth}` },

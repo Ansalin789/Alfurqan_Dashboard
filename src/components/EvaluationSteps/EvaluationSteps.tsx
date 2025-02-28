@@ -207,7 +207,7 @@ const Step2: React.FC<{
         setLoading(true);
         const auth = localStorage.getItem("authToken");
         const response = await fetch(
-          `http://localhost:5001/studentlist/${studentId}`,
+          `https://alfurqanacademy.tech/studentlist/${studentId}`,
           {
             headers: {
               Authorization: `Bearer ${auth}`,
@@ -1161,7 +1161,7 @@ const Step6 = ({
       try {
         const auth = localStorage.getItem("authToken");
         const response = await fetch(
-          "http://alfurqanacademy.tech:5001/users?role=TEACHER",
+          "https://alfurqanacademy.tech/users?role=TEACHER",
           {
             headers: {
               Authorization: `Bearer ${auth}`,
@@ -2055,7 +2055,7 @@ const Step9 = ({
       console.log("Payload being sent:", JSON.stringify(submitData, null, 2));
       const auth = localStorage.getItem("authToken");
       // Make POST request to your API
-      const response = await fetch(`http://localhost:5001/evaluation`, {
+      const response = await fetch(`https://alfurqanacademy.tech/evaluation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

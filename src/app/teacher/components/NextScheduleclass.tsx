@@ -101,7 +101,7 @@ const NextScheduledClass = () => {
         }
 
         const response = await axios.get<ApiResponse>(
-          `http://localhost:5001/classShedule/teacher`,
+          `https://alfurqanacademy.tech/classShedule/teacher`,
           {
             params: { teacherId },
             headers: { 'Authorization': `Bearer ${authToken}` }

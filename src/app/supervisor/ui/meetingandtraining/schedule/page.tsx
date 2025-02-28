@@ -152,7 +152,7 @@ const [currentView, setCurrentView] = useState<View>("month");
 useEffect(() => {
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:5001/allMeetings");
+      const response = await axios.get("https://alfurqanacademy.tech/allMeetings");
 
       const meetings = response.data?.data?.meetings;
 

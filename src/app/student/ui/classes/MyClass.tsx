@@ -100,7 +100,7 @@ const NextClass = () => {
         }
 
         const response = await axios.get<ApiResponse>(
-          `http://localhost:5001/classShedule/students`,
+          `https://alfurqanacademy.tech/classShedule/students`,
           {
             params: { studentId },
             headers: { 'Authorization': `Bearer ${authToken}` }

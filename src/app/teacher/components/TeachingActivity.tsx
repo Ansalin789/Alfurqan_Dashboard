@@ -17,7 +17,7 @@ const TeachingActivity: React.FC = () => {
           return;
         }
 
-        const response = await axios.get("http://localhost:5001/classShedule", {
+        const response = await axios.get("https://alfurqanacademy.tech/classShedule", {
           headers: { Authorization: `Bearer ${auth}` },
         });
 
