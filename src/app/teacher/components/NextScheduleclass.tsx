@@ -2,12 +2,13 @@
 import { AiOutlineClockCircle } from 'react-icons/ai';
 import { useEffect, useState } from "react";
 import { FaUser } from "react-icons/fa";
-import { MdDateRange } from "react-icons/md";
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { FaUserAlt } from 'react-icons/fa';
+
 
 interface Student {
   studentId: string;
@@ -48,7 +49,7 @@ interface ApiResponse {
   classSchedule: ClassData[];
 }
 
-const NextClass = () => {
+const NextScheduledClass = () => {
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isCountdownFinished, setIsCountdownFinished] = useState(false);
@@ -152,12 +153,12 @@ const NextClass = () => {
   
 
   return (
-    <div className="p-4">
-      <div className="bg-[#1C3557] rounded-[25px] shadow flex items-center justify-between text-white p-4">
-        <div>
-          <h3 className="text-[15px] font-medium">{classData?.student.studentFirstName} | <FaUser className='inline'/> {classData?.teacher.teacherName}</h3>
-          <div className="flex items-center space-x-4 py-2">
-            <MdDateRange className="w-[15px]" />
+      <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] rounded-[25px] shadow flex items-center justify-between text-white">
+        <h3 className="text-[15px] font-medium pt-2 p-3 underline">Your Next Evaluation Class</h3>
+        <div className="items-center p-1 px-8">
+          <h3 className="text-[16px] font-medium pt-2 ml-4">{classData?.student.studentFirstName} | <FaUser className='inline'/> {classData?.teacher.teacherName}</h3>
+          <div className="flex items-center space-x-6 py-2">
+          {/* <FaUserAlt className="w-[10px]" /> */}
             <p className="text-[13px]">{classData?.classDay[0]} - {new Date(classData?.startDate ?? '').toLocaleDateString()}</p>
             <AiOutlineClockCircle className="w-[15px]" />
             <p className="text-[13px]">{classData?.startTime[0]} - {classData?.endTime[0]}</p>
@@ -177,7 +178,7 @@ const NextClass = () => {
               </div>
             </div>
           )}
-          <p className="text-[15px] font-bold">Starts in</p>
+          <p className="text-white text-[13px] font-semibold">Starts in</p>
           <div className="w-12 h-12">
             <CircularProgressbar value={timeRemaining} maxValue={60} text={`${timeRemaining}m`} styles={buildStyles({ textSize: '20px', textColor: '#fff', pathColor: '#fff' })} />
           </div>
@@ -192,8 +193,7 @@ const NextClass = () => {
           <BsThreeDotsVertical className="cursor-pointer" onClick={() => setIsPopupVisible(!isPopupVisible)} />
         </div>
       </div>
-    </div>
   );
 };
 
-export default NextClass;
+export default NextScheduledClass;
