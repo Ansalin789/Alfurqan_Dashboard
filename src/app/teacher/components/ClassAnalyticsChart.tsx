@@ -5,20 +5,17 @@ import {
   Chart,
   ArcElement,
   Tooltip,
-  Legend,
-  ChartOptions,
-  ChartData,
-  TooltipItem,
+  Legend
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
 Chart.register(ArcElement, Tooltip, Legend, ChartDataLabels);
-
 interface Student {
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
   studentEmail: string;
+  gender: "MALE" | "FEMALE";
 }
 
 interface Teacher {
@@ -27,10 +24,10 @@ interface Teacher {
   teacherEmail: string;
 }
 
-interface Schedule {
+interface ClassSchedule {
+  _id: string;
   student: Student;
   teacher: Teacher;
-  _id: string;
   classDay: string[];
   package: string;
   preferedTeacher: string;
@@ -39,114 +36,136 @@ interface Schedule {
   endDate: string;
   startTime: string[];
   endTime: string[];
-  classStatus:string;
   scheduleStatus: string;
+  classLink: string;
   status: string;
+  classStatus: string;
   createdBy: string;
   createdDate: string;
   lastUpdatedDate: string;
   __v: number;
+  teacherAttendee: string;
 }
 
-interface ApiResponse {
-  totalCount: number;
-  students: Schedule[];
-}
 
-const API_URL = "http://localhost:5001/classShedule";
 
-const ClassAnalyticsChart = () => {
-  const [chartData, setChartData] = useState<number[]>([0, 0, 0]);
+
+const ClassAnalytics: React.FC = () => {
+  const [classData, setClassData] = useState<ClassSchedule[]>([]);
+  const [chartData, setChartData] = useState<number[]>([]);
+  const [totalClasses, setTotalClasses] = useState<number>(0);
+  const [labels, setLabels] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  console.log('classData',classData);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchClassData = async () => {
       try {
+        const teacherId = localStorage.getItem("TeacherPortalId");
         const auth = localStorage.getItem("TeacherAuthToken");
-        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
-
-        if (!teacherIdToFilter) {
-          console.error("No teacher ID found in localStorage.");
+  
+        if (!teacherId) {
+          setError("Teacher ID not found");
+          setLoading(false);
           return;
         }
-
-        const response = await axios.get<ApiResponse>(API_URL, {
-          headers: {
-            Authorization: `Bearer ${auth}`,
-          },
-        });
-
-        const filteredData = response.data.students.filter(
-          (item) => item.teacher.teacherId === teacherIdToFilter
+  
+        const response = await axios.get<{ classSchedule: ClassSchedule[] }>(
+          "http://localhost:5001/classShedule/teacher",
+          {
+            params: { teacherId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${auth}`,
+            },
+          }
         );
-
-        const studentScheduleMap = new Map<string, Schedule>();
-
-        filteredData.forEach((item) => {
-          studentScheduleMap.set(item.student.studentId, item);
+  
+        const classSchedule = response.data.classSchedule;
+  
+        const statusCount: Record<string, number> = {
+          Scheduled: 0,
+          Completed: 0,
+          Absent: 0,
+        };
+  
+        classSchedule.forEach((cls) => {
+          if (cls.classStatus?.toLowerCase() === "pending") {
+            statusCount["Scheduled"] += 1;
+          } else if (cls.classStatus?.toLowerCase() === "completed") {
+            statusCount["Completed"] += 1;
+          }
+  
+          if (cls.teacherAttendee?.toLowerCase() === "absent") {
+            statusCount["Absent"] += 1;
+          }
         });
+  
+        // Ensure total includes all statuses (Scheduled + Completed + Absent)
+        const total = statusCount["Scheduled"] + statusCount["Completed"] + statusCount["Absent"];
 
-        const uniqueSchedules = Array.from(studentScheduleMap.values());
+      // Function to calculate percentage
+      const calculatePercentage = (count: number) =>
+        total > 0 ? ((count / total) * 100).toFixed(0) + "%" : "0%";
 
-        // Count schedule statuses
-        const scheduledCount = uniqueSchedules.filter(
-          (item) => item.scheduleStatus === "Scheduled"
-        ).length;
-        const completedCount = uniqueSchedules.filter(
-          (item) => item.scheduleStatus === "Completed"
-        ).length;
-        const absentCount = uniqueSchedules.filter(
-          (item) => item.scheduleStatus === "Absent"
-        ).length;
-
-        setChartData([scheduledCount, completedCount, absentCount]);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      // Update labels with percentage values
+      const updatedLabels = [
+        `Scheduled (${calculatePercentage(statusCount["Scheduled"])})`,
+        `Completed (${calculatePercentage(statusCount["Completed"])})`,
+        `Absent (${calculatePercentage(statusCount["Absent"])})`,
+      ];
+  
+        setLabels(updatedLabels);
+        setChartData(Object.values(statusCount));
+        setTotalClasses(total); // Fix: This now correctly includes all statuses
+        setClassData(classSchedule);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      } finally {
+        setLoading(false);
       }
     };
-
-    fetchData();
+  
+    fetchClassData();
   }, []);
+  
+  
 
-  const data: ChartData<"doughnut"> = {
-    labels: ["Scheduled", "Completed", "Absent"],
+  const data = {
+    labels,
     datasets: [
       {
         data: chartData,
-        backgroundColor: ["#FEC64F", "#0BF4C8", "#F2A0FF"],
-        borderWidth: 0,
+        backgroundColor: ["#FEC64F", "#0BF4C8", "#F2A0FF"], // Ensure "Absent" has a color
+        hoverBackgroundColor: ["#FEC64F", "#0BF4C8", "#FF6384"],
+        borderWidth: 0, // ✅ Removes the white border
       },
     ],
   };
+  
+  
 
-  const total = chartData.reduce((sum, value) => sum + value, 0);
-
-  const options: ChartOptions<"doughnut"> = {
-    cutout: "50%",
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        callbacks: {
-          label: (tooltipItem: TooltipItem<"doughnut">) => {
-            return `${tooltipItem.label}: ${tooltipItem.raw}`;
-          },
-        },
-      },
+      legend: { display: false },
       datalabels: {
-        formatter: (value: number) => `${value}`,
         color: "white",
-        font: {
-          weight: 600,
-          size: 14,
+        formatter: (value: number, ctx: any) => {
+          let total = ctx.dataset.data.reduce((acc: number, val: number) => acc + val, 0);
+          return total > 0 ? ((value / total) * 100).toFixed(0) + "%" : "0%";
         },
+        font: { weight: "bold" as const, size: 12 }, // ✅ Fix applied here
       },
-    },
-    animation: {
-      animateRotate: true,
-      animateScale: true,
     },
   };
+  
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div className="w-[100%] bg-[#3E68A1] p-4 rounded-[17px] shadow-lg flex justify-between">
@@ -154,12 +173,12 @@ const ClassAnalyticsChart = () => {
         <Doughnut data={data} options={options} />
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-[12px] font-bold text-white bg-[#223857] rounded-full p-3">
-            {total}
+            {totalClasses}
           </span>
         </div>
       </div>
       <div className="text-white text-sm w-[60%]">
-        <h3 className="text-[16px] font-semibold text-center justify-center mb-2">
+        <h3 className="text-[13px] font-semibold ml-4 justify-center">
           Class Analytics
         </h3>
         <div className="flex justify-between items-center mr-2">
@@ -169,30 +188,29 @@ const ClassAnalyticsChart = () => {
               TOTAL CLASS ASSIGNED
             </p>
           </span>
-          <span>{total}</span>
+          <span>{totalClasses}</span>
         </div>
         <div className="flex flex-col ml-4 mt-3 text-[10px] text-[#A098AE]">
-            {(data.labels as string[])?.map((label, index) => (
-              <div key={label} className="flex justify-between items-center">
-                <span className="flex items-center">
-                  <div
-                    className="w-2 h-2 rounded-sm mr-2"
-                    style={{
-                      backgroundColor: Array.isArray(data.datasets?.[0]?.backgroundColor)
-                        ? data.datasets[0].backgroundColor[index] || "#000"
-                        : "#000",
-                    }}
-                  ></div>
-                  {label} ({chartData[index]})
-                </span>
-                <span>{chartData[index]}</span>
-              </div>
-            ))}
-          </div>
-
+          {labels.map((label, index) => (
+            <div key={label} className="flex justify-between items-center">
+              <span className="flex items-center">
+                <div
+                  className="w-2 h-2 rounded-sm mr-2"
+                  style={{
+                    backgroundColor: Array.isArray(data.datasets?.[0]?.backgroundColor)
+                      ? data.datasets[0].backgroundColor[index] || "#000"
+                      : "#000",
+                  }}
+                ></div>
+                {label}
+              </span>
+              <span>{chartData[index]}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
-export default ClassAnalyticsChart;
+export default ClassAnalytics;

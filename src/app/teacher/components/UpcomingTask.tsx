@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { FaBook } from 'react-icons/fa';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { FaBook } from "react-icons/fa";
 
 interface ClassItem {
   id: string;
@@ -17,18 +17,17 @@ const UpcomingTask: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch class data from the API
   useEffect(() => {
     const fetchClassData = async () => {
       try {
-        const teacherId = localStorage.getItem('TeacherPortalId');
-        const auth = localStorage.getItem('TeacherAuthToken');
+        const teacherId = localStorage.getItem("TeacherPortalId");
+        const auth = localStorage.getItem("TeacherAuthToken");
 
-        const response = await axios.get('http://localhost:5001/classShedule/teacher', {
+        const response = await axios.get("http://localhost:5001/classShedule/teacher", {
           params: { teacherId: teacherId },
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${auth}`,
           },
         });
 
@@ -37,18 +36,21 @@ const UpcomingTask: React.FC = () => {
           date: classItem.startDate,
           time: `${classItem.startTime[0]} - ${classItem.endTime[0]}`,
           title: classItem.package,
-          color: 'bg-[#FAD85D] opacity-[90%]', // Customize based on your requirements
-          icon: <FaBook className="text-yellow-700" />, // Customize based on your requirements
+          color: "bg-[#FAD85D] opacity-[90%]",
+          icon: <FaBook className="text-yellow-700" />,
           teacher: classItem.teacher.teacherName,
         }));
 
-        setClasses(fetchedClasses);
+        // Sort by date (assuming startDate is in ISO format) and get the last 5 upcoming classes
+        const sortedClasses = fetchedClasses
+        .sort((a: ClassItem, b: ClassItem) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort ascending by date
+        .slice(0, 5); // Get the first 5 upcoming classes
+      
+      setClasses(sortedClasses);
+      
+
       } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('An unexpected error occurred');
-        }
+        setError(err instanceof Error ? err.message : "An unexpected error occurred");
       } finally {
         setLoading(false);
       }
@@ -66,7 +68,7 @@ const UpcomingTask: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow-lg -ml-24 h-[33vh] overflow-y-scroll scrollbar-none">
+    <div className="bg-gray-100 p-4 w-[250px] rounded-lg shadow-lg -ml-14 h-[40vh] overflow-y-scroll scrollbar-none">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-[14px] font-semibold text-gray-800">Upcoming Task</h3>
       </div>
@@ -75,7 +77,7 @@ const UpcomingTask: React.FC = () => {
           <div key={classItem.id} className={`relative ${classItem.color} p-4 rounded-md shadow-md`}>
             <div className="flex items-center space-x-2">
               {classItem.icon}
-              <h4 className="text-[13px] font-medium text-gray-800">{classItem.title}</h4>
+              <h4 className="text-[13px] fontdd-medium text-gray-800">{classItem.title}</h4>
             </div>
             <p className="text-[10px] text-gray-600 mt-1">{classItem.date}</p>
             <p className="text-[10px] text-gray-600">{classItem.time}</p>

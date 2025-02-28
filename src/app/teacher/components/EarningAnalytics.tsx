@@ -5,7 +5,7 @@ const EarningAnalytics = () => {
     <div className="bg-[#3E68A1] text-white p-4 rounded-2xl shadow-lg w-[100%] mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-[14px] font-medium">Earning Analytics</h2>
+        <h2 className="text-[13px] font-semibold ml-4">Earning Analytics</h2>
         {/* Dropdown for Weekly/Monthly selection */}
         <select className="bg-[#F7F8FA] text-[#3E5E8A] py-[1px] px-1 rounded-md text-[10px] font-semibold">
           <option value="weekly">This Week</option>

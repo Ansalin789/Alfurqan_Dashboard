@@ -7,7 +7,7 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import Link from "next/link";
@@ -23,7 +23,14 @@ export interface User {
 }
 
 // Register ChartJS components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function Teachers() {
   const [maleCount, setMaleCount] = useState<number>(0); // Male count for current month
@@ -121,26 +128,23 @@ export default function Teachers() {
   return (
     <Link
       href="/Academic/manageTeachers"
-      className="block col-span-12 bg-[#3e68a1] p-4 py-3 rounded-[25px] shadow-xl 
-                 transition-transform hover:scale-[1.02] 
-                 focus:outline-none focus:ring-2 focus:ring-blue-400"
-      aria-label="View Teachers and Students Management"
+      className="bg-[#3e68a1] p-4 py-3 rounded-[20px] shadow-xl"
     >
-      <div className="col-span-12 bg-[#3e68a1] p-4 rounded-[25px] shadow-lg">
-        <div className="flex justify-between items-center gap-6">
-          <h3 className="text-[15px] font-semibold text-white">Teachers</h3>
-          <div className="flex gap-2 -ml-2">
+      <div className="col-span-12 bg-[#3e68a1]">
+        <div className="flex justify-between items-center">
+          <h3 className="text-[13px] font-medium text-white">Teachers</h3>
+          <div className="flex gap-2">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-[#6fd4ff]"></div>
-              <span className="text-white/60 text-[10px]">Male</span>
+              <div className="w-1 h-1 rounded-full bg-[#6fd4ff]"></div>
+              <span className="text-white/60 text-[9px]">Male</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-[#ff82f5]"></div>
-              <span className="text-white/60 text-[10px]">Female</span>
+              <span className="text-white/60 text-[9px]">Female</span>
             </div>
           </div>
         </div>
-        <div className="relative h-[200px]">
+        <div className="relative h-[120px] mt-10">
           <Bar data={data} options={options} />
         </div>
       </div>

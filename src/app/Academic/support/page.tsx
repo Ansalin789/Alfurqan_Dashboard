@@ -1,112 +1,125 @@
-import React from 'react'
-import Image from 'next/image'
-import BaseLayout1 from '@/components/BaseLayout1'
+import BaseLayout1 from "@/components/BaseLayout1";
+import React from "react";
 
-export default function Support() {
-  const blogPosts = [
-    {
-      id: 1,
-      title: "Here 10 Tips to become better in UI/UX Design.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      date: "2 January 2022"
-    },
-    {
-      id: 2,
-      title: "Understanding the Basics of Web Development.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      date: "15 January 2022"
-    },
-    {
-      id: 3,
-      title: "Mastering JavaScript in 30 Days.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      date: "25 January 2022"
-    }
-  ];
-
+const Support = () => {
   return (
     <BaseLayout1>
-      <div className="flex h-screen">
+      <div className="p-2 mx-auto">
+        {/* Page Title */}
+        <h1 className="mb-0 p-2 text-[25px] font-semibold text-gray-800">
+          Support
+        </h1>
 
-        {/* Main Content */}
-        <main className="w-5/6 p-4">
-          {/* Support Header */}
-          <h1 className="text-2xl font-bold mb-2">Support</h1>
-
-          <div className="grid grid-cols-3 gap-8">
-            {/* Blog Section */}
-            <section className="col-span-2 space-y-8">
-              {/* Blog Entries */}
-              {blogPosts.map((post) => (
-                <div key={post.id} className="bg-white shadow-md p-6 rounded-lg">
-                  <Image src="/public/assets/images/alf.png" alt="" width={40} height={40}/>
-                  <h2 className="text-xl font-bold mb-2">
-                    {post.title}
-                  </h2>
-                  <p className="text-gray-500">
-                    {post.content}
-                  </p>
-                  <p className="text-sm text-gray-400 mt-4">Admin - {post.date}</p>
-                </div>
-              ))}
-
-              {/* Pagination */}
-              <div className="flex justify-between items-center">
-                <p className="text-gray-500">Showing 1-5 from 100 data</p>
-                <div className="flex space-x-2">
-                  <button className="px-4 py-2 bg-gray-300 rounded-md">1</button>
-                  <button className="px-4 py-2 bg-blue-500 text-white rounded-md">2</button>
-                  <button className="px-4 py-2 bg-gray-300 rounded-md">3</button>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="col-span-1 p-0 h-[10vh]">
+            <div className="bg-[#4CBC9A] shadow-lg rounded-xl p-2">
+              <h2 className="text-[18px] font-semibold text-gray-800 mb-1 p-6">
+                Contact Details
+              </h2>
+              <div className="text-gray-800 space-y-4 justify-evenly px-6">
+                <p>
+                  <strong className="text-white text-[13px] font-semibold">
+                    Visit Us:
+                  </strong>
+                  <br />
+                  <span className="text-[11px] font-medium">
+                    Come say Hello at Our Office HQ
+                  </span>
+                  <br />
+                  <span className="text-white text-[11px] font-normal">
+                    {" "}
+                    128, City Road, London, EC1V 2NX, United Kingdom
+                  </span>
+                </p>
+                <p>
+                  <strong className="text-white text-[13px] font-semibold">
+                    Call Us:
+                  </strong>
+                  <br />
+                  <span className="text-[11px] font-medium">
+                    Monday – Sunday/ 24×7
+                  </span>
+                  <br />
+                  <span className="text-white text-[11px] font-medium">
+                    UK +44 20 4577 1227
+                    <br />
+                    USA +1 85 5442 3380
+                  </span>
+                </p>
+                <p>
+                  <strong className="text-white text-[13px] font-semibold">
+                    Chat to Us:
+                  </strong>
+                  <br />
+                  <span className="text-[11px] font-medium">
+                    Our Friendly team is here to Help
+                  </span>
+                  <br />
+                  <span className="text-white text-[11px] font-medium">
+                    contact@alfurqan.academy
+                  </span>
+                </p>
               </div>
-            </section>
-
-            {/* Contact and FAQ Section */}
-            <aside className="space-y-8">
-              {/* Contact Info */}
-              <div className="bg-green-500 text-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-bold mb-4">Contact</h3>
-                <p className="mb-2">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                <div className="space-y-1">
-                  <p>📞 +1234567890</p>
-                  <p>📧 lovia@support.com</p>
-                </div>
+            </div>
+            <div className="p-1 mt-4">
+              <div className="mt-0 text-center p-3">
+                <h3 className="text-lg font-semibold text-[#1C3557]">
+                  WE’RE HERE TO ASSIST YOU!
+                </h3>
               </div>
-
-              {/* FAQ */}
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-bold mb-4">FAQs</h3>
-                <div className="space-y-4">
-                  <details className="bg-gray-100 p-4 rounded-lg">
-                    <summary className="font-medium">Is there a free trial?</summary>
-                    <p className="text-gray-500 mt-2">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    </p>
-                  </details>
-                  <details className="bg-gray-100 p-4 rounded-lg">
-                    <summary className="font-medium">How do I get payment?</summary>
-                    <p className="text-gray-500 mt-2">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    </p>
-                  </details>
-                  <details className="bg-gray-100 p-4 rounded-lg">
-                    <summary className="font-medium">Can I rewatch the live courses?</summary>
-                    <p className="text-gray-500 mt-2">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    </p>
-                  </details>
-                  <details className="bg-gray-100 p-4 rounded-lg">
-                    <summary className="font-medium">What’s different between Free and Premium accounts?</summary>
-                    <p className="text-gray-500 mt-2">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    </p>
-                  </details>
-                </div>
+              <div className="justify-center align-middle text-center p-5">
+                <img
+                  src="/assets/images/support.png"
+                  alt=""
+                  className="w-60 justify-center ml-12"
+                />
               </div>
-            </aside>
+            </div>
           </div>
-        </main>
+
+          <div className="col-span-1 bg-[#223857] shadow-lg rounded-xl p-6 w-full max-w-[400px] h-[570px]">
+            <h2 className="text-[14px] text-center font-semibold text-[#fff] mb-6">
+              Do you have questions?
+            </h2>
+            <details className="mb-4 p-2 w-full border-b border-b-[#fff]">
+              <summary className="text-[13px] font-medium text-[#fff] cursor-pointer">
+                What if I encounter technical issues?
+              </summary>
+              <div className="text-[#fff] text-[11px] mt-2 break-words">
+                Visit the Help Center or Support section of the site. You can
+                often find troubleshooting guides or contact the support team
+                via email, chat, or phone.
+              </div>
+            </details>
+            <details className="p-2 mb-4 w-full border-b border-b-[#fff]">
+              <summary className="text-[13px] font-medium text-[#fff] cursor-pointer">
+                Can I use Teacher communicate with students?
+              </summary>
+              <div className="text-[#fff] text-[11px] mt-2 break-words">
+                Yes, the Teacher Module provides features to communicate
+                directly with students.
+              </div>
+            </details>
+            <details className="p-2 w-full border-b border-b-[#fff]">
+              <summary className="text-[13px] font-medium text-[#fff] cursor-pointer">
+                Can I track my teacher progress?
+              </summary>
+              <div className="text-[#fff] text-[11px] mt-2 break-words">
+                Yes, the Teacher progress to communicate directly with students.
+              </div>
+            </details>
+
+            <div className="flex gap-3 mt-10 text-[#fff] text-center p-2">
+              <p className="p-2">My question is not here</p>
+              <button className="bg-slate-950 p-2 rounded-lg">
+                Connect Us
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </BaseLayout1>
-  )
-}
+  );
+};
+
+export default Support;

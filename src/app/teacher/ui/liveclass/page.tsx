@@ -67,22 +67,88 @@ function LiveClass() {
     const apiRef = useRef<any>(null);
     const [classData, setClassData] = useState<ClassData | null>(null);
   const[isFormData,setIsFormData]=useState(true);
-  const filterUpcomingClass = (response: { totalCount: number, classSchedule: any[] }): ClassData | null => {
+  const filterUpcomingClass = (response: { totalCount: number; classSchedule: any[] }): ClassData | null => {
     const classes = response.classSchedule;
   
     if (!Array.isArray(classes)) {
-      console.log('Expected an array, but received:', classes);
+      console.log("Expected an array, but received:", classes);
       return null;
     }
   
-    // Find the next class
-    const nextClass = classes.find((cls) => {
-      const now = new Date();
-      const classStartDate = new Date(cls.startDate);
-      return classStartDate > now;
+    const now = new Date();
+    let upcomingClass: ClassData | null = null;
+  
+    classes.forEach((cls) => {
+      console.log(`Processing Class ID: ${cls._id}, startDate: ${cls.startDate}, startTime:`, cls.startTime);
+  
+      // Validate startDate
+      if (!cls.startDate || typeof cls.startDate !== "string") {
+        console.log(`Skipping class ${cls._id} due to missing or invalid startDate`);
+        return;
+      }
+  
+      const classDate = new Date(cls.startDate);
+      if (isNaN(classDate.getTime())) {
+        console.log(`Invalid startDate for class ${cls._id}:`, cls.startDate);
+        return;
+      }
+  
+      // Validate startTime and endTime
+      if (!Array.isArray(cls.startTime) || !Array.isArray(cls.endTime)) {
+        console.log(`Skipping class ${cls._id} due to incorrect startTime or endTime format`, cls.startTime, cls.endTime);
+        return;
+      }
+  
+      // Assuming startTime and endTime are arrays of strings in "HH:mm" format
+      const startTime = cls.startTime[0];
+      const endTime = cls.endTime[0];
+  
+      const startTimeParts = startTime.split(":").map(Number);
+      const endTimeParts = endTime.split(":").map(Number);
+  
+      if (startTimeParts.length !== 2 || endTimeParts.length !== 2) {
+        console.log(`Skipping class ${cls._id} due to invalid time format: startTime=${startTime}, endTime=${endTime}`);
+        return;
+      }
+  
+      const [startHours, startMinutes] = startTimeParts;
+      const [endHours, endMinutes] = endTimeParts;
+  
+      if (
+        isNaN(startHours) || isNaN(startMinutes) || 
+        isNaN(endHours) || isNaN(endMinutes) ||
+        startHours < 0 || startHours > 23 || 
+        endHours < 0 || endHours > 23 ||
+        startMinutes < 0 || startMinutes > 59 || 
+        endMinutes < 0 || endMinutes > 59
+      ) {
+        console.log(`Skipping class ${cls._id} due to out-of-range time values: startTime=${startTime}, endTime=${endTime}`);
+        return;
+      }
+  
+      // Set start and end times correctly in 24-hour format
+      classDate.setHours(startHours, startMinutes, 0, 0);
+      const classEndDate = new Date(classDate);
+      classEndDate.setHours(endHours, endMinutes, 0, 0);
+  
+      console.log(
+        `Checking class: ${cls._id}, Start: ${classDate.toISOString()}, End: ${classEndDate.toISOString()}, Now: ${now.toISOString()}`
+      );
+  
+      // Check if the class is currently ongoing
+      if (now >= classDate && now <= classEndDate) {
+        console.log(`Class ${cls._id} is currently LIVE`);
+        upcomingClass = cls;
+      } 
+      // If no live class, find the next upcoming class
+      else if (classDate > now && (!upcomingClass || classDate < new Date(upcomingClass.startDate))) {
+        console.log(`Class ${cls._id} is in the future`);
+        upcomingClass = cls;
+      }
     });
   
-    return nextClass || null;  // Return the next class or null if not found
+    console.log("Selected Class:", upcomingClass);
+    return upcomingClass;
   };
   // Fetch class data
   
@@ -97,20 +163,27 @@ function LiveClass() {
           return;
         }
   
-        const response = await axios.get<ApiResponse>(`http://localhost:5001/classShedule/teacher`, {
+        const response = await axios.get<ApiResponse>(`https://alfurqanacademy.tech/classShedule/teacher`, {
           params: { teacherId },
           headers: {
             'Authorization': `Bearer ${authToken}`
           }
         });
         
-        console.log('API Response:', response.data);  // Log the response data
-  
-        const nextClass = filterUpcomingClass(response.data);
-        console.log('Filtered Next Class:', nextClass);  // Log the filtered data
-        setClassData(nextClass);
-      
-  
+        console.log('Raw API Response:', response.data.classSchedule); // Check data format
+
+          const nextClass = filterUpcomingClass(response.data);
+          
+          console.log('Filtered Next Class:', nextClass); // Debug if nextClass is valid
+
+          if (nextClass) {
+              console.log("Setting classData to:", nextClass);
+              setClassData(nextClass);
+          } else {
+              console.log("No upcoming class found.");
+              setClassData(null);
+          }
+    
       } catch (err) {
         console.log('Error loading class details:', err);
       }
@@ -120,26 +193,7 @@ function LiveClass() {
   }, []);
     
   
-  useEffect(() => {
-    // Use optional chaining to check for `classData` and `endTime` in one step
-    if (!classData?.endTime?.length) return;
   
-    const now = new Date();
-    
-    // Assuming endTime is an array of strings, we'll use the first value (classData.endTime[0]) for comparison
-    const endTime = new Date(classData.endTime[0]);
-    
-    const timeUntilEnd = endTime.getTime() - now.getTime();
-  
-    if (timeUntilEnd > 0) {
-      const timer = setTimeout(() => {
-        
-        setClassData(null);
-      }, timeUntilEnd);
-  
-      return () => clearTimeout(timer);
-    }
-  }, [classData]);
   
   
   
@@ -337,12 +391,12 @@ function LiveClass() {
                          <div className="relative">
                            <select
                              name="city"
-                             value={classData?.student.city}
+                             value="Coimbatote"
                              className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
-                             
-                           </select>
+                               <option value="Coimbatore">Coimbatore</option>
+                             </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
                        </div>
@@ -356,7 +410,7 @@ function LiveClass() {
                              className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
-                             
+                             <option value="Coimbatore">India</option>
                            </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>
@@ -367,11 +421,12 @@ function LiveClass() {
                          <input
                            type="text"
                            name="trialId"
-                           value={classData?.student.trailId}
+                           value="67a06f973e286e72332e18d3"
                           
                            className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
                          />
+                          
                        </div>
          
                        <div>
@@ -379,10 +434,11 @@ function LiveClass() {
                          <div className="relative">
                            <select
                              name="course"
-                             value={classData?.student.course}
+                             value="Quran"
                              className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
+                              <option value="Coimbatore"> Quarn</option>
                            </select>
                            <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
                          </div>

@@ -52,7 +52,7 @@ interface Assignment {
   courses?: string;
 }
 
-const QuizPage = async () => {
+const QuizPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const type = searchParams.get('type');

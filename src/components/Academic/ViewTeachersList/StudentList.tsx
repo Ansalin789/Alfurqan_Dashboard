@@ -1,39 +1,64 @@
-import React from 'react';
-import Image from 'next/image';
-import { nanoid } from 'nanoid'; // Import nanoid for generating unique IDs
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-const StudentList = () => {
-  const students = [
-    { id: nanoid(), name: 'Abdullah Sulaiman', course: 'Arabic', avatar: '/assets/images/proff.jpg' },
-    { id: nanoid(), name: 'Iman Gabel', course: 'Quran', avatar: '/assets/images/proff.jpg' },
-    { id: nanoid(), name: 'Hassan Zadran', course: 'Arabic', avatar: '/assets/images/proff.jpg' },
-    { id: nanoid(), name: 'Hassan dummy', course: 'Quran', avatar: '/assets/images/proff.jpg' },
-    { id: nanoid(), name: 'Hassan Data', course: 'Quran', avatar: '/assets/images/proff.jpg' },
-    { id: nanoid(), name: 'Hassan Ibrahim', course: 'Quran', avatar: '/assets/images/proff.jpg' },
-  ];
+const TotalStudents = () => {
+  const [uniqueStudentNames, setUniqueStudentNames] = useState<string[]>([]);
+  const [totalStudents, setTotalStudents] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const auth = localStorage.getItem("authToken");
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+
+        if (!teacherIdToFilter) {
+          console.error("No teacher ID found in localStorage.");
+          return;
+        }
+
+        const response = await axios.get("http://localhost:5001/classShedule", {
+          headers: { Authorization: `Bearer ${auth}` },
+        });
+
+        const filteredData = response.data.students.filter(
+          (item: any) => item.teacher.teacherId === teacherIdToFilter
+        );
+
+        // Get unique student names
+        const studentNamesSet = new Set<string>();
+        filteredData.forEach((item: any) => {
+          const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`;
+          studentNamesSet.add(fullName);
+        });
+
+        setUniqueStudentNames(Array.from(studentNamesSet));
+        setTotalStudents(filteredData.length); // Total count of students
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
 
   return (
     <div className="bg-[#CED4DC] rounded-lg shadow-lg p-6 w-72 h-[300px] ml-20">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Teachers List</h3>
-        <span className="text-lg font-semibold">20</span>
+        <h3 className="text-lg font-semibold">Students List</h3>
+        <span className="text-lg font-semibold">  {uniqueStudentNames.length}</span>
+        {/* <span className="text-lg font-semibold">  {totalStudents}</span> */}
+
       </div>
-      <ul className="space-y-2 overflow-y-auto h-40 scrollbar-thin scrollbar-track-black">
-        {students.map((student) => (
-          <li key={student.id} className="flex items-center">
-            <Image
-              src={student.avatar}
-              width={24}
-              height={24}
-              className="rounded-full"
-              alt={`${student.name} avatar`}
-            />
-            <span className="ml-3 text-[12px]">{student.name} ({student.course})</span>
-          </li>
-        ))}
-      </ul>
+  
+        <ul className="space-y-2 overflow-y-auto h-40 scrollbar-thin scrollbar-track-black">
+        
+        {uniqueStudentNames.map((name) => (
+            <li key={uniqueStudentNames.length} className="py-1">{name}</li>
+          ))}        
+        </ul>
     </div>
   );
 };
 
-export default StudentList;
+export default TotalStudents;

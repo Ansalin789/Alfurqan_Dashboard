@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react'; 
-import axios from 'axios';
-
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 type StudentData = {
   id: number;
@@ -19,16 +18,17 @@ const StudentEvaluation = () => {
 
   useEffect(() => {
     // Fetch data from API
-    const auth=localStorage.getItem('authToken');
-    const academicId=localStorage.getItem('academicId');
-    console.log("academicId>>",academicId);
-    axios.get(`http://localhost:5001/evaluationlist`,{
-      params:{academicCoachId:academicId },
+    const auth = localStorage.getItem("authToken");
+    const academicId = localStorage.getItem("academicId");
+    console.log("academicId>>", academicId);
+    axios
+      .get(`http://localhost:5001/evaluationlist`, {
+        params: { academicCoachId: academicId },
 
-      headers: {
-        'Authorization': `Bearer ${auth}`,        
-          },
-    })
+        headers: {
+          Authorization: `Bearer ${auth}`,
+        },
+      })
       .then((response) => {
         if (!response.data) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -36,15 +36,31 @@ const StudentEvaluation = () => {
         return response.data;
       })
       .then((data) => {
-        const formattedData: StudentData[] = data.evaluation.map((item: { student: { studentFirstName: string; studentLastName: string; studentPhone: string; studentCountry: string; preferredTeacher: string; preferredDate: string; preferredFromTime: string; preferredToTime: string; }; }, index: number) => ({
-          id: index + 1,
-          name: `${item.student.studentFirstName} ${item.student.studentLastName}`,
-          mobile: item.student.studentPhone,
-          country: item.student.studentCountry,
-          preferredTeacher: item.student.preferredTeacher,
-          date: new Date(item.student.preferredDate).toLocaleDateString(),
-          time: `${item.student.preferredFromTime} - ${item.student.preferredToTime}`,
-        }));
+        const formattedData: StudentData[] = data.evaluation.map(
+          (
+            item: {
+              student: {
+                studentFirstName: string;
+                studentLastName: string;
+                studentPhone: string;
+                studentCountry: string;
+                preferredTeacher: string;
+                preferredDate: string;
+                preferredFromTime: string;
+                preferredToTime: string;
+              };
+            },
+            index: number
+          ) => ({
+            id: index + 1,
+            name: `${item.student.studentFirstName} ${item.student.studentLastName}`,
+            mobile: item.student.studentPhone,
+            country: item.student.studentCountry,
+            preferredTeacher: item.student.preferredTeacher,
+            date: new Date(item.student.preferredDate).toLocaleDateString(),
+            time: `${item.student.preferredFromTime} - ${item.student.preferredToTime}`,
+          })
+        );
         setEvaluationList(formattedData.slice(-5)); // Keep only the latest 5 records
         setLoading(false);
       })
@@ -58,30 +74,32 @@ const StudentEvaluation = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="col-span-12 bg-[#CED4DC] p-0 rounded-[30px] shadow mb-2">
-      <h3 className="text-[15px] font-medium ml-4 mt-2 text-[#0A0338]">Student Evaluation</h3>
-      <table className="w-full mt-1">
+    <div className="col-span-12 bg-[#CED4DC] p-0 rounded-[20px] shadow mb-2">
+      <h3 className="text-[13px] font-semibold ml-4 mt-2 text-[#000] mb-2">
+        Student Evaluation
+      </h3>
+      <table className="w-full">
         <thead>
-          <tr className="text-center border-b text-[13px]">
-            <th className="p-2">Trail</th>
-            <th className="p-2">Name</th>
-            <th className="p-2">Mobile</th>
-            <th className="p-2">Country</th>
-            <th className="p-2">Preferred Teacher</th>
-            <th className="p-2">Date</th>
-            <th className="p-2">Time</th>
+          <tr className="text-center border-b text-[11px] font-semibold">
+            <th className="p-1">Trail</th>
+            <th className="p-1">Name</th>
+            <th className="p-1">Mobile</th>
+            <th className="p-1">Country</th>
+            <th className="p-1">Preferred Teacher</th>
+            <th className="p-1">Date</th>
+            <th className="p-1">Time</th>
           </tr>
         </thead>
         <tbody>
           {evaluationList.map((item) => (
-            <tr key={item.id} className="border-b text-[11px] text-center">
-              <td className="p-2">{item.id}</td>
-              <td className="p-2">{item.name}</td>
-              <td className="p-2">{item.mobile}</td>
-              <td className="p-2">{item.country}</td>
-              <td className="p-2">{item.preferredTeacher}</td>
-              <td className="p-2">{item.date}</td>
-              <td className="p-2">{item.time}</td>
+            <tr key={item.id} className="border-b text-[9px] text-center">
+              <td className="p-1">{item.id}</td>
+              <td className="p-1">{item.name}</td>
+              <td className="p-1">{item.mobile}</td>
+              <td className="p-1">{item.country}</td>
+              <td className="p-1">{item.preferredTeacher}</td>
+              <td className="p-1">{item.date}</td>
+              <td className="p-1">{item.time}</td>
             </tr>
           ))}
         </tbody>

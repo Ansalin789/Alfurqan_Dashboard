@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { IoMdArrowDropdownCircle } from "react-icons/io";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
 interface Student {
@@ -12,11 +12,11 @@ interface Student {
   studentFirstName: string;
   studentLastName: string;
   studentEmail: string;
-  city:string;
-  country:string;
-  trailId:string;
-  course:string;
-  classStatus:string;
+  city: string;
+  country: string;
+  trailId: string;
+  course: string;
+  classStatus: string;
 }
 
 interface Teacher {
@@ -25,7 +25,7 @@ interface Teacher {
   teacherEmail: string;
 }
 
-interface Schedule {
+interface ClassData {
   student: Student;
   teacher: Teacher;
   _id: string;
@@ -47,9 +47,8 @@ interface Schedule {
 
 interface ApiResponse {
   totalCount: number;
-  students: Schedule[];
+  classSchedule: ClassData[];
 }
-
 
 const ScheduledClasses = () => {
   const router = useRouter();
@@ -62,40 +61,49 @@ const ScheduledClasses = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const [upcomingClasses, setUpcomingClasses] = useState<Schedule[]>([]);
-  const[completedData,setCompletedData]=useState<Schedule[]>([]);
+  const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([]);
+  const [completedData, setCompletedData] = useState<ClassData[]>([]);
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchClasses = async () => {
       try {
-        const auth = localStorage.getItem("TeacherAuthToken");
-        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
-
-        if (!teacherIdToFilter) {
-          console.error("No teacher ID found in localStorage.");
+        const teacherId = localStorage.getItem("TeacherPortalId");
+        const authToken = localStorage.getItem("TeacherAuthToken");
+        if (!teacherId || !authToken) {
+          console.log("Missing studentId or authToken");
           return;
         }
 
-        const response = await axios.get<ApiResponse>("http://localhost:5001/classShedule", {
-          headers: {
-            Authorization: `Bearer ${auth}`,
-          },
-        });
-        const teacherClasses = response.data.students.filter(
-          (classItem) => classItem.teacher.teacherId === teacherIdToFilter
+        const response = await axios.get<ApiResponse>(
+          "http://localhost:5001/classShedule/teacher",
+          {
+            params: { teacherId },
+            headers: { Authorization: `Bearer ${authToken}` },
+          }
         );
-  
-        // Set filtered data to state
-        setUpcomingClasses(teacherClasses.filter((classItem) => classItem.status === "Active"));
-        setCompletedData(teacherClasses.filter((classItem) => classItem.status === "completed"));
+        const classes = response.data.classSchedule;
+
+        const now = new Date();
+        const upcoming = classes.filter((cls) => {
+          const classDate = new Date(cls.startDate);
+          const [startHours, startMinutes] = cls.startTime[0]
+            .split(":")
+            .map(Number);
+          classDate.setHours(startHours, startMinutes, 0, 0);
+          return now < classDate;
+        });
+
+        const completed = classes.filter(
+          (cls) => new Date(cls.startDate) <= now
+        );
+
+        setUpcomingClasses(upcoming);
+        setCompletedData(completed);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching class data:", error);
       }
     };
-
-    fetchData();
+    fetchClasses();
   }, []);
-
- 
 
   const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
 
@@ -117,15 +125,15 @@ const ScheduledClasses = () => {
   const handleRescheduleSubmit = () => {
     if (rescheduleReason.trim() && selectedItemId) {
       setShowSuccess(true);
-      setUpcomingClasses((prevClasses : Schedule[]) =>
-        prevClasses.map(item =>
+      setUpcomingClasses((prevClasses: ClassData[]) =>
+        prevClasses.map((item) =>
           Number(item._id) === selectedItemId // Convert item._id to a number
-            ? { ...item, status: 'Re-Schedule Requested' }
+            ? { ...item, status: "Re-Schedule Requested" }
             : item
         )
       );
     } else {
-      alert('Please provide a reason and select a class to reschedule.');
+      alert("Please provide a reason and select a class to reschedule.");
     }
 
     setTimeout(() => {
@@ -136,8 +144,8 @@ const ScheduledClasses = () => {
   };
 
   const handleStatusClick = (status: string) => {
-    if (status.includes('Available')) {
-      router.push('/teacher/ui/liveclass');
+    if (status.includes("Available")) {
+      router.push("/teacher/ui/liveclass");
     }
   };
 
@@ -145,42 +153,54 @@ const ScheduledClasses = () => {
     if (date) {
       setSelectedDate(date);
       setIsDatePickerOpen(false);
-      router.push('/teacher/ui/schedule/schedules');
+      router.push("/teacher/ui/schedule/schedules");
     }
   };
 
   return (
     <div className="p-4">
-      <div className={`${isRescheduleModalOpen ? 'blur-sm' : ''} transition-all duration-200`}>
-        <h1 className="text-2xl font-semibold text-gray-800 p-2">Scheduled Classes</h1>
+      <div
+        className={`${
+          isRescheduleModalOpen ? "blur-sm" : ""
+        } transition-all duration-200`}
+      >
+        <h1 className="text-2xl font-semibold text-gray-800 p-2">
+          Scheduled Classes
+        </h1>
         <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
           {/* Tabs */}
           <div>
             <div className="flex">
               <button
-                  className={`py-3 px-2 ml-5 ${
-                  activeTab === "upcoming" ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold" : "text-gray-600"
-                  } focus:outline-none text-[13px]`}
-                  onClick={() => setActiveTab("upcoming")}
+                className={`py-3 px-2 ml-5 ${
+                  activeTab === "upcoming"
+                    ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold"
+                    : "text-gray-600"
+                } focus:outline-none text-[13px]`}
+                onClick={() => setActiveTab("upcoming")}
               >
-                  Upcoming ({upcomingClasses.length})
+                Upcoming ({upcomingClasses.length})
               </button>
               <button
-                  className={`py-3 px-6 ${
-                  activeTab === "completed" ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold" : "text-gray-600"
-                  } focus:outline-none text-[13px]`}
-                  onClick={() => setActiveTab("completed")}
+                className={`py-3 px-6 ${
+                  activeTab === "completed"
+                    ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold"
+                    : "text-gray-600"
+                } focus:outline-none text-[13px]`}
+                onClick={() => setActiveTab("completed")}
               >
-                  Completed ({completedData.length})
+                Completed ({completedData.length})
               </button>
             </div>
             <div className="flex justify-end px-[50px] mt-[2px] h-6 relative">
               <div className="flex items-center border border-[#1C3557] rounded-md overflow-hidden">
-                <button 
+                <button
                   onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
                   className="flex items-center space-x-2 shadow-lg p-1 rounded-lg text-gray-600 hover:text-gray-800"
                 >
-                  <span className="text-[14px]">{selectedDate ? selectedDate.toLocaleDateString() : "Date"}</span>
+                  <span className="text-[14px]">
+                    {selectedDate ? selectedDate.toLocaleDateString() : "Date"}
+                  </span>
                   <IoMdArrowDropdownCircle />
                 </button>
                 {isDatePickerOpen && (
@@ -201,30 +221,46 @@ const ScheduledClasses = () => {
               <table className="table-auto w-full">
                 <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
                   <tr>
-                    {["Id", "Name", "Courses", "Date", "Status"].map((header) => (
-                      <th key={header} className="px-6 py-3 text-center">
-                        {header}
-                      </th>
-                    ))}
+                    {["Id", "Name", "Courses", "Date", "Status"].map(
+                      (header) => (
+                        <th key={header} className="px-6 py-3 text-center">
+                          {header}
+                        </th>
+                      )
+                    )}
                   </tr>
                 </thead>
                 <tbody>
-                  {currentItems.map((item) => (
-                    <tr key={item._id} className="text-[12px] font-medium mt-2"
-                    style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
+                  {currentItems.map((item, index) => (
+                    <tr
+                      key={item._id}
+                      className={`text-[12px] font-medium mt-2 ${
+                        index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                      }`}
+                    >
                       <td className="px-6 py-2 text-center">{item._id}</td>
-                      <td className="px-6 py-2 text-center">{item.student.studentFirstName}</td>
-                      <td className="px-6 py-2 text-center">{item.student.course ?? "Quran"}</td>
-                      <td className="px-6 py-2 text-center">{new Date(item?.startDate ?? '2022-01-01').toLocaleDateString()} </td>
+                      <td className="px-6 py-2 text-center">
+                        {item.student.studentFirstName}
+                      </td>
+                      <td className="px-6 py-2 text-center">
+                        {item.student.course ?? "Quran"}
+                      </td>
+                      <td className="px-6 py-2 text-center">
+                        {new Date(
+                          item?.startDate ?? "2022-01-01"
+                        ).toLocaleDateString()}{" "}
+                      </td>
                       <td className="px-6 py-2 text-center">
                         {activeTab === "completed" ? (
-                          <span className="text-green-600 border text-[12px] border-green-600 bg-green-100 px-3 py-1 rounded-lg">{item.status}</span>
+                          <span className="text-green-600 border text-[12px] border-green-600 bg-green-100 px-3 py-1 rounded-lg">
+                            {item.status}
+                          </span>
                         ) : (
-                          <button 
+                          <button
                             onClick={() => handleStatusClick(item.status)}
                             className={`${
-                              item.status === "Re-Schedule Requested" 
-                                ? "bg-[#79d67a36] text-[#2a642b] border border-[#2a642b] px-3" 
+                              item.status === "Re-Schedule Requested"
+                                ? "bg-[#79d67a36] text-[#2a642b] border border-[#2a642b] px-3"
                                 : "bg-[#1c355739] text-[#1C3557] border border-[#1C3557] px-6"
                             } py-1 rounded-lg`}
                           >
@@ -235,9 +271,11 @@ const ScheduledClasses = () => {
                       <td className="px-6 py-2 text-center">
                         {activeTab === "upcoming" && (
                           <>
-                            <button 
+                            <button
                               className="text-xl"
-                              onClick={() => handleOptionsClick(Number(item._id))}
+                              onClick={() =>
+                                handleOptionsClick(Number(item._id))
+                              }
                             >
                               ...
                             </button>
@@ -277,11 +315,17 @@ const ScheduledClasses = () => {
           <div>
             <div className="flex justify-between items-center p-4">
               <p className="text-[10px] text-gray-600">
-                Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, dataToShow.length)} from {dataToShow.length} data
+                Showing {indexOfFirstItem + 1}-
+                {Math.min(indexOfLastItem, dataToShow.length)} from{" "}
+                {dataToShow.length} data
               </p>
               <div className="flex space-x-2 text-[10px]">
-                <button 
-                  className={`px-2 py-1 rounded ${currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'bg-gray-200 hover:bg-gray-300'}`}
+                <button
+                  className={`px-2 py-1 rounded ${
+                    currentPage === 1
+                      ? "bg-gray-100 text-gray-400"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                 >
@@ -291,15 +335,21 @@ const ScheduledClasses = () => {
                   <button
                     key={index + 1}
                     className={`px-2 py-1 rounded ${
-                      currentPage === index + 1 ? 'bg-[#1B2B65] text-white' : 'bg-gray-200 hover:bg-gray-300'
+                      currentPage === index + 1
+                        ? "bg-[#1B2B65] text-white"
+                        : "bg-gray-200 hover:bg-gray-300"
                     }`}
                     onClick={() => handlePageChange(index + 1)}
                   >
                     {index + 1}
                   </button>
                 ))}
-                <button 
-                  className={`px-2 py-1 rounded ${currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'bg-gray-200 hover:bg-gray-300'}`}
+                <button
+                  className={`px-2 py-1 rounded ${
+                    currentPage === totalPages
+                      ? "bg-gray-100 text-gray-400"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
                 >
@@ -316,10 +366,13 @@ const ScheduledClasses = () => {
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black bg-opacity-50" />
           <div className="bg-gray-100 rounded-3xl p-6 w-96 relative z-50">
-            <h2 className="text-xl mb-4 text-gray-700">Reason for Re-Schedule</h2>
+            <h2 className="text-xl mb-4 text-gray-700">
+              Reason for Re-Schedule
+            </h2>
             {showSuccess ? (
               <div className="bg-[#108422] text-white py-3 px-6 rounded-lg flex items-center justify-center space-x-2 mb-4 mx-auto max-w-[280px]">
-                <img src="/assets/images/success.png" alt="" /><span>Request Has Been Sent to Admin</span>
+                <img src="/assets/images/success.png" alt="" />
+                <span>Request Has Been Sent to Admin</span>
               </div>
             ) : (
               <>

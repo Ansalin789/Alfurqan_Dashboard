@@ -1,5 +1,5 @@
 .custom-calendar {
-  width: 300px !important;
+  width: 250px !important;
   border: none !important;
   background: #ced4dc !important;
 }
@@ -8,33 +8,33 @@
 .custom-calendar .react-calendar__navigation {
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   height: auto;
   background: #ced4dc;
 }
 
 .custom-calendar .react-calendar__navigation button {
-  min-width: 32px;
+  min-width: 28px;
   background: none;
-  font-size: 16px;
+  font-size: 20px;
   color: #333;
 }
 
 .custom-calendar .react-calendar__navigation__label {
   font-weight: 500 !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
   color: #333;
 }
 
 /* Weekday labels */
 .custom-calendar .react-calendar__month-view__weekdays {
-  font-size: 12px;
+  font-size: 10px;
   color: #666;
   text-transform: uppercase;
 }
 
 .custom-calendar .react-calendar__month-view__weekdays__weekday {
-  padding: 8px 0;
+  padding: 10px 0;
 }
 
 .custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
@@ -44,13 +44,13 @@
 
 /* Calendar days */
 .custom-calendar .react-calendar__month-view__days__day {
-  font-size: 14px;
-  padding: 8px;
+  font-size: 11px;
+  padding: 0px;
   color: #333;
 }
 
 .custom-calendar .react-calendar__tile {
-  padding: 12px 0;
+  padding: 10px 0;
   font-weight: normal;
   background: none;
 }
@@ -92,8 +92,19 @@
 }
 
 .event-day {
-
-  background-image: linear-gradient(to right, #30507c, #5792e2) !important;
-  color: white !important;
+  position: relative;
+  color: #31517e !important;
   border-radius: 6px !important;
+}
+
+.event-day::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background-color: #223857;
+  border-radius: 50%;
 }

@@ -145,12 +145,15 @@ console.log(view)
    };
 const [description, setDescription] = useState("");
 const [events, setEvents] = useState<Event[]>([]);
+const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+const [filteredMeetings, setFilteredMeetings] = useState<Event[]>([]);
+const [currentView, setCurrentView] = useState<View>("month");
+
 useEffect(() => {
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/allMeetings');
+      const response = await axios.get("http://localhost:5001/allMeetings");
 
-      // Extract meetings array safely
       const meetings = response.data?.data?.meetings;
 
       if (!Array.isArray(meetings)) {
@@ -162,7 +165,7 @@ useEffect(() => {
         .map((item): Event | null => {
           if (!item.selectedDate || !item.startTime || !item.endTime) {
             console.warn("Skipping event due to missing date/time:", item);
-            return null; // Skip invalid events
+            return null;
           }
 
           const selectedDate = moment(item.selectedDate);
@@ -186,27 +189,52 @@ useEffect(() => {
             title: item.meetingName || "Untitled Meeting",
             start: startDate,
             end: endDate,
-            description: item.description ?? "No description", // ✅ Handle missing values
+            description: item.description ?? "No description",
             meetingStatus: item.status || "Unknown",
             supervisorName: item.supervisor?.supervisorName || "Unknown",
             meetingId: item.id,
             teacherName: item.teacher?.[0]?.teacherName || "Unknown",
           };
         })
-        .filter((event): event is Event => event !== null); // ✅ Type-safe filtering
+        .filter((event): event is Event => event !== null);
 
-      setEvents(formattedEvents);
+      // Determine the date range based on the view
+      let startRange = moment();
+      let endRange = moment();
+
+      if (currentView === "month") {
+        startRange = moment().startOf("month");
+        endRange = moment().endOf("month");
+      } else if (currentView === "week") {
+        startRange = moment().startOf("week");
+        endRange = moment().endOf("week");
+      } else if (currentView === "day") {
+        startRange = moment().startOf("day");
+        endRange = moment().endOf("day");
+      }
+
+      // Filter events based on the date range
+      const filteredEvents = formattedEvents.filter((event) => {
+        const eventStart = moment(event.start);
+        return eventStart.isBetween(startRange, endRange, undefined, "[]"); // Inclusive filtering
+      });
+
+      setEvents(filteredEvents);
     } catch (error) {
       console.error("Error fetching schedule data:", error);
     }
   };
 
   fetchData();
-}, []);
+}, [currentView]);
+ 
 
-const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-const [filteredMeetings, setFilteredMeetings] = useState<Event[]>([]);
 
+
+
+const handleViewChanges= (view: View) => {
+  setCurrentView(view);
+};
 const handleDateClick = (slotInfo: { start: Date }) => {
   const clickedDate = moment(slotInfo.start).startOf("day"); // Normalize the date
   setSelectedDate(clickedDate.toDate());
@@ -461,34 +489,34 @@ const handleDateClick = (slotInfo: { start: Date }) => {
             </div>
             </div>
             <Calendar
-              localizer={localizer}
-              events={events}
-              startAccessor="start"
-              endAccessor="end"
-              style={{ height: 640, width: 950 }}
-              views={["month", "week", "day"]}
-              view={"month" as View}
-              selectable
-              onView={handleViewChange}
-              onSelectSlot={handleDateClick} // Handle date clicks
-              onSelectEvent={(event) => console.log("Event clicked:", event)}
-              components={{
-                toolbar: (props) => (
-                  <CustomToolbar {...props} onViewChange={handleViewChange} />
-                ),
-              }}
-              popup
-              eventPropGetter={(event: Event) => {
-                console.log("Event:", event); // Debugging output
-              
-                if (event.title.includes("Meeting")) {
-                  return { style: { backgroundColor: "#fcd4d4", color: "#000",fontSize:"12px" } };
-                } else {
-                  return { style: { backgroundColor: "#e8fcd8", color: "#000" } };
-                }
-              }}
-              
-            />
+  localizer={localizer}
+  events={events}
+  startAccessor="start"
+  endAccessor="end"
+  style={{ height: 640, width: 950 }}
+  views={["month", "week", "day"]}
+  view={currentView} // Ensure the calendar respects the state
+  selectable
+  onView={handleViewChanges} // Update the view state when user changes it
+  onSelectSlot={handleDateClick}
+  onSelectEvent={(event) => console.log("Event clicked:", event)}
+  components={{
+    toolbar: (props) => (
+      <CustomToolbar {...props} onViewChange={handleViewChanges} />
+    ),
+  }}
+  popup
+  eventPropGetter={(event: Event) => {
+    if (event.title.includes("Meeting")) {
+      return { style: { backgroundColor: "#fcd4d4", color: "#000", fontSize: "12px" } };
+    } else {
+      return { style: { backgroundColor: "#e8fcd8", color: "#000" } };
+    }
+  }}
+/>
+
+
+
           </div>
         </div>
         <div className="w-100% md:w-[250px] flex flex-col gap-6 shadow-2xl rounded-lg bg-white overflow-y-auto h-[85vh] mt-12 scrollbar-none ml-12">

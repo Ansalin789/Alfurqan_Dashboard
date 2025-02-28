@@ -5,15 +5,14 @@ import 'react-calendar/dist/Calendar.css'
 import BaseLayout from '@/components/BaseLayout'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { FaSearch } from "react-icons/fa";
-// import { BiFilterAlt } from "react-icons/bi";
 import Calender from '@/app/teacher/components/Calender';
 import Total from '@/app/teacher/components/total';
 import NextScheduleClass from '@/app/teacher/components/NextScheduleclass';
 import ClassAnalyticsChart from '@/app/teacher/components/ClassAnalyticsChart';
 import EarningAnalytics from '../../components/EarningAnalytics';
 import TeachingActivity from '../../components/TeachingActivity';
-import StudentsCard from '../../components/Students';
 import UpcomingTask from '../../components/UpcomingTask';
+import StudentsCard from '../../components/Students';
 
 
 // Register Chart.js components
@@ -29,7 +28,7 @@ export default function Academic() {
         <div className="flex flex-col lg:flex-row p-2 w-full">
           <div className="flex-1 pr-8 pl-4">
           <header className="flex p-2">
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 -pl-8">
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   {/* Search Icon */}
@@ -38,7 +37,7 @@ export default function Academic() {
                   <input
                     type="text"
                     placeholder="Search here..."
-                    className="h-9 w-60 pl-10 text-sm text-[#35324B] bg-[#E1E5EA] rounded-[10px] shadow-[0_4px_6px_rgba(0,0,0,0.2)] outline-none focus:ring-2 focus:ring-[#9CA3AF]"
+                    className="h-9 w-60 pl-14 text-sm text-[#35324B] bg-[#E1E5EA] rounded-[10px] shadow-[0_4px_6px_rgba(0,0,0,0.2)] outline-none focus:ring-2 focus:ring-[#9CA3AF]"
                   />
                 </div>
               </div>
@@ -74,8 +73,9 @@ export default function Academic() {
               <div className="col-span-9 grid grid-cols-1 gap-4 p-0">
                 <TeachingActivity />
               </div>
+              
               <div className="col-span-3 grid grid-cols-1 gap-4 p-0">
-              <StudentsCard />
+                <StudentsCard />
               </div>
               
             </main>

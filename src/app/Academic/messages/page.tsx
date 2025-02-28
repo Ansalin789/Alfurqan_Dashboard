@@ -1,110 +1,242 @@
-import BaseLayout1 from '@/components/BaseLayout1';
-import React from 'react';
+"use client";
 
-export default function Messages() {
-  const contacts = [
-    { no:1,name: 'Dr. Lila Ramirez', message: 'Please ensure the monthly attendance report', time: '9:00 AM' },
-    { no:2,name: 'Ms. Heather Morris', message: 'Don\'t forget the staff training on digital tools scheduled for May 5th at 3 PM in the...', time: '10:15 AM' },
-    { no:3,name: 'Staff Coordination', message: 'Ms. Patel: All staff performance reviews are due by the end of this month. Please submit your report...', time: '2:00 PM' },
-    { no:4,name: 'Officer Dan Brooks', message: 'Review the updated security protocols effective May 1st. Familiarize yourself with...', time: '4:00 PM' },
-    { no:5,name: 'Ms. Tina Goldberg', message: 'Reminder: Major IT system upgrade on May 8th from 1 PM to 4 PM.', time: '5:00 PM' },
-    { no:6,name: 'Mr. Roberto Gracias', message: 'Reminder: Major IT system upgrade on May 8th from 1 PM to 4 PM.', time: '7:00 PM' },
+import React, { useState } from "react";
+import { GrAttachment } from "react-icons/gr";
+import { FaTelegramPlane } from "react-icons/fa";
+import BaseLayout1 from "@/components/BaseLayout1";
+
+const Messages = () => {
+  const [activeTab, setActiveTab] = useState("Private");
+
+  const privateChats = [
+    { name: "Samantha William", message: "Lorem ipsum...", time: "12:45 PM" },
+    { name: "Tony Soap", message: "Lorem ipsum...", time: "12:45 PM" },
+    { name: "Karen Hope", message: "Lorem ipsum...", time: "12:45 PM" },
+    { name: "Johnny Ahmad", message: "Lorem ipsum...", time: "12:45 PM" },
+    { name: "Nadila Adja", message: "Lorem ipsum...", time: "12:45 PM" },
+    { name: "Adam Jones", message: "Lorem ipsum...", time: "12:45 PM" },
+    { name: "Jijo", message: "Lorem ipsum...", time: "12:45 PM" },
+    { name: "Nadila Adja", message: "Lorem ipsum...", time: "12:45 PM" },
+    { name: "Nadila Adja", message: "Lorem ipsum...", time: "12:45 PM" },
   ];
 
-  const chatMessages = [
-    { no:1,name: 'Mr. Franklin', role: 'School Secretary', message: 'Good morning, everyone! Please remember to update your calendars. The school board meeting has been rescheduled to April 27th at 10 AM.', time: '8:00 AM', type: 'received' },
-    { no:2,name: 'Mrs. Thompson', role: 'Vice Principal', message: 'Thanks for the heads-up, Mr. Franklin. I\'ll make sure the agenda items from each department are ready by next Monday. Can someone confirm it next Monday with Mr. Reed?', time: '8:05 AM', type: 'received' },
-    { no:3,name: 'Mr. Harris', role: 'Health Services Coordinator', message: 'Can someone confirm if the nurse\'s office will receive additional flu vaccines before the health fair next week?', time: '8:10 AM', type: 'received' },
-    { no:4,name: 'Linda Adora', role: 'Admin', message: 'Maintenance update: The gym\'s air conditioning system will be repaired this Wednesday. Gym classes need to be relocated for the day.', time: '8:15 AM', type: 'received' },
-    { no:15,name: 'Ms. Patel', role: 'HR Manager', message: 'All staff performance reviews are due by the end of this month. Please submit your reports to HR as soon as possible. Thank you.', time: '8:20 AM', type: 'sent' },
+  // New array for student chats
+  const studentChats = [
+    {
+      name: "John Doe",
+      message: "Hi, when is the next class?",
+    },
+    { name: "Jane Smith", message: "Can I get the notes?", time: "1:05 PM" },
+    // Add more student chat objects as needed
   ];
 
   return (
     <BaseLayout1>
-      <div className="flex h-screen bg-gray-100">
-        {/* Sidebar */}
-        <div className="w-1/4 bg-white p-4 border-r">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-semibold">Staff Coordination</h1>
-            <div className="flex items-center">
-              <button className="p-2 rounded-full bg-gray-100">
-                <i className="fas fa-search"></i>
-              </button>
-              <button className="p-2 rounded-full bg-blue-500 text-white ml-2">
-                <i className="fas fa-plus"></i>
-              </button>
-            </div>
-          </div>
-          <div className="overflow-y-auto">
-            {contacts.map((contact) => (
-              <div key={contact.no} className="flex items-center justify-between p-4 bg-gray-100 rounded-lg mb-2 cursor-pointer hover:bg-gray-200">
-                <div>
-                  <h4 className="font-semibold">{contact.name}</h4>
-                  <p className="text-gray-500 font-normal text-[12px]">{contact.message}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-gray-500 text-sm">{contact.time}</p>
-                  <div className="bg-[#223857] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="mx-auto">
+        <h1 className="text-2xl font-semibold text-gray-800 p-2">Messages</h1>
 
-        {/* Chat Window */}
-        <div className="w-2/4 p-6 flex flex-col">
-          <div className="flex-1 overflow-y-auto p-4 bg-white rounded-lg shadow mb-4">
-            {chatMessages.map((chat) => (
-              <div key={chat.no} className={`mb-4 ${chat.type === 'sent' ? 'text-right' : ''}`}>
-                <p className={`inline-block p-4 rounded-lg ${chat.type === 'sent' ? 'bg-[#223857] text-white' : 'bg-gray-100'}`}>
-                  <span className="block font-semibold text-[15px]">{chat.name} <span className="text-xs text-gray-500">{chat.role}</span></span>
-                  <span className='font-normal text-[12px]'>{chat.message}</span>
-                </p>
-                <p className="text-gray-500 text-xs mt-1">{chat.time}</p>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center">
-            <input type="text" placeholder="Type your message" className="flex-1 p-4 border border-gray-300 rounded-l-lg focus:outline-none" />
-            <button className="bg-[#223857] text-white p-4 rounded-r-lg">Send</button>
-          </div>
-        </div>
-
-        {/* Group Info */}
-        <div className="w-1/4 bg-white p-6 border-l">
-          <div className="flex items-center mb-4">
-            <div className="w-16 h-16 bg-gray-300 rounded-full mr-4"></div>
-            <div>
-              <h2 className="text-base font-semibold">Group Info</h2>
-              <p className="text-gray-500 text-sm">Staff Coordination</p>
-            </div>
-          </div>
-          <div className="mb-4">
-            <h3 className="text-lg font-medium pb-2">Description</h3>
-            <p className="text-gray-500 text-[13px]">This is your go to hub for seamless communication&apos; collaboration&apos; and coordination among our team members. Whether you are working on a project</p>
-          </div>
-          <div className="mb-4">
-            <h3 className="text-lg font-medium pb-2">Members</h3>
-            <div className="overflow-y-auto max-h-48">
-              {contacts.slice(0, 4).map((contact) => (
-                <div key={contact.no} className="flex items-center mb-2">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full mr-2"></div>
+        <div className="flex p-4 h-[93vh]">
+          <main className="flex">
+            <div className="w-[400px] bg-white p-6 ml-6 rounded-lg shadow-md flex flex-col justify-between">
+              {/* Profile Section */}
+              <div>
+                <div className="flex items-center space-x-4">
+                  <img
+                    src="/assets/images/account.png"
+                    alt="Student"
+                    className="w-14 h-14 rounded-lg border border-[#dbdbdb]"
+                  />
                   <div>
-                    <h4 className="font-semibold text-[13px]">{contact.name}</h4>
+                    <h3 className="text-lg font-semibold text-[#374557]">
+                      Allen border
+                    </h3>
+                    <p className="text-[12px] font-medium text-gray-500">
+                      Teacher
+                    </p>
                   </div>
                 </div>
-              ))}
+
+                {/* Contacts Section */}
+                {/* <div className="mt-6">
+                            <div className="flex justify-between items-center">
+                            <h4 className="text-base font-semibold text-[#374557]">Contacts</h4>
+                            <span className="text-sm text-[#374557] cursor-pointer">View All</span>
+                            </div>
+                            <div className="grid grid-cols-5 gap-3 mt-4">
+                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                            </div>
+                        </div> */}
+              </div>
+
+              {/* Chats Section */}
+              <div>
+                <div className="">
+                  <h4 className="text-base font-medium text-[#fff] bg-[#223857] rounded-lg rounded-br-sm mb-6 justify-center align-middle w-20 text-center">
+                    Chats
+                  </h4>
+                  {/* Tabs */}
+                  <div className="flex mt-2 border-b justify-between px-4">
+                    <button
+                      className={`pb-2 px-4 text-[13px] font-semibold ${
+                        activeTab === "Private"
+                          ? "text-[#223857] border-b-2 border-[#223857] transition p-0.5"
+                          : "text-gray-500"
+                      }`}
+                      onClick={() => setActiveTab("Private")}
+                    >
+                      Teachers
+                    </button>
+                    <button
+                      className={`pb-2 px-4 text-[13px] font-semibold ${
+                        activeTab === "Student"
+                          ? "text-[#223857] border-b-2 border-[#223857] transition p-0.5"
+                          : "text-gray-500"
+                      }`}
+                      onClick={() => setActiveTab("Student")}
+                    >
+                      Students
+                    </button>
+                  </div>
+                  {/* Chat List */}
+                  <ul className="mt-4 space-y-4 overflow-scroll h-96 scrollbar-none">
+                    {activeTab === "Private"
+                      ? privateChats.map((chat, index) => (
+                          <li
+                            key={index}
+                            className="flex items-center justify-between border-b-2 p-1 cursor-pointer"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-7 h-7 bg-gray-300 rounded-lg"></div>
+                              <div>
+                                <h5 className="font-semibold text-[10px] text-[#374557]">
+                                  {chat.name}
+                                </h5>
+                                <p className="text-[10px] text-[#A098AE]">
+                                  {chat.message}
+                                </p>
+                              </div>
+                            </div>
+                            {/* <div className="flex flex-col items-center space-y-1">
+                                          <span className="text-[10px] text-gray-400">{chat.time}</span>
+                                          {chat.notifications > 0 && (
+                                              <span className="text-[8px] bg-[#223857] text-[#fff] font-bold w-3 h-3 flex items-center justify-center rounded-[4px]">
+                                              {chat.notifications}
+                                              </span>
+                                          )}
+                                      </div> */}
+                          </li>
+                        ))
+                      : studentChats.map((chat, index) => (
+                          <li
+                            key={index}
+                            className="flex items-center justify-between border-b-2 p-1 cursor-pointer"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-7 h-7 bg-gray-300 rounded-lg"></div>
+                              <div>
+                                <h5 className="font-semibold text-[10px] text-[#374557]">
+                                  {chat.name}
+                                </h5>
+                                <p className="text-[10px] text-[#A098AE]">
+                                  {chat.message}
+                                </p>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                  </ul>
+                </div>
+              </div>
             </div>
-          </div>
-          <div>
-            <h3 className="text-lg font-medium">Attachments</h3>
-            <div className="flex space-x-2">
-              <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center">Media</div>
-              <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center">Files</div>
+
+            {/* Chat Panel */}
+            <div className="w-[600px] bg-white p-4 rounded-lg shadow-md ml-6 flex flex-col justify-between">
+              {/* Header Section */}
+              <div>
+                <div className="flex items-center space-x-4 border-b border-b-[#dbdbdb] p-2">
+                  <img
+                    src="/assets/images/account1.png"
+                    alt="Karen Hope"
+                    className="w-14 h-14 rounded-full"
+                  />
+                  <div>
+                    <h3 className="text-base font-semibold">Sai Hope</h3>
+                    <p className="text-[12px] text-[#223857]">Online</p>
+                  </div>
+                </div>
+                {/* Chat Messages */}
+                <div className="mt-6 space-y-4">
+                  {/* Received Message */}
+                  <div className="flex flex-col items-start">
+                    <div className="relative bg-gray-200 text-gray-800 p-2 rounded-t-lg rounded-br-lg">
+                      <p className="text-[11px]">Hello Nella!</p>
+                      {/* Tail */}
+                      <div className="absolute top-[20px] left-[-5px] w-0 h-0 border-t-[13px] border-t-transparent border-b-[0px] border-b-transparent border-r-[10px] border-r-gray-200  shadow-inner"></div>
+                    </div>
+                    <div className="relative bg-gray-200 text-gray-800 p-2 rounded-t-lg rounded-br-lg mt-2">
+                      <p className="text-[11px]">
+                        Can you arrange schedule for next class?
+                      </p>
+                      {/* Tail */}
+                      <div className="absolute top-[20px] left-[-5px] w-0 h-0 border-t-[12px] border-t-transparent border-b-[0px] border-b-transparent border-r-[10px] border-r-gray-200  shadow-inner"></div>
+                    </div>
+                    <span className="text-[10px] text-gray-400 mt-1">
+                      12:45 PM
+                    </span>
+                  </div>
+
+                  {/* Sent Message */}
+                  <div className="flex flex-col items-end">
+                    <div className="relative bg-[#223857] text-white p-2 rounded-t-lg rounded-bl-lg shadow">
+                      <p className="text-[11px]">Hello Karen!</p>
+                      <div className="absolute top-[17px] right-[-4px] w-0 h-0 border-t-[16px] border-t-transparent border-b-[0px] border-b-transparent border-l-[10px] border-l-[#223857]"></div>
+                    </div>
+                    <div className="relative bg-[#223857] text-white p-2 rounded-t-lg rounded-bl-lg mt-2 shadow">
+                      <p className="text-[11px]">
+                        Okay, I'll arrange it soon. I'll notify you when it's
+                        done.
+                      </p>
+                      <div className="absolute top-[16px] right-[-4px] w-0 h-0 border-t-[16px] border-t-transparent border-b-[0px] border-b-transparent border-l-[10px] border-l-[#223857]"></div>
+                    </div>
+                    <span className="text-[10px] text-gray-400 mt-1">
+                      12:45 PM
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Input Section */}
+              <div>
+                <div className="flex items-center border border-gray-300 rounded-xl p-1 bg-white shadow-sm">
+                  {/* Input field */}
+                  <input
+                    type="text"
+                    placeholder="Write your message..."
+                    className="flex-1 pl-4 text-gray-500 text-sm outline-none bg-transparent"
+                  />
+
+                  {/* Attachment Icon */}
+                  <button className="mx-3">
+                    <GrAttachment />
+                  </button>
+
+                  {/* Send Button */}
+                  <button className="bg-[#223857] text-white px-3 py-[5px] rounded-lg flex items-center text-[12px] font-medium">
+                    Send &nbsp;
+                    <FaTelegramPlane />
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          </main>
         </div>
       </div>
     </BaseLayout1>
   );
-}
+};
+
+export default Messages;

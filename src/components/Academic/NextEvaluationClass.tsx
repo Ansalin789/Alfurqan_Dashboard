@@ -1,8 +1,7 @@
-import { FaUserAlt } from 'react-icons/fa';
-import { AiOutlineClockCircle } from 'react-icons/ai';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-
+import { FaUserAlt } from "react-icons/fa";
+import { AiOutlineClockCircle } from "react-icons/ai";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 interface Student {
   studentFirstName: string;
@@ -30,18 +29,20 @@ const NextEvaluationClass = () => {
   useEffect(() => {
     const fetchNextEvaluationClass = async () => {
       try {
-        const auth=localStorage.getItem('authToken');
-        const academicId=localStorage.getItem('academicId');
-        console.log("academicId>>",academicId);
-        const response = await axios.get(`http://localhost:5001/evaluationlist`, {
-
-          method: 'GET',
-          params:{academicCoachId:academicId },
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth}`,
-          },
-        });
+        const auth = localStorage.getItem("authToken");
+        const academicId = localStorage.getItem("academicId");
+        console.log("academicId>>", academicId);
+        const response = await axios.get(
+          `http://localhost:5001/evaluationlist`,
+          {
+            method: "GET",
+            params: { academicCoachId: academicId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${auth}`,
+            },
+          }
+        );
 
         if (!response.data) {
           throw new Error(`Failed to fetch data: ${response.statusText}`);
@@ -50,7 +51,7 @@ const NextEvaluationClass = () => {
         const data = await response.data;
 
         if (!data.evaluation || !Array.isArray(data.evaluation)) {
-          throw new Error('Invalid data format from API');
+          throw new Error("Invalid data format from API");
         }
 
         const upcomingClass = data.evaluation
@@ -61,7 +62,8 @@ const NextEvaluationClass = () => {
           })
           .sort((a: Evaluation, b: Evaluation) => {
             return (
-              new Date(a.classStartDate).getTime() - new Date(b.classStartDate).getTime()
+              new Date(a.classStartDate).getTime() -
+              new Date(b.classStartDate).getTime()
             );
           })
           .slice(0, 1) // Take only the first upcoming class
@@ -76,7 +78,7 @@ const NextEvaluationClass = () => {
         if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError('An unexpected error occurred');
+          setError("An unexpected error occurred");
         }
       } finally {
         setLoading(false);
@@ -115,10 +117,14 @@ const NextEvaluationClass = () => {
     const day = date.getDate();
     const month = date.getMonth() + 1; // Months are zero-indexed
     const year = date.getFullYear();
-    return `${day < 10 ? '0' + day : day}.${month < 10 ? '0' + month : month}.${year}`;
+    return `${day < 10 ? "0" + day : day}.${
+      month < 10 ? "0" + month : month
+    }.${year}`;
   };
 
-  const progress = ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) * 100;
+  const progress =
+    ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) *
+    100;
 
   if (loading) {
     return <div className="text-center text-gray-600">Loading...</div>;
@@ -129,9 +135,11 @@ const NextEvaluationClass = () => {
   }
 
   return (
-    <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] rounded-[25px] shadow flex items-center justify-between text-white">
+    <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] rounded-[20px] shadow flex items-center justify-between text-white">
       <div className="items-center p-1 px-8">
-        <h3 className="text-[15px] font-medium pt-3">Your Next Evaluation Class</h3>
+        <h3 className="text-[13px] font-medium pt-3">
+          Your Next Evaluation Class
+        </h3>
         <div className="flex items-center space-x-8 py-2">
           <div className="flex items-center space-x-2">
             <FaUserAlt className="w-[10px]" />
@@ -149,7 +157,7 @@ const NextEvaluationClass = () => {
         )}
       </div>
       <div className="flex items-center space-x-2 px-14">
-        <p className="text-[15px] font-bold">Starts in</p>
+        <p className="text-[13px] font-medium">Starts in</p>
         <div className="relative flex items-center justify-center p-10">
           <svg className="absolute w-14 h-20" viewBox="0 0 36 36">
             <path
@@ -173,7 +181,8 @@ const NextEvaluationClass = () => {
               <div className="text-[#234878]">
                 <p className="text-[4px] font-bold">SESSION 13</p>
                 <p className="text-[8px] font-extrabold text-[#223857]">
-                  {formatTime(time.hours)}:{formatTime(time.minutes)}:{formatTime(time.seconds)}
+                  {formatTime(time.hours)}:{formatTime(time.minutes)}:
+                  {formatTime(time.seconds)}
                 </p>
               </div>
             </div>
