@@ -1,18 +1,18 @@
 "use client";
 import Image from "next/image";
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { GrApple } from "react-icons/gr";
-import { useRouter } from 'next/navigation';
-import { GoogleLogin,CredentialResponse } from '@react-oauth/google';
+import { useRouter } from "next/navigation";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import axios from "axios";
 const SignIn: React.FC = () => {
   const [emailNotExist, setEmailNotExist] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [showError, setShowError] = useState(false);
-  const router = useRouter(); 
+  const router = useRouter();
   useEffect(() => {
     if (error) {
       setShowError(true);
@@ -23,44 +23,47 @@ const SignIn: React.FC = () => {
   }, [error]);
   const signIn = async (username: string, password: string) => {
     try {
-      const response = await axios.post('http://localhost:5001/signin', { username, password });
-  
+      const response = await axios.post("http://localhost:5001/signin", {
+        username,
+        password,
+      });
+
       // Handle successful login response
       if (response.status === 200) {
         return response.data;
       }
-  
-      throw new Error('Unexpected error occurred');
+
+      throw new Error("Unexpected error occurred");
     } catch (error: any) {
       // Handle backend errors, e.g., user not found
       if (error.response && error.response.status === 404) {
-        throw new Error('Email not found'); // Specific error message
+        throw new Error("Email not found"); // Specific error message
       }
-  
+
       // Handle other errors
-      throw new Error(error.message || 'Login failed');
-    }
+      throw new Error(error.message || "Login failed");
+    }
   };
-  
+
   const setLoginError = (message: string) => {
     setError(message);
     setEmailNotExist(true);
   };
-  
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); // Clear previous errors
+    setError(""); // Clear previous errors
     try {
       const data = await signIn(username, password);
-      const { accessToken, role,_id,userName } = data;
-      localStorage.setItem('TeacherAuthToken', accessToken);
-      localStorage.setItem('TeacherPortalId', _id);
-      localStorage.setItem('TeacherPortalName', userName);
-      const authToken = localStorage.getItem('TeacherAuthToken');
+      const { accessToken, role, _id, userName } = data;
+      localStorage.setItem("TeacherAuthToken", accessToken);
+      localStorage.setItem("TeacherPortalId", _id);
+      localStorage.setItem("TeacherPortalName", userName);
+      const authToken = localStorage.getItem("TeacherAuthToken");
       console.log(accessToken);
       console.log(authToken);
-      if (role?.includes('TEACHER')) {
-        router.push('/teacher/ui/dashboard');
+      if (role?.includes("TEACHER")) {
+        router.push("/teacher/ui/dashboard");
         alert("Login successful as Teacher");
       }
     } catch (error: any) {
@@ -68,18 +71,20 @@ const SignIn: React.FC = () => {
         const { status, data } = error.response;
         if (status === 400) {
           setEmailNotExist(true);
-        } else if (status === 404 && data.message === 'Email not found') {
+        } else if (status === 404 && data.message === "Email not found") {
           setEmailNotExist(true);
         } else {
-          setLoginError(data.message || 'Login failed. Please try again later.');
+          setLoginError(
+            data.message || "Login failed. Please try again later."
+          );
         }
       } else {
-        setLoginError('Login failed. Please try again later.');
+        setLoginError("Login failed. Please try again later.");
       }
-      console.error('Login error:', error);
+      console.error("Login error:", error);
     }
   };
-  
+
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     const { credential } = response;
     if (!credential) {
@@ -90,45 +95,48 @@ const SignIn: React.FC = () => {
     const checkEmail = async (email: string) => {
       try {
         // Send a POST request to the backend to check if the email exists
-        const response = await axios.post(`http://localhost:5001/allcheck-email`, { email});
-    
+        const response = await axios.post(
+          `http://localhost:5001/allcheck-email`,
+          { email }
+        );
+
         // If the response status is 200, the email exists
         if (response.status === 200) {
-          console.log('Email exists:', response.data);
-          return { message: 'Email exists', data: response.data }; // Return email data
+          console.log("Email exists:", response.data);
+          return { message: "Email exists", data: response.data }; // Return email data
         }
       } catch (error: any) {
         // Handle errors based on status code if available
         if (error.response) {
           if (error.response.status === 404) {
-            console.log('Email not found');
-            return { message: 'Email not found' }; // Email not found
+            console.log("Email not found");
+            return { message: "Email not found" }; // Email not found
           }
-          
+
           if (error.response.status === 500) {
-            console.log('Internal Server Error');
-            return { message: 'Internal Server Error' }; // Handle server errors
+            console.log("Internal Server Error");
+            return { message: "Internal Server Error" }; // Handle server errors
           }
         }
-        
+
         // Handle non-HTTP errors or unexpected issues (network error, etc.)
-        console.log('Error occurred:', error.message || 'Unknown error');
-        return { message: 'Unknown error occurred' }; // Return unknown error message
+        console.log("Error occurred:", error.message || "Unknown error");
+        return { message: "Unknown error occurred" }; // Return unknown error message
       }
     };
     const email = extractEmailFromCredential(credential); // Replace with your extraction logic
     try {
       // Call the checkEmail function to verify if the email exists
       const result = await checkEmail(email);
-  
+
       // Handle result based on the returned message
-      if (result?.message === 'Email exists') {
-        localStorage.setItem('TeacherAuthToken', result.data.accessToken);
-        localStorage.setItem('TeacherPortalId', result.data.id);
-        localStorage.setItem('TeacherPortalName', result.data.username);
-        const authToken = localStorage.getItem('TeacherAuthToken');
+      if (result?.message === "Email exists") {
+        localStorage.setItem("TeacherAuthToken", result.data.accessToken);
+        localStorage.setItem("TeacherPortalId", result.data.id);
+        localStorage.setItem("TeacherPortalName", result.data.username);
+        const authToken = localStorage.getItem("TeacherAuthToken");
         console.log(authToken);
-        router.push('/teacher/ui/dashboard'); // Redirect to dashboard
+        router.push("/teacher/ui/dashboard"); // Redirect to dashboard
       } else {
         setLoginError("Email not found"); // Display appropriate error message
         console.log(result?.message); // Log the error message for debugging
@@ -139,10 +147,9 @@ const SignIn: React.FC = () => {
       setLoginError("An unexpected error occurred. Please try again.");
     }
   };
-  
-  
+
   const extractEmailFromCredential = (credential: string) => {
-    const decodedCredential = JSON.parse(atob(credential.split('.')[1])); // Decode the payload (base64)
+    const decodedCredential = JSON.parse(atob(credential.split(".")[1])); // Decode the payload (base64)
     return decodedCredential.email;
   };
 
@@ -150,7 +157,7 @@ const SignIn: React.FC = () => {
     error: string;
     details?: string;
   }
-  
+
   const handleGoogleFailure = (error: GoogleError) => {
     console.error("Google login failed:", error.error);
     if (error.details) {
@@ -159,12 +166,12 @@ const SignIn: React.FC = () => {
   };
 
   const errorWrapper = () => {
-    const error: GoogleError = { error: "Some error message" }; 
-    handleGoogleFailure(error); 
+    const error: GoogleError = { error: "Some error message" };
+    handleGoogleFailure(error);
   };
-  const newuserclick=()=>{
-    router.push('/form');
-  }
+  const newuserclick = () => {
+    router.push("/form");
+  };
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-100">
       {showError && error && (
@@ -174,46 +181,50 @@ const SignIn: React.FC = () => {
       )}
       {emailNotExist ? (
         <div className="flex-1 flex flex-col items-center justify-center bg-[#E8EFF6] px-8 md:px-16 ">
-             <div className="flex justify-center mb-8">
-              <Image
-                src="/assets/images/alf.png"
-                width={150}
-                height={150}
-                alt="Al Furqan Academy"
-                className="h-12"
-              />
-            </div>
-            <h4 className="text-center text-xl font-semibold text-gray-700 mt-4 ">
+          <div className="flex justify-center mb-8">
+            <Image
+              src="/assets/images/alf.png"
+              width={150}
+              height={150}
+              alt="Al Furqan Academy"
+              className="h-12"
+            />
+          </div>
+          <h4 className="text-center text-xl font-semibold text-gray-700 mt-4 ">
             This email isn’t associated with us.
           </h4>
-            <div className="w-[50%] max-w-lg h-auto min-h-[500px] p-3">
-          {/* Display uploaded image */}
-          <input
-                  type="text"
-                  placeholder="Enter your Email ID"
-                  className="w-full px-4 py-2 border  border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
-                  required
-                />
-         <p className="text-center text-sm px-4 py-2 text-gray-500 mt-4">
-               <button className="text-blue-600" onClick={newuserclick} >New user?</button>
+          <div className="w-[50%] max-w-lg h-auto min-h-[500px] p-3">
+            {/* Display uploaded image */}
+            <input
+              type="text"
+              placeholder="Enter your Email ID"
+              className="w-full px-4 py-2 border  border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+              required
+            />
+            <p className="text-center text-sm px-4 py-2 text-gray-500 mt-4">
+              <button className="text-blue-600" onClick={newuserclick}>
+                New user?
+              </button>
             </p>
-          <div className="mt-6 space-y-2">
-            <button
-              type="button"
-              className="w-full bg-[#42a7c3] px-4 py-2 hover:bg-[#42a7c3] text-white  rounded-md"
-            >
-              Book a Trial
-            </button>
-            <p className="text-center text-sm px-4 py-6 text-gray-500 mt-4">
-               <a href="/signup" className="text-gray-500">Already an existing user?</a>
-            </p>
-            <button
-              type="button"
-              className="w-full border px-4 py-2 border-gray-300  rounded-md hover:bg-gray-100"
-            >
-              Contact Support for Help
-            </button>
-          </div>
+            <div className="mt-6 space-y-2">
+              <button
+                type="button"
+                className="w-full bg-[#42a7c3] px-4 py-2 hover:bg-[#42a7c3] text-white  rounded-md"
+              >
+                Book a Trial
+              </button>
+              <p className="text-center text-sm px-4 py-6 text-gray-500 mt-4">
+                <a href="/signup" className="text-gray-500">
+                  Already an existing user?
+                </a>
+              </p>
+              <button
+                type="button"
+                className="w-full border px-4 py-2 border-gray-300  rounded-md hover:bg-gray-100"
+              >
+                Contact Support for Help
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -265,7 +276,7 @@ const SignIn: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-gray-300 hover:bg-gray-300 text-white py-2 rounded-md"
+                className="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 rounded-md"
               >
                 Submit
               </button>
@@ -273,18 +284,18 @@ const SignIn: React.FC = () => {
 
             {/* Sign In Options */}
             <div className="my-4 space-y-5">
-      <div
-        className="flex flex-col justify-center items-center w-full px-100"
-        style={{ maxWidth: '800px' , border: 'none',padding:0}} // Max width set here for Google login button
-      >
-        <GoogleLogin
-          onSuccess={handleGoogleSuccess}
-          onError={errorWrapper}
-          useOneTap
-          shape="rectangular"
-          size="large"
-        />
-        </div>
+              <div
+                className="flex flex-col justify-center items-center w-full px-100"
+                style={{ maxWidth: "800px", border: "none", padding: 0 }} // Max width set here for Google login button
+              >
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={errorWrapper}
+                  useOneTap
+                  shape="rectangular"
+                  size="large"
+                />
+              </div>
               <button
                 type="button"
                 className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-md hover:bg-gray-100"
@@ -299,14 +310,17 @@ const SignIn: React.FC = () => {
             {/* Book a Trial */}
             <button
               type="button"
-              className="w-full bg-[#42a7c3] hover:bg-[#42a7c3] text-white py-2 rounded-md"
+              className="w-full bg-[#4b90a3] hover:bg-[#4ba5be] text-white py-2 rounded-md"
             >
               Book a Trial
             </button>
 
             {/* Sign Up Option */}
             <p className="text-center text-sm text-gray-500 mt-4">
-              New user?  <button className="text-blue-600" onClick={newuserclick} >Sign up</button>
+              New user?{" "}
+              <button className="text-blue-600" onClick={newuserclick}>
+                Sign up
+              </button>
             </p>
           </div>
         </div>

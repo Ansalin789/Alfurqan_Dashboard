@@ -921,31 +921,38 @@ const TrailSection = () => {
                       >
                         {item.time}
                       </td>
-                      <td className="p-2 text-center">
+                      <td
+                        className="p-2 text-center"
+                        style={{ minWidth: "100px" }}
+                      >
                         <span
-                          className={`px-2 text-[8px] text-center py-1 rounded-lg ${
+                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
                             item.classStatus === "COMPLETED"
                               ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
                               : "bg-green-100 text-green-800 border border-green-900 px-2"
                           }`}
                         >
-                          {item.classStatus ?? "COMPLETED"}
+                          {item.classStatus === "COMPLETED"
+                            ? "PENDING"
+                            : "COMPLETED"}
                         </span>
 
                         <span>/</span>
                         <span
-                          className={`px-2 text-[8px] text-center py-1 rounded-lg ${
+                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
                             item.trialClassStatus === "COMPLETED"
-                              ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                              : "bg-green-100 text-green-800 border border-green-900 px-2"
+                              ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-2"
+                              : "bg-red-100 text-red-800 border border-red-900 px-3"
                           }`}
                         >
-                          {item.trialClassStatus ?? "COMPLETED"}
+                          {item.trialClassStatus === "COMPLETED"
+                            ? "COMPLETED"
+                            : "PENDING"}
                         </span>
                       </td>
                       <td className="p-2 text-center">
                         <span
-                          className={`px-2 text-[9px] text-center py-1 rounded-lg ${
+                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
                             item.paymentStatus === "PAID"
                               ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-5"
                               : "bg-green-100 text-green-800 border border-green-900 px-3"
@@ -956,7 +963,7 @@ const TrailSection = () => {
                       </td>
                       <td className="p-2 text-center">
                         <span
-                          className={`px-2 text-[8px] text-center py-1 rounded-lg ${
+                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
                             item.status === "Active"
                               ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
                               : "bg-green-100 text-green-800 border border-green-900 px-3"
@@ -1008,9 +1015,11 @@ const TrailSection = () => {
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[720px]">
+          <div className="bg-gray-100 border border-gray-300 rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[720px]">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold">Student Details</h3>
+              <h3 className="text-[18px] font-bold bg-gradient-to-r from-[#415075] via-[#1e273c] to-[#1e273c] text-transparent bg-clip-text">
+                Student Details
+              </h3>
               <button
                 className="text-gray-600 hover:text-gray-800"
                 onClick={handleCloseModal}
@@ -1022,7 +1031,7 @@ const TrailSection = () => {
               <div>
                 <label
                   htmlFor="firstName"
-                  className="block text-black text-xs font-medium"
+                  className="block text-black  text-xs font-medium"
                 >
                   First Name
                 </label>
@@ -1031,7 +1040,7 @@ const TrailSection = () => {
                   type="text"
                   disabled
                   value={formData?.student.studentFirstName} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1046,7 +1055,7 @@ const TrailSection = () => {
                   type="text"
                   disabled
                   value={formData?.student.studentLastName} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1062,7 +1071,7 @@ const TrailSection = () => {
                   disabled
                   value={formData?.student.studentEmail} // Bind to formData
                   readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1077,7 +1086,7 @@ const TrailSection = () => {
                   type="number"
                   disabled
                   value={formData?.student.studentPhone} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1093,7 +1102,7 @@ const TrailSection = () => {
                   disabled
                   value={formData?.student.studentCity ?? ""} // Bind to formData
                   readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1109,7 +1118,7 @@ const TrailSection = () => {
                   disabled
                   value={formData?.student.studentCountry} // Bind to formData
                   readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
 
@@ -1129,7 +1138,7 @@ const TrailSection = () => {
                     " TO " +
                     formData?.student.preferredToTime
                   } // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1145,7 +1154,7 @@ const TrailSection = () => {
                   disabled
                   value={formData?._id} // Bind to formData
                   readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1160,7 +1169,7 @@ const TrailSection = () => {
                   type="text"
                   disabled
                   value={formData?.student.learningInterest} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1175,7 +1184,7 @@ const TrailSection = () => {
                   type="text"
                   disabled
                   value={formData?.student.preferredTeacher} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1190,7 +1199,7 @@ const TrailSection = () => {
                   type="text"
                   disabled
                   value={formData?.languageLevel} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1205,7 +1214,7 @@ const TrailSection = () => {
                   type="text"
                   disabled
                   value={formData?.student.preferredDate} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1221,7 +1230,7 @@ const TrailSection = () => {
                   disabled
                   value={formData?.hours} // Bind to formData
                   readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1237,7 +1246,7 @@ const TrailSection = () => {
                   disabled
                   value={formData?.subscription.subscriptionName} // Check if subscription exists
                   readOnly
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1252,7 +1261,7 @@ const TrailSection = () => {
                   type="text"
                   disabled
                   value={formData?.gardianName} // Bind to formDat
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1267,7 +1276,7 @@ const TrailSection = () => {
                   type="email"
                   disabled
                   value={formData?.gardianEmail} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1282,7 +1291,7 @@ const TrailSection = () => {
                   type="text"
                   disabled
                   value={formData?.gardianPhone} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
 
@@ -1298,7 +1307,7 @@ const TrailSection = () => {
                   type="text"
                   disabled
                   value={formData?.student.evaluationStatus} // Bind to formData
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 />
               </div>
               <div>
@@ -1312,7 +1321,7 @@ const TrailSection = () => {
                   id="trialClassStatus"
                   value={trialClassStatus}
                   onChange={handleChange("TrialClassStatus")}
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 >
                   {options.trialClassStatus.map((status) => (
                     <option key={status} value={status}>
@@ -1333,7 +1342,7 @@ const TrailSection = () => {
                   id="studentStatus"
                   value={studentStatus}
                   onChange={handleChange("studentStatus")}
-                  className="w-full mt-2 p-1 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
                 >
                   {options.studentStatus.map((status) => (
                     <option key={status} value={status}>
@@ -1342,7 +1351,7 @@ const TrailSection = () => {
                   ))}
                 </select>
               </div>
-              <div className="col-span-2">
+              <div className="col-span-3">
                 <label
                   htmlFor="comment"
                   className="block text-black text-xs font-medium"
@@ -1353,14 +1362,14 @@ const TrailSection = () => {
                   id="comment"
                   placeholder="Write your comment here..."
                   value={formData?.comments} // Bind to formData
-                  className="w-full mt-2 border rounded-md text-xs text-gray-800"
+                  className="w-full mt-2 bg-gray-200 border border-gray-300 p-2 rounded-md text-[10px] text-gray-800"
                 ></textarea>
               </div>
               {/* Save and Cancel Buttons */}
               <div className="col-span-2 flex justify-end space-x-4 mt-0">
                 <button
                   type="button"
-                  className="px-4 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-800"
+                  className="px-4 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
                   onClick={handleCloseModal}
                 >
                   Cancel
@@ -1368,7 +1377,7 @@ const TrailSection = () => {
                 <button
                   onClick={() => updateClick(formData?._id)}
                   type="submit"
-                  className="px-4 py-1 bg-[#223857] text-white rounded-md hover:bg-[#1c2f49]"
+                  className="px-4 py-1 bg-[#223857] text-white rounded-md hover:bg-[#1c2f49] text-sm"
                 >
                   Update
                 </button>

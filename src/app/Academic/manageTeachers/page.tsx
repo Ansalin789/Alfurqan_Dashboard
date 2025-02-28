@@ -177,7 +177,7 @@ const ManageTeacher: React.FC = () => {
                     <Image
                       src={teacher.profileImage ?? "/assets/images/proff.jpg"}
                       alt="Teacher"
-                      className="w-12 h-12 ml-12 mt-4 rounded-full"
+                      className="w-12 h-12 ml-14 mt-4 rounded-full"
                       width={40}
                       height={40}
                     />
@@ -198,15 +198,6 @@ const ManageTeacher: React.FC = () => {
                         onClick={handleViewTeachersList}
                       >
                         View Schedule
-                      </button>
-                      <button
-                        className="block text-left px-4 py-2 text-[12px] font-medium text-[#223857] hover:bg-gray-100"
-                        onClick={() => {
-                          handleViewTeachersList();
-                          router.push("/Academic/messages");
-                        }}
-                      >
-                        Chat
                       </button>
                       <button
                         className="block text-left px-4 py-2 text-[12px] font-medium text-[#223857] hover:bg-gray-100"

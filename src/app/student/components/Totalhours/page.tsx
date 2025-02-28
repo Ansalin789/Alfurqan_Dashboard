@@ -48,7 +48,7 @@ const Page = () => {
   return (
     <div className="block col-span-12 bg-[#f7f7f9] p-4 py-3 rounded-[17px] h-60 -mt-3 border-[#c8c8c8] border-[1px]">
       {/* Title */}
-      <h2 className="text-[13px] font-semibold text-gray-700 text-center mb-2">
+      <h2 className="text-[15px] font-semibold text-gray-700 text-center mb-2">
         Total class hours - {totalHours} Hrs
       </h2>
 

@@ -10,14 +10,21 @@ import {
   Tooltip,
   Filler,
   ChartOptions,
-  TooltipItem
+  TooltipItem,
 } from "chart.js";
 import axios from "axios";
 
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Filler);
+ChartJS.register(
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Filler
+);
 
 const TeachingActivity = () => {
-  const [chartData, setChartData] = useState<number[]>(Array(12).fill(0)); 
+  const [chartData, setChartData] = useState<number[]>(Array(12).fill(0));
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -27,15 +34,20 @@ const TeachingActivity = () => {
         const authToken = localStorage.getItem("StudentAuthToken");
 
         if (!studentId || !authToken) {
-          console.warn("Missing StudentPortalId or StudentAuthToken in localStorage.");
+          console.warn(
+            "Missing StudentPortalId or StudentAuthToken in localStorage."
+          );
           setLoading(false);
           return;
         }
 
-        const response = await axios.get(`http://localhost:5001/classShedule/activity`, {
-          params: { studentId },
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
+        const response = await axios.get(
+          `http://localhost:5001/classShedule/activity`,
+          {
+            params: { studentId },
+            headers: { Authorization: `Bearer ${authToken}` },
+          }
+        );
 
         console.log("API Response Data:", response.data);
 
@@ -75,17 +87,35 @@ const TeachingActivity = () => {
   }, []);
 
   const chartConfig = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
     datasets: [
       {
         label: "Teaching Activity",
-        data: chartData,        
+        data: chartData,
         borderColor: "#ffffff",
         backgroundColor: (context: any) => {
           const chart = context.chart;
           const { ctx, chartArea } = chart;
           if (!chartArea) return null;
-          const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          const gradient = ctx.createLinearGradient(
+            0,
+            chartArea.top,
+            0,
+            chartArea.bottom
+          );
           gradient.addColorStop(0, "#536680");
           gradient.addColorStop(1, "#FEFEFE");
           return gradient;
@@ -101,7 +131,7 @@ const TeachingActivity = () => {
     ],
   };
 
-  const options: ChartOptions<'line'> = {
+  const options: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -110,7 +140,7 @@ const TeachingActivity = () => {
         usePointStyle: true,
         callbacks: {
           title: () => "Selected Date",
-          label: (context: TooltipItem<'line'>) => {
+          label: (context: TooltipItem<"line">) => {
             if (context.raw && typeof context.raw === "number") {
               return `${context.raw} Hours`;
             }
@@ -157,10 +187,7 @@ const TeachingActivity = () => {
       }}
     >
       <div className="flex items-center justify-between mb-2">
-        <h2
-          className="text-[16px] font-semibold text-gray-700"
-          style={{ fontFamily: "Arial, sans-serif" }}
-        >
+        <h2 className="text-[14px] font-semibold text-gray-700">
           Teaching Activity ({new Date().getFullYear()})
         </h2>
         <select
@@ -168,11 +195,17 @@ const TeachingActivity = () => {
           defaultValue="monthly"
         >
           <option value="monthly">Monthly</option>
-          <option value="weekly" className="hidden">Weekly</option>
+          <option value="weekly" className="hidden">
+            Weekly
+          </option>
         </select>
       </div>
       <div style={{ height: "190px" }}>
-        {loading ? <p className="text-center">Loading...</p> : <Line data={chartConfig} options={options} />}
+        {loading ? (
+          <p className="text-center">Loading...</p>
+        ) : (
+          <Line data={chartConfig} options={options} />
+        )}
       </div>
     </div>
   );

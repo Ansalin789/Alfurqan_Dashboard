@@ -68,8 +68,6 @@ const TrailManagement = () => {
     setModalIsOpen(false);
   };
 
-  
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value); // Update search query state
   };
@@ -220,23 +218,6 @@ const TrailManagement = () => {
 
           <div>
             <label
-              htmlFor="teacherName"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Teacher Name
-            </label>
-            <input
-              type="text"
-              className="w-full p-2 rounded-lg text-[12px] font-medium bg-gray-200 border border-gray-300"
-              value={filters.teacherName}
-              onChange={(e) =>
-                setFilters({ ...filters, teacherName: e.target.value })
-              }
-            />
-          </div>
-
-          <div>
-            <label
               htmlFor="contact"
               className="block text-xs font-medium text-gray-700 mb-1"
             >
@@ -318,7 +299,7 @@ const TrailManagement = () => {
 
     if (filters.studentId) {
       filtered = filtered.filter((user) =>
-        user.studentId.includes(filters.studentId)
+        user.studentId?.includes(filters.studentId)
       );
     }
     if (filters.dateOfJoining) {
@@ -531,12 +512,6 @@ const TrailManagement = () => {
                   </th>
                   <th
                     className="p-3 py-5  font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "18%" }}
-                  >
-                    Teacher Name
-                  </th>
-                  <th
-                    className="p-3 py-5  font-semibold text-center"
                     style={{ wordWrap: "break-word", width: "15%" }}
                   >
                     Contact
@@ -571,7 +546,7 @@ const TrailManagement = () => {
                       }`}
                     >
                       <td
-                        className="p-2 text-center"
+                        className="p-2 py-4 text-center"
                         style={{ wordWrap: "break-word" }}
                       >
                         {student.student?.studentId}
@@ -588,10 +563,6 @@ const TrailManagement = () => {
                       >
                         {student.username}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      ></td>
                       <td
                         className="p-2 text-center"
                         style={{ wordWrap: "break-word" }}

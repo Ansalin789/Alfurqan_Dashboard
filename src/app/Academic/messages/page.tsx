@@ -20,6 +20,16 @@ const Messages = () => {
     { name: "Nadila Adja", message: "Lorem ipsum...", time: "12:45 PM" },
   ];
 
+  // New array for student chats
+  const studentChats = [
+    {
+      name: "John Doe",
+      message: "Hi, when is the next class?",
+    },
+    { name: "Jane Smith", message: "Can I get the notes?", time: "1:05 PM" },
+    // Add more student chat objects as needed
+  ];
+
   return (
     <BaseLayout1>
       <div className="mx-auto">
@@ -80,35 +90,64 @@ const Messages = () => {
                     >
                       Teachers
                     </button>
+                    <button
+                      className={`pb-2 px-4 text-[13px] font-semibold ${
+                        activeTab === "Student"
+                          ? "text-[#223857] border-b-2 border-[#223857] transition p-0.5"
+                          : "text-gray-500"
+                      }`}
+                      onClick={() => setActiveTab("Student")}
+                    >
+                      Students
+                    </button>
                   </div>
                   {/* Chat List */}
                   <ul className="mt-4 space-y-4 overflow-scroll h-96 scrollbar-none">
-                    {privateChats.map((chat, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center justify-between border-b-2 p-1 cursor-pointer"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-7 h-7 bg-gray-300 rounded-lg"></div>
-                          <div>
-                            <h5 className="font-semibold text-[10px] text-[#374557]">
-                              {chat.name}
-                            </h5>
-                            <p className="text-[10px] text-[#A098AE]">
-                              {chat.message}
-                            </p>
-                          </div>
-                        </div>
-                        {/* <div className="flex flex-col items-center space-y-1">
-                                        <span className="text-[10px] text-gray-400">{chat.time}</span>
-                                        {chat.notifications > 0 && (
-                                            <span className="text-[8px] bg-[#223857] text-[#fff] font-bold w-3 h-3 flex items-center justify-center rounded-[4px]">
-                                            {chat.notifications}
-                                            </span>
-                                        )}
-                                    </div> */}
-                      </li>
-                    ))}
+                    {activeTab === "Private"
+                      ? privateChats.map((chat, index) => (
+                          <li
+                            key={index}
+                            className="flex items-center justify-between border-b-2 p-1 cursor-pointer"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-7 h-7 bg-gray-300 rounded-lg"></div>
+                              <div>
+                                <h5 className="font-semibold text-[10px] text-[#374557]">
+                                  {chat.name}
+                                </h5>
+                                <p className="text-[10px] text-[#A098AE]">
+                                  {chat.message}
+                                </p>
+                              </div>
+                            </div>
+                            {/* <div className="flex flex-col items-center space-y-1">
+                                          <span className="text-[10px] text-gray-400">{chat.time}</span>
+                                          {chat.notifications > 0 && (
+                                              <span className="text-[8px] bg-[#223857] text-[#fff] font-bold w-3 h-3 flex items-center justify-center rounded-[4px]">
+                                              {chat.notifications}
+                                              </span>
+                                          )}
+                                      </div> */}
+                          </li>
+                        ))
+                      : studentChats.map((chat, index) => (
+                          <li
+                            key={index}
+                            className="flex items-center justify-between border-b-2 p-1 cursor-pointer"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className="w-7 h-7 bg-gray-300 rounded-lg"></div>
+                              <div>
+                                <h5 className="font-semibold text-[10px] text-[#374557]">
+                                  {chat.name}
+                                </h5>
+                                <p className="text-[10px] text-[#A098AE]">
+                                  {chat.message}
+                                </p>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
                   </ul>
                 </div>
               </div>

@@ -40,7 +40,7 @@ export default function App() {
     <div className="p-0">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <h2 className="text-[16px] font-bold text-gray-800 p-[0px] px-4 -mt-[20px]">Course Overview</h2>
+        <h2 className="text-[15px] font-semibold text-gray-800 p-[0px] px-4 -mt-[20px]">Course Overview</h2>
         <div className="relative">
           <select
             className="block appearance-none text-[10px] w-full bg-white border rounded-lg border-gray-300 font-semibold text-gray-800 py-1 px-2 leading-tight focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 -mt-4"

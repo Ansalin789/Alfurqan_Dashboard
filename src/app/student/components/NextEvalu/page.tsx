@@ -1,13 +1,13 @@
-'use client'
-import { AiOutlineClockCircle } from 'react-icons/ai';
+"use client";
+import { AiOutlineClockCircle } from "react-icons/ai";
 import { useEffect, useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { MdDateRange } from "react-icons/md";
-import { BsThreeDotsVertical } from 'react-icons/bs';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 interface Student {
   studentId: string;
@@ -57,45 +57,46 @@ const NextClass = () => {
 
   const filterUpcomingClass = (response: ApiResponse): ClassData | null => {
     const now = new Date();
-  
-    const upcomingClasses = response.classSchedule.filter(cls => {
+
+    const upcomingClasses = response.classSchedule.filter((cls) => {
       const classDate = new Date(cls.startDate);
-      const [startHours, startMinutes] = cls.startTime[0].split(":").map(Number);
+      const [startHours, startMinutes] = cls.startTime[0]
+        .split(":")
+        .map(Number);
       const [endHours, endMinutes] = cls.endTime[0].split(":").map(Number);
-  
+
       classDate.setHours(startHours, startMinutes, 0, 0);
       const classEndTime = new Date(classDate);
       classEndTime.setHours(endHours, endMinutes, 0, 0);
-  
+
       // Include classes that are upcoming OR currently ongoing
       return now < classEndTime;
     });
-  
+
     // Sort by closest upcoming class or ongoing one first
     upcomingClasses.sort((a, b) => {
       const dateA = new Date(a.startDate);
       const dateB = new Date(b.startDate);
-  
+
       const [hoursA, minutesA] = a.startTime[0].split(":").map(Number);
       const [hoursB, minutesB] = b.startTime[0].split(":").map(Number);
-  
+
       dateA.setHours(hoursA, minutesA, 0, 0);
       dateB.setHours(hoursB, minutesB, 0, 0);
-  
+
       return dateA.getTime() - dateB.getTime();
     });
-  
+
     return upcomingClasses.length > 0 ? upcomingClasses[0] : null;
   };
-  
 
   useEffect(() => {
     const fetchClassData = async () => {
       try {
-        const studentId = localStorage.getItem('StudentPortalId');
-        const authToken = localStorage.getItem('StudentAuthToken');
+        const studentId = localStorage.getItem("StudentPortalId");
+        const authToken = localStorage.getItem("StudentAuthToken");
         if (!studentId || !authToken) {
-          console.log('Missing studentId or authToken');
+          console.log("Missing studentId or authToken");
           return;
         }
 
@@ -103,12 +104,12 @@ const NextClass = () => {
           `http://localhost:5001/classShedule/students`,
           {
             params: { studentId },
-            headers: { 'Authorization': `Bearer ${authToken}` }
+            headers: { Authorization: `Bearer ${authToken}` },
           }
         );
         setClassData(filterUpcomingClass(response.data));
       } catch (err) {
-        console.log('Error loading class details:', err);
+        console.log("Error loading class details:", err);
       }
     };
     fetchClassData();
@@ -116,20 +117,24 @@ const NextClass = () => {
 
   useEffect(() => {
     if (!classData) return;
-  
+
     const updateRemainingTime = () => {
       const now = new Date();
       const classDate = new Date(classData.startDate);
-      const [startHours, startMinutes] = classData.startTime[0].split(":").map(Number);
-      const [endHours, endMinutes] = classData.endTime[0].split(":").map(Number);
-  
+      const [startHours, startMinutes] = classData.startTime[0]
+        .split(":")
+        .map(Number);
+      const [endHours, endMinutes] = classData.endTime[0]
+        .split(":")
+        .map(Number);
+
       classDate.setHours(startHours, startMinutes, 0, 0);
       const classEndTime = new Date(classDate);
       classEndTime.setHours(endHours, endMinutes, 0, 0);
-  
+
       const timeToStart = classDate.getTime() - now.getTime();
       const timeToEnd = classEndTime.getTime() - now.getTime();
-  
+
       if (timeToStart > 0) {
         // Before class starts
         setTimeRemaining(Math.floor(timeToStart / (1000 * 60))); // Convert to minutes
@@ -144,31 +149,65 @@ const NextClass = () => {
         setIsCountdownFinished(false);
       }
     };
-  
+
     updateRemainingTime();
     const timer = setInterval(updateRemainingTime, 1000); // Update every second
     return () => clearInterval(timer);
   }, [classData]);
-  
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-semibold text-gray-800 p-2">My Class</h2>
-      <div className="bg-[#1C3557] rounded-[25px] shadow flex items-center justify-between text-white p-4">
-        <div>
-          <h3 className="text-[15px] font-medium">{classData?.student.studentFirstName} | <FaUser className='inline'/> {classData?.teacher.teacherName}</h3>
+    <div>
+      <style>
+        {`
+              @keyframes wave {
+                0% {
+                  background-position: 0% 50%;
+                }
+                50% {
+                  background-position: 100% 50%;
+                }
+                100% {
+                  background-position: 0% 50%;
+                }
+              }
+
+              .animated-gradient {
+                background: linear-gradient(270deg, #10B981 10%, #FBBF24 30%, #8B5CF6 90%);
+                background-size: 400% 400%;
+                animation: wave 5s ease infinite;
+                -webkit-background-clip: background;
+                -webkit-text-fill-color: text;
+              }
+            `}
+      </style>
+      <h2 className="text-[15px] font-semibold text-gray-800 pb-[6px] px-4 -mt-[12px]">
+        Your Next Classes
+      </h2>
+      <div className="bg-[#375074] rounded-[16px] shadow flex items-center justify-between text-white">
+        <div className="items-center p-1 px-8">
+          <h3 className="text-[10px]">
+            {classData?.student.studentFirstName} &nbsp; | &nbsp;{" "}
+            <FaUser className="inline" /> {classData?.teacher.teacherName}
+          </h3>
           <div className="flex items-center space-x-4 py-2">
-            <MdDateRange className="w-[15px]" />
-            <p className="text-[13px]">{classData?.classDay[0]} - {new Date(classData?.startDate ?? '').toLocaleDateString()}</p>
-            <AiOutlineClockCircle className="w-[15px]" />
-            <p className="text-[13px]">{classData?.startTime[0]} - {classData?.endTime[0]}</p>
+            <MdDateRange className="w-[10px]" />
+            <p className="text-[10px]">
+              {classData?.classDay[0]} -{" "}
+              {new Date(classData?.startDate ?? "").toLocaleDateString()}
+            </p>
+            <AiOutlineClockCircle className="w-[10px]" />
+            <p className="text-[10px]">
+              {classData?.startTime[0]} - {classData?.endTime[0]}
+            </p>
           </div>
         </div>
         <div className="relative flex items-center space-x-4">
           {isPopupVisible && !isCountdownFinished && (
             <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center z-10 bg-black bg-opacity-50">
               <div className="bg-white p-6 rounded shadow">
-                <p className="text-gray-800 mb-4">Please wait until your session starts...</p>
+                <p className="text-gray-800 mb-4">
+                  Please wait until your session starts...
+                </p>
                 <button
                   className="bg-[#1C3557] text-white px-4 py-2 rounded text-center ml-28 justify-center"
                   onClick={() => setIsPopupVisible(false)}
@@ -178,19 +217,31 @@ const NextClass = () => {
               </div>
             </div>
           )}
-          <p className="text-[15px] font-bold">Starts in</p>
-          <div className="w-12 h-12">
-            <CircularProgressbar value={timeRemaining} maxValue={60} text={`${timeRemaining}m`} styles={buildStyles({ textSize: '20px', textColor: '#fff', pathColor: '#fff' })} />
+          <p className="text-[12px] font-normal">Starts in</p>
+          <div className="w-10 h-10">
+            <CircularProgressbar
+              value={timeRemaining}
+              maxValue={40}
+              text={`${timeRemaining}m`}
+              styles={buildStyles({
+                textSize: "18px",
+                textColor: "#fff",
+                pathColor: "#fff",
+              })}
+            />
           </div>
           {isCountdownFinished && (
             <button
-              className="bg-white-500 px-4 py-2 rounded-full"
+              className="animated-gradient text-[15px] font-medium text-white px-4 py-2 rounded-full shadow-lg transition-transform transform active:scale-95 hover:scale-105"
               onClick={() => router.push(`/student/ui/liveclass`)}
             >
               Join Now
             </button>
           )}
-          <BsThreeDotsVertical className="cursor-pointer" onClick={() => setIsPopupVisible(!isPopupVisible)} />
+          <BsThreeDotsVertical
+            className="cursor-pointer text-[12px]"
+            onClick={() => setIsPopupVisible(!isPopupVisible)}
+          />
         </div>
       </div>
     </div>
