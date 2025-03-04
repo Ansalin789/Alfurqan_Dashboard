@@ -91,7 +91,7 @@ const Message = () => {
         const fetchData = async () => {
             try {
                 const auth = localStorage.getItem('SupervisorAuthToken');
-                const response = await axios.get("http://alfurqanacademy.tech:5001/applicants", {
+                const response = await axios.get("https://alfurqanacademy.tech/applicants", {
                     headers: {
                         Authorization: `Bearer ${auth}`,
                     },
@@ -148,7 +148,7 @@ const Message = () => {
             console.log(teacherIdToFilter);
     
             // Fetch messages from backend (Mock API or Database)
-            const response = await axios.get(`http://alfurqanacademy.tech:5001/message/supervisormessage`, {
+            const response = await axios.get(`https://alfurqanacademy.tech/message/supervisormessage`, {
                 params: {
                     supervisorId: teacherIdToFilter,
                     teacherId: candidate,
@@ -184,7 +184,7 @@ const Message = () => {
     
         try {
             const auth = localStorage.getItem('SupervisorAuthToken');
-            const response = await fetch("http://alfurqanacademy.tech:5001/supervisormessage", {
+            const response = await fetch("https://alfurqanacademy.tech/supervisormessage", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" ,
                     Authorization: `Bearer ${auth}`, 

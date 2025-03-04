@@ -23,7 +23,7 @@ const SignIn: React.FC = () => {
   }, [error]);
   const signIn = async (username: string, password: string) => {
     try {
-      const response = await axios.post("http://alfurqanacademy.tech:5001/signin", {
+      const response = await axios.post("https://alfurqanacademy.tech/signin", {
         username,
         password,
       });

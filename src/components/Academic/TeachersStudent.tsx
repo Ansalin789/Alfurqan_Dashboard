@@ -22,7 +22,7 @@ export default function Academic() {
       try {
         const teacherId = "some_teacher_id"; // Replace with actual teacherId
         const response = await axios.get<ApiResponse>(
-          `http://alfurqanacademy.tech:5001/teacher-student-count`,
+          `https://alfurqanacademy.tech/teacher-student-count`,
           {
             params: { teacherId },
           }

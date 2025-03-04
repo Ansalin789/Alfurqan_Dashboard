@@ -70,7 +70,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, invoiceId,amo
     if (error) {
       setMessage(error.message ?? 'Payment failed.');
     } else if (paymentIntent?.status === 'succeeded') {
-      await axios.post('http://alfurqanacademy.tech:5001/student/create-payment-intent', {
+      await axios.post('https://alfurqanacademy.tech/student/create-payment-intent', {
         amount,
         currency,
         invoiceId,
@@ -114,7 +114,7 @@ const Invoice = () => {
     const fetchInvoices = async () => {
       try {
         const studentIdToFilter=localStorage.getItem('StudentPortalId');
-        const response = await axios.get<InvoiceResponse>('http://alfurqanacademy.tech:5001/studentinvoice');
+        const response = await axios.get<InvoiceResponse>('https://alfurqanacademy.tech/studentinvoice');
         const filteredInvoices = response.data.invoice.filter(invoice => invoice.student.studentId === studentIdToFilter);
         setInvoices(filteredInvoices);
       } catch (error) {
@@ -140,7 +140,7 @@ const Invoice = () => {
     const totalprice = selectedInvoice.amount;
   
     try {
-      const response = await axios.post('http://alfurqanacademy.tech:5001/student/create-payment-intent', {
+      const response = await axios.post('https://alfurqanacademy.tech/student/create-payment-intent', {
         amount: totalprice * 100,
         currency: 'usd',
         invoiceId: evaluationid,

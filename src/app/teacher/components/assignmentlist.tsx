@@ -46,7 +46,7 @@ const AssignmentList = () => {
       const storedStudentId = localStorage.getItem('studentviewcontrol');
       const auth = localStorage.getItem('TeacherAuthToken');
       try {
-        const response = await axios.get("http://alfurqanacademy.tech:5001/allAssignment", {
+        const response = await axios.get("https://alfurqanacademy.tech/allAssignment", {
           headers: {
             Authorization: `Bearer ${auth}`,
             "Content-Type": "application/json",
@@ -214,7 +214,7 @@ formData.forEach((value, key) => {
 
     try {
       const auth = localStorage.getItem('TeacherAuthToken');
-      const response = await fetch("http://alfurqanacademy.tech:5001/assignments", {
+      const response = await fetch("https://alfurqanacademy.tech/assignments", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${auth}`,
@@ -240,7 +240,7 @@ formData.forEach((value, key) => {
     console.log("assigned is clicked");
     try {
       // **Step 1: GET REQUEST** (Fetch assignment details)
-      const response = await axios.get(`http://alfurqanacademy.tech:5001/assignments/${selectedAssignmentId}`, {
+      const response = await axios.get(`https://alfurqanacademy.tech/assignments/${selectedAssignmentId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("TeacherAuthToken")}`,
         },
@@ -288,7 +288,7 @@ formData.forEach((value, key) => {
       formData.append("answerValidation", data.answerValidation);
       formData.append("studentId", data.studentId);
       console.log(formData);
-      await axios.put(`http://alfurqanacademy.tech:5001/assignments/${selectedAssignmentId}`, formData, {
+      await axios.put(`https://alfurqanacademy.tech/assignments/${selectedAssignmentId}`, formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("TeacherAuthToken")}`,
         },

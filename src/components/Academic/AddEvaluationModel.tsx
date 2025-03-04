@@ -161,7 +161,7 @@ gardianLanguage: '',
         throw new Error('First name must be at least 3 characters long');
       }
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`http://alfurqanacademy.tech:5001/evaluation`, {
+      const response = await fetch(`https://alfurqanacademy.tech/evaluation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

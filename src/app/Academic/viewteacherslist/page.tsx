@@ -151,7 +151,7 @@ const ViewTeachersList= () => {
           
           console.log(">>>>"+auth);
           try {
-            const response = await fetch(`http://alfurqanacademy.tech:5001/users/${teacherIdLocal}`, {
+            const response = await fetch(`https://alfurqanacademy.tech/users/${teacherIdLocal}`, {
 
               headers: {
                 'Authorization': `Bearer ${auth}`,
@@ -251,7 +251,7 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
 
     try {
       const auth=localStorage.getItem('authToken');
-      const response = await fetch(`http://alfurqanacademy.tech:5001/shiftschedule`,
+      const response = await fetch(`https://alfurqanacademy.tech/shiftschedule`,
          {
           method: 'POST',
           headers: {
@@ -274,7 +274,7 @@ const handleSave1 = async (e: React.FormEvent<HTMLFormElement>) => {
   const studentlist=async()=>{
       try{
         const auth=localStorage.getItem('authToken');
-           const response=await fetch(`http://alfurqanacademy.tech:5001/shiftschedule?role=TEACHER`,{
+           const response=await fetch(`https://alfurqanacademy.tech/shiftschedule?role=TEACHER`,{
             method:'GET',
             headers:{
               "Content-Type":"application/json",

@@ -150,7 +150,7 @@ export default function ApplicantsPage() {
   useEffect(() => {
     const auth = localStorage.getItem("SupervisorAuthToken");
     axios
-      .get("http://alfurqanacademy.tech:5001/applicants", {
+      .get("https://alfurqanacademy.tech/applicants", {
         headers: {
           Authorization: `Bearer ${auth}`, // Add Authorization header with the Bearer token
         },
@@ -196,7 +196,7 @@ export default function ApplicantsPage() {
       const auth = localStorage.getItem("SupervisorAuthToken");
       try {
         const response = await axios.get<ApiResponse>(
-          `http://alfurqanacademy.tech:5001/applicants/${_id}`,
+          `https://alfurqanacademy.tech/applicants/${_id}`,
           {
             headers: {
               Authorization: `Bearer ${auth}`, // Replace with actual token
@@ -276,7 +276,7 @@ export default function ApplicantsPage() {
 
     try {
       const response = await axios.post(
-        "http://alfurqanacademy.tech:5001/recruit",
+        "https://alfurqanacademy.tech/recruit",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -336,7 +336,7 @@ export default function ApplicantsPage() {
     console.log(updateData);
     try {
       const response = await axios.put(
-        `http://alfurqanacademy.tech:5001/applicants/${id}`,
+        `https://alfurqanacademy.tech/applicants/${id}`,
         updateData
       );
       console.log("Update successful:", response.data);

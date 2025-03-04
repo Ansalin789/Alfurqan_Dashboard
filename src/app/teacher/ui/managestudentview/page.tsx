@@ -36,7 +36,7 @@ const Page = () => {
       const storedStudentId = localStorage.getItem('studentviewcontrol');
       const auth = localStorage.getItem('TeacherAuthToken');
       try {
-        const response = await axios.get("http://alfurqanacademy.tech:5001/allAssignment", {
+        const response = await axios.get("https://alfurqanacademy.tech/allAssignment", {
           headers: {
             Authorization: `Bearer ${auth}`,
             "Content-Type": "application/json",

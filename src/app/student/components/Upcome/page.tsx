@@ -49,7 +49,7 @@ const UpcomingClasses = () => {
         const studentId = localStorage.getItem("StudentPortalId");
         const auth = localStorage.getItem("StudentAuthToken");
         const response = await axios.get<ApiResponse>(
-          "http://alfurqanacademy.tech:5001/classShedule/students",
+          "https://alfurqanacademy.tech/classShedule/students",
           {
             params: { studentId: studentId },
             headers: {

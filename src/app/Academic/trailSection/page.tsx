@@ -66,7 +66,7 @@ const getAllUsers = async (): Promise<{
     const auth = localStorage.getItem("authToken");
     const academicId = localStorage.getItem("academicId");
     console.log("academicId>>", academicId);
-    const response = await axios.get(`http://alfurqanacademy.tech:5001/evaluationlist`, {
+    const response = await axios.get(`https://alfurqanacademy.tech/evaluationlist`, {
       params: { academicCoachId: academicId },
       headers: {
         "Content-Type": "application/json",
@@ -449,7 +449,7 @@ const TrailSection = () => {
     try {
       const auth = localStorage.getItem("authToken");
       const response = await fetch(
-        `http://alfurqanacademy.tech:5001/evaluationlist/${id}`,
+        `https://alfurqanacademy.tech/evaluationlist/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -560,7 +560,7 @@ const TrailSection = () => {
     alert(JSON.stringify(formDataNames));
     try {
       const auth = localStorage.getItem("authToken");
-      const response = await fetch(`http://alfurqanacademy.tech:5001/evaluation/${id}`, {
+      const response = await fetch(`https://alfurqanacademy.tech/evaluation/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

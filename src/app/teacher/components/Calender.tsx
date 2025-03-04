@@ -52,7 +52,7 @@ const Calender: React.FC = () => {
         const teacherId = localStorage.getItem('TeacherPortalId');
         const auth = localStorage.getItem('TeacherAuthToken');
 
-        const response = await axios.get<ApiResponse>('http://alfurqanacademy.tech:5001/classShedule/teacher', {
+        const response = await axios.get<ApiResponse>('https://alfurqanacademy.tech/classShedule/teacher', {
           params: { teacherId: teacherId },
           headers: {
             'Authorization': `Bearer ${auth}`,

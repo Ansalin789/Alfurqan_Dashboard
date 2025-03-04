@@ -29,7 +29,7 @@ const ScheduleCalender: React.FC = () => {
 
   useEffect(() => {
     const auth=localStorage.getItem('authToken');
-    fetch(`http://alfurqanacademy.tech:5001/meetingSchedulelist`,{
+    fetch(`https://alfurqanacademy.tech/meetingSchedulelist`,{
       headers: {
         'Authorization': `Bearer ${auth}`,
       },
