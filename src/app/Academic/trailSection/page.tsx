@@ -476,7 +476,7 @@ const TrailSection = () => {
       setStudentStatus(data.studentStatus);
       setPaymentStatus(data.paymentStatus);
       setPaymentLink(
-        `http://localhost:3000/invoice?id=${encodeURIComponent(data._id)}`
+        `https://web.alfurqanacademy.tech/invoice?id=${encodeURIComponent(data._id)}`
       );
       setFormData(data);
       console.log(data);
