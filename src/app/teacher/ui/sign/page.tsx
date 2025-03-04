@@ -96,7 +96,7 @@ const SignIn: React.FC = () => {
       try {
         // Send a POST request to the backend to check if the email exists
         const response = await axios.post(
-          `http://localhost:5001/allcheck-email`,
+          `https://alfurqanacademy.tech/allcheck-email`,
           { email }
         );
 
