@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Doughnut } from "react-chartjs-2";
-import {
-  Chart,
-  ArcElement,
-  Tooltip,
-  Legend
-} from "chart.js";
+import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
 Chart.register(ArcElement, Tooltip, Legend, ChartDataLabels);
@@ -47,9 +42,6 @@ interface ClassSchedule {
   teacherAttendee: string;
 }
 
-
-
-
 const ClassAnalytics: React.FC = () => {
   const [classData, setClassData] = useState<ClassSchedule[]>([]);
   const [chartData, setChartData] = useState<number[]>([]);
@@ -58,20 +50,20 @@ const ClassAnalytics: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('classData',classData);
+  console.log("classData", classData);
 
   useEffect(() => {
     const fetchClassData = async () => {
       try {
         const teacherId = localStorage.getItem("TeacherPortalId");
         const auth = localStorage.getItem("TeacherAuthToken");
-  
+
         if (!teacherId) {
           setError("Teacher ID not found");
           setLoading(false);
           return;
         }
-  
+
         const response = await axios.get<{ classSchedule: ClassSchedule[] }>(
           "http://localhost:5001/classShedule/teacher",
           {
@@ -82,56 +74,59 @@ const ClassAnalytics: React.FC = () => {
             },
           }
         );
-  
+
         const classSchedule = response.data.classSchedule;
-  
+
         const statusCount: Record<string, number> = {
           Scheduled: 0,
           Completed: 0,
           Absent: 0,
         };
-  
+
         classSchedule.forEach((cls) => {
           if (cls.classStatus?.toLowerCase() === "pending") {
             statusCount["Scheduled"] += 1;
           } else if (cls.classStatus?.toLowerCase() === "completed") {
             statusCount["Completed"] += 1;
           }
-  
+
           if (cls.teacherAttendee?.toLowerCase() === "absent") {
             statusCount["Absent"] += 1;
           }
         });
-  
+
         // Ensure total includes all statuses (Scheduled + Completed + Absent)
-        const total = statusCount["Scheduled"] + statusCount["Completed"] + statusCount["Absent"];
+        const total =
+          statusCount["Scheduled"] +
+          statusCount["Completed"] +
+          statusCount["Absent"];
 
-      // Function to calculate percentage
-      const calculatePercentage = (count: number) =>
-        total > 0 ? ((count / total) * 100).toFixed(0) + "%" : "0%";
+        // Function to calculate percentage
+        const calculatePercentage = (count: number) =>
+          total > 0 ? ((count / total) * 100).toFixed(0) + "%" : "0%";
 
-      // Update labels with percentage values
-      const updatedLabels = [
-        `Scheduled (${calculatePercentage(statusCount["Scheduled"])})`,
-        `Completed (${calculatePercentage(statusCount["Completed"])})`,
-        `Absent (${calculatePercentage(statusCount["Absent"])})`,
-      ];
-  
+        // Update labels with percentage values
+        const updatedLabels = [
+          `Scheduled (${calculatePercentage(statusCount["Scheduled"])})`,
+          `Completed (${calculatePercentage(statusCount["Completed"])})`,
+          `Absent (${calculatePercentage(statusCount["Absent"])})`,
+        ];
+
         setLabels(updatedLabels);
         setChartData(Object.values(statusCount));
         setTotalClasses(total); // Fix: This now correctly includes all statuses
         setClassData(classSchedule);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An unexpected error occurred");
+        setError(
+          err instanceof Error ? err.message : "An unexpected error occurred"
+        );
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchClassData();
   }, []);
-  
-  
 
   const data = {
     labels,
@@ -144,8 +139,6 @@ const ClassAnalytics: React.FC = () => {
       },
     ],
   };
-  
-  
 
   const options = {
     responsive: true,
@@ -155,14 +148,18 @@ const ClassAnalytics: React.FC = () => {
       datalabels: {
         color: "white",
         formatter: (value: number, ctx: any) => {
-          let total = ctx.dataset.data.reduce((acc: number, val: number) => acc + val, 0);
-          return total > 0 ? ((value / total) * 100).toFixed(0) + "%" : "0%";
+          let total = ctx.dataset.data.reduce(
+            (acc: number, val: number) => acc + val,
+            0
+          );
+          return total > 0 && value > 0
+            ? ((value / total) * 100).toFixed(0) + "%"
+            : "";
         },
         font: { weight: "bold" as const, size: 12 }, // ✅ Fix applied here
       },
     },
   };
-  
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -178,26 +175,28 @@ const ClassAnalytics: React.FC = () => {
         </div>
       </div>
       <div className="text-white text-sm w-[60%]">
-        <h3 className="text-[13px] font-semibold ml-4 justify-center">
+        <h3 className="text-[13px] font-semibold mb-5 justify-center">
           Class Analytics
         </h3>
         <div className="flex justify-between items-center mr-2">
           <span className="flex items-center">
-            <div className="w-2 h-2 rounded-full bg-[#FEC64F] mr-2"></div>
-            <p className="text-[#6BF4FD] font-semibold text-[11px]">
+            <div className="w-2 h-2 rounded-full bg-[#fff] mr-2"></div>
+            <p className="text-[#6BF4FD] font-medium text-[9px]">
               TOTAL CLASS ASSIGNED
             </p>
           </span>
-          <span>{totalClasses}</span>
+          <span className="text-[10px]">{totalClasses}</span>
         </div>
-        <div className="flex flex-col ml-4 mt-3 text-[10px] text-[#A098AE]">
+        <div className="flex flex-col ml-4 text-[9px] text-[#c1bacc]">
           {labels.map((label, index) => (
-            <div key={label} className="flex justify-between items-center">
+            <div key={label} className="flex justify-between items-center mr-2">
               <span className="flex items-center">
                 <div
                   className="w-2 h-2 rounded-sm mr-2"
                   style={{
-                    backgroundColor: Array.isArray(data.datasets?.[0]?.backgroundColor)
+                    backgroundColor: Array.isArray(
+                      data.datasets?.[0]?.backgroundColor
+                    )
                       ? data.datasets[0].backgroundColor[index] || "#000"
                       : "#000",
                   }}

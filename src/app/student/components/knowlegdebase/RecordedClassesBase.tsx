@@ -1,9 +1,12 @@
-'use client';
+"use client";
 import { useState } from "react";
 import { FiFilter } from "react-icons/fi";
 
 const RecordedClassesBase: React.FC = () => {
-  const [selectedVideo, setSelectedVideo] = useState<{ url: string; isYouTube: boolean } | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<{
+    url: string;
+    isYouTube: boolean;
+  } | null>(null);
 
   // Sample data for videos
   const videoData = [
@@ -38,14 +41,17 @@ const RecordedClassesBase: React.FC = () => {
   ];
 
   const handleVideoClick = (videoUrl: string) => {
-    const isYouTube = videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
+    const isYouTube =
+      videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
     setSelectedVideo({ url: videoUrl, isYouTube });
   };
 
   return (
-    <section className="bg-[#ffffff] p-2 rounded-xl mt-2">
-      <div className="flex items-center justify-between mb-2 p-1 border-b-2 border-b-[#525151]">
-        <h2 className="text-[18px] font-semibold text-[#5C5F85]">Recorded Classes Base</h2>
+    <section className="bg-[#ffffff] p-6 py-3 rounded-xl w-full mt-2">
+      <div className="flex items-center justify-between p-1 border-b-2 border-b-[#525151] w-full">
+        <h2 className="text-[18px] font-semibold text-[#5C5F85]">
+          Recorded Classes Base
+        </h2>
         {/* Date and Filter */}
         <div className="flex items-center space-x-2">
           <div className="relative">
@@ -81,24 +87,27 @@ const RecordedClassesBase: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
         {videoData.map((video) => (
           <button
-          key={video.id}
-          className="w-60 bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
-          onClick={() => handleVideoClick(video.videoUrl)}
-          aria-label={`Play video ${video.title}`}
-        >
-          <img
-            src={video.thumbnail}
-            alt="Class Thumbnail"
-            className="w-full h-32 object-cover"
-          />
-          <div className="p-3">
-            <h3 className="text-[12px] font-bold text-gray-800 mb-1">{video.title}</h3>
-            <p className="text-[11px] text-gray-500 mb-2">{video.time}</p>
-            <p className="text-[10px] text-gray-500 bg-[#dadada] px-[8px] py-[2px] rounded-lg">
-              <b>Note:</b> Recorded classes will remain available for a maximum of one month from the class date.
-            </p>
-          </div>
-        </button>
+            key={video.id}
+            className="w-60 bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
+            onClick={() => handleVideoClick(video.videoUrl)}
+            aria-label={`Play video ${video.title}`}
+          >
+            <img
+              src={video.thumbnail}
+              alt="Class Thumbnail"
+              className="w-full h-32 object-cover"
+            />
+            <div className="p-3">
+              <h3 className="text-[12px] font-bold text-gray-800 mb-1">
+                {video.title}
+              </h3>
+              <p className="text-[11px] text-gray-500 mb-2">{video.time}</p>
+              <p className="text-[10px] text-gray-500 bg-[#dadada] px-[8px] py-[2px] rounded-lg">
+                <b>Note:</b> Recorded classes will remain available for a
+                maximum of one month from the class date.
+              </p>
+            </div>
+          </button>
         ))}
       </div>
 
@@ -117,7 +126,11 @@ const RecordedClassesBase: React.FC = () => {
                 allowFullScreen
               ></iframe>
             ) : (
-              <video src={selectedVideo.url} controls className="w-full h-auto" />
+              <video
+                src={selectedVideo.url}
+                controls
+                className="w-full h-auto"
+              />
             )}
             <div className="flex justify-end p-2">
               <button

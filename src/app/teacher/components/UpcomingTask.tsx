@@ -23,34 +23,42 @@ const UpcomingTask: React.FC = () => {
         const teacherId = localStorage.getItem("TeacherPortalId");
         const auth = localStorage.getItem("TeacherAuthToken");
 
-        const response = await axios.get("http://localhost:5001/classShedule/teacher", {
-          params: { teacherId: teacherId },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${auth}`,
-          },
-        });
+        const response = await axios.get(
+          "http://localhost:5001/classShedule/teacher",
+          {
+            params: { teacherId: teacherId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${auth}`,
+            },
+          }
+        );
 
-        const fetchedClasses = response.data.classSchedule.map((classItem: any) => ({
-          id: classItem._id,
-          date: classItem.startDate,
-          time: `${classItem.startTime[0]} - ${classItem.endTime[0]}`,
-          title: classItem.package,
-          color: "bg-[#FAD85D] opacity-[90%]",
-          icon: <FaBook className="text-yellow-700" />,
-          teacher: classItem.teacher.teacherName,
-        }));
+        const fetchedClasses = response.data.classSchedule.map(
+          (classItem: any) => ({
+            id: classItem._id,
+            date: classItem.startDate,
+            time: `${classItem.startTime[0]} - ${classItem.endTime[0]}`,
+            title: classItem.package,
+            color: "bg-[#FBE07D]",
+            icon: <FaBook className="text-yellow-700" />,
+            teacher: classItem.teacher.teacherName,
+          })
+        );
 
         // Sort by date (assuming startDate is in ISO format) and get the last 5 upcoming classes
         const sortedClasses = fetchedClasses
-        .sort((a: ClassItem, b: ClassItem) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort ascending by date
-        .slice(0, 5); // Get the first 5 upcoming classes
-      
-      setClasses(sortedClasses);
-      
+          .sort(
+            (a: ClassItem, b: ClassItem) =>
+              new Date(a.date).getTime() - new Date(b.date).getTime()
+          ) // Sort ascending by date
+          .slice(0, 5); // Get the first 5 upcoming classes
 
+        setClasses(sortedClasses);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An unexpected error occurred");
+        setError(
+          err instanceof Error ? err.message : "An unexpected error occurred"
+        );
       } finally {
         setLoading(false);
       }
@@ -68,21 +76,28 @@ const UpcomingTask: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-100 p-4 w-[250px] rounded-lg shadow-lg -ml-14 h-[40vh] overflow-y-scroll scrollbar-none">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-[14px] font-semibold text-gray-800">Upcoming Task</h3>
+    <div className="bg-gray-100 p-3 w-[250px] rounded-[15px] shadow-lg -ml-14 ">
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="text-[14px] font-semibold text-gray-800">
+          Upcoming Task
+        </h3>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-2 h-[29vh] overflow-y-scroll scrollbar-none">
         {classes.map((classItem) => (
-          <div key={classItem.id} className={`relative ${classItem.color} p-4 rounded-md shadow-md`}>
+          <div
+            key={classItem.id}
+            className={`relative ${classItem.color} p-2 rounded-md shadow-md`}
+          >
             <div className="flex items-center space-x-2">
               {classItem.icon}
-              <h4 className="text-[13px] fontdd-medium text-gray-800">{classItem.title}</h4>
+              <h4 className="text-[11px] font-semibold text-gray-800">
+                {classItem.title}
+              </h4>
             </div>
-            <p className="text-[10px] text-gray-600 mt-1">{classItem.date}</p>
-            <p className="text-[10px] text-gray-600">{classItem.time}</p>
+            <p className="text-[8px] text-gray-600 mt-1">{classItem.date}</p>
+            <p className="text-[8px] text-gray-600">{classItem.time}</p>
             {classItem.teacher && (
-              <p className="absolute right-3 bottom-2 text-gray-700 text-[12px] font-medium">
+              <p className="absolute right-3 bottom-2 text-gray-700 text-[9px] font-medium">
                 {classItem.teacher}
               </p>
             )}

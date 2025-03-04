@@ -1,28 +1,37 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react';
-import PdfCard from '@/app/student/components/knowlegdebase/PdfCard';
-import BaseLayout2 from '@/components/BaseLayout2';
+import React, { useState } from "react";
+import PdfCard from "@/app/student/components/knowlegdebase/PdfCard";
+import BaseLayout2 from "@/components/BaseLayout2";
 import { FiFilter } from "react-icons/fi";
 import { GrShare } from "react-icons/gr";
-import RecordedClassesBase from '../../components/knowlegdebase/RecordedClassesBase';
+import RecordedClassesBase from "../../components/knowlegdebase/RecordedClassesBase";
 
 const Knowledge: React.FC = () => {
-  const [userType, setUserType] = useState('normal');
+  const [userType, setUserType] = useState("normal");
   const [showPopup, setShowPopup] = useState(true);
 
   const handleRecordedClassesClick = () => {
-    if (userType === 'normal') {
+    if (userType === "normal") {
       setShowPopup(false);
     }
   };
 
   return (
     <BaseLayout2>
-      <div onClick={handleRecordedClassesClick} className={`${userType === 'normal' ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''} w-full p-2 px-4`}>
+      <div
+        onClick={handleRecordedClassesClick}
+        className={`${
+          userType === "normal"
+            ? "opacity-50 cursor-not-allowed pointer-events-none"
+            : ""
+        } w-full p-4 px-4 mr-8`}
+      >
         <section className=" bg-[#ffffff] p-6 py-3 rounded-xl w-full">
           <div className="flex items-center justify-between p-1 border-b-2 border-b-[#525151] w-full">
-            <h2 className="text-[18px] font-semibold text-[#5C5F85]">Knowledge Base</h2>
+            <h2 className="text-[18px] font-semibold text-[#5C5F85]">
+              Knowledge Base
+            </h2>
             {/* Date and Filter */}
             <div className="flex items-center space-x-2">
               <div className="relative">
@@ -55,42 +64,47 @@ const Knowledge: React.FC = () => {
           </div>
 
           {/* Cards Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
             {[...Array(6)].map((_, index) => (
-                <PdfCard
+              <PdfCard
                 key={`pdf-card-${index}`}
                 title="Sample PDF"
                 details="Details"
                 pdfUrl="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
-                />
+              />
             ))}
-        </div>
-
+          </div>
         </section>
 
         <div>
-          <RecordedClassesBase /> 
+          <RecordedClassesBase />
         </div>
-        
-
 
         <section>
           <h2 className="text-[18px] font-semibold text-[#5C5F85] p-1 px-7">
             Learn More Courses
           </h2>
           <button className="bg-[#223857] flex text-white text-[10px] p-[3px] ml-7 px-4 rounded-full hover:bg-[#1f334e]">
-            <GrShare className="mt-[1px]" />&nbsp; Look More Courses
+            <GrShare className="mt-[1px]" />
+            &nbsp; Look More Courses
           </button>
         </section>
       </div>
       {showPopup && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-4 rounded shadow-lg">
-              <p className='text-[12px]'>Please upgrade your plan to access this feature.</p>
-              <button onClick={() => setShowPopup(false)} className="mt-2 bg-[#223857] text-white px-2 text-center justify-center py-1 rounded text-[12px] ml-28">Close</button>
-            </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-4 rounded shadow-lg">
+            <p className="text-[12px]">
+              Please upgrade your plan to access this feature.
+            </p>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="mt-2 bg-[#223857] text-white px-2 text-center justify-center py-1 rounded text-[12px] ml-28"
+            >
+              Close
+            </button>
           </div>
-        )}
+        </div>
+      )}
     </BaseLayout2>
   );
 };

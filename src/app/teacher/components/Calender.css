@@ -1,5 +1,6 @@
 .custom-calendar {
   width: 250px !important;
+  height: 330px !important;
   border: none !important;
   background: #ced4dc !important;
 }
@@ -34,7 +35,7 @@
 }
 
 .custom-calendar .react-calendar__month-view__weekdays__weekday {
-  padding: 10px 0;
+  padding: 1px 0;
 }
 
 .custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
@@ -44,9 +45,10 @@
 
 /* Calendar days */
 .custom-calendar .react-calendar__month-view__days__day {
-  font-size: 11px;
+  font-size: 10px;
   padding: 0px;
   color: #333;
+  font-weight: 800;
 }
 
 .custom-calendar .react-calendar__tile {

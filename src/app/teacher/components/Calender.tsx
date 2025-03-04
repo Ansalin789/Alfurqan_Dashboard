@@ -1,10 +1,9 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import Calendar from 'react-calendar';
+"use client";
+import React, { useEffect, useState } from "react";
+import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import axios from 'axios';
+import axios from "axios";
 import "./Calender.css";
- 
 
 // Rename Event interface to avoid conflicts
 interface ClassEvent {
@@ -43,21 +42,26 @@ interface ApiResponse {
 }
 
 const Calender: React.FC = () => {
-  const [events, setEvents] = useState<{ title: string; startDate: Date; endDate: Date }[]>([]);
+  const [events, setEvents] = useState<
+    { title: string; startDate: Date; endDate: Date }[]
+  >([]);
   const [value, setValue] = useState<Date>(new Date());
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const teacherId = localStorage.getItem('TeacherPortalId');
-        const auth = localStorage.getItem('TeacherAuthToken');
+        const teacherId = localStorage.getItem("TeacherPortalId");
+        const auth = localStorage.getItem("TeacherAuthToken");
 
-        const response = await axios.get<ApiResponse>('http://localhost:5001/classShedule/teacher', {
-          params: { teacherId: teacherId },
-          headers: {
-            'Authorization': `Bearer ${auth}`,
-          },
-        });
+        const response = await axios.get<ApiResponse>(
+          "http://localhost:5001/classShedule/teacher",
+          {
+            params: { teacherId: teacherId },
+            headers: {
+              Authorization: `Bearer ${auth}`,
+            },
+          }
+        );
 
         // ✅ Correct Mapping (Use `classSchedule`, not `teacher.map`)
         const mappedEvents = response.data.classSchedule.map((classItem) => ({
@@ -69,7 +73,7 @@ const Calender: React.FC = () => {
         setEvents(mappedEvents);
         console.log("Fetched Events: ", mappedEvents);
       } catch (error) {
-        console.error('Error fetching data: ', error);
+        console.error("Error fetching data: ", error);
       }
     };
 
@@ -88,14 +92,16 @@ const Calender: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center mt-12">
+    <div className="flex items-center justify-center">
       <div className="calendar-container rounded-[50px] -ml-28">
         <Calendar
           onChange={(newValue) => setValue(newValue as Date)}
           value={value}
           className="custom-calendar"
           navigationLabel={({ date }) =>
-            `${date.toLocaleString('default', { month: 'long' }).toUpperCase()}, ${date.getFullYear()}`
+            `${date
+              .toLocaleString("default", { month: "long" })
+              .toUpperCase()}, ${date.getFullYear()}`
           }
           nextLabel="›"
           prevLabel="‹"
@@ -103,7 +109,7 @@ const Calender: React.FC = () => {
           prev2Label={null}
           showNeighboringMonth={false}
           tileClassName={({ date, view }) =>
-            view === 'month' && isMeetingDate(date) ? 'event-day' : undefined
+            view === "month" && isMeetingDate(date) ? "event-day" : undefined
           }
         />
       </div>
