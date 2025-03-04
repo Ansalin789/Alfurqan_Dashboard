@@ -19,7 +19,7 @@ const TeacherReschedule = () => {
   // Fetch events data
   useEffect(() => {
     const auth = localStorage.getItem('authToken');
-    fetch('https://alfurqanacademy.tech/meetingSchedulelist', {
+    fetch('http://alfurqanacademy.tech:5001/meetingSchedulelist', {
       headers: {
         Authorization: `Bearer ${auth}`,
       },

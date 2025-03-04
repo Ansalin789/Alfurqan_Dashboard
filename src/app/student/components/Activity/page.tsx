@@ -42,7 +42,7 @@ const TeachingActivity = () => {
         }
 
         const response = await axios.get(
-          `https://alfurqanacademy.tech/classShedule/activity`,
+          `http://alfurqanacademy.tech:5001/classShedule/activity`,
           {
             params: { studentId },
             headers: { Authorization: `Bearer ${authToken}` },

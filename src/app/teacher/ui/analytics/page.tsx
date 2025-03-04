@@ -157,7 +157,7 @@ useEffect(() => {
               return;
           }
 
-          const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule", {
+          const response = await axios.get<ApiResponse>("http://alfurqanacademy.tech:5001/classShedule", {
               headers: {
                   Authorization: `Bearer ${auth}`,
               },

@@ -16,7 +16,7 @@ const TotalStudents = () => {
           return;
         }
 
-        const response = await axios.get("https://alfurqanacademy.tech/classShedule", {
+        const response = await axios.get("http://alfurqanacademy.tech:5001/classShedule", {
           headers: { Authorization: `Bearer ${auth}` },
         });
 

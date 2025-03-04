@@ -17,7 +17,7 @@ export default function App() {
     const fetchData = async () => {
       try {
         const studentId = localStorage.getItem('StudentPortalId');
-        const response = await axios.get('https://alfurqanacademy.tech/dashboard/student/counts', {
+        const response = await axios.get('http://alfurqanacademy.tech:5001/dashboard/student/counts', {
           params: { studentId },
         });
         setData(response.data); // Set the fetched data into the state

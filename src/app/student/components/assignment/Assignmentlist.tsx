@@ -32,7 +32,7 @@ const AssignmentList = () => {
       console.log( ">>>>>>>>>>",storedStudentId);
       
       try {
-        const response = await axios.get("https://alfurqanacademy.tech/allAssignment", {
+        const response = await axios.get("http://alfurqanacademy.tech:5001/allAssignment", {
           headers: {
             Authorization: `Bearer YOUR_AUTH_TOKEN`,
             "Content-Type": "application/json",

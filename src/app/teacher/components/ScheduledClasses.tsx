@@ -74,7 +74,7 @@ const ScheduledClasses = () => {
         }
 
         const response = await axios.get<ApiResponse>(
-          "https://alfurqanacademy.tech/classShedule/teacher",
+          "http://alfurqanacademy.tech:5001/classShedule/teacher",
           {
             params: { teacherId },
             headers: { Authorization: `Bearer ${authToken}` },

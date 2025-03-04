@@ -153,7 +153,7 @@ const ManageStudentView = () => {
         try {
           const auth = localStorage.getItem("authToken");
           const response = await fetch(
-            `https://alfurqanacademy.tech/alstudents/${studentId}`,
+            `http://alfurqanacademy.tech:5001/alstudents/${studentId}`,
             {
               headers: {
                 Authorization: `Bearer ${auth}`,
@@ -172,7 +172,7 @@ const ManageStudentView = () => {
     const studentlist = async () => {
       try {
         const auth = localStorage.getItem("authToken");
-        const response = await fetch(`https://alfurqanacademy.tech/classShedule`, {
+        const response = await fetch(`http://alfurqanacademy.tech:5001/classShedule`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

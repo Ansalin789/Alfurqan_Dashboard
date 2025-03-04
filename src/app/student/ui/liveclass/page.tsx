@@ -157,7 +157,7 @@ useEffect(() => {
               return;
           }
 
-          const response = await axios.get<ApiResponse>(`https://alfurqanacademy.tech/classShedule/students`, {
+          const response = await axios.get<ApiResponse>(`http://alfurqanacademy.tech:5001/classShedule/students`, {
               params: { studentId },
               headers: { 'Authorization': `Bearer ${authToken}` }
           });
@@ -222,7 +222,7 @@ useEffect(() => {
       };
   
       try {
-        const response = await axios.post("https://alfurqanacademy.tech/feedback", feedbackData, {
+        const response = await axios.post("http://alfurqanacademy.tech:5001/feedback", feedbackData, {
           headers: {
             "Content-Type": "application/json",
           },

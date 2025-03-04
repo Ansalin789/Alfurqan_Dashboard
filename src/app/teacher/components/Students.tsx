@@ -22,7 +22,7 @@ const fetchTeacherData = async (): Promise<Teacher[] | null> => {
   try {
     const studentId = localStorage.getItem("TeacherPortalId");
     console.log(">>>>>", studentId);
-    const response = await axios.get("https://alfurqanacademy.tech/teacher-student-count",
+    const response = await axios.get("http://alfurqanacademy.tech:5001/teacher-student-count",
       {
         params:{teacherId: studentId}
       }

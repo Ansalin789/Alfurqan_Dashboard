@@ -23,7 +23,7 @@ const SignIn: React.FC = () => {
   }, [error]);
   const signIn = async (username: string, password: string) => {
     try {
-      const response = await axios.post("https://alfurqanacademy.tech/studentsignin", {
+      const response = await axios.post("http://alfurqanacademy.tech:5001/studentsignin", {
         username,
         password,
       });
@@ -81,7 +81,7 @@ const SignIn: React.FC = () => {
   const checkEmail = async (email: string) => {
     try {
       // Send a POST request to the backend to check if the email exists
-      const response = await axios.post(`https://alfurqanacademy.tech/check-email`, {
+      const response = await axios.post(`http://alfurqanacademy.tech:5001/check-email`, {
         email,
       });
 

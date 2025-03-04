@@ -220,7 +220,7 @@ const MultiStepForm = () => {
       // Debug log to check the data being sent
       console.log("Sending data:", formattedData);
       const auth = localStorage.getItem("authToken");
-      const response = await fetch(`https://alfurqanacademy.tech/student`, {
+      const response = await fetch(`http://alfurqanacademy.tech:5001/student`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

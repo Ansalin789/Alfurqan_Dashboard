@@ -95,7 +95,7 @@ const Message = () => {
                     return;
                 }
 
-                const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule", {
+                const response = await axios.get<ApiResponse>("http://alfurqanacademy.tech:5001/classShedule", {
                     headers: {
                         Authorization: `Bearer ${auth}`,
                     },
@@ -133,7 +133,7 @@ const Message = () => {
             const auth = localStorage.getItem('TeacherAuthToken');
             const teacherIdToFilter = localStorage.getItem('TeacherPortalId');
             // Fetch messages from backend (Mock API or Database)
-            const response = await axios.get(`https://alfurqanacademy.tech/message/studentmessage`,{
+            const response = await axios.get(`http://alfurqanacademy.tech:5001/message/studentmessage`,{
                 params: {
                     studentId: studentId,
                     teacherId: teacherIdToFilter,
@@ -158,7 +158,7 @@ const Message = () => {
     
         try {
             const auth = localStorage.getItem('TeacherAuthToken');
-            const response = await fetch("https://alfurqanacademy.tech/message", {
+            const response = await fetch("http://alfurqanacademy.tech:5001/message", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" ,
                     Authorization: `Bearer ${auth}`, 

@@ -71,7 +71,7 @@ const StudentProfile = () => {
         try {
           const studentId = localStorage.getItem("StudentPortalId");
           const response = await axios.get<ApiResponse>(
-            "https://alfurqanacademy.tech/alstudents",
+            "http://alfurqanacademy.tech:5001/alstudents",
             {
               headers: { Authorization: `Bearer ${auth}` },
             }

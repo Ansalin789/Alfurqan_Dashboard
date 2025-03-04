@@ -65,7 +65,7 @@ console.log(isPopupOpen);
           return;
         }
 
-        const response = await axios.get("https://alfurqanacademy.tech/supervisorfeedback", {
+        const response = await axios.get("http://alfurqanacademy.tech:5001/supervisorfeedback", {
           params: { supervisorId },
         });
 

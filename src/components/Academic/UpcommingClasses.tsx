@@ -34,7 +34,7 @@ const UpcomingClasses: React.FC = () => {
         const academicId = localStorage.getItem("academicId");
         console.log("academicId>>", academicId);
         const response = await axios.get(
-          `https://alfurqanacademy.tech/evaluationlist`,
+          `http://alfurqanacademy.tech:5001/evaluationlist`,
           {
             method: "GET",
             params: { academicCoachId: academicId },

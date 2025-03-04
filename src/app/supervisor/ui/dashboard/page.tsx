@@ -114,12 +114,12 @@ export default function Dashboard() {
       setPieData(filteredData);
     };
 
-    const fetchApplicants = axios.get("https://alfurqanacademy.tech/applicants", {
+    const fetchApplicants = axios.get("http://alfurqanacademy.tech:5001/applicants", {
       headers: { Authorization: `Bearer ${auth}` },
     });
 
     const fetchDashboardCounts = axios.get(
-      "https://alfurqanacademy.tech/dashboard/supervisor/counts"
+      "http://alfurqanacademy.tech:5001/dashboard/supervisor/counts"
     );
 
     Promise.all([fetchApplicants, fetchDashboardCounts])
@@ -220,7 +220,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get("https://alfurqanacademy.tech/allMeetings", {
+        const response = await axios.get("http://alfurqanacademy.tech:5001/allMeetings", {
           headers: { "Content-Type": "application/json" },
         });
 
@@ -277,7 +277,7 @@ export default function Dashboard() {
   const currentYear = today.getFullYear();
   const fetchApplicantsData = async (auth: string) => {
     try {
-      const response = await axios.get("https://alfurqanacademy.tech/applicants", {
+      const response = await axios.get("http://alfurqanacademy.tech:5001/applicants", {
         headers: { Authorization: `Bearer ${auth}` },
       });
 
