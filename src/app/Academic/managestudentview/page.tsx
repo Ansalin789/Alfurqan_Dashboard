@@ -151,15 +151,9 @@ const ManageStudentView = () => {
     if (studentId) {
       const fetchData = async () => {
         try {
-          const auth = localStorage.getItem("authToken");
+         
           const response = await fetch(
-            `https://alfurqanacademy.tech/alstudents/${studentId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${auth}`,
-              },
-            }
-          );
+            `https://alfurqanacademy.tech/alstudents/${studentId}`);
           const data = await response.json();
           setStudentData(data);
           console.log("student data form evalutional" + JSON.stringify(data));
@@ -171,14 +165,9 @@ const ManageStudentView = () => {
     }
     const studentlist = async () => {
       try {
-        const auth = localStorage.getItem("authToken");
         const response = await fetch(`https://alfurqanacademy.tech/classShedule`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${auth}`,
-          },
-        });
+          method: "GET"
+      });
         const data = await response.json();
         setStudentllistdata(data);
         console.log(JSON.stringify(data));

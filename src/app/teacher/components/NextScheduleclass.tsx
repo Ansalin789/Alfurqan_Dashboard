@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import { FaUserAlt } from 'react-icons/fa';
+
 
 
 interface Student {
@@ -104,7 +104,7 @@ const NextScheduledClass = () => {
           `https://alfurqanacademy.tech/classShedule/teacher`,
           {
             params: { teacherId },
-            headers: { 'Authorization': `Bearer ${authToken}` }
+         
           }
         );
         setClassData(filterUpcomingClass(response.data));

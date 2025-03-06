@@ -18,12 +18,8 @@ const TeacherReschedule = () => {
 
   // Fetch events data
   useEffect(() => {
-    const auth = localStorage.getItem('authToken');
-    fetch('https://alfurqanacademy.tech/meetingSchedulelist', {
-      headers: {
-        Authorization: `Bearer ${auth}`,
-      },
-    })
+    
+    fetch('https://alfurqanacademy.tech/meetingSchedulelist')
       .then((response) => response.json())
       .then((data) => {
         const mappedEvents = data.academicCoach.map((item: any) => ({
@@ -114,7 +110,7 @@ const TeacherReschedule = () => {
         <div className="w-[350px] ml-64 mt-36">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">Select your Preferred Time Slot</h2>
           <div className="mb-4 flex">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor='rdrxyrx' className="block text-sm font-medium text-gray-700 mb-2">
               Available Time Slots <span className="text-red-500">*</span>
             </label>
             <select
@@ -123,8 +119,8 @@ const TeacherReschedule = () => {
               className="block w-[40%] text-[11px] bg-[#DFE4F8] border-black opacity-[19%] border text-black py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
             >
               <option value="">Select</option>
-              {generateTimeSlots().map((time, index) => (
-                <option key={index} value={time}>
+              {generateTimeSlots().map((time) => (
+                <option key={time} value={time}>
                   {time}
                 </option>
               ))}

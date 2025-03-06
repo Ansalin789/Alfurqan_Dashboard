@@ -47,7 +47,7 @@ const StudentList = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const auth = localStorage.getItem("TeacherAuthToken");
+       
         const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
 
         if (!teacherIdToFilter) {
@@ -55,11 +55,7 @@ const StudentList = () => {
           return;
         }
 
-        const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule", {
-          headers: {
-            Authorization: `Bearer ${auth}`,
-          },
-        });
+        const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule");
 
         const filteredData = response.data.students.filter(
           (item) => item.teacher.teacherId === teacherIdToFilter

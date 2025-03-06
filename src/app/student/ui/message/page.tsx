@@ -89,7 +89,7 @@ const Message = () => {
       
           const fetchData = async () => {
               try {
-                  const auth = localStorage.getItem('StudentAuthToken');
+                 
                   const studentIdToFilter = localStorage.getItem('StudentPortalId');  // Get studentId
       
                   if (!studentIdToFilter) {
@@ -97,11 +97,7 @@ const Message = () => {
                       return;
                   }
       
-                  const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule", {
-                      headers: {
-                          Authorization: `Bearer ${auth}`,
-                      },
-                  });
+                  const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule");
       
                   const filteredData = response.data.students.filter(
                       (item) => item.student.studentId === studentIdToFilter  // Filter by studentId
@@ -134,7 +130,7 @@ const Message = () => {
     const loadMessages = async (teacherId: string) => {
         console.log(teacherId);
         try {
-            const auth = localStorage.getItem('StudentAuthToken');
+           
             const teacherIdToFilter = localStorage.getItem('StudentPortalId');
             console.log(teacherIdToFilter);
             // Fetch messages from backend (Mock API or Database)
@@ -143,9 +139,7 @@ const Message = () => {
                     studentId: teacherIdToFilter,
                     teacherId: teacherId,
                 },
-                headers: {
-                    Authorization: `Bearer ${auth}`,
-                },
+               
             });
             console.log('Response Data:', response.data);
             setMessages(response.data.Message || []);
@@ -163,11 +157,11 @@ const Message = () => {
         if (!selectedTeacher || !messageText.trim()) return;
     
         try {
-            const auth = localStorage.getItem('StudentAuthToken');
+            
             const response = await fetch("https://alfurqanacademy.tech/message", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" ,
-                    Authorization: `Bearer ${auth}`, 
+                   
                 },
                 body: JSON.stringify({
                     teacher: {

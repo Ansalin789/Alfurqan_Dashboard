@@ -73,21 +73,7 @@ function LiveClass() {
     setShowFeedback(datafeedshow === "true"); 
     const fetchClassData = async () => {
       try {
-       
-        const authToken = localStorage.getItem('SupervisorAuthToken');
-        
-        // Ensure studentId and authToken are valid
-        if (!authToken) {
-          console.log('Missing studentId or authToken');
-          return;
-        }
-  
-        const response = await axios.get<ClassData>(`https://alfurqanacademy.tech/classShedule/${classScheduleid}`, {
-          
-          headers: {
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
+        const response = await axios.get<ClassData>(`https://alfurqanacademy.tech/classShedule/${classScheduleid}`);
         console.log('Full API Response:', response.data);  // ✅ Log full response
 
       if (response.data) {

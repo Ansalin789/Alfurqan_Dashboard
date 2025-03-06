@@ -47,14 +47,14 @@ const UpcomingClasses = () => {
     const fetchNextEvaluationClass = async () => {
       try {
         const studentId = localStorage.getItem("StudentPortalId");
-        const auth = localStorage.getItem("StudentAuthToken");
+        
         const response = await axios.get<ApiResponse>(
           "https://alfurqanacademy.tech/classShedule/students",
           {
             params: { studentId: studentId },
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${auth}`,
+            
             },
           }
         );

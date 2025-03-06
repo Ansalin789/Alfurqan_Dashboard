@@ -54,11 +54,11 @@ const Invoice = () => {
     }
 
     try {
-      const auth = localStorage.getItem('authToken');
+     
       const response = await fetch(`https://alfurqanacademy.tech/evaluationlist/${studentId}`, {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${auth}`,
+          
         },
       });
       if (!response.ok) {
@@ -116,16 +116,16 @@ const Invoice = () => {
   const country = student.studentCountry;
   const email = student.studentEmail;
   const phoneNumber = `${student.studentCountryCode} ${student.studentPhone}`;
-
+console.log(feesPerDay);
   const handleClick = async () => {
     const evaluationid = evaluationData._id; // Replace with your actual evaluation ID
     const totalprice = evaluationData.planTotalPrice;
-    const auth = localStorage.getItem('authToken');
+   
     const response = await fetch(`https://alfurqanacademy.tech/create-payment-intent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${auth}`,
+        
       },
       body: JSON.stringify({ amount: totalprice * 100, currency: 'usd', evaluationId: evaluationid, paymentIntentResponse: '' }),
     });

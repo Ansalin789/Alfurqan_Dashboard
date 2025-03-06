@@ -32,11 +32,11 @@ function  AssignList(){
   useEffect(() => {
     const fetchAssignments = async () => {
       const storedStudentId = localStorage.getItem('StudentPortalId');
-      const auth = localStorage.getItem('TeacherAuthToken');
+      
       try {
         const response = await axios.get("https://alfurqanacademy.tech/allAssignment", {
           headers: {
-            Authorization: `Bearer ${auth}`,
+            
             "Content-Type": "application/json",
           },
         });

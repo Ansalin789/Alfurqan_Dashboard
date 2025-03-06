@@ -13,12 +13,12 @@ const HomePage = () => {
   const [evaluationId, setEvaluationId] = useState<string | null>(null);
 
   const createPaymentIntent = async () => {
-    const auth=localStorage.getItem('authToken');
+   
     const response = await fetch(`https://alfurqanacademy.tech/create-payment-intent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth}`,
+        
       },
       body: JSON.stringify({ amount: 5000, currency: 'usd' }),
     });

@@ -97,9 +97,7 @@ const colorOptions = [
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   useEffect(() => {
     axios
-      .get<{ totalCount: number; applicants: ApiResponse[] }>("https://alfurqanacademy.tech/applicants", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("SupervisorAuthToken")}` },
-      })
+      .get<{ totalCount: number; applicants: ApiResponse[] }>("https://alfurqanacademy.tech/applicants")
       .then((response) => {
         console.log("API Response:", response.data); // ✅ Debugging step
   

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Search, Filter, Bell, Sun, Moon, User } from "lucide-react";
+import { Search, Bell, Sun, Moon, User } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -114,9 +114,7 @@ export default function Dashboard() {
       setPieData(filteredData);
     };
 
-    const fetchApplicants = axios.get("https://alfurqanacademy.tech/applicants", {
-      headers: { Authorization: `Bearer ${auth}` },
-    });
+    const fetchApplicants = axios.get("https://alfurqanacademy.tech/applicants");
 
     const fetchDashboardCounts = axios.get(
       "https://alfurqanacademy.tech/dashboard/supervisor/counts"
@@ -277,9 +275,7 @@ export default function Dashboard() {
   const currentYear = today.getFullYear();
   const fetchApplicantsData = async (auth: string) => {
     try {
-      const response = await axios.get("https://alfurqanacademy.tech/applicants", {
-        headers: { Authorization: `Bearer ${auth}` },
-      });
+      const response = await axios.get("https://alfurqanacademy.tech/applicants");
 
       console.log("API Response:", response.data);
 

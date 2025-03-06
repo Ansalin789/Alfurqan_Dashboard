@@ -81,12 +81,12 @@ const AddTrailStudentModal = ({
       }
 
       console.log("Sending data:", studentData);
-      const auth = localStorage.getItem("authToken");
+    
       const response = await fetch(`https://alfurqanacademy.tech/student`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${auth}`,
+          
         },
         body: JSON.stringify(studentData),
       });

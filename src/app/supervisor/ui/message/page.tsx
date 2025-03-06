@@ -90,12 +90,8 @@ const Message = () => {
     
         const fetchData = async () => {
             try {
-                const auth = localStorage.getItem('SupervisorAuthToken');
-                const response = await axios.get("https://alfurqanacademy.tech/applicants", {
-                    headers: {
-                        Authorization: `Bearer ${auth}`,
-                    },
-                });
+                
+                const response = await axios.get("https://alfurqanacademy.tech/applicants");
                 console.log("Full API Response:", response.data);
 
     
@@ -143,7 +139,6 @@ const Message = () => {
     const loadMessages = async (candidate: string) => {
         console.log(candidate);
         try {
-            const auth = localStorage.getItem('SupervisorAuthToken');
             const teacherIdToFilter = localStorage.getItem('SupervisorPortalId');
             console.log(teacherIdToFilter);
     
@@ -152,9 +147,6 @@ const Message = () => {
                 params: {
                     supervisorId: teacherIdToFilter,
                     teacherId: candidate,
-                },
-                headers: {
-                    Authorization: `Bearer ${auth}`,
                 },
             });
             
@@ -183,11 +175,11 @@ const Message = () => {
         if (!selectedTeacher || !messageText.trim()) return;
     
         try {
-            const auth = localStorage.getItem('SupervisorAuthToken');
+            
             const response = await fetch("https://alfurqanacademy.tech/supervisormessage", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" ,
-                    Authorization: `Bearer ${auth}`, 
+                   
                 },
                 body: JSON.stringify({
                     teacher: {  // Still keeping the name 'teacher', but using candidate info

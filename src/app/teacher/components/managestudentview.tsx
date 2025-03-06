@@ -100,13 +100,8 @@ const ManageStudentView = () => {
     if (studentId) {
       const fetchData = async () => {
         try {
-          const auth=localStorage.getItem('TeacherAuthToken');
-          const response = await fetch(`https://alfurqanacademy.tech/alstudents/${studentId}`,
-            {
-              headers: {
-                     'Authorization': `Bearer ${auth}`,
-              },
-            });
+         
+          const response = await fetch(`https://alfurqanacademy.tech/alstudents/${studentId}`);
           const data = await response.json();
           setStudentData(data);
           console.log(data);

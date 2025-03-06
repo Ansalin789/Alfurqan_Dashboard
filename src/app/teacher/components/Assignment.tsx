@@ -37,11 +37,9 @@ function  Assignment(){
     const fetchAssignments = async () => {
       const storedStudentId = localStorage.getItem('TeacherPortalId');
       console.log(storedStudentId);
-      const auth = localStorage.getItem('TeacherAuthToken');
       try {
         const response = await axios.get("https://alfurqanacademy.tech/allAssignment", {
           headers: {
-            Authorization: `Bearer ${auth}`,
             "Content-Type": "application/json",
           },
         });

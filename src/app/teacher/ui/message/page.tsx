@@ -87,7 +87,7 @@ const Message = () => {
 
         const fetchData = async () => {
             try {
-                const auth = localStorage.getItem('TeacherAuthToken');
+                
                 const teacherIdToFilter = localStorage.getItem('TeacherPortalId');
 
                 if (!teacherIdToFilter) {
@@ -95,11 +95,7 @@ const Message = () => {
                     return;
                 }
 
-                const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule", {
-                    headers: {
-                        Authorization: `Bearer ${auth}`,
-                    },
-                });
+                const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule");
 
                 const filteredData = response.data.students.filter(
                     (item) => item.teacher.teacherId === teacherIdToFilter
@@ -130,7 +126,7 @@ const Message = () => {
     // Function to load messages when a student is selected
     const loadMessages = async (studentId: string) => {
         try {
-            const auth = localStorage.getItem('TeacherAuthToken');
+           
             const teacherIdToFilter = localStorage.getItem('TeacherPortalId');
             // Fetch messages from backend (Mock API or Database)
             const response = await axios.get(`https://alfurqanacademy.tech/message/studentmessage`,{
@@ -138,9 +134,7 @@ const Message = () => {
                     studentId: studentId,
                     teacherId: teacherIdToFilter,
                 },
-                headers: {
-                    Authorization: `Bearer ${auth}`,
-                },
+              
             });
             setMessages(response.data.Message || []);
         } catch (error) {
@@ -157,11 +151,11 @@ const Message = () => {
         if (!selectedStudent || !messageText.trim()) return;
     
         try {
-            const auth = localStorage.getItem('TeacherAuthToken');
+           
             const response = await fetch("https://alfurqanacademy.tech/message", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" ,
-                    Authorization: `Bearer ${auth}`, 
+                    
                 },
                 body: JSON.stringify({
                     teacher: {

@@ -64,7 +64,7 @@ const ClassAnalytics: React.FC = () => {
     const fetchClassData = async () => {
       try {
         const teacherId = localStorage.getItem("TeacherPortalId");
-        const auth = localStorage.getItem("TeacherAuthToken");
+       
   
         if (!teacherId) {
           setError("Teacher ID not found");
@@ -78,7 +78,7 @@ const ClassAnalytics: React.FC = () => {
             params: { teacherId },
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${auth}`,
+              
             },
           }
         );

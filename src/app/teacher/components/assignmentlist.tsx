@@ -44,11 +44,9 @@ const AssignmentList = () => {
   useEffect(() => {
     const fetchAssignments = async () => {
       const storedStudentId = localStorage.getItem('studentviewcontrol');
-      const auth = localStorage.getItem('TeacherAuthToken');
       try {
         const response = await axios.get("https://alfurqanacademy.tech/allAssignment", {
           headers: {
-            Authorization: `Bearer ${auth}`,
             "Content-Type": "application/json",
           },
         });
@@ -213,12 +211,9 @@ formData.forEach((value, key) => {
 
 
     try {
-      const auth = localStorage.getItem('TeacherAuthToken');
+      
       const response = await fetch("https://alfurqanacademy.tech/assignments", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${auth}`,
-        },
         body: formData, // Use FormData instead of JSON
       });
       console.log(formData);
@@ -240,11 +235,7 @@ formData.forEach((value, key) => {
     console.log("assigned is clicked");
     try {
       // **Step 1: GET REQUEST** (Fetch assignment details)
-      const response = await axios.get(`https://alfurqanacademy.tech/assignments/${selectedAssignmentId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("TeacherAuthToken")}`,
-        },
-      });
+      const response = await axios.get(`https://alfurqanacademy.tech/assignments/${selectedAssignmentId}`);
   console.log(response.data);
       const data = response.data;
       // **Step 2: PUT REQUEST** (Update assignment)
@@ -288,11 +279,7 @@ formData.forEach((value, key) => {
       formData.append("answerValidation", data.answerValidation);
       formData.append("studentId", data.studentId);
       console.log(formData);
-      await axios.put(`https://alfurqanacademy.tech/assignments/${selectedAssignmentId}`, formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("TeacherAuthToken")}`,
-        },
-      });
+      await axios.put(`https://alfurqanacademy.tech/assignments/${selectedAssignmentId}`, formData);
       setIsFormOpen1(false);
     } catch (error) {
       console.error("Error:", error);

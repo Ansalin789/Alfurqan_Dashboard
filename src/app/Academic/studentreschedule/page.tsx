@@ -76,12 +76,10 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
   useEffect(() => {
     const studentlist = async () => {
       try {
-        const auth = localStorage.getItem('authToken');
         const response = await fetch(`https://alfurqanacademy.tech/classShedule`, {
           method: 'GET',
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${auth}`,
           }
         });
         const data = await response.json();
@@ -93,11 +91,10 @@ const [teachers, setTeachers] = useState<Teacher[]>([]); // State to store all t
     };
     studentlist();
 
-    const auth = localStorage.getItem('authToken');
+    
     fetch(`https://alfurqanacademy.tech/shiftschedule?role=TEACHER`, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth}`,
       },
     })
       .then((response) => response.json())
@@ -221,7 +218,6 @@ const requestData = {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${auth}`,
         },
         body: JSON.stringify(requestData),
       });

@@ -45,7 +45,6 @@ const TeachingActivity = () => {
           `https://alfurqanacademy.tech/classShedule/activity`,
           {
             params: { studentId },
-            headers: { Authorization: `Bearer ${authToken}` },
           }
         );
 

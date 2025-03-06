@@ -76,7 +76,7 @@ const Classes = () => {
 
         const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule/students", {
           params: { studentId },
-          headers: { Authorization: `Bearer ${authToken}` },
+        
         })
         const classes = response.data.classSchedule
 

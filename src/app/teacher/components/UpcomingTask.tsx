@@ -21,13 +21,12 @@ const UpcomingTask: React.FC = () => {
     const fetchClassData = async () => {
       try {
         const teacherId = localStorage.getItem("TeacherPortalId");
-        const auth = localStorage.getItem("TeacherAuthToken");
+        
 
         const response = await axios.get("https://alfurqanacademy.tech/classShedule/teacher", {
           params: { teacherId: teacherId },
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${auth}`,
           },
         });
 

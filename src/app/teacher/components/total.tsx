@@ -53,9 +53,6 @@ const fetchDashboardData = async (teacherId: string, authToken: string | null): 
       params: {
         teacherId: teacherId
       },
-      headers: {
-        'Authorization': `Bearer ${authToken}`,
-      },
     });
 
     return response.data;

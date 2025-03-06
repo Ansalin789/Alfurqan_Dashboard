@@ -34,7 +34,7 @@ const AssignmentList = () => {
       try {
         const response = await axios.get("https://alfurqanacademy.tech/allAssignment", {
           headers: {
-            Authorization: `Bearer YOUR_AUTH_TOKEN`,
+          
             "Content-Type": "application/json",
           },
         });
