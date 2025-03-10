@@ -76,7 +76,7 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
         <span className="text-[13px] font-semibold text-black">{title}</span>
       </div>
       <div>
-        <span className="text-[17px] font-bold text-black">{value}</span>
+        <span className="text-[17px] font-bold text-black">{value ?? 0}</span>
       </div>
     </div>
   </div>
@@ -96,7 +96,7 @@ const fetchDashboardData = async (
     }
   );
 
-  if (!response.data.ok) {
+  if (response.status !== 200) {
     throw new Error(`HTTP Error: ${response.status}`);
   }
 
