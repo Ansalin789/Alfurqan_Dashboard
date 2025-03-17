@@ -91,11 +91,10 @@ export default function SignInSignUp(): JSX.Element {
         `https://alfurqanacademy.tech/signin`,
         { username, password }
       );
-      const { accessToken, role, _id } = response.data;
+      const { role, _id } = response.data;
       console.log(response.data);
-      console.log(accessToken);
       // Store the token securely
-      localStorage.setItem("authToken", accessToken);
+      //localStorage.setItem("authToken", accessToken);
       localStorage.setItem("academicId", _id);
       // Optional: Store token expiry
       const tokenExpiry = new Date().getTime() + 24 * 60 * 60 * 1000; // 24 hours from now

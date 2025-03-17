@@ -1970,6 +1970,9 @@ const Step9 = ({
   // Function to handle form submission
   const handleSubmit = async () => {
     try {
+      const startDate = new Date(updatedStudentDatass.startDate);
+const classEndDate = new Date(startDate);
+classEndDate.setDate(classEndDate.getDate() + 28);
       console.log(">>>", updatedStudentDatass.academicCoach.academicCoachId);
       const submitData = {
         academicCoachId: updatedStudentDatass.academicCoach.academicCoachId,
@@ -2014,8 +2017,8 @@ const Step9 = ({
         startTime: updatedStudentDatass.startTime,
         endTime: updatedStudentDatass.endTime,
         planTotalPrice: updatedStudentDatass.planTotalPrice,
-        classStartDate: updatedStudentDatass.startDate,
-        classEndDate: updatedStudentDatass.classEndDate,
+        classStartDate:startDate,
+        classEndDate: classEndDate,
         classStartTime: updatedStudentDatass.preferredFromTime,
         classEndTime: updatedStudentDatass.preferredToTime,
         accomplishmentTime: updatedStudentDatass.accomplishmentTime.toString(),
