@@ -86,9 +86,7 @@ const ManageTeacher: React.FC = () => {
     });
   };
 
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
+ 
 
   const closeModal = () => {
     setIsModalOpen(false);

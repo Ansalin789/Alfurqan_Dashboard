@@ -151,7 +151,7 @@ const ManageStudentView = () => {
     if (studentId) {
       const fetchData = async () => {
         try {
-         
+          const studentId = localStorage.getItem("studentManageID");
           const response = await fetch(
             `https://alfurqanacademy.tech/alstudents/${studentId}`);
           const data = await response.json();
