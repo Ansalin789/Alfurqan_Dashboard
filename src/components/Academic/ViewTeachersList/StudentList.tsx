@@ -40,7 +40,7 @@ const TotalStudents = () => {
 
 
   return (
-    <div className="bg-[#CED4DC] rounded-lg shadow-lg p-6 w-72 h-[300px] ml-20">
+    <div className="bg-[#CED4DC] rounded-lg shadow-lg p-6 w-72 h-[275px] ml-20">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">Students List</h3>
         <span className="text-lg font-semibold">  {uniqueStudentNames.length}</span>
