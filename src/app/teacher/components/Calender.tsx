@@ -50,13 +50,10 @@ const Calender: React.FC = () => {
     const fetchEvents = async () => {
       try {
         const teacherId = localStorage.getItem('TeacherPortalId');
-        const auth = localStorage.getItem('TeacherAuthToken');
+       
 
         const response = await axios.get<ApiResponse>('https://alfurqanacademy.tech/classShedule/teacher', {
           params: { teacherId: teacherId },
-          headers: {
-            'Authorization': `Bearer ${auth}`,
-          },
         });
 
         // ✅ Correct Mapping (Use `classSchedule`, not `teacher.map`)

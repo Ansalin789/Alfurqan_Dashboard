@@ -29,7 +29,7 @@ const NextEvaluationClass = () => {
   useEffect(() => {
     const fetchNextEvaluationClass = async () => {
       try {
-        const auth = localStorage.getItem("authToken");
+        
         const academicId = localStorage.getItem("academicId");
         console.log("academicId>>", academicId);
         const response = await axios.get(
@@ -39,7 +39,6 @@ const NextEvaluationClass = () => {
             params: { academicCoachId: academicId },
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${auth}`,
             },
           }
         );

@@ -38,14 +38,14 @@ interface GetAllUsersResponse {
 // Update the getAllUsers function to fetch from your API
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   try {
-    const auth = localStorage.getItem("authToken");
+    
     const academicId = localStorage.getItem("academicId");
     console.log("academicId>>", academicId);
     const response = await axios.get(`https://alfurqanacademy.tech/studentlist`, {
       params: { academicCoachId: academicId },
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${auth}`,
+        
       },
     });
     console.log("response>>>", response);

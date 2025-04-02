@@ -103,7 +103,6 @@ const NextClass = () => {
           `https://alfurqanacademy.tech/classShedule/teacher`,
           {
             params: { teacherId },
-            headers: { 'Authorization': `Bearer ${authToken}` }
           }
         );
         setClassData(filterUpcomingClass(response.data));

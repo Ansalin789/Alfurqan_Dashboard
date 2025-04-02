@@ -18,16 +18,11 @@ const StudentEvaluation = () => {
 
   useEffect(() => {
     // Fetch data from API
-    const auth = localStorage.getItem("authToken");
     const academicId = localStorage.getItem("academicId");
     console.log("academicId>>", academicId);
     axios
       .get(`https://alfurqanacademy.tech/evaluationlist`, {
         params: { academicCoachId: academicId },
-
-        headers: {
-          Authorization: `Bearer ${auth}`,
-        },
       })
       .then((response) => {
         if (!response.data) {

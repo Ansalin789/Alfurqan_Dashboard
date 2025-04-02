@@ -149,7 +149,6 @@ const[TotalClasses,setTotalClasses]=useState<number>();
 useEffect(() => {
   const fetchData = async () => {
       try {
-          const auth = localStorage.getItem('TeacherAuthToken');
           const teacherIdToFilter = localStorage.getItem('TeacherPortalId');
 
           if (!teacherIdToFilter) {
@@ -157,11 +156,7 @@ useEffect(() => {
               return;
           }
 
-          const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule", {
-              headers: {
-                  Authorization: `Bearer ${auth}`,
-              },
-          });
+          const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule");
 
           const filteredData = response.data.students.filter(
               (item) => item.teacher.teacherId === teacherIdToFilter
