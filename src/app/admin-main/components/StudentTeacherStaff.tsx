@@ -27,11 +27,11 @@ const COLORS = ["#4B9EFF", "#FF9EE2"]; // Updated colors to match the image
 
 const StudentTeacherStaff = () => {
   return (
-    <div className="flex justify-center items-center gap-4">
+    <div className="flex justify-center items-center gap-4 ">
       {data.map((item) => (
         <div
           key={item.title}
-          className="bg-[#032848] text-white p-4 rounded-2xl w-[320px] shadow-md"
+          className="bg-[#032848] text-white p-4 rounded-2xl w-[320px] shadow-lg h-[160px]"
         >
           {/* Top Section with Number and Icon */}
           <div className="flex justify-between items-center">
@@ -42,29 +42,29 @@ const StudentTeacherStaff = () => {
           </div>
 
           {/* Title */}
-          <div className="text-[12px] mt-1">{item.title}</div>
+          <div className="text-[14px] mt-1">{item.title}</div>
 
           {/* Pie Chart and Legend */}
           <div className="flex items-center justify-between">
             <div className="flex text-sm text-gray-300 gap-2">
-              <div className="flex items-center text-[12px]">
+              <div className="flex items-center text-[14px]">
                 <span className="w-2 h-2 bg-blue-500 rounded-[2px] mr-2"></span>
                 <span>Male</span>
               </div>
-              <div className="flex items-center text-[12px]">
+              <div className="flex items-center text-[14px]">
                 <span className="w-2 h-2 bg-pink-400 rounded-[2px] mr-2"></span>
                 <span>Female</span>
               </div>
             </div>
 
             {/* Pie Chart with Different Sizes and Outline */}
-            <PieChart width={100} height={100}>
+            <PieChart width={100} height={90}>
               <Tooltip />
               {/* Male segment - larger */}
               <Pie
                 data={[{ value: item.male }]}
                 cx={50}
-                cy={50}
+                cy={35}
                 innerRadius={0}
                 outerRadius={32}
                 startAngle={-90}
@@ -80,7 +80,7 @@ const StudentTeacherStaff = () => {
               <Pie
                 data={[{ value: item.female }]}
                 cx={50}
-                cy={50}
+                cy={35}
                 innerRadius={0}
                 outerRadius={27}
                 startAngle={-90 + ((item.male / (item.male + item.female)) * 360)}
@@ -96,7 +96,7 @@ const StudentTeacherStaff = () => {
               <Pie
                 data={[{ value: item.male }]}
                 cx={50}
-                cy={50}
+                cy={35}
                 innerRadius={34}
                 outerRadius={37}
                 startAngle={-90}

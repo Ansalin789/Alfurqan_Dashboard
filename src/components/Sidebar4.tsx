@@ -25,7 +25,7 @@ const SidebarItems = [
     },
     {
         name: 'Evaluation',
-        href: '/admin-main/ui/evaluation',
+        href: '/admin-main/ui/evaluations',
         icon: MdBookmarks,
     },
     {
