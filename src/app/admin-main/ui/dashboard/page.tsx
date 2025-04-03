@@ -4,11 +4,13 @@ import React from "react";
 import "react-calendar/dist/Calendar.css";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import TeachersStudent from "@/components/Academic/TeachersStudent";
-import Countries from "@/components/Academic/Countries";
+import TrialRequests from "../../components/trailclassdashboard";
+import Notifications from "../../components/notificationsdashboard";
+import TeachersStudents from "../../components/teachersstudentsdashboard";
+import TotalClasses from "../../components/totalclassesdashboard";
 import Calender from "@/components/Academic/Calender";
 import UpcomingClasses from "@/components/Academic/UpcommingClasses";
-import { Search, Sun, Bell } from "lucide-react";
+import { Sun, Bell } from "lucide-react";
 import StudentTeacherStaff from "../../components/StudentTeacherStaff";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -20,16 +22,8 @@ const page = () => {
       <BaseLayout4>
         <div className="p-2 w-[100%] mx-auto">
           <div className="p-0 flex items-center justify-between mr-12">
-            <div className="relative w-1/4 left-3">
-              <Search
-                className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={13}
-              />
-              <input
-                type="text"
-                placeholder="Search here..."
-                className="h-9 w-60 pl-10 text-sm text-[#35324B] bg-[#E1E5EA] rounded-[10px] shadow-[0_4px_6px_rgba(0,0,0,0.2)] outline-none focus:ring-2 focus:ring-[#9CA3AF]"
-              />
+            <div className="relative w-1/4 left-2 top-2">
+              <h3 className="text-black text-[22px] font-semibold">Dashboard</h3>
             </div>
 
             <div className="flex items-center gap-4">
@@ -58,17 +52,17 @@ const page = () => {
                   <StudentTeacherStaff />
                 </div>
 
-                <div className="col-span-6 grid grid-cols-1 p-0">
-                  <TeachersStudent />
-                </div>
-                <div className="col-span-6 grid grid-cols-1 p-0">
-                  <Countries />
-                </div>
                 <div className="col-span-7 grid grid-cols-1 p-0">
-                  <TeachersStudent />
+                  <TrialRequests />
                 </div>
                 <div className="col-span-5 grid grid-cols-1 p-0">
-                  <Countries />
+                  <Notifications />
+                </div>
+                <div className="col-span-7 grid grid-cols-1 p-0">
+                  <TotalClasses />
+                </div>
+                <div className="col-span-5 grid grid-cols-1 p-0">
+                  <TeachersStudents />
                 </div>  
               </main>
             </div>
