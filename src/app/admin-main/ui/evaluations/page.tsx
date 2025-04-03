@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
-import { FaSyncAlt, FaPlus, FaEdit } from "react-icons/fa";
-import BaseLayout1 from "@/components/BaseLayout1";
+import { FaSyncAlt, FaPlus, FaEdit, FaFilter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import AddEvaluationModal from "@/components/Academic/AddEvaluationModel";
 import { User } from "@/types";
 import axios from "axios";
 import Dashboard from "../../components/dashhh";
+import BaseLayout4 from "@/components/BaseLayout4";
 // Define interfaces for the API response structure
 interface Student {
   learningInterest: string; // Replace with the exact type if known
@@ -66,6 +65,7 @@ const getAllUsers = async (): Promise<{
     // const auth = localStorage.getItem("authToken");
     // const academicId = localStorage.getItem("academicId");
     // console.log("academicId>>", academicId);
+
     const response = await axios.get(`http://localhost:5001/evaluationlist`, {
       // params: { academicCoachId: academicId },
       headers: {
@@ -299,9 +299,7 @@ const FilterModal = ({
 const TrailSection = () => {
   const [users, setUsers] = useState<TransformedUser[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState<TransformedUser[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
@@ -312,6 +310,8 @@ const TrailSection = () => {
   const [paymentStatus, setPaymentStatus] = useState("");
   const [paymentLink, setPaymentLink] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -422,16 +422,7 @@ const TrailSection = () => {
     expectedFinishingDate: number;
     __v: number;
   }
-  const openModal = (user: User | null = null) => {
-    setIsEditMode(!!user);
-    setIsModalOpen(true);
-    setModalIsOpen(true);
-  };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setModalIsOpen(false);
-  };
 
   useEffect(() => {
     console.log("Current users data:", users);
@@ -630,74 +621,7 @@ const TrailSection = () => {
               &lt;
             </button>
 
-            {/* Pagination Numbers */}
-            {totalPages > 5 ? (
-              <>
-                {/* First Page */}
-                <button
-                  className={`px-2 py-1 rounded ${
-                    currentPage === 1
-                      ? "bg-[#1B2B65] text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
-                  onClick={() => setCurrentPage(1)}
-                >
-                  1
-                </button>
-
-                {/* Left Ellipsis */}
-                {currentPage > 3 && <span className="px-2 py-1">...</span>}
-
-                {/* Pages Around Current */}
-                {Array.from({ length: 3 }, (_, i) => currentPage - 1 + i)
-                  .filter((page) => page > 1 && page < totalPages)
-                  .map((page) => (
-                    <button
-                      key={page}
-                      className={`px-2 py-1 rounded ${
-                        currentPage === page
-                          ? "bg-[#1B2B65] text-white"
-                          : "bg-gray-200 hover:bg-gray-300"
-                      }`}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  ))}
-
-                {/* Right Ellipsis */}
-                {currentPage < totalPages - 2 && (
-                  <span className="px-2 py-1">...</span>
-                )}
-
-                {/* Last Page */}
-                <button
-                  className={`px-2 py-1 rounded ${
-                    currentPage === totalPages
-                      ? "bg-[#1B2B65] text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
-                  onClick={() => setCurrentPage(totalPages)}
-                >
-                  {totalPages}
-                </button>
-              </>
-            ) : (
-              // Display all pages when totalPages <= 5
-              [...Array(totalPages)].map((_, index) => (
-                <button
-                  key={index + 1}
-                  className={`px-2 py-1 rounded ${
-                    currentPage === index + 1
-                      ? "bg-[#1B2B65] text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
-                  onClick={() => setCurrentPage(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              ))
-            )}
+           
 
             {/* Next Button */}
             <button
@@ -738,21 +662,41 @@ const TrailSection = () => {
     );
   });
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    const filtered = users.filter((user) => {
+      const fullName = `${user.studentFirstName} ${user.studentLastName}`.toLowerCase();
+      return (
+        user.studentId.toLowerCase().includes(query.toLowerCase()) ||
+        fullName.includes(query.toLowerCase()) ||
+        user.paymentStatus.toLowerCase().includes(query.toLowerCase()) ||
+        user.number.includes(query) ||
+        user.country.toLowerCase().includes(query.toLowerCase()) ||
+        user.course.toLowerCase().includes(query.toLowerCase()) ||
+        user.preferredTeacher.toLowerCase().includes(query.toLowerCase()) ||
+        user.time.toLowerCase().includes(query.toLowerCase()) ||
+        user.trialClassStatus.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when search changes
+  };
+
   if (errorMessage) {
     return (
-      <BaseLayout1>
+      <BaseLayout4>
         <div className="min-h-screen p-4">{errorMessage}</div>
-      </BaseLayout1>
+      </BaseLayout4>
     );
   }
 
   return (
-    <BaseLayout1>
+    <BaseLayout4>
       <div className="p-3 pr-9 mx-auto h-full">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <h2 className="text-[18px] p-2 font-semibold">
-              Scheduled Trail Session
+            <h2 className="text-[18px] font-semibold">
+              Trail class Request
             </h2>
             <button
               className="bg-gray-800 text-white p-[4px] rounded-full shadow-2xl"
@@ -762,9 +706,9 @@ const TrailSection = () => {
             </button>
           </div>
         </div>
-         <div className="p-6">
-                  <Dashboard />
-                </div>
+         <div className="p-2">
+                <Dashboard />
+            </div>
         <div className="">
           <div className="flex justify-between items-center p-2">
             <div className="flex flex-1 mb-4 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
@@ -772,18 +716,19 @@ const TrailSection = () => {
                 <input
                   type="text"
                   placeholder="Search here..."
-                  className="border rounded-lg px-2 py-2 text-[12px] mr-4 shadow"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="border rounded-lg px-2 text-[12px] mr-4 shadow"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
                 />
+                <button
+                  onClick={() => setIsFilterModalOpen(true)}
+                  className="flex items-center bg-gray-200 p-2 rounded-lg shadow text-[12px]"
+                >
+                  <FaFilter className="mr-2" /> Filter
+                </button>
               </div>
               <div className="flex">
-                <button
-                  onClick={() => openModal(null)}
-                  className="text-[12px] p-2 rounded-lg shadow flex bg-[#223857] text-[#fff] items-center mx-4"
-                >
-                  <FaPlus className="mr-2" /> Add new
-                </button>
+           
                 <select className="border rounded-lg p-2 shadow text-[12px]">
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
@@ -875,7 +820,7 @@ const TrailSection = () => {
               </thead>
               <tbody>
                 {filteredItems.length > 0 ? (
-                  filteredItems.map((item, index) => (
+                   filteredItems.slice(0, 5).map((item, index) => (
                     <tr
                       key={item._id}
                       className={`text-[9px] font-medium mt-0 ${
@@ -1001,27 +946,11 @@ const TrailSection = () => {
               </tbody>
             </table>
           </div>
-          <Pagination />
+         
         </div>
       </div>
-      <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={() => setModalIsOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-lg"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
-      >
-        <h2>Edit User</h2>
-      </Modal>
-      <AddEvaluationModal
-        isOpen={isModalOpen}
-        onRequestClose={closeModal}
-        isEditMode={isEditMode}
-        onSave={() => {
-          fetchStudents();
-          closeModal();
-        }}
-      />
 
+     
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-100 border border-gray-300 rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[720px]">
@@ -1395,7 +1324,7 @@ const TrailSection = () => {
           </div>
         </div>
       )}
-    </BaseLayout1>
+    </BaseLayout4>
   );
 };
 export default TrailSection;
