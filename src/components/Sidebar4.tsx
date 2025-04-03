@@ -60,12 +60,12 @@ const SidebarItems = [
     },
     {
         name: 'Messages',
-        href: '/admin-main/ui/messagess',
+        href: '/admin-main/ui/messages',
         icon: LuMessagesSquare,
     },
     {
         name: 'Settings',
-        href: '/admin-main/ui/settingss',
+        href: '/admin-main/ui/settings',
         icon: IoMdSettings,
     }
 ];
