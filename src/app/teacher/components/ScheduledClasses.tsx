@@ -77,7 +77,7 @@ const ScheduledClasses = () => {
           "https://alfurqanacademy.tech/classShedule/teacher",
           {
             params: { teacherId },
-            headers: { Authorization: `Bearer ${authToken}` },
+           
           }
         );
         const classes = response.data.classSchedule;

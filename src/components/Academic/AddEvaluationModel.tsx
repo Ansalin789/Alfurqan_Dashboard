@@ -160,13 +160,13 @@ gardianLanguage: '',
       if (!evaluationData.student.studentFirstName || evaluationData.student.studentFirstName.length < 3) {
         throw new Error('First name must be at least 3 characters long');
       }
-      const auth=localStorage.getItem('authToken');
+      
       const response = await fetch(`https://alfurqanacademy.tech/evaluation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Authorization': `Bearer ${auth}`,
+          
         },
         body: JSON.stringify(evaluationData),
       });

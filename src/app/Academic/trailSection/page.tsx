@@ -63,14 +63,14 @@ const getAllUsers = async (): Promise<{
   message: string;
 }> => {
   try {
-    const auth = localStorage.getItem("authToken");
+    
     const academicId = localStorage.getItem("academicId");
     console.log("academicId>>", academicId);
     const response = await axios.get(`https://alfurqanacademy.tech/evaluationlist`, {
       params: { academicCoachId: academicId },
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${auth}`,
+       
       },
     });
 
@@ -447,13 +447,13 @@ const TrailSection = () => {
 
   const handleClick = async (id: string) => {
     try {
-      const auth = localStorage.getItem("authToken");
+     
       const response = await fetch(
         `https://alfurqanacademy.tech/evaluationlist/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${auth}`,
+        
           },
         }
       );
@@ -476,7 +476,7 @@ const TrailSection = () => {
       setStudentStatus(data.studentStatus);
       setPaymentStatus(data.paymentStatus);
       setPaymentLink(
-        `http://localhost:3000/invoice?id=${encodeURIComponent(data._id)}`
+        `https://web.alfurqanacademy.tech/invoice?id=${encodeURIComponent(data._id)}`
       );
       setFormData(data);
       console.log(data);
@@ -559,12 +559,12 @@ const TrailSection = () => {
 
     alert(JSON.stringify(formDataNames));
     try {
-      const auth = localStorage.getItem("authToken");
+    
       const response = await fetch(`https://alfurqanacademy.tech/evaluation/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${auth}`,
+         
         },
         body: JSON.stringify(formDataNames),
       });

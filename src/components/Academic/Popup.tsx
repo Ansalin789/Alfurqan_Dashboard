@@ -85,13 +85,8 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
 
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     try {
-      const auth=localStorage.getItem('authToken');
-      const response = await fetch(`https://alfurqanacademy.tech/studentlist`,{
-
-        headers: {
-          'Authorization': `Bearer ${auth}`,        
-            },
-      });
+      
+      const response = await fetch(`https://alfurqanacademy.tech/studentlist`);
       const rawData = await response.json();
       console.log('Raw API Response:', rawData);
       // console.log(response) 

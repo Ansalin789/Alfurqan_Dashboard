@@ -33,12 +33,8 @@ const SchedulePage = () => {
   const [view, setView] = useState<View>("month");
 
   useEffect(() => {
-    const auth = localStorage.getItem("authToken");
-    fetch(`https://alfurqanacademy.tech/meetingSchedulelist`, {
-      headers: {
-        Authorization: `Bearer ${auth}`,
-      },
-    })
+    
+    fetch(`https://alfurqanacademy.tech/meetingSchedulelist`)
       .then((response) => response.json())
       .then((data) => {
         const mappedEvents = data.academicCoach.map((item: any) => ({
