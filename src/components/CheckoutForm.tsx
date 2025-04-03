@@ -35,13 +35,11 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId 
     if (error) {
       setMessage(error.message ?? 'An unexpected error occurred.');
     } else if (paymentIntent?.status === 'succeeded') {
-      const auth = localStorage.getItem('authToken');
       await fetch(`https://alfurqanacademy.tech/create-payment-intent`, {
 
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth}`,
         },
         body: JSON.stringify({
           amount: paymentIntent.amount,

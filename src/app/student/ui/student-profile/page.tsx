@@ -62,7 +62,7 @@ const StudentProfile = () => {
   }
   useEffect(() => {
     const studentId = localStorage.getItem("StudentPortalId");
-    const auth = localStorage.getItem("StudentAuthToken");
+   
 
     console.log("Retrieved Student ID:", studentId);
 
@@ -71,10 +71,7 @@ const StudentProfile = () => {
         try {
           const studentId = localStorage.getItem("StudentPortalId");
           const response = await axios.get<ApiResponse>(
-            "https://alfurqanacademy.tech/alstudents",
-            {
-              headers: { Authorization: `Bearer ${auth}` },
-            }
+            "https://alfurqanacademy.tech/alstudents"
           );
 
           if (!studentId) {

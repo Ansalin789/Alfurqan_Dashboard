@@ -28,7 +28,7 @@ const Profile = () => {
     // Ensure code runs only in the browser
     if (typeof window !== "undefined") {
       const studentId = localStorage.getItem("StudentPortalId");
-      const auth = localStorage.getItem("StudentAuthToken");
+      
       setStudentName(localStorage.getItem("StudentPortalName"));
 
       const fetchInvoice = async () => {
@@ -37,7 +37,7 @@ const Profile = () => {
             "https://alfurqanacademy.tech/classShedule/totalhours",
             {
               params: { studentId },
-              headers: { Authorization: `Bearer ${auth}` },
+           
             }
           );
 
