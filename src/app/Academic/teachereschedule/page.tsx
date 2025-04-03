@@ -39,12 +39,8 @@ const Teachereschedule = () => {
 
   // Fetch events data
   useEffect(() => {
-    const auth=localStorage.getItem('authToken');
-    fetch(`https://alfurqanacademy.tech/meetingSchedulelist`,{
-      headers: {
-         'Authorization': `Bearer ${auth}`,
-      },
-    })
+   
+    fetch(`https://alfurqanacademy.tech/meetingSchedulelist`)
       .then((response) => response.json())
       .then((data) => {
         const mappedEvents = data.academicCoach.map((item: AcademicCoachItem) => ({

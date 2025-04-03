@@ -25,10 +25,10 @@ const AddStudentModal = ({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  // const [country, setCountry] = useState('');
+  
 
   const [country, setCountry] = useState("USA");
-  // const [cities, setCities] = useState<string[]>([]);
+ 
   const [cities, setCities] = useState([]);
   const [city, setCity] = useState("");
   const countriesCities = require("countries-cities");
@@ -40,7 +40,6 @@ const AddStudentModal = ({
   const [startDate, setStartDate] = useState("");
   const [evaluationStatus, setEvaluationStatus] = useState("");
   const [preferredFromTime, setPreferredFromTime] = useState("");
-  // const [cities, setCities] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +87,7 @@ const AddStudentModal = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${auth}`,
+          
         },
         body: JSON.stringify(studentData),
       });

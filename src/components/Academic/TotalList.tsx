@@ -1,3 +1,4 @@
+import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import {
@@ -75,7 +76,7 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
         <span className="text-[13px] font-semibold text-black">{title}</span>
       </div>
       <div>
-        <span className="text-[17px] font-bold text-black">{value}</span>
+        <span className="text-[17px] font-bold text-black">{value ?? 0}</span>
       </div>
     </div>
   </div>
@@ -85,21 +86,21 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
 const fetchDashboardData = async (
   authToken: string | null
 ): Promise<ApiResponse> => {
-  const response = await fetch(
+  const response = await axios.get(
     `https://alfurqanacademy.tech/dashboard/widgets`,
     {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${authToken}`,
       },
     }
   );
 
-  if (!response.ok) {
+  if (response.status !== 200) {
     throw new Error(`HTTP Error: ${response.status}`);
   }
 
-  return response.json();
+  return response.data;
 };
 
 // Map API response to dashboard data

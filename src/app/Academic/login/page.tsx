@@ -23,13 +23,7 @@ export default function SignInSignUp(): JSX.Element {
     try {
       // Get user info using the access token
       const userInfo = await axios.get(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        {
-          headers: {
-            Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IlRlc3QgVXNlciIsInN1YiI6IjY3MmRjMzZmNmRhNjJkYzc2ZWY5Yzg4NSIsImlhdCI6MTczNDQxMzA4MywiZXhwIjoxNzM0NDk5NDgzfQ.ZoWZ2uCXuKPRwEpZMGwVpYcAqVV95lqenlS1tMKTKfs"}`,
-          },
-        }
-      );
+        "https://www.googleapis.com/oauth2/v3/userinfo");
 
       // Send the Google token to your backend
       const response = await axios.post(
@@ -97,11 +91,10 @@ export default function SignInSignUp(): JSX.Element {
         `https://alfurqanacademy.tech/signin`,
         { username, password }
       );
-      const { accessToken, role, _id } = response.data;
+      const { role, _id } = response.data;
       console.log(response.data);
-      console.log(accessToken);
       // Store the token securely
-      localStorage.setItem("authToken", accessToken);
+      //localStorage.setItem("authToken", accessToken);
       localStorage.setItem("academicId", _id);
       // Optional: Store token expiry
       const tokenExpiry = new Date().getTime() + 24 * 60 * 60 * 1000; // 24 hours from now

@@ -148,13 +148,9 @@ export default function ApplicantsPage() {
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
   useEffect(() => {
-    const auth = localStorage.getItem("SupervisorAuthToken");
+   
     axios
-      .get("https://alfurqanacademy.tech/applicants", {
-        headers: {
-          Authorization: `Bearer ${auth}`, // Add Authorization header with the Bearer token
-        },
-      })
+      .get("https://alfurqanacademy.tech/applicants")
       .then((response) => setApplicants(response.data.applicants))
       .catch((error) => console.error("Error fetching applicants:", error));
   }, []);
@@ -193,13 +189,13 @@ export default function ApplicantsPage() {
     setOpenMenuId(openMenuId === _id ? null : _id);
 
     if (openMenuId !== _id) {
-      const auth = localStorage.getItem("SupervisorAuthToken");
+      
       try {
         const response = await axios.get<ApiResponse>(
           `https://alfurqanacademy.tech/applicants/${_id}`,
           {
             headers: {
-              Authorization: `Bearer ${auth}`, // Replace with actual token
+             
               "Content-Type": "application/json",
             },
           }
