@@ -4,15 +4,12 @@ import React from "react";
 import "react-calendar/dist/Calendar.css";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import TotalList from "@/components/Academic/TotalList";
-import NextEvaluationClass from "@/components/Academic/NextEvaluationClass";
 import TeachersStudent from "@/components/Academic/TeachersStudent";
 import Countries from "@/components/Academic/Countries";
-import Teachers from "@/components/Academic/Teachers";
 import Calender from "@/components/Academic/Calender";
 import UpcomingClasses from "@/components/Academic/UpcommingClasses";
-import Dashboardevaluation from "@/components/Academic/Dashboardevaluation";
 import { Search, Sun, Bell } from "lucide-react";
+import StudentTeacherStaff from "../../components/StudentTeacherStaff";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -58,24 +55,21 @@ const page = () => {
             <div className="flex-1 p-2">
               <main className="grid grid-cols-12 gap-4 pr-20">
                 <div className="col-span-12 grid grid-cols-1 p-0">
-                  <TotalList />
-                </div>
-                <div className="col-span-12 grid grid-cols-1 p-0">
-                  <NextEvaluationClass />
+                  <StudentTeacherStaff />
                 </div>
 
-                <div className="col-span-5 grid grid-cols-1 p-0">
+                <div className="col-span-6 grid grid-cols-1 p-0">
                   <TeachersStudent />
                 </div>
-                <div className="col-span-4 grid grid-cols-1 p-0">
+                <div className="col-span-6 grid grid-cols-1 p-0">
                   <Countries />
                 </div>
-                <div className="col-span-3 grid grid-cols-1 p-0">
-                  <Teachers />
+                <div className="col-span-7 grid grid-cols-1 p-0">
+                  <TeachersStudent />
                 </div>
-                <div className="col-span-12 grid grid-cols-1 p-0">
-                  <Dashboardevaluation />
-                </div>
+                <div className="col-span-5 grid grid-cols-1 p-0">
+                  <Countries />
+                </div>  
               </main>
             </div>
 

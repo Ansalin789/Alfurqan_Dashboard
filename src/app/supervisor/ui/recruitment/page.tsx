@@ -166,8 +166,8 @@ export default function ApplicantsPage() {
     activeTab === "All"
       ? applicants
       : applicants.filter(
-          (applicant) => applicant.applicationStatus === activeTab
-        );
+        (applicant) => applicant.applicationStatus === activeTab
+      );
 
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -374,11 +374,10 @@ export default function ApplicantsPage() {
                       <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-3 py-1 md:px-3 md:py-1 rounded-md text-[13px] font-semibold ${
-                          activeTab === tab
-                            ? "text-[#fff] bg-[#012A4A] mt-2"
-                            : "text-[#05445E] hover:underline mt-4"
-                        }`}
+                        className={`px-3 py-1 md:px-3 md:py-1 rounded-md text-[13px] font-semibold ${activeTab === tab
+                          ? "text-[#fff] bg-[#012A4A] mt-2"
+                          : "text-[#05445E] py-4 hover:bg-slate-100 mt-4"
+                          }`}
                       >
                         {tab}
                       </button>
@@ -407,48 +406,47 @@ export default function ApplicantsPage() {
                 <div className="overflow-x-auto ">
                   <table className="table-auto w-full min-h-auto ">
                     <thead className="text-[12px] font-bold">
-                      <tr className="bg-[#F4F5F7] py-2 rounded-2xl">
-                        <th className="text-center px-2 py-2  font-medium text-[#343942]">
+                      <tr className="bg-[#F4F5F7] py-2 rounded-2xl mb-2">
+                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
                           Application Date
                         </th>
-                        <th className="text-center px-2 py-2  font-medium text-[#343942]">
+                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
                           Applicant Name
                         </th>
-                        <th className="text-center px-2 py-2  font-medium text-[#343942]">
+                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
                           Contact
                         </th>
-                        <th className="text-center px-2 py-2  font-medium text-[#343942]">
+                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
                           E-Mail
                         </th>
-                        <th className="text-center px-4 py-2  font-medium text-[#343942]">
+                        <th className="text-center px-4 py-2  font-semibold text-[#343942]">
                           Position Applied
                         </th>
-                        <th className="text-center px-2 py-2  font-medium text-[#343942]">
+                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
                           Resume
                         </th>
-                        <th className="text-center px-2 py-2  font-medium text-[#343942]">
+                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
                           Status
                         </th>
-                        <th className="text-center px-2 py-2  font-medium text-[#343942]">
+                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
                           Level
                         </th>
-                        <th className="text-center px-2 py-2  font-medium text-[#343942]"></th>
+                        <th className="text-center px-2 py-2  font-semibold text-[#343942]"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {currentApplicants.map((applicant, index) => (
                         <tr
                           key={applicant._id}
-                          className={`text-[12px] font-medium mt-2 ${
-                            index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                          }`}
+                          className={`text-[11px] font-medium mt-2 ${index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                            }`}
                         >
                           <td className="px-4 py-1 text-center text-[#17243E]">
                             {formatDate(applicant.applicationDate)}
                           </td>
                           <td className="px-4 py-1 text-center">
                             <div className="flex items-center gap-3">
-                              <div className="h-6 w-6 rounded-full bg-purple-100 flex items-center justify-center">
+                              <div className="h-4 w-4 rounded-full bg-purple-100 flex items-center justify-center">
                                 <span className="text-purple-600 font-medium">
                                   {applicant.candidateFirstName.charAt(0)}
                                 </span>
@@ -465,7 +463,7 @@ export default function ApplicantsPage() {
                             {applicant.candidateEmail}
                           </td>
                           <td className="px-4 py-1 text-center text-[9px">
-                            {applicant.positionApplied}
+                            {applicant.positionApplied}fghdhdfgh
                           </td>
                           <td className="px-4 py-1 text-center">
                             <button className="text-[#17243E] hover:text-[#38619A] flex items-center">
@@ -487,11 +485,10 @@ export default function ApplicantsPage() {
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <Star
                                   key={`star-${star}`} // Using a stable key instead of index
-                                  className={`w-4 h-4 ${
-                                    (Number(applicant?.level) || 0) >= star
-                                      ? "text-[#FAAB3C] fill-[#68b806]"
-                                      : "text-[#F8D8AB] fill-[#f7f6f5]"
-                                  }`}
+                                  className={`w-4 h-4 ${(Number(applicant?.level) || 0) >= star
+                                    ? "text-[#FAAB3C] fill-[#68b806]"
+                                    : "text-[#F8D8AB] fill-[#f7f6f5]"
+                                    }`}
                                 />
                               ))}
                             </div>
@@ -546,11 +543,10 @@ export default function ApplicantsPage() {
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className={`px-2 py-1 rounded ${
-                        currentPage === 1
-                          ? "bg-gray-100 text-gray-400"
-                          : "bg-gray-200 hover:bg-gray-300"
-                      }`}
+                      className={`px-2 py-1 rounded ${currentPage === 1
+                        ? "bg-gray-100 text-gray-400"
+                        : "bg-gray-200 hover:bg-gray-300"
+                        }`}
                     >
                       &lt;
                     </button>
@@ -561,11 +557,10 @@ export default function ApplicantsPage() {
                         {/* First Page */}
                         <button
                           onClick={() => setCurrentPage(1)}
-                          className={`px-2 py-1 rounded ${
-                            currentPage === 1
-                              ? "bg-[#1B2B65] text-white"
-                              : "bg-gray-200 hover:bg-gray-300"
-                          }`}
+                          className={`px-2 py-1 rounded ${currentPage === 1
+                            ? "bg-[#1B2B65] text-white"
+                            : "bg-gray-200 hover:bg-gray-300"
+                            }`}
                         >
                           1
                         </button>
@@ -585,11 +580,10 @@ export default function ApplicantsPage() {
                             <button
                               key={page}
                               onClick={() => setCurrentPage(page)}
-                              className={`px-2 py-1 rounded ${
-                                currentPage === page
-                                  ? "bg-[#1B2B65] text-white"
-                                  : "bg-gray-200 hover:bg-gray-300"
-                              }`}
+                              className={`px-2 py-1 rounded ${currentPage === page
+                                ? "bg-[#1B2B65] text-white"
+                                : "bg-gray-200 hover:bg-gray-300"
+                                }`}
                             >
                               {page}
                             </button>
@@ -603,11 +597,10 @@ export default function ApplicantsPage() {
                         {/* Last Page */}
                         <button
                           onClick={() => setCurrentPage(totalPages)}
-                          className={`px-2 py-1 rounded ${
-                            currentPage === totalPages
-                              ? "bg-[#1B2B65] text-white"
-                              : "bg-gray-200 hover:bg-gray-300"
-                          }`}
+                          className={`px-2 py-1 rounded ${currentPage === totalPages
+                            ? "bg-[#1B2B65] text-white"
+                            : "bg-gray-200 hover:bg-gray-300"
+                            }`}
                         >
                           {totalPages}
                         </button>
@@ -618,11 +611,10 @@ export default function ApplicantsPage() {
                         <button
                           key={index + 1}
                           onClick={() => setCurrentPage(index + 1)}
-                          className={`px-2 py-1 rounded ${
-                            currentPage === index + 1
-                              ? "bg-[#1B2B65] text-white"
-                              : "bg-gray-200 hover:bg-gray-300"
-                          }`}
+                          className={`px-2 py-1 rounded ${currentPage === index + 1
+                            ? "bg-[#1B2B65] text-white"
+                            : "bg-gray-200 hover:bg-gray-300"
+                            }`}
                         >
                           {index + 1}
                         </button>
@@ -635,11 +627,10 @@ export default function ApplicantsPage() {
                         setCurrentPage((p) => Math.min(totalPages, p + 1))
                       }
                       disabled={currentPage === totalPages}
-                      className={`px-2 py-1 rounded ${
-                        currentPage === totalPages
-                          ? "bg-gray-100 text-gray-400"
-                          : "bg-gray-200 hover:bg-gray-300"
-                      }`}
+                      className={`px-2 py-1 rounded ${currentPage === totalPages
+                        ? "bg-gray-100 text-gray-400"
+                        : "bg-gray-200 hover:bg-gray-300"
+                        }`}
                     >
                       &gt;
                     </button>
@@ -727,13 +718,13 @@ export default function ApplicantsPage() {
                 </div>
                 <div>
                   <label
-                    htmlFor="lastName"
+                    htmlFor="gender"
                     className="block text-gray-600 text-[12px] font-medium mb-2"
                   >
                     Gender
                   </label>
-                  <input
-                    type="text"
+                  <select
+                    id="gender"
                     value={addApplicantForm.gender}
                     onChange={(e) =>
                       setAddApplicantForm({
@@ -741,13 +732,16 @@ export default function ApplicantsPage() {
                         gender: e.target.value,
                       })
                     }
-                    id="lastName"
-                    className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
+                    className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+                  >
+                    <option value="" disabled>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
-              </div>
 
-              {/* Email & Phone Number */}
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label
@@ -1002,8 +996,8 @@ export default function ApplicantsPage() {
 
       {/* Application Details Popup */}
       {selectedApplicant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl relative max-h-[90vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex max-h-[90vh] items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl relative  overflow-hidden">
             <button
               onClick={handleviewclose}
               className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 z-50"
@@ -1169,11 +1163,10 @@ export default function ApplicantsPage() {
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
-                            className={`text-xl cursor-pointer ${
-                              rating >= star
-                                ? "text-yellow-500"
-                                : "text-gray-300"
-                            }`}
+                            className={`text-xl cursor-pointer ${rating >= star
+                              ? "text-yellow-500"
+                              : "text-gray-300"
+                              }`}
                             onClick={() => setRating(star)}
                           >
                             ★

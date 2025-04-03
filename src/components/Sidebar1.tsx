@@ -56,14 +56,12 @@ export default function Sidebar1() {
   return (
     <div className="sidebar__wrapper">
       <aside className="sidebar shadow-lg">
-        <div className="sidebar__top">
-          <Image
-            src="/assets/images/whitelogo.png"
-            width={150}
-            height={150}
-            className="bg-cover bg-center"
-            alt="logo"
-          />
+        <div className='flex justify-center align-middle p-4 gap-2'>
+            <Image src="/assets/images/alfwhite.png" width={150} height={150} className='bg-cover bg-center w-8 h-12' alt='logo' />
+            <div className="text-white">
+                <h3 className="font-bold text-[19px]">AL FURQAN</h3>
+                <h4 className="font-light text-[17px] justify-end ml-8 -mt-3 font-sans">academy</h4>
+            </div>
         </div>
         <ul className="sidebar__list text-center align-middle justify-center">
           {SidebarItems.map(({ name, href, icon: Icon }) => (
