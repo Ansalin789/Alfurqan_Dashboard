@@ -21,7 +21,7 @@ const SidebarItems = [
     {
         name: 'Dashboard',
         href: '/admin-main/ui/dashboard',
-        icon: RiDashboardFill,    
+        icon: RiDashboardFill,
     },
     {
         name: 'Evaluation',
@@ -40,7 +40,7 @@ const SidebarItems = [
     },
     {
         name: 'Courses',
-        href: '/admin-main/ui/courses', 
+        href: '/admin-main/ui/courses',
         icon: PiBookOpenFill,
     },
     {
@@ -74,10 +74,14 @@ export default function Sidebar4() {
     return (
         <div className="sidebar__wrapper bg-[#012A4A] h-[100vh]">
             <aside className='sidebar bg-[#012A4A] shadow-lg'>
-                <div className='justify-center align-middle mt-2 p-4'>
-                <Image src="/assets/images/whitelogo.png" width={150} height={150} className='bg-cover bg-center' alt='logo'/>
+                <div className='flex justify-center align-middle p-4 gap-2'>
+                    <Image src="/assets/images/alfwhite.png" width={150} height={150} className='bg-cover bg-center w-8 h-12' alt='logo' />
+                    <div className="text-white">
+                        <h3 className="font-bold text-[19px]">AL FURQAN</h3>
+                        <h4 className="font-light text-[17px] justify-end ml-8 -mt-3 font-sans">academy</h4>
+                    </div>
                 </div>
-                <ul className="ml-6">
+                <ul className="ml-6">   
                     {SidebarItems.map(({ name, href, icon: Icon }) => (
                         <li className="text-center justify-center hover:no-underline hover:flex hover:bg-[#476a9b] hover:text-[#fff] hover:align-middle hover:justify-center] hover:pl-2 pl-2 py-2 hover:rounded-lg" key={name}>
                             <Link href={href} className='no-underline flex align-middle justify-start w-[100%] text-[#fff] pt-[10px] pb-[10px] text-[14px]'>
