@@ -91,7 +91,7 @@ const SchedulePage = () => {
           `https://alfurqanacademy.tech/classShedule`,
           {
             params: { teacherId },
-            headers: { Authorization: `Bearer ${authToken}` },
+          
           }
         );
 

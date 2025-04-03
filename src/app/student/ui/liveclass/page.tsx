@@ -159,7 +159,7 @@ useEffect(() => {
 
           const response = await axios.get<ApiResponse>(`https://alfurqanacademy.tech/classShedule/students`, {
               params: { studentId },
-              headers: { 'Authorization': `Bearer ${authToken}` }
+             
           });
 
           console.log('Raw API Response:', response.data.classSchedule); // Check data format

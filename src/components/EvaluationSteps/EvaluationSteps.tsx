@@ -205,15 +205,8 @@ const Step2: React.FC<{
     const fetchStudentData = async () => {
       try {
         setLoading(true);
-        const auth = localStorage.getItem("authToken");
         const response = await fetch(
-          `https://alfurqanacademy.tech/studentlist/${studentId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${auth}`,
-            },
-          }
-        );
+          `https://alfurqanacademy.tech/studentlist/${studentId}` );
         console.log("response>>>", response);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -1159,15 +1152,8 @@ const Step6 = ({
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const auth = localStorage.getItem("authToken");
         const response = await fetch(
-          "https://alfurqanacademy.tech/users?role=TEACHER",
-          {
-            headers: {
-              Authorization: `Bearer ${auth}`,
-            },
-          }
-        );
+          "https://alfurqanacademy.tech/users?role=TEACHER");
         const data = await response.json();
 
         console.log("Fetched data:", data);
@@ -1984,6 +1970,9 @@ const Step9 = ({
   // Function to handle form submission
   const handleSubmit = async () => {
     try {
+      const startDate = new Date(updatedStudentDatass.startDate);
+const classEndDate = new Date(startDate);
+classEndDate.setDate(classEndDate.getDate() + 28);
       console.log(">>>", updatedStudentDatass.academicCoach.academicCoachId);
       const submitData = {
         academicCoachId: updatedStudentDatass.academicCoach.academicCoachId,
@@ -2028,8 +2017,8 @@ const Step9 = ({
         startTime: updatedStudentDatass.startTime,
         endTime: updatedStudentDatass.endTime,
         planTotalPrice: updatedStudentDatass.planTotalPrice,
-        classStartDate: updatedStudentDatass.startDate,
-        classEndDate: updatedStudentDatass.classEndDate,
+        classStartDate:startDate,
+        classEndDate: classEndDate,
         classStartTime: updatedStudentDatass.preferredFromTime,
         classEndTime: updatedStudentDatass.preferredToTime,
         accomplishmentTime: updatedStudentDatass.accomplishmentTime.toString(),
@@ -2053,13 +2042,11 @@ const Step9 = ({
         updatedBy: "system", // or replace with the current user's email/ID
       };
       console.log("Payload being sent:", JSON.stringify(submitData, null, 2));
-      const auth = localStorage.getItem("authToken");
       // Make POST request to your API
       const response = await fetch(`https://alfurqanacademy.tech/evaluation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${auth}`,
         },
         body: JSON.stringify(submitData),
       });

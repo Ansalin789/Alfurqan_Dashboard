@@ -55,10 +55,7 @@ const ViewSchedule = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const auth = localStorage.getItem("SupervisorAuthToken");
-        const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule", {
-          headers: { Authorization: `Bearer ${auth}` },
-        });
+        const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule");
   
         const now = new Date();
         const today = new Date();
