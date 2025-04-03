@@ -3,9 +3,8 @@
 
 import { useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import { DatePicker } from "@nextui-org/react";
+import { Card, DatePicker } from "@nextui-org/react";
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
-import { Card } from "@/components/ui/card";
 import { IoMdArrowDropdownCircle } from "react-icons/io";
 import router from "next/router";
 import { format } from "date-fns";

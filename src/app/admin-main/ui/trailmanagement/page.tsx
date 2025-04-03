@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { FaSyncAlt, FaFilter, FaPlus, FaEdit } from "react-icons/fa";
-import BaseLayout1 from "@/components/BaseLayout1";
-import AddStudentModal from "@/components/Academic/AddStudentModel";
 import Popup from "@/components/Academic/Popup";
 import { useRouter } from "next/navigation";
-import { table } from "console";
 import axios from "axios";
 import Dashboard from "@/app/admin-main/components/dash";
+import BaseLayout4 from "@/components/BaseLayout4";
 // Define the return type of the getAllUsers function
 interface User {
   studentId: string;
@@ -667,19 +665,19 @@ const TrailManagement = () => {
 
   if (errorMessage) {
     return (
-      <BaseLayout1>
+      <BaseLayout4>
         <div className="min-h-screen p-2">{errorMessage}</div>
-      </BaseLayout1>
+      </BaseLayout4>
     );
   }
 
   return (
-    <BaseLayout1>
+    <BaseLayout4>
       <div className="p-3 pr-9 mx-auto h-full">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <h2 className="text-[18px] p-2 font-semibold">
-              Scheduled Evaluation Session
+            <h2 className="text-[18px]  font-semibold">
+              Scheduled Trail Classes
             </h2>
             <button
               className="bg-gray-800 text-white p-[4px] rounded-full shadow-2xl"
@@ -689,12 +687,12 @@ const TrailManagement = () => {
             </button>
           </div>
         </div>
-        <div className="p-6">
+        <div className="">
           <Dashboard />
         </div>
         <div className="">
-          <div className="flex justify-between items-center p-2">
-            <div className="flex flex-1 mb-4 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
+          <div className="flex justify-between items-center p-1">
+            <div className="flex flex-1 mb-2 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
               <div className="flex">
                 <input
                   type="text"
@@ -711,12 +709,7 @@ const TrailManagement = () => {
                 </button>
               </div>
               <div className="flex">
-                <button
-                  onClick={() => openModal(null)}
-                  className="text-[12px] p-2 rounded-lg shadow flex bg-[#223857] text-[#fff] items-center mx-4"
-                >
-                  <FaPlus className="mr-2" /> Add new
-                </button>
+           
                 <select className="border rounded-lg p-2 shadow text-[12px]">
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
@@ -725,6 +718,7 @@ const TrailManagement = () => {
               </div>
             </div>
           </div>
+          
           <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] h-full  flex flex-col justify-between">
             <table
               className="min-w-full rounded-lg shadow bg-[#fff]"
@@ -802,7 +796,7 @@ const TrailManagement = () => {
               </thead>
               <tbody>
                 {currentItems.length > 0 ? (
-                  currentItems.map((item, index) => (
+                    currentItems.slice(0, 5).map((item, index) => (
                     <tr
                       key={item.studentId || index}
                       className={`text-[9px] font-medium mt-0 ${
@@ -922,22 +916,14 @@ const TrailManagement = () => {
           <div>No user data available for editing.</div>
         )}
       </Modal>
-      <AddStudentModal
-        isOpen={isModalOpen}
-        onRequestClose={closeModal}
-        isEditMode={isEditMode}
-        onSave={() => {
-          fetchStudents();
-          closeModal();
-        }}
-      />
+
       <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         onApplyFilters={handleApplyFilters}
         users={users}
       />
-    </BaseLayout1>
+    </BaseLayout4>
   );
 };
 
