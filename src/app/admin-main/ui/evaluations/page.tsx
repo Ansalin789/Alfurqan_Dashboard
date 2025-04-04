@@ -5,9 +5,78 @@ import Modal from "react-modal";
 import { FaSyncAlt, FaPlus, FaEdit, FaFilter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { User } from "@/types";
-import axios from "axios";
+
 import Dashboard from "../../components/dashhh";
 import BaseLayout4 from "@/components/BaseLayout4";
+
+const evaluation: EvaluationItem[] = [
+  {
+    paymentLink: "https://payment.example.com/link1",
+    _id: "eval001",
+    student: {
+      learningInterest: "Mathematics",
+      studentId: "stu001",
+      studentFirstName: "Alice",
+      studentLastName: "Smith",
+      studentPhone: 1234567890,
+      studentCountry: "USA",
+      preferredTeacher: "Teacher A",
+      preferredFromTime: "10:00 AM",
+      preferredToTime: "11:00 AM",
+      classStatus: "Pending",
+      status: "Active",
+      trialClassStatus: "Scheduled",
+    },
+    trialClassStatus: "Scheduled",
+    assignedTeacher: "Teacher A",
+    paymentStatus: "Pending",
+  },
+  {
+    paymentLink: "https://payment.example.com/link2",
+    _id: "eval002",
+    student: {
+      learningInterest: "Science",
+      studentId: "stu002",
+      studentFirstName: "Bob",
+      studentLastName: "Johnson",
+      studentPhone: 9876543210,
+      studentCountry: "UK",
+      preferredTeacher: "Teacher B",
+      preferredFromTime: "2:00 PM",
+      preferredToTime: "3:00 PM",
+      classStatus: "Confirmed",
+      status: "Active",
+      trialClassStatus: "Completed",
+    },
+    trialClassStatus: "Completed",
+    assignedTeacher: "Teacher B",
+    paymentStatus: "Paid",
+  },
+  {
+    paymentLink: "https://payment.example.com/link3",
+    _id: "eval003",
+    student: {
+      learningInterest: "English",
+      studentId: "stu003",
+      studentFirstName: "Charlie",
+      studentLastName: "Brown",
+      studentPhone: 1122334455,
+      studentCountry: "Canada",
+      preferredTeacher: "Teacher C",
+      preferredFromTime: "9:00 AM",
+      preferredToTime: "10:00 AM",
+      classStatus: "Rescheduled",
+      status: "Inactive",
+      trialClassStatus: "Pending",
+    },
+    trialClassStatus: "Pending",
+    assignedTeacher: "Teacher C",
+    paymentStatus: "Unpaid",
+  },
+];
+
+console.log(evaluation);
+
 // Define interfaces for the API response structure
 interface Student {
   learningInterest: string; // Replace with the exact type if known
@@ -31,10 +100,6 @@ interface EvaluationItem {
   trialClassStatus: string;
   assignedTeacher: string;
   paymentStatus: string;
-}
-
-interface ApiResponse {
-  evaluation: EvaluationItem[];
 }
 
 // Define the transformed user structure
@@ -62,50 +127,26 @@ const getAllUsers = async (): Promise<{
   message: string;
 }> => {
   try {
-    // const auth = localStorage.getItem("authToken");
-    // const academicId = localStorage.getItem("academicId");
-    // console.log("academicId>>", academicId);
-
-    const response = await axios.get(`http://localhost:5001/evaluationlist`, {
-      // params: { academicCoachId: academicId },
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6Ik1hdGhpIiwic3ViIjoiNjcyZGIzNzk1NGZlMWQ1YTM0NWFjNDgzIiwiaWF0IjoxNzQxMDg3Nzk2LCJleHAiOjE3NDExNzQxOTZ9.ayaCAJWhCskIckV-jg6dxCGAS9M51Ff7HLjePmJ3TtY`,
-      },
-    });
-
-    // Check for response.ok to handle HTTP errors
-    if (!response.data) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // Ensure rawData has the expected structure
-    if (!response.data.evaluation || !Array.isArray(response.data.evaluation)) {
-      throw new Error("Invalid data structure received from API");
-    }
-
     // Transform API data to match TransformedUser interface
-    const transformedData: TransformedUser[] = response.data.evaluation.map(
-      (item: any) => ({
-        _id: item._id,
-        studentId: item.student.studentId,
-        studentFirstName: item.student.studentFirstName,
-        studentLastName: item.student.studentLastName,
-        number: item.student.studentPhone
-          ? item.student.studentPhone.toString()
-          : "",
-        country: item.student.studentCountry,
-        course: item.student.learningInterest,
-        preferredTeacher: item.student.preferredTeacher,
-        time: item.student.preferredFromTime,
-        classStatus: item.student.classStatus,
-        status: item.student.status,
-        trialClassStatus: item.trialClassStatus,
-        paymentStatus: item.paymentStatus,
-        assignedTeacher: item.assignedTeacher,
-        paymentLink: item.paymentLink,
-      })
-    );
+    const transformedData: TransformedUser[] = evaluation.map((item: any) => ({
+      _id: item._id,
+      studentId: item.student.studentId,
+      studentFirstName: item.student.studentFirstName,
+      studentLastName: item.student.studentLastName,
+      number: item.student.studentPhone
+        ? item.student.studentPhone.toString()
+        : "",
+      country: item.student.studentCountry,
+      course: item.student.learningInterest,
+      preferredTeacher: item.student.preferredTeacher,
+      time: item.student.preferredFromTime,
+      classStatus: item.student.classStatus,
+      status: item.student.status,
+      trialClassStatus: item.trialClassStatus,
+      paymentStatus: item.paymentStatus,
+      assignedTeacher: item.assignedTeacher,
+      paymentLink: item.paymentLink,
+    }));
 
     console.log(">>>>transformedData", transformedData);
 
@@ -172,12 +213,6 @@ const FilterModal = ({
   };
 
   return (
-
-
-   
-      
-      
-    
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
@@ -190,7 +225,7 @@ const FilterModal = ({
           ×
         </button>
       </div>
-      
+
       <div className="space-y-4">
         <div>
           <label
@@ -296,7 +331,10 @@ const FilterModal = ({
   );
 };
 
+type ViewType = "students";
+
 const TrailSection = () => {
+
   const [users, setUsers] = useState<TransformedUser[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -311,7 +349,7 @@ const TrailSection = () => {
   const [paymentLink, setPaymentLink] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [activeView, setActiveView] = useState<ViewType>("students");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -355,6 +393,7 @@ const TrailSection = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
   interface FormData {
     _id: string;
     student: {
@@ -423,65 +462,14 @@ const TrailSection = () => {
     __v: number;
   }
 
-
   useEffect(() => {
     console.log("Current users data:", users);
   }, [users]);
 
-  const fetchStudents = async () => {
-    try {
-      const allData = await getAllUsers();
-      if (allData.success && allData.data) {
-        setUsers(allData.data); // Cast to User[] to resolve type error
-      } else {
-        setErrorMessage(allData.message ?? "Failed to fetch users");
-      }
-    } catch (error) {
-      setErrorMessage("An unexpected error occurred");
-      console.error("An unexpected error occurred", error);
-    }
-  };
-
-  const handleClick = async (id: string) => {
-    try {
-      const auth = localStorage.getItem("authToken");
-      const response = await fetch(
-        `http://localhost:5001/evaluationlist/${id}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${auth}`,
-          },
-        }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setOptions((prev) => ({
-        trialClassStatus: prev.trialClassStatus.includes(data.trialClassStatus)
-          ? prev.trialClassStatus
-          : [...prev.trialClassStatus, data.trialClassStatus],
-        studentStatus: prev.studentStatus.includes(data.studentStatus)
-          ? prev.studentStatus
-          : [...prev.studentStatus, data.studentStatus],
-        paymentStatus: prev.paymentStatus.includes(data.paymentStatus)
-          ? prev.paymentStatus
-          : [...prev.paymentStatus, data.paymentStatus],
-      }));
-      setTrialClassStatus(data.trialClassStatus);
-      setStudentStatus(data.studentStatus);
-      setPaymentStatus(data.paymentStatus);
-      setPaymentLink(
-        `http://localhost:3000/invoice?id=${encodeURIComponent(data._id)}`
-      );
-      setFormData(data);
-      console.log(data);
-
-      // Open the modal after setting the form data
+  const handleClick = (id: string) => {
+    const selectedItem = evaluation.find((item) => item._id === id);
+    if (selectedItem) {
       setShowModal(true);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
     }
   };
 
@@ -489,94 +477,9 @@ const TrailSection = () => {
     setShowModal(false);
   };
 
-  const updateClick = async (id: string | undefined) => {
-    const formDataNames = {
-      _id: formData?._id ?? "",
-      student: {
-        studentId: formData?.student.studentId,
-        studentFirstName: formData?.student.studentFirstName,
-        studentLastName: formData?.student.studentLastName,
-        studentEmail: formData?.student.studentEmail,
-        studentPhone: formData?.student.studentPhone,
-        studentCity: formData?.student.studentCity,
-        studentCountry: formData?.student.studentCountry,
-        studentCountryCode: formData?.student.studentCountryCode,
-        learningInterest: formData?.student.learningInterest,
-        numberOfStudents: formData?.student.numberOfStudents,
-        preferredTeacher: formData?.student.preferredTeacher,
-        preferredFromTime: formData?.student.preferredFromTime,
-        preferredToTime: formData?.student.preferredToTime,
-        timeZone: formData?.student.timeZone,
-        referralSource: formData?.student.referralSource,
-        preferredDate: formData?.student.preferredDate,
-        evaluationStatus: formData?.student.evaluationStatus,
-        status: formData?.student.status,
-        createdDate: formData?.student.createdDate,
-        createdBy: formData?.student.createdBy,
-      },
-      isLanguageLevel: formData?.isLanguageLevel,
-      languageLevel: formData?.languageLevel,
-      isReadingLevel: formData?.isReadingLevel,
-      readingLevel: formData?.readingLevel,
-      isGrammarLevel: formData?.isGrammarLevel,
-      grammarLevel: formData?.grammarLevel,
-      hours: formData?.hours,
-      subscription: {
-        subscriptionName: formData?.subscription.subscriptionName,
-      },
-      classStartDate: formData?.classStartDate,
-      classEndDate: formData?.classEndDate,
-      classStartTime: formData?.classStartTime,
-      classEndTime: formData?.classEndTime,
-      gardianName: formData?.gardianName,
-      gardianEmail: formData?.gardianEmail,
-      gardianPhone: formData?.gardianPhone,
-      gardianCity: formData?.gardianCity,
-      gardianCountry: formData?.gardianCountry,
-      gardianTimeZone: formData?.gardianTimeZone,
-      gardianLanguage: formData?.gardianLanguage,
-      assignedTeacher: formData?.assignedTeacher,
-      studentStatus: studentStatus,
-      classStatus: formData?.classStatus,
-      comments: formData?.comments,
-      trialClassStatus: trialClassStatus,
-      invoiceStatus: formData?.invoiceStatus,
-      paymentLink: paymentLink,
-      paymentStatus: paymentStatus,
-      status: formData?.status,
-      createdDate: formData?.createdDate,
-      createdBy: formData?.createdBy,
-      updatedDate: formData?.updatedDate,
-      updatedBy: formData?.updatedBy,
-      planTotalPrice: formData?.planTotalPrice,
-      accomplishmentTime: formData?.accomplishmentTime,
-      studentRate: formData?.studentRate,
-      expectedFinishingDate: formData?.expectedFinishingDate,
-    };
 
-    alert(JSON.stringify(formDataNames));
-    try {
-      const auth = localStorage.getItem("authToken");
-      const response = await fetch(`http://localhost:5001/evaluation/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${auth}`,
-        },
-        body: JSON.stringify(formDataNames),
-      });
 
-      console.log("response", response);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
-      // Open the modal after setting the form data
-      // setShowModal(true);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
   const handleChange =
     (field: string) => (event: React.ChangeEvent<HTMLSelectElement>) => {
       console.log(`Field: ${field}, Value: ${event.target.value}`);
@@ -597,49 +500,6 @@ const TrailSection = () => {
   useEffect(() => {
     console.log(`Updated TrialClassStatus: ${trialClassStatus}`);
   }, [trialClassStatus]);
-
-  const Pagination = () => {
-    return (
-      <div>
-        <div className="flex justify-between items-center p-3">
-          <p className="text-[9px] text-gray-600">
-            Showing {indexOfFirstItem + 1}-
-            {Math.min(indexOfLastItem, filteredUsers.length)} from{" "}
-            {filteredUsers.length} data
-          </p>
-          <div className="flex space-x-2 text-[8px]">
-            {/* Previous Button */}
-            <button
-              className={`px-2 py-1 rounded ${
-                currentPage === 1
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              &lt;
-            </button>
-
-           
-
-            {/* Next Button */}
-            <button
-              className={`px-2 py-1 rounded ${
-                currentPage === totalPages
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              &gt;
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const filteredItems = currentItems.filter((item) => {
     const searchFields = [
@@ -665,7 +525,8 @@ const TrailSection = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     const filtered = users.filter((user) => {
-      const fullName = `${user.studentFirstName} ${user.studentLastName}`.toLowerCase();
+      const fullName =
+        `${user.studentFirstName} ${user.studentLastName}`.toLowerCase();
       return (
         user.studentId.toLowerCase().includes(query.toLowerCase()) ||
         fullName.includes(query.toLowerCase()) ||
@@ -695,9 +556,7 @@ const TrailSection = () => {
       <div className="p-3 pr-9 mx-auto h-full">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <h2 className="text-[18px] font-semibold">
-              Trail class Request
-            </h2>
+            <h2 className="text-[18px] font-semibold">Trail class Request</h2>
             <button
               className="bg-gray-800 text-white p-[4px] rounded-full shadow-2xl"
               onClick={handleSyncClick}
@@ -706,13 +565,13 @@ const TrailSection = () => {
             </button>
           </div>
         </div>
-         <div className="p-2">
-                <Dashboard />
-            </div>
+        <div className="p-2">
+          <Dashboard />
+        </div>
         <div className="">
-          <div className="flex justify-between items-center p-2">
+          <div className="flex justify-between items-center p-2 -ml-2">
             <div className="flex flex-1 mb-4 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
-              <div className="flex">
+              <div className="flex ">
                 <input
                   type="text"
                   placeholder="Search here..."
@@ -728,7 +587,6 @@ const TrailSection = () => {
                 </button>
               </div>
               <div className="flex">
-           
                 <select className="border rounded-lg p-2 shadow text-[12px]">
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
@@ -745,73 +603,73 @@ const TrailSection = () => {
               <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
                 <tr>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ wordWrap: "break-word", width: "26%" }}
                   >
-                    Trail ID
+                    Trial ID
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ wordWrap: "break-word", width: "22%" }}
                   >
                     Student Name
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ wordWrap: "break-word", width: "15%" }}
                   >
                     Mobile
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ width: "12%" }}
                   >
                     Country
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ wordWrap: "break-word", width: "13%" }}
                   >
                     Course
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ wordWrap: "break-word", width: "18%" }}
                   >
                     Preferred Teacher
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ wordWrap: "break-word", width: "18%" }}
                   >
                     Assigned Teacher
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ width: "8%" }}
                   >
                     Time
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ wordWrap: "break-word", width: "25%" }}
                   >
                     Class Status
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ wordWrap: "break-word", width: "15%" }}
                   >
-                    payment Status
+                    Payment Status
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ wordWrap: "break-word", width: "13%" }}
                   >
                     Student Status
                   </th>
                   <th
-                    className="p-3 py-5  font-semibold text-center"
+                    className="p-3 py-5 font-semibold text-center"
                     style={{ width: "10%" }}
                   >
                     Action
@@ -820,7 +678,7 @@ const TrailSection = () => {
               </thead>
               <tbody>
                 {filteredItems.length > 0 ? (
-                   filteredItems.slice(0, 5).map((item, index) => (
+                  filteredItems.slice(0, 5).map((item, index) => (
                     <tr
                       key={item._id}
                       className={`text-[9px] font-medium mt-0 ${
@@ -886,22 +744,7 @@ const TrailSection = () => {
                               : "bg-green-100 text-green-800 border border-green-900 px-2"
                           }`}
                         >
-                          {item.classStatus === "COMPLETED"
-                            ? "PENDING"
-                            : "COMPLETED"}
-                        </span>
-
-                        <span>/</span>
-                        <span
-                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
-                            item.trialClassStatus === "COMPLETED"
-                              ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-2"
-                              : "bg-red-100 text-red-800 border border-red-900 px-3"
-                          }`}
-                        >
-                          {item.trialClassStatus === "COMPLETED"
-                            ? "COMPLETED"
-                            : "PENDING"}
+                          {item.classStatus}
                         </span>
                       </td>
                       <td className="p-2 text-center">
@@ -912,7 +755,7 @@ const TrailSection = () => {
                               : "bg-green-100 text-green-800 border border-green-900 px-3"
                           }`}
                         >
-                          {item.paymentStatus ?? "PAID"}
+                          {item.paymentStatus}
                         </span>
                       </td>
                       <td className="p-2 text-center">
@@ -923,7 +766,7 @@ const TrailSection = () => {
                               : "bg-green-100 text-green-800 border border-green-900 px-3"
                           }`}
                         >
-                          {item.status ?? "Active"}
+                          {item.status}
                         </span>
                       </td>
                       <td className="p-2 text-center">
@@ -938,7 +781,7 @@ const TrailSection = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={10} className="p-4 text-center">
+                    <td colSpan={12} className="p-4 text-center">
                       No data available
                     </td>
                   </tr>
@@ -946,11 +789,18 @@ const TrailSection = () => {
               </tbody>
             </table>
           </div>
-         
+
+          <div className="flex justify-end">
+            <button
+              className="text-[#fff] mt-4 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
+              onClick={() => router.push("/admin-main/ui/trailclasslist")}
+            >
+              View All
+            </button>
+          </div>
         </div>
       </div>
 
-     
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-100 border border-gray-300 rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[720px]">
@@ -965,301 +815,177 @@ const TrailSection = () => {
                 ✖
               </button>
             </div>
-            <form className="grid grid-cols-3 gap-4">
+            <form className="grid grid-cols-2 gap-4">
+              {/* First Name */}
               <div>
-                <label
-                  htmlFor="firstName"
-                  className="block text-black  text-xs font-medium"
-                >
+                <label className="block text-black text-xs font-medium">
                   First Name
                 </label>
                 <input
-                  id="firstName"
                   type="text"
                   disabled
-                  value={formData?.student.studentFirstName} // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                  value={formData?.student.studentFirstName}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 />
               </div>
+
+              {/* Last Name */}
               <div>
-                <label
-                  htmlFor="lastName"
-                  className="block text-black text-xs font-medium"
-                >
+                <label className="block text-black text-xs font-medium">
                   Last Name
                 </label>
                 <input
-                  id="lastName"
                   type="text"
                   disabled
-                  value={formData?.student.studentLastName} // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                  value={formData?.student.studentLastName}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 />
               </div>
+
+              {/* Email */}
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-black text-xs font-medium"
-                >
+                <label className="block text-black text-xs font-medium">
                   Email
                 </label>
                 <input
-                  id="email"
                   type="email"
                   disabled
-                  value={formData?.student.studentEmail} // Bind to formData
-                  readOnly
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                  value={formData?.student.studentEmail}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 />
               </div>
+
+              {/* Phone Number */}
               <div>
-                <label
-                  htmlFor="phoneNumber"
-                  className="block text-black text-xs font-medium"
-                >
+                <label className="block text-black text-xs font-medium">
                   Phone Number
                 </label>
                 <input
-                  id="phoneNumber"
-                  type="number"
+                  type="text"
                   disabled
-                  value={formData?.student.studentPhone} // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                  value={formData?.student.studentPhone}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 />
               </div>
+
+              {/* City */}
               <div>
-                <label
-                  htmlFor="city"
-                  className="block text-black text-xs font-medium"
-                >
+                <label className="block text-black text-xs font-medium">
                   City
                 </label>
                 <input
-                  id="city"
                   type="text"
                   disabled
-                  value={formData?.student.studentCity ?? ""} // Bind to formData
-                  readOnly
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                  value={formData?.student.studentCity ?? ""}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 />
               </div>
+
+              {/* Country */}
               <div>
-                <label
-                  htmlFor="country"
-                  className="block text-black text-xs font-medium"
-                >
+                <label className="block text-black text-xs font-medium">
                   Country
                 </label>
                 <input
-                  id="country"
                   type="text"
                   disabled
-                  value={formData?.student.studentCountry} // Bind to formData
-                  readOnly
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                  value={formData?.student.studentCountry}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 />
               </div>
 
+              {/* Trial ID */}
               <div>
-                <label
-                  htmlFor="preferredTime"
-                  className="block text-black text-xs font-medium"
-                >
-                  Preferred Time
+                <label className="block text-black text-xs font-medium">
+                  Trial ID
                 </label>
                 <input
-                  id="preferredTime"
                   type="text"
                   disabled
-                  value={
-                    formData?.student.preferredFromTime +
-                    " TO " +
-                    formData?.student.preferredToTime
-                  } // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                  value={formData?._id}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 />
               </div>
+
+              {/* Course */}
               <div>
-                <label
-                  htmlFor="trailId"
-                  className="block text-black text-xs font-medium"
-                >
-                  Trail ID
-                </label>
-                <input
-                  id="trailId"
-                  type="text"
-                  disabled
-                  value={formData?._id} // Bind to formData
-                  readOnly
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="course"
-                  className="block text-black text-xs font-medium"
-                >
+                <label className="block text-black text-xs font-medium">
                   Course
                 </label>
                 <input
-                  id="course"
                   type="text"
                   disabled
-                  value={formData?.student.learningInterest} // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="preferredTeacher"
-                  className="block text-black text-xs font-medium"
-                >
-                  Preferred Teacher
-                </label>
-                <input
-                  id="preferredTeacher"
-                  type="text"
-                  disabled
-                  value={formData?.student.preferredTeacher} // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="level"
-                  className="block text-black text-xs font-medium"
-                >
-                  Level
-                </label>
-                <input
-                  id="level"
-                  type="text"
-                  disabled
-                  value={formData?.languageLevel} // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="preferredDate"
-                  className="block text-black text-xs font-medium"
-                >
-                  Preferred Date
-                </label>
-                <input
-                  id="preferredDate"
-                  type="text"
-                  disabled
-                  value={formData?.student.preferredDate} // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="preferredHours"
-                  className="block text-black text-xs font-medium"
-                >
-                  Preferred Hours
-                </label>
-                <input
-                  id="preferredHours"
-                  type="text"
-                  disabled
-                  value={formData?.hours} // Bind to formData
-                  readOnly
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="preferredPackage"
-                  className="block text-black text-xs font-medium"
-                >
-                  Preferred package
-                </label>
-                <input
-                  id="preferredPackage"
-                  type="text"
-                  disabled
-                  value={formData?.subscription.subscriptionName} // Check if subscription exists
-                  readOnly
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="guardianName"
-                  className="block text-black text-xs font-medium"
-                >
-                  Guardian&apos;s name
-                </label>
-                <input
-                  id="guardianName"
-                  type="text"
-                  disabled
-                  value={formData?.gardianName} // Bind to formDat
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="guardianEmail"
-                  className="block text-black text-xs font-medium"
-                >
-                  Guardian&apos;s email
-                </label>
-                <input
-                  id="guardianEmail"
-                  type="email"
-                  disabled
-                  value={formData?.gardianEmail} // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="guardianPhone"
-                  className="block text-black text-xs font-medium"
-                >
-                  Guardian&apos;s phone Number
-                </label>
-                <input
-                  id="guardianPhone"
-                  type="text"
-                  disabled
-                  value={formData?.gardianPhone} // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                  value={formData?.student.learningInterest}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 />
               </div>
 
+              {/* Preferred Teacher */}
               <div>
-                <label
-                  htmlFor="evaluationStatus"
-                  className="block text-black text-xs font-medium"
-                >
-                  Evaluation status
+                <label className="block text-black text-xs font-medium">
+                  Preferred Teacher
                 </label>
                 <input
-                  id="evaluationStatus"
                   type="text"
                   disabled
-                  value={formData?.student.evaluationStatus} // Bind to formData
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                  value={formData?.student.preferredTeacher}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 />
               </div>
+
+              {/* Preferred Time */}
               <div>
-                <label
-                  htmlFor="trialClassStatus"
-                  className="block text-black text-xs font-medium"
+                <label className="block text-black text-xs font-medium">
+                  Preferred Time
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={`${formData?.student.preferredFromTime} - ${formData?.student.preferredToTime}`}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
+                />
+              </div>
+
+              {/* Preferred Package */}
+              <div>
+                <label className="block text-black text-xs font-medium">
+                  Preferred Package
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData?.subscription?.subscriptionName}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
+                />
+              </div>
+
+              {/* Student Status */}
+              <div>
+                <label className="block text-black text-xs font-medium">
+                  Student Status
+                </label>
+                <select
+                  value={studentStatus}
+                  onChange={handleChange("studentStatus")}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 >
+                  {options.studentStatus.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Trial Class Status */}
+              <div>
+                <label className="block text-black text-xs font-medium">
                   Trial Class Status
                 </label>
                 <select
-                  id="trialClassStatus"
                   value={trialClassStatus}
                   onChange={handleChange("TrialClassStatus")}
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[12px] text-gray-800"
                 >
                   {options.trialClassStatus.map((status) => (
                     <option key={status} value={status}>
@@ -1269,42 +995,20 @@ const TrailSection = () => {
                 </select>
               </div>
 
-              <div>
-                <label
-                  htmlFor="studentStatus"
-                  className="block text-black text-xs font-medium"
-                >
-                  Student Status
-                </label>
-                <select
-                  id="studentStatus"
-                  value={studentStatus}
-                  onChange={handleChange("studentStatus")}
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                >
-                  {options.studentStatus.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-span-3">
-                <label
-                  htmlFor="comment"
-                  className="block text-black text-xs font-medium"
-                >
+              {/* Comment */}
+              <div className="col-span-2">
+                <label className="block text-black text-xs font-medium">
                   Comment
                 </label>
                 <textarea
-                  id="comment"
                   placeholder="Write your comment here..."
-                  value={formData?.comments} // Bind to formData
-                  className="w-full mt-2 bg-gray-200 border border-gray-300 p-2 rounded-md text-[10px] text-gray-800"
+                  value={formData?.comments}
+                  className="w-full mt-2 bg-gray-200 border border-gray-300 p-2 rounded-md text-[12px] text-gray-800"
                 ></textarea>
               </div>
-              {/* Save and Cancel Buttons */}
-              <div className="col-span-2 flex justify-end space-x-4 mt-0">
+
+              {/* Buttons */}
+              <div className="col-span-2 flex justify-end space-x-4 mt-4">
                 <button
                   type="button"
                   className="px-4 py-1 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
@@ -1313,11 +1017,10 @@ const TrailSection = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => updateClick(formData?._id)}
                   type="submit"
                   className="px-4 py-1 bg-[#223857] text-white rounded-md hover:bg-[#1c2f49] text-sm"
                 >
-                  Update
+                  Save
                 </button>
               </div>
             </form>

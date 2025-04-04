@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import {
   PieChart,
   Pie,
@@ -20,7 +19,7 @@ const TotalScheduledChart = () => {
     { name: "Pending", value: 123, color: "#5b9bd5" },
   ];
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-60 border border-gray-200">
+    <div className="bg-white p-4 rounded-lg shadow-md w-64 border border-gray-200 -ml-3">
       <h2 className="text-sm font-semibold text-gray-900">
         Total Scheduled
       </h2>
@@ -109,7 +108,7 @@ const CountriesCard = () => {
   const maxValue = Math.max(...countriesData.map((c) => c.value)); // Find max for bar scaling
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-60 border border-gray-200">
+    <div className="bg-white p-4 rounded-lg shadow-md w-64 border border-gray-200">
       <h2 className="text-sm font-semibold text-gray-900">Countries</h2>
 
       <div className="space-y-4 mt-4">
@@ -166,7 +165,7 @@ const COLORS = ["#0D1B2A", "#4B9EFF", "#81878B"];
 
 const PreferredTeachersCard = () => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-60 border border-gray-200 justify-between flex flex-col">
+    <div className="bg-white p-4 rounded-lg shadow-md w-64 border border-gray-200 justify-between flex flex-col">
       <div>
         <h2 className="text-sm font-semibold text-gray-900">
           Preferred Teachers
@@ -270,7 +269,7 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
 
 const CoursesChart = () => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-60 border border-gray-200 ">
+    <div className="bg-white p-4 rounded-lg shadow-md w-64 border border-gray-200 ml-4 ">
       <h2 className="text-sm font-semibold text-gray-900">Courses</h2>
 
       <ResponsiveContainer width="100%" height={198}>
