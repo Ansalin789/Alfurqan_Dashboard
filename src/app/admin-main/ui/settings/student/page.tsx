@@ -4,7 +4,7 @@ import BaseLayout4 from '@/components/BaseLayout4';
 import { useState } from 'react';
 import { FaRegSquare, FaRegCheckSquare } from 'react-icons/fa';
 
-const SupervisorModuleAccess = () => {
+const StudentModuleAccess = () => {
   const [selectedModules, setSelectedModules] = useState<{ [key: string]: boolean }>({});
   const [permissions, setPermissions] = useState<{ [key: string]: { read: boolean; write: boolean; delete: boolean } }>({});
 
@@ -30,28 +30,28 @@ const SupervisorModuleAccess = () => {
 
   return (
     <BaseLayout4>
-      <div className="min-h-screen flex items-center justify-center p-6 mx-auto">
-        <div className="p-6 w-full max-w-4xl">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">Student Module Access</h2>
-          <div className="bg-white p-4 rounded-lg shadow-lg">
+      <div className="flex items-center justify-center mx-auto">
+        <div className="">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 text-left p-4">Student Module Access</h2>
+          <div className="bg-white p-10 rounded-3xl shadow-lg">
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b bg-gray-100">
-                  <th className="p-4">Modules</th>
-                  <th className="p-4 text-center">Read</th>
-                  <th className="p-4 text-center">Write</th>
-                  <th className="p-4 text-center">Delete</th>
+                <tr className="border-b">
+                  <th className="p-4 px-32 underline">Modules</th>
+                  <th className="p-4 px-16 text-center">Read</th>
+                  <th className="p-4 px-16 text-center">Write</th>
+                  <th className="p-4 px-16 text-center">Delete</th>
                 </tr>
               </thead>
               <tbody>
                 {modules.map((module) => (
-                  <tr key={module} className="border-t hover:bg-gray-50">
+                  <tr key={module} className="border-t">
                     <td className="p-4 flex items-center space-x-3">
                       <button onClick={() => toggleModule(module)}>
                         {selectedModules[module] ? (
-                          <FaRegCheckSquare className="text-blue-600 text-lg" />
+                          <FaRegCheckSquare className="text-[#fff] bg-[#012A4A] text-lg rounded-xl" />
                         ) : (
-                          <FaRegSquare className="text-gray-500 text-lg" />
+                          <FaRegSquare className="text-[#D0D5DD] text-lg rounded-xl" />
                         )}
                       </button>
                       <span className="text-gray-700">{module}</span>
@@ -61,7 +61,7 @@ const SupervisorModuleAccess = () => {
                         type="checkbox"
                         checked={permissions[module]?.read || false}
                         onChange={() => togglePermission(module, 'read')}
-                        className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring focus:ring-blue-500"
+                        className="h-4 w-4 text-[#012A4A] rounded-xl border-[#D0D5DD]"
                       />
                     </td>
                     <td className="p-4 text-center">
@@ -69,7 +69,7 @@ const SupervisorModuleAccess = () => {
                         type="checkbox"
                         checked={permissions[module]?.write || false}
                         onChange={() => togglePermission(module, 'write')}
-                        className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring focus:ring-blue-500"
+                        className="h-4 w-4 text-[#012A4A] rounded-xl border-[#D0D5DD]"
                       />
                     </td>
                     <td className="p-4 text-center">
@@ -77,7 +77,7 @@ const SupervisorModuleAccess = () => {
                         type="checkbox"
                         checked={permissions[module]?.delete || false}
                         onChange={() => togglePermission(module, 'delete')}
-                        className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring focus:ring-blue-500"
+                        className="h-4 w-4 text-[#012A4A] rounded-xl border-[#D0D5DD]"
                       />
                     </td>
                   </tr>
@@ -86,7 +86,7 @@ const SupervisorModuleAccess = () => {
             </table>
           </div>
           <div className="flex justify-center mt-6">
-            <button className="bg-blue-700 text-white px-6 py-2 rounded-lg text-lg font-semibold hover:bg-blue-800 shadow-md">Submit</button>
+            <button className="bg-[#012A4A] text-white px-6 py-2 rounded-lg text-lg font-semibold hover:bg-[#040c11] shadow-md">Submit</button>
           </div>
         </div>
       </div>
@@ -94,4 +94,4 @@ const SupervisorModuleAccess = () => {
   );
 };
 
-export default SupervisorModuleAccess;
+export default StudentModuleAccess;
