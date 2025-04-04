@@ -25,7 +25,7 @@ const TotalScheduledChart = () => {
   ];
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow-md w-64 border border-gray-200">
+    <div className="bg-white p-4 rounded-xl shadow-md w-64 border border-gray-200 -ml-4">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-sm font-semibold text-gray-900">

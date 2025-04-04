@@ -17,7 +17,7 @@ type Teacher = {
   
   
     return (
-      <div className="bg-white rounded-lg shadow-sm p-4 ">
+      <div className="bg-white rounded-lg shadow-sm p-5 ">
         <h2 className="text-[15px] font-semibold text-gray-800 mb-3">Teachers - Students</h2>
         <div className="flex justify-between text-sm font-medium mb-2">
           <span>Teachers</span>

@@ -8,8 +8,8 @@ import TrialRequests from "../../components/trailclassdashboard";
 import Notifications from "../../components/notificationsdashboard";
 import TeachersStudents from "../../components/teachersstudentsdashboard";
 import TotalClasses from "../../components/totalclassesdashboard";
-import Calender from "@/components/Academic/Calender";
-import UpcomingClasses from "@/components/Academic/UpcommingClasses";
+import Calender from "../../components/calenderdashboard";
+import UpcomingClasses from "../../components/upcomingclassdasboard";
 import { Sun, Bell } from "lucide-react";
 import StudentTeacherStaff from "../../components/StudentTeacherStaff";
 
@@ -46,7 +46,7 @@ const page = () => {
             </div>
           </div>
           <div className="flex flex-col lg:flex-row mt-2">
-            <div className="flex-1 p-2">
+            <div className="flex-1 p-1">
               <main className="grid grid-cols-12 gap-4 pr-20">
                 <div className="col-span-12 grid grid-cols-1 p-0">
                   <StudentTeacherStaff />
@@ -71,7 +71,7 @@ const page = () => {
               <div className="pr-0 mb-0 rounded-[20px]">
                 <Calender />
               </div>
-              <div className="pr-0 rounded-lg w-64 mt-11 -ml-12">
+              <div className="pr-0 rounded-lg w-50 mt-6 -ml-12">
                 <UpcomingClasses />
               </div>
             </div>
