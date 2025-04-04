@@ -8,13 +8,13 @@ export default function TrialRequests() {
   ]
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5">
+    <div className="bg-white rounded-lg shadow-sm p-5 h-42">
       <div className="mb-3">
         <h2 className="text-[15px] font-semibold text-gray-800">Total Trial Request</h2>
       </div>
-      <div className="space-y-6 mx-2">
+      <div className="space-y-6 mx-2 ">
         {requests.map((request) => (
-          <div key={request.status} className="flex items-center space-x-4">
+          <div key={request.status} className="flex items-center space-x-4 h-42">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
               <request.icon className="h-4 w-4 text-white" />
             </div>
