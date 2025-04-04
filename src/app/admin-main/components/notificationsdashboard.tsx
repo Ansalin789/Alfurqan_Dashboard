@@ -13,7 +13,7 @@ type Notification = {
         name: "Alex Campbell",
         message: "Just wanted to check in on how everyone's progress...",
         time: "2:36 PM",
-        avatar: "/placeholder.svg?height=40&width=40",
+        avatar: "/Imageuser.svg?height=40&width=40",
       },
       {
         id: 2,
@@ -39,8 +39,8 @@ type Notification = {
     ]
   
     return (
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <div className="mb-4">
+      <div className="bg-white rounded-lg shadow-sm p-5">
+        <div className="mb-3">
           <h2 className="text-[15px] font-semibold text-gray-800">Notifications</h2>
         </div>
         <div className="space-y-4 mx-2">
@@ -58,9 +58,9 @@ type Notification = {
               <div className="flex-grow min-w-0">
                 <div className="flex justify-between items-start">
                   <p className="font-medium text-xs">{notification.name}</p>
-                  <span className="text-xs text-gray-500 whitespace-nowrap ml-2">{notification.time}</span>
+                  <span className="text-[10px] text-gray-500 whitespace-nowrap ml-2">{notification.time}</span>
                 </div>
-                <p className="text-xs text-gray-500 truncate">{notification.message}</p>
+                <p className="text-[10px] text-gray-500 truncate">{notification.message}</p>
               </div>
             </div>
           ))}

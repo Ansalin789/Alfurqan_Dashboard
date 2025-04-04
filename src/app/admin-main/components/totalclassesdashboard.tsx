@@ -28,9 +28,9 @@ export default function TotalClasses() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4">
+    <div className="bg-white rounded-lg shadow-sm p-4 w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <h2 className="text-base font-semibold text-gray-800">Total Classes</h2>
         <div className="relative">
           <button
@@ -46,7 +46,7 @@ export default function TotalClasses() {
                   <button
                     key={option}
                     onClick={() => selectTimeFrame(option)}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
                   >
                     {option}
                   </button>
@@ -58,9 +58,9 @@ export default function TotalClasses() {
       </div>
 
       {/* Chart Section */}
-      <div className="h-64 flex">
+      <div className="h-48 flex">
         {/* Y-Axis Labels */}
-        <div className="flex flex-col justify-between text-gray-500 text-xs pr-2">
+        <div className="flex flex-col justify-between text-gray-700 text-xs pl-1 pr-2">
           {[125, 100, 75, 50, 25, 0].map((label) => (
             <div key={label} className="h-6 flex items-center justify-end">
               {label}
@@ -68,19 +68,16 @@ export default function TotalClasses() {
           ))}
         </div>
 
-        {/* Bar Chart - Centered Container */}
+        {/* Bar Chart */}
         <div className="flex-1 flex flex-col">
-          {/* Centered Bars */}
-          <div className="flex-1 flex items-end justify-center gap-x-5 h-full pl-4">
+          <div className="flex-1 flex items-end justify-between sm:justify-center sm:gap-x-3 md:gap-x-8 lg:gap-x-10 h-full pl-4">
             {classData.map((item) => (
-              <div key={item.type} className="flex flex-col items-center h-full" style={{ width: '100px' }}>
-               
-                
+              <div key={item.type} className="flex flex-col items-center h-full" style={{ minWidth: '40px' }}>
                 {/* Bar container */}
                 <div className="flex-1 w-full flex flex-col justify-end items-center">
-                  {/* Actual bar - centered and narrow */}
+                  {/* Actual bar */}
                   <div
-                    className={`w-14 rounded-t-md ${item.color}`}
+                    className={`w-8 sm:w-10 md:w-10 rounded-t-md ${item.color}`}
                     style={{
                       height: `${(item.count / maxCount) * 100}%`,
                       minHeight: '2px'

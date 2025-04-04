@@ -8,8 +8,8 @@ export default function TrialRequests() {
   ]
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4">
-      <div className="mb-4">
+    <div className="bg-white rounded-lg shadow-sm p-5">
+      <div className="mb-3">
         <h2 className="text-[15px] font-semibold text-gray-800">Total Trial Request</h2>
       </div>
       <div className="space-y-6 mx-2">
