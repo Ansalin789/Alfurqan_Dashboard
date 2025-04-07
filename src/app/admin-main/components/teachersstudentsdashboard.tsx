@@ -24,7 +24,7 @@ type Teacher = {
           <span>Students</span>
         </div>
   
-        <div className="max-h-48 overflow-y-auto pr-2">
+        <div className="max-h-40 overflow-y-auto pr-2">
           {teachers.map((teacher) => (
             <div key={teacher.id} className="flex items-center py-[2px] my-1">
               <div className="w-5 flex-shrink-0">
