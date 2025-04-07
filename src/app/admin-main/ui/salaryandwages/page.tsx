@@ -82,7 +82,7 @@ const SalaryCard = () => {
           </button>
         </div>
 
-        <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-[1255px]">
+        <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
           <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-xs">
             <thead className="border-b border-[#1C3557] text-xs font-semibold">
               <tr className="bg-gray-100">

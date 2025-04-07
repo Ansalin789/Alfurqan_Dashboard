@@ -180,8 +180,8 @@ const Expenses = () => {
 </button>
         </div>
 
-        <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-[1255px]">
-          <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-xs">
+        <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
+        <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-xs">
             <thead className="border-b border-[#1C3557] text-xs font-semibold">
               <tr className="bg-gray-100">
                 <th className="p-3 text-center">Date</th>
