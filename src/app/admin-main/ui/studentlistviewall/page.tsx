@@ -12,7 +12,7 @@ const TrailManagement = () => {
   const router = useRouter();
 
 const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 12;
 
 
   const students = [
@@ -126,6 +126,26 @@ const [currentPage, setCurrentPage] = useState(1);
         time: "8.00 AM",
         level: 3,
       },
+      {
+        id: 12,
+        joinDate: "27/12/2025",
+        name: "Has",
+        teacher: "Ahm",
+        course: "Arabic",
+        contact: "9876578901",
+        time: "8.00 AM",
+        level: 3,
+      },
+      {
+        id: 13,
+        joinDate: "27/12/2025",
+        name: "Has",
+        teacher: "Ahmen",
+        course: "Arabic",
+        contact: "9876578901",
+        time: "8.00 AM",
+        level: 3,
+      },
   ];
   
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -179,92 +199,96 @@ const [currentPage, setCurrentPage] = useState(1);
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto bg-white rounded-lg p-4 border-2 border-[#1C3557] w-[1150px]">
-          <table className="w-full table-auto bg-[#fff] rounded-lg shadow">
-            <thead className="border-b border-[#1C3557] text-[11px] font-semibold">
-              <tr className="bg-gray-100">
-                <th className="p-3 text-center">Student ID</th>
-                <th className="p-3 text-center">Date of Joining</th>
-                <th className="p-3 text-center">Student Name</th>
-                <th className="p-3 text-center">Teacher Name</th>
-                <th className="p-3 text-center">Course Name</th>
-                <th className="p-3 text-center">Contact</th>
-                <th className="p-3 text-center">Scheduled Class</th>
-                <th className="p-3 text-center">Level</th>
-                <th className="p-3 text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-  {students.length === 0 ? (
-    <tr>
-      <td colSpan={9} className="text-center py-4 text-gray-500">
-        No student records found.
-      </td>
-    </tr>
-  ) : (
-    paginatedStudent.map((student, index) => (
-      <tr key={student.id} className="border-b border-gray-200 relative">
-        <td className="p-2 text-center text-gray-900">{student.id}</td>
-        <td className="p-2 text-center text-gray-900">{student.joinDate}</td>
-        <td className="p-2 text-center text-gray-900">{student.name}</td>
-        <td className="p-2 text-center text-gray-900">{student.teacher}</td>
-        <td className="p-2 text-center text-gray-900">{student.course}</td>
-        <td className="p-2 text-center text-gray-900">{student.contact}</td>
-        <td className="p-2 text-center text-gray-900">{student.time}</td>
-        <td className="p-2 text-center text-gray-900">{student.level}</td>
-        <td className="p-2 text-center relative">
-          <button
-            className="p-2 bg-[#1C3557] text-white rounded-full"
-            onClick={() => setOpenPopup(openPopup === index ? null : index)}
-          >
-            <FaEdit size={10} />
-          </button>
-
-          {openPopup === index && (
-            <div
-              ref={popupRef}
-              className="absolute right-0 mt-2 w-32 bg-white shadow-lg border rounded-lg z-50 text-[12px]"
-            >
-              <button
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"
-                onClick={handleViewDetails}
-              >
-                View Details
-              </button>
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
-                Edit
-              </button>
-              <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
-                Delete
-              </button>
-            </div>
-          )}
-        </td>
+        <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
+        <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-[11px]">
+    <thead className="border-b border-[#1C3557] font-semibold text-[11px]">
+      <tr className="bg-gray-100">
+        <th className="p-3 text-center">Student ID</th>
+        <th className="p-3 text-center">Date of Joining</th>
+        <th className="p-3 text-center">Student Name</th>
+        <th className="p-3 text-center">Teacher Name</th>
+        <th className="p-3 text-center">Course Name</th>
+        <th className="p-3 text-center">Contact</th>
+        <th className="p-3 text-center">Scheduled Class</th>
+        <th className="p-3 text-center">Level</th>
+        <th className="p-3 text-center">Action</th>
       </tr>
-    ))
-  )}
-</tbody>
-          </table>
-            {/* Pagination Controls */}
-        <div className="flex justify-between items-center mt-4 text-sm text-gray-600">
-        <p>
-          Showing {paginatedStudent.length} of {students.length} classes
-        </p>
-        <div className="flex gap-2">
-          {Array.from({ length: Math.ceil(students.length / itemsPerPage) }, (_, i) => (
-            <button
-              key={i}
-              className={`w-5 h-5 text-[13px] flex items-center justify-center rounded ${
-                currentPage === i + 1 ? "bg-[#1C3557] text-white" : "text-[#1C3557] border border-[#1C3557]"
-              }`}
-              onClick={() => setCurrentPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      </div>
-        </div>
+    </thead>
+    <tbody className="text-[11px]">
+      {students.length === 0 ? (
+        <tr>
+          <td colSpan={9} className="text-center py-4 text-gray-500 text-[11px]">
+            No student records found.
+          </td>
+        </tr>
+      ) : (
+        paginatedStudent.map((student) => (
+          <tr key={student.id} className="border-b border-gray-200 relative">
+            <td className="p-2 text-center text-gray-900">{student.id}</td>
+            <td className="p-2 text-center text-gray-900">{student.joinDate}</td>
+            <td className="p-2 text-center text-gray-900">{student.name}</td>
+            <td className="p-2 text-center text-gray-900">{student.teacher}</td>
+            <td className="p-2 text-center text-gray-900">{student.course}</td>
+            <td className="p-2 text-center text-gray-900">{student.contact}</td>
+            <td className="p-2 text-center text-gray-900">{student.time}</td>
+            <td className="p-2 text-center text-gray-900">{student.level}</td>
+            <td className="p-2 text-center relative">
+              <button
+                className="p-2 bg-[#1C3557] text-white rounded-full"
+                onClick={() => setOpenPopup(openPopup === student.id ? null : student.id)}
+              >
+                <FaEdit size={10} />
+              </button>
+
+              {openPopup === student.id && (
+                <div
+                  ref={popupRef}
+                  className="absolute right-0 mt-2 w-32 bg-white shadow-lg border rounded-lg z-50 text-[11px]"
+                >
+                  <button
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"
+                    onClick={handleViewDetails}
+                  >
+                    View Details
+                  </button>
+                  <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
+                    Edit
+                  </button>
+                  <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
+                    Delete
+                  </button>
+                </div>
+              )}
+            </td>
+          </tr>
+        ))
+      )}
+    </tbody>
+  </table>
+
+  {/* Pagination Controls */}
+  <div className="flex justify-between items-center p-2 mt-4 text-[11px] text-gray-600">
+    <p>
+      Showing {paginatedStudent.length} of {students.length} classes
+    </p>
+    <div className="flex gap-2">
+      {Array.from({ length: Math.ceil(students.length / itemsPerPage) }, (_, i) => (
+        <button
+          key={i}
+          className={`w-5 h-5 text-[11px] flex items-center justify-center rounded ${
+            currentPage === i + 1
+              ? "bg-[#1C3557] text-white"
+              : "text-[#1C3557] border border-[#1C3557]"
+          }`}
+          onClick={() => setCurrentPage(i + 1)}
+        >
+          {i + 1}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
       </div>
     </BaseLayout4>
   );

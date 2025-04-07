@@ -111,67 +111,68 @@ const TrailManagement = () => {
       </div>
 
       {/* Table Section */}
-      <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-[1150px]">
-        <table className="w-full table-auto bg-[#fff] rounded-lg shadow">
-          <thead className="border-b border-[#1C3557] text-[11px] font-semibold">
-            <tr className="bg-gray-100">
-              <th className="p-3 text-center">Student ID</th>
-              <th className="p-3 text-center">Date of Joining</th>
-              <th className="p-3 text-center">Student Name</th>
-              <th className="p-3 text-center">Teacher Name</th>
-              <th className="p-3 text-center">Course Name</th>
-              <th className="p-3 text-center">Contact</th>
-              <th className="p-3 text-center">Scheduled Class</th>
-              <th className="p-3 text-center">Level</th>
-              <th className="p-3 text-center">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((student) => (
-              <tr key={student.studentId} className="border-b border-gray-200 relative">
-                <td className="p-2 text-center">{student.studentId}</td>
-                <td className="p-2 text-center">{student.dateOfJoining}</td>
-                <td className="p-2 text-center">{student.studentName}</td>
-                <td className="p-2 text-center">{student.teacherName}</td>
-                <td className="p-2 text-center">{student.courseName}</td>
-                <td className="p-2 text-center">{student.contact}</td>
-                <td className="p-2 text-center">{student.scheduledClass}</td>
-                <td className="p-2 text-center">{student.level}</td>
-                <td className="p-2 text-center">
-                  <button
-                    className="p-2 bg-[#1C3557] text-white rounded-full"
-                    onClick={() =>
-                      setOpenPopup(openPopup === student.studentId ? null : student.studentId)
-                    }
-                  >
-                    <FaEdit size={10} />
-                  </button>
+      <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
+  <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-sm">
+    <thead className="border-b border-[#1C3557] text-xs font-semibold">
+      <tr className="bg-gray-100">
+        <th className="p-3 text-center">Student ID</th>
+        <th className="p-3 text-center">Date of Joining</th>
+        <th className="p-3 text-center">Student Name</th>
+        <th className="p-3 text-center">Teacher Name</th>
+        <th className="p-3 text-center">Course Name</th>
+        <th className="p-3 text-center">Contact</th>
+        <th className="p-3 text-center">Scheduled Class</th>
+        <th className="p-3 text-center">Level</th>
+        <th className="p-3 text-center">Action</th>
+      </tr>
+    </thead>
+    <tbody className="text-xs">
+      {students.map((student) => (
+        <tr key={student.studentId} className="border-b border-gray-200 relative">
+          <td className="p-2 text-center">{student.studentId}</td>
+          <td className="p-2 text-center">{student.dateOfJoining}</td>
+          <td className="p-2 text-center">{student.studentName}</td>
+          <td className="p-2 text-center">{student.teacherName}</td>
+          <td className="p-2 text-center">{student.courseName}</td>
+          <td className="p-2 text-center">{student.contact}</td>
+          <td className="p-2 text-center">{student.scheduledClass}</td>
+          <td className="p-2 text-center">{student.level}</td>
+          <td className="p-2 text-center">
+            <button
+              className="p-2 bg-[#1C3557] text-white rounded-full"
+              onClick={() =>
+                setOpenPopup(openPopup === student.studentId ? null : student.studentId)
+              }
+            >
+              <FaEdit size={10} />
+            </button>
 
-                  {openPopup === student.studentId && (
-                    <div
-                      ref={popupRef}
-                      className="absolute right-0 mt-2 w-32 bg-white shadow-lg border rounded-lg z-50 text-[12px]"
-                    >
-                      <button
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"
-                        onClick={handleViewDetails}
-                      >
-                        View Details
-                      </button>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
-                        Edit
-                      </button>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            {openPopup === student.studentId && (
+              <div
+                ref={popupRef}
+                className="absolute right-0 mt-2 w-32 bg-white shadow-lg border rounded-lg z-50 text-xs"
+              >
+                <button
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"
+                  onClick={handleViewDetails}
+                >
+                  View Details
+                </button>
+                <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
+                  Edit
+                </button>
+                <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
+                  Delete
+                </button>
+              </div>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
     </div>
   );
 };
