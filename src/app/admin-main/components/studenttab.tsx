@@ -242,31 +242,37 @@ const TabbedTable = () => {
       {activeTab === "Courses" && (
         <div className="mt-4">
           <div className="grid grid-cols-4 gap-4 text-center">
-            {progressData.map((item, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <div className="relative w-24 h-20 flex items-center justify-center">
-                  <CircularProgressbar
-                    value={item.value}
-                    maxValue={item.label === "Attendance" ? 100 : undefined}
-                    strokeWidth={15} // Controls the bar thickness
-                    styles={buildStyles({
-                      pathColor: item.color,
-                      trailColor: "#D3D3D3",
-                      strokeLinecap: "round",
-                    })}
-                  />
-                  <div className="absolute text-md font-bold text-black">
-                    {item.value}
-                    {item.label === "Attendance"
-                      ? "%"
-                      : item.label === "Duration"
-                      ? " HRS"
-                      : ""}
-                  </div>
-                </div>
-                <p className="mt-2 text-sm font-medium">{item.label}</p>
-              </div>
-            ))}
+          {progressData.map((item) => {
+  let suffix = "";
+  if (item.label === "Attendance") {
+    suffix = "%";
+  } else if (item.label === "Duration") {
+    suffix = " HRS";
+  }
+
+  return (
+    <div key={item.label} className="flex flex-col items-center">
+      <div className="relative w-24 h-20 flex items-center justify-center">
+        <CircularProgressbar
+          value={item.value}
+          maxValue={item.label === "Attendance" ? 100 : undefined}
+          strokeWidth={15}
+          styles={buildStyles({
+            pathColor: item.color,
+            trailColor: "#D3D3D3",
+            strokeLinecap: "round",
+          })}
+        />
+        <div className="absolute text-md font-bold text-black">
+          {item.value}
+          {suffix}
+        </div>
+      </div>
+      <p className="mt-2 text-sm font-medium">{item.label}</p>
+    </div>
+  );
+})}
+
           </div>
           <div className="mt-4 overflow-hidden">
             <table className="w-full text-[12px]">
@@ -362,33 +368,43 @@ const TabbedTable = () => {
                 </tr>
               </thead>
               <tbody>
-            {paginatedPaymentData.map((row) => (
-                  <tr key={row.invoiceid} className="border-b text-center">
-                    <td className="p-2">{row.invoiceid}</td>
-                    <td className="p-2">{row.date}</td>
-                    <td className="p-2">{row.course}</td>
-                    <td className="p-2">{row.duebydays}</td>
-                    <td className="p-2">{row.paiddate}</td>
-                    <td className="p-2">
-                      <span
-                        className={`inline-flex items-center justify-center w-20 h-8 px-3 py-1 rounded-2xl 
-    ${
-      row.status === "Paid"
-        ? "bg-green-500 text-white"
-        : row.status === "Pending"
-        ? "bg-red-500 text-white"
-        : row.status === "Void"
-        ? "bg-yellow-500 text-white"
-        : row.status === "Cancelled"
-        ? "bg-gray-500 text-white"
-        : ""
-    }`}
-                      >
-                        {row.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+              {paginatedPaymentData.map((row) => {
+  let statusClass = "";
+
+  switch (row.status) {
+    case "Paid":
+      statusClass = "bg-green-500 text-white";
+      break;
+    case "Pending":
+      statusClass = "bg-red-500 text-white";
+      break;
+    case "Void":
+      statusClass = "bg-yellow-500 text-white";
+      break;
+    case "Cancelled":
+      statusClass = "bg-gray-500 text-white";
+      break;
+    
+  }
+
+  return (
+    <tr key={row.invoiceid} className="border-b text-center">
+      <td className="p-2">{row.invoiceid}</td>
+      <td className="p-2">{row.date}</td>
+      <td className="p-2">{row.course}</td>
+      <td className="p-2">{row.duebydays}</td>
+      <td className="p-2">{row.paiddate}</td>
+      <td className="p-2">
+        <span
+          className={`inline-flex items-center justify-center w-20 h-8 px-3 py-1 rounded-2xl ${statusClass}`}
+        >
+          {row.status}
+        </span>
+      </td>
+    </tr>
+  );
+})}
+
               </tbody>
             </table>
               {/* Pagination Controls */}
@@ -434,28 +450,36 @@ const TabbedTable = () => {
                 </tr>
               </thead>
               <tbody>
-              {paginatedAssessmentData.map((row) => (
-                  <tr key={row.subject} className="border-b text-center">
-                    <td className="p-2">{row.subject}</td>
-                    <td className="p-2">{row.date}</td>
-                    <td className="p-2">{row.score}</td>
-                    <td className="p-2">{row.grade}</td>
-                    <td className="p-2">
-                      <span
-                        className={`inline-flex items-center justify-center w-36 h-8 px-3 py-1 rounded-2xl 
-                     ${
-                       row.status === "Completed"
-                         ? "bg-green-500 text-white"
-                         : row.status === "Retake Required"
-                         ? "bg-red-500 text-white"
-                         : ""
-                     }`}
-                      >
-                        {row.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+              {paginatedAssessmentData.map((row) => {
+  let statusClass = "";
+
+  switch (row.status) {
+    case "Completed":
+      statusClass = "bg-green-500 text-white";
+      break;
+    case "Retake Required":
+      statusClass = "bg-red-500 text-white";
+      break;
+  
+  }
+
+  return (
+    <tr key={row.subject} className="border-b text-center">
+      <td className="p-2">{row.subject}</td>
+      <td className="p-2">{row.date}</td>
+      <td className="p-2">{row.score}</td>
+      <td className="p-2">{row.grade}</td>
+      <td className="p-2">
+        <span
+          className={`inline-flex items-center justify-center w-36 h-8 px-3 py-1 rounded-2xl ${statusClass}`}
+        >
+          {row.status}
+        </span>
+      </td>
+    </tr>
+  );
+})}
+
               </tbody>
             </table>
               {/* Pagination Controls */}

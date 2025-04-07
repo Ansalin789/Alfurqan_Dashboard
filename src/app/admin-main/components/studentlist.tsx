@@ -4,33 +4,82 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaEdit, FaFilter } from "react-icons/fa";
 
+const students = [
+  {
+    studentId: "STU001",
+    dateOfJoining: "2024-01-15",
+    studentName: "Amina Khan",
+    teacherName: "Ustadh Ahmad",
+    courseName: "Tajweed Basics",
+    contact: "+91-9876543210",
+    scheduledClass: "Mon, Wed, Fri - 5 PM",
+    level: "Beginner",
+  },
+  {
+    studentId: "STU002",
+    dateOfJoining: "2024-02-10",
+    studentName: "Zayd Rahman",
+    teacherName: "Ustadha Fatima",
+    courseName: "Quran Memorization",
+    contact: "+91-9123456780",
+    scheduledClass: "Tue, Thu - 6 PM",
+    level: "Intermediate",
+  },
+  {
+    studentId: "STU003",
+    dateOfJoining: "2024-03-05",
+    studentName: "Maryam Siddiqui",
+    teacherName: "Ustadh Bilal",
+    courseName: "Arabic Grammar",
+    contact: "+91-9988776655",
+    scheduledClass: "Sat, Sun - 4 PM",
+    level: "Advanced",
+  },
+  {
+    studentId: "STU004",
+    dateOfJoining: "2024-01-25",
+    studentName: "Ibrahim Ali",
+    teacherName: "Ustadh Ahmad",
+    courseName: "Tajweed Advanced",
+    contact: "+91-9090909090",
+    scheduledClass: "Mon to Fri - 7 AM",
+    level: "Advanced",
+  },
+  {
+    studentId: "STU005",
+    dateOfJoining: "2024-02-28",
+    studentName: "Fatima Noor",
+    teacherName: "Ustadha Fatima",
+    courseName: "Quran with Translation",
+    contact: "+91-9876541230",
+    scheduledClass: "Wed, Fri - 8 PM",
+    level: "Beginner",
+  },
+];
+
 const TrailManagement = () => {
-  const [openPopup, setOpenPopup] = useState<number | null>(null);
+  const [openPopup, setOpenPopup] = useState<string | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const popupRef = useRef<HTMLDivElement | null>(null);
-  const router = useRouter(); // Initialize router
+  const router = useRouter();
 
-  // Function to handle outside click
   const handleClickOutside = (event: MouseEvent) => {
     if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
       setOpenPopup(null);
     }
   };
 
-  // Effect to add/remove event listener for outside clicks
   useEffect(() => {
     if (openPopup !== null) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
-
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openPopup]);
 
-  // Function to handle view details click
   const handleViewDetails = () => {
-    router.push(`/admin-main/ui/studentlist`); // Navigate to student details page
+    router.push(`/admin-main/ui/studentlist`);
   };
 
   return (
@@ -51,7 +100,7 @@ const TrailManagement = () => {
           </button>
         </div>
 
-        {/* Duration Dropdown on the Right */}
+        {/* Duration Dropdown */}
         <div className="ml-auto">
           <select className="border rounded-lg px-2 py-1 shadow text-[12px]">
             <option>Duration: Last month</option>
@@ -78,33 +127,34 @@ const TrailManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {[...Array(4)].map((_, index) => (
-              <tr key={index} className="border-b border-gray-200 relative">
-                <td className="p-2 text-center text-gray-400">-</td>
-                <td className="p-2 text-center text-gray-400">-</td>
-                <td className="p-2 text-center text-gray-400">-</td>
-                <td className="p-2 text-center text-gray-400">-</td>
-                <td className="p-2 text-center text-gray-400">-</td>
-                <td className="p-2 text-center text-gray-400">-</td>
-                <td className="p-2 text-center text-gray-400">-</td>
-                <td className="p-2 text-center text-gray-400">-</td>
+            {students.map((student) => (
+              <tr key={student.studentId} className="border-b border-gray-200 relative">
+                <td className="p-2 text-center">{student.studentId}</td>
+                <td className="p-2 text-center">{student.dateOfJoining}</td>
+                <td className="p-2 text-center">{student.studentName}</td>
+                <td className="p-2 text-center">{student.teacherName}</td>
+                <td className="p-2 text-center">{student.courseName}</td>
+                <td className="p-2 text-center">{student.contact}</td>
+                <td className="p-2 text-center">{student.scheduledClass}</td>
+                <td className="p-2 text-center">{student.level}</td>
                 <td className="p-2 text-center">
                   <button
                     className="p-2 bg-[#1C3557] text-white rounded-full"
-                    onClick={() => setOpenPopup(openPopup === index ? null : index)}
+                    onClick={() =>
+                      setOpenPopup(openPopup === student.studentId ? null : student.studentId)
+                    }
                   >
-                          <FaEdit size={10} />
+                    <FaEdit size={10} />
                   </button>
 
-                  {/* Pop-up */}
-                  {openPopup === index && (
+                  {openPopup === student.studentId && (
                     <div
                       ref={popupRef}
                       className="absolute right-0 mt-2 w-32 bg-white shadow-lg border rounded-lg z-50 text-[12px]"
                     >
                       <button
                         className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"
-                        onClick={() => handleViewDetails()}
+                        onClick={handleViewDetails}
                       >
                         View Details
                       </button>
