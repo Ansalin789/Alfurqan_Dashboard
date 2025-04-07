@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaEllipsisH, FaFilter } from "react-icons/fa";
+import { FaEdit, FaFilter } from "react-icons/fa";
 
 const TrailManagement = () => {
   const [openPopup, setOpenPopup] = useState<number | null>(null);
@@ -93,14 +93,14 @@ const TrailManagement = () => {
                     className="p-2 bg-[#1C3557] text-white rounded-full"
                     onClick={() => setOpenPopup(openPopup === index ? null : index)}
                   >
-                    <FaEllipsisH />
+                          <FaEdit size={10} />
                   </button>
 
                   {/* Pop-up */}
                   {openPopup === index && (
                     <div
                       ref={popupRef}
-                      className="absolute right-0 mt-2 w-40 bg-white shadow-lg border rounded-lg z-50"
+                      className="absolute right-0 mt-2 w-32 bg-white shadow-lg border rounded-lg z-50 text-[12px]"
                     >
                       <button
                         className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"
