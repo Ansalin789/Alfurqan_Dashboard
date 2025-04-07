@@ -53,6 +53,8 @@ const teacherTrials = [
   { name: "Hassan I.", trials: 6, joined: 4 },
   { name: "Imran G.", trials: 4, joined: 3 },
   { name: "Hussain A.", trials: 5, joined: 5 },
+  { name: "Gomathi A.", trials: 5, joined: 5 },
+
 ]
 
 const CustomBarLabel = (props: any) => {
