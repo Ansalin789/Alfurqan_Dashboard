@@ -112,23 +112,23 @@ const TrailManagement = () => {
 
       {/* Table Section */}
       <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
-  <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-sm">
-    <thead className="border-b border-[#1C3557] text-xs font-semibold">
-      <tr className="bg-gray-100">
-        <th className="p-3 text-center">Student ID</th>
-        <th className="p-3 text-center">Date of Joining</th>
-        <th className="p-3 text-center">Student Name</th>
-        <th className="p-3 text-center">Teacher Name</th>
-        <th className="p-3 text-center">Course Name</th>
-        <th className="p-3 text-center">Contact</th>
-        <th className="p-3 text-center">Scheduled Class</th>
-        <th className="p-3 text-center">Level</th>
-        <th className="p-3 text-center">Action</th>
+  <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-[11px]">
+    <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
+      <tr>
+        <th className="p-3 py-5 font-semibold text-center">Student ID</th>
+        <th className="p-3 py-5 font-semibold text-center">Date of Joining</th>
+        <th className="p-3  py-5 font-semibold text-center">Student Name</th>
+        <th className="p-3  py-5 font-semibold text-center">Teacher Name</th>
+        <th className="p-3 py-5 font-semibold text-center">Course Name</th>
+        <th className="p-3 py-5 font-semibold text-center">Contact</th>
+        <th className="p-3 py-5 font-semibold text-center">Scheduled Class</th>
+        <th className="p-3 py-5 font-semibold text-center">Level</th>
+        <th className="p-3 py-5 font-semibold text-center">Action</th>
       </tr>
     </thead>
-    <tbody className="text-xs">
-      {students.map((student) => (
-        <tr key={student.studentId} className="border-b border-gray-200 relative">
+    <tbody>
+      {students.map((student ,index) => (
+        <tr key={student.studentId} className={`text-[9px] font-medium mt-0 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}` }>
           <td className="p-2 text-center">{student.studentId}</td>
           <td className="p-2 text-center">{student.dateOfJoining}</td>
           <td className="p-2 text-center">{student.studentName}</td>
@@ -139,7 +139,7 @@ const TrailManagement = () => {
           <td className="p-2 text-center">{student.level}</td>
           <td className="p-2 text-center">
             <button
-              className="p-2 bg-[#1C3557] text-white rounded-full"
+              className="p-2 bg-[#1C3557] text-white rounded-lg"
               onClick={() =>
                 setOpenPopup(openPopup === student.studentId ? null : student.studentId)
               }
