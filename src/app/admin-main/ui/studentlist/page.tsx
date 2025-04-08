@@ -22,17 +22,17 @@ const students = [
 export default function StudentList() {
   return (
     <BaseLayout4>
-      <div className="p-4 overflow-x-auto">
+      <div className="p-4 w-[1180px] overflow-x-auto">
         {students.map((student) => {
           const percentageNumber = parseInt(student.percentage.replace("%", ""));
 
           return (
             <div
               key={student.id}
-              className="bg-white shadow-md rounded-lg p-4 flex border border-gray-300 w-[1200px] h-[200px] overflow-x-auto"
+              className="bg-white shadow-md rounded-lg p-4 flex border border-gray-300 w-[1150px] h-[200px] overflow-x-auto"
             >
               {/* Left Section */}
-              <div className="w-1/4 flex flex-col items-center border-r pr-4">
+              <div className="w-1/4 flex flex-col items-center border-r pr-4 ">
                 {/* Circle Image with Thick Border */}
                 <div className="w-20 h-20 rounded-full border-4 border-blue-500 flex items-center justify-center">
                   <img
@@ -56,7 +56,7 @@ export default function StudentList() {
 
                 {/* Course Completion Bar */}
                 <div className="w-full max-w-[120px] mt-2">
-                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-x-auto">
                     <div
                       className="h-full bg-green-500"
                       style={{ width: `${percentageNumber}%` }}
@@ -69,7 +69,7 @@ export default function StudentList() {
               </div>
 
               {/* Right Section */}
-              <div className="w-3/4 pl-4">
+              <div className="w-3/4 pl-4 ">
                   <h4 className="text-gray-500 font-semibold mb-1 text-sm">Contact & Details</h4>
                   <div className="grid grid-cols-3 gap-x-7 gap-y-1 text-xs">
                     <div className="mt-2">
@@ -110,7 +110,7 @@ export default function StudentList() {
             </div>
           );
         })}
-        <div className="overflow-x-auto">
+        <div>
         <TabbedTable />
         </div>
       </div>
