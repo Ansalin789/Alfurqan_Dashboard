@@ -164,7 +164,7 @@ const TabbedTable = () => {
   
 
   return (
-    <div className="mt-4 bg-white shadow-md rounded-lg p-3">
+    <div className=" overflow-x-auto mt-4 bg-white shadow-md rounded-lg p-3">
       {/* Tabs */}
       <div className="flex space-x-4 border-b pb-1 text-sm">
         {tabs.map((tab) => (
