@@ -22,14 +22,14 @@ const students = [
 export default function StudentList() {
   return (
     <BaseLayout4>
-      <div className="p-4">
+      <div className="p-4 overflow-x-auto">
         {students.map((student) => {
           const percentageNumber = parseInt(student.percentage.replace("%", ""));
 
           return (
             <div
               key={student.id}
-              className="bg-white shadow-md rounded-lg p-4 flex border border-gray-300 w-[1200px] h-[200px] overflow-hidden"
+              className="bg-white shadow-md rounded-lg p-4 flex border border-gray-300 w-[1200px] h-[200px] overflow-x-auto"
             >
               {/* Left Section */}
               <div className="w-1/4 flex flex-col items-center border-r pr-4">
@@ -110,9 +110,8 @@ export default function StudentList() {
             </div>
           );
         })}
-        <div>
+        <div className="overflow-x-auto">
         <TabbedTable />
-          
         </div>
       </div>
     </BaseLayout4>
