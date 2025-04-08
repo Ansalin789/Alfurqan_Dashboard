@@ -32,7 +32,7 @@ const StudentModuleAccess = () => {
     <BaseLayout4>
       <div className="flex items-center justify-center mx-auto">
         <div className="">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 text-left p-4">Student Module Access</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 text-left py-4">Student Module Access</h2>
           <div className="bg-white p-10 rounded-3xl shadow-lg">
             <table className="w-full border-collapse text-left">
               <thead>

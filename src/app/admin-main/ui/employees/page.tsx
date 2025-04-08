@@ -66,6 +66,193 @@ interface OtherEmployees {
     rating: number;
 }
 
+// Mock data for teachers
+const mockTeachers: Teacher[] = [
+    {
+        _id: "1",
+        userId: "user1",
+        userName: "John Smith",
+        email: "john.smith@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Senior",
+        subject: "Mathematics",
+        rating: 4.5
+    },
+    {
+        _id: "2",
+        userId: "user2",
+        userName: "Sarah Johnson",
+        email: "sarah.j@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Physics",
+        rating: 4.2
+    },
+    {
+        _id: "3",
+        userId: "user3",
+        userName: "Michael Brown",
+        email: "michael.b@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Senior",
+        subject: "Chemistry",
+        rating: 4.8
+    },
+    {
+        _id: "4",
+        userId: "user4",
+        userName: "Emily Davis",
+        email: "emily.d@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Biology",
+        rating: 4.0
+    },
+    {
+        _id: "5",
+        userId: "user4",
+        userName: "Emily Davis",
+        email: "emily.d@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Biology",
+        rating: 4.0
+    },
+    {
+        _id: "6",
+        userId: "user4",
+        userName: "Emily Davis",
+        email: "emily.d@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Biology",
+        rating: 4.0
+    },
+    {
+        _id: "7",
+        userId: "user4",
+        userName: "Emily Davis",
+        email: "emily.d@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Biology",
+        rating: 4.0
+    },
+    {
+        _id: "8",
+        userId: "user4",
+        userName: "Emily Davis",
+        email: "emily.d@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Biology",
+        rating: 4.0
+    },
+    {
+        _id: "9",
+        userId: "user4",
+        userName: "Emily Davis",
+        email: "emily.d@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Biology",
+        rating: 4.0
+    }
+];
+
+// Mock data for other employees
+const mockOtherEmployees: OtherEmployees[] = [
+    {
+        _id: "1",
+        userId: "user5",
+        userName: "David Wilson",
+        email: "david.w@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Senior",
+        subject: "Administration",
+        rating: 4.3
+    },
+    {
+        _id: "2",
+        userId: "user6",
+        userName: "Lisa Anderson",
+        email: "lisa.a@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "HR",
+        rating: 4.1
+    },
+    {
+        _id: "3",
+        userId: "user6",
+        userName: "Lisa Anderson",
+        email: "lisa.a@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Teacher",
+        rating: 4.1
+    },
+    {
+        _id: "4",
+        userId: "user6",
+        userName: "Lisa Anderson",
+        email: "lisa.a@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Supervisor",
+        rating: 4.1
+    },
+    {
+        _id: "5",
+        userId: "user6",
+        userName: "Lisa Anderson",
+        email: "lisa.a@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "HR",
+        rating: 4.1
+    },
+    {
+        _id: "6",
+        userId: "user6",
+        userName: "Lisa Anderson",
+        email: "lisa.a@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Teacher",
+        rating: 4.1
+    },
+    {
+        _id: "7",
+        userId: "user6",
+        userName: "Lisa Anderson",
+        email: "lisa.a@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "Academic",
+        rating: 4.1
+    },
+    {
+        _id: "8",
+        userId: "user6",
+        userName: "Lisa Anderson",
+        email: "lisa.a@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "HR",
+        rating: 4.1
+    },
+    {
+        _id: "9",
+        userId: "user6",
+        userName: "Lisa Anderson",
+        email: "lisa.a@example.com",
+        profileImage: "/assets/images/proff.jpg",
+        level: "Junior",
+        subject: "HR",
+        rating: 4.1
+    }
+];
 
 const Page = () => {
     const [activeTab, setActiveTab] = useState<'teachers' | 'otheremployees' | 'recruitment'>('teachers');
@@ -79,7 +266,8 @@ const Page = () => {
     const needleLength = 35; // Adjusted needle length
     const angle = (needleValue / 100) * 180; // Rotate needle based on percentage
     const router = useRouter();
-    const [teachers, setTeachers] = useState<Teacher[]>([]);
+    const [teachers, setTeachers] = useState<Teacher[]>(mockTeachers);
+    const [otherEmployees, setOtherEmployees] = useState<OtherEmployees[]>(mockOtherEmployees);
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [searchQuery1, setSearchQuery1] = useState<string>("");
 
@@ -94,54 +282,6 @@ const Page = () => {
         profileImage: null,
         lastUpdatedBy: "SYSTEM",
     });
-    useEffect(() => {
-        const fetchTeachers = async () => {
-            try {
-
-                const response = await fetch(
-                    `https://alfurqanacademy.tech/users?role=TEACHER`,
-
-                );
-                const data = await response.json();
-
-                console.log("Fetched data:", data);
-
-                // Access `users` array in the response
-                if (data && Array.isArray(data.users)) {
-                    setTeachers(data.users);
-                } else {
-                    console.error("Unexpected API response structure:", data);
-                }
-            } catch (error) {
-                console.error("Error fetching teachers:", error);
-            }
-        };
-
-        fetchTeachers();
-    }, []);
-    useEffect(() => {
-    }, [teachers]);
-
-    const handleViewTeacher = (teacherId: string) => {
-        if (!teacherId) {
-            console.error("Teacher ID is undefined.");
-            return;
-        }
-        localStorage.setItem("manageTeacherId", teacherId);
-        console.log("Teacher ID:", teacherId); // Debugging
-        router.push("/admin-main/ui/employees/teacher");
-    };
-
-    const handleViewEmployee = (teacherId: string) => {
-        if (!teacherId) {
-            console.error("Teacher ID is undefined.");
-            return;
-        }
-        localStorage.setItem("manageTeacherId", teacherId);
-        console.log("Teacher ID:", teacherId); // Debugging
-        router.push("/admin-main/ui/employees/otheremployees");
-    };
-
 
     const closeModal = () => {
         setIsModalOpen(false);
@@ -173,6 +313,27 @@ const Page = () => {
         }
         closeModal();
     };
+
+    const handleViewTeacher = (teacherId: string) => {
+        if (!teacherId) {
+            console.error("Teacher ID is undefined.");
+            return;
+        }
+        localStorage.setItem("manageTeacherId", teacherId);
+        console.log("Teacher ID:", teacherId);
+        router.push("/admin-main/ui/employees/teacher");
+    };
+
+    const handleViewEmployee = (employeeId: string) => {
+        if (!employeeId) {
+            console.error("Employee ID is undefined.");
+            return;
+        }
+        localStorage.setItem("manageTeacherId", employeeId);
+        console.log("Employee ID:", employeeId);
+        router.push("/admin-main/ui/employees/otheremployees");
+    };
+
     return (
         <BaseLayout4>
             <div className="p-4 min-h-screen mx-auto">
@@ -373,7 +534,7 @@ const Page = () => {
                                                 </div>
                                             </div>
                                             {/* Cards */}
-                                            <div className="grid grid-cols-6 gap-[214px] py-2 h-52 overflow-y-scroll scrollbar-thin" style={{ width: "100%" }}>
+                                            <div className="grid grid-cols-6 gap-x-[214px] gap-y-[21px] py-2 h-52 overflow-y-scroll scrollbar-thin" style={{ width: "100%" }}>
                                                 {teachers
                                                     .filter(
                                                         (teacher) =>
@@ -387,25 +548,25 @@ const Page = () => {
                                                     .map((teacher, index) => (
                                                         <div
                                                             key={teacher._id}
-                                                            className="bg-white shadow-md rounded-lg w-48 "
+                                                            className="bg-white shadow-md rounded-lg w-48 h-44"
                                                         >
                                                             <div className="flex justify-between items-center gap-4">
                                                                 <Image
-                                                                    src={teacher.profileImage ?? "/assets/images/proff.jpg"}
+                                                                    src="/assets/images/proff.jpg"
                                                                     alt="Teacher"
-                                                                    className="w-12 h-12 ml-[73px] mt-3 rounded-full"
+                                                                    className="w-10 h-10 ml-[80px] mt-3 rounded-full"
                                                                     width={40}
                                                                     height={40}
                                                                 />
                                                             </div>
                                                             <div className="mt-3 text-center">
-                                                                <h3 className="text-base font-bold text-[#223857] mb-2">
+                                                                <h3 className="text-sm font-semibold text-[#223857] mb-2">
                                                                     {teacher.userName}
                                                                 </h3>
-                                                                <p className="text-[#717579] text-sm">
+                                                                <p className="text-[#717579] text-xs">
                                                                     Level: {teacher.level}
                                                                 </p>
-                                                                <p className="text-[#717579] p-1 text-sm">
+                                                                <p className="text-[#717579] p-1 text-xs">
                                                                     {teacher.subject}
                                                                 </p>
                                                                 <div className="flex text-center justify-center"></div>
@@ -579,45 +740,45 @@ const Page = () => {
                                                     </div>
                                                 </div>
                                                 {/* Cards */}
-                                                <div className="grid grid-cols-6 gap-[214px] py-2 h-52 overflow-y-scroll scrollbar-thin" style={{ width: "100%" }}>
-                                                    {teachers
+                                                <div className="grid grid-cols-6 gap-x-[214px] gap-y-[21px]  py-2 h-52 overflow-y-scroll scrollbar-thin" style={{ width: "100%" }}>
+                                                    {otherEmployees
                                                         .filter(
-                                                            (teacher) =>
-                                                                teacher.userName
+                                                            (employee) =>
+                                                                employee.userName
                                                                     .toLowerCase()
                                                                     .includes(searchQuery1.toLowerCase()) ||
-                                                                teacher.email
+                                                                employee.email
                                                                     .toLowerCase()
                                                                     .includes(searchQuery1.toLowerCase())
                                                         )
-                                                        .map((teacher, index) => (
+                                                        .map((employee) => (
                                                             <div
-                                                                key={teacher._id}
-                                                                className="bg-white shadow-md rounded-lg w-48 "
+                                                                key={employee._id}
+                                                                className="bg-white shadow-md rounded-lg w-48 h-44"
                                                             >
                                                                 <div className="flex justify-between items-center gap-4">
                                                                     <Image
-                                                                        src={teacher.profileImage ?? "/assets/images/proff.jpg"}
-                                                                        alt="Teacher"
-                                                                        className="w-12 h-12 ml-[73px] mt-3 rounded-full"
+                                                                        src={employee.profileImage ?? "/assets/images/proff.jpg"}
+                                                                        alt="Employee"
+                                                                        className="w-10 h-10 ml-[80px] mt-3 rounded-full"
                                                                         width={40}
                                                                         height={40}
                                                                     />
                                                                 </div>
                                                                 <div className="mt-3 text-center">
-                                                                    <h3 className="text-base font-bold text-[#223857] mb-2">
-                                                                        {teacher.userName}
+                                                                    <h3 className="text-sm font-bold text-[#223857] mb-2">
+                                                                        {employee.userName}
                                                                     </h3>
-                                                                    <p className="text-[#717579] text-sm">
-                                                                        Level: {teacher.level}
+                                                                    <p className="text-[#717579] text-xs">
+                                                                        {employee.level}
                                                                     </p>
-                                                                    <p className="text-[#717579] p-1 text-sm">
-                                                                        {teacher.subject}
+                                                                    <p className="text-[#717579] p-1 text-xs">
+                                                                        {employee.subject}
                                                                     </p>
                                                                     <div className="flex text-center justify-center"></div>
                                                                     <button
                                                                         className="mt-2 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg"
-                                                                        onClick={() => handleViewEmployee(teacher._id)}
+                                                                        onClick={() => handleViewEmployee(employee._id)}
                                                                     >
                                                                         View Profile
                                                                     </button>

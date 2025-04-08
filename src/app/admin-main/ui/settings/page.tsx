@@ -126,31 +126,31 @@ const Page: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <div className="bg-white shadow-md border border-gray-800 rounded-lg overflow-hidden h-[500px] overflow-y-scroll scrollbar-thin">
+                <div className="bg-white shadow-md border border-gray-800 rounded-lg overflow-hidden h-[490px] overflow-y-scroll scrollbar-thin">
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="text-gray-600 text-left text-[12px]">
-                                <th className="px-7 text-center py-8">Employee ID</th>
-                                <th className="px-7 text-center py-8">Employee Name</th>
-                                <th className="px-7 text-center py-8">Contact</th>
-                                <th className="px-7 text-center py-8">Designation</th>
-                                <th className="px-7 text-center py-8">Date of Joining</th>
-                                <th className="px-7 text-center py-8">Role Access</th>
-                                <th className="px-7 text-center py-8">Module Access</th>
-                                <th className="px-7 text-center py-8">Actions</th>
+                                <th className="px-5 text-center py-8">Employee ID</th>
+                                <th className="px-5 text-center py-8">Employee Name</th>
+                                <th className="px-5 text-center py-8">Contact</th>
+                                <th className="px-5 text-center py-8">Designation</th>
+                                <th className="px-5 text-center py-8">Date of Joining</th>
+                                <th className="px-5 text-center py-8">Role Access</th>
+                                <th className="px-5 text-center py-8">Module Access</th>
+                                <th className="px-5 text-center py-8">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {employees.map((emp, index) => (
                                 <tr key={index} className="border-t border-gray-200 text-gray-700 text-[10px]">
-                                    <td className="py-4 px-9 text-center">{emp.id}</td>
-                                    <td className="py-4 px-9 text-center">{emp.name}</td>
-                                    <td className="py-4 px-9 text-center">{emp.contact}</td>
-                                    <td className="py-4 px-9 text-center">{emp.designation}</td>
-                                    <td className="py-4 px-9 text-center">{emp.date}</td>
-                                    <td className="py-4 px-9 text-center">
+                                    <td className="py-4 px-5 text-center">{emp.id}</td>
+                                    <td className="py-4 px-5 text-center">{emp.name}</td>
+                                    <td className="py-4 px-5 text-center">{emp.contact}</td>
+                                    <td className="py-4 px-5 text-center">{emp.designation}</td>
+                                    <td className="py-4 px-5 text-center">{emp.date}</td>
+                                    <td className="py-4 px-5 text-center">
                                         <select
-                                            className="border border-gray-300 p-1 rounded-md"
+                                            className="border border-gray-300 p-1 rounded-md text-center"
                                             value={emp.role}
                                             onChange={(e) => handleRoleChange(index, e.target.value)}
                                         >
@@ -160,8 +160,8 @@ const Page: React.FC = () => {
                                             <option value="Teacher">Teacher</option>
                                         </select>
                                     </td>
-                                    <td className="py-4 px-9 text-center">
-                                        <button className='flex' onClick={() => toggleModuleDropdown(index)}>
+                                    <td className="py-4 px-5 text-center">
+                                        <button className='flex text-center' onClick={() => toggleModuleDropdown(index)}>
                                             {emp.module} <FaChevronDown size={6} className='mt-[5px] ml-1' />
                                         </button>
                                         {openModuleDropdownIndex === index && (
@@ -205,7 +205,7 @@ const Page: React.FC = () => {
                                             </ul>
                                         )}
                                     </td>
-                                    <td className="py-4 px-9 w-5 text-center text-gray-500 hover:text-gray-700 cursor-pointer">
+                                    <td className="py-4 px-5 w-5 text-center text-gray-500 hover:text-gray-700 cursor-pointer">
                                         <PiDotsThreeCircle size={20} />
                                     </td>
                                 </tr>
