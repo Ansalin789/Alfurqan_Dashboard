@@ -29,8 +29,8 @@ const Dashboard = () => {
           </div>
           <div className="flex justify-end">
             <button
-              className="flex items-center gap-1 text-gray-600 text-sm bg-gray-200 px-3 py-1 rounded-md hover:bg-gray-300 transition"
-              onClick={handleView}
+             className="text-[#fff] mt-1 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
+         onClick={handleView}
             >
               View all
             </button>

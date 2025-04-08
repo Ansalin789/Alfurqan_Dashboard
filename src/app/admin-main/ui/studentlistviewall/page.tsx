@@ -201,20 +201,20 @@ const [currentPage, setCurrentPage] = useState(1);
         {/* Table */}
         <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
         <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-[11px]">
-    <thead className="border-b border-[#1C3557] font-semibold text-[11px]">
-      <tr className="bg-gray-100">
-        <th className="p-3 text-center">Student ID</th>
-        <th className="p-3 text-center">Date of Joining</th>
-        <th className="p-3 text-center">Student Name</th>
-        <th className="p-3 text-center">Teacher Name</th>
-        <th className="p-3 text-center">Course Name</th>
-        <th className="p-3 text-center">Contact</th>
-        <th className="p-3 text-center">Scheduled Class</th>
-        <th className="p-3 text-center">Level</th>
-        <th className="p-3 text-center">Action</th>
+    <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
+      <tr>
+        <th className="p-3 py-5 font-semibold text-center">Student ID</th>
+        <th className="p-3 py-5 font-semibold text-center">Date of Joining</th>
+        <th className="p-3 py-5 font-semibold text-center">Student Name</th>
+        <th className="p-3 py-5 font-semibold text-center">Teacher Name</th>
+        <th className="p-3 py-5 font-semibold text-center">Course Name</th>
+        <th className="p-3 py-5 font-semibold text-center">Contact</th>
+        <th className="p-3 py-5 font-semibold text-center">Scheduled Class</th>
+        <th className="p-3 py-5 font-semibold text-center">Level</th>
+        <th className="p-3 py-5 font-semibold text-center">Action</th>
       </tr>
     </thead>
-    <tbody className="text-[11px]">
+    <tbody>
       {students.length === 0 ? (
         <tr>
           <td colSpan={9} className="text-center py-4 text-gray-500 text-[11px]">
@@ -222,8 +222,8 @@ const [currentPage, setCurrentPage] = useState(1);
           </td>
         </tr>
       ) : (
-        paginatedStudent.map((student) => (
-          <tr key={student.id} className="border-b border-gray-200 relative">
+        paginatedStudent.map((student,index) => (
+          <tr key={student.id} className={`text-[9px] font-medium mt-0 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}` }>
             <td className="p-2 text-center text-gray-900">{student.id}</td>
             <td className="p-2 text-center text-gray-900">{student.joinDate}</td>
             <td className="p-2 text-center text-gray-900">{student.name}</td>
@@ -234,7 +234,7 @@ const [currentPage, setCurrentPage] = useState(1);
             <td className="p-2 text-center text-gray-900">{student.level}</td>
             <td className="p-2 text-center relative">
               <button
-                className="p-2 bg-[#1C3557] text-white rounded-full"
+                className="p-2 bg-[#1C3557] text-white rounded-lg"
                 onClick={() => setOpenPopup(openPopup === student.id ? null : student.id)}
               >
                 <FaEdit size={10} />
