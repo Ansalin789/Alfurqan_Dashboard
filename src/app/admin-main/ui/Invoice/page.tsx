@@ -175,7 +175,9 @@ export default function Page() {
   };
   
   const doughnutOptions = {
-    cutout: '70%',
+    responsive: false,
+    maintainAspectRatio: false,
+    cutout: '75%',
     plugins: {
       legend: {
         position: 'bottom' as const,
@@ -183,6 +185,7 @@ export default function Page() {
       },
     },
   };
+  
 
   return (
     <div>
@@ -333,7 +336,7 @@ export default function Page() {
       <div className="bg-white rounded-xl shadow-sm p-4">
         <h3 className="text-lg font-semibold text-gray-800 mb-2">Invoices Due by Days</h3>
         <div className="w-full flex justify-center">
-          <Doughnut data={doughnutData} options={doughnutOptions} width={200} height={200} />
+          <Doughnut data={doughnutData} options={doughnutOptions}  />
         </div>
       </div>
 
