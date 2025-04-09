@@ -336,7 +336,7 @@ const Page = () => {
 
     return (
         <BaseLayout4>
-            <div className="p-4 min-h-screen mx-auto">
+            <div className="p-6 min-h-screen mx-auto">
                 <div className="p-0 flex items-center justify-between">
                     <div className="relative">
                         <h2 className='text-xl font-semibold mb-4'>Employees</h2>
@@ -524,17 +524,17 @@ const Page = () => {
                                                     <div className="flex">
                                                         {/* <button className={`border p-2 rounded-lg shadow flex items-center mx-4 bg-[#223857] text-white`} onClick={openModal}>
                   <FaPlus className="mr-2" /> Add new
-                </button> */}
+                </button> */}<h2 className='text-[12px] mt-2 p-2 font-semibold'>Duration:</h2>
                                                         <select className="border rounded-lg p-2 shadow text-[12px]">
-                                                            <option>Duration: Last month</option>
-                                                            <option>Duration: Last week</option>
-                                                            <option>Duration: Last year</option>
+                                                            <option>Last month</option>
+                                                            <option>Last week</option>
+                                                            <option>Last year</option>
                                                         </select>
                                                     </div>
                                                 </div>
                                             </div>
                                             {/* Cards */}
-                                            <div className="grid grid-cols-6 gap-x-[214px] gap-y-[21px] py-2 h-52 overflow-y-scroll scrollbar-thin" style={{ width: "100%" }}>
+                                            <div className="grid grid-cols-6 gap-x-[216px] gap-y-[18px] py-2 h-56 overflow-y-scroll scrollbar-none" style={{ width: "100%" }}>
                                                 {teachers
                                                     .filter(
                                                         (teacher) =>
