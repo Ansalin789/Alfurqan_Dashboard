@@ -4,6 +4,7 @@ import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight, FaEdit, FaFilter, FaSyncAlt } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa6";
 
 interface EvaluationItem {
   _id: string;
@@ -536,7 +537,9 @@ const Trailclasslist = () => {
     
     return pageNumbers;
   };
-
+ const handleclicksend =()=>{
+  router.push('/admin-main/ui/send-invoice');
+ }; 
 
 
   return (
@@ -551,27 +554,38 @@ const Trailclasslist = () => {
             <FaSyncAlt />
           </button>
         </div>
-        <div className="flex flex-1 mb-2 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none p-6">
-              <div className="flex">
-                <input
-                  type="text"
-                  placeholder="Search here..."
-                  className="border rounded-lg px-2 text-[12px] mr-4 shadow"
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-                <button className="flex items-center bg-gray-200 p-2 rounded-lg shadow text-[12px]">
-                  <FaFilter className="mr-2" /> Filter
-                </button>
-              </div>
-              <div className="flex">
-                <select className="border rounded-lg p-2 shadow text-[12px]">
-                  <option>Duration: Last month</option>
-                  <option>Duration: Last week</option>
-                  <option>Duration: Last year</option>
-                </select>
-              </div>
-            </div>
+        <div className="flex justify-between items-center px-6 py-4  rounded-sm">
+  {/* Left Section: Search + Filter */}
+  <div className="flex items-center space-x-3">
+    <input
+      type="text"
+      placeholder="Search here..."
+      className="border rounded-full px-4 py-2 text-[12px] shadow outline-none"
+      value={searchQuery}
+      onChange={(e) => handleSearch(e.target.value)}
+    />
+    <button className="flex items-center bg-white border p-2 px-4 rounded-full shadow text-[12px]">
+      <FaFilter className="mr-2 text-gray-600" />
+      Filter
+    </button>
+  </div>
+
+  {/* Right Section: Add Invoice + Duration */}
+  <div className="flex items-center space-x-3">
+    <button
+      onClick={handleclicksend}
+      className="flex items-center bg-[#002244] text-white px-4 py-2 rounded-full text-[12px] font-medium shadow"
+    >
+      + New Invoice
+    </button>
+    <select className="border rounded-full px-4 py-2 shadow text-[12px] outline-none">
+      <option>Duration: Last month</option>
+      <option>Duration: Last week</option>
+      <option>Duration: Last year</option>
+    </select>
+  </div>
+</div>
+
         <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[580px] overflow-y-scroll scrollbar-none flex flex-col justify-between mt-4">
           <div>
             <div className="overflow-x-auto">
