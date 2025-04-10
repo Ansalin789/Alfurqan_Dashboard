@@ -12,7 +12,7 @@ const Expenses = () => {
   const [isPopupOpens, setIsPopupOpens] = useState<number | null>(null);
 
 
-  const itemsPerPage = 7;
+  const itemsPerPage = 8;
 
   const salaryData = [
     {
@@ -206,7 +206,7 @@ const Expenses = () => {
         </div>
         {isPopupOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 scrollbar-none">
-            <div className="relative w-[500px] h-[600px] bg-white rounded-2xl shadow-2xl px-4 py-6 overflow-y-auto ">
+            <div className="relative w-[500px] h-[600px] bg-white rounded-2xl shadow-2xl px-4 py-6 overflow-y-auto scrollbar-none">
               <button
                 className="absolute top-4 right-4 text-black text-xl font-bold"
                 onClick={() => setIsPopupOpen(false)}
@@ -328,8 +328,8 @@ const Expenses = () => {
 
         <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
           <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-xs">
-            <thead className="border-b border-[#1C3557] text-xs font-semibold">
-              <tr className="bg-gray-100">
+          <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
+          <tr className="bg-gray-100">
                 <th className="p-3 text-center">Date</th>
                 <th className="p-3 text-center">Expense Type</th>
                 <th className="p-3 text-center">Amount</th>
@@ -341,7 +341,7 @@ const Expenses = () => {
             </thead>
             <tbody>
               {paginatedCourseData.map((row, index) => (
-                <tr key={row.date} className="border-b text-center text-xs">
+        <tr key={row.date} className={`text-[9px] text-center font-medium mt-0 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}` }>
                   <td className="p-2">{row.date}</td>
                   <td className="p-2">{row.expenseType}</td>
                   <td className="p-2">{row.amount}</td>
@@ -349,7 +349,7 @@ const Expenses = () => {
                   <td className="p-2">{row.paymentMethod}</td>
                   <td className="p-2">
                     <span
-                      className={`inline-flex items-center justify-center w-20 h-8 px-3 py-1 rounded-2xl ${
+                      className={`inline-flex items-center justify-center  w-14 h-6 px-3 py-1 rounded-2xl ${
                         row.status === "Paid"
                           ? "bg-green-500 text-white"
                           : "bg-red-500 text-white"
@@ -493,7 +493,7 @@ const Expenses = () => {
             </tbody>
           </table>
           <div className="flex justify-between items-center mt-4 p-2 text-sm text-gray-600">
-            <p>
+            <p className="text-[11px]">
               Showing {paginatedCourseData.length} of {salaryData.length}{" "}
               classes
             </p>
@@ -503,7 +503,7 @@ const Expenses = () => {
                 (_, i) => (
                   <button
                     key={i}
-                    className={`w-5 h-5 text-[13px] flex items-center justify-center rounded ${
+                    className={`w-4 h-4 text-[11px] flex items-center justify-center rounded ${
                       currentPage === i + 1
                         ? "bg-[#1C3557] text-white"
                         : "text-[#1C3557] border border-[#1C3557]"

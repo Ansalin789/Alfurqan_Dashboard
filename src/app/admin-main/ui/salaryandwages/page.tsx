@@ -8,7 +8,7 @@ const SalaryCard = () => {
   const [duration, setDuration] = useState("Last month");
   const [currentPage, setCurrentPage] = useState(1);
   const [openPopup, setOpenPopup] = useState<number | null>(null);
-  const itemsPerPage = 7;
+  const itemsPerPage = 8;
 
   const salaryData = [
     { employeeid: "3867", employeename: "Arabic", paymentdate: "11/02/2024", designation: "Teacher", salaryamount: "1000", status: "Paid" },
@@ -32,7 +32,7 @@ const SalaryCard = () => {
         <div className="flex justify-between items-start mb-1.5">
           <h2 className="text-2xl font-bold text-gray-800">Salary and Wages</h2>
 
-          <div className="flex items-center gap-2 rounded border border-gray-300 bg-white px-3 py-[6px] shadow-sm">
+          <div className="flex items-center gap-2 rounded border border-gray-300 bg-white px-3 py-[6px] shadow-sm mb-2 mr-2.5">
             <label htmlFor="duration" className="text-sm font-medium text-gray-600">Duration :</label>
             <select
               value={duration}
@@ -47,7 +47,7 @@ const SalaryCard = () => {
           </div>
         </div>
 
-        <div className="flex gap-6 mb-6">
+        <div className="flex gap-6 ">
           <div className="w-[240px] h-[120px] p-5 rounded-xl bg-[#304DAF] text-white shadow-md">
             <h4 className="text-sm mb-2 opacity-90">Total Salary Paid</h4>
             <h1 className="text-xl font-bold">$ 120,000</h1>
@@ -77,14 +77,14 @@ const SalaryCard = () => {
         </div>
 
         <div className="flex justify-end mb-2">
-          <button className="bg-[#0F3659] hover:bg-[#0c2b46] text-white text-sm font-medium px-12 py-2 rounded-md shadow-sm transition">
+          <button className="bg-[#0F3659] hover:bg-[#0c2b46] text-white text-sm font-medium px-9 py-1.5 rounded-md shadow-sm transition mr-3">
             Pay Now
           </button>
         </div>
 
-        <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
+        <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto ">
           <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-xs">
-            <thead className="border-b border-[#1C3557] text-xs font-semibold">
+          <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
               <tr className="bg-gray-100">
                 <th className="p-3 text-center">Employee ID</th>
                 <th className="p-3 text-center">Employee Name</th>
@@ -97,14 +97,14 @@ const SalaryCard = () => {
             </thead>
             <tbody>
               {paginatedCourseData.map((row, index) => (
-                <tr key={row.employeeid} className="border-b text-center text-xs">
+                <tr key={row.employeeid} className={`text-[9px] text-center font-medium mt-0 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}` }>
                   <td className="p-2">{row.employeeid}</td>
                   <td className="p-2">{row.employeename}</td>
                   <td className="p-2">{row.designation}</td>
                   <td className="p-2">{row.salaryamount}</td>
                   <td className="p-2">{row.paymentdate}</td>
                   <td className="p-2">
-                    <span className={`inline-flex items-center justify-center w-20 h-8 px-3 py-1 rounded-2xl ${row.status === "Paid" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>{row.status}</span>
+                    <span className={`inline-flex items-center justify-center w-14 h-6 px-3 py-1 rounded-2xl ${row.status === "Paid" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>{row.status}</span>
                   </td>
                   <td className="p-1 text-center align-middle relative">
                     <button
@@ -181,14 +181,14 @@ const SalaryCard = () => {
             </tbody>
           </table>
           <div className="flex justify-between items-center mt-4 p-2 text-sm text-gray-600">
-          <p>
+          <p className="text-[11px]">
             Showing {paginatedCourseData.length} of {salaryData.length} classes
           </p>
           <div className="flex gap-2">
             {Array.from({ length: Math.ceil(salaryData.length / itemsPerPage) }, (_, i) => (
               <button
                 key={i}
-                className={`w-5 h-5 text-[13px] flex items-center justify-center rounded ${
+                className={`w-4 h-4 text-[11px] flex items-center justify-center rounded ${
                   currentPage === i + 1 ? "bg-[#1C3557] text-white" : "text-[#1C3557] border border-[#1C3557]"
                 }`}
                 onClick={() => setCurrentPage(i + 1)}
