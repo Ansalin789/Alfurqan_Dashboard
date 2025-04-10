@@ -442,7 +442,7 @@ const getMeetingStatusLabel = (status: string, startTime: string) => {
                         <>
                           {/* Completed Meeting - Show Start Time */}
                           <span
-                    className={`text-[12px] px-3 py-1 rounded-lg border ${getMeetingStatusClass(item.meetingStatus)}`}
+                            className={`text-[12px] px-3 py-1 rounded-lg border ${getMeetingStatusClass(item.meetingStatus)}`}
                               >
                             {getMeetingStatusLabel(item.meetingStatus, item.startTime)}
                               </span>
@@ -555,32 +555,32 @@ const getMeetingStatusLabel = (status: string, startTime: string) => {
 
                         {/* Table Body */}
                         <tbody>
-  {Array.isArray(teachersByMeetingId) &&
-    teachersByMeetingId.map((teacher: Teacher) => (
-      <tr key={teacher.teacherId || teacher.teacherName} className="border-b text-[13px]">
-        {/* Name with Profile Icon - Justify Between Applied Here */}
-        <td className="p-3 flex items-center space-x-2 w-3/4">
-          <span className="w-4 h-4 bg-blue-900 text-white rounded-full flex items-center justify-center">
-            🧑‍💼 {/* Replace with an actual profile icon */}
-          </span>
-          <span className="flex-grow text-[12px]">{teacher.teacherName || "N/A"}</span>
-        </td>
+                          {Array.isArray(teachersByMeetingId) &&
+                            teachersByMeetingId.map((teacher: Teacher) => (
+                              <tr key={teacher.teacherId || teacher.teacherName} className="border-b text-[13px]">
+                                {/* Name with Profile Icon - Justify Between Applied Here */}
+                                <td className="p-3 flex items-center space-x-2 w-3/4">
+                                  <span className="w-4 h-4 bg-blue-900 text-white rounded-full flex items-center justify-center">
+                                    🧑‍💼 {/* Replace with an actual profile icon */}
+                                  </span>
+                                  <span className="flex-grow text-[12px]">{teacher.teacherName || "N/A"}</span>
+                                </td>
 
-        {/* Attendance Status - Centered */}
-        <td className="p-3 text-center w-1/3">
-          {teacher.teacherName ? (
-            <span className="w-4 h-4 bg-[#4ABDE8] text-white font-bold rounded-full flex items-center justify-center text-[8px]">
-              ✔
-            </span>
-          ) : (
-            <span className="w-4 h-4 bg-red-500 text-white font-bold rounded-full flex items-center justify-center text-[8px]">
-              ✖
-            </span>
-          )}
-        </td>
-      </tr>
-    ))}
-</tbody>
+                                {/* Attendance Status - Centered */}
+                                <td className="p-3 text-center w-1/3">
+                                  {teacher.teacherName ? (
+                                    <span className="w-4 h-4 bg-[#4ABDE8] text-white font-bold rounded-full flex items-center justify-center text-[8px]">
+                                      ✔
+                                    </span>
+                                  ) : (
+                                    <span className="w-4 h-4 bg-red-500 text-white font-bold rounded-full flex items-center justify-center text-[8px]">
+                                      ✖
+                                    </span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                      </tbody>
 
                       </table>
 

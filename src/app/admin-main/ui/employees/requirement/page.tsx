@@ -1,957 +1,480 @@
+"use client";
 
-// "use client";
+import { useState } from "react";
+import BaseLayout4 from "@/components/BaseLayout4";
+import { BsCalendar4Event, BsClockHistory } from "react-icons/bs";
+import { RiMenu2Fill } from "react-icons/ri";
+import { GrCurrency } from "react-icons/gr";
+import { MdOutlineCurrencyExchange, MdOutlineTimer } from "react-icons/md";
+import { IoSunnyOutline } from "react-icons/io5";
 
-// import BaseLayout4 from "@/components/BaseLayout4";
-// import { Upload } from "lucide-react";
-// import React, { useState } from "react";
-// import { CountryDropdown } from "react-country-region-selector";
+const Teacher = () => {
+  const [activeTab, setActiveTab] = useState("Wages");
+  const tabs = ["Wages", "Earnings", "Leave Records", "Working Hours"];
 
-// const applicants: Applicant[] = [
-//   {
-//     _id: "1",
-//     applicationDate: "2025-04-01",
-//     candidateFirstName: "John",
-//     candidatePhoneNumber: "+1 234 567 890",
-//     candidateEmail: "john.doe@example.com",
-//     positionApplied: "Software Engineer",
-//     applicationStatus: "Pending",
-//     level: 3,
-//   },
-//   {
-//     _id: "2",
-//     applicationDate: "2025-04-02",
-//     candidateFirstName: "Alice",
-//     candidatePhoneNumber: "+1 987 654 321",
-//     candidateEmail: "alice.smith@example.com",
-//     positionApplied: "Frontend Developer",
-//     applicationStatus: "Accepted",
-//     level: 4,
-//   },
-//   {
-//     _id: "3",
-//     applicationDate: "2025-04-03",
-//     candidateFirstName: "Bob",
-//     candidatePhoneNumber: "+44 123 456 789",
-//     candidateEmail: "bob.miller@example.com",
-//     positionApplied: "Backend Developer",
-//     applicationStatus: "Rejected",
-//     level: 2,
-//   },
-// ];
+  return (
+    <BaseLayout4>
+      <div className="p-5 min-h-screen w-full">
+        <div className="grid grid-cols-5 gap-4">
+          {/* Profile Card (60%) with Contact Details */}
+          <div className="col-span-3 bg-white p-6 rounded-lg shadow flex justify-between flex-row">
+            <div className="border-r-2 justify-center p-5 text-center">
+              <img
+                src="/assets/images/Avatar.png"
+                alt="Avatar"
+                className="w-20 h-20 rounded-full border"
+              />
+              <h2 className="font-semibold mt-2 text-[12px]"> Alen Smith</h2>
+              <p className="text-xs text-gray-500">Admin</p>
+            </div>
+            <div className="flex justify-between p-2 gap-6">
+              <div>
+                <div className="mt-4 text-xs w-full">
+                  <h4 className="font-bold text-[13px] -mt-5">
+                    Contact & Details
+                  </h4>
+                  <p className="py-2 font-semibold  text-gray-600">Email:</p>
+                  <span>asulaiman403@gmail.com</span>
+                  <p className="py-2 font-semibold  text-gray-600">Phone: </p>
+                  <span>+880 1234 567891</span>
+                  <p className="py-2 font-semibold  text-gray-600">
+                    Date of Birth:
+                  </p>
+                  <span> 28, July 2000</span>
+                  <p className="py-2 font-semibold  text-gray-600">Country:</p>
+                  <span> Canada</span>
+                  <p className="py-2 font-semibold  text-gray-600">
+                    Gender:
+                  </p>{" "}
+                  <span>Male</span>
+                </div>
+              </div>
+              <div>
+                <div className="mt-4 text-gray-600 text-xs w-full">
+                  <p className="py-2 font-semibold">Languages Known:</p>{" "}
+                  <span> English, Hindi, Arabic</span>
+                  <p className="py-2 font-semibold"> City:</p>{" "}
+                  <span> Toronto</span>
+                  <p className="py-2 font-semibold">Residential Address:</p>
+                  <span>
+                    {" "}
+                    325, Residences on Bloor, Bloor St E, Toronto, Ontario.
+                  </span>
+                  <p className="py-2 font-semibold">Nationality:</p>{" "}
+                  <span> Canadian</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Educational Details Card (20%) */}
+          <div className="col-span-1 bg-white p-6 rounded-lg shadow">
+            <div className="mt-4 text-xs w-full">
+              <h4 className="font-bold text-[13px] -mt-5">
+                Educational Information
+              </h4>
+              <p className="py-2 font-semibold text-gray-600">
+                Highest Qualification:{" "}
+              </p>{" "}
+              <span>MBA</span>
+              <p className="py-2 font-semibold text-gray-600">
+                University/Institute:
+              </p>{" "}
+              <span> ABC School of Education</span>
+              <p className="py-2 font-semibold text-gray-600">
+                Previous Job Title:{" "}
+              </p>{" "}
+              <span>Junior Developer</span>
+              <p className="py-2 font-semibold text-gray-600">Experience: </p>
+              <span>2 years</span>
+            </div>
+          </div>
+          {/* Bank Details Card (20%) */}
+          <div className="col-span-1 bg-white p-6 rounded-lg shadow">
+            <div className="mt-4 text-xs w-full">
+              <h4 className="font-bold text-[13px] -mt-5">Bank Details</h4>
+              <p className="py-2 font-semibold text-gray-600">Bank Name:</p>
+              <span>Lorem Ipsum</span>
+              <p className="py-2 font-semibold text-gray-600">
+                Account Number:
+              </p>{" "}
+              <span> 1234567890</span>
+              <p className="py-2 font-semibold text-gray-600">
+                Bank Code:
+              </p>{" "}
+              <span>000-00000</span>
+              <p className="py-2 font-semibold text-gray-600">
+                Passport Number:
+              </p>
+              <span> ABCD00000</span>
+            </div>
+          </div>
+        </div>
 
-// interface AddApplicantFormData {
-//   applicationDate: string;
-//   firstName: string;
-//   lastName: string;
-//   email: string;
-//   phone: string;
-//   country: string;
-//   gender: string;
-//   city: string;
-//   position: string;
-//   expectedSalary: string;
-//   workingHours: string;
-//   resume: File | null | undefined;
-//   comment: string;
-// }
+        {/* Tabs Section */}
+        <div className="mt-6 bg-white p-4 rounded-lg shadow h-min">
+          {/* Tabs */}
+          <div className="flex space-x-6">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                className={`px-6 py-2 text-sm font-semibold rounded-lg focus:outline-none transition-all duration-200 ${
+                  activeTab === tab
+                    ? "bg-[#102645] text-white shadow"
+                    : "text-black"
+                }`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
 
-// interface Applicant {
-//   _id: string;
-//   applicationDate: string;
-//   candidateFirstName: string;
-//   candidatePhoneNumber: string;
-//   candidateEmail: string;
-//   positionApplied: string;
-//   applicationStatus: string;
-//   level: number;
-// }
+          {/* Tab Content */}
+          <div className="p-4">
+            {activeTab === "Wages" && (
+              <table className="w-full border border-gray-200 rounded-md">
+                <thead className="text-left">
+                  <tr className="text-sm text-gray-700 border-b border-gray-200">
+                    <th className="p-4 font-medium">
+                      <div className="flex items-center space-x-2">
+                        <BsCalendar4Event className="text-base" />
+                        <span>Class Type</span>
+                      </div>
+                    </th>
+                    <th className="p-4 font-medium border-l border-gray-200">
+                      <div className="flex items-center space-x-2">
+                        <span className="material-icons text-base">
+                          <RiMenu2Fill className="text-base" />
+                        </span>
+                        <span>Rate</span>
+                      </div>
+                    </th>
+                    <th className="p-4 font-medium border-l border-gray-200">
+                      <div className="flex items-center space-x-2">
+                        <span className="material-icons text-base">
+                          <GrCurrency />
+                        </span>
+                        <span>Currency</span>
+                      </div>
+                    </th>
+                    <th className="p-4 font-medium border-l border-gray-200">
+                      <div className="flex items-center space-x-2">
+                        <span className="material-icons text-base">
+                          <MdOutlineTimer />
+                        </span>
+                        <span>Duration</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm text-gray-900">
+                  {[
+                    ["Trial Class", "-", "-", "-"],
+                    ["Regular Class", "-", "-", "-"],
+                    ["Group Class", "-", "-", "-"],
+                    ["Fixed Salary", "$2000", "Dirhams", "Monthly"],
+                  ].map(([type, rate, currency, duration], index) => (
+                    <tr key={index} className="border-t border-gray-200">
+                      <td className="p-4">{type}</td>
+                      <td className="p-4 border-l border-gray-200">{rate}</td>
+                      <td className="p-4 border-l border-gray-200">
+                        {type === "Fixed Salary" ? (
+                          <select className="p-1 focus:outline-none">
+                            <option>Dirhams</option>
+                            <option>USD</option>
+                            <option>INR</option>
+                          </select>
+                        ) : (
+                          currency
+                        )}
+                      </td>
+                      <td className="p-4 border-l border-gray-200">
+                        {type === "Fixed Salary" ? (
+                          <select className="p-1 focus:outline-none">
+                            <option>Monthly</option>
+                            <option>Weekly</option>
+                            <option>Daily</option>
+                          </select>
+                        ) : (
+                          duration
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
 
-// const page = () => {
-//   const [activeTab, setActiveTab] = useState("All");
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const [applicants, setApplicants] = useState<Applicant[]>([]);
-//   const [showAddApplicant, setShowAddApplicant] = useState(false);
-//   const [addApplicantForm, setAddApplicantForm] =
-//     useState<AddApplicantFormData>({
-//       applicationDate: new Date().toISOString().split("T")[0],
-//       firstName: "",
-//       lastName: "",
-//       email: "",
-//       phone: "",
-//       gender: "",
-//       country: "USA",
-//       city: "",
-//       position: "Arabic Teacher",
-//       expectedSalary: "",
-//       workingHours: "",
-//       resume: null,
-//       comment: "",
-//     });
+            {/* Earnings Tab */}
+            {activeTab === "Earnings" && (
+              <div className="space-y-6">
+                {/* Top Cards */}
+                <div className="flex flex-wrap gap-4">
+                  <div className="bg-[#11244D] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
+                    <div>
+                      <p className="text-xs">Total Earnings</p>
+                      <h2 className="text-lg font-bold mt-1">$2800</h2>
+                    </div>
+                    <div className="bg-[#1D3D70] p-2 rounded-lg text-sm">
+                      <MdOutlineCurrencyExchange />
+                    </div>
+                  </div>
+                  <div className="bg-[#4F4CD1] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
+                    <div>
+                      <p className="text-xs">Total Deductions</p>
+                      <h2 className="text-lg font-bold mt-1">$400</h2>
+                    </div>
+                    <div className="bg-[#6D6BF1] p-2 rounded-lg text-sm">
+                      <BsClockHistory />
+                    </div>
+                  </div>
+                </div>
 
-//   const tabs = ["All", "NEWAPPLICATION", "SHORTLISTED", "REJECTED", "WAITING"];
-//   const itemsPerPage = 10;
+                {/* Scrollable Table */}
+                <div className="rounded-xl border border-[#D5D5D5] shadow overflow-hidden">
+                  <div className="overflow-x-auto max-h-[180px] overflow-y-auto custom-scrollbar">
+                    <table className="w-full min-w-[600px] text-sm text-left">
+                      <thead className="text-gray-600 border-b border-gray-200 ">
+                        <tr className="text-center">
+                          <th className="p-4 font-semibold">Month</th>
+                          <th className="p-4 font-semibold">
+                            Total Working Hours
+                          </th>
+                          <th className="p-4 font-semibold">Total Earnings</th>
+                          <th className="p-4 font-semibold">
+                            Total Deductions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-gray-800">
+                        {[
+                          ["January", "170 Hours", "$1050", "$0"],
+                          ["February", "185 Hours", "$170", "$0"],
+                          ["March", "178 Hours", "$140", "$0"],
+                          ["April", "180 Hours", "$125", "$100"],
+                          ["May", "100 Hours", "$190", "$0"],
+                          ["June", "180 Hours", "$138", "$100"],
+                          ["July", "120 Hours", "$210", "$0"],
+                          ["August", "130 Hours", "$260", "$100"],
+                          ["September", "100 Hours", "$186", "$100"],
+                        ].map(([month, hours, earnings, deductions], index) => (
+                          <tr
+                            key={index}
+                            className="border-t border-gray-100 hover:bg-gray-50"
+                          >
+                            <td className="p-2 text-[12px] text-center">
+                              {month}
+                            </td>
+                            <td className="p-2 text-[12px] text-center">
+                              {hours}
+                            </td>
+                            <td className="p-2 text-[12px] text-center">
+                              {earnings}
+                            </td>
+                            <td className="p-2 text-[12px] text-center">
+                              {deductions}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+         
 
-//   const filteredApplicants =
-//     activeTab === "All"
-//       ? applicants
-//       : applicants.filter(
-//           (applicant) => applicant.applicationStatus === activeTab
-//         );
+          {/* Leave Record Tab */}
 
-//   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
-//   const startIndex = (currentPage - 1) * itemsPerPage;
-//   const endIndex = startIndex + itemsPerPage;
-//   const currentApplicants = filteredApplicants.slice(startIndex, endIndex);
+          {activeTab === "Leave Records" && (
+            <div className="space-y-6 ">
+              {/* Summary Cards */}
+              <div className="flex flex-wrap gap-4">
+                <div className="bg-[#11244D] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
+                  <div>
+                    <p className="text-xs">Total Applied Leave(Days)</p>
+                    <h2 className="text-lg font-bold mt-1">03</h2>
+                  </div>
+                </div>
+                <div className="bg-[#4F4CD1] text-white rounded-xl p-4 w-56 shadow-md">
+                  <div>
+                    <p className="text-xs">Total Approved</p>
+                    <h2 className="text-lg font-bold mt-1">02</h2>
+                  </div>
+                </div>
+                <div className="bg-[#707791] text-white rounded-xl p-4 w-56 shadow-md">
+                  <div>
+                    <p className="text-xs">Total Declined</p>
+                    <h2 className="text-lg font-bold mt-1">01</h2>
+                  </div>
+                </div>
+              </div>
 
+              {/* Leave Table */}
+              <div className="rounded-xl border border-[#D5D5D5] shadow overflow-hidden">
+                <div className="overflow-x-auto max-h-[180px] overflow-y-auto custom-scrollbar">
+                  <table className="w-full min-w-[600px] text-sm text-left">
+                    <thead className="text-gray-600 border-b border-gray-200 ">
+                      <tr className="text-center">
+                        <th className="p-4 font-semibold">Employee ID</th>
+                        <th className="p-4 font-semibold">Employee Name</th>
+                        <th className="p-4 font-semibold">Designation</th>
+                        <th className="p-4 font-semibold">Leave Type</th>
+                        <th className="p-4 font-semibold">Date Range</th>
+                        <th className="p-4 font-semibold">Reason For Leave</th>
+                        <th className="p-4 font-semibold">Status</th>
+                        <th className="p-4 font-semibold text-center"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-gray-800">
+                      {[
+                        {
+                          id: "#0983867",
+                          name: "Robert james",
+                          designation: "Supervisor",
+                          type: "Sick Leave",
+                          range: "11/02/2024 - 16/02/2024",
+                          reason: "Sickness",
+                          status: "Approved",
+                        },
+                        {
+                          id: "#0983867",
+                          name: "Stefan Salvatore",
+                          designation: "Human Resource",
+                          type: "Casual Leave",
+                          range: "11/02/2024 - 16/02/2024",
+                          reason: "Family Function",
+                          status: "Approved",
+                        },
+                        {
+                          id: "#0983867",
+                          name: "Prasanna Popz",
+                          designation: "Teacher",
+                          type: "Privilege Leave",
+                          range: "11/02/2024 - 16/02/2024",
+                          reason: "Vacation",
+                          status: "Declined",
+                        },
+                      ].map((item, index) => (
+                        <tr
+                          key={index}
+                          className="border-t border-gray-100 hover:bg-gray-50"
+                        >
+                          <td className="p-2 text-[12px] text-center">
+                            {item.id}
+                          </td>
+                          <td className="p-2 text-[12px] text-center">
+                            {item.name}
+                          </td>
+                          <td className="p-2 text-[12px] text-center">
+                            {item.designation}
+                          </td>
+                          <td className="p-2 text-[12px] text-center">
+                            {item.type}
+                          </td>
+                          <td className="p-2 text-[12px] text-center">
+                            {item.range}
+                          </td>
+                          <td className="p-2 text-[12px] text-center">
+                            {item.reason}
+                          </td>
+                          <td className="p-2 text-[12px] text-center">
+                            <div className="flex items-center gap-2">
+                              {item.status === "Approved" ? (
+                                <>
+                                  <span className="text-green-600 p-2 text-[12px] text-center">
+                                    ✅
+                                  </span>
+                                  <span className="p-2 text-[12px] text-center">
+                                    Approved
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-red-600 p-2 text-[12px] text-center">
+                                    ❌
+                                  </span>
+                                  <span className="p-2 text-[12px] text-center">
+                                    Declined
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-4 text-center text-lg text-gray-500 cursor-pointer">
+                            ...
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
 
-//   return (
-//     <BaseLayout4>
-//       <div className="min-h-screen mx-auto w-[1280px]">
-//         <div className="md:p-4 mx-auto">
-//           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-//             <h1 className="text-xl md:text-2xl font-semibold text-slate-800">
-//               Applicants
-//             </h1>
-//           </div>
+          {/* Working Hours Tab */}
 
-//           <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[600px]  flex flex-col justify-between">
-//             <div className="p-4 justify-between flex flex-col">
-//               <div>
-//                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
-//                   <div className="flex flex-wrap gap-2 mb-0">
-//                     {tabs.map((tab) => (
-//                       <button
-//                         key={tab} // Add key prop here
-//                         onClick={() => setActiveTab(tab)}
-//                         className={`px-3 py-1 md:px-3 md:py-1 rounded-md text-[13px] font-semibold ${
-//                           activeTab === tab
-//                             ? "text-[#fff] bg-[#012A4A] mt-2"
-//                             : "text-[#05445E] py-4 hover:bg-slate-100 mt-4"
-//                         }`}
-//                       >
-//                         {tab}
-//                       </button>
-//                     ))}
-//                   </div>
-//                   <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-//                     <div className="flex items-center gap-2">
-//                       <span className="text-[11px] text-slate-600 whitespace-nowrap">
-//                         Sort by:
-//                       </span>
-//                       <select className="px-2 py-1 border rounded-md text-slate-600 bg-white text-[11px]">
-//                         <option>Designation</option>
-//                         <option>Date</option>
-//                         <option>Status</option>
-//                       </select>
-//                     </div>
-//                     <button
-//                       onClick={() => setShowAddApplicant(true)}
-//                       className="bg-[#012A4A] font-medium text-[12px] hover:bg-[#0d202f] text-white px-2 py-0 rounded-md transition-colors"
-//                     >
-//                       + Add Applicant
-//                     </button>
-//                   </div>
-//                 </div>
+          {activeTab === "Working Hours" && (
+            <div className="shadow overflow-hidden">
+              <div className="overflow-x-auto max-h-[280px] overflow-y-auto custom-scrollbar">
+                <table className="w-full min-w-[600px] text-sm text-left border border-gray-200">
+                  <thead className="text-gray-600 border-b border-gray-200">
+                    <tr className="text-center">
+                      <th className="p-4 font-semibold border-r border-gray-300">
+                        <div className="flex items-center justify-center gap-2">
+                          <BsCalendar4Event className="text-xl" />
+                          <span>Day</span>
+                        </div>
+                      </th>
+                      <th className="p-4 font-semibold border-r border-gray-300">
+                        <div className="flex items-center justify-center gap-2">
+                         <BsClockHistory className="text-xl" />
+                          <span>Working Hours</span>
+                        </div>
+                      </th>
+                      <th className="p-4 font-semibold">
+                        <div className="flex items-center justify-center gap-2">
+                          <IoSunnyOutline className="text-xl" />
+                          <span>GMT</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-800">
+                    {[
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Friday", // duplicate as per image
+                      "Sunday",
+                    ].map((day, idx) => (
+                      <tr
+                        key={idx}
+                        className="border-t border-gray-100 hover:bg-gray-50 text-center"
+                      >
+                        <td className="p-3 text-[12px] border-r border-gray-200">
+                          {day}
+                        </td>
+                        <td className="p-3 text-[12px] border-r border-gray-200">
+                          9 AM - 2 PM / 4 PM - 7 PM
+                        </td>
+                        <td className="p-3 text-[12px]">GMT +4</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-//                 <div className="overflow-x-auto">
-//                   <table className="table-auto w-full min-h-auto">
-//                     <thead className="text-[12px] font-bold">
-//                       <tr className="bg-[#F4F5F7] py-2 rounded-2xl mb-2">
-//                         <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-//                           Application Date
-//                         </th>
-//                         <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-//                           Applicant Name
-//                         </th>
-//                         <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-//                           Contact
-//                         </th>
-//                         <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-//                           E-Mail
-//                         </th>
-//                         <th className="text-center px-4 py-2 font-semibold text-[#343942]">
-//                           Position Applied
-//                         </th>
-//                         <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-//                           Resume
-//                         </th>
-//                         <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-//                           Status
-//                         </th>
-//                         <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-//                           Level
-//                         </th>
-//                         <th className="text-center px-2 py-2 font-semibold text-[#343942]"></th>
-//                       </tr>
-//                     </thead>
-//                     <tbody>
-//                       <tr className="text-[11px] font-medium bg-[#faf9f9]">
-//                         <td className="px-4 py-1 text-center text-[#17243E]">
-//                           ---
-//                         </td>
-//                         <td className="px-4 py-1 text-center">
-//                           <div className="flex items-center gap-3">
-//                             <div className="h-4 w-4 rounded-full bg-purple-100 flex items-center justify-center">
-//                               <span className="text-purple-600 font-medium">
-//                                 A
-//                               </span>
-//                             </div>
-//                             <span className="font-medium text-slate-800">
-//                               Name
-//                             </span>
-//                           </div>
-//                         </td>
-//                         <td className="px-4 py-1 text-center text-[#17243E]">
-//                           ---
-//                         </td>
-//                         <td className="px-4 py-1 text-center text-[#17243E]">
-//                           ---
-//                         </td>
-//                         <td className="px-4 py-1 text-center text-[9px]">
-//                           ---
-//                         </td>
-//                         <td className="px-4 py-1 text-center">
-//                           <button className="text-[#17243E] hover:text-[#38619A] flex items-center">
-//                             <span className="w-4 h-4 mr-2">📄</span>
-//                             Resume
-//                           </button>
-//                         </td>
-//                         <td className="px-4 py-1 text-center text-[12px]">
-//                           <span className="px-3 py-1 rounded-full bg-gray-300">
-//                             ---
-//                           </span>
-//                         </td>
-//                         <td className="px-4 py-1 text-center">
-//                           <div className="flex gap-1">
-//                             {[1, 2, 3, 4, 5].map((star) => (
-//                               <span
-//                                 key={`star-${star}`}
-//                                 className="w-4 h-4 text-[#F8D8AB]"
-//                               >
-//                                 ⭐
-//                               </span>
-//                             ))}
-//                           </div>
-//                         </td>
-//                         <td className="px-4 py-1 text-center">
-//                           <div className="relative">
-//                             <button className="hover:bg-gray-100 p-2 rounded-md">
-//                               ⋮
-//                             </button>
-//                           </div>
-//                         </td>
-//                       </tr>
-//                     </tbody>
-//                   </table>
-//                 </div>
-//               </div>
-//               <div>
-//                 <div className="flex flex-col md:flex-row items-center justify-between px-4 py-4 border-t space-y-4 md:space-y-0">
-//                   <div className="text-[10px] text-gray-600">
-//                     Showing {startIndex + 1} -{" "}
-//                     {Math.min(endIndex, filteredApplicants.length)} of{" "}
-//                     {filteredApplicants.length} entries
-//                   </div>
-//                   <div className="flex space-x-2 text-[10px]">
-//                     {/* Previous Button */}
-//                     <button
-//                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-//                       disabled={currentPage === 1}
-//                       className={`px-2 py-1 rounded ${
-//                         currentPage === 1
-//                           ? "bg-gray-100 text-gray-400"
-//                           : "bg-gray-200 hover:bg-gray-300"
-//                       }`}
-//                     >
-//                       &lt;
-//                     </button>
+           </div>
+        </div>
+      </div>
+    </BaseLayout4>
+  );
+};
 
-//                     {/* Pagination Numbers */}
-//                     {totalPages > 5 ? (
-//                       <>
-//                         {/* First Page */}
-//                         <button
-//                           onClick={() => setCurrentPage(1)}
-//                           className={`px-2 py-1 rounded ${
-//                             currentPage === 1
-//                               ? "bg-[#1B2B65] text-white"
-//                               : "bg-gray-200 hover:bg-gray-300"
-//                           }`}
-//                         >
-//                           1
-//                         </button>
-
-//                         {/* Left Ellipsis */}
-//                         {currentPage > 3 && (
-//                           <span className="px-2 py-1">...</span>
-//                         )}
-
-//                         {/* Pages Around Current */}
-//                         {Array.from(
-//                           { length: 3 },
-//                           (_, i) => currentPage - 1 + i
-//                         )
-//                           .filter((page) => page > 1 && page < totalPages)
-//                           .map((page) => (
-//                             <button
-//                               key={page}
-//                               onClick={() => setCurrentPage(page)}
-//                               className={`px-2 py-1 rounded ${
-//                                 currentPage === page
-//                                   ? "bg-[#1B2B65] text-white"
-//                                   : "bg-gray-200 hover:bg-gray-300"
-//                               }`}
-//                             >
-//                               {page}
-//                             </button>
-//                           ))}
-
-//                         {/* Right Ellipsis */}
-//                         {currentPage < totalPages - 2 && (
-//                           <span className="px-2 py-1">...</span>
-//                         )}
-
-//                         {/* Last Page */}
-//                         <button
-//                           onClick={() => setCurrentPage(totalPages)}
-//                           className={`px-2 py-1 rounded ${
-//                             currentPage === totalPages
-//                               ? "bg-[#1B2B65] text-white"
-//                               : "bg-gray-200 hover:bg-gray-300"
-//                           }`}
-//                         >
-//                           {totalPages}
-//                         </button>
-//                       </>
-//                     ) : (
-//                       // Display all pages when totalPages <= 5
-//                       [...Array(totalPages)].map((_, index) => (
-//                         <button
-//                           key={index + 1}
-//                           onClick={() => setCurrentPage(index + 1)}
-//                           className={`px-2 py-1 rounded ${
-//                             currentPage === index + 1
-//                               ? "bg-[#1B2B65] text-white"
-//                               : "bg-gray-200 hover:bg-gray-300"
-//                           }`}
-//                         >
-//                           {index + 1}
-//                         </button>
-//                       ))
-//                     )}
-
-//                     {/* Next Button */}
-//                     <button
-//                       onClick={() =>
-//                         setCurrentPage((p) => Math.min(totalPages, p + 1))
-//                       }
-//                       disabled={currentPage === totalPages}
-//                       className={`px-2 py-1 rounded ${
-//                         currentPage === totalPages
-//                           ? "bg-gray-100 text-gray-400"
-//                           : "bg-gray-200 hover:bg-gray-300"
-//                       }`}
-//                     >
-//                       &gt;
-//                     </button>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//       {showAddApplicant && (
-//         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-//           <div className="bg-white rounded-lg shadow-lg p-4 w-[500px]">
-//             <h2 className="text-[16px] font-semibold text-gray-800 mb-4 text-center">
-//               Add Applicant
-//             </h2>
-//             <form className="space-y-2">
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                 {/* Application Date */}
-//                 <div>
-//                   <label
-//                     htmlFor="applicationDate"
-//                     className="block text-gray-700 text-[12px] font-medium mb-2"
-//                   >
-//                     Application Date
-//                   </label>
-//                   <div className="relative">
-//                     <input
-//                       type="date"
-//                       value={addApplicantForm.applicationDate}
-//                       onChange={(e) =>
-//                         setAddApplicantForm({
-//                           ...addApplicantForm,
-//                           applicationDate: e.target.value,
-//                         })
-//                       }
-//                       id="applicationDate"
-//                       className="w-full px-4 py-2 text-[11px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                     />
-//                   </div>
-//                 </div>
-//                 <div>
-//                   <label
-//                     htmlFor="firstName"
-//                     className="block text-gray-600 text-[12px] font-medium mb-2"
-//                   >
-//                     First Name
-//                   </label>
-//                   <input
-//                     type="text"
-//                     value={addApplicantForm.firstName}
-//                     onChange={(e) =>
-//                       setAddApplicantForm({
-//                         ...addApplicantForm,
-//                         firstName: e.target.value,
-//                       })
-//                     }
-//                     id="firstName"
-//                     className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                   />
-//                 </div>
-//               </div>
-
-//               {/* First Name & Last Name */}
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                 <div>
-//                   <label
-//                     htmlFor="lastName"
-//                     className="block text-gray-600 text-[12px] font-medium mb-2"
-//                   >
-//                     Last Name
-//                   </label>
-//                   <input
-//                     type="text"
-//                     value={addApplicantForm.lastName}
-//                     onChange={(e) =>
-//                       setAddApplicantForm({
-//                         ...addApplicantForm,
-//                         lastName: e.target.value,
-//                       })
-//                     }
-//                     id="lastName"
-//                     className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                   />
-//                 </div>
-//                 <div>
-//                   <label
-//                     htmlFor="gender"
-//                     className="block text-gray-600 text-[12px] font-medium mb-2"
-//                   >
-//                     Gender
-//                   </label>
-//                   <select
-//                     id="gender"
-//                     value={addApplicantForm.gender}
-//                     onChange={(e) =>
-//                       setAddApplicantForm({
-//                         ...addApplicantForm,
-//                         gender: e.target.value,
-//                       })
-//                     }
-//                     className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
-//                   >
-//                     <option value="" disabled>
-//                       Select Gender
-//                     </option>
-//                     <option value="Male">Male</option>
-//                     <option value="Female">Female</option>
-//                     <option value="Other">Other</option>
-//                   </select>
-//                 </div>
-//               </div>
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                 <div>
-//                   <label
-//                     htmlFor="email"
-//                     className="block text-gray-600 text-[12px] font-medium mb-2"
-//                   >
-//                     Email
-//                   </label>
-//                   <input
-//                     type="email"
-//                     value={addApplicantForm.email}
-//                     onChange={(e) =>
-//                       setAddApplicantForm({
-//                         ...addApplicantForm,
-//                         email: e.target.value,
-//                       })
-//                     }
-//                     id="email"
-//                     className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                   />
-//                 </div>
-//                 <div>
-//                   <label
-//                     htmlFor="phoneNumber"
-//                     className="block text-gray-600 text-[12px] font-medium mb-2"
-//                   >
-//                     Phone Number
-//                   </label>
-//                   <input
-//                     type="number"
-//                     value={addApplicantForm.phone}
-//                     onChange={(e) =>
-//                       setAddApplicantForm({
-//                         ...addApplicantForm,
-//                         phone: e.target.value,
-//                       })
-//                     }
-//                     id="phoneNumber"
-//                     className="w-full px-4 py-2 rounded-lg border border-gray-300 text-[11px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                   />
-//                 </div>
-//               </div>
-
-//               {/* Country & City */}
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                 <div>
-//                   <label
-//                     htmlFor="country"
-//                     className="block text-gray-600 text-[12px] font-medium mb-2"
-//                   >
-//                     Country
-//                   </label>
-//                   <CountryDropdown
-//                     // value={addApplicantForm.country}
-//                     // onChange={(val) => {
-//                     //   setCountry(val);
-//                     //   setAddApplicantForm({
-//                     //     ...addApplicantForm,
-//                     //     country: val,
-//                     //   });
-//                     // }}
-//                     className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                   />
-//                 </div>
-//                 <div>
-//                   <label
-//                     htmlFor="city"
-//                     className="block text-gray-600 text-[12px] font-medium mb-2"
-//                   >
-//                     City
-//                   </label>
-//                   <select
-//                     id="city"
-//                     value={addApplicantForm.city}
-//                     onChange={(e) =>
-//                       setAddApplicantForm({
-//                         ...addApplicantForm,
-//                         city: e.target.value,
-//                       })
-//                     }
-//                     className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                   >
-//                     <option value="">Select a city</option>
-//                     {/* {cities?.map((cityName) => (
-//                       <option key={cityName} value={cityName}>
-//                         {cityName}
-//                       </option>
-//                     ))} */}
-//                   </select>
-//                 </div>
-//               </div>
-
-//               {/* Position Applied & Salary */}
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                 <div>
-//                   <label
-//                     htmlFor="position"
-//                     className="block text-gray-600 text-[12px] font-medium mb-2"
-//                   >
-//                     Position Applied
-//                   </label>
-//                   <select
-//                     id="position"
-//                     value={addApplicantForm.position}
-//                     onChange={(e) =>
-//                       setAddApplicantForm({
-//                         ...addApplicantForm,
-//                         position: e.target.value,
-//                       })
-//                     }
-//                     className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                   >
-//                     <option value="Arabic Teacher">Arabic Teacher</option>
-//                     <option value="English Teacher">Quran Teacher</option>
-//                     <option value="Math Teacher">
-//                       Islamic Studies Teacher
-//                     </option>
-//                   </select>
-//                 </div>
-//                 <div>
-//                   <label
-//                     htmlFor="salary"
-//                     className="block text-gray-600 text-[12px] font-medium mb-2"
-//                   >
-//                     Expected Salary per Hour
-//                   </label>
-//                   <div className="relative">
-//                     <input
-//                       type="text"
-//                       value={addApplicantForm.expectedSalary}
-//                       onChange={(e) =>
-//                         setAddApplicantForm({
-//                           ...addApplicantForm,
-//                           expectedSalary: e.target.value,
-//                         })
-//                       }
-//                       id="salary"
-//                       className="w-full px-4 py-2 text-[11px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                     />
-//                     <button className="absolute inset-y-0 right-0 px-3 text-[11px] text-[#1C3557] hover:underline focus:outline-none">
-//                       Edit
-//                     </button>
-//                   </div>
-//                 </div>
-//               </div>
-
-//               {/* Preferred Working Hours & Resume */}
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                 <div>
-//                   <label
-//                     htmlFor="workingHours"
-//                     className="block text-gray-600 text-[12px] font-medium mb-2"
-//                   >
-//                     Preferred Working Hours
-//                   </label>
-//                   <div className="relative">
-//                     <input
-//                       type="text"
-//                       value={addApplicantForm.workingHours}
-//                       onChange={(e) =>
-//                         setAddApplicantForm({
-//                           ...addApplicantForm,
-//                           workingHours: e.target.value,
-//                         })
-//                       }
-//                       className="w-full px-4 py-2 rounded-lg border border-gray-300 text-[11px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                     />
-//                   </div>
-//                 </div>
-//                 <div>
-//                   <label
-//                     htmlFor="resume"
-//                     className="text-gray-600 text-[12px] font-medium mb-2 flex items-center"
-//                   >
-//                     Upload Resume
-//                   </label>
-//                   <div className="relative">
-//                     <input
-//                     //   ref={fileInputRef}
-//                       id="resume"
-//                       type="file"
-//                       accept=".pdf,.doc,.docx"
-//                       className="absolute opacity-0 w-full h-full cursor-pointer"
-//                     //   onChange={handleFileChange}
-//                     />
-//                     <div className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-//                       {addApplicantForm.resume
-//                         ? addApplicantForm.resume.name
-//                         : "No file selected"}
-//                     </div>
-//                     <button
-//                       type="button"
-//                       className="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 text-[11px] bg-[#1C3557] text-white rounded-lg hover:bg-[#0e1a2c] flex items-center"
-//                     //   onClick={() => fileInputRef.current?.click()}
-//                     >
-//                       <Upload className="h-4 w-4 mr-1" />
-//                       Upload
-//                     </button>
-//                   </div>
-//                   {addApplicantForm.resume && (
-//                     <p className="mt-2 text-[11px] text-gray-500">
-//                       Selected file: {addApplicantForm.resume.name}
-//                     </p>
-//                   )}
-//                 </div>
-//               </div>
-
-//               {/* Comment */}
-//               <div>
-//                 <label
-//                   htmlFor="comment"
-//                   className="block text-gray-600 text-[12px] font-medium mb-2"
-//                 >
-//                   Comment
-//                 </label>
-//                 <textarea
-//                   id="comment"
-//                   value={addApplicantForm.comment}
-//                   onChange={(e) =>
-//                     setAddApplicantForm({
-//                       ...addApplicantForm,
-//                       comment: e.target.value,
-//                     })
-//                   }
-//                   rows={4}
-//                   placeholder="Write your comment here..."
-//                   className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-//                 ></textarea>
-//               </div>
-
-//               {/* Buttons */}
-//               <div className="flex justify-end gap-3">
-//                 <button
-//                   type="button"
-//                   onClick={() => setShowAddApplicant(false)}
-//                   className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-[12px] hover:bg-gray-200"
-//                 >
-//                   Cancel
-//                 </button>
-//                 <button
-//                   type="submit"
-//                 //   onClick={handleAddApplicantSubmit}
-//                   className="px-4 py-2 bg-[#1C3557] text-white rounded-lg text-[12px] hover:bg-[#0e1a2c]"
-//                 >
-//                   Save
-//                 </button>
-//               </div>
-//             </form>
-//           </div>
-//         </div>
-//       )}
-
-//       {/* Application Details Popup */}
-//       {/* {selectedApplicant && (
-//         <div className="fixed inset-0 bg-black bg-opacity-50 flex max-h-[90vh] items-center justify-center p-4 z-50">
-//           <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl relative  overflow-hidden">
-//             <button
-//               onClick={handleviewclose}
-//               className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 z-50"
-//             >
-//               <X className="w-6 h-6" />
-//             </button>
-
-//             <div className="flex h-full">
-            
-//               <div className="w-1/2 border-r relative bg-gray-50">
-//                 <div className="relative min-h-full">
-//                   <iframe
-//                     src={resumeImages ?? ""}
-//                     title="Resume PDF"
-//                     width="100%"
-//                     height="800px"
-//                   />
-
-                  
-//                   <div className="none" />
-//                 </div>
-//               </div>
-
-            
-//               <div className="w-1/2 flex flex-col h-full ">
-              
-//                 <div className="flex items-start p-4 border-b">
-//                   <img
-//                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-//                     alt="Profile"
-//                     className="w-16 h-16 rounded-full mr-3"
-//                   />
-//                   <div>
-//                     <h2 className="text-xl font-semibold">
-//                       {Applicantbyid?.candidateFirstName}{" "}
-//                       {Applicantbyid?.candidateLastName}
-//                     </h2>
-//                     <div className="flex items-center text-sm text-gray-600 mt-1">
-//                       <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-medium">
-//                         {Applicantbyid?.positionApplied}
-//                       </span>
-//                     </div>
-//                     <div className="flex items-center text-sm text-gray-600 mt-1">
-//                       <FileText className="w-4 h-4 mr-1" /> CV.pdf
-//                     </div>
-//                   </div>
-//                   <div className="ml-auto mt-8">
-//                     <div className="text-sm font-medium">
-//                       {Applicantbyid?.applicationStatus}
-//                     </div>
-//                   </div>
-//                 </div>
-
-              
-//                 <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
-//                   <h3 className="text-lg font-semibold mb-2">
-//                     Language Proficiency
-//                   </h3>
-
-               
-//                   {[
-//                     {
-//                       field: "Quran Reading",
-//                       state: quranReading,
-//                       setState: setQuranReading,
-//                     },
-//                     { field: "Tajweed", state: tajweed, setState: setTajweed },
-//                     {
-//                       field: "Arabic Speaking",
-//                       state: arabicSpeaking,
-//                       setState: setArabicSpeaking,
-//                     },
-//                     {
-//                       field: "Arabic Writing",
-//                       state: arabicWriting,
-//                       setState: setArabicWriting,
-//                     },
-//                     {
-//                       field: "English Speaking",
-//                       state: englishSpeaking,
-//                       setState: setEnglishSpeaking,
-//                     },
-//                   ].map(({ field, state, setState }) => (
-//                     <div key={field}>
-//                       <p className="text-sm text-indigo-600 mb-1">{field}</p>
-//                       <div className="flex gap-2">
-//                         {["Basic", "Medium", "Advanced"].map((level) => (
-//                           <label
-//                             key={level}
-//                             className="flex items-center gap-2"
-//                           >
-//                             <input
-//                               type="radio"
-//                               name={field}
-//                               value={level}
-//                               checked={state === level}
-//                               onChange={() => setState(level)}
-//                             />
-//                             {level}
-//                           </label>
-//                         ))}
-//                       </div>
-//                     </div>
-//                   ))}
-
-                
-//                   <div className="grid grid-cols-2 gap-4">
-                  
-//                     <div>
-//                       <h3 className="text-sm text-indigo-600 mb-1">
-//                         Preferred Working Days
-//                       </h3>
-//                       <select
-//                         className="border rounded px-2 py-1 w-full"
-//                         value={workingDays}
-//                         onChange={(e) => setWorkingDays(e.target.value)}
-//                       >
-//                         <option value="Monday-Saturday">Monday-Saturday</option>
-//                         <option value="Monday-Friday">Monday-Friday</option>
-//                         <option value="Sunday-Thursday">Sunday-Thursday</option>
-//                         <option value="Sunday-Saturday">Sunday-Saturday</option>
-//                         <option value="Tuesday-Saturday">
-//                           Tuesday-Saturday
-//                         </option>
-//                         <option value="Wednesday-Saturday">
-//                           Wednesday-Saturday
-//                         </option>
-//                       </select>
-//                     </div>
-
-                   
-//                     <div>
-//                       <h3 className="text-sm text-indigo-600 mb-1">
-//                         Preferred Working Hours
-//                       </h3>
-//                       <input
-//                         type="text"
-//                         className="border rounded px-2 py-1 w-full"
-//                         value={Applicantbyid?.preferedWorkingHours}
-//                         disabled
-//                       />
-//                     </div>
-
-                   
-//                     <div>
-//                       <h3 className="text-sm text-indigo-600 mb-1">
-//                         Expected Salary per Hour
-//                       </h3>
-//                       <input
-//                         type="text"
-//                         className="border rounded px-2 py-1 w-full"
-//                         value={Applicantbyid?.expectedSalary}
-//                         disabled
-//                       />
-//                     </div>
-
-                   
-//                     <div>
-//                       <h3 className="text-sm text-indigo-600 mb-1">
-//                         Overall Rating
-//                       </h3>
-//                       <div className="flex">
-//                         {[1, 2, 3, 4, 5].map((star) => (
-//                           <button
-//                             key={star}
-//                             className={`text-xl cursor-pointer ${
-//                               rating >= star
-//                                 ? "text-yellow-500"
-//                                 : "text-gray-300"
-//                             }`}
-//                             onClick={() => setRating(star)}
-//                           >
-//                             ★
-//                           </button>
-//                         ))}
-//                       </div>
-//                     </div>
-//                   </div>
-
-                 
-//                   <div>
-//                     <h3 className="text-sm text-indigo-600 mb-1">Comments</h3>
-//                     <textarea
-//                       className="w-full p-2 border rounded h-15 resize-none"
-//                       placeholder="Add your comments here..."
-//                       value={comments}
-//                       onChange={(e) => setComments(e.target.value)}
-//                     ></textarea>
-//                   </div>
-//                 </div>
-
-             
-//                 <div className="p-3 border-t bg-white flex justify-end gap-2">
-//                   <button
-//                     onClick={() => {
-//                       setApplicationStatus("REJECTED");
-//                     }}
-//                     className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
-//                   >
-//                     Reject
-//                   </button>
-//                   <button
-//                     onClick={() => {
-//                       setApplicationStatus("WAITING");
-//                     }}
-//                     className="px-3 py-1.5 text-sm font-semibold text-white bg-yellow-500 hover:bg-yellow-600 rounded transition-colors"
-//                   >
-//                     Waiting
-//                   </button>
-//                   <button
-//                     onClick={() => {
-//                       setApplicationStatus("SHORTLISTED");
-//                     }}
-//                     className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded transition-colors"
-//                   >
-//                     Shortlist
-//                   </button>
-//                   <button
-//                     onClick={() => {
-//                       handlesendupdate(Applicantbyid?._id ?? "");
-//                     }}
-//                     className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
-//                   >
-//                     Send
-//                   </button>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       )} */}
-//     </BaseLayout4>
-//   );
-// };
-
-// export default page;
+export default Teacher;
