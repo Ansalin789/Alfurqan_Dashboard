@@ -683,7 +683,7 @@ const Trailclasslist = () => {
               
               {getPageNumbers().map((pageNumber, index) => (
                 pageNumber === -1 ? (
-                  <span key={index} className="px-2">...</span>
+                  <span key={pageNumber} className="px-2">...</span>
                 ) : (
                   <button
                     key={index}
