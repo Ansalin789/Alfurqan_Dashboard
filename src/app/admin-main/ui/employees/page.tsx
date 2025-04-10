@@ -388,7 +388,7 @@ const Page = () => {
       },
     ],
   });
-  
+
 
   const smallChartOptions = {
     responsive: true,
@@ -434,31 +434,28 @@ const Page = () => {
         </div>
         <div className="flex space-x-4 border-b py-2">
           <button
-            className={`px-4 py-2 text-[13px] font-semibold ${
-              activeTab === "teachers"
+            className={`px-4 py-2 text-[13px] font-semibold ${activeTab === "teachers"
                 ? "bg-[#012A4A] text-white rounded-lg"
                 : ""
-            }`}
+              }`}
             onClick={() => setActiveTab("teachers")}
           >
             Teachers
           </button>
           <button
-            className={`px-4 py-2 text-[13px] font-semibold ${
-              activeTab === "otheremployees"
+            className={`px-4 py-2 text-[13px] font-semibold ${activeTab === "otheremployees"
                 ? "bg-[#012A4A] text-white rounded-lg"
                 : ""
-            }`}
+              }`}
             onClick={() => setActiveTab("otheremployees")}
           >
             Other Employees
           </button>
           <button
-            className={`px-4 py-2 text-[13px] font-semibold ${
-              activeTab === "recruitment"
+            className={`px-4 py-2 text-[13px] font-semibold ${activeTab === "recruitment"
                 ? "bg-[#012A4A] text-white rounded-lg"
                 : ""
-            }`}
+              }`}
             onClick={() => setActiveTab("recruitment")}
           >
             Recruitment
@@ -548,7 +545,7 @@ const Page = () => {
                           </Pie>
 
                           {/* Needle */}
-                          <Line
+                          <line
                             x1={cx}
                             y1={cy}
                             x2={
@@ -796,7 +793,7 @@ const Page = () => {
                           </Pie>
 
                           {/* Needle */}
-                          <Line
+                          <line
                             x1={cx}
                             y1={cy}
                             x2={
@@ -868,9 +865,8 @@ const Page = () => {
                               <div
                                 className="h-2 bg-[#012A4A] rounded-full"
                                 style={{
-                                  width: `${
-                                    (country.value / maxValue1) * 100
-                                  }%`,
+                                  width: `${(country.value / maxValue1) * 100
+                                    }%`,
                                 }}
                               ></div>
                             </div>
@@ -971,81 +967,81 @@ const Page = () => {
               </main>
             </div>
           )}
-        {activeTab === "recruitment" && (
-        <div className="flex">
-       <main className="flex-grow py-2 px-1">
-          
-      {/* ✅ Section 1: Stats Card Row */}
-      <div className="grid grid-cols-4 gap-4 ">
-        {[
-          {
-            title: "Total Applications",
-            count: "250",
-            color: "gray",
-            iconBg: "bg-gray-100",
-            iconColor: "text-gray-500",
-            chartColor: "#64748b",
-          },
-          {
-            title: "Shortlisted Candidates",
-            count: "135",
-            color: "indigo",
-            iconBg: "bg-indigo-100",
-            iconColor: "text-indigo-500",
-            chartColor: "#6366f1",
-          },
-          {
-            title: "Rejected Candidates",
-            count: "100",
-            color: "cyan",
-            iconBg: "bg-cyan-100",
-            iconColor: "text-cyan-500",
-            chartColor: "#06b6d4",
-          },
-          {
-            title: "Waiting Candidates",
-            count: "15",
-            color: "blue",
-            iconBg: "bg-blue-100",
-            iconColor: "text-blue-500",
-            chartColor: "#3b82f6",
-          },
-        ].map((card, i) => (
-          <div
-            key={i}
-            className="bg-white shadow-md rounded-xl flex flex-col justify-between w-[250px]"
-          >
-            <div className="flex items-start justify-between px-4 mt-2 mb-2">
-              <div
-                className={`w-10 h-10 rounded-full ${card.iconBg} flex items-center justify-center`}
-              >
-                <FileText size={20} className={card.iconColor} />
-              </div>
-              <div className="text-right">
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {card.count}
-                </h3>
-                <p className="text-sm text-gray-500">{card.title}</p>
-              </div>
-            </div>
-            <div className="h-16">
-              <Line
-                data={chartTemplate(card.chartColor)}
-                options={smallChartOptions}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
+          {activeTab === "recruitment" && (
+            <div className="flex">
+              <main className="flex-grow py-2 px-1">
 
-      {/* ✅ Section 2: ApplicantsPage as separate row */}
-      <div className="overflow-x-auto w-[1100px] scrollbar-none"> 
-      <ApplicantsPage />
-      </div>
+                {/* ✅ Section 1: Stats Card Row */}
+                <div className="grid grid-cols-4 gap-4 ">
+                  {[
+                    {
+                      title: "Total Applications",
+                      count: "250",
+                      color: "gray",
+                      iconBg: "bg-gray-100",
+                      iconColor: "text-gray-500",
+                      chartColor: "#64748b",
+                    },
+                    {
+                      title: "Shortlisted Candidates",
+                      count: "135",
+                      color: "indigo",
+                      iconBg: "bg-indigo-100",
+                      iconColor: "text-indigo-500",
+                      chartColor: "#6366f1",
+                    },
+                    {
+                      title: "Rejected Candidates",
+                      count: "100",
+                      color: "cyan",
+                      iconBg: "bg-cyan-100",
+                      iconColor: "text-cyan-500",
+                      chartColor: "#06b6d4",
+                    },
+                    {
+                      title: "Waiting Candidates",
+                      count: "15",
+                      color: "blue",
+                      iconBg: "bg-blue-100",
+                      iconColor: "text-blue-500",
+                      chartColor: "#3b82f6",
+                    },
+                  ].map((card, i) => (
+                    <div
+                      key={i}
+                      className="bg-white shadow-md rounded-xl flex flex-col justify-between w-[250px]"
+                    >
+                      <div className="flex items-start justify-between px-4 mt-2 mb-2">
+                        <div
+                          className={`w-10 h-10 rounded-full ${card.iconBg} flex items-center justify-center`}
+                        >
+                          <FileText size={20} className={card.iconColor} />
+                        </div>
+                        <div className="text-right">
+                          <h3 className="text-2xl font-bold text-gray-800">
+                            {card.count}
+                          </h3>
+                          <p className="text-sm text-gray-500">{card.title}</p>
+                        </div>
+                      </div>
+                      <div className="h-16">
+                        <Line
+                          data={chartTemplate(card.chartColor)}
+                          options={smallChartOptions}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-    </main>
-  </div>
-)}
+                {/* ✅ Section 2: ApplicantsPage as separate row */}
+                <div className="overflow-x-auto w-[1100px] scrollbar-none">
+                  <ApplicantsPage />
+                </div>
+
+              </main>
+            </div>
+          )}
 
         </div>
       </div>

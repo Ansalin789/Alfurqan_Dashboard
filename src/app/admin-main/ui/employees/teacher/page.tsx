@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { BsCalendar4Event, BsClockHistory } from "react-icons/bs";
-import { MdOutlineCurrencyExchange } from "react-icons/md";
+import { MdOutlineCurrencyExchange, MdOutlineCancel } from "react-icons/md";
 import { IoSunnyOutline } from "react-icons/io5";
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar'
 import { format } from 'date-fns/format'
@@ -12,6 +12,9 @@ import { startOfWeek } from 'date-fns/startOfWeek'
 import { getDay } from 'date-fns/getDay'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { FaUserGraduate } from "react-icons/fa6";
+import { FaRegEye } from "react-icons/fa";
+import { IoIosCheckmarkCircleOutline } from "react-icons/io";
+
 
 
 
@@ -249,16 +252,16 @@ const Teacher = () => {
             ))}
           </div>
 
-          {/* Tab Content */}
           <div className="p-4">
             {activeTab === "Studentslist" && (
-              <div className="space-y-2">
-                <div className="rounded-lg border border-[#D5D5D5] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[180px] overflow-y-auto custom-scrollbar">
-                    <table className="w-full min-w-[600px] text-sm">
-                      <thead className="text-gray-600 border-b border-gray-200">
-                        <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">Total Students</h2>
-                        <tr className="text-center">
+              <div className="space-y-6">
+                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
+                  <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">Total Students</h2>
+
+                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                    <table className="w-full min-w-[900px] text-sm text-left">
+                      <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                        <tr>
                           <th className="p-4 font-semibold text-[12px] text-center">Student ID</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Student's name</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Country</th>
@@ -267,44 +270,75 @@ const Teacher = () => {
                           <th className="p-4 font-semibold text-[12px] text-center">Classes</th>
                         </tr>
                       </thead>
-                    </table>
-                  </div>
-                  <div className="overflow-y-scroll scrollbar-none max-h-[200px]">
-                    <table className="w-full min-w-[600px] text-sm">
-                      <tbody className="text-gray-800">
+                      <tbody className="text-xs text-[#1D2939]">
                         {[
-                          ["jij2ihjknkjn", "john", "India", "Tajweed", "30mins", "10/20"],
-                          ["jij2ihjknkjn", "Pathan jack", "Pakistan", "Tajweed", "60mins", "12/20"],
-                          ["jij2ihjknkjn", "sahib hossain", "India", "Tajweed", "30mins", "10/20"],
-                          ["jij2ihjknkjn", "john", "India", "Tajweed", "30mins", "10/20"],
-                          ["jij2ihjknkjn", "john", "UAE", "Quran", "60mins", "6/20"],
-                          ["jij2ihjknkjn", "john", "India", "Tajweed", "30mins", "10/20"],
-                          ["jij2ihjknkjn", "john", "India", "Tajweed", "30mins", "10/20"],
-                          ["jij2ihjknkjn", "john", "India", "Tajweed", "30mins", "10/20"],
-                          ["jij2ihjknkjn", "john", "India", "Tajweed", "30mins", "10/20"],
-                        ].map(([studentID, studentname, country, subject, duration, classes], index) => (
+                          {
+                            id: "11/11/2022",
+                            name: "$500",
+                            country: "Monthly Salary",
+                            subject: "Monthly Salary",
+                            duration: "Monthly Salary",
+                            classes: "Monthly Salary",
+                          },
+                          {
+                            id: "11/11/2022",
+                            name: "$500",
+                            country: "Monthly Salary",
+                            subject: "Monthly Salary",
+                            duration: "Monthly Salary",
+                            classes: "Monthly Salary",
+                          },
+                          {
+                            id: "11/11/2022",
+                            name: "$500",
+                            country: "Monthly Salary",
+                            subject: "Monthly Salary",
+                            duration: "Monthly Salary",
+                            classes: "Monthly Salary",
+                          },
+                          {
+                            id: "11/11/2022",
+                            name: "$500",
+                            country: "Monthly Salary",
+                            subject: "Monthly Salary",
+                            duration: "Monthly Salary",
+                            classes: "Monthly Salary",
+                          },
+                          {
+                            id: "11/11/2022",
+                            name: "$500",
+                            country: "Monthly Salary",
+                            subject: "Monthly Salary",
+                            duration: "Monthly Salary",
+                            classes: "Monthly Salary",
+                          },
+                          {
+                            id: "11/11/2022",
+                            name: "$500",
+                            country: "Monthly Salary",
+                            subject: "Monthly Salary",
+                            duration: "Monthly Salary",
+                            classes: "Monthly Salary",
+                          },
+                          {
+                            id: "11/11/2022",
+                            name: "$500",
+                            country: "Monthly Salary",
+                            subject: "Monthly Salary",
+                            duration: "Monthly Salary",
+                            classes: "Monthly Salary",
+                          },
+                        ].map((item, index) => (
                           <tr
-                            key={studentID}
+                            key={index}
                             className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
                           >
-                            <td className="p-2 text-[11px] text-center">
-                              {studentID}
-                            </td>
-                            <td className="p-2 text-[11px] text-center">
-                              {studentname}
-                            </td>
-                            <td className="p-2 text-[11px] text-center">
-                              {country}
-                            </td>
-                            <td className="p-2 text-[11px] text-center">
-                              {subject}
-                            </td>
-                            <td className="p-2 text-[11px] text-center">
-                              {duration}
-                            </td>
-                            <td className="p-2 text-[11px] text-center">
-                              {classes}
-                            </td>
+                            <td className="p-3">{item.id}</td>
+                            <td className="p-3">{item.name}</td>
+                            <td className="p-3">{item.country}</td>
+                            <td className="p-3">{item.subject}</td>
+                            <td className="p-3">{item.duration}</td>
+                            <td className="p-3">{item.classes}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -316,17 +350,17 @@ const Teacher = () => {
 
             {activeTab === "ScheduledClass" && (
               <div className="space-y-6">
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <div className="flex justify-between items-center mb-4">
+                <div className="bg-white p-6 rounded-lg">
+                  <div className="flex justify-between items-center mb-0">
                     <div className="space-x-4">
                       <button
-                        className={`font-medium ${view === 'month' ? 'text-black' : 'text-gray-400'}`}
+                        className={`font-medium text-[14px] ${view === 'month' ? 'text-black' : 'text-gray-400'}`}
                         onClick={() => setView('month')}
                       >
                         Calendar View
                       </button>
                       <button
-                        className={`font-medium ${view === 'agenda' ? 'text-black' : 'text-gray-400'}`}
+                        className={`font-medium text-[14px] ${view === 'agenda' ? 'text-black' : 'text-gray-400'}`}
                         onClick={() => setView('agenda')}
                       >
                         List View
@@ -338,83 +372,137 @@ const Teacher = () => {
                       <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">+ Add Schedule</button>
                     </div>
                   </div>
+                  <div className="overflow-x-auto max-h-[213px] overflow-y-auto custom-scrollbar scrollbar-none">
+                    {view === 'month' ? (
+                      <Calendar
+                        localizer={localizer}
+                        events={events}
+                        startAccessor="start"
+                        endAccessor="end"
+                        style={{ height: 600, width: '100%' }}
+                        view={view}
+                        onView={(newView) => setView(newView as 'month' | 'week' | 'day' | 'agenda')}
+                        onNavigate={(date) => console.log('Navigated to:', date)}
+                        selectable
+                        popup
+                        components={{ toolbar: CustomToolbar }}
+                        eventPropGetter={(event) => ({
+                          style: {
+                            backgroundColor: event.title.includes("Meeting") ? "#fcd4d4" : "#e8fcd8",
+                            color: "#000",
+                            fontSize: "10px",
+                            padding: "2px 4px",
+                          },
+                        })}
+                      />
+                    ) : (
+                      <div className="space-y-6 mt-2">
+                        <div className="rounded-xl border border-[#000]">
+                          <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">Total Students</h2>
 
-                  {/* Conditional Rendering */}
-                  {view === 'month' ? (
-                    <Calendar
-                      localizer={localizer}
-                      events={events}
-                      startAccessor="start"
-                      endAccessor="end"
-                      style={{ height: 600, width: '100%' }}
-                      view={view}
-                      onView={(newView) => setView(newView as 'month' | 'week' | 'day' | 'agenda')}
-                      onNavigate={(date) => console.log('Navigated to:', date)}
-                      selectable
-                      popup
-                      components={{ toolbar: CustomToolbar }}
-                      eventPropGetter={(event) => ({
-                        style: {
-                          backgroundColor: event.title.includes("Meeting") ? "#fcd4d4" : "#e8fcd8",
-                          color: "#000",
-                          fontSize: "10px",
-                          padding: "2px 4px",
-                        },
-                      })}
-                    />
-                  ) : (
-                    <div className="bg-white rounded-xl shadow-md p-4">
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm text-left">
-                          <thead className="bg-gray-100 text-gray-700">
-                            <tr>
-                              <th className="p-4">Student Name</th>
-                              <th className="p-4">Student ID</th>
-                              <th className="p-4">Course</th>
-                              <th className="p-4">Course Type</th>
-                              <th className="p-4">Course Duration</th>
-                              <th className="p-4">Class - Date & Time</th>
-                              <th className="p-4">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {scheduledclass.map((event, index) => (
-                              <tr key={index} className="border-b hover:bg-gray-50">
-                                <td className="p-4">{event.studentName}</td>
-                                <td className="p-4 text-blue-600 font-medium">{event.studentId}</td>
-                                <td className="p-4">{event.course}</td>
-                                <td className="p-4">{event.courseType}</td>
-                                <td className="p-4">{event.courseDuration}</td>
-                                <td className="p-4">{format(event.start, 'MMMM d, yyyy – hh:mm a')}</td>
-                                <td className="p-4">
-                                  <span className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${statusStyle[event.status as keyof typeof statusStyle]}`}>
-                                    {event.status}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Footer Pagination */}
-                      <div className="flex items-center justify-between mt-4 px-2">
-                        <p className="text-sm text-gray-500">Showing 1–10 of 100 data</p>
-                        <div className="flex space-x-1">
-                          <button className="w-8 h-8 rounded-full text-gray-400 border border-gray-300 hover:bg-gray-200">&lt;</button>
-                          <button className="w-8 h-8 rounded-full bg-gray-200 text-gray-800">1</button>
-                          <button className="w-8 h-8 rounded-full bg-blue-900 text-white">2</button>
-                          <button className="w-8 h-8 rounded-full text-gray-400 border border-gray-300 hover:bg-gray-200">3</button>
-                          <button className="w-8 h-8 rounded-full text-gray-400 border border-gray-300 hover:bg-gray-200">&gt;</button>
+                          <div className="overflow-x-auto max-h-[170px] overflow-y-scroll  scrollbar-none">
+                            <table className="w-full min-w-[900px] text-sm text-left">
+                              <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                                <tr>
+                                <th className="p-4 font-semibold text-[12px] text-center">Student name</th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">Student ID</th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">Courses</th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">Course Type</th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">Course Duration</th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">Class - Date & Time</th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">Status</th>
+                                </tr>
+                              </thead>
+                              <tbody className="text-xs text-[#1D2939]">
+                                {[
+                                  { 
+                                    name: "Ansalin",
+                                    id: "#17655hhjk",
+                                    course: "Monthly Salary",
+                                    coursetype: "Monthly Salary",
+                                    courseduration: "Monthly Salary",
+                                    classdatetime: "Monthly Salary",
+                                    status: "completed",
+                                  },
+                                  { 
+                                    name: "Ansalin",
+                                    id: "#17655hhjk",
+                                    course: "Monthly Salary",
+                                    coursetype: "Monthly Salary",
+                                    courseduration: "Monthly Salary",
+                                    classdatetime: "Monthly Salary",
+                                    status: "pending",
+                                  },
+                                  { 
+                                    name: "Ansalin",
+                                    id: "#17655hhjk",
+                                    course: "Monthly Salary",
+                                    coursetype: "Monthly Salary",
+                                    courseduration: "Monthly Salary",
+                                    classdatetime: "Monthly Salary",
+                                    status: "completed",
+                                  },
+                                  { 
+                                    name: "Ansalin",
+                                    id: "#17655hhjk",
+                                    course: "Monthly Salary",
+                                    coursetype: "Monthly Salary",
+                                    courseduration: "Monthly Salary",
+                                    classdatetime: "Monthly Salary",
+                                    status: "pending",
+                                  },
+                                  { 
+                                    name: "Ansalin",
+                                    id: "#17655hhjk",
+                                    course: "Monthly Salary",
+                                    coursetype: "Monthly Salary",
+                                    courseduration: "Monthly Salary",
+                                    classdatetime: "Monthly Salary",
+                                    status: "completed",
+                                  },
+                                  { 
+                                    name: "Ansalin",
+                                    id: "#17655hhjk",
+                                    course: "Monthly Salary",
+                                    coursetype: "Monthly Salary",
+                                    courseduration: "Monthly Salary",
+                                    classdatetime: "Monthly Salary",
+                                    status: "completed",
+                                  },
+                                  { 
+                                    name: "Ansalin",
+                                    id: "#17655hhjk",
+                                    course: "Monthly Salary",
+                                    coursetype: "Monthly Salary",
+                                    courseduration: "Monthly Salary",
+                                    classdatetime: "Monthly Salary",
+                                    status: "completed",
+                                  },
+                                ].map((item, index) => (
+                                  <tr
+                                    key={index}
+                                    className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+                                  >
+                                    <td className="p-3">{item.name}</td>
+                                    <td className="p-3">{item.id}</td>
+                                    <td className="p-3">{item.course}</td>
+                                    <td className="p-3">{item.coursetype}</td>
+                                    <td className="p-3">{item.courseduration}</td>
+                                    <td className="p-3">{item.classdatetime}</td>
+                                    <td className="p-3">{item.status}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+
                 </div>
               </div>
             )}
-
-
 
             {activeTab === "Earnings" && (
               <div className="space-y-6">
@@ -426,7 +514,7 @@ const Teacher = () => {
                       <h2 className="text-lg font-bold mt-1">100</h2>
                     </div>
                     <div className="bg-[#003E6E] p-2 rounded-lg text-sm">
-                      <FaUserGraduate  />
+                      <FaUserGraduate className="text-[#ffffffbd]" />
                     </div>
                   </div>
                   <div className="bg-[#2D49AD] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
@@ -435,7 +523,7 @@ const Teacher = () => {
                       <h2 className="text-lg font-bold mt-1">130</h2>
                     </div>
                     <div className="bg-[#8280ffc0] p-2 rounded-lg text-sm">
-                      <BsClockHistory />
+                      <BsClockHistory className="text-[#15255f]" />
                     </div>
                   </div>
                   <div className="bg-[#667085] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
@@ -444,187 +532,189 @@ const Teacher = () => {
                       <h2 className="text-lg font-bold mt-1">$800</h2>
                     </div>
                     <div className="bg-[#979797] p-2 rounded-lg text-sm">
-                      <MdOutlineCurrencyExchange />
+                      <MdOutlineCurrencyExchange className="text-[#4F5154]" />
                     </div>
                   </div>
                 </div>
 
-                {/* Scrollable Table */}
-                <div className="rounded-xl border border-[#D5D5D5] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[180px] overflow-y-auto custom-scrollbar">
-                    <table className="w-full min-w-[600px] text-sm text-left">
-                      <thead className="text-gray-600 border-b border-gray-200 ">
-                        <tr className="text-center">
-                          <th className="p-4 font-semibold">Month</th>
-                          <th className="p-4 font-semibold">
-                            Total Classes
-                          </th>
-                          <th className="p-4 font-semibold">Total Hours</th>
-                          <th className="p-4 font-semibold">
-                            Total Earnings
-                          </th>
-                          <th className="p-4 font-semibold">
-                            View
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-gray-800">
-                        {[
-                          ["January", "170 Hours", "$1050", "$0"],
-                          ["February", "185 Hours", "$170", "$0"],
-                          ["March", "178 Hours", "$140", "$0"],
-                          ["April", "180 Hours", "$125", "$100"],
-                          ["May", "100 Hours", "$190", "$0"],
-                          ["June", "180 Hours", "$138", "$100"],
-                          ["July", "120 Hours", "$210", "$0"],
-                          ["August", "130 Hours", "$260", "$100"],
-                          ["September", "100 Hours", "$186", "$100"],
-                        ].map(([month,  hours, earnings, deductions], index) => (
-                          <tr
-                            key={index}
-                            className=""
-                          >
-                            <td className="py-2 text-[12px] text-center">
-                              {month}
-                            </td>
-                            <td className="py-2 text-[12px] text-center">
-                              {hours}
-                            </td>
-                            <td className="py-2 text-[12px] text-center">
-                              {earnings}
-                            </td>
-                            <td className="py-2 text-[12px] text-center">
-                              {deductions}
-                            </td>
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-[#000] shadow overflow-hidden">
+                    <div className="overflow-x-auto max-h-[181px] overflow-y-auto custom-scrollbar scrollbar-none">
+                      <table className="w-full min-w-[900px] text-sm text-left">
+                        <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                          <tr>
+                            <th className="p-4 font-semibold text-[12px] text-center">Month</th>
+                            <th className="p-4 font-semibold text-[12px] text-center">Total Classes</th>
+                            <th className="p-4 font-semibold text-[12px] text-center">Total Hours</th>
+                            <th className="p-4 font-semibold text-[12px] text-center">Total Earnings</th>
+                            <th className="p-4 font-semibold text-[12px] text-center">View</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="text-xs text-[#1D2939]">
+                          {[
+                            {
+                              month: "11/11/2022",
+                              class: "$500",
+                              hours: "Monthly Salary",
+                              earnings: "Monthly Salary",
+                              view: <FaRegEye />,
+                            },
+                            {
+                              month: "11/11/2022",
+                              class: "$500",
+                              hours: "Monthly Salary",
+                              earnings: "Monthly Salary",
+                              view: <FaRegEye />,
+                            },
+                            {
+                              month: "11/11/2022",
+                              class: "$500",
+                              hours: "Monthly Salary",
+                              earnings: "Monthly Salary",
+                              view: <FaRegEye />,
+                            },
+                            {
+                              month: "11/11/2022",
+                              class: "$500",
+                              hours: "Monthly Salary",
+                              earnings: "Monthly Salary",
+                              view: <FaRegEye />,
+                            },
+                            {
+                              month: "11/11/2022",
+                              class: "$500",
+                              hours: "Monthly Salary",
+                              earnings: "Monthly Salary",
+                              view: <FaRegEye />,
+                            },
+                            {
+                              month: "11/11/2022",
+                              class: "$500",
+                              hours: "Monthly Salary",
+                              earnings: "Monthly Salary",
+                              view: <FaRegEye />,
+                            },
+                            {
+                              month: "11/11/2022",
+                              class: "$500",
+                              hours: "Monthly Salary",
+                              earnings: "Monthly Salary",
+                              view: <FaRegEye />,
+                            },
+                          ].map((item, index) => (
+                            <tr
+                              key={index}
+                              className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+                            >
+                              <td className="p-3">{item.month}</td>
+                              <td className="p-3">{item.class}</td>
+                              <td className="p-3">{item.hours}</td>
+                              <td className="p-3">{item.earnings}</td>
+                              <td className="p-3">{item.view}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-
-            {/* Leave Record Tab */}
-
             {activeTab === "Payments" && (
-              <div className="space-y-6 ">
-                {/* Summary Cards */}
-                <div className="flex flex-wrap gap-4">
-                  <div className="bg-[#11244D] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Applied Leave(Days)</p>
-                      <h2 className="text-lg font-bold mt-1">03</h2>
-                    </div>
-                  </div>
-                  <div className="bg-[#4F4CD1] text-white rounded-xl p-4 w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Approved</p>
-                      <h2 className="text-lg font-bold mt-1">02</h2>
-                    </div>
-                  </div>
-                  <div className="bg-[#707791] text-white rounded-xl p-4 w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Declined</p>
-                      <h2 className="text-lg font-bold mt-1">01</h2>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Leave Table */}
-                <div className="rounded-xl border border-[#D5D5D5] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[180px] overflow-y-auto custom-scrollbar">
-                    <table className="w-full min-w-[600px] text-sm text-left">
-                      <thead className="text-gray-600 border-b border-gray-200 ">
-                        <tr className="text-center">
-                          <th className="p-4 font-semibold">Employee ID</th>
-                          <th className="p-4 font-semibold">Employee Name</th>
-                          <th className="p-4 font-semibold">Designation</th>
-                          <th className="p-4 font-semibold">Leave Type</th>
-                          <th className="p-4 font-semibold">Date Range</th>
-                          <th className="p-4 font-semibold">Reason For Leave</th>
-                          <th className="p-4 font-semibold">Status</th>
-                          <th className="p-4 font-semibold text-center"></th>
+              <div className="space-y-6">
+                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
+                  <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
+                    <table className="w-full min-w-[900px] text-sm text-left">
+                      <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                        <tr>
+                          <th className="p-4 font-semibold text-[12px] text-center">Payment Date</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Amount</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Description</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Payment Method</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Status</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Comments for Reference</th>
+                          <th className="p-4 font-semibold text-[12px] text-center"></th>
                         </tr>
                       </thead>
-                      <tbody className="text-gray-800">
+                      <tbody className="text-xs text-[#1D2939]">
                         {[
                           {
-                            id: "#0983867",
-                            name: "Robert james",
-                            designation: "Supervisor",
-                            type: "Sick Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Sickness",
-                            status: "Approved",
+                            date: "11/11/2022",
+                            amount: "$500",
+                            description: "Monthly Salary",
+                            method: "PayPal",
+                            status: "Paid",
                           },
                           {
-                            id: "#0983867",
-                            name: "Stefan Salvatore",
-                            designation: "Human Resource",
-                            type: "Casual Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Family Function",
-                            status: "Approved",
+                            date: "22/10/2022",
+                            amount: "$500",
+                            description: "Bonus",
+                            method: "PayPal",
+                            status: "Paid",
                           },
                           {
-                            id: "#0983867",
-                            name: "Prasanna Popz",
-                            designation: "Teacher",
-                            type: "Privilege Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Vacation",
-                            status: "Declined",
+                            date: "22/05/2022",
+                            amount: "$500",
+                            description: "Monthly Salary",
+                            method: "PayPal",
+                            status: "Pending",
+                          },
+                          {
+                            date: "14/07/2020",
+                            amount: "$500",
+                            description: "Monthly Salary",
+                            method: "Stripe",
+                            status: "Paid",
+                          },
+                          {
+                            date: "12/04/2021",
+                            amount: "$500",
+                            description: "Monthly Salary",
+                            method: "Bank Transfer",
+                            status: "Pending",
+                          },
+                          {
+                            date: "02/02/2022",
+                            amount: "$500",
+                            description: "Bonus",
+                            method: "Bank Transfer",
+                            status: "Paid",
+                          },
+                          {
+                            date: "02/02/2022",
+                            amount: "$500",
+                            description: "Bonus",
+                            method: "Bank Transfer",
+                            status: "Paid",
                           },
                         ].map((item, index) => (
                           <tr
-                            key={item.id}
-                            className="border-t border-gray-100 hover:bg-gray-50"
+                            key={index}
+                            className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
                           >
-                            <td className="p-2 text-[12px] text-center">
-                              {item.id}
+                            <td className="p-3">{item.date}</td>
+                            <td className="p-3">{item.amount}</td>
+                            <td className="p-3">{item.description}</td>
+                            <td className="p-3">{item.method}</td>
+                            <td className="p-3">
+                              {item.status === "Paid" ? (
+                                <span className="inline-flex items-center justify-center  gap-1">
+                                  <span className="text-lg"><IoIosCheckmarkCircleOutline className="text-green-600" />
+                                  </span> Paid
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center justify-center  gap-1">
+                                  <span className="text-lg"><MdOutlineCancel className="text-red-600" />
+                                  </span> Pending
+                                </span>
+                              )}
                             </td>
-                            <td className="p-2 text-[12px] text-center">
-                              {item.name}
-                            </td>
-                            <td className="p-2 text-[12px] text-center">
-                              {item.designation}
-                            </td>
-                            <td className="p-2 text-[12px] text-center">
-                              {item.type}
-                            </td>
-                            <td className="p-2 text-[12px] text-center">
-                              {item.range}
-                            </td>
-                            <td className="p-2 text-[12px] text-center">
-                              {item.reason}
-                            </td>
-                            <td className="p-2 text-[12px] text-center">
-                              <div className="flex items-center gap-2">
-                                {item.status === "Approved" ? (
-                                  <>
-                                    <span className="text-green-600 p-2 text-[12px] text-center">
-                                      ✅
-                                    </span>
-                                    <span className="p-2 text-[12px] text-center">
-                                      Approved
-                                    </span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <span className="text-red-600 p-2 text-[12px] text-center">
-                                      ❌
-                                    </span>
-                                    <span className="p-2 text-[12px] text-center">
-                                      Declined
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                            <td className="p-4 text-center text-lg text-gray-500 cursor-pointer">
-                              ...
+                            <td className="p-3"></td>
+                            <td className="p-3 text-center">
+                              <button className="text-gray-600 hover:text-blue-500 text-lg">
+                                ⬇️
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -635,58 +725,143 @@ const Teacher = () => {
               </div>
             )}
 
+            {activeTab === "Wages" && (
+              <div className="space-y-6">
+                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
+                  <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
+                    <table className="w-full min-w-[900px] text-sm text-left">
+                      <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                        <tr>
+                          <th className="p-4 font-semibold text-[12px] text-center">Class Type</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Rate</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Currency</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Duration</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-xs text-[#1D2939]">
+                        {[
+                          {
+                            type: "11/11/2022",
+                            rate: "$500",
+                            currency: "Monthly Salary",
+                            duration: "Monthly Salary",
+                          },
+                          {
+                            type: "11/11/2022",
+                            rate: "$500",
+                            currency: "Monthly Salary",
+                            duration: "Monthly Salary",
+                          },
+                          {
+                            type: "11/11/2022",
+                            rate: "$500",
+                            currency: "Monthly Salary",
+                            duration: "Monthly Salary",
+                          },
+                          {
+                            type: "11/11/2022",
+                            rate: "$500",
+                            currency: "Monthly Salary",
+                            duration: "Monthly Salary",
+                          },
+                          {
+                            type: "11/11/2022",
+                            rate: "$500",
+                            currency: "Monthly Salary",
+                            duration: "Monthly Salary",
+                          },
+                          {
+                            type: "11/11/2022",
+                            rate: "$500",
+                            currency: "Monthly Salary",
+                            duration: "Monthly Salary",
+                          },
+                          {
+                            type: "11/11/2022",
+                            rate: "$500",
+                            currency: "Monthly Salary",
+                            duration: "Monthly Salary",
+                          },
+                        ].map((item, index) => (
+                          <tr
+                            key={index}
+                            className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+                          >
+                            <td className="p-3">{item.type}</td>
+                            <td className="p-3">{item.rate}</td>
+                            <td className="p-3">{item.currency}</td>
+                            <td className="p-3">{item.duration}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {activeTab === "WorkingHours" && (
-              <div className="shadow overflow-hidden">
-                <div className="overflow-x-auto max-h-[280px] overflow-y-auto custom-scrollbar">
-                  <table className="w-full min-w-[600px] text-sm text-left border border-gray-200">
-                    <thead className="text-gray-600 border-b border-gray-200">
-                      <tr className="text-center">
-                        <th className="p-4 font-semibold border-r border-gray-300">
-                          <div className="flex items-center justify-center gap-2">
-                            <BsCalendar4Event className="text-xl" />
-                            <span>Day</span>
-                          </div>
-                        </th>
-                        <th className="p-4 font-semibold border-r border-gray-300">
-                          <div className="flex items-center justify-center gap-2">
-                            <BsClockHistory className="text-xl" />
-                            <span>Working Hours</span>
-                          </div>
-                        </th>
-                        <th className="p-4 font-semibold">
-                          <div className="flex items-center justify-center gap-2">
-                            <IoSunnyOutline className="text-xl" />
-                            <span>GMT</span>
-                          </div>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-800">
-                      {[
-                        "Monday",
-                        "Tuesday",
-                        "Wednesday",
-                        "Thursday",
-                        "Friday",
-                        "Friday", // duplicate as per image
-                        "Sunday",
-                      ].map((day, idx) => (
-                        <tr
-                          key={idx}
-                          className="border-t border-gray-100 hover:bg-gray-50 text-center"
-                        >
-                          <td className="p-3 text-[12px] border-r border-gray-200">
-                            {day}
-                          </td>
-                          <td className="p-3 text-[12px] border-r border-gray-200">
-                            9 AM - 2 PM / 4 PM - 7 PM
-                          </td>
-                          <td className="p-3 text-[12px]">GMT +4</td>
+              <div className="space-y-6">
+                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
+                  <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
+                    <table className="w-full min-w-[900px] text-sm text-left">
+                      <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                        <tr>
+                          <th className="p-4 font-semibold text-[12px] text-center">Day</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Working Hours</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">GMT</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="text-xs text-[#1D2939]">
+                        {[
+                          {
+                            day: "11/11/2022",
+                            whours: "$500",
+                            GMT: "Monthly Salary",
+                          },
+                          {
+                            day: "11/11/2022",
+                            whours: "$500",
+                            GMT: "Monthly Salary",
+                          },
+                          {
+                            day: "11/11/2022",
+                            whours: "$500",
+                            GMT: "Monthly Salary",
+                          },
+                          {
+                            day: "11/11/2022",
+                            whours: "$500",
+                            GMT: "Monthly Salary",
+                          },
+                          {
+                            day: "11/11/2022",
+                            whours: "$500",
+                            GMT: "Monthly Salary",
+                          },
+                          {
+                            day: "11/11/2022",
+                            whours: "$500",
+                            GMT: "Monthly Salary",
+                          },
+                          {
+                            day: "11/11/2022",
+                            whours: "$500",
+                            GMT: "Monthly Salary",
+                          },
+                        ].map((item, index) => (
+                          <tr
+                            key={index}
+                            className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+                          >
+                            <td className="p-3">{item.day}</td>
+                            <td className="p-3">{item.whours}</td>
+                            <td className="p-3">{item.GMT}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}

@@ -46,29 +46,12 @@ const SidebarItems = [
         name: 'Employees',
         href: '/admin-main/ui/employees',
         icon: IoPeopleSharp,
-        subItems: [
-            {
-                name: 'Teachers',
-                href: '/admin-main/ui/employees/teacher',
-                icon: MdBookmarks,
-            },
-            {
-                name: 'Others Employees',
-                href: '/admin-main/ui/employees/otheremployees',
-                icon: MdBookmarks,
-            },
-            {
-                name: 'Recruitment',
-                href: '/admin-main/ui/employees/recruitment',
-                icon: MdBookmarks,
-            }
-        ]
     },
     {
         name: 'Courses',
         href: '/admin-main/ui/courses',
         icon: PiBookOpenFill,
-    },
+    },  
     {
         name: 'Schedules',
         href: '/admin-main/ui/classes',
