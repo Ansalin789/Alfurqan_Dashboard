@@ -2,18 +2,15 @@
 
 import Image from "next/image";
 import Link from 'next/link';
-import React from 'react';
+import React, { useState } from 'react';
 import { RiDashboardFill } from "react-icons/ri";
 import { MdBookmarks, MdAnalytics } from "react-icons/md";
 import { IoPeopleSharp } from "react-icons/io5";
 import { LuMessagesSquare } from "react-icons/lu";
 import { GiGraduateCap } from "react-icons/gi";
 import { PiBookOpenFill } from "react-icons/pi";
-import { IoMdSettings } from "react-icons/io";
-
-
-
-
+import { IoMdSettings, IoIosArrowForward, IoIosArrowDown } from "react-icons/io";
+import { usePathname } from "next/navigation";
 
 import "@/styles/globals.css";
 
@@ -27,6 +24,18 @@ const SidebarItems = [
         name: 'Evaluation',
         href: '/admin-main/ui/evaluations',
         icon: MdBookmarks,
+        subItems: [
+            {
+                name: 'Trial Class',
+                href: '/admin-main/ui/evaluations/trial-class',
+                icon: MdBookmarks,
+            },
+            {
+                name: 'Scheduled Trial Class',
+                href: '/admin-main/ui/evaluations/scheduled-trial-class',
+                icon: MdBookmarks,
+            }
+        ]
     },
     {
         name: 'Students',
@@ -42,16 +51,45 @@ const SidebarItems = [
         name: 'Courses',
         href: '/admin-main/ui/courses',
         icon: PiBookOpenFill,
-    },
+    },  
     {
-        name: 'Classes',
+        name: 'Schedules',
         href: '/admin-main/ui/classes',
         icon: '/assets/images/clssss.png',
+        subItems: [
+            {
+                name: 'Classes',
+                href: '/admin-main/ui/evaluations/trial-class',
+                icon: MdBookmarks,
+            },
+            {
+                name: 'Meetings',
+                href: '/admin-main/ui/evaluations/scheduled-trial-class',
+                icon: MdBookmarks,
+            }
+        ]
     },
     {
-        name: 'Invoice',
+        name: 'Finance',
         href: '/admin-main/ui/invoice',
         icon: '/assets/images/invoicee.jpeg',
+        subItems: [
+            {
+                name: 'Invoice',
+                href: '/admin-main/ui/evaluations/trial-class',
+                icon: MdBookmarks,
+            },
+            {
+                name: 'Salery and Wages',
+                href: '/admin-main/ui/evaluations/scheduled-trial-class',
+                icon: MdBookmarks,
+            },
+            {
+                name: 'Expenses',
+                href: '/admin-main/ui/evaluations/scheduled-trial-class',
+                icon: MdBookmarks,
+            }
+        ]
     },
     {
         name: 'Analytics',
@@ -71,6 +109,31 @@ const SidebarItems = [
 ];
 
 export default function Sidebar4() {
+    const [expandedItem, setExpandedItem] = useState<string | null>(null);
+    const currentPath = usePathname();
+
+    // Check if any sub-item is active
+    const isSubItemActive = (subItems: any[]) => {
+        return subItems.some(subItem => currentPath === subItem.href);
+    };
+
+    // Set the expanded item based on the current path
+    React.useEffect(() => {
+        SidebarItems.forEach(item => {
+            if (item.subItems && isSubItemActive(item.subItems)) {
+                setExpandedItem(item.name);
+            }
+        });
+    }, [currentPath]);
+
+    const toggleSubItems = (name: string) => {
+        if (expandedItem === name) {
+            setExpandedItem(null);
+        } else {
+            setExpandedItem(name);
+        }
+    };
+
     return (
         <div className="sidebar__wrapper bg-[#012A4A] h-[100vh]">
             <aside className='sidebar bg-[#012A4A] shadow-lg'>
@@ -81,19 +144,44 @@ export default function Sidebar4() {
                         <h4 className="font-light text-[17px] justify-end ml-8 -mt-3 font-sans">academy</h4>
                     </div>
                 </div>
-                <ul className="ml-6">   
-                    {SidebarItems.map(({ name, href, icon: Icon }) => (
-                        <li className="text-center justify-center hover:no-underline hover:flex hover:bg-[#476a9b] hover:text-[#fff] hover:align-middle hover:justify-center] hover:pl-2 pl-2 py-2 hover:rounded-lg" key={name}>
-                            <Link href={href} className='no-underline flex align-middle justify-start w-[100%] text-[#fff] pt-[10px] pb-[10px] text-[14px]'>
-                                <span className="text-[20px] inline-block mr-[10px]">
-                                    {typeof Icon === 'string' ? (
-                                        <Image src={Icon} width={20} height={20} alt={name} />
-                                    ) : (
-                                        <Icon />
+                <ul className="ml-6">
+                    {SidebarItems.map(({ name, href, icon: Icon, subItems }) => (
+                        <li key={name}>
+                            <button
+                                className={`text-center justify-center hover:no-underline hover:flex hover:bg-[#476a9b] hover:text-[#fff] hover:align-middle hover:justify-center] hover:pl-2 pl-2 pr-2 py-2 hover:rounded-lg rounded-lg ${subItems ? 'cursor-pointer' : ''} ${currentPath === href || (subItems && isSubItemActive(subItems)) ? 'bg-[#476a9b] text-[#fff]' : ''}`}
+                                onClick={() => subItems && toggleSubItems(name)}
+                            >
+                                <Link href={href} className='no-underline flex align-middle justify-start w-[100%] text-[#fff] pt-[10px] pb-[10px] text-[14px]'>
+                                    <span className="text-[20px] inline-block mr-[10px]">
+                                        {typeof Icon === 'string' ? (
+                                            <Image src={Icon} width={20} height={20} alt={name} />
+                                        ) : (
+                                            <Icon />
+                                        )}
+                                    </span>
+                                    <span className="sidebar__name">{name}</span>
+                                    {subItems && (
+                                        <span className="ml-1 mr-2 mt-[6px]">
+                                            {expandedItem === name ? <IoIosArrowDown /> : <IoIosArrowForward />}
+                                        </span>
                                     )}
-                                </span>
-                                <span className="sidebar__name">{name}</span>
-                            </Link>
+                                </Link>
+                            </button>
+
+                            {subItems && expandedItem === name && (
+                                <ul className="ml-8 mt-1 mb-1">
+                                    {subItems.map((subItem) => (
+                                        <li key={subItem.name} className="py-1">
+                                            <Link
+                                                href={subItem.href}
+                                                className={`text-[#fff] text-[10px] hover:text-[#a0c4ff] no-underline ${currentPath === subItem.href ? 'text-[#a0c4ff] font-semibold' : ''}`}
+                                            >
+                                                {subItem.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </li>
                     ))}
                 </ul>
