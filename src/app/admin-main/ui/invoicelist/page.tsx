@@ -3,8 +3,8 @@
 import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { FaChevronLeft, FaChevronRight, FaEdit, FaFilter, FaSyncAlt } from "react-icons/fa";
-import { FaPlus } from "react-icons/fa6";
+import { FaChevronLeft, FaChevronRight, FaEdit, FaFilter } from "react-icons/fa";
+
 
 interface EvaluationItem {
   _id: string;
@@ -433,11 +433,11 @@ const evaluation: EvaluationItem[] = [
 ];
 
 const Trailclasslist = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredUsers, setFilteredUsers] = useState<EvaluationItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showModal, setShowModal] = useState(false);
+ 
  
 
   const itemsPerPage = 11;
@@ -476,16 +476,9 @@ const Trailclasslist = () => {
     setCurrentPage(1);
   };
 
-  const handleSyncClick = () => {
-    router.push("/admin-main/ui/trailmanagement");
-  };
+  
 
-  const handleClick = (id: string) => {
-    const selectedItem = evaluation.find((item) => item._id === id);
-    if (selectedItem) {
-      setShowModal(true);
-    }
-  };
+
   const goToNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -546,13 +539,7 @@ const Trailclasslist = () => {
     <BaseLayout4>
       <div className="p-8 mx-auto w-[1250px] pr-16">
         <div className="flex items-center space-x-2">
-          <h2 className="text-[18px] font-semibold ">Invoice</h2>
-          <button
-            className="bg-gray-800 text-white p-[4px] rounded-full shadow-2xl"
-            onClick={handleSyncClick}
-          >
-            <FaSyncAlt />
-          </button>
+          <h2 className="text-[20px] font-semibold ">Invoice</h2>
         </div>
         <div className="flex justify-between items-center px-6 py-4  rounded-sm">
   {/* Left Section: Search + Filter */}
@@ -642,7 +629,6 @@ const Trailclasslist = () => {
                         </td>
                         <td className="p-2 text-center">
                           <button
-                            onClick={() => handleClick(item._id.toString())}
                             className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
                           >
                             <FaEdit size={10} />
@@ -686,7 +672,7 @@ const Trailclasslist = () => {
                   <span key={pageNumber} className="px-2">...</span>
                 ) : (
                   <button
-                    key={index}
+                    key={pageNumber}
                     onClick={() => goToPage(pageNumber)}
                     className={`w-5 h-5 rounded-lg shadow text-[11px] ${
                       currentPage === pageNumber
