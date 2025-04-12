@@ -48,21 +48,19 @@ const SidebarItems = [
         icon: IoPeopleSharp,
     },
     {
+        name: 'Meetings',
+        href: '/admin-main/ui/meeting',
+        icon: MdAnalytics,
+    },
+    {
         name: 'Courses',
         href: '/admin-main/ui/courses',
         icon: PiBookOpenFill,
     },  
     {
-        name: 'Schedules',
-        href: '/admin-main/ui/schedules',
+        name: 'Classes',
+        href: '/admin-main/ui/classes',
         icon: '/assets/images/clssss.png',
-        subItems: [
-            {
-                name: 'Classes',
-                href: '/admin-main/ui/evaluations/classes',
-                icon: MdBookmarks,
-            }
-        ]
     },
     {
         name: 'Finance',
@@ -71,26 +69,22 @@ const SidebarItems = [
         subItems: [
             {
                 name: 'Invoice',
-                href: '/admin-main/ui/evaluations/trial-class',
+                href: '/admin-main/ui/evaluations/Invoice',
                 icon: MdBookmarks,
             },
             {
                 name: 'Salery and Wages',
-                href: '/admin-main/ui/evaluations/salaryandwages',
+                href: '/admin-main/ui/salaryandwages',
                 icon: MdBookmarks,
             },
             {
                 name: 'Expenses',
-                href: '/admin-main/ui/evaluations/expenses',
+                href: '/admin-main/ui/expenses',
                 icon: MdBookmarks,
             }
         ]
     },
-    {
-        name: 'Meetings',
-        href: '/admin-main/ui/meetings',
-        icon: MdAnalytics,
-    },
+
     {
         name: 'Analytics',
         href: '/admin-main/ui/analytics',
