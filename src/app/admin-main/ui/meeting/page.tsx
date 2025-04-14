@@ -139,34 +139,36 @@ const getMeetingStatusClass = (status: string): string => {
             isRescheduleModalOpen ? "blur-sm" : ""
           } transition-all duration-200`}
         >
-          <h1 className="text-2xl font-semibold text-gray-800 p-2">
-            Scheduled Classes
+          <h1 className="text-xl font-semibold text-gray-800 p-2">
+            Scheduled Meetings
           </h1>
           <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px]  overflow-y-scroll scrollbar-none flex flex-col justify-between">
             {/* Tabs */}
             <div>
-              <div className="flex">
-                <button
-                  className={`py-3 px-2 ml-5 ${
-                    activeTab === "upcoming"
-                      ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold"
-                      : "text-gray-600"
-                  } focus:outline-none text-[13px]`}
-                  onClick={() => setActiveTab("upcoming")}
-                >
-                  Upcoming ({upcomingClasses.length})
-                </button>
-                <button
-                  className={`py-3 px-6 ${
-                    activeTab === "completed"
-                      ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold"
-                      : "text-gray-600"
-                  } focus:outline-none text-[13px]`}
-                  onClick={() => setActiveTab("completed")}
-                >
-                  Completed ({completedData.length})
-                </button>
-              </div>
+            <div className="flex p-4">
+              <button
+                className={`py-1 px-4 rounded-lg text-sm font-medium  ${
+                  activeTab === "upcoming"
+                    ? "bg-[#1C3557] text-white"
+                    : "bg-transparent text-black"
+                }`}
+                onClick={() => setActiveTab("upcoming")}
+              >
+                Scheduled
+              </button>
+              <button
+                className={`py-1 px-4 rounded-lg  text-sm font-medium ml-4 ${
+                  activeTab === "completed"
+                    ? "bg-[#1C3557] text-white"
+                    : "bg-transparent text-black"
+                }`}
+                onClick={() => setActiveTab("completed")}
+              >
+                Completed
+              </button>
+           </div>
+
+
               <div className="flex justify-end px-[50px] mt-[2px] h-6 relative">
                <button onClick={nextPage}>
                   <FaCalendarAlt className="mr-2" />
@@ -327,6 +329,8 @@ const getMeetingStatusClass = (status: string): string => {
                             </>
                           )}
                         </td>
+
+                        
                       </tr>
                     ))}
                   </tbody>
