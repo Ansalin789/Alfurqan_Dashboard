@@ -41,7 +41,7 @@ const cardData = [
         total: '100',
         course: 'Islamic History',
         city: 'India',
-        href: '/admin-main/ui/knowledgebase',
+        href: '/admin-main/ui/knowledge',
     },
     {
         title: 'Packages',
