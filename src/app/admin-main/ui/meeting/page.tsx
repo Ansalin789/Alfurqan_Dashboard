@@ -144,6 +144,7 @@ const Meeting = () => {
   };
 
   const nextPage = () => {
+    console.log("nextPage")
     router.push("/admin-main/ui/meeting/schedule");
   };
 
@@ -206,7 +207,8 @@ const Meeting = () => {
 
             {/* Right side: Calendar, Add Meeting, Date Picker */}
             <div className="flex items-center gap-4">
-              <button onClick={nextPage}>
+              <button onClick={()=>nextPage()}
+                >
                 <FaCalendarAlt className="text-[#1C3557]" />
               </button>
 
@@ -1026,7 +1028,7 @@ const Meeting = () => {
                   Next
                 </button>
               </div>
-              
+
             </div>
           </div>
         )}
