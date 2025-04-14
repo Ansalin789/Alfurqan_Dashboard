@@ -747,8 +747,8 @@ const Teacher = () => {
                           <th className="p-4 font-semibold text-[12px] text-center">Day</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Working Hours</th>
                           <th className="p-4 font-semibold text-[12px] text-center">GMT</th>
-                        </tr>
-                      </thead>
+                      </tr>
+                    </thead>
                       <tbody className="text-xs text-[#1D2939]">
                         {[
                           {
@@ -794,10 +794,10 @@ const Teacher = () => {
                             <td className="p-3">{item.day}</td>
                             <td className="p-3">{item.whours}</td>
                             <td className="p-3">{item.GMT}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                   </div>
                 </div>
               </div>

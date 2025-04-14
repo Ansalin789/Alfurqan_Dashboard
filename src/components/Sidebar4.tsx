@@ -32,7 +32,7 @@ const SidebarItems = [
             },
             {
                 name: 'Scheduled Trail class',
-                href: '/admin-main/ui/evaluations/schedulelistview',
+                href: '/admin-main/ui/schedulelistview',
                 icon: MdBookmarks,
             },
         ]
@@ -69,7 +69,7 @@ const SidebarItems = [
         subItems: [
             {
                 name: 'Invoice',
-                href: '/admin-main/ui/evaluations/Invoice',
+                href: '/admin-main/ui/Invoice',
                 icon: MdBookmarks,
             },
             {
