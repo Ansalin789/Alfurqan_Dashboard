@@ -26,20 +26,20 @@ const SidebarItems = [
         icon: MdBookmarks,
         subItems: [
             {
-                name: 'Trial Class',
-                href: '/admin-main/ui/evaluations/trial-class',
+                name: 'Trail Class',
+                href: '/admin-main/ui/trailclasslist',
                 icon: MdBookmarks,
             },
             {
-                name: 'Scheduled Trial Class',
-                href: '/admin-main/ui/evaluations/scheduled-trial-class',
+                name: 'Scheduled Trail class',
+                href: '/admin-main/ui/schedulelistview',
                 icon: MdBookmarks,
-            }
+            },
         ]
     },
     {
         name: 'Students',
-        href: '/admin-main/ui/students',
+        href: '/admin-main/ui/student',
         icon: GiGraduateCap,
     },
     {
@@ -48,49 +48,43 @@ const SidebarItems = [
         icon: IoPeopleSharp,
     },
     {
+        name: 'Meetings',
+        href: '/admin-main/ui/meeting',
+        icon: MdAnalytics,
+    },
+    {
         name: 'Courses',
         href: '/admin-main/ui/courses',
         icon: PiBookOpenFill,
     },  
     {
-        name: 'Schedules',
+        name: 'Classes',
         href: '/admin-main/ui/classes',
         icon: '/assets/images/clssss.png',
-        subItems: [
-            {
-                name: 'Classes',
-                href: '/admin-main/ui/evaluations/trial-class',
-                icon: MdBookmarks,
-            },
-            {
-                name: 'Meetings',
-                href: '/admin-main/ui/evaluations/scheduled-trial-class',
-                icon: MdBookmarks,
-            }
-        ]
     },
     {
         name: 'Finance',
-        href: '/admin-main/ui/invoice',
+        href: '/admin-main/ui/Invoice',
         icon: '/assets/images/invoicee.jpeg',
         subItems: [
             {
                 name: 'Invoice',
-                href: '/admin-main/ui/evaluations/trial-class',
+                href: '/admin-main/ui/Invoice',
                 icon: MdBookmarks,
             },
             {
                 name: 'Salery and Wages',
-                href: '/admin-main/ui/evaluations/scheduled-trial-class',
+                href: '/admin-main/ui/salaryandwages',
                 icon: MdBookmarks,
             },
             {
                 name: 'Expenses',
-                href: '/admin-main/ui/evaluations/scheduled-trial-class',
+                href: '/admin-main/ui/expenses',
                 icon: MdBookmarks,
             }
         ]
     },
+
     {
         name: 'Analytics',
         href: '/admin-main/ui/analytics',
@@ -98,7 +92,7 @@ const SidebarItems = [
     },
     {
         name: 'Messages',
-        href: '/admin-main/ui/messages',
+        href: '/admin-main/ui/messagess',
         icon: LuMessagesSquare,
     },
     {

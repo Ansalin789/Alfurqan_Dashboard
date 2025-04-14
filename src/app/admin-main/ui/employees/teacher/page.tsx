@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { BsCalendar4Event, BsClockHistory } from "react-icons/bs";
@@ -14,9 +15,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { FaUserGraduate } from "react-icons/fa6";
 import { FaRegEye } from "react-icons/fa";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
-
-
-
+import { FaCalendarAlt } from "react-icons/fa";
 
 
 const locales = {
@@ -33,7 +32,7 @@ const localizer = dateFnsLocalizer({
 
 const Teacher = () => {
   const [activeTab, setActiveTab] = useState("Studentslist");
-  const [view, setView] = useState<'month' | 'week' | 'day' | 'agenda'>('month');
+  const [view, setView] = useState<'month' | 'week' | 'day' | 'agenda'>('agenda');
   const tabs = ["Studentslist", "ScheduledClass", "Earnings", "Payments", "Wages", "WorkingHours"];
   const events = [
     {
@@ -58,7 +57,6 @@ const Teacher = () => {
     Cancelled: 'bg-gray-300 text-gray-700',
     Rescheduled: 'bg-yellow-300 text-black',
   };
-
 
   const scheduledclass = [
     {
@@ -99,22 +97,21 @@ const Teacher = () => {
     },
   ]
 
-
   const CustomToolbar = (toolbar: any) => (
     <div className="flex justify-center items-center py-2 px-4">
-      {/* <div className="space-x-4">
-        <button onClick={() => toolbar.onView('month')} className="text-sm px-3 py-1 rounded bg-blue-500 text-white">Month</button>
-        <button onClick={() => toolbar.onView('agenda')} className="text-sm px-3 py-1 rounded bg-blue-500 text-white">List</button>
-      </div> */}
       <h2 className="text-xl font-semibold text-center">{toolbar.label}</h2>
-      {/* <div className="space-x-2">
-        <button onClick={() => toolbar.onNavigate('PREV')} className="text-sm">Prev</button>
-        <button onClick={() => toolbar.onNavigate('TODAY')} className="text-sm">Today</button>
-        <button onClick={() => toolbar.onNavigate('NEXT')} className="text-sm">Next</button>
-      </div> */}
     </div>
   )
 
+  const router = useRouter();
+
+  const handleView = () => {
+    router.push(`/admin-main/ui/employees/teacher/monthdata`);
+  };
+
+  const handleclickcalender = () => {
+    router.push('/admin-main/ui/employees/teacher/calendar');
+  };
 
   return (
     <BaseLayout4>
@@ -125,9 +122,9 @@ const Teacher = () => {
           <div className="col-span-3 bg-white p-4 rounded-xl shadow flex justify-between flex-row">
             <div className="flex flex-col items-center md:w-1/3 text-center">
               <div className="border-r-2 p-6 -ml-8">
-                <div className="w-10 h-10 rounded-full overflow-hidden ml-8">
+                <div className="w-10 h-10 rounded-full overflow-hidden ml-2">
                   <img
-                    src="/assets/images/Avatar.png" // Replace with your actual image path or use a placeholder
+                    src="/assets/images/Avatar.png"
                     alt="Avatar"
                     width={96}
                     height={96}
@@ -137,14 +134,12 @@ const Teacher = () => {
                   <h2 className="text-xs font-medium mt-4">Abdullah Sulaiman</h2>
                   <p className="text-gray-500 text-[11px]">Mufti & imam</p>
                   <div className="mt-4">
-                    <div className=" h-1 bg-[#455E8F] rounded-full w-[150px]">
+                    <div className=" h-1 bg-[#455E8F] rounded-full w-[120px]">
                       <div className="h-1 bg-[#8CB2FF] rounded-full" style={{ width: '75%' }}></div>
                     </div>
                     <div className="text-[10px] text-gray-500 mb-1 mt-2">Course completion : 75%</div>
-
                   </div>
                 </div>
-
               </div>
             </div>
             <div className="flex-1 gap-y-2 gap-x-6 text-sm">
@@ -187,22 +182,15 @@ const Teacher = () => {
                   <p className="text-[10px] text-gray-400">Full-time</p>
                 </div>
               </div>
-
             </div>
           </div>
           <div className="col-span-2 bg-white p-4 rounded-xl shadow">
             <div className=" text-xs w-full">
               <div className="max-w-md mx-auto bg-white rounded-full p-2">
-                {/* Dropdown */}
                 <div className="flex justify-start mb-6">
-                  <select className="bg-[#0F2C59] text-white w-[120px] text-center text-[11px] px-2 py-2 rounded-lg focus:outline-none">
-                    <option>Quran</option>
-                    <option className="hover:bg-[#0f2c59]">Tajweed</option>
-                    <option>Islamic Studies</option>
-                  </select>
+                  <h2 className='bg-[#0F2C59] text-white w-[120px] text-center text-[11px] px-2 py-2 rounded-lg'>Quran</h2>
                 </div>
 
-                {/* Stats Grid */}
                 <div className="grid grid-cols-3 gap-y-6 text-center text-sm">
                   <div>
                     <p className="text-xl font-normal text-[#012A4A]">30</p>
@@ -234,9 +222,7 @@ const Teacher = () => {
           </div>
         </div>
 
-        {/* Tabs Section */}
         <div className="mt-4 bg-white p-4 rounded-xl shadow h-min">
-          {/* Tabs */}
           <div className="flex space-x-6">
             {tabs.map((tab) => (
               <button
@@ -355,9 +341,9 @@ const Teacher = () => {
                     <div className="space-x-4">
                       <button
                         className={`font-medium text-[14px] ${view === 'month' ? 'text-black' : 'text-gray-400'}`}
-                        onClick={() => setView('month')}
+                        onClick={ handleclickcalender}
                       >
-                        Calendar View
+                        <FaCalendarAlt />
                       </button>
                       <button
                         className={`font-medium text-[14px] ${view === 'agenda' ? 'text-black' : 'text-gray-400'}`}
@@ -366,11 +352,21 @@ const Teacher = () => {
                         List View
                       </button>
                     </div>
-                    <div className="space-x-2">
-                      <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">+ Add Meeting</button>
-                      <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">+ Add ToDoList</button>
-                      <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">+ Add Schedule</button>
-                    </div>
+                    {view === 'month' ? (
+                      <div className="space-x-2">
+                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">+ Add Meeting</button>
+                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">+ Add ToDoList</button>
+                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">+ Add Schedule</button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <input
+                          type="text"
+                          placeholder="Search here..."
+                          className="border rounded-lg px-2 py-1 text-[10px] shadow"
+                        />
+                      </div>
+                    )}
                   </div>
                   <div className="overflow-x-auto max-h-[213px] overflow-y-auto custom-scrollbar scrollbar-none">
                     {view === 'month' ? (
@@ -399,12 +395,11 @@ const Teacher = () => {
                       <div className="space-y-6 mt-2">
                         <div className="rounded-xl border border-[#000]">
                           <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">Total Students</h2>
-
                           <div className="overflow-x-auto max-h-[170px] overflow-y-scroll  scrollbar-none">
                             <table className="w-full min-w-[900px] text-sm text-left">
                               <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
                                 <tr>
-                                <th className="p-4 font-semibold text-[12px] text-center">Student name</th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">Student name</th>
                                   <th className="p-4 font-semibold text-[12px] text-center">Student ID</th>
                                   <th className="p-4 font-semibold text-[12px] text-center">Courses</th>
                                   <th className="p-4 font-semibold text-[12px] text-center">Course Type</th>
@@ -414,82 +409,19 @@ const Teacher = () => {
                                 </tr>
                               </thead>
                               <tbody className="text-xs text-[#1D2939]">
-                                {[
-                                  { 
-                                    name: "Ansalin",
-                                    id: "#17655hhjk",
-                                    course: "Monthly Salary",
-                                    coursetype: "Monthly Salary",
-                                    courseduration: "Monthly Salary",
-                                    classdatetime: "Monthly Salary",
-                                    status: "completed",
-                                  },
-                                  { 
-                                    name: "Ansalin",
-                                    id: "#17655hhjk",
-                                    course: "Monthly Salary",
-                                    coursetype: "Monthly Salary",
-                                    courseduration: "Monthly Salary",
-                                    classdatetime: "Monthly Salary",
-                                    status: "pending",
-                                  },
-                                  { 
-                                    name: "Ansalin",
-                                    id: "#17655hhjk",
-                                    course: "Monthly Salary",
-                                    coursetype: "Monthly Salary",
-                                    courseduration: "Monthly Salary",
-                                    classdatetime: "Monthly Salary",
-                                    status: "completed",
-                                  },
-                                  { 
-                                    name: "Ansalin",
-                                    id: "#17655hhjk",
-                                    course: "Monthly Salary",
-                                    coursetype: "Monthly Salary",
-                                    courseduration: "Monthly Salary",
-                                    classdatetime: "Monthly Salary",
-                                    status: "pending",
-                                  },
-                                  { 
-                                    name: "Ansalin",
-                                    id: "#17655hhjk",
-                                    course: "Monthly Salary",
-                                    coursetype: "Monthly Salary",
-                                    courseduration: "Monthly Salary",
-                                    classdatetime: "Monthly Salary",
-                                    status: "completed",
-                                  },
-                                  { 
-                                    name: "Ansalin",
-                                    id: "#17655hhjk",
-                                    course: "Monthly Salary",
-                                    coursetype: "Monthly Salary",
-                                    courseduration: "Monthly Salary",
-                                    classdatetime: "Monthly Salary",
-                                    status: "completed",
-                                  },
-                                  { 
-                                    name: "Ansalin",
-                                    id: "#17655hhjk",
-                                    course: "Monthly Salary",
-                                    coursetype: "Monthly Salary",
-                                    courseduration: "Monthly Salary",
-                                    classdatetime: "Monthly Salary",
-                                    status: "completed",
-                                  },
-                                ].map((item, index) => (
-                                  <tr
-                                    key={index}
-                                    className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
-                                  >
-                                    <td className="p-3">{item.name}</td>
-                                    <td className="p-3">{item.id}</td>
-                                    <td className="p-3">{item.course}</td>
-                                    <td className="p-3">{item.coursetype}</td>
-                                    <td className="p-3">{item.courseduration}</td>
-                                    <td className="p-3">{item.classdatetime}</td>
-                                    <td className="p-3">{item.status}</td>
+                                {scheduledclass.map((event, index) => (
+                                  <tr key={index} className={`border-b hover:bg-gray-50 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-white'}`}>
+                                    <td className="p-4 text-center">{event.studentName}</td>
+                                    <td className="p-4 text-center text-blue-600 font-medium">{event.studentId}</td>
+                                    <td className="p-4 text-center">{event.course}</td>
+                                    <td className="p-4 text-center">{event.courseType}</td>
+                                    <td className="p-4 text-center">{event.courseDuration}</td>
+                                    <td className="p-4 text-center">{format(event.start, 'MMMM d, yyyy – hh:mm a')}</td>
+                                    <td className="p-4 text-center">
+                                      <span className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${statusStyle[event.status as keyof typeof statusStyle]}`}>
+                                        {event.status}
+                                      </span>
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -499,14 +431,12 @@ const Teacher = () => {
                       </div>
                     )}
                   </div>
-
                 </div>
               </div>
             )}
 
             {activeTab === "Earnings" && (
               <div className="space-y-6">
-                {/* Top Cards */}
                 <div className="flex flex-wrap gap-4">
                   <div className="bg-[#012A4A] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
                     <div>
@@ -610,7 +540,14 @@ const Teacher = () => {
                               <td className="p-3">{item.class}</td>
                               <td className="p-3">{item.hours}</td>
                               <td className="p-3">{item.earnings}</td>
-                              <td className="p-3">{item.view}</td>
+                              <td className="p-3">
+                                <button
+                                  onClick={() => handleView()}
+                                  className="text-gray-600 hover:text-blue-500"
+                                >
+                                  {item.view}
+                                </button>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -810,8 +747,8 @@ const Teacher = () => {
                           <th className="p-4 font-semibold text-[12px] text-center">Day</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Working Hours</th>
                           <th className="p-4 font-semibold text-[12px] text-center">GMT</th>
-                        </tr>
-                      </thead>
+                      </tr>
+                    </thead>
                       <tbody className="text-xs text-[#1D2939]">
                         {[
                           {
@@ -857,15 +794,14 @@ const Teacher = () => {
                             <td className="p-3">{item.day}</td>
                             <td className="p-3">{item.whours}</td>
                             <td className="p-3">{item.GMT}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                   </div>
                 </div>
               </div>
             )}
-
           </div>
         </div>
       </div>

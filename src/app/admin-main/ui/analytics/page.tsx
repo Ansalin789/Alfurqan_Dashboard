@@ -1,24 +1,9 @@
 "use client"
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, TooltipProps, Cell } from "recharts"
-import { CircleDollarSign, TrendingUp } from "lucide-react"
-import Image from "next/image"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell, DotProps } from "recharts"
 import BaseLayout4 from "@/components/BaseLayout4"
 
-const revenueData = [
-  { month: "Jan", amount: 5000, label: "$5K" },
-  { month: "Feb", amount: 9000, label: "$9K" },
-  { month: "Mar", amount: 3000, label: "$3K" },
-  { month: "Apr", amount: 12000, label: "$12K" },
-  { month: "May", amount: 15000, label: "$15K" },
-  { month: "Jun", amount: 19000, label: "$19K" },
-  { month: "Jul", amount: 30000, label: "$30K" },
-  { month: "Aug", amount: 21000, label: "$21K" },
-  { month: "Sep", amount: 16000, label: "$16K" },
-  { month: "Oct", amount: 10000, label: "$10K" },
-  { month: "Nov", amount: 3000, label: "$3K" },
-  { month: "Dec", amount: 5000, label: "$5K" },
-]
+
 
 const visitorData = [
   { name: "Jan", Instagram: 320, Facebook: 240, Website: 280 },
@@ -32,30 +17,13 @@ const visitorData = [
   { name: "Sep", Instagram: 340, Facebook: 280, Website: 300 },
 ]
 
-const countryData = [
-  { country: "United States", amount: 3800, flag: "🇺🇸" },
-  { country: "Germany", amount: 1900, flag: "🇩🇪" },
-  { country: "United Kingdom", amount: 2000, flag: "🇬🇧" },
-  { country: "England", amount: 2500, flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-  { country: "France", amount: 2050, flag: "🇫🇷" },
-]
 
-const transactions = [
-  { id: 1, name: "Piyush Chawla", service: "Web Design", amount: 20000 },
-  { id: 2, name: "Piyush Chawla", service: "Web Design", amount: 20000 },
-  { id: 3, name: "Piyush Chawla", service: "Web Design", amount: 20000 },
-]
 
-const teacherTrials = [
-  { name: "Abdullah S.", trials: 5, joined: 3 },
-  { name: "Abdur R.", trials: 6, joined: 5 },
-  { name: "Mariam H.", trials: 5, joined: 4 },
-  { name: "Hassan I.", trials: 6, joined: 4 },
-  { name: "Imran G.", trials: 4, joined: 3 },
-  { name: "Hussain A.", trials: 5, joined: 5 },
-  { name: "Gomathi A.", trials: 5, joined: 5 },
-
-]
+const data = [
+  { client: "Robert", course: "Arabic", amount: "$ 20.00", status: "Paid" },
+  { client: "Ryan", course: "Quran", amount: "$ 15.00", status: "Paid" },
+  { client: "James", course: "Arabic", amount: "$ 10.00", status: "Paid" },
+];
 
 const CustomBarLabel = (props: any) => {
   const { x, y, width, label } = props
@@ -72,37 +40,32 @@ const CustomBarLabel = (props: any) => {
   )
 }
 const countriesData = [
-    { name: "United States", flag: "/assets/images/flags/us.png", value: 110002, color: "#002c5f" },
-    { name: "Germany", flag: "/assets/images/flags/germany.png", value: 103499, color: "#5b9bd5" },
-    { name: "United Kingdom", flag: "/assets/images/flags/united-kingdom.png", value: 96998, color: "#002c5f" },
-    { name: "England", flag: "/assets/images/flags/england.png", value: 89061, color: "#5b9bd5" },
-    { name: "France", flag: "/assets/images/flags/france.png", value: 82000, color: "#002c5f" },
+    { name: "United States", flag: "/assets/images/flags/us.png", value: 110002, color: "#012A4A" },
+    { name: "Germany", flag: "/assets/images/flags/germany.png", value: 103499, color: "#012A4A" },
+    { name: "United Kingdom", flag: "/assets/images/flags/united-kingdom.png", value: 96998, color: "#012A4A" },
+    { name: "England", flag: "/assets/images/flags/england.png", value: 89061, color: "#012A4A" },
+    { name: "France", flag: "/assets/images/flags/france.png", value: 82000, color: "#012A4A" },
   ];
   
   const CountriesCard = () => {
     const maxValue = Math.max(...countriesData.map((c) => c.value)); // Find max for bar scaling
   
     return (
-      <div className="bg-white p-5 rounded-xl shadow-md w-64 border border-gray-200">
-        <h2 className="text-lg font-semibold mb-4 text-gray-700">Countries</h2>
+      <div className="bg-white p-5 rounded-xl shadow-md w-full border border-gray-200">
+        <h2 className="text-base font-semibold mb-3 text-gray-700">Countries</h2>
   
-        <div className="space-y-4">
+        <div className="space-y-5">
           {countriesData.map((country) => (
             <div key={country.name}>
-              {/* Country Row */}
               <div className="flex items-center justify-between">
-                {/* Flag & Name */}
-                <div className="flex items-center space-x-3">
-                  <img src={country.flag} alt={country.name} className="w-6 h-6 rounded-full" />
-                  <span className="text-[12px] text-gray-700">{country.name}</span>
+                <div className="flex items-center space-x-2">
+                  <img src={country.flag} alt={country.name} className="w-5 h-5 rounded-full" />
+                  <span className="text-xs text-gray-700">{country.name}</span>
                 </div>
-  
-                {/* Value */}
-                <span className="text-sm font-semibold text-gray-600">{country.value.toLocaleString()}</span>
+                <span className="text-xs font-medium text-gray-600">${country.value.toLocaleString()}</span>
               </div>
   
-              {/* Progress Bar */}
-              <div className="w-full h-2 rounded-full bg-gray-200 mt-1">
+              <div className="w-full h-2 rounded-full bg-[#0092FF] mt-1">
                 <div
                   className="h-2 rounded-full"
                   style={{
@@ -117,227 +80,296 @@ const countriesData = [
       </div>
     );
   };
+  
   const courseData = [
     { name: "Quran", value: 30, color: "#7f9cb6" },
     { name: "Arabic", value: 45, color: "#001d3d" },
     { name: "Islamic", value: 60, color: "#4a90e2" },
   ];
-  const CustomTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {
-    if (active && payload?.length) {
+  
+  
+  const CoursesChart = () => {
+    return (
+      <div className="bg-white p-6 rounded-xl shadow-md w-full border border-gray-200">
+  <h2 className="text-base font-semibold mb-3 text-gray-700">Courses</h2>
+
+  <ResponsiveContainer width="100%" height={195}>
+    <BarChart
+      data={courseData}
+      barCategoryGap={30}
+      onMouseMove={() => {}} // prevents default active shape overlay
+    >
+      {/* Hide XAxis completely */}
+      <XAxis hide />
+      {/* Tooltip only shows value in transparent style */}
+      <Tooltip
+        content={({ active, payload }) =>
+          active && payload?.length ? (
+            <div className="bg-white text-gray-800 text-sm px-2 py-1 rounded shadow border border-gray-200">
+              {payload[0]?.value}
+            </div>
+          ) : null
+        }
+        cursor={{ fill: "transparent" }}
+      />
+
+      {/* Bar without hover highlight */}
+      <Bar dataKey="value" radius={[15, 15, 15, 15]} barSize={35} activeBar={false}>
+        {courseData.map((entry) => (
+          <Cell key={entry.name} fill={entry.color} />
+        ))}
+      </Bar>
+    </BarChart>
+  </ResponsiveContainer>
+
+  {/* Legend below the chart */}
+  <div className="flex justify-center mt-4 space-x-6">
+    {courseData.map((entry) => (
+      <div key={entry.name} className="flex items-center space-x-2">
+        <div
+          className="w-2 h-2 rounded-full"
+          style={{ backgroundColor: entry.color }}
+        ></div>
+        <span className="text-[12px] text-gray-700">{entry.name}</span>
+      </div>
+    ))}
+  </div>
+</div>
+
+    );
+  };
+  
+  const CustomDot = (props: DotProps & { payload?: any }) => {
+    const { cx, cy, payload } = props;
+    // This assumes July is the 7th item (index 6) and you're plotting 'Instagram'
+    if (payload?.name === "Jul" && cx !== undefined && cy !== undefined) {
       return (
-        <div className="bg-white text-gray-900 text-sm px-2 py-1 rounded shadow-md border">
-          {payload[0]?.value}
-        </div>
+        <circle cx={cx} cy={cy} r={6} fill="#0F172A" stroke="#fff" strokeWidth={2} />
       );
     }
     return null;
   };
   
-  const CoursesChart = () => {
-    return (
-      <div className="bg-white p-5 rounded-xl shadow-md w-64 border border-gray-200 ">
-        <h2 className="text-lg font-semibold mb-4 text-gray-700">Courses</h2>
   
-        <ResponsiveContainer width="100%" height={198}>
-          <BarChart
-            data={courseData}
-            barCategoryGap={30} // Controls the gap between bars
-          >
-            <XAxis
-              dataKey="name"
-              tick={{ fill: "#7f9cb6", fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Tooltip content={<CustomTooltip active={undefined} payload={undefined} />} />
-            
-            <Bar dataKey="value" radius={[10, 10, 0, 0]} barSize={35}> {/* Set bar width */}
-              {courseData.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-  
-        <div className="flex justify-center mt-4 space-x-6">
-          {courseData.map((entry) => (
-            <div key={entry.name} className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></div>
-              <span className="text-[12px] text-gray-700">{entry.name}</span>
-            </div>
-          ))}
-        </div>
+  const CustomLegend = () => (
+    <div className="flex justify-center mt-4 space-x-8 text-sm font-medium text-slate-700">
+      <div className="flex items-center space-x-2">
+        <span className="w-3 h-3 rounded-full bg-[#0F172A]"></span>
+        <span>Instagram</span>
       </div>
-    );
-  };
+      <div className="flex items-center space-x-2">
+        <span className="w-3 h-3 rounded-full bg-[#94A3B8]"></span>
+        <span>Facebook</span>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className="w-3 h-3 rounded-full bg-[#3B82F6]"></span>
+        <span>Website</span>
+      </div>
+    </div>
+  );
 
+  const revenueDatas = [
+    { month: "Jan", amount: 15 },
+    { month: "Feb", amount: 19 },
+    { month: "Mar", amount: 13 },
+    { month: "Apr", amount: 12 },
+    { month: "May", amount: 15 },
+    { month: "Jun", amount: 19 },
+    { month: "Jul", amount: 28 },
+    { month: "Aug", amount: 21 },
+    { month: "Sep", amount: 16 },
+    { month: "Oct", amount: 10 },
+    { month: "Nov", amount: 13 },
+    { month: "Dec", amount: 15 },
+  ];
+  
+  const getBarColor = (value: number) => {
+    if (value >= 25) return "#0f172a"; // darkest
+    if (value >= 20) return "#3b82f6"; // strong blue
+    if (value >= 15) return "#60a5fa"; // medium blue
+    if (value >= 10) return "#93c5fd"; // light blue
+    return "#bae6fd"; // lightest
+  };
+  
 export default function Home() {
   return (
     <BaseLayout4>
       {/* Main Content */}
       <div className="flex-1 overflow-auto scrollbar-hide">
-        <div className="p-6">
-          <div className="mb-4">
-            <h1 className="text-2xl font-bold mb-4">Analytics</h1>
-
+        <div className="p-5 mr-6">
+          <div className="mb-3">
+            <h1 className="text-lg font-bold mb-4">Analytics</h1>
+            </div>
             {/* Revenue Section */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="col-span-1 bg-gradient-to-br from-[#002B3D] to-[#004B6B] text-white p-4 rounded-xl">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-lg font-medium">Total Income</h3>
-                  <CircleDollarSign className="h-5 w-5" />
-                </div>
-                <div className="text-2xl font-bold mb-1">$8954.57</div>
-                <div className="flex items-center text-green-400">
-                  <TrendingUp className="h-4 w-4 mr-1" />
-                  <span>15%</span>
-                </div>
-                <div className="mt-2">
-                  <svg width="100%" height="40" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M0,40 C20,20 40,60 60,40 C80,20 100,60 120,40 C140,20 160,60 180,40 C190,30 200,40 200,40"
-                      stroke="rgba(255,255,255,0.3)"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M0,40 C20,20 40,60 60,40 C80,20 100,60 120,40 C140,20 160,60 180,40 C190,30 200,40 200,40"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeDasharray="3 3"
-                    />
-                  </svg>
-                </div>
-              </div>
+<div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-3">
+  {/* Total Income Card */}
+  <div className="bg-[#203e7b] text-white rounded-2xl p-3 relative overflow-hidden flex flex-col justify-left items-center h-40 w-full">
+  <h3 className="text-sm font-medium mb-1">Total Income</h3>
+  <div className="text-2xl md:text-3xl font-bold mb-1">$8954.57</div>
+  <div className="flex items-center text-sm text-white gap-1">
+    <div className="rounded-full border border-white p-1">
+      <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M10 5l5 5H5l5-5z" clipRule="evenodd" />
+      </svg>
+    </div>
+    <span>15%</span>
+  </div>
 
-              <div className="col-span-3 bg-white p-4 rounded-xl shadow-sm">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-lg font-semibold">Revenue</h3>
-                  <select className="bg-transparent border rounded-lg px-2 py-1 text-sm">
-                    <option>2023</option>
-                  </select>
-                </div>
-                <ResponsiveContainer width="100%" height={180}>
-                  <BarChart data={revenueData} margin={{ top: 20, right: 10, left: 10, bottom: 5 }}>
-                    <CartesianGrid vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} display="none" />
-                    <Tooltip
-                      cursor={{ fill: "transparent" }}
-                      contentStyle={{
-                        backgroundColor: "#fff",
-                        border: "1px solid #E5E7EB",
-                        borderRadius: "8px",
-                        padding: "8px",
-                      }}
-                    />
-                    <Bar
-                      dataKey="amount"
-                      fill="#60A5FA"
-                      radius={[4, 4, 0, 0]}
-                      barSize={25}
-                      label={<CustomBarLabel />}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
+  {/* Decorative Wave Background */}
+  <div className="absolute bottom-0 left-0 w-full">
+    <svg viewBox="0 0 500 150" preserveAspectRatio="none" className="w-full h-16">
+      <path d="M0.00,49.98 C150.00,150.00 350.00,-50.00 500.00,49.98 L500.00,150.00 L0.00,150.00 Z" fill="rgba(255,255,255,0.1)" />
+      <path d="M0.00,49.98 C150.00,150.00 350.00,-50.00 500.00,49.98" stroke="white" strokeWidth="4" fill="none" />
+    </svg>
+  </div>
+</div>
 
+
+  {/* Table Section */}
+  <div className="col-span-3">
+    <div className="bg-white rounded-xl shadow-lg overflow-x-auto w-full">
+      <table className="w-full min-w-[500px] text-xs">
+        <thead className="bg-[#203e7b] text-white">
+          <tr>
+            <th className="py-3 px-4 text-center font-semibold">Clients</th>
+            <th className="py-3 px-4 text-center font-semibold">Course</th>
+            <th className="py-3 px-4 text-center font-semibold">Amount</th>
+            <th className="py-3 px-4 text-center font-semibold">Status</th>
+          </tr>
+        </thead>
+        <tbody className="text-black">
+          {data.map((row) => (
+            <tr key={row.client} className="border-b last:border-none">
+              <td className="py-3 px-4 text-center">{row.client}</td>
+              <td className="py-3 px-4 text-center">{row.course}</td>
+              <td className="py-3 px-4 text-center">{row.amount}</td>
+              <td className="py-3 px-4 text-center">{row.status}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+          
           {/* Visitor Insights & Countries/Courses */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <h3 className="text-lg font-semibold mb-2">Visitor Insights</h3>
-              <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={visitorData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "8px",
-                      padding: "8px",
-                    }}
-                  />
-                  <Line type="monotone" dataKey="Instagram" stroke="#0EA5E9" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="Facebook" stroke="#6366F1" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="Website" stroke="#10B981" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+  {/* Visitor Insights spans 2 columns on lg+ */}
+  <div className="lg:col-span-2 bg-white p-5 rounded-xl shadow-lg">
+      <h3 className="text-base font-semibold text-slate-800 mb-4">Visitor Insights</h3>
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={visitorData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+          <XAxis
+            dataKey="name"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#64748b", fontSize: 12 }}
+          />
+          <YAxis
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#64748b", fontSize: 12 }}
+          />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "#fff",
+              border: "1px solid #E5E7EB",
+              borderRadius: "10px",
+              padding: "10px",
+              fontSize:"13px"
+            }}
+          />
+          <Line
+            type="monotone"
+            dataKey="Instagram"
+            stroke="#0F172A"
+            strokeWidth={3.5}
+            dot={<CustomDot />}
+          />
+          <Line
+            type="monotone"
+            dataKey="Facebook"
+            stroke="#94A3B8"
+            strokeWidth={3.5}
+            dot={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="Website"
+            stroke="#3B82F6"
+            strokeWidth={3.5}
+            dot={false}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+      <CustomLegend />
+    </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <CountriesCard/>
-              {/* Courses */}
-              <CoursesChart/>
-            </div>
-          </div>
+  {/* Countries */}
+  <div className="lg:col-span-1">
+    <CountriesCard />
+  </div>
+
+  {/* Courses */}
+  <div className="lg:col-span-1">
+    <CoursesChart />
+  </div>
+</div>
+
 
           {/* Recent Transactions & Trials */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-lg font-semibold">Recent Transactions</h3>
-                <select className="bg-transparent border rounded-lg px-2 py-1 text-sm">
-                  <option>7 days</option>
-                </select>
-              </div>
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-gray-500">
-                    <th className="pb-2 font-medium text-sm">Client</th>
-                    <th className="pb-2 font-medium text-sm">Service</th>
-                    <th className="pb-2 font-medium text-sm">Amount</th>
-                    <th className="pb-2 font-medium text-sm">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((tx) => (
-                    <tr key={tx.id} className="border-t">
-                      <td className="py-2">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-200 rounded-full mr-2 flex items-center justify-center overflow-hidden">
-                            <Image src="/placeholder.svg?height=32&width=32" alt={tx.name} width={32} height={32} />
-                          </div>
-                          <span className="font-medium text-sm">{tx.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-2 text-gray-600 text-sm">{tx.service}</td>
-                      <td className="py-2 font-medium text-sm">${tx.amount}</td>
-                      <td className="py-2">
-                        <span className="bg-green-50 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
-                          Paid
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="col-span-3 bg-white p-4 rounded-xl shadow-sm">
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="text-base font-semibold text-slate-700">Revenue</h3>
+      <select className="bg-transparent border rounded-lg px-2 py-1 text-xs text-slate-500">
+        <option>2023</option>
+      </select>
+    </div>
 
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <h3 className="text-lg font-semibold mb-3">Trials Taken by Teacher</h3>
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-gray-500">
-                    <th className="pb-2 font-medium text-sm">Name</th>
-                    <th className="pb-2 font-medium text-sm">Total Trials</th>
-                    <th className="pb-2 font-medium text-sm">Joined</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {teacherTrials.map((teacher) => (
-                    <tr key={teacher.name} className="border-t">
-                      <td className="py-2 font-medium text-sm">{teacher.name}</td>
-                      <td className="py-2 text-gray-600 text-sm">{teacher.trials}</td>
-                      <td className="py-2 text-gray-600 text-sm">{teacher.joined}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+    <ResponsiveContainer width="100%" height={170}>
+      <BarChart
+        data={revenueDatas}
+        margin={{ top: 15, right: 10, left: 10, bottom: 0 }}
+      >
+        <XAxis
+          dataKey="month"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: "#94a3b8", fontSize: 12 }}
+        />
+        <YAxis hide />
+        <CartesianGrid vertical={false} horizontal={false} />
+        <Tooltip
+          cursor={{ fill: "transparent" }}
+          contentStyle={{
+            backgroundColor: "#fff",
+            border: "1px solid #E5E7EB",
+            borderRadius: "10px",
+            padding: "10px",
+            fontSize:"13px"
+          }}
+          formatter={(value: number) => [`$${value}K`, "Revenue"]}
+        />
+        <Bar
+          dataKey="amount"
+          radius={[15, 15, 15, 15]}
+          barSize={32}
+          label={{
+            position: "top",
+            formatter: (value: number) => `$${value}K`,
+            fill: "#0f172a",
+            fontSize: 10,
+          }}
+        >
+          {revenueDatas.map((entry) => (
+            <Cell key={`cell-${entry.month}`} fill={getBarColor(entry.amount)} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
         </div>
       </div>
     </BaseLayout4>
