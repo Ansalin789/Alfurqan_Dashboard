@@ -22,17 +22,17 @@ const SidebarItems = [
     },
     {
         name: 'Evaluation',
-        href: '/admin-main/ui/evaluations',
+        href: '#',
         icon: MdBookmarks,
         subItems: [
             {
                 name: 'Trail Class',
-                href: '/admin-main/ui/trailclasslist',
+                href: '/admin-main/ui/evaluations',
                 icon: MdBookmarks,
             },
             {
                 name: 'Scheduled Trail class',
-                href: '/admin-main/ui/schedulelistview',
+                href: '/admin-main/ui/trailmanagement',
                 icon: MdBookmarks,
             },
         ]
@@ -64,7 +64,7 @@ const SidebarItems = [
     },
     {
         name: 'Finance',
-        href: '/admin-main/ui/Invoice',
+        href: '#',
         icon: '/assets/images/invoicee.jpeg',
         subItems: [
             {

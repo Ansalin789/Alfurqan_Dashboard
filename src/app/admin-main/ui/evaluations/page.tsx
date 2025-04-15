@@ -334,7 +334,6 @@ const FilterModal = ({
 type ViewType = "students";
 
 const TrailSection = () => {
-
   const [users, setUsers] = useState<TransformedUser[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -477,9 +476,6 @@ const TrailSection = () => {
     setShowModal(false);
   };
 
-
-
-
   const handleChange =
     (field: string) => (event: React.ChangeEvent<HTMLSelectElement>) => {
       console.log(`Field: ${field}, Value: ${event.target.value}`);
@@ -557,12 +553,6 @@ const TrailSection = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <h2 className="text-[18px] font-semibold">Trail class Request</h2>
-            <button
-              className="bg-gray-800 text-white p-[4px] rounded-full shadow-2xl"
-              onClick={handleSyncClick}
-            >
-              <FaSyncAlt />
-            </button>
           </div>
         </div>
         <div className="p-2">
@@ -587,7 +577,7 @@ const TrailSection = () => {
                 </button>
               </div>
               <div className="flex">
-                <select className="border rounded-lg p-2 shadow text-[12px]">
+                <select className="border rounded-lg p-2 shadow text-[12px] appearance-none  bg-white">
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
                   <option>Duration: Last year</option>
