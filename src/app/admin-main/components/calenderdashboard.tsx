@@ -74,8 +74,8 @@ const Academic: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center">
-      <a href="/Academic/schedule">
-        <div className="calendar-container rounded-[50px] -ml-10">
+      <div>
+        <div className="calendar-container rounded-[50px] mr-10">
           <Calendar
             onChange={(newValue) => setValue(newValue as Date)}
             value={value}
@@ -93,7 +93,7 @@ const Academic: React.FC = () => {
             }
           />
         </div>
-      </a>
+        </div>
     </div>
   );
 };

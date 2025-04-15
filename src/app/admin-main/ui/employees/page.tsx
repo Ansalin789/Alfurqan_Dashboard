@@ -469,7 +469,20 @@ const Page = () => {
       );
   };
 
+  function handlePortalAccess(teacherId: string) {
+    const username = encodeURIComponent("David");
+    const password = encodeURIComponent("David@123");
   
+    const portalURL = `http://localhost:3000/teacher/ui/sign?username=${username}&password=${password}`;
+    window.location.href = portalURL;
+  }
+  function handlePortalAccessforemployee(employeeID: string) {
+    const username = encodeURIComponent("Arthi");
+    const password = encodeURIComponent("Supervisor@123");
+  
+    const portalURL = `http://localhost:3000/supervisor/ui/sign?username=${username}&password=${password}`;
+    window.location.href = portalURL;
+  }
 
   return (
     <BaseLayout4>
@@ -769,13 +782,24 @@ const Page = () => {
                                 <p className="text-[#717579] p-1 text-xs">
                                   {teacher.subject}
                                 </p>
-                                <div className="flex text-center justify-center"></div>
-                                <button
-                                  className="mt-2 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg"
-                                  onClick={() => handleViewTeacher(teacher._id)}
-                                >
-                                  View Profile
-                                </button>
+                                <div className="flex justify-center items-center mt-2 space-x-3">
+                                    <button
+                                      className="text-[10px] bg-[#c95b45] text-white px-2 py-1 rounded-lg"
+                                      onClick={() =>
+                                        handlePortalAccess(teacher._id)
+                                      }
+                                    >
+                                      Portal Access
+                                    </button>
+                                    <button
+                                      className="text-[10px] bg-[#223857] text-white px-2 py-1 rounded-lg"
+                                      onClick={() =>
+                                        handleViewTeacher(teacher._id)
+                                      }
+                                    >
+                                      View Profile
+                                    </button>
+                                  </div>
                               </div>
                             </div>
                           ))}
@@ -1022,15 +1046,24 @@ const Page = () => {
                                   <p className="text-[#717579] p-1 text-xs">
                                     {employee.subject}
                                   </p>
-                                  <div className="flex text-center justify-center"></div>
-                                  <button
-                                    className="mt-2 text-[11px] bg-[#223857] text-white px-4 py-1 rounded-lg"
-                                    onClick={() =>
-                                      handleViewEmployee(employee._id)
-                                    }
-                                  >
-                                    View Profile
-                                  </button>
+                                  <div className="flex justify-center items-center mt-2 space-x-3">
+                                    <button
+                                      className="text-[10px] bg-[#c95b45] text-white px-2 py-1 rounded-lg"
+                                      onClick={() =>
+                                        handlePortalAccessforemployee(employee._id)
+                                      }
+                                    >
+                                      Portal Access
+                                    </button>
+                                    <button
+                                      className="text-[10px] bg-[#223857] text-white px-2 py-1 rounded-lg"
+                                      onClick={() =>
+                                        handleViewEmployee(employee._id)
+                                      }
+                                    >
+                                      View Profile
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             ))}
