@@ -85,19 +85,19 @@ const Page = () => {
                 {showForm && (
                     <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
                         <div className="bg-white rounded-xl p-4 w-[400px] max-h-[100vh] overflow-y-scroll scrollbar-none shadow-xl">
-                            <h2 className="text-[15px] font-semibold mb-3">Add New Course</h2>
-
-                            <FormInput label="Course ID" value={form.courseId} onChange={e => setForm({ ...form, courseId: e.target.value })} />
+                        <h3 className="text-lg font-semibold text-[#002b4d] mb-6">
+                        Add New Course                </h3>
+                            <FormInput label="Course ID"  value={form.courseId} onChange={e => setForm({ ...form, courseId: e.target.value })} />
                             <FormInput label="Course Title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
-                            <FormInput label="Course Description" textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+                            <FormInput label="Course Description"  value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
                             <FormInput label="Course Duration" value={form.duration} onChange={e => setForm({ ...form, duration: e.target.value })} />
                             <FormInput label="Number of Levels" value={form.students} onChange={e => setForm({ ...form, students: e.target.value })} />
                             <FormInput label="Creation Date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
                             <FormInput label="Created By" value={form.createdBy} onChange={e => setForm({ ...form, createdBy: e.target.value })} />
 
-                            <div className="mt-4 flex justify-end gap-3">
-                                <button onClick={() => setShowForm(false)} className="px-3 py-[4px] border rounded-lg text-[12px]">Cancel</button>
-                                <button onClick={handleSubmit} className="px-3 py-[4px] bg-[#0b2447] text-white rounded-lg text-[12px]">Save</button>
+                            <div className="mt-4 flex justify-end gap-4">
+                                <button onClick={() => setShowForm(false)}className="px-6 py-2 border rounded-xl text-gray-700 hover:bg-gray-100 transition">Cancel</button>
+                                <button onClick={handleSubmit} className="px-6 py-2 bg-[#002b4d] text-white rounded-xl hover:bg-[#001f36] transition">Save</button>
                             </div>
                         </div>
                     </div>
@@ -147,18 +147,18 @@ const FormInput = ({
     textarea?: boolean;
 }) => (
     <div className="mb-2">
-        <label className="text-[12px] font-medium">{label}</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
         {textarea ? (
             <textarea
                 value={value}
                 onChange={onChange}
-                className="mt-1 w-full px-3 py-2 text-sm border-[#808FA4] border-[2px] rounded-xl bg-[#F7F7F8]"
+                className="mt-1 w-full px-3 py-2 text-sm border-[#fff] border-[2px] rounded-xl bg-[#F7F7F8]"
             />
         ) : (
             <input
                 value={value}
                 onChange={onChange}
-                className="w-full border-[#808FA4] border-[2px] px-3 py-2 rounded-xl bg-[#F7F7F8] text-sm"
+                 className="w-full border rounded-xl px-4 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#002b4d]"
             />
         )}
     </div>
