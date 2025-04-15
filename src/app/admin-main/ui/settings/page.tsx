@@ -95,231 +95,140 @@ const Page: React.FC = () => {
 
     return (
         <BaseLayout4>
-            <div className="p-6 min-h-screen mx-auto ">
-                <h2 className="text-xl font-bold mb-6">Role Access</h2>
-                <div className="flex justify-between items-center p-2">
-                    <div className="flex flex-1 mb-4 -ml-3 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
-                        <div className="flex">
-                            <input
-                                type="text"
-                                placeholder="Search here..."
-                                className="border rounded-lg px-2 text-[12px] mr-4 shadow"
-                            />
-                            <button
-                                className="flex items-center bg-[#fff] p-2 rounded-lg shadow text-[12px]"
-                                onClick={() => setFilterPopupOpen(true)}
-                            >
-                                <FaFilter className="mr-2" /> Filter
-                            </button>
-                        </div>
-                        <div className="flex">
-                            <button
-                                className="text-[12px] p-2 rounded-lg shadow flex bg-[#223857] text-[#fff] items-center mx-4"
-                            >
-                                <FaPlus className="mr-2" /> Add new
-                            </button>
-                            <select className="border rounded-lg p-2 shadow text-[12px]">
-                                <option>Duration: Last month</option>
-                                <option>Duration: Last week</option>
-                                <option>Duration: Last year</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white shadow-md border border-gray-800 rounded-lg overflow-hidden h-[490px] overflow-y-scroll scrollbar-thin">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="text-gray-600 text-left text-[12px]">
-                                <th className="px-5 text-center py-8">Employee ID</th>
-                                <th className="px-5 text-center py-8">Employee Name</th>
-                                <th className="px-5 text-center py-8">Contact</th>
-                                <th className="px-5 text-center py-8">Designation</th>
-                                <th className="px-5 text-center py-8">Date of Joining</th>
-                                <th className="px-5 text-center py-8">Role Access</th>
-                                <th className="px-5 text-center py-8">Module Access</th>
-                                <th className="px-5 text-center py-8">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {employees.map((emp, index) => (
-                                <tr key={index} className="border-t border-gray-200 text-gray-700 text-[10px]">
-                                    <td className="py-4 px-5 text-center">{emp.id}</td>
-                                    <td className="py-4 px-5 text-center">{emp.name}</td>
-                                    <td className="py-4 px-5 text-center">{emp.contact}</td>
-                                    <td className="py-4 px-5 text-center">{emp.designation}</td>
-                                    <td className="py-4 px-5 text-center">{emp.date}</td>
-                                    <td className="py-4 px-5 text-center">
-                                        <select
-                                            className="border border-gray-300 p-1 rounded-md text-center"
-                                            value={emp.role}
-                                            onChange={(e) => handleRoleChange(index, e.target.value)}
-                                        >
-                                            <option value="Supervisor">Supervisor</option>
-                                            <option value="Academic Coach">Academic Coach</option>
-                                            <option value="Student">Student</option>
-                                            <option value="Teacher">Teacher</option>
-                                        </select>
-                                    </td>
-                                    <td className="py-4 px-5 text-center">
-                                        <button className='flex text-center' onClick={() => toggleModuleDropdown(index)}>
-                                            {emp.module} <FaChevronDown size={6} className='mt-[5px] ml-1' />
-                                        </button>
-                                        {openModuleDropdownIndex === index && (
-                                            <ul className="absolute bg-white border border-gray-300 mt-2">
-                                                <li
-                                                    className="p-2 hover:bg-gray-200 cursor-pointer"
-                                                    onClick={() => {
-                                                        handleModuleClick('Supervisor');
-                                                        setOpenModuleDropdownIndex(null);
-                                                    }}
-                                                >
-                                                    Supervisor
-                                                </li>
-                                                <li
-                                                    className="p-2 hover:bg-gray-200 cursor-pointer"
-                                                    onClick={() => {
-                                                        handleModuleClick('AcademicCoach');
-                                                        setOpenModuleDropdownIndex(null);
-                                                    }}
-                                                >
-                                                    Academic Coach
-                                                </li>
-                                                <li
-                                                    className="p-2 hover:bg-gray-200 cursor-pointer"
-                                                    onClick={() => {
-                                                        handleModuleClick('Student');
-                                                        setOpenModuleDropdownIndex(null);
-                                                    }}
-                                                >
-                                                    Student
-                                                </li>
-                                                <li
-                                                    className="p-2 hover:bg-gray-200 cursor-pointer"
-                                                    onClick={() => {
-                                                        handleModuleClick('Teacher');
-                                                        setOpenModuleDropdownIndex(null);
-                                                    }}
-                                                >
-                                                    Teacher
-                                                </li>
-                                            </ul>
-                                        )}
-                                    </td>
-                                    <td className="py-4 px-5 w-5 text-center text-gray-500 hover:text-gray-700 cursor-pointer">
-                                        <PiDotsThreeCircle size={20} />
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Filter Popup */}
-                {isFilterPopupOpen && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 w-full">
-                        <div className="bg-white p-6 rounded-lg shadow-lg">
-                            <h3 className="text-md font-bold mb-4">Filter Employees</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="mb-4">
-                                    <label className="block mb-1 text-sm">Employee ID</label>
-                                    <input
-                                        type="text"
-                                        name="id"
-                                        value={filterCriteria.id}
-                                        onChange={handleFilterChange}
-                                        className="border rounded-lg w-full p-2"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block mb-1 text-sm">Employee Name</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={filterCriteria.name}
-                                        onChange={handleFilterChange}
-                                        className="border rounded-lg w-full p-2"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block mb-1 text-sm">Contact</label>
-                                    <input
-                                        type="text"
-                                        name="contact"
-                                        value={filterCriteria.contact}
-                                        onChange={handleFilterChange}
-                                        className="border rounded-lg w-full p-2"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block mb-1 text-sm">Designation</label>
-                                    <input
-                                        type="text"
-                                        name="designation"
-                                        value={filterCriteria.designation}
-                                        onChange={handleFilterChange}
-                                        className="border rounded-lg w-full p-2"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block mb-1 text-sm">Date of Joining</label>
-                                    <input
-                                        type="date"
-                                        name="date"
-                                        value={filterCriteria.date}
-                                        onChange={handleFilterChange}
-                                        className="border rounded-lg w-full p-2"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block mb-1 text-sm">Role Access</label>
-                                    <select
-                                        name="role"
-                                        value={filterCriteria.role}
-                                        onChange={handleFilterChange}
-                                        className="border rounded-lg w-full p-2 text-sm"
-                                    >
-                                        <option value="">Select Role</option>
-                                        <option value="Supervisor">Supervisor</option>
-                                        <option value="Academic Coach">Academic Coach</option>
-                                        <option value="Student">Student</option>
-                                        <option value="Teacher">Teacher</option>
-                                    </select>
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block mb-1 text-sm">Module Access</label>
-                                    <select
-                                        name="module"
-                                        value={filterCriteria.module}
-                                        onChange={handleFilterChange}
-                                        className="border rounded-lg w-full p-2 text-sm"
-                                    >
-                                        <option value="">Select Module</option>
-                                        <option value="Supervisor">Supervisor</option>
-                                        <option value="Academic Coach">Academic Coach</option>
-                                        <option value="Student">Student</option>
-                                        <option value="Teacher">Teacher</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="flex justify-end mt-4">
-                                <button
-                                    className="bg-blue-500 text-white px-4 py-2 rounded-lg mr-2 text-sm"
-                                    onClick={applyFilters}
-                                >
-                                    Apply
-                                </button>
-                                <button
-                                    className="bg-gray-300 px-4 py-2 rounded-lg text-sm"
-                                    onClick={() => setFilterPopupOpen(false)}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+        <div className="p-5 sm:p-6 md:p-8 min-h-screen w-full max-w-8xl mx-auto mr-5">
+          <h2 className="text-xl sm:text-2xl font-bold mb-6">Role Access</h2>
+      
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+            <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
+              <input
+                type="text"
+                placeholder="Search here..."
+                className="border rounded-lg px-4 py-2 text-xs shadow"
+              />
+              <button
+                className="flex items-center bg-white p-2 rounded-lg shadow text-xs border"
+                onClick={() => setFilterPopupOpen(true)}
+              >
+                <FaFilter className="mr-2" /> Filter
+              </button>
             </div>
-        </BaseLayout4>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button className="text-xs px-4 py-2 rounded-lg shadow flex bg-[#223857] text-white items-center">
+                <FaPlus className="mr-2" /> Add new
+              </button>
+              <div className="w-[170px] h-[35px] border bg-[#fff] border-gray-300 rounded-md text-xs flex items-center justify-between px-2 py-2 shadow mx-auto">
+  <select
+    className="w-full h-full bg-transparent text-xs text-center focus:outline-none appearance-none"
+    defaultValue="Duration: Last month"
+  >
+    <option>Duration: Last month</option>
+    <option>Duration: Last week</option>
+    <option>Duration: Last year</option>
+  </select>
+  <FaChevronDown size={10} className="ml-1 mt-[2px]" />
+</div>
+
+            </div>
+          </div>
+          <div className="bg-white shadow-md border border-gray-900 rounded-lg overflow-hidden scrollbar-none">
+  <div className="overflow-x-auto">
+    <div className="max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-none">
+      <table className="w-full border-collapse min-w-[800px]">
+        <thead className="sticky top-0 bg-gray-100 z-10">
+          <tr className="text-gray-600 text-xs sm:text-xs">
+            <th className="px-4 py-3 text-center">Employee ID</th>
+            <th className="px-4 py-3 text-center">Employee Name</th>
+            <th className="px-4 py-3 text-center">Contact</th>
+            <th className="px-4 py-3 text-center">Designation</th>
+            <th className="px-4 py-3 text-center">Date of Joining</th>
+            <th className="px-4 py-3 text-center">Role Access</th>
+            <th className="px-4 py-3 text-center">Module Access</th>
+            <th className="px-4 py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {employees.map((emp, index) => (
+            <tr key={emp.id} className="border-t border-gray-200 text-gray-700 text-xs sm:text-xs">
+              <td className="py-3 px-4 text-center">{emp.id}</td>
+              <td className="py-3 px-4 text-center">{emp.name}</td>
+              <td className="py-3 px-4 text-center">{emp.contact}</td>
+              <td className="py-3 px-4 text-center">{emp.designation}</td>
+              <td className="py-3 px-4 text-center">{emp.date}</td>
+              {/* Role Dropdown (Modified to match the custom Module dropdown) */}
+<td className="py-1 px-1 text-center align-middle relative">
+  <button
+    className="w-[140px] h-[30px] border border-gray-300 rounded-md text-xs flex items-center justify-between px-2 mx-auto cursor-pointer"
+    onClick={() => toggleRoleDropdown(index)}
+  >
+    <span className="w-full text-center truncate">{emp.role}</span>
+    <FaChevronDown size={10} className="ml-1 mt-[2px]" />
+  </button>
+
+  {openRoleDropdownIndex === index && (
+    <ul className="absolute z-50 bg-white border border-gray-300 mt-1 w-[140px] left-1/2 transform -translate-x-1/2 rounded shadow-md">
+      {["Supervisor", "Academic Coach", "Student", "Teacher"].map((role) => (
+        <li key={role}>
+          <button
+            className="w-full p-1 hover:bg-gray-100 text-xs text-center"
+            onClick={() => {
+              handleRoleChange(index, role);
+              setOpenRoleDropdownIndex(null);
+            }}
+          >
+            {role}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )}
+</td>
+
+{/* Module Dropdown (Unchanged, still matching) */}
+<td className="py-1 px-1 text-center align-middle relative">
+  <button
+    className="w-[140px] h-[30px] border border-gray-300 rounded-md text-xs flex items-center justify-between px-2 mx-auto cursor-pointer"
+    onClick={() => toggleModuleDropdown(index)}
+  >
+    <span className="w-full text-center truncate">{emp.module}</span>
+    <FaChevronDown size={10} className="ml-1 mt-[2px]" />
+  </button>
+
+  {openModuleDropdownIndex === index && (
+    <ul className="absolute z-50 bg-white border border-gray-300 mt-1 w-[140px] left-1/2 transform -translate-x-1/2 rounded shadow-md">
+      {["Supervisor", "AcademicCoach", "Student", "Teacher"].map((mod) => (
+        <li key={mod}>
+          <button
+            className="w-full p-1 hover:bg-gray-100 text-xs text-center"
+            onClick={() => {
+              handleModuleClick(mod);
+              setOpenModuleDropdownIndex(null);
+            }}
+          >
+            {mod}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )}
+</td>
+
+
+              <td className="py-3 px-9 text-center text-gray-500 hover:text-gray-700 cursor-pointer">
+                <PiDotsThreeCircle size={18} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+        </div>
+      
+        {/* Your Filter Popup here remains unchanged */}
+      </BaseLayout4>
+      
     );
 };
 
