@@ -3,13 +3,11 @@
 import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { IoMdArrowDropdownCircle, IoMdClose } from "react-icons/io";
+import { IoMdArrowDropdownCircle } from "react-icons/io";
 
 import { FaCalendarAlt, FaEdit, FaFilter, FaPlus } from "react-icons/fa";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
-import { Input } from "@nextui-org/react";
-import { CalendarIcon } from "lucide-react";
 
 const Meeting = () => {
   const dummyData = [
@@ -20,16 +18,16 @@ const Meeting = () => {
       selectedDate: new Date(),
       startTime: "10:00 AM",
       endTime: "11:00 AM",
-      meetingStatus: "Scheduled",
+      meetingStatus: "Completed",
     },
     {
       _id: "2",
       meetingName: "Science Class",
-      teacher: [{ teacherName: "Ms. Johnson" }],
+      teacher: [{ teacherName: "Ms. John" }],
       selectedDate: new Date(),
-      startTime: "11.00 PM",
-      endTime: "12:00 PM",
-      meetingStatus: "Pending",
+      startTime: "11.00 AM",
+      endTime: "12:00 AM",
+      meetingStatus: "Scheduled",
     },
     {
       _id: "3",
@@ -38,7 +36,7 @@ const Meeting = () => {
       selectedDate: new Date(),
       startTime: "01.00 AM",
       endTime: "12:00 PM",
-      meetingStatus: "Pending",
+      meetingStatus: "Scheduled",
     },
     {
       _id: "4",
@@ -87,6 +85,8 @@ const Meeting = () => {
     "Will Jonto",
     "El Byers",
   ]);
+
+  console.log(setAllTeachers);
 
   useEffect(() => {
     if (isAutoClose) {
@@ -144,7 +144,7 @@ const Meeting = () => {
   };
 
   const nextPage = () => {
-    console.log("nextPage")
+    console.log("nextPage");
     router.push("/admin-main/ui/meeting/schedule");
   };
 
@@ -173,11 +173,61 @@ const Meeting = () => {
     }
   };
 
-  const getMeetingStatusLabel = (status: string, startTime: string) => {
+  const parseDateTime = (date: string | Date, time: string): Date => {
+    const dateStr =
+      typeof date === "string" ? date : date.toISOString().split("T")[0];
+    const normalizedTime = time.replace(".", ":").toUpperCase(); // e.g. "11.00 PM" -> "11:00 PM"
+    return new Date(`${dateStr} ${normalizedTime}`);
+  };
+
+  const getMeetingStatusLabel = (
+    status: string,
+    selectedDate: string | Date,
+    startTime: string,
+    endTime?: string
+  ): string => {
+    const now = new Date();
+    const start = parseDateTime(selectedDate, startTime);
+    let end: Date | null = null;
+
+    if (endTime) {
+      end = parseDateTime(selectedDate, endTime);
+      if (end < start) {
+        end.setDate(end.getDate() + 1); // handle overnight meetings
+      }
+    }
+
+    const isToday =
+      start.getFullYear() === now.getFullYear() &&
+      start.getMonth() === now.getMonth() &&
+      start.getDate() === now.getDate();
+
+    if (status === "Scheduled" && isToday) {
+      const formattedStart = start.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const formattedEnd = end?.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      if (end && now >= start && now <= end) {
+        return `Started (${formattedStart} - ${formattedEnd})`;
+      }
+      if (end && now < start) {
+        return `Today (${formattedStart} - ${formattedEnd})`;
+      }
+      if (end && now > end) {
+        return "Completed";
+      }
+    }
+
     if (status === "Scheduled") return "Scheduled";
     if (status === "ReSchedule") return "ReSchedule";
     if (status === "Pending") return "Pending";
     if (status === "Completed") return "Completed";
+
     return "Started";
   };
 
@@ -207,8 +257,7 @@ const Meeting = () => {
 
             {/* Right side: Calendar, Add Meeting, Date Picker */}
             <div className="flex items-center gap-4">
-              <button onClick={()=>nextPage()}
-                >
+              <button onClick={() => nextPage()}>
                 <FaCalendarAlt className="text-[#1C3557]" />
               </button>
 
@@ -219,7 +268,7 @@ const Meeting = () => {
                 <FaPlus /> Add Meeting
               </button>
 
-              <div
+              <button
                 className="relative"
                 onMouseEnter={() => setIsDatePickerOpen(true)}
                 onMouseLeave={() => setIsDatePickerOpen(false)}
@@ -250,7 +299,7 @@ const Meeting = () => {
                     />
                   </div>
                 )}
-              </div>
+              </button>
             </div>
           </div>
 
@@ -324,17 +373,39 @@ const Meeting = () => {
                         <td className="px-6 py-4 text-center">
                           {activeTab === "upcoming" ? (
                             <>
-                              {/* Completed Meeting - Show Start Time */}
-                              <span
-                                className={`text-[12px] px-2 py-2 rounded-lg inline-block text-center w-[150px]  ${getMeetingStatusClass(
-                                  item.meetingStatus
-                                )}`}
-                              >
-                                {getMeetingStatusLabel(
+                              {(() => {
+                                const label = getMeetingStatusLabel(
                                   item.meetingStatus,
-                                  item.startTime
-                                )}
-                              </span>
+                                  item.selectedDate,
+                                  item.startTime,
+                                  item.endTime
+                                );
+
+                                const isStarted = label.startsWith("Started");
+
+                                return isStarted ? (
+                                  <button
+                                    onClick={() =>
+                                      router.push(
+                                        `/admin-main/ui/meeting/liveclass/`
+                                      )
+                                    }
+                                    className={`text-[12px] px-2 py-2 rounded-lg inline-block text-center w-[150px] cursor-pointer hover:underline ${getMeetingStatusClass(
+                                      item.meetingStatus
+                                    )}`}
+                                  >
+                                    {label}
+                                  </button>
+                                ) : (
+                                  <span
+                                    className={`text-[12px] px-2 py-2 rounded-lg inline-block text-center w-[150px] ${getMeetingStatusClass(
+                                      item.meetingStatus
+                                    )}`}
+                                  >
+                                    {label}
+                                  </span>
+                                );
+                              })()}
                             </>
                           ) : (
                             <>
@@ -464,7 +535,10 @@ const Meeting = () => {
 
               {/* Meeting ID */}
               <div className="mb-2">
-                <label className="text-xs font-medium text-gray-700">
+                <label
+                  htmlFor=" meetingID"
+                  className="text-xs font-medium text-gray-700"
+                >
                   Meeting ID
                 </label>
                 <input
@@ -476,7 +550,10 @@ const Meeting = () => {
 
               {/* Meeting Title */}
               <div className="mb-2">
-                <label className="text-xs font-medium text-gray-700">
+                <label
+                  htmlFor=" meetingTitle"
+                  className="text-xs font-medium text-gray-700"
+                >
                   Meeting Title
                 </label>
                 <input
@@ -488,7 +565,10 @@ const Meeting = () => {
 
               {/* Scheduled Date */}
               <div className="mb-2">
-                <label className="text-xs font-medium text-gray-700">
+                <label
+                  htmlFor=" schedule Date"
+                  className="text-xs font-medium text-gray-700"
+                >
                   Scheduled Date
                 </label>
                 <div className="flex items-center border border-gray-300 bg-[#f4f4f4] rounded-xl p-2 text-xs">
@@ -506,7 +586,10 @@ const Meeting = () => {
 
               {/* Scheduled Time */}
               <div className="mb-2">
-                <label className="text-xs font-medium text-gray-700">
+                <label
+                  htmlFor=" schedule Time"
+                  className="text-xs font-medium text-gray-700"
+                >
                   Scheduled Time
                 </label>
                 <div className="flex items-center border border-gray-300 bg-[#f4f4f4] rounded-xl p-2">
@@ -524,10 +607,13 @@ const Meeting = () => {
 
               {/* Attendees Dropdown */}
               <div className="mb-2 relative">
-                <label className="text-xs font-medium text-gray-700">
+                <label
+                  htmlFor=" attendees"
+                  className="text-xs font-medium text-gray-700"
+                >
                   Attendees
                 </label>
-                <div
+                <button
                   className="flex items-center border border-gray-300 bg-[#f4f4f4] rounded-xl p-2 justify-between cursor-pointer"
                   onClick={() =>
                     setShowAttendeesDropdown(!showAttendeesDropdown)
@@ -543,7 +629,7 @@ const Meeting = () => {
                       showAttendeesDropdown ? "up" : "down"
                     } text-gray-500`}
                   />
-                </div>
+                </button>
 
                 {showAttendeesDropdown && (
                   <div className="absolute bg-white border border-gray-300 rounded-xl shadow-md w-full mt-2 max-h-44 overflow-y-auto z-50 p-4">
@@ -612,7 +698,10 @@ const Meeting = () => {
 
               {/* Description */}
               <div className="mb-6">
-                <label className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor=" Description"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Description
                 </label>
                 <textarea
@@ -663,7 +752,10 @@ const Meeting = () => {
                 <>
                   {/* Meeting Title */}
                   <div className="mb-2">
-                    <label className="text-xs text-[#0F1D40] font-medium block mb-1">
+                    <label
+                      htmlFor=" meetingTitle"
+                      className="text-xs text-[#0F1D40] font-medium block mb-1"
+                    >
                       Meeting Title
                     </label>
                     <input
@@ -675,7 +767,10 @@ const Meeting = () => {
 
                   {/* Scheduled Date */}
                   <div className="mb-2">
-                    <label className="text-xs text-[#0F1D40] font-medium block mb-1">
+                    <label
+                      htmlFor="scheduled date"
+                      className="text-xs text-[#0F1D40] font-medium block mb-1"
+                    >
                       Scheduled Date
                     </label>
                     <div className="relative">
@@ -691,7 +786,10 @@ const Meeting = () => {
 
                   {/* Scheduled Time */}
                   <div className="mb-2">
-                    <label className="text-xs text-[#0F1D40] font-medium block mb-1">
+                    <label
+                      htmlFor=" scedule time"
+                      className="text-xs text-[#0F1D40] font-medium block mb-1"
+                    >
                       Scheduled Time
                     </label>
                     <div className="relative">
@@ -707,10 +805,13 @@ const Meeting = () => {
 
                   {/* Attendees Dropdown */}
                   <div className="mb-2 relative">
-                    <label className="text-xs font-medium text-gray-700">
+                    <label
+                      htmlFor=" attendees"
+                      className="text-xs font-medium text-gray-700"
+                    >
                       Attendees
                     </label>
-                    <div
+                    <button
                       className="flex items-center border border-gray-300 bg-[#f4f4f4] rounded-xl p-2 justify-between cursor-pointer"
                       onClick={() =>
                         setShowAttendeesDropdown(!showAttendeesDropdown)
@@ -726,7 +827,7 @@ const Meeting = () => {
                           showAttendeesDropdown ? "up" : "down"
                         } text-gray-500`}
                       />
-                    </div>
+                    </button>
 
                     {showAttendeesDropdown && (
                       <div className="absolute bg-white border border-gray-300 rounded-xl shadow-md w-full mt-2 max-h-44 overflow-y-auto z-50 p-4">
@@ -797,7 +898,10 @@ const Meeting = () => {
 
                   {/* Description */}
                   <div className="mb-4">
-                    <label className="text-xs text-[#0F1D40] font-medium block mb-1">
+                    <label
+                      htmlFor=" reason"
+                      className="text-xs text-[#0F1D40] font-medium block mb-1"
+                    >
                       Reason for Reschedule
                     </label>
                     <textarea
@@ -850,7 +954,10 @@ const Meeting = () => {
               {/* Input Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="text-[12px] text-gray-700 font-semibold">
+                  <label
+                    htmlFor=" meetingID"
+                    className="text-[12px] text-gray-700 font-semibold"
+                  >
                     Meeting ID
                   </label>
                   <input
@@ -860,7 +967,10 @@ const Meeting = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[12px] text-gray-700 font-semibold">
+                  <label
+                    htmlFor=" meetingTitle"
+                    className="text-[12px] text-gray-700 font-semibold"
+                  >
                     Meeting Title
                   </label>
                   <input
@@ -870,7 +980,10 @@ const Meeting = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[12px] text-gray-700 font-semibold">
+                  <label
+                    htmlFor=" Scheduled Date "
+                    className="text-[12px] text-gray-700 font-semibold"
+                  >
                     Scheduled Date
                   </label>
                   <input
@@ -880,7 +993,10 @@ const Meeting = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[12px] text-gray-700 font-semibold">
+                  <label
+                    htmlFor=" meetingDuration"
+                    className="text-[12px] text-gray-700 font-semibold"
+                  >
                     Meeting Duration
                   </label>
                   <input
@@ -890,8 +1006,11 @@ const Meeting = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[12px] text-gray-700 font-semibold">
-                    Scheduled Time– From
+                  <label
+                    htmlFor=" Scheduled Time From"
+                    className="text-[12px] text-gray-700 font-semibold"
+                  >
+                    Scheduled Time From
                   </label>
                   <input
                     className="w-full mt-1 p-2 border border-gray-300 rounded-md bg-gray-100 text-xs"
@@ -900,8 +1019,11 @@ const Meeting = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[12px] text-gray-700 font-semibold">
-                    Scheduled Time– To
+                  <label
+                    htmlFor=" Scheduled Time To"
+                    className="text-[12px] text-gray-700 font-semibold"
+                  >
+                    Scheduled Time To
                   </label>
                   <input
                     className="w-full mt-1 p-2 border border-gray-300 rounded-md bg-gray-100 text-xs"
@@ -959,7 +1081,10 @@ const Meeting = () => {
 
               {/* Meeting Minutes */}
               <div className="mb-6">
-                <label className="text-xs font-semibold mb-1 block">
+                <label
+                  htmlFor=" meetingMinutes"
+                  className="text-xs font-semibold mb-1 block"
+                >
                   Meeting Minutes
                 </label>
                 <div className="bg-gray-100 border p-6 rounded-lg text-xs text-gray-700 ">
@@ -986,35 +1111,37 @@ const Meeting = () => {
                       (page) =>
                         page === 1 || // Always show first
                         page === totalPages || // Always show last
-                        Math.abs(page - currentPage) <= 1 // Near current
+                        Math.abs(page - currentPage) <= 1 // Show near current
                     )
                     .reduce((acc: (number | "...")[], page, i, arr) => {
-                      if (
-                        i > 0 &&
-                        (page as number) - (arr[i - 1] as number) > 1
-                      ) {
+                      if (i > 0 && page - (arr[i - 1] as number) > 1) {
                         acc.push("...");
                       }
                       acc.push(page);
                       return acc;
                     }, [])
-                    .map((page, index) =>
-                      page === "..." ? (
-                        <span key={index} className="px-2 text-sm">
-                          ...
-                        </span>
-                      ) : (
+                    .map((page) =>
+                      typeof page === "number" ? (
                         <button
-                          key={page}
+                          key={`page-${page}`}
                           className={`w-5 h-5 rounded border text-xs ${
                             currentPage === page
                               ? "bg-slate-800 text-white"
                               : "bg-gray-100 hover:bg-gray-200"
                           }`}
-                          onClick={() => goToPage(page as number)}
+                          onClick={() => goToPage(page)}
                         >
                           {page}
                         </button>
+                      ) : (
+                        <span
+                          key={`ellipsis-${Math.random()
+                            .toString(36)
+                            .substr(2, 5)}`}
+                          className="px-2 text-sm"
+                        >
+                          ...
+                        </span>
                       )
                     )}
                 </div>
@@ -1028,7 +1155,6 @@ const Meeting = () => {
                   Next
                 </button>
               </div>
-
             </div>
           </div>
         )}
