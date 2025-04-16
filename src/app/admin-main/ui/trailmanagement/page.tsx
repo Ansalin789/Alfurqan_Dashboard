@@ -645,13 +645,21 @@ const TrailManagement = () => {
             </table>
           </div>
 
-          <Pagination />
+          <div className="flex justify-end">
+            <button
+              className="text-[#fff] mt-4 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
+              onClick={() => router.push("/admin-main/ui/scheduledtrailclasslist")}
+            >
+              View All
+            </button>
+          </div>
+
         </div>
       </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-100 border border-gray-300 rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[720px]">
+          <div className="bg-gray-100 border border-gray-300 rounded-lg shadow-lg p-4 w-[80%] max-w-3xl h-[650px]">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-[18px] font-bold bg-gradient-to-r from-[#415075] via-[#1e273c] to-[#1e273c] text-transparent bg-clip-text">
                 Student Details
@@ -839,6 +847,7 @@ const TrailManagement = () => {
           </div>
         </div>
       )}
+      
     </BaseLayout4>
   );
 };

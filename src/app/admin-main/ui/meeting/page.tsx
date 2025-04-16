@@ -9,54 +9,57 @@ import { FaCalendarAlt, FaEdit, FaFilter, FaPlus } from "react-icons/fa";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
 
+
+const dummyData = [
+  {
+    _id: "1",
+    meetingName: "Math Class",
+    teacher: [{ teacherName: "Mr. Smith" }],
+    selectedDate: new Date(),
+    startTime: "10:00 AM",
+    endTime: "11:00 AM",
+    meetingStatus: "Completed",
+  },
+  {
+    _id: "2",
+    meetingName: "Science Class",
+    teacher: [{ teacherName: "Ms. John" }],
+    selectedDate: new Date(),
+    startTime: "11.00 AM",
+    endTime: "12:00 AM",
+    meetingStatus: "Scheduled",
+  },
+  {
+    _id: "3",
+    meetingName: "Science Class",
+    teacher: [{ teacherName: "Ms. Johnson" }],
+    selectedDate: new Date(),
+    startTime: "01.00 AM",
+    endTime: "12:00 PM",
+    meetingStatus: "Scheduled",
+  },
+  {
+    _id: "4",
+    meetingName: "History Class",
+    teacher: [{ teacherName: "Mr. Brown" }],
+    selectedDate: new Date(),
+    startTime: "03.00 AM",
+    endTime: "1:00 PM",
+    meetingStatus: "Completed",
+  },
+  {
+    _id: "5",
+    meetingName: "English Class",
+    teacher: [{ teacherName: "Ms. Green" }],
+    selectedDate: new Date("2025-04-17"),
+    startTime: "09:00 AM",
+    endTime: "10:00 AM",
+    meetingStatus: "Scheduled",
+  },
+
+];
 const Meeting = () => {
-  const dummyData = [
-    {
-      _id: "1",
-      meetingName: "Math Class",
-      teacher: [{ teacherName: "Mr. Smith" }],
-      selectedDate: new Date(),
-      startTime: "10:00 AM",
-      endTime: "11:00 AM",
-      meetingStatus: "Completed",
-    },
-    {
-      _id: "2",
-      meetingName: "Science Class",
-      teacher: [{ teacherName: "Ms. John" }],
-      selectedDate: new Date(),
-      startTime: "11.00 AM",
-      endTime: "12:00 AM",
-      meetingStatus: "Scheduled",
-    },
-    {
-      _id: "3",
-      meetingName: "Science Class",
-      teacher: [{ teacherName: "Ms. Johnson" }],
-      selectedDate: new Date(),
-      startTime: "01.00 AM",
-      endTime: "12:00 PM",
-      meetingStatus: "Scheduled",
-    },
-    {
-      _id: "4",
-      meetingName: "History Class",
-      teacher: [{ teacherName: "Mr. Brown" }],
-      selectedDate: new Date(),
-      startTime: "03.00 AM",
-      endTime: "1:00 PM",
-      meetingStatus: "Completed",
-    },
-    {
-      _id: "5",
-      meetingName: "Physics Class",
-      teacher: [{ teacherName: "Mr. Vishu" }],
-      selectedDate: new Date(),
-      startTime: "05.00 AM",
-      endTime: "01:00 PM",
-      meetingStatus: "ReSchedule",
-    },
-  ];
+
 
   const [activeTab, setActiveTab] = useState<string>("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
@@ -306,7 +309,7 @@ const Meeting = () => {
           <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px]  overflow-y-scroll scrollbar-none flex flex-col justify-between">
             {/* Tabs */}
             <div>
-              <div className="flex p-4">
+              <div className="flex p-3">
                 <button
                   className={`py-1 px-4 rounded-lg text-sm font-medium  ${
                     activeTab === "upcoming"
@@ -342,7 +345,7 @@ const Meeting = () => {
                         "ScheduleTime",
                         "Action",
                       ].map((header) => (
-                        <th key={header} className="px-6 py-3 text-center">
+                        <th key={header} className="px-1 py-3 text-center ">
                           {header}
                         </th>
                       ))}
@@ -352,26 +355,26 @@ const Meeting = () => {
                     {currentItems.map((item, index) => (
                       <tr
                         key={index}
-                        className={`text-[12px] font-medium mt-2 ${
+                        className={`text-[12px] font-medium  ${
                           index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
                         }`}
                       >
-                        <td className="px-6 py-4 text-center">{item._id}</td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-2 py-2 text-center text-xs">{item._id}</td>
+                        <td className="px-2 py-2 text-center text-xs">
                           {item.meetingName}
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-2 py-2 text-center text-xs">
                           {" "}
                           {item.teacher
                             .map((teacher) => teacher.teacherName)
                             .join(", ")}
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-2 py-2 text-center text-xs">
                           {new Date(item.selectedDate).toISOString()}
                         </td>
 
-                        <td className="px-6 py-4 text-center">
-                          {activeTab === "upcoming" ? (
+                        <td className="px-2 py-2 text-center text-xs whitespace-nowrap ">
+                          {activeTab === "upcoming"  ? (
                             <>
                               {(() => {
                                 const label = getMeetingStatusLabel(
@@ -390,7 +393,7 @@ const Meeting = () => {
                                         `/admin-main/ui/meeting/liveclass/`
                                       )
                                     }
-                                    className={`text-[12px] px-2 py-2 rounded-lg inline-block text-center w-[150px] cursor-pointer hover:underline ${getMeetingStatusClass(
+                                    className={`text-[12px] px-2 py-2 rounded-lg inline-block text-center w-[200px] cursor-pointer  ${getMeetingStatusClass(
                                       item.meetingStatus
                                     )}`}
                                   >
@@ -443,9 +446,9 @@ const Meeting = () => {
                             </button> */}
                               {selectedItemId === item._id && (
                                 <div className="absolute bg-white shadow-lg rounded-lg -mt-4 -ml-14">
-                                  <div className="py-1">
+                                  <div className="py-2 px-2">
                                     <button
-                                      className="block text-left px-3 py-1 text-[10px] font-medium text-[#223857] hover:bg-gray-100"
+                                      className="block text-left px-3 py-1 text-[12px] font-medium text-[#223857] hover:bg-gray-100"
                                       onClick={() => {
                                         setIsRescheduleModalOpen(true);
                                         setSelectedItemId(null);
@@ -454,7 +457,7 @@ const Meeting = () => {
                                       Request
                                     </button>
                                     <button
-                                      className="block text-left px-3 py-1 text-[10px] font-medium text-[#223857] hover:bg-gray-100"
+                                      className="block text-left px-3 py-1 text-[12px] font-medium text-[#223857] hover:bg-gray-100"
                                       onClick={() => {
                                         setSelectedItemId(null);
                                       }}

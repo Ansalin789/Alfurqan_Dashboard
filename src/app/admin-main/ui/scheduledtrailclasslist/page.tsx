@@ -3,7 +3,12 @@
 import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { FaChevronLeft, FaChevronRight, FaEdit, FaFilter, FaSyncAlt } from "react-icons/fa";
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaEdit,
+  FaFilter,
+} from "react-icons/fa";
 
 interface EvaluationItem {
   _id: string;
@@ -29,406 +34,404 @@ interface EvaluationItem {
 }
 
 interface FormData {
-    _id: string;
-    student: {
-      city: string;
-      studentId: string;
-      studentFirstName: string;
-      studentLastName: string;
-      studentEmail: string;
-      studentPhone: number;
-      studentCity: string;
-      studentCountry: string;
-      studentCountryCode: string;
-      learningInterest: string;
-      numberOfStudents: number;
-      preferredTeacher: string;
-      preferredFromTime: string;
-      preferredToTime: string;
-      timeZone: string;
-      referralSource: string;
-      preferredDate: string; // ISO date string
-      evaluationStatus: string;
-      status: string;
-      createdDate: string; // ISO date string
-      createdBy: string;
-    };
-    isLanguageLevel: boolean;
-    languageLevel: string;
-    isReadingLevel: boolean;
-    readingLevel: string;
-    isGrammarLevel: boolean;
-    grammarLevel: string;
-    hours: number;
-    subscription: {
-      subscriptionName: string;
-    };
-    planTotalPrice: number;
-    classStartDate: string; // ISO date string
-    classEndDate: string; // ISO date string
-    classStartTime: string;
-    classEndTime: string;
-    accomplishmentTime: string;
-    studentRate: number;
-    gardianName: string;
-    gardianEmail: string;
-    gardianPhone: string;
-    gardianCity: string;
-    gardianCountry: string;
-    gardianTimeZone: string;
-    gardianLanguage: string;
-    assignedTeacher: string;
-    assignedTeacherId: string;
-    assignedTeacherEmail: string;
-    studentStatus: string;
-    classStatus: string;
-    comments: string;
-    trialClassStatus: string;
-    invoiceStatus: string;
-    paymentLink: string;
-    paymentStatus: string;
+  _id: string;
+  student: {
+    city: string;
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    studentPhone: number;
+    studentCity: string;
+    studentCountry: string;
+    studentCountryCode: string;
+    learningInterest: string;
+    numberOfStudents: number;
+    preferredTeacher: string;
+    preferredFromTime: string;
+    preferredToTime: string;
+    timeZone: string;
+    referralSource: string;
+    preferredDate: string; // ISO date string
+    evaluationStatus: string;
     status: string;
     createdDate: string; // ISO date string
     createdBy: string;
-    updatedDate: string; // ISO date string
-    updatedBy: string;
-    expectedFinishingDate: number;
-    __v: number;
-  }
+  };
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  subscription: {
+    subscriptionName: string;
+  };
+  planTotalPrice: number;
+  classStartDate: string; // ISO date string
+  classEndDate: string; // ISO date string
+  classStartTime: string;
+  classEndTime: string;
+  accomplishmentTime: string;
+  studentRate: number;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  assignedTeacherId: string;
+  assignedTeacherEmail: string;
+  studentStatus: string;
+  classStatus: string;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  status: string;
+  createdDate: string; // ISO date string
+  createdBy: string;
+  updatedDate: string; // ISO date string
+  updatedBy: string;
+  expectedFinishingDate: number;
+  __v: number;
+}
 
 const evaluation: EvaluationItem[] = [
-    {
-      _id: "0983867",
-      student: {
-        studentId: "stu001",
-        studentFirstName: "Robert",
-        studentLastName: "James",
-        studentPhone: 9347653567,
-        studentCountry: "USA",
-        learningInterest: "Arabic",
-        preferredTeacher: "Male",
-        assignedAcademicCoach: "Cole Walter",
-        preferredFromTime: "9:00 AM",
-        preferredToTime: "10:00 AM",
-        classStatus: "Pending",
-        status: "Active",
-        trialClassStatus: "Scheduled",
-      },
-      assignedTeacher: "Cole Walter",
-      paymentStatus: "Pending",
+  {
+    _id: "0983867",
+    student: {
+      studentId: "stu001",
+      studentFirstName: "Robert",
+      studentLastName: "James",
+      studentPhone: 9347653567,
+      studentCountry: "USA",
+      learningInterest: "Arabic",
+      preferredTeacher: "Male",
+      assignedAcademicCoach: "Cole Walter",
+      preferredFromTime: "9:00 AM",
+      preferredToTime: "10:00 AM",
+      classStatus: "Pending",
+      status: "Active",
       trialClassStatus: "Scheduled",
-      paymentLink: "https://payment.example.com/link1",
     },
-    {
-      _id: "0983868",
-      student: {
-        studentId: "stu002",
-        studentFirstName: "Emily",
-        studentLastName: "Clark",
-        studentPhone: 9876543210,
-        studentCountry: "UK",
-        learningInterest: "Quran",
-        preferredTeacher: "Female",
-        assignedAcademicCoach: "Sarah Miller",
-        preferredFromTime: "8:00 AM",
-        preferredToTime: "9:00 AM",
-        classStatus: "Scheduled",
-        status: "Active",
-        trialClassStatus: "Completed",
-      },
-      assignedTeacher: "Hana Yusuf",
-      paymentStatus: "Completed",
+    assignedTeacher: "Cole Walter",
+    paymentStatus: "Pending",
+    trialClassStatus: "Scheduled",
+    paymentLink: "https://payment.example.com/link1",
+  },
+  {
+    _id: "0983868",
+    student: {
+      studentId: "stu002",
+      studentFirstName: "Emily",
+      studentLastName: "Clark",
+      studentPhone: 9876543210,
+      studentCountry: "UK",
+      learningInterest: "Quran",
+      preferredTeacher: "Female",
+      assignedAcademicCoach: "Sarah Miller",
+      preferredFromTime: "8:00 AM",
+      preferredToTime: "9:00 AM",
+      classStatus: "Scheduled",
+      status: "Active",
       trialClassStatus: "Completed",
-      paymentLink: "https://payment.example.com/link2",
     },
-    {
-      _id: "0983869",
-      student: {
-        studentId: "stu003",
-        studentFirstName: "Liam",
-        studentLastName: "Williams",
-        studentPhone: 9123456780,
-        studentCountry: "Canada",
-        learningInterest: "Arabic",
-        preferredTeacher: "Male",
-        assignedAcademicCoach: "Cole Walter",
-        preferredFromTime: "10:00 AM",
-        preferredToTime: "11:00 AM",
-        classStatus: "Pending",
-        status: "Active",
-        trialClassStatus: "Scheduled",
-      },
-      assignedTeacher: "Omar Khalid",
-      paymentStatus: "Pending",
+    assignedTeacher: "Hana Yusuf",
+    paymentStatus: "Completed",
+    trialClassStatus: "Completed",
+    paymentLink: "https://payment.example.com/link2",
+  },
+  {
+    _id: "0983869",
+    student: {
+      studentId: "stu003",
+      studentFirstName: "Liam",
+      studentLastName: "Williams",
+      studentPhone: 9123456780,
+      studentCountry: "Canada",
+      learningInterest: "Arabic",
+      preferredTeacher: "Male",
+      assignedAcademicCoach: "Cole Walter",
+      preferredFromTime: "10:00 AM",
+      preferredToTime: "11:00 AM",
+      classStatus: "Pending",
+      status: "Active",
       trialClassStatus: "Scheduled",
-      paymentLink: "https://payment.example.com/link3",
     },
-    {
-      _id: "0983870",
-      student: {
-        studentId: "stu004",
-        studentFirstName: "Sophia",
-        studentLastName: "Brown",
-        studentPhone: 9988776655,
-        studentCountry: "Australia",
-        learningInterest: "Tajweed",
-        preferredTeacher: "Female",
-        assignedAcademicCoach: "Sarah Miller",
-        preferredFromTime: "11:00 AM",
-        preferredToTime: "12:00 PM",
-        classStatus: "Completed",
-        status: "Active",
-        trialClassStatus: "Completed",
-      },
-      assignedTeacher: "Fatima Noor",
-      paymentStatus: "Completed",
+    assignedTeacher: "Omar Khalid",
+    paymentStatus: "Pending",
+    trialClassStatus: "Scheduled",
+    paymentLink: "https://payment.example.com/link3",
+  },
+  {
+    _id: "0983870",
+    student: {
+      studentId: "stu004",
+      studentFirstName: "Sophia",
+      studentLastName: "Brown",
+      studentPhone: 9988776655,
+      studentCountry: "Australia",
+      learningInterest: "Tajweed",
+      preferredTeacher: "Female",
+      assignedAcademicCoach: "Sarah Miller",
+      preferredFromTime: "11:00 AM",
+      preferredToTime: "12:00 PM",
+      classStatus: "Completed",
+      status: "Active",
       trialClassStatus: "Completed",
-      paymentLink: "https://payment.example.com/link4",
     },
-    {
-      _id: "0983871",
-      student: {
-        studentId: "stu005",
-        studentFirstName: "Noah",
-        studentLastName: "Davis",
-        studentPhone: 9123456701,
-        studentCountry: "USA",
-        learningInterest: "Arabic",
-        preferredTeacher: "Male",
-        assignedAcademicCoach: "Cole Walter",
-        preferredFromTime: "1:00 PM",
-        preferredToTime: "2:00 PM",
-        classStatus: "Pending",
-        status: "Active",
-        trialClassStatus: "Scheduled",
-      },
-      assignedTeacher: "Ahmed Saleh",
-      paymentStatus: "Pending",
+    assignedTeacher: "Fatima Noor",
+    paymentStatus: "Completed",
+    trialClassStatus: "Completed",
+    paymentLink: "https://payment.example.com/link4",
+  },
+  {
+    _id: "0983871",
+    student: {
+      studentId: "stu005",
+      studentFirstName: "Noah",
+      studentLastName: "Davis",
+      studentPhone: 9123456701,
+      studentCountry: "USA",
+      learningInterest: "Arabic",
+      preferredTeacher: "Male",
+      assignedAcademicCoach: "Cole Walter",
+      preferredFromTime: "1:00 PM",
+      preferredToTime: "2:00 PM",
+      classStatus: "Pending",
+      status: "Active",
       trialClassStatus: "Scheduled",
-      paymentLink: "https://payment.example.com/link5",
     },
-    {
-      _id: "0983872",
-      student: {
-        studentId: "stu006",
-        studentFirstName: "Ava",
-        studentLastName: "Moore",
-        studentPhone: 9347653523,
-        studentCountry: "UK",
-        learningInterest: "Quran",
-        preferredTeacher: "Female",
-        assignedAcademicCoach: "Sarah Miller",
-        preferredFromTime: "3:00 PM",
-        preferredToTime: "4:00 PM",
-        classStatus: "Scheduled",
-        status: "Inactive",
-        trialClassStatus: "Rescheduled",
-      },
-      assignedTeacher: "Mariam Zainab",
-      paymentStatus: "Pending",
+    assignedTeacher: "Ahmed Saleh",
+    paymentStatus: "Pending",
+    trialClassStatus: "Scheduled",
+    paymentLink: "https://payment.example.com/link5",
+  },
+  {
+    _id: "0983872",
+    student: {
+      studentId: "stu006",
+      studentFirstName: "Ava",
+      studentLastName: "Moore",
+      studentPhone: 9347653523,
+      studentCountry: "UK",
+      learningInterest: "Quran",
+      preferredTeacher: "Female",
+      assignedAcademicCoach: "Sarah Miller",
+      preferredFromTime: "3:00 PM",
+      preferredToTime: "4:00 PM",
+      classStatus: "Scheduled",
+      status: "Inactive",
       trialClassStatus: "Rescheduled",
-      paymentLink: "https://payment.example.com/link6",
     },
-    {
-      _id: "0983873",
-      student: {
-        studentId: "stu007",
-        studentFirstName: "William",
-        studentLastName: "Taylor",
-        studentPhone: 9871234567,
-        studentCountry: "USA",
-        learningInterest: "Tajweed",
-        preferredTeacher: "Male",
-        assignedAcademicCoach: "Cole Walter",
-        preferredFromTime: "5:00 PM",
-        preferredToTime: "6:00 PM",
-        classStatus: "Pending",
-        status: "Active",
-        trialClassStatus: "Scheduled",
-      },
-      assignedTeacher: "Yusuf Khan",
-      paymentStatus: "Pending",
+    assignedTeacher: "Mariam Zainab",
+    paymentStatus: "Pending",
+    trialClassStatus: "Rescheduled",
+    paymentLink: "https://payment.example.com/link6",
+  },
+  {
+    _id: "0983873",
+    student: {
+      studentId: "stu007",
+      studentFirstName: "William",
+      studentLastName: "Taylor",
+      studentPhone: 9871234567,
+      studentCountry: "USA",
+      learningInterest: "Tajweed",
+      preferredTeacher: "Male",
+      assignedAcademicCoach: "Cole Walter",
+      preferredFromTime: "5:00 PM",
+      preferredToTime: "6:00 PM",
+      classStatus: "Pending",
+      status: "Active",
       trialClassStatus: "Scheduled",
-      paymentLink: "https://payment.example.com/link7",
     },
-    {
-      _id: "0983874",
-      student: {
-        studentId: "stu008",
-        studentFirstName: "Isabella",
-        studentLastName: "Anderson",
-        studentPhone: 9356473829,
-        studentCountry: "Canada",
-        learningInterest: "Quran",
-        preferredTeacher: "Female",
-        assignedAcademicCoach: "Sarah Miller",
-        preferredFromTime: "6:00 PM",
-        preferredToTime: "7:00 PM",
-        classStatus: "Scheduled",
-        status: "Active",
-        trialClassStatus: "Completed",
-      },
-      assignedTeacher: "Layla Hassan",
-      paymentStatus: "Completed",
+    assignedTeacher: "Yusuf Khan",
+    paymentStatus: "Pending",
+    trialClassStatus: "Scheduled",
+    paymentLink: "https://payment.example.com/link7",
+  },
+  {
+    _id: "0983874",
+    student: {
+      studentId: "stu008",
+      studentFirstName: "Isabella",
+      studentLastName: "Anderson",
+      studentPhone: 9356473829,
+      studentCountry: "Canada",
+      learningInterest: "Quran",
+      preferredTeacher: "Female",
+      assignedAcademicCoach: "Sarah Miller",
+      preferredFromTime: "6:00 PM",
+      preferredToTime: "7:00 PM",
+      classStatus: "Scheduled",
+      status: "Active",
       trialClassStatus: "Completed",
-      paymentLink: "https://payment.example.com/link8",
     },
-    {
-      _id: "0983875",
-      student: {
-        studentId: "stu009",
-        studentFirstName: "James",
-        studentLastName: "Martin",
-        studentPhone: 9234567890,
-        studentCountry: "USA",
-        learningInterest: "Arabic",
-        preferredTeacher: "Male",
-        assignedAcademicCoach: "Cole Walter",
-        preferredFromTime: "7:00 AM",
-        preferredToTime: "8:00 AM",
-        classStatus: "Pending",
-        status: "Active",
-        trialClassStatus: "Scheduled",
-      },
-      assignedTeacher: "Imran Malik",
-      paymentStatus: "Pending",
+    assignedTeacher: "Layla Hassan",
+    paymentStatus: "Completed",
+    trialClassStatus: "Completed",
+    paymentLink: "https://payment.example.com/link8",
+  },
+  {
+    _id: "0983875",
+    student: {
+      studentId: "stu009",
+      studentFirstName: "James",
+      studentLastName: "Martin",
+      studentPhone: 9234567890,
+      studentCountry: "USA",
+      learningInterest: "Arabic",
+      preferredTeacher: "Male",
+      assignedAcademicCoach: "Cole Walter",
+      preferredFromTime: "7:00 AM",
+      preferredToTime: "8:00 AM",
+      classStatus: "Pending",
+      status: "Active",
       trialClassStatus: "Scheduled",
-      paymentLink: "https://payment.example.com/link9",
     },
-    {
-      _id: "0983876",
-      student: {
-        studentId: "stu010",
-        studentFirstName: "Mia",
-        studentLastName: "White",
-        studentPhone: 9874563210,
-        studentCountry: "UK",
-        learningInterest: "Quran",
-        preferredTeacher: "Female",
-        assignedAcademicCoach: "Sarah Miller",
-        preferredFromTime: "4:00 PM",
-        preferredToTime: "5:00 PM",
-        classStatus: "Scheduled",
-        status: "Active",
-        trialClassStatus: "Scheduled",
-      },
-      assignedTeacher: "Aisha Omar",
-      paymentStatus: "Pending",
+    assignedTeacher: "Imran Malik",
+    paymentStatus: "Pending",
+    trialClassStatus: "Scheduled",
+    paymentLink: "https://payment.example.com/link9",
+  },
+  {
+    _id: "0983876",
+    student: {
+      studentId: "stu010",
+      studentFirstName: "Mia",
+      studentLastName: "White",
+      studentPhone: 9874563210,
+      studentCountry: "UK",
+      learningInterest: "Quran",
+      preferredTeacher: "Female",
+      assignedAcademicCoach: "Sarah Miller",
+      preferredFromTime: "4:00 PM",
+      preferredToTime: "5:00 PM",
+      classStatus: "Scheduled",
+      status: "Active",
       trialClassStatus: "Scheduled",
-      paymentLink: "https://payment.example.com/link10",
     },
-    {
-      _id: "0983877",
-      student: {
-        studentId: "stu011",
-        studentFirstName: "Benjamin",
-        studentLastName: "Lee",
-        studentPhone: 9874561200,
-        studentCountry: "USA",
-        learningInterest: "Tajweed",
-        preferredTeacher: "Male",
-        assignedAcademicCoach: "Cole Walter",
-        preferredFromTime: "12:00 PM",
-        preferredToTime: "1:00 PM",
-        classStatus: "Pending",
-        status: "Active",
-        trialClassStatus: "Scheduled",
-      },
-      assignedTeacher: "Ali Kareem",
-      paymentStatus: "Pending",
+    assignedTeacher: "Aisha Omar",
+    paymentStatus: "Pending",
+    trialClassStatus: "Scheduled",
+    paymentLink: "https://payment.example.com/link10",
+  },
+  {
+    _id: "0983877",
+    student: {
+      studentId: "stu011",
+      studentFirstName: "Benjamin",
+      studentLastName: "Lee",
+      studentPhone: 9874561200,
+      studentCountry: "USA",
+      learningInterest: "Tajweed",
+      preferredTeacher: "Male",
+      assignedAcademicCoach: "Cole Walter",
+      preferredFromTime: "12:00 PM",
+      preferredToTime: "1:00 PM",
+      classStatus: "Pending",
+      status: "Active",
       trialClassStatus: "Scheduled",
-      paymentLink: "https://payment.example.com/link11",
     },
-    {
-      _id: "0983878",
-      student: {
-        studentId: "stu012",
-        studentFirstName: "Charlotte",
-        studentLastName: "Scott",
-        studentPhone: 9981234567,
-        studentCountry: "Canada",
-        learningInterest: "Quran",
-        preferredTeacher: "Female",
-        assignedAcademicCoach: "Sarah Miller",
-        preferredFromTime: "2:00 PM",
-        preferredToTime: "3:00 PM",
-        classStatus: "Scheduled",
-        status: "Active",
-        trialClassStatus: "Completed",
-      },
-      assignedTeacher: "Nadia Farooq",
-      paymentStatus: "Completed",
+    assignedTeacher: "Ali Kareem",
+    paymentStatus: "Pending",
+    trialClassStatus: "Scheduled",
+    paymentLink: "https://payment.example.com/link11",
+  },
+  {
+    _id: "0983878",
+    student: {
+      studentId: "stu012",
+      studentFirstName: "Charlotte",
+      studentLastName: "Scott",
+      studentPhone: 9981234567,
+      studentCountry: "Canada",
+      learningInterest: "Quran",
+      preferredTeacher: "Female",
+      assignedAcademicCoach: "Sarah Miller",
+      preferredFromTime: "2:00 PM",
+      preferredToTime: "3:00 PM",
+      classStatus: "Scheduled",
+      status: "Active",
       trialClassStatus: "Completed",
-      paymentLink: "https://payment.example.com/link12",
     },
-    {
-      _id: "0983879",
-      student: {
-        studentId: "stu013",
-        studentFirstName: "Elijah",
-        studentLastName: "King",
-        studentPhone: 9765432100,
-        studentCountry: "Australia",
-        learningInterest: "Arabic",
-        preferredTeacher: "Male",
-        assignedAcademicCoach: "Cole Walter",
-        preferredFromTime: "9:00 AM",
-        preferredToTime: "10:00 AM",
-        classStatus: "Pending",
-        status: "Active",
-        trialClassStatus: "Scheduled",
-      },
-      assignedTeacher: "Zaid Ansari",
-      paymentStatus: "Pending",
+    assignedTeacher: "Nadia Farooq",
+    paymentStatus: "Completed",
+    trialClassStatus: "Completed",
+    paymentLink: "https://payment.example.com/link12",
+  },
+  {
+    _id: "0983879",
+    student: {
+      studentId: "stu013",
+      studentFirstName: "Elijah",
+      studentLastName: "King",
+      studentPhone: 9765432100,
+      studentCountry: "Australia",
+      learningInterest: "Arabic",
+      preferredTeacher: "Male",
+      assignedAcademicCoach: "Cole Walter",
+      preferredFromTime: "9:00 AM",
+      preferredToTime: "10:00 AM",
+      classStatus: "Pending",
+      status: "Active",
       trialClassStatus: "Scheduled",
-      paymentLink: "https://payment.example.com/link13",
     },
-    {
-      _id: "0983880",
-      student: {
-        studentId: "stu014",
-        studentFirstName: "Amelia",
-        studentLastName: "Young",
-        studentPhone: 9001234567,
-        studentCountry: "UK",
-        learningInterest: "Tajweed",
-        preferredTeacher: "Female",
-        assignedAcademicCoach: "Sarah Miller",
-        preferredFromTime: "10:00 AM",
-        preferredToTime: "11:00 AM",
-        classStatus: "Scheduled",
-        status: "Inactive",
-        trialClassStatus: "Rescheduled",
-      },
-      assignedTeacher: "Sumayya Bashir",
-      paymentStatus: "Pending",
+    assignedTeacher: "Zaid Ansari",
+    paymentStatus: "Pending",
+    trialClassStatus: "Scheduled",
+    paymentLink: "https://payment.example.com/link13",
+  },
+  {
+    _id: "0983880",
+    student: {
+      studentId: "stu014",
+      studentFirstName: "Amelia",
+      studentLastName: "Young",
+      studentPhone: 9001234567,
+      studentCountry: "UK",
+      learningInterest: "Tajweed",
+      preferredTeacher: "Female",
+      assignedAcademicCoach: "Sarah Miller",
+      preferredFromTime: "10:00 AM",
+      preferredToTime: "11:00 AM",
+      classStatus: "Scheduled",
+      status: "Inactive",
       trialClassStatus: "Rescheduled",
-      paymentLink: "https://payment.example.com/link14",
     },
-    {
-      _id: "0983881",
-      student: {
-        studentId: "stu015",
-        studentFirstName: "Lucas",
-        studentLastName: "Walker",
-        studentPhone: 9445566778,
-        studentCountry: "USA",
-        learningInterest: "Quran",
-        preferredTeacher: "Male",
-        assignedAcademicCoach: "Cole Walter",
-        preferredFromTime: "8:00 AM",
-        preferredToTime: "9:00 AM",
-        classStatus: "Pending",
-        status: "Active",
-        trialClassStatus: "Scheduled",
-      },
-      assignedTeacher: "Muhammad Tariq",
-      paymentStatus: "Pending",
+    assignedTeacher: "Sumayya Bashir",
+    paymentStatus: "Pending",
+    trialClassStatus: "Rescheduled",
+    paymentLink: "https://payment.example.com/link14",
+  },
+  {
+    _id: "0983881",
+    student: {
+      studentId: "stu015",
+      studentFirstName: "Lucas",
+      studentLastName: "Walker",
+      studentPhone: 9445566778,
+      studentCountry: "USA",
+      learningInterest: "Quran",
+      preferredTeacher: "Male",
+      assignedAcademicCoach: "Cole Walter",
+      preferredFromTime: "8:00 AM",
+      preferredToTime: "9:00 AM",
+      classStatus: "Pending",
+      status: "Active",
       trialClassStatus: "Scheduled",
-      paymentLink: "https://payment.example.com/link15",
     },
-  
-  
+    assignedTeacher: "Muhammad Tariq",
+    paymentStatus: "Pending",
+    trialClassStatus: "Scheduled",
+    paymentLink: "https://payment.example.com/link15",
+  },
 ];
 
 const Trailclasslist = () => {
@@ -438,8 +441,7 @@ const Trailclasslist = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<FormData | null>(null);
-  
- 
+
 
   const itemsPerPage = 11;
   const router = useRouter();
@@ -507,7 +509,7 @@ const Trailclasslist = () => {
   const getPageNumbers = () => {
     const pageNumbers = [];
     const maxVisiblePages = 5; // Maximum number of page buttons to show
-    
+
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
@@ -516,18 +518,18 @@ const Trailclasslist = () => {
       // Show first page, current page, and last page with ellipses
       const leftBound = Math.max(1, currentPage - 1);
       const rightBound = Math.min(totalPages, currentPage + 1);
-      
+
       if (leftBound > 1) {
         pageNumbers.push(1);
         if (leftBound > 2) {
           pageNumbers.push(-1); // -1 represents ellipsis
         }
       }
-      
+
       for (let i = leftBound; i <= rightBound; i++) {
         pageNumbers.push(i);
       }
-      
+
       if (rightBound < totalPages) {
         if (rightBound < totalPages - 1) {
           pageNumbers.push(-1); // -1 represents ellipsis
@@ -535,11 +537,11 @@ const Trailclasslist = () => {
         pageNumbers.push(totalPages);
       }
     }
-    
-    return pageNumbers;
-  };
 
-  const handleCloseModal = () => {
+    return pageNumbers;
+};
+
+const handleCloseModal = () => {
     setShowModal(false);
   };
 
@@ -550,26 +552,26 @@ const Trailclasslist = () => {
           <h2 className="text-[18px] font-semibold ">Trial Class Request</h2>
         </div>
         <div className="flex flex-1 mt-8 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none ">
-              <div className="flex">
-                <input
-                  type="text"
-                  placeholder="Search here..."
-                  className="border rounded-lg px-2 text-[12px] mr-4 shadow"
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-                <button className="flex items-center bg-gray-200 p-2 rounded-lg shadow text-[12px]">
-                  <FaFilter className="mr-2" /> Filter
-                </button>
-              </div>
-              <div className="flex">
-                <select className="border rounded-lg p-2 shadow text-[12px]">
-                  <option>Duration: Last month</option>
-                  <option>Duration: Last week</option>
-                  <option>Duration: Last year</option>
-                </select>
-              </div>
-            </div>
+          <div className="flex">
+            <input
+              type="text"
+              placeholder="Search here..."
+              className="border rounded-lg px-2 text-[12px] mr-4 shadow"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+            <button className="flex items-center bg-gray-200 p-2 rounded-lg shadow text-[12px]">
+              <FaFilter className="mr-2" /> Filter
+            </button>
+          </div>
+          <div className="flex">
+            <select className="border rounded-lg p-2 shadow text-[12px]">
+              <option>Duration: Last month</option>
+              <option>Duration: Last week</option>
+              <option>Duration: Last year</option>
+            </select>
+          </div>
+        </div>
         <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[580px] overflow-y-scroll scrollbar-none flex flex-col justify-between mt-4">
           <div>
             <div className="overflow-x-auto">
@@ -592,13 +594,13 @@ const Trailclasslist = () => {
                 </thead>
                 <tbody>
                   {filteredItems.length > 0 ? (
-                    filteredItems.map((item,index) => (
+                    filteredItems.map((item, index) => (
                       <tr
-                      key={item._id}
-                      className={`text-[9px] font-medium mt-0 ${
-                        index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                      }`}
-                    >
+                        key={item._id}
+                        className={`text-[9px] font-medium mt-0 ${
+                          index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                        }`}
+                      >
                         <td className="p-2 text-center">{item._id}</td>
                         <td className="p-2 text-center">
                           {item.student.studentFirstName}{" "}
@@ -651,7 +653,7 @@ const Trailclasslist = () => {
               {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of{" "}
               {filteredUsers.length} data
             </p>
-            
+
             <div className="flex items-center space-x-2">
               <button
                 onClick={goToPrevPage}
@@ -664,10 +666,12 @@ const Trailclasslist = () => {
               >
                 <FaChevronLeft size={8} />
               </button>
-              
-              {getPageNumbers().map((pageNumber, index) => (
+
+              {getPageNumbers().map((pageNumber, index) =>
                 pageNumber === -1 ? (
-                  <span key={index} className="px-2">...</span>
+                  <span key={index} className="px-2">
+                    ...
+                  </span>
                 ) : (
                   <button
                     key={index}
@@ -681,8 +685,8 @@ const Trailclasslist = () => {
                     {pageNumber}
                   </button>
                 )
-              ))}
-              
+              )}
+
               <button
                 onClick={goToNextPage}
                 disabled={currentPage === totalPages}
@@ -698,7 +702,6 @@ const Trailclasslist = () => {
           </div>
         </div>
       </div>
-
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -890,7 +893,6 @@ const Trailclasslist = () => {
           </div>
         </div>
       )}
-
     </BaseLayout4>
   );
 };
