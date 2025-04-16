@@ -82,6 +82,28 @@ const  ApplicantsList: React.FC = () => {
         positionApplied: "Islamic Studies Teacher",
         applicationDate: "2023-05-05",
         level: "2"
+      },
+      {
+        _id: "7",
+        candidateFirstName: "John",
+        candidateLastName: "Doe",
+        candidateEmail: "john.doe@example.com",
+        candidatePhoneNumber: "+1234567890",
+        applicationStatus: "NEWAPPLICATION",
+        positionApplied: "Arabic Teacher",
+        applicationDate: "2023-05-15",
+        level: "3"
+      },
+      {
+        _id: "8",
+        candidateFirstName: "Jane",
+        candidateLastName: "Smith",
+        candidateEmail: "jane.smith@example.com",
+        candidatePhoneNumber: "+1987654321",
+        applicationStatus: "SHORTLISTED",
+        positionApplied: "Quran Teacher",
+        applicationDate: "2023-05-10",
+        level: "4"
       }
   ];
 
@@ -125,17 +147,17 @@ const  ApplicantsList: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "NEWAPPLICATION":
-        return "bg-blue-500 text-white px-2 text-[10px]";
+        return "bg-blue-500 text-white px-2 text-[9px]";
       case "SHORTLISTED":
-        return "bg-[#1E8A26] text-white px-3 text-[10px]";
+        return "bg-[#79D67B] text-white px-3 text-[9px]";
       case "REJECTED":
-        return "bg-[#D12B36] text-white px-2 text-[10px]";
+        return "bg-[#D12B36] text-white px-2 text-[9px]";
       case "WAITING":
-        return "bg-yellow-500 text-white px-2 text-[10px]";
+        return "bg-yellow-500 text-white px-2 text-[9px]";
       case "APPROVED":
-        return "bg-green-500 text-white px-7 text-[10px]";
+        return "bg-green-500 text-white px-7 text-[9px]";
       default:
-        return "bg-gray-300 text-black px-2 text-[10px]";
+        return "bg-gray-300 text-black px-2 text-[9px]";
     }
   };
 
@@ -198,7 +220,7 @@ const  ApplicantsList: React.FC = () => {
     ? applicants 
     : applicants.filter(applicant => applicant.applicationStatus === activeTab);
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 8;
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -206,280 +228,238 @@ const  ApplicantsList: React.FC = () => {
 
   return (
     <div className=" mx-auto">
-      <div className=" mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-          <h1 className="text-xl md:text-2xl font-semibold text-slate-800 mt-5">
-            Applicants
-          </h1>
+      <div className="mx-auto">
+  <div className="bg-white shadow-md border border-gray-900 rounded-lg  flex h-[470px] mb-4">
+    <div className="w-full flex flex-col mt-3">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 space-y-3 md:space-y-0 px-4 mt-2">
+        <div className="flex flex-wrap gap-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-2 py-1 text-sm rounded-md font-semibold ${
+                activeTab === tab
+                  ? "text-white bg-[#012A4A]"
+                  : "text-[#05445E] hover:bg-slate-100"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
-
-      <div  className="bg-white shadow-md rounded-lg  flex border border-gray-300  h-[360px] mb-4">
-        <div className="p-4 justify-between flex flex-col">
-            <div>
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
-                <div className="flex flex-wrap gap-2 mb-0">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`px-3 py-1 md:px-3 md:py-1 rounded-md text-[13px] font-semibold ${
-                        activeTab === tab
-                          ? "text-[#fff] bg-[#012A4A] mt-2"
-                          : "text-[#05445E] py-4 hover:bg-slate-100 mt-4"
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto mr-20">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-slate-600 whitespace-nowrap">
-                      Sort by:
-                    </span>
-                    <select className="px-2 py-1 border rounded-md text-slate-600 bg-white text-[11px]">
-                      <option>Designation</option>
-                      <option>Date</option>
-                      <option>Status</option>
-                    </select>
-                  </div>
-                 
-                </div>
-              </div>
-
-              <div className="overflow-x-auto w-[1150px]">
-                <table className="table-auto w-[200px]">
-                  <thead className="text-[12px] font-bold">
-                    <tr className="bg-[#F4F5F7] py-6 rounded-lg mb-4">
-                      <th className="text-center px-2 py-2 font-semibold text-[#343942] whitespace-nowrap">
-                        Application Date
-                      </th>
-                      <th className="text-center px-2 py-2 font-semibold text-[#343942] whitespace-nowrap">
-                        Applicant Name
-                      </th>
-                      <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-                        Contact
-                      </th>
-                      <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-                        E-Mail
-                      </th>
-                      <th className="text-center px-4 py-2 font-semibold text-[#343942] whitespace-nowrap">
-                       Position Applied
-                    </th>
-                      <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-                        Resume
-                      </th>
-                      <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-                        Status
-                      </th>
-                      <th className="text-center px-2 py-2 font-semibold text-[#343942]">
-                        Level
-                      </th>
-                      <th className="text-center px-2 py-2 font-semibold text-[#343942]"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentApplicants.map((applicant, index) => (
-                      <tr
-                        key={applicant._id}
-                        className={`text-[11px] font-medium mt-2 ${
-                          index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                        }`}
-                      >
-                        <td className="px-4 py-1 text-center text-[#17243E]">
-                          {formatDate(applicant.applicationDate)}
-                        </td>
-                        <td className="px-4 py-1 text-center">
-                          <div className="flex items-center gap-3">
-                            <div className="h-4 w-4 rounded-full bg-purple-100 flex items-center justify-center">
-                              <span className="text-purple-600 font-medium whitespace-nowrap">
-                                {applicant.candidateFirstName.charAt(0)}
-                              </span>
-                            </div>
-                            <span className="font-medium text-slate-800">
-                              {applicant.candidateFirstName} {applicant.candidateLastName}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-1 text-center text-[#17243E]">
-                          {applicant.candidatePhoneNumber}
-                        </td>
-                        <td className="px-4 py-1 text-center text-[#17243E]">
-                          {applicant.candidateEmail}
-                        </td>
-                        <td className="px-4 py-1 text-center text-[9px]">
-                          {applicant.positionApplied}
-                        </td>
-                        <td className="px-4 py-1 text-center">
-                          <button className="text-[#17243E] hover:text-[#38619A] flex items-center">
-                            <FileText className="w-4 h-4 mr-2" />
-                            Resume
-                          </button>
-                        </td>
-                        <td className="px-4 py-1 text-center text-[12px]">
-  <span
-    className={`inline-block w-[90px] text-center px-3 py-1 rounded-full truncate ${getStatusColor(
-      applicant.applicationStatus
-    )}`}
-  >
-    {applicant.applicationStatus}
-  </span>
-</td>
-
-                        <td className="px-4 py-1 text-center">
-                          <div className="flex gap-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={`star-${star}`}
-                                className={`w-4 h-4 ${
-                                  (Number(applicant?.level) || 0) >= star
-                                    ? "text-[#FAAB3C] fill-[#68b806]"
-                                    : "text-[#F8D8AB] fill-[#f7f6f5]"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-4 py-1 text-center">
-                          <div className="relative">
-                            <button
-                              onClick={() => handleMenuClick(applicant._id)}
-                              className="hover:bg-gray-100 p-2 rounded-md"
-                            >
-                              <MoreHorizontal className="w-4 h-4 text-slate-600" />
-                            </button>
-                            {openMenuId === applicant._id && (
-                              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
-                                <button
-                                  className="block w-full px-4 py-2 text-left text-[12px] text-[#353232]"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleViewDetails(applicant)}
-                                  className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
-                                >
-                                  View Details
-                                </button>
-                                <button
-                                  onClick={() => setOpenMenuId(null)}
-                                  className="block w-full px-4 py-2 text-left text-[12px] text-red-600 hover:bg-gray-50"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div>
-              <div className="flex flex-col md:flex-row items-center justify-between px-24 py-2  space-y-4 md:space-y-0">
-                <div className="text-[10px] text-gray-600">
-                  Showing {startIndex + 1} -{" "}
-                  {Math.min(endIndex, filteredApplicants.length)} of{" "}
-                  {filteredApplicants.length} entries
-                </div>
-                <div className="flex space-x-2 text-[10px]">
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className={`px-2 py-1 rounded ${
-                      currentPage === 1
-                        ? "bg-gray-100 text-gray-400"
-                        : "bg-gray-200 hover:bg-gray-300"
-                    }`}
-                  >
-                    &lt;
-                  </button>
-
-                  {totalPages > 5 ? (
-                    <>
-                      <button
-                        onClick={() => setCurrentPage(1)}
-                        className={`px-2 py-1 rounded ${
-                          currentPage === 1
-                            ? "bg-[#1B2B65] text-white"
-                            : "bg-gray-200 hover:bg-gray-300"
-                        }`}
-                      >
-                        1
-                      </button>
-
-                      {currentPage > 3 && (
-                        <span className="px-2 py-1">...</span>
-                      )}
-
-                      {Array.from({ length: 3 }, (_, i) => currentPage - 1 + i)
-                        .filter((page) => page > 1 && page < totalPages)
-                        .map((page) => (
-                          <button
-                            key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`px-2 py-1 rounded ${
-                              currentPage === page
-                                ? "bg-[#1B2B65] text-white"
-                                : "bg-gray-200 hover:bg-gray-300"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        ))}
-
-                      {currentPage < totalPages - 2 && (
-                        <span className="px-2 py-1">...</span>
-                      )}
-
-                      <button
-                        onClick={() => setCurrentPage(totalPages)}
-                        className={`px-2 py-1 rounded ${
-                          currentPage === totalPages
-                            ? "bg-[#1B2B65] text-white"
-                            : "bg-gray-200 hover:bg-gray-300"
-                        }`}
-                      >
-                        {totalPages}
-                      </button>
-                    </>
-                  ) : (
-                    [...Array(totalPages)].map((_, index) => (
-                      <button
-                        key={index + 1}
-                        onClick={() => setCurrentPage(index + 1)}
-                        className={`px-2 py-1 rounded ${
-                          currentPage === index + 1
-                            ? "bg-[#1B2B65] text-white"
-                            : "bg-gray-200 hover:bg-gray-300"
-                        }`}
-                      >
-                        {index + 1}
-                      </button>
-                    ))
-                  )}
-
-                  <button
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                    className={`px-2 py-1 rounded ${
-                      currentPage === totalPages
-                        ? "bg-gray-100 text-gray-400"
-                        : "bg-gray-200 hover:bg-gray-300"
-                    }`}
-                  >
-                    &gt;
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-600 whitespace-nowrap">
+            Sort by:
+          </span>
+          <select className="px-2 py-1 border rounded-md text-slate-600 bg-white text-xs">
+            <option>Designation</option>
+            <option>Date</option>
+            <option>Status</option>
+          </select>
         </div>
       </div>
+
+      <div className="overflow-auto w-full h-[400px] ">
+        <table className="w-full text-xs">
+          <thead className="bg-[#F4F5F7] text-gray-700 sticky top-0 z-10">
+            <tr>
+              <th className="px-2 py-3 whitespace-nowrap">Date</th>
+              <th className="px-2 py-3 whitespace-nowrap">Name</th>
+              <th className="px-2 py-3 whitespace-nowrap">Contact</th>
+              <th className="px-2 py-3 whitespace-nowrap">E-Mail</th>
+              <th className="px-2 py-3 whitespace-nowrap">Position</th>
+              <th className="px-2 py-3 whitespace-nowrap">Resume</th>
+              <th className="px-2 py-3 whitespace-nowrap">Status</th>
+              <th className="px-2 py-3 whitespace-nowrap">Level</th>
+              <th className="px-2 py-3 whitespace-nowrap">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+  {currentApplicants.map((applicant, index) => (
+    <tr 
+      key={applicant._id} 
+      className={`border-b border-gray-300 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+    >
+      <td className="px-2 py-2 text-[#17243E] whitespace-nowrap text-center align-middle">
+        {formatDate(applicant.applicationDate)}
+      </td>
+      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
+          <span className="font-medium text-slate-800 truncate max-w-[100px]">
+            {applicant.candidateFirstName} {applicant.candidateLastName}
+          </span>
+      </td>
+      <td className="px-2 py-2 text-[#17243E] whitespace-nowrap text-center align-middle">
+        {applicant.candidatePhoneNumber}
+      </td>
+      <td className="px-2 py-2 text-[#17243E] whitespace-nowrap truncate max-w-[120px] text-center align-middle">
+        {applicant.candidateEmail}
+      </td>
+      <td className="px-2 py-2 whitespace-nowrap truncate max-w-[100px] text-center align-middle">
+        {applicant.positionApplied}
+      </td>
+      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
+        <button className="text-[#5482dd] hover:text-[#0b1421] flex items-center justify-center mx-auto">
+          <FileText className="w-3 h-3 mr-1" />
+          <span className="hidden sm:inline ">Resume</span>
+        </button>
+      </td>
+      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
+        <div className="flex justify-center">
+          <span
+            className={`inline-block px-3 py-1 rounded-full text-[9px] w-[100px] text-center ${getStatusColor(
+              applicant.applicationStatus
+            )}`}
+          >
+            {applicant.applicationStatus}
+          </span>
+        </div>
+      </td>
+      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
+        <div className="flex gap-0.5 justify-center">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={`star-${star}`}
+              className={`w-3 h-3 ${
+                (Number(applicant?.level) || 0) >= star
+                  ? "text-[#FAAB3C] fill-[#68b806]"
+                  : "text-[#F8D8AB] fill-[#f7f6f5]"
+              }`}
+            />
+          ))}
+        </div>
+      </td>
+      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
+        <div className="relative flex justify-center">
+          <button
+            onClick={() => handleMenuClick(applicant._id)}
+            className="hover:bg-gray-100 p-1 rounded-md"
+          >
+            <MoreHorizontal className="w-4 h-4 text-slate-600" />
+          </button>
+          {openMenuId === applicant._id && (
+            <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-10">
+              <button className="block w-full px-3 py-1 text-left text-xs text-[#353232]">
+                Edit
+              </button>
+              <button
+                onClick={() => handleViewDetails(applicant)}
+                className="block w-full px-3 py-1 text-left text-xs text-slate-600"
+              >
+                View Details
+              </button>
+              <button
+                onClick={() => setOpenMenuId(null)}
+                className="block w-full px-3 py-1 text-left text-xs text-red-600 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      </td>
+    </tr>
+  ))}
+</tbody>
+        </table>
+      </div>
+
+      <div className="flex flex-col md:flex-row items-center justify-between px-4 py-2 space-y-2 md:space-y-0 border-t mt-auto">
+        <div className="text-xs text-gray-600">
+          Showing {startIndex + 1} -{" "}
+          {Math.min(endIndex, filteredApplicants.length)} of{" "}
+          {filteredApplicants.length} entries
+        </div>
+        <div className="flex space-x-1">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className={`px-2 py-1 rounded text-xs ${
+              currentPage === 1
+                ? "bg-gray-100 text-gray-400"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
+          >
+            &lt;
+          </button>
+
+          {totalPages > 5 ? (
+            <>
+              <button
+                onClick={() => setCurrentPage(1)}
+                className={`px-2 py-1 rounded text-xs ${
+                  currentPage === 1
+                    ? "bg-[#1B2B65] text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              >
+                1
+              </button>
+
+              {currentPage > 3 && <span className="px-1 py-1">...</span>}
+
+              {Array.from({ length: 3 }, (_, i) => currentPage - 1 + i)
+                .filter((page) => page > 1 && page < totalPages)
+                .map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-2 py-1 rounded text-xs ${
+                      currentPage === page
+                        ? "bg-[#1B2B65] text-white"
+                        : "bg-gray-200 hover:bg-gray-300"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+              {currentPage < totalPages - 2 && <span className="px-1 py-1">...</span>}
+
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                className={`px-2 py-1 rounded text-xs ${
+                  currentPage === totalPages
+                    ? "bg-[#1B2B65] text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              >
+                {totalPages}
+              </button>
+            </>
+          ) : (
+            [...Array(totalPages)].map((_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => setCurrentPage(index + 1)}
+                className={`px-2 py-1 rounded text-xs ${
+                  currentPage === index + 1
+                    ? "bg-[#1B2B65] text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              >
+                {index + 1}
+              </button>
+            ))
+          )}
+
+          <button
+            onClick={() =>
+              setCurrentPage((p) => Math.min(totalPages, p + 1))
+            }
+            disabled={currentPage === totalPages}
+            className={`px-2 py-1 rounded text-xs ${
+              currentPage === totalPages
+                ? "bg-gray-100 text-gray-400"
+                : "bg-gray-200 hover:bg-gray-300"
+            }`}
+          >
+            &gt;
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* Add Applicant Modal */}
       {showAddApplicant && (
