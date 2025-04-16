@@ -220,7 +220,7 @@ const  ApplicantsList: React.FC = () => {
     ? applicants 
     : applicants.filter(applicant => applicant.applicationStatus === activeTab);
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 7;
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -229,7 +229,7 @@ const  ApplicantsList: React.FC = () => {
   return (
     <div className=" mx-auto">
       <div className="mx-auto">
-  <div className="bg-white shadow-md border border-gray-900 rounded-lg  flex h-[470px] mb-4">
+  <div className="bg-white shadow-md border border-gray-900 rounded-lg  flex h-[430px] mb-4">
     <div className="w-full flex flex-col mt-3">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 space-y-3 md:space-y-0 px-4 mt-2">
         <div className="flex flex-wrap gap-1">
