@@ -1,5 +1,16 @@
 "use client";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  TooltipProps,
+  CartesianGrid,
+  Cell,
+} from "recharts";
+import { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 
 const data = [
   { name: "Total Students", value: 100, color: "#002c5f" },
@@ -9,16 +20,38 @@ const data = [
   { name: "Students on Break", value: 60, color: "#007BFF" },
 ];
 
+// ✅ Type-safe tooltip component
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: TooltipProps<ValueType, NameType>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-gray-200 rounded p-1 text-[10px] shadow-sm">
+        <p className="text-[10px] font-medium">{`${label}: ${payload[0].value}`}</p>
+      </div>
+    );
+  }
+
+  return null;
+};
+
 const StudentsRecord = () => {
   return (
     <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 w-[500px] h-[250px]">
-      <h2 className="text-lg font-semibold mb-4 text-gray-700">Student Records</h2>
+      <h2 className="text-lg font-semibold mb-4 text-gray-700">
+        Student Records
+      </h2>
       <div className="flex">
         {/* Legend */}
         <div className="space-y-4 mr-8">
           {data.map((item) => (
             <div key={item.name} className="flex items-center space-x-3">
-              <div className="w-4 h-4 rounded-full" style={{ background: item.color }}></div>
+              <div
+                className="w-4 h-4 rounded-full"
+                style={{ background: item.color }}
+              ></div>
               <span className="text-sm text-gray-600">{item.name}</span>
             </div>
           ))}
@@ -31,7 +64,10 @@ const StudentsRecord = () => {
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis dataKey="name" axisLine={false} tick={false} />
               <YAxis hide />
-              <Tooltip cursor={{ fill: "transparent" }} />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: "transparent" }}
+              />
               <Bar dataKey="value" radius={[5, 5, 0, 0]}>
                 {data.map((entry, index) => (
                   <Cell key={index} fill={entry.color} />

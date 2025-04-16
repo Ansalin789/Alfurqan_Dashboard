@@ -256,9 +256,9 @@ const Expenses = () => {
 </div>
 
 <br/>
-<div className="flex justify-between items-start mb-6 flex-wrap">
+<div className="flex justify-between items-start mb-6 flex-wrap ml-3">
   {/* Cards Section */}
-  <div className="flex gap-6 flex-wrap">
+  <div className="flex gap-10 flex-wrap">
     <div className="w-[240px] h-[120px] p-5 rounded-xl bg-[#304DAF] text-white shadow-md">
       <h4 className="text-sm mb-2 opacity-90">Total Expenses</h4>
       <h1 className="text-xl font-bold">$ 120,000</h1>
@@ -296,7 +296,12 @@ const Expenses = () => {
     </div>
   </div>
 
-  {/* Duration Filter */}
+ 
+</div>
+
+
+        <div className="flex justify-end mb-2">
+           {/* Duration Filter */}
   <div className="flex items-center rounded border border-gray-300 bg-white px-4 py-[5px] mt-2 md:mt-0">
     <label
       htmlFor="duration"
@@ -314,11 +319,7 @@ const Expenses = () => {
       <option>Last 3 months</option>
       <option>Last year</option>
     </select>
-  </div>
-</div>
-
-
-        <div className="flex justify-end mb-2">
+  </div> &nbsp;&nbsp;&nbsp;
           <button
             className="bg-[#0F3659] hover:bg-[#0c2b46] text-white text-[10px] font-medium px-2 py-2 rounded-lg shadow-sm transition flex items-center mr-3 "
             onClick={() => setIsPopupOpen(true)}
