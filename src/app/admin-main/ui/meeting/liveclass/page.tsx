@@ -204,7 +204,7 @@ function LiveClass() {
   const categories = ["knowledge of students and content", "Assessment of Students", " Communication and Collaboration","Professionalism"];
 
    const handlelogout =()=>{
-    router.push("/admin-main/ui/meeting/liveclass");
+    router.push("/admin-main/ui/meeting");
    }
 
   return (
