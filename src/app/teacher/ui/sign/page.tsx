@@ -2,7 +2,7 @@
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { GrApple } from "react-icons/gr";
-import { useRouter } from "next/navigation";
+import { useRouter , useSearchParams  } from "next/navigation";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +19,9 @@ const slides = [
   },
 ];
 const SignIn: React.FC = () => {
+ 
+
+const searchParams = useSearchParams();
   const [emailNotExist, setEmailNotExist] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [username, setUsername] = useState("");
@@ -40,6 +43,11 @@ const SignIn: React.FC = () => {
         setShowError(false);
       }, 5000); // Hide the error after 5 seconds
     }
+    const user = searchParams.get("username");
+    const pass = searchParams.get("password");
+  
+    if (user) setUsername(user);
+    if (pass) setPassword(pass);
   }, [error]);
   const signIn = async (username: string, password: string) => {
     try {

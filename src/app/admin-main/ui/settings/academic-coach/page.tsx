@@ -2,16 +2,17 @@
 
 import BaseLayout4 from '@/components/BaseLayout4';
 import { useState } from 'react';
-import { FaRegSquare, FaRegCheckSquare } from 'react-icons/fa';
-
+import { FaRegCheckSquare, FaRegSquare } from 'react-icons/fa';
+type PermissionType = 'read' | 'write' | 'delete';
 const AcademicCoachModuleAccess = () => {
   const [selectedModules, setSelectedModules] = useState<{ [key: string]: boolean }>({});
   const [permissions, setPermissions] = useState<{ [key: string]: { read: boolean; write: boolean; delete: boolean } }>({});
 
   const modules = [
     'Dashboard',
-    'Recruitment',
-    'Meeting & Training',
+    'Scheduled Evaluation',
+    'Schedule Trial sessions',
+    'Students',
     'Teachers',
     'Messages',
     'Support',
@@ -21,72 +22,66 @@ const AcademicCoachModuleAccess = () => {
     setSelectedModules((prev) => ({ ...prev, [module]: !prev[module] }));
   };
 
-  const togglePermission = (module: string, permission: 'read' | 'write' | 'delete') => {
+  // ✅ Now uses the alias
+  const togglePermission = (module: string, type: PermissionType) => {
     setPermissions((prev) => ({
       ...prev,
-      [module]: { ...prev[module], [permission]: !prev[module]?.[permission] },
+      [module]: {
+        ...prev[module],
+        [type]: !prev[module]?.[type],
+      },
     }));
   };
 
   return (
     <BaseLayout4>
-      <div className="flex items-center justify-center mx-auto">
-        <div className="">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 text-left py-4">Academic Coach Module Access</h2>
-          <div className="bg-white p-10 rounded-3xl shadow-lg">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b">
-                  <th className="p-4 px-32 underline">Modules</th>
-                  <th className="p-4 px-16 text-center">Read</th>
-                  <th className="p-4 px-16 text-center">Write</th>
-                  <th className="p-4 px-16 text-center">Delete</th>
+      <div className="w-full min-h-screen p-5 flex flex-col items-center">
+        <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
+          Admin Module Access
+        </h1>
+
+        <div className=" bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
+        <table className="w-full text-left min-w-[900px]">
+            <thead>
+              <tr className="border-b text-[#101828] font-medium text-sm">
+                <th className="p-3">Modules</th>
+                <th className="p-3 text-center">Read</th>
+                <th className="p-3 text-center">Write</th>
+                <th className="p-3 text-center">Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {modules.map((module) => (
+                <tr key={module} className="border-t hover:bg-gray-50 transition">
+                  <td className="p-4 flex items-center space-x-3">
+                    <button onClick={() => toggleModule(module)}>
+                      {selectedModules[module] ? (
+                        <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
+                      ) : (
+                        <FaRegSquare className="text-gray-400 text-sm" />
+                      )}
+                    </button>
+                    <span className="text-[12px] text-[#344054]">{module}</span>
+                  </td>
+                  {['read', 'write', 'delete'].map((perm) => (
+                    <td key={perm} className="p-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={permissions[module]?.[perm as 'read' | 'write' | 'delete'] || false}
+                        onChange={() => togglePermission(module, perm as 'read' | 'write' | 'delete')}
+                        className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
+                      />
+                    </td>
+                  ))}
                 </tr>
-              </thead>
-              <tbody>
-                {modules.map((module) => (
-                  <tr key={module} className="border-t">
-                    <td className="p-4 flex items-center space-x-3">
-                      <button onClick={() => toggleModule(module)}>
-                        {selectedModules[module] ? (
-                          <FaRegCheckSquare className="text-[#fff] bg-[#012A4A] text-lg rounded-xl" />
-                        ) : (
-                          <FaRegSquare className="text-[#D0D5DD] text-lg rounded-xl" />
-                        )}
-                      </button>
-                      <span className="text-gray-700">{module}</span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <input
-                        type="checkbox"
-                        checked={permissions[module]?.read || false}
-                        onChange={() => togglePermission(module, 'read')}
-                        className="h-4 w-4 text-[#012A4A] rounded-xl border-[#D0D5DD]"
-                      />
-                    </td>
-                    <td className="p-4 text-center">
-                      <input
-                        type="checkbox"
-                        checked={permissions[module]?.write || false}
-                        onChange={() => togglePermission(module, 'write')}
-                        className="h-4 w-4 text-[#012A4A] rounded-xl border-[#D0D5DD]"
-                      />
-                    </td>
-                    <td className="p-4 text-center">
-                      <input
-                        type="checkbox"
-                        checked={permissions[module]?.delete || false}
-                        onChange={() => togglePermission(module, 'delete')}
-                        className="h-4 w-4 text-[#012A4A] rounded-xl border-[#D0D5DD]"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex justify-center mt-6">
-            <button className="bg-[#012A4A] text-white px-6 py-2 rounded-lg text-lg font-semibold hover:bg-[#040c11] shadow-md">Submit</button>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="flex justify-center mt-4">
+            <button className="bg-[#012A4A] hover:bg-[#011d33] text-white font-sm px-4 py-1 rounded-lg shadow-md transition">
+              Submit
+            </button>
           </div>
         </div>
       </div>

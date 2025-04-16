@@ -8,7 +8,6 @@ import Dashboard from "@/app/admin-main/components/dash";
 import BaseLayout4 from "@/components/BaseLayout4";
 // Define the return type of the getAllUsers function
 
-
 const evaluation: EvaluationItem[] = [
   {
     paymentLink: "https://payment.example.com/link1",
@@ -121,8 +120,6 @@ interface TransformedUser {
   paymentLink: string;
 }
 
-
-
 const TrailManagement = () => {
   const [users, setUsers] = useState<TransformedUser[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -138,9 +135,7 @@ const TrailManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<FormData | null>(null);
 
-
   console.log(setItemsPerPage);
-
 
   const router = useRouter();
   const handleSyncClick = () => {
@@ -266,7 +261,6 @@ const TrailManagement = () => {
     );
   };
 
-
   useEffect(() => {
     Modal.setAppElement("body");
   }, []);
@@ -285,7 +279,6 @@ const TrailManagement = () => {
   useEffect(() => {
     console.log("Current users data:", users);
   }, [users]);
-
 
   interface FormData {
     _id: string;
@@ -423,18 +416,12 @@ const TrailManagement = () => {
             <h2 className="text-[18px]  font-semibold">
               Scheduled Trail Classes
             </h2>
-            <button
-              className="bg-gray-800 text-white p-[4px] rounded-full shadow-2xl"
-              onClick={handleSyncClick}
-            >
-              <FaSyncAlt />
-            </button>
           </div>
         </div>
         <div className="">
           <Dashboard />
         </div>
-        <div className="">
+        <div className="p-4 -ml-4">
           <div className="flex justify-between items-center p-1">
             <div className="flex flex-1 mb-2 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
               <div className="flex">
@@ -452,9 +439,8 @@ const TrailManagement = () => {
                   <FaFilter className="mr-2" /> Filter
                 </button>
               </div>
-              <div className="flex">
-           
-                <select className="border rounded-lg p-2 shadow text-[12px]">
+              <div className="flex ">
+                <select className="border rounded-lg p-2 shadow text-[12px] appearance-none bg-white">
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
                   <option>Duration: Last year</option>
@@ -462,206 +448,206 @@ const TrailManagement = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] h-full  flex flex-col justify-between">
-              <table
-                  className="min-w-full rounded-lg shadow bg-[#fff]"
-                  style={{ width: "100%", tableLayout: "fixed" }}
-                >
-                  <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
-                    <tr>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ wordWrap: "break-word", width: "26%" }}
+            <table
+              className="min-w-full rounded-lg shadow bg-[#fff]"
+              style={{ width: "100%", tableLayout: "fixed" }}
+            >
+              <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
+                <tr>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ wordWrap: "break-word", width: "26%" }}
+                  >
+                    Trial ID
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ wordWrap: "break-word", width: "22%" }}
+                  >
+                    Student Name
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ wordWrap: "break-word", width: "15%" }}
+                  >
+                    Mobile
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "12%" }}
+                  >
+                    Country
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ wordWrap: "break-word", width: "13%" }}
+                  >
+                    Course
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ wordWrap: "break-word", width: "18%" }}
+                  >
+                    Preferred Teacher
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ wordWrap: "break-word", width: "18%" }}
+                  >
+                    Assigned Teacher
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "8%" }}
+                  >
+                    Time
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ wordWrap: "break-word", width: "25%" }}
+                  >
+                    Class Status
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ wordWrap: "break-word", width: "15%" }}
+                  >
+                    Payment Status
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ wordWrap: "break-word", width: "13%" }}
+                  >
+                    Student Status
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "10%" }}
+                  >
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {evaluation.length > 0 ? (
+                  evaluation.slice(0, 5).map((item, index) => (
+                    <tr
+                      key={item._id}
+                      className={`text-[9px] font-medium mt-0 ${
+                        index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                      }`}
+                    >
+                      <td
+                        className="p-2 text-center"
+                        style={{ wordWrap: "break-word" }}
                       >
-                        Trial ID
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ wordWrap: "break-word", width: "22%" }}
+                        {item._id}
+                      </td>
+                      <td
+                        className="p-2 text-center"
+                        style={{ wordWrap: "break-word" }}
                       >
-                        Student Name
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ wordWrap: "break-word", width: "15%" }}
+                        {item.student.studentFirstName}{" "}
+                        {item.student.studentLastName}
+                      </td>
+                      <td
+                        className="p-2 text-center"
+                        style={{ wordWrap: "break-word" }}
                       >
-                        Mobile
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ width: "12%" }}
+                        {item.student.studentPhone}
+                      </td>
+                      <td
+                        className="p-2 text-center"
+                        style={{ wordWrap: "break-word" }}
                       >
-                        Country
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ wordWrap: "break-word", width: "13%" }}
+                        {item.student.studentCountry}
+                      </td>
+                      <td
+                        className="p-2 text-center"
+                        style={{ wordWrap: "break-word" }}
                       >
-                        Course
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ wordWrap: "break-word", width: "18%" }}
+                        {item.student.learningInterest}
+                      </td>
+                      <td
+                        className="p-2 text-center"
+                        style={{ wordWrap: "break-word" }}
                       >
-                        Preferred Teacher
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ wordWrap: "break-word", width: "18%" }}
+                        {item.student.preferredTeacher}
+                      </td>
+                      <td
+                        className="p-2 text-center"
+                        style={{ wordWrap: "break-word" }}
                       >
-                        Assigned Teacher
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ width: "8%" }}
+                        {item.assignedTeacher}
+                      </td>
+                      <td
+                        className="p-2 text-center"
+                        style={{ wordWrap: "break-word" }}
                       >
-                        Time
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ wordWrap: "break-word", width: "25%" }}
+                        {item.student.preferredFromTime}
+                      </td>
+                      <td
+                        className="p-2 text-center"
+                        style={{ minWidth: "100px" }}
                       >
-                        Class Status
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ wordWrap: "break-word", width: "15%" }}
-                      >
-                        Payment Status
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ wordWrap: "break-word", width: "13%" }}
-                      >
-                        Student Status
-                      </th>
-                      <th
-                        className="p-3 py-5 font-semibold text-center"
-                        style={{ width: "10%" }}
-                      >
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  {evaluation.length > 0 ? (
-                    evaluation.slice(0, 5).map((item, index) => (
-                        <tr
-                          key={item._id}
-                          className={`text-[9px] font-medium mt-0 ${
-                            index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                        <span
+                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
+                            item.trialClassStatus === "COMPLETED"
+                              ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
+                              : "bg-green-100 text-green-800 border border-green-900 px-2"
                           }`}
                         >
-                          <td
-                            className="p-2 text-center"
-                            style={{ wordWrap: "break-word" }}
-                          >
-                            {item._id}
-                          </td>
-                          <td
-                            className="p-2 text-center"
-                            style={{ wordWrap: "break-word" }}
-                          >
-                            {item.student.studentFirstName} {item.student.studentLastName}
-                          </td>
-                          <td
-                            className="p-2 text-center"
-                            style={{ wordWrap: "break-word" }}
-                          >
-                            {item.student.studentPhone}
-                          </td>
-                          <td
-                            className="p-2 text-center"
-                            style={{ wordWrap: "break-word" }}
-                          >
-                            {item.student.studentCountry}
-                          </td>
-                          <td
-                            className="p-2 text-center"
-                            style={{ wordWrap: "break-word" }}
-                          >
-                            {item.student.learningInterest}
-                          </td>
-                          <td
-                            className="p-2 text-center"
-                            style={{ wordWrap: "break-word" }}
-                          >
-                            {item.student.preferredTeacher}
-                          </td>
-                          <td
-                            className="p-2 text-center"
-                            style={{ wordWrap: "break-word" }}
-                          >
-                            {item.assignedTeacher}
-                          </td>
-                          <td
-                            className="p-2 text-center"
-                            style={{ wordWrap: "break-word" }}
-                          >
-                            {item.student.preferredFromTime}
-                          </td>
-                          <td
-                            className="p-2 text-center"
-                            style={{ minWidth: "100px" }}
-                          >
-                            <span
-                              className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
-                                item.trialClassStatus === "COMPLETED"
-                                  ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                  : "bg-green-100 text-green-800 border border-green-900 px-2"
-                              }`}
-                            >
-                              {item.paymentStatus}
-                            </span>
-                          </td>
-                          <td className="p-2 text-center">
-                            <span
-                              className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
-                                item.paymentStatus === "PAID"
-                                  ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-5"
-                                  : "bg-green-100 text-green-800 border border-green-900 px-3"
-                              }`}
-                            >
-                              {item.paymentStatus}
-                            </span>
-                          </td>
-                          <td className="p-2 text-center">
-                            <span
-                              className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
-                                item.student.status === "Active"
-                                  ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                  : "bg-green-100 text-green-800 border border-green-900 px-3"
-                              }`}
-                            >
-                              {item.student.status}
-                            </span>
-                          </td>
-                          <td className="p-2 text-center">
-                            <button
-                              onClick={() => handleClick(item._id.toString())}
-                              className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
-                            >
-                              <FaEdit size={10} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={12} className="p-4 text-center">
-                          No data available
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                          {item.paymentStatus}
+                        </span>
+                      </td>
+                      <td className="p-2 text-center">
+                        <span
+                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
+                            item.paymentStatus === "PAID"
+                              ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-5"
+                              : "bg-green-100 text-green-800 border border-green-900 px-3"
+                          }`}
+                        >
+                          {item.paymentStatus}
+                        </span>
+                      </td>
+                      <td className="p-2 text-center">
+                        <span
+                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
+                            item.student.status === "Active"
+                              ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
+                              : "bg-green-100 text-green-800 border border-green-900 px-3"
+                          }`}
+                        >
+                          {item.student.status}
+                        </span>
+                      </td>
+                      <td className="p-2 text-center">
+                        <button
+                          onClick={() => handleClick(item._id.toString())}
+                          className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
+                        >
+                          <FaEdit size={10} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={12} className="p-4 text-center">
+                      No data available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
 
           <Pagination />
         </div>
       </div>
-  
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -853,7 +839,6 @@ const TrailManagement = () => {
           </div>
         </div>
       )}
-
     </BaseLayout4>
   );
 };

@@ -304,7 +304,7 @@ const TeachersStudents = () => {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4">
+    <div className="bg-white rounded-lg shadow-sm p-4 ">
       <h2 className="text-[15px] font-semibold text-gray-800 mb-3">
         Teachers - Students
       </h2>
@@ -314,7 +314,7 @@ const TeachersStudents = () => {
       </div>
 
       {/* Scrollable List */}
-      <div className="max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      <div className="max-h-48 p-4 overflow-y-auto pr-2 scrollbar-none scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         {teachers.map((teacher) => (
           <div key={teacher.id} className="flex items-center py-2 border-b">
             {/* Avatar */}
