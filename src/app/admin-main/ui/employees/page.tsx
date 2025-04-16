@@ -583,272 +583,267 @@ const Page = () => {
 
   return (
     <BaseLayout4>
-    <div className="min-h-screen w-full px-4 py-4 mr-10">
-      <div className="max-w-7xl w-full mx-auto">
-        <div className="p-0 flex items-center justify-between">
-          <div className="relative">
-            <h2 className="text-xl font-semibold mb-4">Employees</h2>
-          </div>
+   <div className="h-full w-full px-4 py-4 md:mr-10">
+  <div className="max-w-7xl w-full mx-auto">
+    {/* Header Section */}
+    <div className="p-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+      <div className="relative">
+        <h2 className="text-lg sm:text-xl font-semibold">Employees</h2>
+      </div>
 
-          <div className="flex items-center gap-4">
-            <button className="p-2 bg-[#fff] rounded-lg shadow hover:bg-gray-200">
-              <Sun size={16} className="text-black" />
-            </button>
-            <button className="p-2 bg-[#fff] rounded-lg shadow hover:bg-gray-200">
-              <Bell size={16} className="text-black" />
-            </button>
-            <Link href="#">
-              <img
-                src="/assets/images/student-profile.png"
-                alt="Profile"
-                className="w-8 h-8 rounded-lg border border-gray-300 shadow"
-              />
-            </Link>
-          </div>
-        </div>
-        <div className="flex space-x-4 border-b py-2">
-          <button
-            className={`px-4 py-2 text-[14px] font-semibold ${
-              activeTab === "teachers"
-                ? "bg-[#012A4A] text-white rounded-lg"
-                : ""
-            }`}
-            onClick={() => setActiveTab("teachers")}
-          >
-            Teachers
-          </button>
-          <button
-            className={`px-4 py-2 text-[14px] font-semibold ${
-              activeTab === "otheremployees"
-                ? "bg-[#012A4A] text-white rounded-lg"
-                : ""
-            }`}
-            onClick={() => setActiveTab("otheremployees")}
-          >
-            Other Employees
-          </button>
-          <button
-            className={`px-4 py-2 text-[14px] font-semibold ${
-              activeTab === "recruitment"
-                ? "bg-[#012A4A] text-white rounded-lg"
-                : ""
-            }`}
-            onClick={() => setActiveTab("recruitment")}
-          >
-            Recruitment
-          </button>
-          <button
-            className={`px-4 py-2 text-[14px] font-semibold ${
-              activeTab === "leave" ? "bg-[#012A4A] text-white rounded-lg" : ""
-            }`}
-            onClick={() => setActiveTab("leave")}
-          >
-            Leave
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        <div className="w-full py-6">
-  {activeTab === "teachers" && (
-    <div className="flex flex-col gap-6 w-full overflow-y-auto scrollbar-none ">
-      <main className="w-full">
-        {/* Charts & Stats Section */}
-        <div className="flex flex-wrap gap-11 w-full">
-          {/* Teachers Records */}
-          <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 min-w-[580px] max-w-[650px] h-[280px]">
-  <h2 className="text-[16px] font-semibold text-gray-800 mb-4">Teachers Record</h2>
-  <div className="flex  items-center">
-    <div className="space-y-6 text-xs">
-      <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-[#012A4A]"></div>
-        <span>Total Teachers</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-[#6D5DD3]"></div>
-        <span>Active Teachers</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-[#00CFFF]"></div>
-        <span>Inactive Teachers</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="w-3 h-3 rounded-full bg-[#007BFF]"></div>
-        <span>Teachers on Leave</span>
+      <div className="flex items-center gap-4">
+        <button className="p-2 bg-white rounded-lg shadow hover:bg-gray-200">
+          <Sun size={16} className="text-black" />
+        </button>
+        <button className="p-2 bg-white rounded-lg shadow hover:bg-gray-200">
+          <Bell size={16} className="text-black" />
+        </button>
+        <Link href="#">
+          <img
+            src="/assets/images/student-profile.png"
+            alt="Profile"
+            className="w-8 h-8 rounded-lg border border-gray-300 shadow"
+          />
+        </Link>
       </div>
     </div>
-    <div className="flex-1 h-[230px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={barData} barSize={40}>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis dataKey="name" axisLine={false} tick={false} />
-          <YAxis hide />
-          <Tooltip cursor={{ fill: "transparent" }} />
-          <Bar dataKey="value" radius={[5, 5, 0, 0]}>
-            {barData.map((entry, index) => (
-              <Cell key={index} fill={entry.color} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+
+    {/* Tab Navigation */}
+    <div className="flex flex-wrap gap-2 sm:space-x-4 border-b py-2 overflow-x-auto">
+      <button
+        className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
+          activeTab === "teachers"
+            ? "bg-[#012A4A] text-white rounded-lg"
+            : ""
+        }`}
+        onClick={() => setActiveTab("teachers")}
+      >
+        Teachers
+      </button>
+      <button
+        className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
+          activeTab === "otheremployees"
+            ? "bg-[#012A4A] text-white rounded-lg"
+            : ""
+        }`}
+        onClick={() => setActiveTab("otheremployees")}
+      >
+        Other Employees
+      </button>
+      <button
+        className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
+          activeTab === "recruitment"
+            ? "bg-[#012A4A] text-white rounded-lg"
+            : ""
+        }`}
+        onClick={() => setActiveTab("recruitment")}
+      >
+        Recruitment
+      </button>
+      <button
+        className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
+          activeTab === "leave" ? "bg-[#012A4A] text-white rounded-lg" : ""
+        }`}
+        onClick={() => setActiveTab("leave")}
+      >
+        Leave
+      </button>
     </div>
-  </div>
-</div>
 
-
-  {/* Gender Chart */}
-  <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-[280px] h-[280px] flex flex-col items-center  relative">
-  <h2 className="text-[16px] font-semibold text-gray-800 self-start">Gender</h2>
-  <div className="relative w-full h-[170px]">
-    <ResponsiveContainer width="100%" height="100%">
-      <PieChart>
-        <Pie
-          data={genderData}
-          dataKey="value"
-          cx="50%"
-          cy="90%"
-          startAngle={180}
-          endAngle={0}
-          innerRadius={70}
-          outerRadius={90}
-        >
-          {genderData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color} />
-          ))}
-        </Pie>
-      </PieChart>
-    </ResponsiveContainer>
-
-    {/* Needle - static for now */}
-    <div className="absolute left-1/2 bottom-[25px] w-1 h-[45px] bg-[#00CFFF] transform -translate-x-1/2 rotate-[40deg] origin-bottom rounded-sm"></div>
-  </div>
-
-  {/* Labels */}
-  <div className="flex justify-between w-full px-6 text-gray-700 text-[14px] mb-5">
-    <div className="flex flex-col items-center">
-      <span className="text-[18px] font-bold">40%</span>
-      <span className="text-[12px]">Female</span>
-      <div className="w-10 h-1 bg-[#FF82F5] mt-1 rounded-full"></div>
-    </div>
-    <div className="flex flex-col items-center">
-      <span className="text-[18px] font-bold">60%</span>
-      <span className="text-[12px]">Male</span>
-      <div className="w-10 h-1 bg-[#00CFFF] mt-1 rounded-full"></div>
-    </div>
-  </div>
-</div>
-
-
-
-
-  {/* Countries Block */}
-  <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-[280px] h-[280px] space-y-3">
-  <h2 className="text-[16px] font-semibold text-gray-800">Countries</h2>
-  {countriesData.map((country, i) => (
-    <div key={i} className="flex items-center gap-2">
-      <img src={country.flag} alt={country.name} className="w-5 h-5 rounded-full" />
-      <div className="w-full">
-        <div className="flex justify-between text-[13px] font-medium text-gray-800">
-          <span>{country.name}</span>
-          <span className="text-[#809FB8]">{country.value.toLocaleString()}</span>
-        </div>
-        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-          <div
-            className="h-2 bg-[#012A4A] rounded-full"
-            style={{ width: `${(country.value / maxValue) * 100}%` }}
-          ></div>
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
-
-        </div>
-  
-
-        {/* Search & Cards Section */}
-        <div className="mt-6 w-full">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-4">
-            <input
-              type="text"
-              placeholder="Search here..."
-              className="border rounded-lg px-2 py-2 text-sm shadow w-full lg:w-1/3"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold">Duration:</span>
-              <select className="border rounded-lg p-2 text-sm shadow">
-                <option>Last month</option>
-                <option>Last week</option>
-                <option>Last year</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Teacher Cards */}
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-7 max-h-[300px] ">
-            {teachers
-              .filter(
-                (teacher) =>
-                  teacher.userName
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase()) ||
-                  teacher.email
-                    .toLowerCase()
-                    .includes(searchQuery.toLowerCase())
-              )
-              .map((teacher) => (
-                <div
-                  key={teacher._id}
-                  className="bg-white shadow-md rounded-lg p-5"
-                >
-                  <div className="flex  items-center">
-                    <Image
-                      src="/assets/images/proff.jpg"
-                      alt="Teacher"
-                      className="w-10 h-10 ml-[80px] mt-3 rounded-full"
-                      width={40}
-                      height={40}
-                    />
-                  </div>
-                  <div className="mt-3 text-center">
-                    <h3 className="text-sm mt-3 font-semibold text-[#223857]">
-                      {teacher.userName}
-                    </h3>
-                    <p className="text-xs mt-3 text-[#717579]">
-                      Level: {teacher.level}
-                    </p>
-                    <p className="text-xs mt-1 text-[#717579]">{teacher.subject}</p>
-                    <div className="flex flex-col justify-center gap-3 px-5 mt-2">
-                      <button
-                        className="text-[12px] bg-[#c95b45] text-white px-2 py-1 rounded-lg"
-                        onClick={() => handlePortalAccess(teacher._id)}
-                      >
-                        Portal Access
-                      </button>
-                      <button
-                        className="text-[12px] bg-[#223857] text-white px-2 py-1 rounded-lg"
-                        onClick={() => handleViewTeacher(teacher._id)}
-                      >
-                        View Profile
-                      </button>
+    {/* Tab Content */}
+    <div className="w-full py-6">
+      {activeTab === "teachers" && (
+        <div className="flex flex-col gap-6 w-full ">
+         <div className="h-[600px] overflow-y-auto scrollbar-none">
+         <div className="flex flex-col lg:flex-row gap-11 min-w-[800px]">
+              {/* Teachers Records */}
+              <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full lg:min-w-[450px] lg:max-w-[580px] h-[280px]">
+                <h2 className="text-[16px] font-semibold text-gray-800 mb-4">Teachers Record</h2>
+                <div className="flex items-center">
+                  <div className="space-y-6 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-[#012A4A]"></div>
+                      <span>Total Teachers</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-[#6D5DD3]"></div>
+                      <span>Active Teachers</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-[#00CFFF]"></div>
+                      <span>Inactive Teachers</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-[#007BFF]"></div>
+                      <span>Teachers on Leave</span>
                     </div>
                   </div>
+                  <div className="flex-1 h-[230px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={barData} barSize={40}>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                        <XAxis dataKey="name" axisLine={false} tick={false} />
+                        <YAxis hide />
+                        <Tooltip cursor={{ fill: "transparent" }} />
+                        <Bar dataKey="value" radius={[5, 5, 0, 0]}>
+                          {barData.map((entry, index) => (
+                            <Cell key={index} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-              ))}
-          </div>
+              </div>
+
+              {/* Gender Chart */}
+              <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:w-[280px] h-[280px] flex flex-col items-center relative">
+                <h2 className="text-[16px] font-semibold text-gray-800 self-start">Gender</h2>
+                <div className="relative w-full h-[170px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={genderData}
+                        dataKey="value"
+                        cx="50%"
+                        cy="90%"
+                        startAngle={180}
+                        endAngle={0}
+                        innerRadius={70}
+                        outerRadius={90}
+                      >
+                        {genderData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                  {/* Needle - static for now */}
+                  <div className="absolute left-1/2 bottom-[25px] w-1 h-[45px] bg-[#00CFFF] transform -translate-x-1/2 rotate-[40deg] origin-bottom rounded-sm"></div>
+                </div>
+
+                {/* Labels */}
+                <div className="flex justify-between w-full px-6 text-gray-700 text-[14px] mb-5">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[18px] font-bold">40%</span>
+                    <span className="text-[12px]">Female</span>
+                    <div className="w-10 h-1 bg-[#FF82F5] mt-1 rounded-full"></div>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-[18px] font-bold">60%</span>
+                    <span className="text-[12px]">Male</span>
+                    <div className="w-10 h-1 bg-[#00CFFF] mt-1 rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Countries Block */}
+              <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:w-[280px] h-[280px] space-y-3">
+                <h2 className="text-[16px] font-semibold text-gray-800">Countries</h2>
+                {countriesData.map((country, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <img src={country.flag} alt={country.name} className="w-5 h-5 rounded-full" />
+                    <div className="w-full">
+                      <div className="flex justify-between text-[13px] font-medium text-gray-800">
+                        <span>{country.name}</span>
+                        <span className="text-[#809FB8]">{country.value.toLocaleString()}</span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
+                        <div
+                          className="h-2 bg-[#012A4A] rounded-full"
+                          style={{ width: `${(country.value / maxValue) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Search & Cards Section */}
+            <div className="mt-6 w-full">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                <input
+                  type="text"
+                  placeholder="Search here..."
+                  className="border rounded-lg px-3 py-2 text-sm shadow w-full md:w-1/2 lg:w-1/3"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  <span className="text-sm font-semibold whitespace-nowrap">Duration:</span>
+                  <select className="border rounded-lg p-2 text-sm shadow w-full md:w-auto">
+                    <option>Last month</option>
+                    <option>Last week</option>
+                    <option>Last year</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Teacher Cards */}
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
+                {teachers
+                  .filter(
+                    (teacher) =>
+                      teacher.userName
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase()) ||
+                      teacher.email
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase())
+                  )
+                  .map((teacher) => (
+                    <div
+                      key={teacher._id}
+                      className="bg-white shadow-md rounded-lg p-4 sm:p-5"
+                    >
+                      <div className="flex justify-center">
+                        <Image
+                          src="/assets/images/proff.jpg"
+                          alt="Teacher"
+                          className="w-10 h-10 rounded-full"
+                          width={40}
+                          height={40}
+                        />
+                      </div>
+                      <div className="mt-3 text-center">
+                        <h3 className="text-sm font-semibold text-[#223857]">
+                          {teacher.userName}
+                        </h3>
+                        <p className="text-xs mt-1 text-[#717579]">
+                          Level: {teacher.level}
+                        </p>
+                        <p className="text-xs mt-1 text-[#717579]">{teacher.subject}</p>
+                        <div className="flex flex-col gap-2 mt-3">
+                          <button
+                            className="text-xs sm:text-[12px] bg-[#c95b45] text-white px-2 py-1 rounded-lg"
+                            onClick={() => handlePortalAccess(teacher._id)}
+                          >
+                            Portal Access
+                          </button>
+                          <button
+                            className="text-xs sm:text-[12px] bg-[#223857] text-white px-2 py-1 rounded-lg"
+                            onClick={() => handleViewTeacher(teacher._id)}
+                          >
+                            View Profile
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+         </div> 
         </div>
-      </main>
-    </div>
-  )}
+      )}
 
           {activeTab === "otheremployees" && (
-            <div className="flex flex-col gap-6 w-full overflow-y-auto scrollbar-none ">
-            <main className="w-full">
-              {/* Charts & Stats Section */}
-              <div className="flex flex-wrap gap-11 w-full">
+            <div className="flex flex-col gap-6 w-full ">
+            <div className="h-[600px] overflow-y-auto scrollbar-none">
+            <div className="flex flex-col lg:flex-row gap-11 min-w-[800px]">
           {/* Teachers Records */}
-          <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 min-w-[580px] max-w-[650px] h-[280px]">
+          <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full lg:min-w-[450px] lg:max-w-[580px] h-[280px]">
   <h2 className="text-[16px] font-semibold text-gray-800 mb-4">Teachers Record</h2>
   <div className="flex  items-center">
     <div className="space-y-6 text-xs">
@@ -1037,7 +1032,7 @@ const Page = () => {
                             ))}
           </div>
         </div>
-              </main>
+              </div>
             </div>
           )}
           {activeTab === "recruitment" && (
