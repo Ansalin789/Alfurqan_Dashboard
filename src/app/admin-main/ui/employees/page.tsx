@@ -994,7 +994,7 @@ const Page = () => {
                                       "/assets/images/proff.jpg"
                                     }
                                     alt="Employee"
-                                    className="w-10 h-10 ml-[80px] mt-3 rounded-full"
+                                    className="w-10 h-10 ml-[70px] mt-3 rounded-full"
                                     width={40}
                                     height={40}
                                   />
@@ -1036,7 +1036,7 @@ const Page = () => {
             </div>
           )}
           {activeTab === "recruitment" && (
-  <div className="flex flex-col ">
+  <div className="flex flex-col overflow-y-auto scrollbar-none ">
     <main className="flex-grow">
       {/* ✅ Section 1: Stats Card Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1113,7 +1113,7 @@ const Page = () => {
 
 
           {activeTab === "leave" && (
-            <div className="space-y-4 scrollbar-none">
+            <div className="space-y-4 overflow-y-auto scrollbar-none">
               {/* Summary Cards */}
               <div className="flex gap-5 ">
                 <div className="bg-[#012A4A] text-white rounded-xl shadow p-5 w-[200px]">
