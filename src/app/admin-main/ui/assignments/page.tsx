@@ -182,147 +182,266 @@ const AssignmentsPage = () => {
                 </div>
 
                 {/* Modal Form */}
-                    {showModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-                            <div className="bg-white rounded-2xl p-6 w-[400px] max-h-[90vh] overflow-y-auto shadow-xl">
-                                <h2 className="text-lg font-semibold mb-4">Add Assignments</h2>
-                                <form>
-                                    <div className="flex gap-4 mb-4">
-                                        <div className="w-1/2">
-                                            <label className="block text-sm font-medium mb-1">Assignment Name</label>
-                                            <input
-                                                type="text"
-                                                placeholder="Name of class"
-                                                className="block w-full border border-gray-300 rounded-lg p-2"
-                                            />
-                                        </div>
-                                        <div className="w-1/2">
-                                            <label className="block text-sm font-medium mb-1">Assignment Type</label>
-                                            <select 
-                                                className="block w-full border border-gray-300 rounded-lg p-2"
-                                                onChange={(e) => setAssignmentType(e.target.value)}
-                                            >
-                                                <option>Quiz</option>
-                                                <option>Writing</option>
-                                                <option>Reading</option>
-                                                <option>Image Identification</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-4 mb-4">
-                                        <div className="flex items-center">
-                                            <input 
-                                                type="checkbox" 
-                                                id="choose" 
-                                                className="mr-2 accent-[#0b2447]" 
-                                                onChange={() => {
-                                                    setIsChoose(!isChoose);
-                                                    if (isTrueFalse) setIsTrueFalse(false);
-                                                }} 
-                                            />
-                                            <label htmlFor="choose" className="text-sm font-medium">Choose</label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input 
-                                                type="checkbox" 
-                                                id="tf" 
-                                                className="mr-2 accent-[#0b2447]" 
-                                                onChange={() => {
-                                                    setIsTrueFalse(!isTrueFalse);
-                                                    if (isChoose) setIsChoose(false);
-                                                }} 
-                                            />
-                                            <label htmlFor="tf" className="text-sm font-medium">True or False</label>
-                                        </div>
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium mb-1">Type the question</label>
-                                        <textarea
-                                            className="block w-full border border-gray-300 rounded-lg p-2 text-sm"
-                                            rows={2}
-                                            placeholder="Enter your question here..."
+                {showModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+                        <div className="bg-white rounded-2xl p-6 w-[400px] max-h-[90vh] overflow-y-auto shadow-xl">
+                            <h2 className="text-lg font-semibold mb-4">Add Assignments</h2>
+                            <form>
+                                <div className="flex gap-4 mb-4">
+                                    <div className="w-1/2">
+                                        <label className="block text-[12px] font-medium mb-1">Assignment Name</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Name of class"
+                                            className="block w-full border border-gray-300 rounded-lg p-2 text-[12px]"
                                         />
                                     </div>
-                                    <div className="space-y-3 mb-6">
-                                        {assignmentType === 'Reading' ? (
-                                            <div>
-                                                <label className="block text-sm font-medium mb-1">Image URL</label>
+                                    <div className="w-1/2">
+                                        <label className="block text-[12px] font-medium mb-1">Assignment Type</label>
+                                        <select
+                                            className="block w-full border border-gray-300 rounded-lg p-2 text-[12px]"
+                                            onChange={(e) => setAssignmentType(e.target.value)}
+                                        >
+                                            <option>Quiz</option>
+                                            <option>Reading</option>
+                                            <option>Writing</option>
+                                            <option>Image Identification</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 mb-4">
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            id="choose"
+                                            className="mr-2 accent-[#0b2447] text-[12px] py-1"
+                                            onChange={() => {
+                                                setIsChoose(!isChoose);
+                                                if (isTrueFalse) setIsTrueFalse(false);
+                                            }}
+                                        />
+                                        <label htmlFor="choose" className="text-sm font-medium">Choose</label>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            id="tf"
+                                            className="mr-2 accent-[#0b2447]"
+                                            onChange={() => {
+                                                setIsTrueFalse(!isTrueFalse);
+                                                if (isChoose) setIsChoose(false);
+                                            }}
+                                        />
+                                        <label htmlFor="tf" className="text-sm font-medium">True or False</label>
+                                    </div>
+                                </div>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium mb-1">Enter the question</label>
+                                    <textarea
+                                        className="block w-full border border-gray-300 rounded-lg p-2 text-sm"
+                                        rows={2}
+                                        placeholder="Enter your question here..."
+                                    />
+                                </div>
+                                <div className="space-y-3 mb-6">
+                                    {assignmentType === 'Reading' ? (
+                                        <div className='space-y-3'>
+                                            <div className="flex items-center">
                                                 <input
-                                                    type="text"
-                                                    placeholder="Enter image URL"
-                                                    className="block w-full border border-gray-300 rounded-lg p-2"
+                                                    type="checkbox"
+                                                    id="choose"
+                                                    className="mr-2 accent-[#0b2447] text-[12px] py-1"
+                                                    onChange={() => {
+                                                        setIsChoose(!isChoose);
+                                                        if (isTrueFalse) setIsTrueFalse(true);
+                                                    }}
                                                 />
+                                                <label htmlFor="choose" className="text-sm font-medium">No Option</label>
                                             </div>
-                                        ) : isTrueFalse ? (
-                                            <>
-                                                <label className="flex items-center border rounded-lg px-3 py-2 cursor-pointer transition border-gray-300 bg-white">
-                                                    <input
-                                                        type="radio"
-                                                        name="option"
-                                                        checked={selectedOption === 1}
-                                                        onChange={() => setSelectedOption(1)}
-                                                        className="mr-3 accent-[#0b2447]"
-                                                    />
-                                                    <span className="text-sm font-medium">True</span>
-                                                </label>
-                                                <label className="flex items-center border rounded-lg px-3 py-2 cursor-pointer transition border-gray-300 bg-white">
-                                                    <input
-                                                        type="radio"
-                                                        name="option"
-                                                        checked={selectedOption === 2}
-                                                        onChange={() => setSelectedOption(2)}
-                                                        className="mr-3 accent-[#0b2447]"
-                                                    />
-                                                    <span className="text-sm font-medium">False</span>
-                                                </label>
-                                            </>
-                                        ) : (
-                                            [1, 2, 3, 4].map((num) => (
-                                                <label
-                                                    key={num}
-                                                    className={`flex items-center border rounded-lg px-3 py-2 cursor-pointer transition
+
+                                            {!isChoose && (
+                                                [1, 2, 3, 4].map((num) => (
+                                                    <label
+                                                        key={num}
+                                                        className={`flex items-center border rounded-lg px-3 py-2 cursor-pointer transition
+            ${selectedOption === num ? "border-[#0b2447] bg-[#f0f4fa]" : "border-gray-300 bg-white"}
+          `}
+                                                    >
+                                                        <input
+                                                            type="radio"
+                                                            name="option"
+                                                            checked={selectedOption === num}
+                                                            onChange={() => setSelectedOption(num)}
+                                                            className="mr-3 accent-[#0b2447]"
+                                                        />
+                                                        <span className="text-sm font-medium">
+                                                            {String.fromCharCode(96 + num)}) Answer {num}
+                                                        </span>
+                                                        {selectedOption === num && (
+                                                            <svg className="ml-auto text-[#0b2447]" width="20" height="20" fill="none" viewBox="0 0 24 24">
+                                                                <circle cx="12" cy="12" r="10" fill="#0b2447" opacity="0.1" />
+                                                                <path d="M7 13l3 3 7-7" stroke="#0b2447" strokeWidth="2" fill="none" />
+                                                            </svg>
+                                                        )}
+                                                    </label>
+                                                ))
+                                            )}
+                                        </div>
+                                    ) : assignmentType === 'Writing' ? (
+                                        <div className='space-y-3'>
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    id="choose"
+                                                    className="mr-2 accent-[#0b2447] text-[12px] py-1"
+                                                    onChange={() => {
+                                                        setIsChoose(!isChoose);
+                                                        if (isTrueFalse) setIsTrueFalse(false);
+                                                    }}
+                                                />
+                                                <label htmlFor="choose" className="text-sm font-medium">No Option</label>
+                                            </div>
+                                            {(
+                                                [1, 2, 3, 4].map((num) => (
+                                                    <label
+                                                        key={num}
+                                                        className={`flex items-center border rounded-lg px-3 py-2 cursor-pointer transition
                                     ${selectedOption === num ? "border-[#0b2447] bg-[#f0f4fa]" : "border-gray-300 bg-white"}
                                 `}
-                                                >
-                                                    <input
-                                                        type="radio"
-                                                        name="option"
-                                                        checked={selectedOption === num}
-                                                        onChange={() => setSelectedOption(num)}
-                                                        className="mr-3 accent-[#0b2447]"
-                                                    />
-                                                    <span className="text-sm font-medium">
-                                                        {String.fromCharCode(96 + num)}) Answer {num}
-                                                    </span>
-                                                    {selectedOption === num && (
-                                                        <svg className="ml-auto text-[#0b2447]" width="20" height="20" fill="none" viewBox="0 0 24 24">
-                                                            <circle cx="12" cy="12" r="10" fill="#0b2447" opacity="0.1" />
-                                                            <path d="M7 13l3 3 7-7" stroke="#0b2447" strokeWidth="2" fill="none" />
-                                                        </svg>
-                                                    )}
-                                                </label>
-                                            ))
-                                        )}
-                                    </div>
-                                    <div className="flex justify-end gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={handleCloseModal}
-                                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            className="px-4 py-2 bg-[#0b2447] text-white rounded-lg text-sm"
-                                        >
-                                            Save
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                                                    >
+                                                        <input
+                                                            type="radio"
+                                                            name="option"
+                                                            checked={selectedOption === num}
+                                                            onChange={() => setSelectedOption(num)}
+                                                            className="mr-3 accent-[#0b2447]"
+                                                        />
+                                                        <span className="text-sm font-medium">
+                                                            {String.fromCharCode(96 + num)}) Answer {num}
+                                                        </span>
+                                                        {selectedOption === num && (
+                                                            <svg className="ml-auto text-[#0b2447]" width="20" height="20" fill="none" viewBox="0 0 24 24">
+                                                                <circle cx="12" cy="12" r="10" fill="#0b2447" opacity="0.1" />
+                                                                <path d="M7 13l3 3 7-7" stroke="#0b2447" strokeWidth="2" fill="none" />
+                                                            </svg>
+                                                        )}
+                                                    </label>
+                                                ))
+                                            )}
+                                        </div>
+                                    ) : assignmentType === 'Image Identification' ? (
+                                        <div className='space-y-3'>
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    id="choose"
+                                                    className="mr-2 accent-[#0b2447] text-[12px] py-1"
+                                                    onChange={() => {
+                                                        setIsChoose(!isChoose);
+                                                        if (isTrueFalse) setIsTrueFalse(false);
+                                                    }}
+                                                />
+                                                <label htmlFor="choose" className="text-sm font-medium">No Option</label>
+                                            </div>
+
+                                            {(
+                                                [1, 2, 3, 4].map((num) => (
+                                                    <label
+                                                        key={num}
+                                                        className={`flex items-center border rounded-lg px-3 py-2 cursor-pointer transition
+                                    ${selectedOption === num ? "border-[#0b2447] bg-[#f0f4fa]" : "border-gray-300 bg-white"}
+                                `}
+                                                    >
+                                                        <input
+                                                            type="radio"
+                                                            name="option"
+                                                            checked={selectedOption === num}
+                                                            onChange={() => setSelectedOption(num)}
+                                                            className="mr-3 accent-[#0b2447]"
+                                                        />
+                                                        <span className="text-sm font-medium">
+                                                            {String.fromCharCode(96 + num)}) Answer {num}
+                                                        </span>
+                                                        {selectedOption === num && (
+                                                            <svg className="ml-auto text-[#0b2447]" width="20" height="20" fill="none" viewBox="0 0 24 24">
+                                                                <circle cx="12" cy="12" r="10" fill="#0b2447" opacity="0.1" />
+                                                                <path d="M7 13l3 3 7-7" stroke="#0b2447" strokeWidth="2" fill="none" />
+                                                            </svg>
+                                                        )}
+                                                    </label>
+                                                ))
+                                            )}
+                                        </div>
+                                    ) : isTrueFalse ? (
+                                        <>
+                                            <label className="flex items-center border rounded-lg px-3 py-2 cursor-pointer transition border-gray-300 bg-white">
+                                                <input
+                                                    type="radio"
+                                                    name="option"
+                                                    checked={selectedOption === 1}
+                                                    onChange={() => setSelectedOption(1)}
+                                                    className="mr-3 accent-[#0b2447]"
+                                                />
+                                                <span className="text-sm font-medium">True</span>
+                                            </label>
+                                            <label className="flex items-center border rounded-lg px-3 py-2 cursor-pointer transition border-gray-300 bg-white">
+                                                <input
+                                                    type="radio"
+                                                    name="option"
+                                                    checked={selectedOption === 2}
+                                                    onChange={() => setSelectedOption(2)}
+                                                    className="mr-3 accent-[#0b2447]"
+                                                />
+                                                <span className="text-sm font-medium">False</span>
+                                            </label>
+                                        </>
+                                    ) : (
+                                        [1, 2, 3, 4].map((num) => (
+                                            <label
+                                                key={num}
+                                                className={`flex items-center border rounded-lg px-3 py-2 cursor-pointer transition
+                                    ${selectedOption === num ? "border-[#0b2447] bg-[#f0f4fa]" : "border-gray-300 bg-white"}
+                                `}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="option"
+                                                    checked={selectedOption === num}
+                                                    onChange={() => setSelectedOption(num)}
+                                                    className="mr-3 accent-[#0b2447]"
+                                                />
+                                                <span className="text-sm font-medium">
+                                                    {String.fromCharCode(96 + num)}) Answer {num}
+                                                </span>
+                                                {selectedOption === num && (
+                                                    <svg className="ml-auto text-[#0b2447]" width="20" height="20" fill="none" viewBox="0 0 24 24">
+                                                        <circle cx="12" cy="12" r="10" fill="#0b2447" opacity="0.1" />
+                                                        <path d="M7 13l3 3 7-7" stroke="#0b2447" strokeWidth="2" fill="none" />
+                                                    </svg>
+                                                )}
+                                            </label>
+                                        ))
+                                    )}
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleCloseModal}
+                                        className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-[#0b2447] text-white rounded-lg text-sm"
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                    )}
+                    </div>
+                )}
             </div>
         </BaseLayout4>
     );
