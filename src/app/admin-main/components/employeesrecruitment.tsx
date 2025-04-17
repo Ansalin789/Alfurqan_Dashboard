@@ -271,7 +271,7 @@ const  ApplicantsList: React.FC = () => {
               <th className="px-2 py-3 whitespace-nowrap">Resume</th>
               <th className="px-2 py-3 whitespace-nowrap">Status</th>
               <th className="px-2 py-3 whitespace-nowrap">Level</th>
-              <th className="px-2 py-3 whitespace-nowrap">Actions</th>
+              {/* <th className="px-2 py-3 whitespace-nowrap">Actions</th> */}
             </tr>
           </thead>
           <tbody>
@@ -328,10 +328,10 @@ const  ApplicantsList: React.FC = () => {
           ))}
         </div>
       </td>
-      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
+      {/* <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
         <div className="relative flex justify-center">
           <button
-            onClick={() => handleMenuClick(applicant._id)}
+         
             className="hover:bg-gray-100 p-1 rounded-md"
           >
             <MoreHorizontal className="w-4 h-4 text-slate-600" />
@@ -356,7 +356,7 @@ const  ApplicantsList: React.FC = () => {
             </div>
           )}
         </div>
-      </td>
+      </td> */}
     </tr>
   ))}
 </tbody>

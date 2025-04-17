@@ -96,7 +96,7 @@ const Page: React.FC = () => {
   return (
     <BaseLayout4>
       <div className="p-5 sm:p-6 md:p-8 min-h-screen w-full max-w-8xl mx-auto mr-5">
-        <h2 className="text-xl sm:text-2xl font-bold mb-6">Role Access</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold mb-6">Role Access</h2>
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
           <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
@@ -113,9 +113,7 @@ const Page: React.FC = () => {
             </button>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            <button className="text-xs px-4 py-2 rounded-lg shadow flex bg-[#223857] text-white items-center">
-              <FaPlus className="mr-2" /> Add new
-            </button>
+            
             <div className="w-[170px] h-[35px] border bg-[#fff] border-gray-300 rounded-md text-xs flex items-center justify-between px-2 py-2 shadow mx-auto">
               <select
                 className="w-full h-full bg-transparent text-xs text-center focus:outline-none appearance-none"
