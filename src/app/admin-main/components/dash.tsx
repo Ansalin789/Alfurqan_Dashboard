@@ -90,7 +90,7 @@ const TotalScheduledChart = () => {
 const courseData = [
   { name: "Joined", value: 30, color: "#7f9cb6" },
   { name: "Not Joined", value: 45, color: "#001d3d" },
-  { name: "Not Assigned", value: 60, color: "#4a90e2" },
+  { name: "No Response", value: 60, color: "#4a90e2" },
 ];
 const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
   active,
