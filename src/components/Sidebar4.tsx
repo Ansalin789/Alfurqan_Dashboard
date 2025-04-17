@@ -142,10 +142,10 @@ export default function Sidebar4() {
                     {SidebarItems.map(({ name, href, icon: Icon, subItems }) => (
                         <li key={name}>
                             <button
-                                className={`text-center justify-center hover:no-underline hover:flex hover:bg-[#476a9b] hover:text-[#fff] hover:align-middle hover:justify-center] hover:pl-2 pl-2 pr-2 py-2 hover:rounded-lg rounded-lg ${subItems ? 'cursor-pointer' : ''} ${currentPath === href || (subItems && isSubItemActive(subItems)) ? 'bg-[#476a9b] text-[#fff]' : ''}`}
+                                className={`text-center justify-center hover:no-underline hover:flex hover:text-[#476a9b] hover:align-middle hover:justify-center hover:pl-2 pl-2 pr-2 py-2 hover:rounded-lg rounded-lg ${subItems ? 'cursor-pointer' : ''} ${currentPath === href || (subItems && isSubItemActive(subItems)) ? 'bg-[#476a9b] text-[#fff]' : ''}`}
                                 onClick={() => subItems && toggleSubItems(name)}
                             >
-                                <Link href={href} className='no-underline flex align-middle justify-start w-[100%] text-[#fff] pt-[10px] pb-[10px] text-[14px]'>
+                                <Link href={href} className='no-underline hover:text-[#a0c4ff] flex align-middle justify-start w-[100%] text-[#fff] pt-[10px] pb-[10px] text-[14px]'>
                                     <span className="text-[20px] inline-block mr-[10px]">
                                         {typeof Icon === 'string' ? (
                                             <Image src={Icon} width={20} height={20} alt={name} />

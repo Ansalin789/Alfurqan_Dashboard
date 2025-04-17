@@ -6,15 +6,22 @@ import BaseLayout4 from "@/components/BaseLayout4"
 
 
 const visitorData = [
-  { name: "Jan", Instagram: 320, Facebook: 240, Website: 280 },
-  { name: "Feb", Instagram: 380, Facebook: 290, Website: 300 },
-  { name: "Mar", Instagram: 280, Facebook: 220, Website: 250 },
-  { name: "Apr", Instagram: 250, Facebook: 200, Website: 220 },
-  { name: "May", Instagram: 300, Facebook: 250, Website: 280 },
-  { name: "Jun", Instagram: 350, Facebook: 300, Website: 320 },
-  { name: "Jul", Instagram: 400, Facebook: 350, Website: 380 },
-  { name: "Aug", Instagram: 380, Facebook: 320, Website: 350 },
-  { name: "Sep", Instagram: 340, Facebook: 280, Website: 300 },
+  { name: "Jan", Friend: 420, SocialMedia: 300, EMail: 280, Google: 210, Other: 190 },
+  { name: "Feb", Friend: 380, SocialMedia: 270, EMail: 250, Google: 190, Other: 170 },
+  { name: "Mar", Friend: 460, SocialMedia: 310, EMail: 290, Google: 220, Other: 200 },
+  { name: "Apr", Friend: 400, SocialMedia: 260, EMail: 275, Google: 215, Other: 180 },
+  { name: "May", Friend: 440, SocialMedia: 280, EMail: 300, Google: 240, Other: 210 },
+  { name: "Jun", Friend: 410, SocialMedia: 290, EMail: 310, Google: 230, Other: 195 },
+  { name: "Jul", Friend: 430, SocialMedia: 320, EMail: 295, Google: 225, Other: 185 },
+  { name: "Aug", Friend: 450, SocialMedia: 330, EMail: 315, Google: 235, Other: 205 },
+  { name: "Sep", Friend: 470, SocialMedia: 340, EMail: 320, Google: 245, Other: 215 },
+  { name: "Oct", Friend: 490, SocialMedia: 350, EMail: 330, Google: 250, Other: 220 },
+  { name: "Nov", Friend: 460, SocialMedia: 300, EMail: 310, Google: 230, Other: 200 },
+  { name: "Dec", Friend: 440, SocialMedia: 250, EMail: 306, Google: 200, Other: 233 },
+
+
+
+  
 ]
 
 
@@ -155,15 +162,23 @@ const countriesData = [
     <div className="flex justify-center mt-4 space-x-8 text-sm font-medium text-slate-700">
       <div className="flex items-center space-x-2">
         <span className="w-3 h-3 rounded-full bg-[#0F172A]"></span>
-        <span>Instagram</span>
+        <span>Friend</span>
       </div>
       <div className="flex items-center space-x-2">
         <span className="w-3 h-3 rounded-full bg-[#94A3B8]"></span>
-        <span>Facebook</span>
+        <span>SocialMedia</span>
       </div>
       <div className="flex items-center space-x-2">
         <span className="w-3 h-3 rounded-full bg-[#3B82F6]"></span>
-        <span>Website</span>
+        <span>E-Mail</span>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className="w-3 h-3 rounded-full bg-[#66b16c]"></span>
+        <span>Google</span>
+      </div>
+      <div className="flex items-center space-x-2">
+        <span className="w-3 h-3 rounded-full bg-[#848e56]"></span>
+        <span>Other</span>
       </div>
     </div>
   );
@@ -283,25 +298,38 @@ export default function Home() {
           />
           <Line
             type="monotone"
-            dataKey="Instagram"
+            dataKey="Friend"
             stroke="#0F172A"
             strokeWidth={3.5}
             dot={<CustomDot />}
           />
           <Line
             type="monotone"
-            dataKey="Facebook"
+            dataKey="SocialMedia"
             stroke="#94A3B8"
             strokeWidth={3.5}
             dot={false}
           />
           <Line
             type="monotone"
-            dataKey="Website"
+            dataKey="EMail"
             stroke="#3B82F6"
             strokeWidth={3.5}
             dot={false}
           />
+          <Line
+            type="monotone"
+            dataKey="Google"
+            stroke="#66b16c"
+            strokeWidth={3.5}
+            dot={<CustomDot />}
+          /><Line
+          type="monotone"
+          dataKey="Other"
+          stroke="#848e56"
+          strokeWidth={3.5}
+          dot={<CustomDot />}
+        />
         </LineChart>
       </ResponsiveContainer>
       <CustomLegend />
