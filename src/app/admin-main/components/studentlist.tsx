@@ -111,7 +111,7 @@ const TrailManagement = () => {
       </div>
 
       {/* Table Section */}
-      <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
+ <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
   <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-[11px]">
     <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
       <tr>
