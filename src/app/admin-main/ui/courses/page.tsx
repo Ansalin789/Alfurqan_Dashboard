@@ -56,20 +56,20 @@ const cardData = [
 const Page = () => {
     return (
         <BaseLayout4>
-            <div className="min-h-screen mx-auto p-6 ">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 place-items-center">
+            <div className="min-h-screen mx-auto p-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 place-items-center overflow-y-scroll scrollbar-none h-[680px] mt-10">
                     {cardData.map((item, idx) => (
-                        <Link key={idx} href={item.href} className="w-[260px] bg-white rounded-xl shadow p-5 hover:shadow-lg transition-shadow duration-200">
+                        <Link key={idx} href={item.href} className="w-[370px]  h-[410px] bg-white rounded-xl shadow p-5 hover:shadow-lg transition-shadow duration-200">
                             <h2 className="text-lg font-bold text-[#0b2447] mb-4 text-center">
                                 {item.title}
                             </h2>
                             <div className='flex'>
-                                <div className="w-full h-20 border border-gray-400 rounded-lg mx-auto mb-4" />
-                                <p className="text-[10px] text-justify text-gray-600 mb-4 leading-snug px-4">
+                                <div className="w-full h-28 border border-gray-400 rounded-lg mx-auto mb-4" />
+                                <p className="text-[10px] text-left text-gray-600 mb-4 leading-snug px-4">
                                     Description for this particular {item.title.toLowerCase()}, description for this particular {item.title.toLowerCase()}, description for this particular {item.title.toLowerCase()}
                                 </p>
                             </div>
-                            <div className="text-[10px] text-gray-600 space-y-[2px]">
+                            <div className="text-[10px] text-gray-600 space-y-[13px] mt-3">
                                 <div className="flex justify-between">
                                     <span className="font-semibold">{item.idLabel}</span>
                                     <span>{item.id}</span>
