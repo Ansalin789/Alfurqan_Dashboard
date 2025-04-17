@@ -85,10 +85,10 @@ export default function Page() {
 
   // Bar chart data
   const barData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep','Oct','Nov','Dec'],
     datasets: [
       {
-        data: [80, 70, 80, 90, 70, 78, 85, 70, 75], // Total invoices
+        data: [80, 70, 80, 90, 70, 78, 85, 70, 75,35,35,65], // Total invoices
         backgroundColor: '#217EFD', // Light gray background for total
         borderRadius: {
           bottomLeft: 10,
@@ -97,7 +97,7 @@ export default function Page() {
         barThickness: 25,
       },
       {
-        data: [45, 50, 43, 60, 34, 50, 58, 39, 48], // Paid invoices
+        data: [45, 50, 43, 60, 34, 50, 58, 39, 48,35,35,65], // Paid invoices
         backgroundColor: '#012A4A', // Blue color for paid portion
         borderRadius: {
           topLeft: 10,
