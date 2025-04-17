@@ -122,15 +122,13 @@ body {
   align-items: center;
   width: 100%;
 }
-
 .letter {
-  background-image: `url("/assets/images/Dewatermark.png") `;
-  background-repeat: "no-repeat";
-  background-position: "center";
-  object-fit: "cover";
-  background-color: "#000";
+  background-image: url("/assets/images/Dewatermark.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  object-fit: cover;
+  background-color: #000;
 }
-
 
 
 .custom-checkbox {
