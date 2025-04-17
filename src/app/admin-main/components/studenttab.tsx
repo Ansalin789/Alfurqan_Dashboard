@@ -166,7 +166,7 @@ const TabbedTable = () => {
   );
 
   return (
-    <div className=" overflow-x-auto mt-4 bg-white shadow-md rounded-lg p-3">
+    <div className=" overflow-x-auto mt-4 bg-white shadow-md rounded-lg p-3 ">
       {/* Tabs */}
       <div className="flex space-x-4 border-b pb-1 text-sm text-black mb-2">
         {tabs.map((tab) => (
@@ -382,7 +382,7 @@ const TabbedTable = () => {
             </svg>
           </div>
           {/* Transactions Table */}
-          <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
+          <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1275px] mx-auto">
             <table className="w-full text-[12px]">
               <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
                 <tr>
