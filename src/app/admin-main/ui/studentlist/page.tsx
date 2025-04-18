@@ -24,7 +24,7 @@ const students = [
 export default function StudentList() {
   return (
     <BaseLayout4>
-      <div className="p-4 w-[1300px] overflow-hidden">
+      <div className="p-4 w-full overflow-hidden">
         {students.map((student) => {
           const percentageNumber = parseInt(student.percentage.replace("%", ""));
 
