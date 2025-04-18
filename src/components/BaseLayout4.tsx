@@ -13,7 +13,7 @@ export default function BaseLayout4({ children }: Props) {
         </div>
       
         {/* Main content */}
-        <div className="flex-1 overflow-auto p-4">
+        <div className="flex-1 overflow-auto py-2 px-4 scrollbar-none">
           {children}
         </div>
       </div>
