@@ -19,10 +19,8 @@ const TotalScheduledChart = () => {
     { name: "Pending", value: 123, color: "#5b9bd5" },
   ];
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-64 border border-gray-200 -ml-3">
-      <h2 className="text-sm font-semibold text-gray-900">
-        Total Scheduled
-      </h2>
+    <div>
+      <h2 className="text-sm font-semibold text-gray-900">Total Scheduled</h2>
 
       <div className="relative flex items-center justify-center">
         <ResponsiveContainer width={150} height={189}>
@@ -62,10 +60,7 @@ const TotalScheduledChart = () => {
                 className="w-2 h-2 rounded-sm mr-1"
                 style={{ backgroundColor: entry.color }}
               ></span>
-              <span className="text-[10px] text-gray-600 ">{entry.name}</span>
-            </div>
-            <div className="text-[10px] font-semibold text-gray-900">
-              {entry.value}
+              <span className="text-[10px] text-gray-600 ">{entry.name}({entry.value})</span>
             </div>
           </div>
         ))}
@@ -101,14 +96,13 @@ const countriesData = [
     value: 89061,
     color: "#5b9bd5",
   },
-  
 ];
 
 const CountriesCard = () => {
   const maxValue = Math.max(...countriesData.map((c) => c.value)); // Find max for bar scaling
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-64 border border-gray-200">
+    <div>
       <h2 className="text-sm font-semibold text-gray-900">Countries</h2>
 
       <div className="space-y-4 mt-4">
@@ -165,7 +159,7 @@ const COLORS = ["#0D1B2A", "#4B9EFF", "#81878B"];
 
 const PreferredTeachersCard = () => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-64 border border-gray-200 justify-between flex flex-col">
+    <div>
       <div>
         <h2 className="text-sm font-semibold text-gray-900">
           Preferred Teachers
@@ -231,13 +225,13 @@ const PreferredTeachersCard = () => {
         </div>
       </div>
       <div>
-        <div className="flex justify-center gap-4 mt- text-gray-700 text-sm">
+        <div className="flex justify-center gap-4 mt-14 text-gray-700 text-sm">
           <div className="flex items-center text-[10px]">
-            <span className="w-3 h-3 bg-[#0D1B2A] rounded-sm mr-1"></span>
+            <span className="w-2 h-2 bg-[#0D1B2A] rounded-sm mr-1"></span>
             Male
           </div>
           <div className="flex items-center text-[10px] ">
-            <span className="w-3 h-3 bg-[#4B9EFF] rounded-sm mr-1"></span>
+            <span className="w-2 h-2 bg-[#4B9EFF] rounded-sm mr-1"></span>
             Female
           </div>
         </div>
@@ -269,7 +263,7 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
 
 const CoursesChart = () => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-64 border border-gray-200 ml-4 ">
+    <div>
       <h2 className="text-sm font-semibold text-gray-900">Courses</h2>
 
       <ResponsiveContainer width="100%" height={198}>
@@ -311,11 +305,19 @@ const CoursesChart = () => {
 
 export default function Dashboard() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-1 w-full max-w-[1300px] mx-auto">
-      <TotalScheduledChart />
-      <CountriesCard />
-      <PreferredTeachersCard />
-      <CoursesChart />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-[1300px] mx-auto p-4">
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+        <TotalScheduledChart />
+      </div>
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+        <CountriesCard />
+      </div>
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+        <PreferredTeachersCard />
+      </div>
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+        <CoursesChart />
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
-import { FaSyncAlt, FaPlus, FaEdit, FaFilter } from "react-icons/fa";
+import { FaEdit, FaFilter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { User } from "@/types";
 
@@ -75,7 +75,6 @@ const evaluation: EvaluationItem[] = [
   },
 ];
 
-console.log(evaluation);
 
 // Define interfaces for the API response structure
 interface Student {
@@ -549,16 +548,16 @@ const TrailSection = () => {
 
   return (
     <BaseLayout4>
-      <div className="p-3 pr-9 mx-auto h-full">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <h2 className="text-[18px] font-semibold">Trail class Request</h2>
-          </div>
+      <div className="p-4 w-full pr-9 mx-auto h-full">
+        <div className="flex justify-between ml-7">
+         
+            <h2 className="text-[20px] font-semibold">Trail class Request</h2>
+        
         </div>
         <div className="p-2">
           <Dashboard />
         </div>
-        <div className="">
+        <div className="w-full max-w-[1300px] mx-auto px-4">
           <div className="flex justify-between items-center p-2 -ml-2">
             <div className="flex flex-1 mb-4 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
               <div className="flex ">
@@ -586,149 +585,77 @@ const TrailSection = () => {
             </div>
           </div>
           <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] h-full  flex flex-col justify-between">
-            <table
-              className="min-w-full rounded-lg shadow bg-[#fff]"
-              style={{ width: "100%", tableLayout: "fixed" }}
-            >
-              <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
+            <table className="min-w-full table-fixed bg-white shadow rounded-lg">
+              <thead className="border-b-[1px] border-[#1C3557] text-[10px] font-semibold">
                 <tr>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "26%" }}
-                  >
+                  <th className="p-3 text-center w-[15%] break-words">
                     Trial ID
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "22%" }}
-                  >
+                  <th className="p-3 text-center w-[15%] break-words">
                     Student Name
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "15%" }}
-                  >
+                  <th className="p-3 text-center w-[15%] break-words">
                     Mobile
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "12%" }}
-                  >
-                    Country
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "13%" }}
-                  >
+                  <th className="p-3 text-center w-[15%]">Country</th>
+                  <th className="p-3 text-center w-[13%] break-words">
                     Course
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "18%" }}
-                  >
+                  <th className="p-3 text-center w-[18%] break-words">
                     Preferred Teacher
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "18%" }}
-                  >
+                  <th className="p-3 text-center w-[18%] break-words">
                     Assigned Teacher
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "8%" }}
-                  >
-                    Time
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "25%" }}
-                  >
+                  <th className="p-3 text-center w-[10%]">Time</th>
+                  <th className="p-3 text-center w-[25%] break-words">
                     Class Status
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "15%" }}
-                  >
+                  <th className="p-3 text-center w-[15%] break-words">
                     Payment Status
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "13%" }}
-                  >
+                  <th className="p-3 text-center w-[13%] break-words">
                     Student Status
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "10%" }}
-                  >
-                    Action
-                  </th>
+                  <th className="p-3 text-center w-[10%]">Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-[9px] font-medium">
                 {filteredItems.length > 0 ? (
                   filteredItems.slice(0, 5).map((item, index) => (
                     <tr
                       key={item._id}
-                      className={`text-[9px] font-medium mt-0 ${
+                      className={`${
                         index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
                       }`}
                     >
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item._id}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.studentFirstName} {item.studentLastName}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.number}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.country}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.course}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.preferredTeacher}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.assignedTeacher}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.time}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ minWidth: "100px" }}
-                      >
+                      <td className="p-3 text-center">
                         <span
-                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
+                          className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
                             item.classStatus === "COMPLETED"
                               ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
                               : "bg-green-100 text-green-800 border border-green-900 px-2"
@@ -737,32 +664,32 @@ const TrailSection = () => {
                           {item.classStatus}
                         </span>
                       </td>
-                      <td className="p-2 text-center">
+                      <td className="p-3 text-center">
                         <span
-                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
+                          className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
                             item.paymentStatus === "PAID"
-                              ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-5"
-                              : "bg-green-100 text-green-800 border border-green-900 px-3"
+                              ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
+                              : "bg-green-100 text-green-800 border border-green-900 px-2"
                           }`}
                         >
                           {item.paymentStatus}
                         </span>
                       </td>
-                      <td className="p-2 text-center">
+                      <td className="p-3 text-center">
                         <span
-                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
+                          className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
                             item.status === "Active"
                               ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                              : "bg-green-100 text-green-800 border border-green-900 px-3"
+                              : "bg-green-100 text-green-800 border border-green-900 px-2"
                           }`}
                         >
                           {item.status}
                         </span>
                       </td>
-                      <td className="p-2 text-center">
+                      <td className="p-3 text-center">
                         <button
                           onClick={() => handleClick(item._id.toString())}
-                          className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
+                          className="bg-gray-800 hover:cursor-pointer text-white p-2 rounded-lg shadow hover:bg-gray-900"
                         >
                           <FaEdit size={10} />
                         </button>

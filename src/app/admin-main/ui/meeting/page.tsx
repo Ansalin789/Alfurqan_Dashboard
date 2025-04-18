@@ -269,18 +269,23 @@ const Meeting = () => {
 
   return (
     <BaseLayout4>
-      <div className="p-4 mx-auto w-[1250px]">
+      <div className=" p-4 w-full pr-9 mx-auto h-full">
         <div
-          className={`${
+          className={`transition-all duration-200 ${
             isRescheduleModalOpen ? "blur-sm" : ""
-          } transition-all duration-200`}
+          }`}
         >
-          <h1 className="text-xl font-semibold text-gray-800 p-2">
-            Scheduled Meetings
-          </h1>
-          <div className="flex items-center justify-between px-6 py-4 rounded-md">
-            {/* Left side: Search and Filter */}
-            <div className="flex items-center gap-4 -ml-5">
+          {/* Consistent Padding Wrapper */}
+          <div className="px-1">
+            {/* Heading */}
+            <h1 className="text-xl font-semibold text-gray-800 py-2">
+              Scheduled Meetings
+            </h1>
+          </div>
+
+          <div className="flex items-center justify-between py-4 rounded-md">
+            {/* Left Side */}
+            <div className="flex items-center gap-4">
               <input
                 type="text"
                 placeholder="Search here..."
@@ -291,12 +296,11 @@ const Meeting = () => {
               </button>
             </div>
 
-            {/* Right side: Calendar, Add Meeting, Date Picker */}
+            {/* Right Side */}
             <div className="flex items-center gap-4">
-              <button onClick={() => nextPage()}>
+            <button onClick={() => nextPage()}>
                 <FaCalendarAlt className="text-[#1C3557]" />
               </button>
-
               <button
                 onClick={() => setIsMeetingModalOpen(true)}
                 className="flex items-center gap-2 bg-[#1C3557] text-white px-4 py-2 rounded-md shadow hover:bg-[#15294a] text-sm"
@@ -304,17 +308,10 @@ const Meeting = () => {
                 <FaPlus /> Add Meeting
               </button>
 
-              <button
-                className="relative"
-                onMouseEnter={() => setIsDatePickerOpen(true)}
-                onMouseLeave={() => setIsDatePickerOpen(false)}
-              >
+              {/* Date Picker */}
+              <div className="relative">
                 <button
-                  onClick={() => {
-                    if (!selectedDate && !isDatePickerOpen) {
-                      setIsDatePickerOpen(true);
-                    }
-                  }}
+                  onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
                   className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md shadow text-sm hover:bg-gray-50"
                 >
                   <span>
@@ -322,29 +319,25 @@ const Meeting = () => {
                   </span>
                   <IoMdArrowDropdownCircle className="text-[#1C3557]" />
                 </button>
-
                 {isDatePickerOpen && (
                   <div className="absolute right-0 z-10 mt-2">
                     <DatePicker
-                      onChange={(date) => {
-                        setSelectedDate(date);
-                        // Don't close on date select
-                      }}
+                      onChange={(date) => setSelectedDate(date)}
                       inline
                       className="border rounded-lg shadow-lg"
                     />
                   </div>
                 )}
-              </button>
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px]  overflow-y-scroll scrollbar-none flex flex-col justify-between">
-            {/* Tabs */}
+          <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
+          {/* Tabs */}
             <div>
-              <div className="flex p-3">
+              <div className="flex gap-4 p-4 border-b">
                 <button
-                  className={`py-1 px-4 rounded-lg text-sm font-medium  ${
+                  className={`px-4 py-2 bg-[#1C3557] text-black rounded-md text-sm  ${
                     activeTab === "upcoming"
                       ? "bg-[#1C3557] text-white"
                       : "bg-transparent text-black"
@@ -354,7 +347,7 @@ const Meeting = () => {
                   Scheduled
                 </button>
                 <button
-                  className={`py-1 px-4 rounded-lg  text-sm font-medium ml-4 ${
+                  className={`px-4 py-2 bg-[#1C3557] text-black  rounded-md text-sm ${
                     activeTab === "completed"
                       ? "bg-[#1C3557] text-white"
                       : "bg-transparent text-black"
@@ -410,43 +403,41 @@ const Meeting = () => {
 
                         <td className="px-2 py-[6px] text-center text-[8px] whitespace-nowrap ">
                           {activeTab === "upcoming" ? (
-                            
-                              <>
-                                {(() => {
-                                  const label = getMeetingStatusLabel(
-                                    item.meetingStatus,
-                                    item.selectedDate,
-                                    item.startTime,
-                                    item.endTime
-                                  );
+                            <>
+                              {(() => {
+                                const label = getMeetingStatusLabel(
+                                  item.meetingStatus,
+                                  item.selectedDate,
+                                  item.startTime,
+                                  item.endTime
+                                );
 
-                                  const className = getMeetingStatusClass(
-                                    label,
-                                    item.meetingStatus
-                                  );
-                                  const isStarted =
-                                    label.toLowerCase() === "start";
+                                const className = getMeetingStatusClass(
+                                  label,
+                                  item.meetingStatus
+                                );
+                                const isStarted =
+                                  label.toLowerCase() === "start";
 
-                                  return isStarted ? (
-                                    <button
-                                      onClick={() =>
-                                        router.push(
-                                          `/admin-main/ui/meeting/liveclass/`
-                                        )
-                                      }
-                                      className={`text-[10px] px-2 py-[7px] rounded-xl text-white inline-block text-center w-[130px] cursor-pointer ${className}`}
-                                    >
-                                      {label}
-                                    </button>
-                                  ) : (
-                                    <span
-                                      className={`text-[10px] px-2 py-[7px] rounded-lg inline-block text-center w-[130px] ${className}`}
-                                    >
-                                      {label}
-                                    </span>
-                                  );
-                                })()}
-                              
+                                return isStarted ? (
+                                  <button
+                                    onClick={() =>
+                                      router.push(
+                                        `/admin-main/ui/meeting/liveclass/`
+                                      )
+                                    }
+                                    className={`text-[10px] px-2 py-[7px] rounded-xl text-white inline-block text-center w-[130px] cursor-pointer ${className}`}
+                                  >
+                                    {label}
+                                  </button>
+                                ) : (
+                                  <span
+                                    className={`text-[10px] px-2 py-[7px] rounded-lg inline-block text-center w-[130px] ${className}`}
+                                  >
+                                    {label}
+                                  </span>
+                                );
+                              })()}
                             </>
                           ) : (
                             <>
