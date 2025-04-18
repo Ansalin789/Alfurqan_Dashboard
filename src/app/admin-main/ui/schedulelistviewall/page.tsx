@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 const SalaryCard = () => {
     const [activeTab, setActiveTab] = useState("Upcoming");
     const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 11;
  const [showNotifications, setShowNotifications] = useState(false);
    const [notificationCount, setNotificationCount] = useState(5);
    const [notifications, setNotifications] = useState([
@@ -65,7 +65,7 @@ const SalaryCard = () => {
       salaryamount: "Tajweed Masterclass",
       paymentdate: "January 2, 2020",
       class: "Trial Class",
-      status: "Available at 7.30 AM",
+      status: " 7.30 AM",
     },
     {
       employeeid: 799,
@@ -74,7 +74,7 @@ const SalaryCard = () => {
       salaryamount: "Tajweed Masterclass",
       paymentdate: "January 2, 2020",
       class: "Trial Class",
-      status: "Available at 7.30 AM",
+      status: " 7.30 AM",
     },
     {
       employeeid: 800,
@@ -83,11 +83,118 @@ const SalaryCard = () => {
       salaryamount: "Tajweed Masterclass",
       paymentdate: "January 2, 2020",
       class: "Group Class",
-      status: "Re-Schedule Requested",
+      status: "Re-Schedule",
     },
-    // Add more upcoming records...
+    {
+      employeeid: 801,
+      employeename: "Aliyah Karim",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 3, 2020",
+      class: "Trial Class",
+      status: " 7.30 AM",
+    },
+    {
+      employeeid: 802,
+      employeename: "Zayd Malik",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 4, 2020",
+      class: "Group Class",
+      status: "Completed",
+    },
+    {
+      employeeid: 803,
+      employeename: "Fatima Noor",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 5, 2020",
+      class: "Trial Class",
+      status: " 7.30 AM",
+    },
+    {
+      employeeid: 804,
+      employeename: "Adam Yusuf",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 6, 2020",
+      class: "Group Class",
+      status: "Re-Schedule",
+    },
+    {
+      employeeid: 805,
+      employeename: "Layla Hassan",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 7, 2020",
+      class: "Trial Class",
+      status: " 7.30 AM",
+    },
+    {
+      employeeid: 806,
+      employeename: "Bilal Rahman",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 8, 2020",
+      class: "Group Class",
+      status: "Completed",
+    },
+    {
+      employeeid: 807,
+      employeename: "Amina Khalid",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 9, 2020",
+      class: "Trial Class",
+      status: "Re-Schedule",
+    },
+    {
+      employeeid: 808,
+      employeename: "Hasan Ali",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 10, 2020",
+      class: "Trial Class",
+      status: " 7.30 AM",
+    },
+    {
+      employeeid: 809,
+      employeename: "Sara Iqbal",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 11, 2020",
+      class: "Group Class",
+      status: " 7.30 AM",
+    },
+    {
+      employeeid: 810,
+      employeename: "Yusuf Hamza",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 12, 2020",
+      class: "Trial Class",
+      status: "Completed",
+    },
+    {
+      employeeid: 811,
+      employeename: "Maryam Zain",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 13, 2020",
+      class: "Group Class",
+      status: "Re-Schedule",
+    },
+    {
+      employeeid: 812,
+      employeename: "Khalid Omar",
+      designation: "Angela Moss",
+      salaryamount: "Tajweed Masterclass",
+      paymentdate: "January 14, 2020",
+      class: "Trial Class",
+      status: " 7.30 AM",
+    },
   ];
-
+  
 
   const completedData = upcomingData.map((row) => ({
     ...row,
@@ -99,7 +206,7 @@ const SalaryCard = () => {
 
   return (
     <BaseLayout4>
-      <div className="w-full h-screen bg-[#e9e9e9] px-4 py-6">
+      <div className="w-full h-screen bg-[#e9e9e9] px-4 py-6 mr-6">
       <div className="flex justify-between items-start mb-1.5">
   {/* Left Side - Expenses Heading */}
   <div className="text-start">
@@ -237,11 +344,11 @@ const SalaryCard = () => {
               <td className="p-2">{row.paymentdate}</td>
               <td className="p-2">
                 {activeTab === "Completed" ? (
-                  <span className="inline-flex items-center justify-center w-24 h-8 px-3 py-1 rounded-2xl bg-green-600 text-white">Completed</span>
+                  <span className="inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-2xl bg-green-600 text-white">Completed</span>
                 ) : (
                   <span
-                    className={`inline-flex items-center justify-center w-24 h-8 px-3 py-1 rounded-2xl ${
-                      row.status === "Available at 7.30 AM" ? "bg-[#1C3557] text-white" : "bg-[#79D67B] text-white"
+                    className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-2xl ${
+                      row.status === " 7.30 AM" ? "bg-[#1C3557] text-white" : "bg-[#79D67B] text-white"
                     }`}
                   >
                     {row.status}

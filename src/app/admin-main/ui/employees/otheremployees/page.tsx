@@ -5,8 +5,11 @@ import BaseLayout4 from "@/components/BaseLayout4";
 import { BsCalendar4Event, BsClockHistory } from "react-icons/bs";
 import { RiMenu2Fill } from "react-icons/ri";
 import { GrCurrency } from "react-icons/gr";
-import { MdOutlineCurrencyExchange, MdOutlineTimer } from "react-icons/md";
+import { MdOutlineCurrencyExchange, MdOutlineTimer, MdOutlineCancel } from "react-icons/md";
 import { IoSunnyOutline } from "react-icons/io5";
+import { IoIosCheckmarkCircleOutline } from "react-icons/io";
+
+
 
 const EmployeePage = () => {
   const [activeTab, setActiveTab] = useState("Wages");
@@ -14,98 +17,104 @@ const EmployeePage = () => {
 
   return (
     <BaseLayout4>
-      <div className="p-5 min-h-screen w-full">
+      <div className="p-4 min-h-screen w-full">
+        <h2 className="font-semibold pb-2">Other Employees</h2>
+
         <div className="grid grid-cols-5 gap-4">
           {/* Profile Card (60%) with Contact Details */}
-          <div className="col-span-3 bg-white p-6 rounded-lg shadow flex justify-between flex-row">
-            <div className="border-r-2 justify-center p-5 text-center">
-              <img
-                src="/assets/images/Avatar.png"
-                alt="Avatar"
-                className="w-20 h-20 rounded-full border"
-              />
-              <h2 className="font-semibold mt-2 text-[12px]"> Alen Smith</h2>
-              <p className="text-xs text-gray-500">Admin</p>
+          <div className="col-span-3 bg-white p-4 rounded-xl shadow flex justify-between flex-row">
+            <div className="flex flex-col items-center md:w-1/3 text-center">
+              <div className="border-r-2 p-6 -ml-8">
+                <div className="w-10 h-10 rounded-full overflow-hidden ml-2">
+                  <img
+                    src="/assets/images/Avatar.png"
+                    alt="Avatar"
+                    width={96} height={96}
+                  />
+                </div>
+                <h2 className="text-xs font-medium mt-4"> Alen Smith</h2>
+                <p className="text-xs text-gray-500">Admin</p>
+              </div>
             </div>
-            <div className="flex justify-between p-2 gap-6">
+            <div className="flex justify-between gap-20">
               <div>
                 <div className="mt-4 text-xs w-full">
-                  <h4 className="font-bold text-[13px] -mt-5">
+                  <h4 className="text-xs py-4 font-medium -mt-10">
                     Contact & Details
                   </h4>
-                  <p className="py-2 font-semibold  text-gray-600">Email:</p>
-                  <span>asulaiman403@gmail.com</span>
-                  <p className="py-2 font-semibold  text-gray-600">Phone: </p>
-                  <span>+880 1234 567891</span>
-                  <p className="py-2 font-semibold  text-gray-600">
+                  <p className="text-[12px] text-gray-500">Email:</p>
+                  <span className="text-[10px] text-gray-400">asulaiman403@gmail.com</span>
+                  <p className="text-[12px] text-gray-500">Phone: </p>
+                  <span className="text-[10px] text-gray-400">+880 1234 567891</span>
+                  <p className="text-[12px] text-gray-500">
                     Date of Birth:
                   </p>
-                  <span> 28, July 2000</span>
-                  <p className="py-2 font-semibold  text-gray-600">Country:</p>
-                  <span> Canada</span>
-                  <p className="py-2 font-semibold  text-gray-600">
+                  <span className="text-[10px] text-gray-400"> 28, July 2000</span>
+                  <p className="text-[12px] text-gray-500">Country:</p>
+                  <span className="text-[10px] text-gray-400"> Canada</span>
+                  <p className="text-[12px] text-gray-500">
                     Gender:
                   </p>{" "}
-                  <span>Male</span>
+                  <span className="text-[10px] text-gray-400">Male</span>
                 </div>
               </div>
               <div>
                 <div className="mt-4 text-gray-600 text-xs w-full">
-                  <p className="py-2 font-semibold">Languages Known:</p>{" "}
-                  <span> English, Hindi, Arabic</span>
-                  <p className="py-2 font-semibold"> City:</p>{" "}
-                  <span> Toronto</span>
-                  <p className="py-2 font-semibold">Residential Address:</p>
-                  <span>
+                  <p className="text-[12px] text-gray-500">Languages Known:</p>{" "}
+                  <span className="text-[10px] text-gray-400"> English, Hindi, Arabic</span>
+                  <p className="text-[12px] text-gray-500"> City:</p>{" "}
+                  <span className="text-[10px] text-gray-400"> Toronto</span>
+                  <p className="text-[12px] text-gray-500">Residential Address:</p>
+                  <span className="text-[10px] text-gray-400">
                     {" "}
                     325, Residences on Bloor, Bloor St E, Toronto, Ontario.
                   </span>
-                  <p className="py-2 font-semibold">Nationality:</p>{" "}
-                  <span> Canadian</span>
+                  <p className="text-[12px] text-gray-500">Nationality:</p>{" "}
+                  <span className="text-[10px] text-gray-400"> Canadian</span>
                 </div>
               </div>
             </div>
           </div>
           {/* Educational Details Card (20%) */}
           <div className="col-span-1 bg-white p-6 rounded-lg shadow">
-            <div className="mt-4 text-xs w-full">
-              <h4 className="font-bold text-[13px] -mt-5">
+            <div className="mt-2 text-xs w-full">
+              <h4 className="text-xs py-4 font-medium -mt-10">
                 Educational Information
               </h4>
-              <p className="py-2 font-semibold text-gray-600">
+              <p className="text-[12px] text-gray-500">
                 Highest Qualification:{" "}
               </p>{" "}
-              <span>MBA</span>
-              <p className="py-2 font-semibold text-gray-600">
+              <span className="text-[10px] text-gray-400">MBA</span>
+              <p className="text-[12px] text-gray-500">
                 University/Institute:
               </p>{" "}
-              <span> ABC School of Education</span>
-              <p className="py-2 font-semibold text-gray-600">
+              <span className="text-[10px] text-gray-400"> ABC School of Education</span>
+              <p className="text-[12px] text-gray-500">
                 Previous Job Title:{" "}
               </p>{" "}
-              <span>Junior Developer</span>
-              <p className="py-2 font-semibold text-gray-600">Experience: </p>
-              <span>2 years</span>
+              <span className="text-[10px] text-gray-400">Junior Developer</span>
+              <p className="text-[12px] text-gray-500">Experience: </p>
+              <span className="text-[10px] text-gray-400">2 years</span>
             </div>
           </div>
           {/* Bank Details Card (20%) */}
           <div className="col-span-1 bg-white p-6 rounded-lg shadow">
-            <div className="mt-4 text-xs w-full">
-              <h4 className="font-bold text-[13px] -mt-5">Bank Details</h4>
-              <p className="py-2 font-semibold text-gray-600">Bank Name:</p>
-              <span>Lorem Ipsum</span> <br />
-              <p className="py-2 font-semibold text-gray-600">
+            <div className="mt-2 text-xs w-full">
+              <h4 className="text-xs py-4 font-medium -mt-10">Bank Details</h4>
+              <p className="text-[12px] text-gray-500">Bank Name:</p>
+              <span className="text-[10px] text-gray-400">Lorem Ipsum</span> <br />
+              <p className="text-[12px] text-gray-500">
                 Account Number:
               </p>{" "}
-              <span> 1234567890</span>
-              <p className="py-2 font-semibold text-gray-600">
+              <span className="text-[10px] text-gray-400"> 1234567890</span>
+              <p className="text-[12px] text-gray-500">
                 Bank Code:
               </p>{" "}
-              <span>000-00000</span>
-              <p className="py-2 font-semibold text-gray-600">
+              <span className="text-[10px] text-gray-400">000-00000</span>
+              <p className="text-[12px] text-gray-500">
                 Passport Number:
               </p>
-              <span> ABCD00000</span>
+              <span className="text-[10px] text-gray-400"> ABCD00000</span>
             </div>
           </div>
         </div>
@@ -117,11 +126,10 @@ const EmployeePage = () => {
             {tabs.map((tab) => (
               <button
                 key={tab}
-                className={`px-6 py-2 text-sm font-semibold rounded-lg focus:outline-none transition-all duration-200 ${
-                  activeTab === tab
-                    ? "bg-[#102645] text-white shadow"
-                    : "text-black"
-                }`}
+                className={`px-3 py-[7px] text-xs font-medium rounded-lg focus:outline-none transition-all duration-200 ${activeTab === tab
+                  ? "bg-[#102645] text-white shadow"
+                  : "text-black"
+                  }`}
                 onClick={() => setActiveTab(tab)}
               >
                 {tab}
@@ -132,77 +140,84 @@ const EmployeePage = () => {
           {/* Tab Content */}
           <div className="p-4">
             {activeTab === "Wages" && (
-              <table className="w-full border border-gray-200 rounded-md">
-                <thead className="text-left">
-                  <tr className="text-sm text-gray-700 border-b border-gray-200">
-                    <th className="p-4 font-medium">
-                      <div className="flex items-center space-x-2">
-                        <BsCalendar4Event className="text-base" />
-                        <span>Class Type</span>
-                      </div>
-                    </th>
-                    <th className="p-4 font-medium border-l border-gray-200">
-                      <div className="flex items-center space-x-2">
-                        <span className="material-icons text-base">
-                          <RiMenu2Fill className="text-base" />
-                        </span>
-                        <span>Rate</span>
-                      </div>
-                    </th>
-                    <th className="p-4 font-medium border-l border-gray-200">
-                      <div className="flex items-center space-x-2">
-                        <span className="material-icons text-base">
-                          <GrCurrency />
-                        </span>
-                        <span>Currency</span>
-                      </div>
-                    </th>
-                    <th className="p-4 font-medium border-l border-gray-200">
-                      <div className="flex items-center space-x-2">
-                        <span className="material-icons text-base">
-                          <MdOutlineTimer />
-                        </span>
-                        <span>Duration</span>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm text-gray-900">
-                  {[
-                    ["Trial Class", "-", "-", "-"],
-                    ["Regular Class", "-", "-", "-"],
-                    ["Group Class", "-", "-", "-"],
-                    ["Fixed Salary", "$2000", "Dirhams", "Monthly"],
-                  ].map(([type, rate, currency, duration], index) => (
-                    <tr key={index} className="border-t border-gray-200">
-                      <td className="p-2">{type}</td>
-                      <td className="p-2 border-l border-gray-200">{rate}</td>
-                      <td className="p-2 border-l border-gray-200">
-                        {type === "Fixed Salary" ? (
-                          <select className="p-1 focus:outline-none">
-                            <option>Dirhams</option>
-                            <option>USD</option>
-                            <option>INR</option>
-                          </select>
-                        ) : (
-                          currency
-                        )}
-                      </td>
-                      <td className="p-2 border-l border-gray-200">
-                        {type === "Fixed Salary" ? (
-                          <select className="p-1 focus:outline-none">
-                            <option>Monthly</option>
-                            <option>Weekly</option>
-                            <option>Daily</option>
-                          </select>
-                        ) : (
-                          duration
-                        )}
-                      </td>
+              <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] h-[270px] mx-auto">
+                <table className="w-full border-gray-200 rounded-md">
+                  <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                    <tr className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold text-center justify-center">
+                      <th className="p-4 font-semibold text-[12px] text-center">
+                        <div className="flex items-center text-center space-x-2">
+                          <BsCalendar4Event className="text-base" />
+                          <span>Class Type</span>
+                        </div>
+                      </th>
+                      <th className="p-4 font-semibold text-[12px] text-center">
+                        <div className="flex items-center space-x-2">
+                          <span className="material-icons text-base">
+                            <RiMenu2Fill className="text-base" />
+                          </span>
+                          <span>Rate</span>
+                        </div>
+                      </th>
+                      <th className="p-4 font-semibold text-[12px] text-center">
+                        <div className="flex items-center space-x-2">
+                          <span className="material-icons text-base">
+                            <GrCurrency />
+                          </span>
+                          <span>Currency</span>
+                        </div>
+                      </th>
+                      <th className="p-4 font-semibold text-[12px] text-center">
+                        <div className="flex items-center space-x-2">
+                          <span className="material-icons text-base">
+                            <MdOutlineTimer />
+                          </span>
+                          <span>Duration</span>
+                        </div>
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="text-[12px] text-gray-900">
+                    {[
+                      ["Trial Class", "-", "-", "-"],
+                      ["Regular Class", "-", "-", "-"],
+                      ["Group Class", "-", "-", "-"],
+                      ["Team Class", "-", "-", "-"],
+                      ["Group Class", "-", "-", "-"],
+                      ["Fixed Salary", "$2000", "Dirhams", "Monthly"],
+                      ["Special Class", "-", "-", "-"],
+                      ["Group Class", "-", "-", "-"],
+                      ["Group Class", "-", "-", "-"],
+                    ].map(([type, rate, currency, duration], index) => (
+                      <tr key={index} className={` text-[12px] overflow-y-scroll scrollbar-none ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}>
+                        <td className="p-2">{type}</td>
+                        <td className="p-2">{rate}</td>
+                        <td className="p-2">
+                          {type === "Fixed Salary" ? (
+                            <select className="p-1 focus:outline-none text-[12px] bg-transparent">
+                              <option>Dirhams</option>
+                              <option>USD</option>
+                              <option>INR</option>
+                            </select>
+                          ) : (
+                            currency
+                          )}
+                        </td>
+                        <td className="p-2">
+                          {type === "Fixed Salary" ? (
+                            <select className="p-1 focus:outline-none bg-transparent">
+                              <option>Monthly</option>
+                              <option>Weekly</option>
+                              <option>Daily</option>
+                            </select>
+                          ) : (
+                            duration
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
 
             {/* Earnings Tab */}
@@ -210,7 +225,7 @@ const EmployeePage = () => {
               <div className="space-y-2">
                 {/* Top Cards */}
                 <div className="flex flex-wrap gap-4">
-                  <div className="bg-[#11244D] text-white rounded-xl p-3 flex items-center justify-between w-56 shadow-md">
+                  <div className="bg-[#11244D] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
                     <div>
                       <p className="text-xs">Total Earnings</p>
                       <h2 className="text-lg font-bold mt-1">$2800</h2>
@@ -219,7 +234,7 @@ const EmployeePage = () => {
                       <MdOutlineCurrencyExchange />
                     </div>
                   </div>
-                  <div className="bg-[#4F4CD1] text-white rounded-xl p-3 flex items-center justify-between w-56 shadow-md">
+                  <div className="bg-[#4F4CD1] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
                     <div>
                       <p className="text-xs">Total Deductions</p>
                       <h2 className="text-lg font-bold mt-1">$400</h2>
@@ -231,48 +246,220 @@ const EmployeePage = () => {
                 </div>
 
                 {/* Scrollable Table */}
-                <div className="rounded-xl border border-[#D5D5D5] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[130px] overflow-y-auto custom-scrollbar">
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-[#000] shadow overflow-hidden">
+                    <div className="overflow-x-auto max-h-[181px] overflow-y-auto custom-scrollbar scrollbar-none">
+                      <table className="w-full min-w-[900px] text-sm text-left">
+                        <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                          <tr className='border-b-[1px] border-[#1C3557]'>
+                            <th className="p-4 font-semibold text-[12px] text-center">Month</th>
+                            <th className="p-4 font-semibold text-[12px] text-center">Total Working Hours</th>
+                            <th className="p-4 font-semibold text-[12px] text-center">Total Earnings</th>
+                            <th className="p-4 font-semibold text-[12px] text-center">Total Deductions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-xs text-[#1D2939]">
+                          {[
+                            {
+                              month: "11/11/2022",
+                              hours: "$500",
+                              earnings: "Monthly Salary",
+                              deductions: "Monthly Salary",
+                            },
+                            {
+                              month: "11/11/2022",
+                              hours: "$500",
+                              earnings: "Monthly Salary",
+                              deductions: "Monthly Salary",
+                            },
+                            {
+                              month: "11/11/2022",
+                              hours: "$500",
+                              earnings: "Monthly Salary",
+                              deductions: "Monthly Salary",
+                            },
+                            {
+                              month: "11/11/2022",
+                              hours: "$500",
+                              earnings: "Monthly Salary",
+                              deductions: "Monthly Salary",
+                            },
+                            {
+                              month: "11/11/2022",
+                              hours: "$500",
+                              earnings: "Monthly Salary",
+                              deductions: "Monthly Salary",
+                            },
+                            {
+                              month: "11/11/2022",
+                              hours: "$500",
+                              earnings: "Monthly Salary",
+                              deductions: "Monthly Salary",
+                            },
+                            {
+                              month: "11/11/2022",
+                              hours: "$500",
+                              earnings: "Monthly Salary",
+                              deductions: "Monthly Salary",
+                            },
+                          ].map((item, index) => (
+                            <tr
+                              key={index}
+                              className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+                            >
+                              <td className="p-2">{item.month}</td>
+                              <td className="p-2">{item.hours}</td>
+                              <td className="p-2">{item.earnings}</td>
+                              <td className="p-2">{item.deductions}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+
+            {/* Leave Record Tab */}
+
+            {activeTab === "Leave Records" && (
+              <div className="space-y-2 ">
+                {/* Summary Cards */}
+                <div className="flex flex-wrap gap-4">
+                  <div className="bg-[#11244D] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
+                    <div>
+                      <p className="text-xs">Total Applied Leave(Days)</p>
+                      <h2 className="text-lg font-bold mt-1">03</h2>
+                    </div>
+                  </div>
+                  <div className="bg-[#4F4CD1] text-white rounded-xl p-4 w-56 shadow-md">
+                    <div>
+                      <p className="text-xs">Total Approved</p>
+                      <h2 className="text-lg font-bold mt-1">02</h2>
+                    </div>
+                  </div>
+                  <div className="bg-[#707791] text-white rounded-xl p-4 w-56 shadow-md">
+                    <div>
+                      <p className="text-xs">Total Declined</p>
+                      <h2 className="text-lg font-bold mt-1">01</h2>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Leave Table */}
+                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
+                  <div className="overflow-x-auto max-h-[180px] overflow-y-auto custom-scrollbar scrollbar-none">
                     <table className="w-full min-w-[600px] text-sm text-left">
-                      <thead className="text-gray-600 border-b border-gray-200 ">
-                        <tr className="text-center">
-                          <th className="p-2 font-semibold">Month</th>
-                          <th className="p-2 font-semibold">
-                            Total Working Hours
-                          </th>
-                          <th className="p-2 font-semibold">Total Earnings</th>
-                          <th className="p-2 font-semibold">
-                            Total Deductions
-                          </th>
+                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                        <tr className="text-black border-b border-gray-900">
+                          <th className="p-4 font-semibold text-[12px] text-center">Employee Name</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Employee ID</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Designation</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Leave Type</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Date Range</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Reason For Leave</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="text-gray-800">
+                      <tbody className="text-gray-800 text-xs">
                         {[
-                          ["January", "170 Hours", "$1050", "$0"],
-                          ["February", "185 Hours", "$170", "$0"],
-                          ["March", "178 Hours", "$140", "$0"],
-                          ["April", "180 Hours", "$125", "$100"],
-                          ["May", "100 Hours", "$190", "$0"],
-                          ["June", "180 Hours", "$138", "$100"],
-                          ["July", "120 Hours", "$210", "$0"],
-                          ["August", "130 Hours", "$260", "$100"],
-                          ["September", "100 Hours", "$186", "$100"],
-                        ].map(([month, hours, earnings, deductions], index) => (
+                          {
+                            id: "#0983867",
+                            name: "Robert james",
+                            designation: "Supervisor",
+                            type: "Sick Leave",
+                            range: "11/02/2024 - 16/02/2024",
+                            reason: "Sickness",
+                            status: "Approved",
+                          },
+                          {
+                            id: "#0983867",
+                            name: "Stefan Salvatore",
+                            designation: "Human Resource",
+                            type: "Casual Leave",
+                            range: "11/02/2024 - 16/02/2024",
+                            reason: "Family Function",
+                            status: "Approved",
+                          },
+                          {
+                            id: "#0983867",
+                            name: "Prasanna Popz",
+                            designation: "Teacher",
+                            type: "Privilege Leave",
+                            range: "11/02/2024 - 16/02/2024",
+                            reason: "Vacation",
+                            status: "Declined",
+                          },
+                          {
+                            id: "#0983867",
+                            name: "Prasanna Popz",
+                            designation: "Teacher",
+                            type: "Privilege Leave",
+                            range: "11/02/2024 - 16/02/2024",
+                            reason: "Vacation",
+                            status: "Declined",
+                          },
+                          {
+                            id: "#0983867",
+                            name: "Prasanna Popz",
+                            designation: "Teacher",
+                            type: "Privilege Leave",
+                            range: "11/02/2024 - 16/02/2024",
+                            reason: "Vacation",
+                            status: "Declined",
+                          },
+                          {
+                            id: "#0983867",
+                            name: "Prasanna Popz",
+                            designation: "Teacher",
+                            type: "Privilege Leave",
+                            range: "11/02/2024 - 16/02/2024",
+                            reason: "Vacation",
+                            status: "Declined",
+                          },
+                        ].map((item, index) => (
                           <tr
                             key={index}
-                            className="border-t border-gray-100 hover:bg-gray-50"
+                            className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
                           >
-                            <td className="p-2 text-[12px] text-center">
-                              {month}
+                            <td className="p-1 text-center">
+                              {item.id}
                             </td>
-                            <td className="p-2 text-[12px] text-center">
-                              {hours}
+                            <td className="p-2 text-center">
+                              {item.name}
                             </td>
-                            <td className="p-2 text-[12px] text-center">
-                              {earnings}
+                            <td className="p-2 text-center">
+                              {item.designation}
                             </td>
-                            <td className="p-2 text-[12px] text-center">
-                              {deductions}
+                            <td className="p-2 text-center">
+                              {item.type}
+                            </td>
+                            <td className="p-2 text-center">
+                              {item.range}
+                            </td>
+                            <td className="p-2 text-center">
+                              {item.reason}
+                            </td>
+                            <td className="p-2 text-center">
+                              <div className="flex items-center gap-2">
+                                {item.status === "Approved" ? (
+                                  <div>
+                                    <span className="inline-flex items-center justify-center  gap-1">
+                                      <span className="text-lg"><IoIosCheckmarkCircleOutline className="text-green-600 text-xs" />
+                                      </span> Approved
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <span className="inline-flex items-center justify-center  gap-1">
+                                      <span className="text-lg"><MdOutlineCancel className="text-red-600 text-xs" />
+                                      </span> Declined
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -282,195 +469,64 @@ const EmployeePage = () => {
                 </div>
               </div>
             )}
-         
 
-          {/* Leave Record Tab */}
+            {/* Working Hours Tab */}
 
-          {activeTab === "Leave Records" && (
-            <div className="space-y-2 ">
-              {/* Summary Cards */}
-              <div className="flex flex-wrap gap-4">
-                <div className="bg-[#11244D] text-white rounded-xl p-2 flex items-center justify-between w-56 shadow-md">
-                  <div>
-                    <p className="text-xs">Total Applied Leave(Days)</p>
-                    <h2 className="text-lg font-bold mt-1">03</h2>
-                  </div>
-                </div>
-                <div className="bg-[#4F4CD1] text-white rounded-xl p-2 w-56 shadow-md">
-                  <div>
-                    <p className="text-xs">Total Approved</p>
-                    <h2 className="text-lg font-bold mt-1">02</h2>
-                  </div>
-                </div>
-                <div className="bg-[#707791] text-white rounded-xl p-2 w-56 shadow-md">
-                  <div>
-                    <p className="text-xs">Total Declined</p>
-                    <h2 className="text-lg font-bold mt-1">01</h2>
-                  </div>
-                </div>
-              </div>
-
-              {/* Leave Table */}
-              <div className="rounded-xl border border-[#D5D5D5] shadow overflow-hidden">
-                <div className="overflow-x-auto max-h-[180px] overflow-y-auto custom-scrollbar">
+            {activeTab === "Working Hours" && (
+              <div className="rounded-xl border border-[#000] shadow overflow-hidden">
+                <div className="overflow-x-auto max-h-[270px] overflow-y-auto custom-scrollbar scrollbar-none">
                   <table className="w-full min-w-[600px] text-sm text-left">
-                    <thead className="text-gray-600 border-b border-gray-200 ">
-                      <tr className="text-center">
-                        <th className="p-2 font-semibold">Employee Name</th>
-                        <th className="p-2 2ont-semibold">Employee ID</th>
-                        <th className="p-2 font-semibold">Designation</th>
-                        <th className="p-2 font-semibold">Leave Type</th>
-                        <th className="p-2 font-semibold">Date Range</th>
-                        <th className="p-2 font-semibold">Reason For Leave</th>
-                        <th className="p-2 font-semibold">Status</th>
-                        <th className="p-2 font-semibold text-center"></th>
+                    <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                      <tr className="text-black border-b border-gray-900">
+                        <th className="p-4 font-semibold text-[12px] text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <BsCalendar4Event className="text-xl" />
+                            <span>Day</span>
+                          </div>
+                        </th>
+                        <th className="p-4 font-semibold text-[12px] text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <BsClockHistory className="text-xl" />
+                            <span>Working Hours</span>
+                          </div>
+                        </th>
+                        <th className="p-4 font-semibold text-[12px] text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <IoSunnyOutline className="text-xl" />
+                            <span>GMT</span>
+                          </div>
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="text-gray-800">
                       {[
-                        {
-                          id: "#0983867",
-                          name: "Robert james",
-                          designation: "Supervisor",
-                          type: "Sick Leave",
-                          range: "11/02/2024 - 16/02/2024",
-                          reason: "Sickness",
-                          status: "Approved",
-                        },
-                        {
-                          id: "#0983867",
-                          name: "Stefan Salvatore",
-                          designation: "Human Resource",
-                          type: "Casual Leave",
-                          range: "11/02/2024 - 16/02/2024",
-                          reason: "Family Function",
-                          status: "Approved",
-                        },
-                        {
-                          id: "#0983867",
-                          name: "Prasanna Popz",
-                          designation: "Teacher",
-                          type: "Privilege Leave",
-                          range: "11/02/2024 - 16/02/2024",
-                          reason: "Vacation",
-                          status: "Declined",
-                        },
-                      ].map((item, index) => (
+                        "Monday",
+                        "Tuesday",
+                        "Wednesday",
+                        "Thursday",
+                        "Friday",
+                        "Friday", // duplicate as per image
+                        "Sunday",
+                      ].map((day, index) => (
                         <tr
                           key={index}
-                          className="border-t border-gray-100 hover:bg-gray-50"
+                          className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
                         >
-                          <td className="p-1 text-[12px] text-center">
-                            {item.id}
+                          <td className="p-2 text-[12px] border-r border-gray-200">
+                            {day}
                           </td>
-                          <td className="p-1 text-[12px] text-center">
-                            {item.name}
+                          <td className="p-2 text-[12px] border-r border-gray-200">
+                            9 AM - 2 PM / 4 PM - 7 PM
                           </td>
-                          <td className="p-1 text-[12px] text-center">
-                            {item.designation}
-                          </td>
-                          <td className="p-1 text-[12px] text-center">
-                            {item.type}
-                          </td>
-                          <td className="p-1 text-[12px] text-center">
-                            {item.range}
-                          </td>
-                          <td className="p-1 text-[12px] text-center">
-                            {item.reason}
-                          </td>
-                          <td className="p-1 text-[12px] text-center">
-                            <div className="flex items-center gap-2">
-                              {item.status === "Approved" ? (
-                                <>
-                                  <span className="text-green-600 p-1 text-[12px] text-center">
-                                    ✅
-                                  </span>
-                                  <span className="p-1 text-[12px] text-center">
-                                    Approved
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <span className="text-red-600 p-1 text-[12px] text-center">
-                                    ❌
-                                  </span>
-                                  <span className="p-1 text-[12px] text-center">
-                                    Declined
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                          <td className="p-4 text-center text-lg text-gray-500 cursor-pointer">
-                            ...
-                          </td>
+                          <td className="p-2 text-[12px]">GMT +4</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Working Hours Tab */}
-
-          {activeTab === "Working Hours" && (
-            <div className="shadow overflow-hidden">
-              <div className="overflow-x-auto max-h-[280px] overflow-y-auto custom-scrollbar">
-                <table className="w-full min-w-[600px] text-sm text-left border border-gray-200">
-                  <thead className="text-gray-600 border-b border-gray-200">
-                    <tr className="text-center">
-                      <th className="p-4 font-semibold border-r border-gray-300">
-                        <div className="flex items-center justify-center gap-2">
-                          <BsCalendar4Event className="text-xl" />
-                          <span>Day</span>
-                        </div>
-                      </th>
-                      <th className="p-4 font-semibold border-r border-gray-300">
-                        <div className="flex items-center justify-center gap-2">
-                         <BsClockHistory className="text-xl" />
-                          <span>Working Hours</span>
-                        </div>
-                      </th>
-                      <th className="p-4 font-semibold">
-                        <div className="flex items-center justify-center gap-2">
-                          <IoSunnyOutline className="text-xl" />
-                          <span>GMT</span>
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-gray-800">
-                    {[
-                      "Monday",
-                      "Tuesday",
-                      "Wednesday",
-                      "Thursday",
-                      "Friday",
-                      "Friday", // duplicate as per image
-                      "Sunday",
-                    ].map((day, idx) => (
-                      <tr
-                        key={idx}
-                        className="border-t border-gray-100 hover:bg-gray-50 text-center"
-                      >
-                        <td className="p-3 text-[12px] border-r border-gray-200">
-                          {day}
-                        </td>
-                        <td className="p-3 text-[12px] border-r border-gray-200">
-                          9 AM - 2 PM / 4 PM - 7 PM
-                        </td>
-                        <td className="p-3 text-[12px]">GMT +4</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-           </div>
+            )}
+          </div>
         </div>
       </div>
     </BaseLayout4>

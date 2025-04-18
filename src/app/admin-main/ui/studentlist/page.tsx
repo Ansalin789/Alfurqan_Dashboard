@@ -6,7 +6,7 @@ const students = [
   {
     id: 1,
     name: "Abdullah Sulaiman",
-    avatar: "/student-avatar.png",
+    avatar: "/assets/images/graduating-student.png",
     rating: 4,
     percentage: "75%",
     studentID: "Islamic History",
@@ -17,20 +17,21 @@ const students = [
     city: "Egyptian",
     courses: ["Arabic", "Quran"],
     package: "Elite / Premium",
+    
   },
 ];
 
 export default function StudentList() {
   return (
     <BaseLayout4>
-      <div className="p-4 w-[1180px] overflow-hidden">
+      <div className="p-4 w-[1300px] overflow-hidden">
         {students.map((student) => {
           const percentageNumber = parseInt(student.percentage.replace("%", ""));
 
           return (
             <div
               key={student.id}
-              className="bg-white shadow-md rounded-lg p-4 flex border border-gray-300 w-[1150px] h-[200px] mb-4"
+              className="bg-white shadow-md rounded-lg p-4 flex border border-gray-300 w-[1245px] h-[200px] mb-4"
             >
               {/* Left Section */}
               <div className="w-1/4 flex flex-col items-center border-r pr-4">
@@ -63,9 +64,9 @@ export default function StudentList() {
 
                 {/* Course Completion Bar */}
                 <div className="w-full max-w-[120px] mt-2">
-                  <div className="w-full h-2 bg-gray-200 rounded-full">
+                  <div className="w-full h-1 bg-gray-200 rounded-full">
                     <div
-                      className="h-full bg-green-500"
+                      className="h-1 w-2 bg-green-500"
                       style={{ width: `${percentageNumber}%` }}
                     />
                   </div>
@@ -77,9 +78,9 @@ export default function StudentList() {
 
               {/* Right Section */}
               <div className="w-3/4 pl-4">
-                <h4 className="text-gray-500 font-semibold mb-1 text-sm">
+                <h2 className="text-gray-800 font-semibold mb-1 text-sm">
                   Contact & Details
-                </h4>
+                </h2>
                 <div className="grid grid-cols-3 gap-x-7 gap-y-1 text-xs">
                   <div className="mt-2">
                     <p className="text-gray-500">Student ID</p>
@@ -87,7 +88,7 @@ export default function StudentList() {
                   </div>
                   <div className="mt-2">
                     <p className="text-gray-500">Email</p>
-                    <p className="font-semibold text-blue-600 truncate">
+                    <p className="font-semibold ">
                       {student.email}
                     </p>
                   </div>
@@ -124,7 +125,7 @@ export default function StudentList() {
         })}
 
         {/* Tabbed Table Section */}
-        <div className="w-[1150px] overflow-hidden">
+        <div className="w-[1245px] overflow-hidden">
           <TabbedTable />
         </div>
       </div>

@@ -172,7 +172,7 @@ const Expenses = () => {
 
   return (
     <BaseLayout4>
-      <div className="w-full h-screen bg-[#e9e9e9] px-4 py-6">
+      <div className="w-full h-screen bg-[#e9e9e9] px-4 py-6 mr-6">
       <div className="flex justify-between items-start mb-1.5">
   {/* Left Side - Expenses Heading */}
   <div className="text-start">

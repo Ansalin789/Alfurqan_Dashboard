@@ -32,7 +32,8 @@ const CountriesCard = () => {
 
   return (
     <div className="bg-white p-5 rounded-xl shadow-md border border-gray-200 w-[350px] h-[250px] flex flex-col justify-between">
-      <h2 className="text-sm font-semibold text-gray-900">Countries</h2>
+      <h2 className="text-lg font-semibold  text-gray-700">
+      Countries</h2>
       <div className="space-y-4 mt-4">
         {countriesData.map((country) => (
           <div key={country.name}>

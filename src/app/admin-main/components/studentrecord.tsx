@@ -17,7 +17,7 @@ const data = [
   { name: "Students On Hold", value: 30, color: "#B0C4DE" },
   { name: "Active Students", value: 80, color: "#6A5ACD" },
   { name: "Inactive Students", value: 50, color: "#00BFFF" },
-  { name: "Students on Break", value: 60, color: "#007BFF" },
+  { name: " Break", value: 60, color: "#007BFF" },
 ];
 
 // ✅ Type-safe tooltip component
@@ -39,17 +39,17 @@ const CustomTooltip = ({
 
 const StudentsRecord = () => {
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 w-[500px] h-[250px]">
+    <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 w-[530px] h-[250px]">
       <h2 className="text-lg font-semibold mb-4 text-gray-700">
         Student Records
       </h2>
       <div className="flex">
         {/* Legend */}
-        <div className="space-y-4 mr-8">
+        <div className="space-y-4 mr-8 text-sm">
           {data.map((item) => (
-            <div key={item.name} className="flex items-center space-x-3">
+            <div key={item.name} className="flex items-center space-x-3 text-sm">
               <div
-                className="w-4 h-4 rounded-full"
+                className="w-3 h-3 rounded-full"
                 style={{ background: item.color }}
               ></div>
               <span className="text-sm text-gray-600">{item.name}</span>
@@ -58,9 +58,13 @@ const StudentsRecord = () => {
         </div>
 
         {/* Chart */}
-        <div className="w-[250px] h-[200px]">
+        <div className="w-[300px] h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} barSize={50}>
+          <BarChart
+             data={data}
+             barSize={38}
+                 barCategoryGap={30} // <-- Add this line
+>              
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis dataKey="name" axisLine={false} tick={false} />
               <YAxis hide />
