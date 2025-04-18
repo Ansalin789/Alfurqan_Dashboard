@@ -95,7 +95,7 @@ const Page: React.FC = () => {
 
   return (
     <BaseLayout4>
-      <div className="p-5 sm:p-6 md:p-8 min-h-screen w-full max-w-8xl mx-auto mr-5">
+      <div className="p-5 sm:p-6 md:p-8 min-h-screen w-full max-w-8xl mx-auto ">
         <h2 className="text-xl sm:text-2xl font-semibold mb-6">Role Access</h2>
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
