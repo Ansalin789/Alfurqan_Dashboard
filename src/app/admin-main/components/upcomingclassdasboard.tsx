@@ -62,7 +62,7 @@ const UpcomingClasses: React.FC = () => {
 
   return (
     <div className="p-4 shadow-lg rounded-[20px] bg-[#e0dfdf] w-full max-w-md mx-auto">
-      <h3 className="text-[13px] font-semibold text-gray-800 mb-4 text-center">
+      <h3 className="text-[13px] font-semibold text-gray-800 mb-3 text-center">
         Upcoming Classes
       </h3>
       
@@ -86,7 +86,7 @@ const UpcomingClasses: React.FC = () => {
           
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="text-[13px] font-medium text-gray-800">
+                  <h4 className="text-[12px] font-medium text-gray-800">
                     {classItem.title}
                   </h4>
                   <p className="text-[11px] text-gray-600 mt-1">

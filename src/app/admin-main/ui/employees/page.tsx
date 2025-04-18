@@ -657,7 +657,7 @@ const Page = () => {
          <div className="h-[600px] overflow-y-auto scrollbar-none">
          <div className="flex flex-col lg:flex-row gap-11 min-w-[800px]">
               {/* Teachers Records */}
-              <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full lg:min-w-[450px] lg:max-w-[580px] h-[280px]">
+              <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full lg:min-w-[480px] lg:max-w-[600px] h-[280px]">
                 <h2 className="text-[16px] font-semibold text-gray-800 mb-4">Teachers Record</h2>
                 <div className="flex items-center">
                   <div className="space-y-6 text-xs">
@@ -697,7 +697,7 @@ const Page = () => {
               </div>
 
               {/* Gender Chart */}
-              <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:w-[280px] h-[280px] flex flex-col items-center relative">
+              <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:w-[290px] h-[280px] flex flex-col items-center relative">
                 <h2 className="text-[16px] font-semibold text-gray-800 self-start">Gender</h2>
                 <div className="relative w-full h-[170px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -739,7 +739,7 @@ const Page = () => {
               </div>
 
               {/* Countries Block */}
-              <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:w-[280px] h-[280px] space-y-3">
+              <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:w-[290px] h-[280px] space-y-3">
                 <h2 className="text-[16px] font-semibold text-gray-800">Countries</h2>
                 {countriesData.map((country, i) => (
                   <div key={i} className="flex items-center gap-2">
@@ -796,34 +796,34 @@ const Page = () => {
                   .map((teacher) => (
                     <div
                       key={teacher._id}
-                      className="bg-white shadow-md rounded-lg p-4 sm:p-5"
+                      className="bg-white shadow-md rounded-lg p-5 sm:p-5"
                     >
                       <div className="flex justify-center">
                         <Image
                           src="/assets/images/proff.jpg"
                           alt="Teacher"
-                          className="w-10 h-10 rounded-full"
+                          className="w-10 h-10 mt-2 rounded-full"
                           width={40}
                           height={40}
                         />
                       </div>
                       <div className="mt-3 text-center">
-                        <h3 className="text-sm font-semibold text-[#223857]">
+                        <h3 className="text-sm font-bold text-[#223857]">
                           {teacher.userName}
                         </h3>
-                        <p className="text-xs mt-1 text-[#717579]">
+                        <p className="text-xs mt-2 text-[#717579]">
                           Level: {teacher.level}
                         </p>
-                        <p className="text-xs mt-1 text-[#717579]">{teacher.subject}</p>
-                        <div className="flex flex-col gap-2 mt-3">
+                        <p className="text-xs mt-2 text-[#717579]">{teacher.subject}</p>
+                        <div className="flex flex-col justify-center gap-3 px-5 mt-2">
                           <button
-                            className="text-xs sm:text-[12px] bg-[#c95b45] text-white px-2 py-1 rounded-lg"
+                            className="text-[12px] bg-[#c95b45] text-white px-2 py-1 rounded-lg"
                             onClick={() => handlePortalAccess(teacher._id)}
                           >
                             Portal Access
                           </button>
                           <button
-                            className="text-xs sm:text-[12px] bg-[#223857] text-white px-2 py-1 rounded-lg"
+                            className="text-[12px] bg-[#223857] text-white px-2 py-1 rounded-lg"
                             onClick={() => handleViewTeacher(teacher._id)}
                           >
                             View Profile
@@ -843,7 +843,7 @@ const Page = () => {
             <div className="h-[600px] overflow-y-auto scrollbar-none">
             <div className="flex flex-col lg:flex-row gap-11 min-w-[800px]">
           {/* Teachers Records */}
-          <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full lg:min-w-[450px] lg:max-w-[580px] h-[280px]">
+          <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full lg:min-w-[480px] lg:max-w-[600px] h-[280px]">
   <h2 className="text-[16px] font-semibold text-gray-800 mb-4">Teachers Record</h2>
   <div className="flex  items-center">
     <div className="space-y-6 text-xs">
@@ -884,7 +884,7 @@ const Page = () => {
 
 
   {/* Gender Chart */}
-  <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-[280px] h-[280px] flex flex-col items-center  relative">
+  <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-[290px] h-[280px] flex flex-col items-center  relative">
   <h2 className="text-[16px] font-semibold text-gray-800 self-start">Gender</h2>
   <div className="relative w-full h-[170px]">
     <ResponsiveContainer width="100%" height="100%">
@@ -929,7 +929,7 @@ const Page = () => {
 
 
   {/* Countries Block */}
-  <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-[280px] h-[280px] space-y-3">
+  <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-[290px] h-[280px] space-y-3">
   <h2 className="text-[16px] font-semibold text-gray-800">Countries</h2>
   {empcountriesData.map((country, i) => (
     <div key={i} className="flex items-center gap-2">
@@ -987,14 +987,14 @@ const Page = () => {
                                 key={employee._id}
                                 className="bg-white shadow-md rounded-lg p-5"
                               >
-                                <div className="flex  items-center ">
+                                <div className="flex  justify-center ">
                                   <Image
                                     src={
                                       employee.profileImage ??
                                       "/assets/images/proff.jpg"
                                     }
                                     alt="Employee"
-                                    className="w-10 h-10 ml-[70px] mt-3 rounded-full"
+                                    className="w-10 h-10  mt-2 rounded-full"
                                     width={40}
                                     height={40}
                                   />
