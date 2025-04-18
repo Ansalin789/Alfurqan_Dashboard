@@ -282,7 +282,7 @@ export default function KnowledgeBase() {
         </div>
 
         {/* Videos */}
-        <div className="p-4 mt-4 bg-white rounded-lg overflow-y-auto h-[290px] w-[1200px] scrollbar-none">
+        <div className="p-4 mt-4 bg-white rounded-lg overflow-y-auto h-[290px] w-full scrollbar-none">
           <div className="flex gap-4 flex-wrap mt-4">
             {/* Add Video Card */}
             <div
