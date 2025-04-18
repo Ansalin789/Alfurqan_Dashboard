@@ -112,12 +112,12 @@ const CoursesChart = () => {
 
       <ResponsiveContainer width="100%" height={198}>
         <BarChart data={courseData} barCategoryGap={30}>
-          <XAxis
-            dataKey="name"
-            tick={{ fill: "#7f9cb6", fontSize: 10 }}
+          {/* <XAxis
+            // dataKey="name"
+            // tick={{ fill: "#7f9cb6", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
-          />
+          /> */}
           <Tooltip
             content={<CustomTooltip active={undefined} payload={undefined} />}
             wrapperStyle={{ backgroundColor: "transparent", border: "none" }} // Remove tooltip bg
@@ -170,7 +170,7 @@ const PreferredTeachersCard = () => {
         <h2 className="text-sm font-semibold text-gray-900">
           Teacher Assigned - Not Assigned
         </h2>
-        <div className="relative flex items-center justify-center">
+        <div className="relative flex items-center justify-center pt-4">
           {data.map((item) => (
             <div key={item.count}>
               <PieChart width={150} height={150}>
@@ -241,11 +241,11 @@ const PreferredTeachersCard = () => {
         <div className="flex justify-center gap-4 mt-16 text-gray-700 text-sm">
           <div className="flex items-center text-[10px]">
             <span className="w-2 h-2 bg-[#0D1B2A] rounded-sm mr-1"></span>
-            Male
+            Assigned
           </div>
           <div className="flex items-center text-[10px]">
             <span className="w-2 h-2 bg-[#4B9EFF] rounded-sm mr-1"></span>
-            Female
+            Not-Assigned
           </div>
         </div>
       </div>
@@ -304,7 +304,7 @@ const TeachersStudents = () => {
 
   return (
     <div>
-      <h2 className="text-[15px] font-semibold text-gray-800 mb-3">
+      <h2 className="text-sm font-semibold text-gray-900 mb-3">
         Teachers - Students
       </h2>
       <div className="flex justify-between text-[10px] mb-2 border-b pb-2">
