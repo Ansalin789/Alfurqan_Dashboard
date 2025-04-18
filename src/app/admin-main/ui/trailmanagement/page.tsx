@@ -151,116 +151,6 @@ const TrailManagement = () => {
   const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
-  const Pagination = () => {
-    return (
-      <div>
-        <div className="flex justify-between items-center p-3">
-          <p className="text-[9px] text-gray-600">
-            Showing {indexOfFirstItem + 1}-
-            {Math.min(indexOfLastItem, filteredUsers.length)} from{" "}
-            {filteredUsers.length} data
-          </p>
-          <div className="flex space-x-2 text-[8px]">
-            {/* Previous Button */}
-            <button
-              className={`px-2 py-1 rounded ${
-                currentPage === 1
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              &lt;
-            </button>
-
-            {/* Pagination Numbers */}
-            {totalPages > 5 ? (
-              <>
-                {/* First Page */}
-                <button
-                  className={`px-2 py-1 rounded ${
-                    currentPage === 1
-                      ? "bg-[#1B2B65] text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
-                  onClick={() => setCurrentPage(1)}
-                >
-                  1
-                </button>
-
-                {/* Left Ellipsis */}
-                {currentPage > 3 && <span className="px-2 py-1">...</span>}
-
-                {/* Pages Around Current */}
-                {Array.from({ length: 3 }, (_, i) => currentPage - 1 + i)
-                  .filter((page) => page > 1 && page < totalPages)
-                  .map((page) => (
-                    <button
-                      key={page}
-                      className={`px-2 py-1 rounded ${
-                        currentPage === page
-                          ? "bg-[#1B2B65] text-white"
-                          : "bg-gray-200 hover:bg-gray-300"
-                      }`}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  ))}
-
-                {/* Right Ellipsis */}
-                {currentPage < totalPages - 2 && (
-                  <span className="px-2 py-1">...</span>
-                )}
-
-                {/* Last Page */}
-                <button
-                  className={`px-2 py-1 rounded ${
-                    currentPage === totalPages
-                      ? "bg-[#1B2B65] text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
-                  onClick={() => setCurrentPage(totalPages)}
-                >
-                  {totalPages}
-                </button>
-              </>
-            ) : (
-              // Display all pages when totalPages <= 5
-              [...Array(totalPages)].map((_, index) => (
-                <button
-                  key={index + 1}
-                  className={`px-2 py-1 rounded ${
-                    currentPage === index + 1
-                      ? "bg-[#1B2B65] text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
-                  onClick={() => setCurrentPage(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              ))
-            )}
-
-            {/* Next Button */}
-            <button
-              className={`px-2 py-1 rounded ${
-                currentPage === totalPages
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              &gt;
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   useEffect(() => {
     Modal.setAppElement("body");
   }, []);
@@ -410,21 +300,18 @@ const TrailManagement = () => {
 
   return (
     <BaseLayout4>
-      <div className="p-3 pr-9 mx-auto h-full">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <h2 className="text-[18px]  font-semibold">
-              Scheduled Trail Classes
-            </h2>
-          </div>
+      <div className="p-4 w-full pr-9 mx-auto h-full">
+        <div className="flex justify-between ml-7">
+          <h2 className="text-[20px] font-semibold">Scheduled Trail Classes</h2>
         </div>
-        <div className="">
+
+        <div className="p-2">
           <Dashboard />
         </div>
-        <div className="p-4 -ml-4">
-          <div className="flex justify-between items-center p-1">
-            <div className="flex flex-1 mb-2 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
-              <div className="flex">
+        <div className="w-full max-w-[1300px] mx-auto px-4">
+          <div className="flex justify-between items-center p-2 -ml-2">
+            <div className="flex flex-1 mb-4 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
+              <div className="flex ">
                 <input
                   type="text"
                   placeholder="Search here..."
@@ -439,8 +326,8 @@ const TrailManagement = () => {
                   <FaFilter className="mr-2" /> Filter
                 </button>
               </div>
-              <div className="flex ">
-                <select className="border rounded-lg p-2 shadow text-[12px] appearance-none bg-white">
+              <div className="flex">
+                <select className="border rounded-lg p-2 shadow text-[12px] appearance-none  bg-white">
                   <option>Duration: Last month</option>
                   <option>Duration: Last week</option>
                   <option>Duration: Last year</option>
@@ -450,151 +337,92 @@ const TrailManagement = () => {
           </div>
 
           <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] h-full  flex flex-col justify-between">
-            <table
-              className="min-w-full rounded-lg shadow bg-[#fff]"
-              style={{ width: "100%", tableLayout: "fixed" }}
-            >
-              <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
+            <table className="min-w-full table-fixed bg-white shadow rounded-lg">
+              <thead className="border-b-[1px] border-[#1C3557] text-[10px] font-semibold">
                 <tr>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "26%" }}
-                  >
+                  <th className="p-3 text-center w-[15%] break-words">
                     Trial ID
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "22%" }}
-                  >
+                  <th className="p-3 text-center w-[15%] break-words">
                     Student Name
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "15%" }}
-                  >
+                  <th className="p-3 text-center w-[15%] break-words">
                     Mobile
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "12%" }}
-                  >
-                    Country
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "13%" }}
-                  >
+                  <th className="p-3 text-center w-[15%]">Country</th>
+                  <th className="p-3 text-center w-[13%] break-words">
                     Course
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "18%" }}
-                  >
+                  <th className="p-3 text-center w-[18%] break-words">
                     Preferred Teacher
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "18%" }}
-                  >
+                  <th className="p-3 text-center w-[18%] break-words">
                     Assigned Teacher
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "8%" }}
-                  >
-                    Time
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "25%" }}
-                  >
+                  <th className="p-3 text-center w-[10%]">Time</th>
+                  <th className="p-3 text-center w-[25%] break-words">
                     Class Status
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "15%" }}
-                  >
+                  <th className="p-3 text-center w-[15%] break-words">
                     Payment Status
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ wordWrap: "break-word", width: "13%" }}
-                  >
+                  <th className="p-3 text-center w-[13%] break-words">
                     Student Status
                   </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "10%" }}
-                  >
-                    Action
-                  </th>
+                  <th className="p-3 text-center w-[10%]">Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-[9px] font-medium">
                 {evaluation.length > 0 ? (
                   evaluation.slice(0, 5).map((item, index) => (
                     <tr
                       key={item._id}
-                      className={`text-[9px] font-medium mt-0 ${
+                      className={`${
                         index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
                       }`}
                     >
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item._id}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.student.studentFirstName}{" "}
                         {item.student.studentLastName}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.student.studentPhone}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.student.studentCountry}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.student.learningInterest}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.student.preferredTeacher}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.assignedTeacher}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ wordWrap: "break-word" }}
-                      >
+                      <td className="p-3 text-center break-words">
                         {item.student.preferredFromTime}
                       </td>
-                      <td
-                        className="p-2 text-center"
-                        style={{ minWidth: "100px" }}
-                      >
+
+                      <td className="p-3 text-center">
                         <span
-                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
+                          className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
                             item.trialClassStatus === "COMPLETED"
+                              ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
+                              : "bg-green-100 text-green-800 border border-green-900 px-2"
+                          }`}
+                        >
+                          {item.trialClassStatus}
+                        </span>
+                      </td>
+
+                      <td className="p-3 text-center">
+                        <span
+                          className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
+                            item.paymentStatus === "PAID"
                               ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
                               : "bg-green-100 text-green-800 border border-green-900 px-2"
                           }`}
@@ -602,32 +430,23 @@ const TrailManagement = () => {
                           {item.paymentStatus}
                         </span>
                       </td>
-                      <td className="p-2 text-center">
+
+                      <td className="p-3 text-center">
                         <span
-                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
-                            item.paymentStatus === "PAID"
-                              ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-5"
-                              : "bg-green-100 text-green-800 border border-green-900 px-3"
-                          }`}
-                        >
-                          {item.paymentStatus}
-                        </span>
-                      </td>
-                      <td className="p-2 text-center">
-                        <span
-                          className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
+                          className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
                             item.student.status === "Active"
                               ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                              : "bg-green-100 text-green-800 border border-green-900 px-3"
+                              : "bg-green-100 text-green-800 border border-green-900 px-2"
                           }`}
                         >
                           {item.student.status}
                         </span>
                       </td>
-                      <td className="p-2 text-center">
+
+                      <td className="p-3 text-center">
                         <button
                           onClick={() => handleClick(item._id.toString())}
-                          className="bg-gray-800 hover:cursor-pointer text-center text-white p-2 rounded-lg shadow hover:bg-gray-900"
+                          className="bg-gray-800 hover:cursor-pointer text-white p-2 rounded-lg shadow hover:bg-gray-900"
                         >
                           <FaEdit size={10} />
                         </button>
@@ -648,12 +467,13 @@ const TrailManagement = () => {
           <div className="flex justify-end">
             <button
               className="text-[#fff] mt-4 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
-              onClick={() => router.push("/admin-main/ui/scheduledtrailclasslist")}
+              onClick={() =>
+                router.push("/admin-main/ui/scheduledtrailclasslist")
+              }
             >
               View All
             </button>
           </div>
-
         </div>
       </div>
 
@@ -847,7 +667,6 @@ const TrailManagement = () => {
           </div>
         </div>
       )}
-      
     </BaseLayout4>
   );
 };

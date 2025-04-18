@@ -549,7 +549,7 @@ const handleCloseModal = () => {
     <BaseLayout4>
       <div className="p-8 mx-auto w-[1250px] pr-16">
         <div className="flex items-center space-x-2">
-          <h2 className="text-[18px] font-semibold ">Trial Class Request</h2>
+          <h2 className="text-[18px] font-semibold ">Scheduled Trial Class</h2>
         </div>
         <div className="flex flex-1 mt-8 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none ">
           <div className="flex">
