@@ -16,7 +16,7 @@ const Dashboard = () => {
     <BaseLayout4>
 <div className=" sm:p-1 md:p-3 min-h-screen w-full max-w-8xl mx-auto ">
   <div className=" px-5">
-    <h2 className="text-xl font-bold mb-4">Students List</h2>
+    <h2 className="text-xl font-bold mb-4 ml-3">Students List</h2>
 
     <div className="mb-4">
       <div className="flex flex-wrap gap-6 ml-2">
