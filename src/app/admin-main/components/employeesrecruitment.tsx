@@ -23,7 +23,7 @@ const  ApplicantsList: React.FC = () => {
       candidateLastName: "Doe",
       candidateEmail: "john.doe@example.com",
       candidatePhoneNumber: "+1234567890",
-      applicationStatus: "NEWAPPLICATION",
+      applicationStatus: "New Application",
       positionApplied: "Arabic Teacher",
       applicationDate: "2023-05-15",
       level: "3"
@@ -34,7 +34,7 @@ const  ApplicantsList: React.FC = () => {
       candidateLastName: "Smith",
       candidateEmail: "jane.smith@example.com",
       candidatePhoneNumber: "+1987654321",
-      applicationStatus: "SHORTLISTED",
+      applicationStatus: "Shortlisted",
       positionApplied: "Quran Teacher",
       applicationDate: "2023-05-10",
       level: "4"
@@ -45,7 +45,7 @@ const  ApplicantsList: React.FC = () => {
       candidateLastName: "Johnson",
       candidateEmail: "michael.j@example.com",
       candidatePhoneNumber: "+1122334455",
-      applicationStatus: "REJECTED",
+      applicationStatus: "Rejected",
       positionApplied: "Islamic Studies Teacher",
       applicationDate: "2023-05-05",
       level: "2"
@@ -56,7 +56,7 @@ const  ApplicantsList: React.FC = () => {
         candidateLastName: "Johnson",
         candidateEmail: "michael.j@example.com",
         candidatePhoneNumber: "+1122334455",
-        applicationStatus: "WAITING",
+        applicationStatus: "Waiting",
         positionApplied: "Islamic Studies Teacher",
         applicationDate: "2023-05-05",
         level: "2"
@@ -67,7 +67,7 @@ const  ApplicantsList: React.FC = () => {
         candidateLastName: "Johnson",
         candidateEmail: "michael.j@example.com",
         candidatePhoneNumber: "+1122334455",
-        applicationStatus: "WAITING",
+        applicationStatus: "Waiting",
         positionApplied: "Islamic Studies Teacher",
         applicationDate: "2023-05-05",
         level: "2"
@@ -78,7 +78,7 @@ const  ApplicantsList: React.FC = () => {
         candidateLastName: "Johnson",
         candidateEmail: "michael.j@example.com",
         candidatePhoneNumber: "+1122334455",
-        applicationStatus: "WAITING",
+        applicationStatus: "Waiting",
         positionApplied: "Islamic Studies Teacher",
         applicationDate: "2023-05-05",
         level: "2"
@@ -89,7 +89,7 @@ const  ApplicantsList: React.FC = () => {
         candidateLastName: "Doe",
         candidateEmail: "john.doe@example.com",
         candidatePhoneNumber: "+1234567890",
-        applicationStatus: "NEWAPPLICATION",
+        applicationStatus: "New Application",
         positionApplied: "Arabic Teacher",
         applicationDate: "2023-05-15",
         level: "3"
@@ -100,7 +100,7 @@ const  ApplicantsList: React.FC = () => {
         candidateLastName: "Smith",
         candidateEmail: "jane.smith@example.com",
         candidatePhoneNumber: "+1987654321",
-        applicationStatus: "SHORTLISTED",
+        applicationStatus: "Shortlisted",
         positionApplied: "Quran Teacher",
         applicationDate: "2023-05-10",
         level: "4"
@@ -142,19 +142,19 @@ const  ApplicantsList: React.FC = () => {
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const tabs = ["All", "NEWAPPLICATION", "SHORTLISTED", "REJECTED", "WAITING"];
+  const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "NEWAPPLICATION":
+      case "New Application":
         return "bg-blue-500 text-white px-2 text-[9px]";
-      case "SHORTLISTED":
+      case "Shortlisted":
         return "bg-[#79D67B] text-white px-3 text-[9px]";
-      case "REJECTED":
+      case "Rejected":
         return "bg-[#D12B36] text-white px-2 text-[9px]";
-      case "WAITING":
+      case "Waiting":
         return "bg-yellow-500 text-white px-2 text-[9px]";
-      case "APPROVED":
+      case "Approved":
         return "bg-green-500 text-white px-7 text-[9px]";
       default:
         return "bg-gray-300 text-black px-2 text-[9px]";

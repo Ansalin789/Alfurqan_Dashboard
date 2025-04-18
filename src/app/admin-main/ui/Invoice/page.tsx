@@ -526,11 +526,15 @@ export default function Page() {
       </tr>
     </tbody>
   </table>
-
-  <div className="mt-1 text-right px-4 pb-2">
-    <button className="text-blue-500 text-xs hover:underline" onClick={handleviewlist}>View all &gt;</button>
-  </div>
 </div>
+<div className="flex justify-end">
+            <button
+              className="text-[#fff] mt-3 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
+              onClick={handleviewlist}
+            >
+              View All
+            </button>
+          </div>
 
         </div>
       </BaseLayout4>

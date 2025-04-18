@@ -541,17 +541,17 @@ const Trailclasslist = () => {
         <div className="flex items-center space-x-2">
           <h2 className="text-[20px] font-semibold ">Invoice</h2>
         </div>
-        <div className="flex justify-between items-center px-6 py-4  rounded-sm">
+        <div className="flex justify-between items-center  py-4 ">
   {/* Left Section: Search + Filter */}
   <div className="flex items-center space-x-3">
     <input
       type="text"
       placeholder="Search here..."
-      className="border rounded-full px-4 py-2 text-[12px] shadow outline-none"
+      className="border rounded-sm px-4 py-2 text-[12px] shadow outline-none"
       value={searchQuery}
       onChange={(e) => handleSearch(e.target.value)}
     />
-    <button className="flex items-center bg-white border p-2 px-4 rounded-full shadow text-[12px]">
+    <button className="flex items-center bg-white border p-2 px-4 rounded-sm shadow text-[12px]">
       <FaFilter className="mr-2 text-gray-600" />
       Filter
     </button>
@@ -561,11 +561,11 @@ const Trailclasslist = () => {
   <div className="flex items-center space-x-3">
     <button
       onClick={handleclicksend}
-      className="flex items-center bg-[#002244] text-white px-4 py-2 rounded-full text-[12px] font-medium shadow"
+      className="flex items-center bg-[#002244] text-white px-4 py-2 rounded-sm text-[12px] font-medium shadow"
     >
       + New Invoice
     </button>
-    <select className="border rounded-full px-4 py-2 shadow text-[12px] outline-none">
+    <select className="border rounded-sm px-4 py-2 shadow text-[12px] outline-none">
       <option>Duration: Last month</option>
       <option>Duration: Last week</option>
       <option>Duration: Last year</option>
