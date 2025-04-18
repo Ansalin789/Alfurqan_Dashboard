@@ -250,7 +250,10 @@ const Schedules: React.FC = () => {
 
   return (
     <BaseLayout4>
-      <div className="flex flex-col mx-auto">
+      <div className="py-2 px-4 w-full h-full ">
+        <div className="flex justify-between items-center mb-5">
+            <h1 className="text-[20px] font-semibold">Calender</h1>
+          </div>
         {/* Success Message Toast */}
         {showSuccess && (
           <div className="fixed top-4 align-middle right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-out">
@@ -259,11 +262,8 @@ const Schedules: React.FC = () => {
         )}
 
         {/* Calendar Section */}
-        <div className="flex-1 p-6 -ml-10 mt-2">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-[20px] font-semibold">Calender</h1>
-          </div>
-          <div className="grid grid-cols-4 gap-6">
+        <div className="flex-1 ">
+           <div className="grid grid-cols-4 gap-6">
             <div className="col-span-3">
               <div className="bg-white p-4 rounded-lg shadow overflow-hidden">
                 <div className="flex justify-end items-center mb-0">
@@ -316,7 +316,7 @@ const Schedules: React.FC = () => {
             </div>
 
             <div className="col-span-1">
-              <div className="bg-white p-6 w-60 rounded-lg shadow overflow-y-scroll h-[630px] scrollbar-none">
+              <div className="bg-white p-6 w-65 rounded-lg shadow overflow-y-scroll h-full scrollbar-none">
                 <h2 className="text-[13px] font-semibold mb-6 text-center p-4">
                   {selectedDate
                     ? `Meetings Schedules for ${moment(selectedDate).format(
