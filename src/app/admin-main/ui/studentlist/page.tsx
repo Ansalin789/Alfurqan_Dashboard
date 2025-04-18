@@ -31,7 +31,7 @@ export default function StudentList() {
           return (
             <div
               key={student.id}
-              className="bg-white shadow-md rounded-lg p-4 flex border border-gray-300 w-[1245px] h-[200px] mb-4"
+              className="bg-white shadow-md rounded-lg p-4 flex border border-gray-300 w-full h-[200px] mb-4"
             >
               {/* Left Section */}
               <div className="w-1/4 flex flex-col items-center border-r pr-4">
@@ -125,7 +125,7 @@ export default function StudentList() {
         })}
 
         {/* Tabbed Table Section */}
-        <div className="w-[1245px] overflow-hidden">
+        <div className="w-full overflow-hidden ">
           <TabbedTable />
         </div>
       </div>

@@ -19,7 +19,7 @@ const Dashboard = () => {
     <h2 className="text-xl font-bold mb-4">Students List</h2>
 
     <div className="mb-4">
-      <div className="flex flex-wrap gap-6">
+      <div className="flex flex-wrap gap-6 ml-2">
         <StudentsRecord />
       </div>
     </div>
@@ -32,7 +32,7 @@ const Dashboard = () => {
 
     <div className="flex justify-end">
       <button
-        className="text-white text-xs bg-[#223857] cursor-pointer rounded-md px-2 py-1"
+        className="text-white text-xs bg-[#223857] cursor-pointer rounded-md px-2 py-1 mr-3"
         onClick={handleView}
       >
         View all
