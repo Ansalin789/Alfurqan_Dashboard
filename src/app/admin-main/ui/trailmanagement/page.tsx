@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { FaSyncAlt, FaFilter, FaEdit } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import Dashboard from "@/app/admin-main/components/dash";
+import Dashboard from "@/app/admin-main/components/trailmanagementcard";
 import BaseLayout4 from "@/components/BaseLayout4";
 // Define the return type of the getAllUsers function
 
@@ -300,7 +300,7 @@ const TrailManagement = () => {
 
   return (
     <BaseLayout4>
-      <div className="p-4 w-full pr-9 mx-auto h-full">
+      <div className="py-2 md:mr-10 w-full scrollbar-none mx-auto h-full">
         <div className="flex justify-between ml-7">
           <h2 className="text-[20px] font-semibold">Scheduled Trail Classes</h2>
         </div>

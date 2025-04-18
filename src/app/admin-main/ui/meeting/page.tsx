@@ -73,11 +73,29 @@ const dummyData = [
     endTime: "05.30 PM", // New rescheduled time
     meetingStatus: "Scheduled",
   },
+  {
+    _id: "8",
+    meetingName: "Tamil Class",
+    teacher: [{ teacherName: "Mr. Red" }],
+    selectedDate: new Date(), // Update as needed
+    startTime: "05.00 PM", // New rescheduled time
+    endTime: "06.30 PM", // New rescheduled time
+    meetingStatus: "Rescheduled",
+  },
+  {
+    _id: "9",
+    meetingName: "Maths Class",
+    teacher: [{ teacherName: "Mr. White" }],
+    selectedDate: new Date(), // Update as needed
+    startTime: "06.00 PM", // New rescheduled time
+    endTime: "09.30 PM", // New rescheduled time
+    meetingStatus: "Scheduled",
+  },
 ];
 const Meeting = () => {
   const [activeTab, setActiveTab] = useState<string>("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 8;
   const [showSuccess, setShowSuccess] = useState(false);
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -269,7 +287,7 @@ const Meeting = () => {
 
   return (
     <BaseLayout4>
-      <div className=" p-4 w-full pr-9 mx-auto h-full">
+      <div className=" p-8 w-full  mx-auto h-full">
         <div
           className={`transition-all duration-200 ${
             isRescheduleModalOpen ? "blur-sm" : ""
@@ -303,7 +321,7 @@ const Meeting = () => {
               </button>
               <button
                 onClick={() => setIsMeetingModalOpen(true)}
-                className="flex items-center gap-2 bg-[#1C3557] text-white px-4 py-2 rounded-md shadow hover:bg-[#15294a] text-sm"
+                className="flex items-center gap-2 bg-[#1C3557] text-white px-4 py-2 rounded-xl shadow hover:bg-[#15294a] text-sm"
               >
                 <FaPlus /> Add Meeting
               </button>
@@ -332,12 +350,12 @@ const Meeting = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
+          <div className="bg-white rounded-lg border-2 border-[#1C3557] h-full overflow-y-scroll scrollbar-none flex flex-col justify-between">
           {/* Tabs */}
             <div>
               <div className="flex gap-4 p-4 border-b">
                 <button
-                  className={`px-4 py-2 bg-[#1C3557] text-black rounded-md text-sm  ${
+                  className={`px-4 py-1 bg-[#1C3557] text-black rounded-xl text-sm  ${
                     activeTab === "upcoming"
                       ? "bg-[#1C3557] text-white"
                       : "bg-transparent text-black"
@@ -347,7 +365,7 @@ const Meeting = () => {
                   Scheduled
                 </button>
                 <button
-                  className={`px-4 py-2 bg-[#1C3557] text-black  rounded-md text-sm ${
+                  className={`px-4 py-1 bg-[#1C3557] text-black  rounded-xl text-sm ${
                     activeTab === "completed"
                       ? "bg-[#1C3557] text-white"
                       : "bg-transparent text-black"
@@ -360,7 +378,7 @@ const Meeting = () => {
 
               {/* Table */}
               <div className="overflow-x-auto">
-                <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-[11px]">
+                <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-[11px] h-full">
                   <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
                     <tr>
                       {[
@@ -432,7 +450,7 @@ const Meeting = () => {
                                   </button>
                                 ) : (
                                   <span
-                                    className={`text-[10px] px-2 py-[7px] rounded-lg inline-block text-center w-[130px] ${className}`}
+                                    className={`text-[10px] px-2 py-[7px] rounded-xl inline-block text-center w-[130px] ${className}`}
                                   >
                                     {label}
                                   </span>
