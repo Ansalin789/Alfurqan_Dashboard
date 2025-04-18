@@ -6,9 +6,16 @@ interface Props {
 }
 export default function BaseLayout4({ children }: Props) {
     return (
-    <div className="layout">
-        <Sidebar4 /> 
-        {children}
-    </div>
+        <div className="flex h-screen">
+        {/* Sidebar - only visible from md and up */}
+        <div className="hidden md:block md:w-54 bg-[#012A4A]">
+          <Sidebar4 />
+        </div>
+      
+        {/* Main content */}
+        <div className="flex-1 overflow-auto">
+          {children}
+        </div>
+      </div>
     ) ;
 }

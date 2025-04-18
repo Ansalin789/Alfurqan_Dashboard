@@ -129,8 +129,8 @@ export default function Sidebar4() {
     };
 
     return (
-        <div className="sidebar__wrapper bg-[#012A4A] h-[100vh]">
-            <aside className='sidebar bg-[#012A4A] shadow-lg'>
+        <div className="sidebar__wrapper bg-[#012A4A] h-full md:h-[100vh] overflow-y-auto">
+            <aside className="sidebar bg-[#012A4A] shadow-lg">
                 <div className='flex justify-center align-middle p-4 gap-2'>
                     <Image src="/assets/images/alfwhite.png" width={150} height={150} className='bg-cover bg-center w-8 h-12' alt='logo' />
                     <div className="text-white">
