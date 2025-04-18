@@ -83,7 +83,7 @@ const TrailManagement = () => {
   };
 
   return (
-    <div className="pt-3 mx-auto w-[1160px]">
+    <div className="pt-3 mx-auto w-[1220px]">
       {/* Search & Filter Section */}
       <div className="flex justify-between items-center p-2">
         <div className="flex space-x-4 items-center">
@@ -111,7 +111,7 @@ const TrailManagement = () => {
       </div>
 
       {/* Table Section */}
-      <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
+ <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
   <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-[11px]">
     <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
       <tr>

@@ -9,7 +9,6 @@ import { FaCalendarAlt, FaEdit, FaFilter, FaPlus } from "react-icons/fa";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
 
-
 const dummyData = [
   {
     _id: "1",
@@ -34,8 +33,8 @@ const dummyData = [
     meetingName: "Science Class",
     teacher: [{ teacherName: "Ms. Johnson" }],
     selectedDate: new Date(),
-    startTime: "01.00 AM",
-    endTime: "12:00 PM",
+    startTime: "12.30 PM",
+    endTime: "02:00 PM",
     meetingStatus: "Scheduled",
   },
   {
@@ -49,18 +48,33 @@ const dummyData = [
   },
   {
     _id: "5",
-    meetingName: "English Class",
-    teacher: [{ teacherName: "Ms. Green" }],
-    selectedDate: new Date("2025-04-17"),
-    startTime: "09:00 AM",
-    endTime: "10:00 AM",
+    meetingName: "Tamil Class",
+    teacher: [{ teacherName: "Mr. Red" }],
+    selectedDate: new Date(), // Update as needed
+    startTime: "04.00 PM", // New rescheduled time
+    endTime: "05.30 PM", // New rescheduled time
+    meetingStatus: "Rescheduled",
+  },
+  {
+    _id: "6",
+    meetingName: "Maths Class",
+    teacher: [{ teacherName: "Mr. White" }],
+    selectedDate: new Date(), // Update as needed
+    startTime: "04.00 PM", // New rescheduled time
+    endTime: "05.30 PM", // New rescheduled time
     meetingStatus: "Scheduled",
   },
-
+  {
+    _id: "7",
+    meetingName: "Physics Class",
+    teacher: [{ teacherName: "Mr. Yellow" }],
+    selectedDate: new Date(), // Update as needed
+    startTime: "05.00 PM", // New rescheduled time
+    endTime: "05.30 PM", // New rescheduled time
+    meetingStatus: "Scheduled",
+  },
 ];
 const Meeting = () => {
-
-
   const [activeTab, setActiveTab] = useState<string>("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -125,7 +139,9 @@ const Meeting = () => {
 
   const upcomingClasses = dummyData.filter(
     (item) =>
-      item.meetingStatus === "Scheduled" || item.meetingStatus === "Pending"
+      item.meetingStatus === "Scheduled" ||
+      item.meetingStatus === "Start" ||
+      item.meetingStatus === "Rescheduled"
   );
   const completedData = dummyData.filter(
     (item) => item.meetingStatus === "Completed"
@@ -161,19 +177,37 @@ const Meeting = () => {
   };
 
   // Expect 'status' as a string
-  const getMeetingStatusClass = (status: string) => {
-    switch (status) {
-      case "Scheduled":
-        return "text-black-600 border-green-600 bg-[#F66969]";
-      case "ReSchedule":
-        return "text-blue-600 border-blue-600 bg-blue-100";
-      case "Pending":
-        return "text-white border-blue-600 bg-[#012A4A]";
-      case "Completed":
-        return "text-green-900 border-green-900 bg-green-100";
-      default:
-        return "text-green-900 border-green-900 bg-green-100";
+  const getMeetingStatusClass = (
+    label: string,
+    meetingStatus: string
+  ): string => {
+    const normalizedLabel = label.toLowerCase();
+    const normalizedStatus = meetingStatus.toLowerCase();
+
+    if (normalizedLabel === "start") {
+      return "text-white bg-[#F66969]"; // ongoing
     }
+
+    if (normalizedLabel.startsWith("today at")) {
+      return "text-white bg-[#012A4A]"; // upcoming today
+    }
+
+    if (
+      normalizedStatus === "rescheduled" ||
+      normalizedStatus === "reschedule"
+    ) {
+      return "text-black bg-[#79D67B]"; // green
+    }
+
+    if (normalizedLabel === "completed" || normalizedStatus === "completed") {
+      return "text-black bg-[#79D67B]"; // green
+    }
+
+    if (normalizedStatus === "scheduled") {
+      return "text-white bg-gray-500"; // scheduled but not today
+    }
+
+    return "text-white bg-gray-400"; // fallback/default
   };
 
   const parseDateTime = (date: string | Date, time: string): Date => {
@@ -193,6 +227,8 @@ const Meeting = () => {
     const start = parseDateTime(selectedDate, startTime);
     let end: Date | null = null;
 
+    const normalizedStatus = status.toLowerCase();
+
     if (endTime) {
       end = parseDateTime(selectedDate, endTime);
       if (end < start) {
@@ -205,31 +241,28 @@ const Meeting = () => {
       start.getMonth() === now.getMonth() &&
       start.getDate() === now.getDate();
 
-    if (status === "Scheduled" && isToday) {
+    if (normalizedStatus === "scheduled" && isToday) {
       const formattedStart = start.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      const formattedEnd = end?.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       });
 
       if (end && now >= start && now <= end) {
-        return `Started (${formattedStart} - ${formattedEnd})`;
+        return `Start`;
       }
       if (end && now < start) {
-        return `Today (${formattedStart} - ${formattedEnd})`;
+        return `Today at (${formattedStart})`;
       }
       if (end && now > end) {
         return "Completed";
       }
     }
 
-    if (status === "Scheduled") return "Scheduled";
-    if (status === "ReSchedule") return "ReSchedule";
-    if (status === "Pending") return "Pending";
-    if (status === "Completed") return "Completed";
+    if (normalizedStatus === "scheduled") return "Scheduled";
+    if (normalizedStatus === "reschedule" || normalizedStatus === "rescheduled")
+      return "Rescheduled";
+    if (normalizedStatus === "start") return "Start";
+    if (normalizedStatus === "completed") return "Completed";
 
     return "Started";
   };
@@ -334,7 +367,7 @@ const Meeting = () => {
 
               {/* Table */}
               <div className="overflow-x-auto">
-                <table className="table-auto w-full">
+                <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-[11px]">
                   <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
                     <tr>
                       {[
@@ -359,7 +392,9 @@ const Meeting = () => {
                           index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
                         }`}
                       >
-                        <td className="px-2 py-2 text-center text-xs">{item._id}</td>
+                        <td className="px-2 py-2 text-center text-xs">
+                          {item._id}
+                        </td>
                         <td className="px-2 py-2 text-center text-xs">
                           {item.meetingName}
                         </td>
@@ -373,47 +408,50 @@ const Meeting = () => {
                           {new Date(item.selectedDate).toISOString()}
                         </td>
 
-                        <td className="px-2 py-2 text-center text-xs whitespace-nowrap ">
-                          {activeTab === "upcoming"  ? (
-                            <>
-                              {(() => {
-                                const label = getMeetingStatusLabel(
-                                  item.meetingStatus,
-                                  item.selectedDate,
-                                  item.startTime,
-                                  item.endTime
-                                );
+                        <td className="px-2 py-[6px] text-center text-[8px] whitespace-nowrap ">
+                          {activeTab === "upcoming" ? (
+                            
+                              <>
+                                {(() => {
+                                  const label = getMeetingStatusLabel(
+                                    item.meetingStatus,
+                                    item.selectedDate,
+                                    item.startTime,
+                                    item.endTime
+                                  );
 
-                                const isStarted = label.startsWith("Started");
+                                  const className = getMeetingStatusClass(
+                                    label,
+                                    item.meetingStatus
+                                  );
+                                  const isStarted =
+                                    label.toLowerCase() === "start";
 
-                                return isStarted ? (
-                                  <button
-                                    onClick={() =>
-                                      router.push(
-                                        `/admin-main/ui/meeting/liveclass/`
-                                      )
-                                    }
-                                    className={`text-[12px] px-2 py-2 rounded-lg inline-block text-center w-[200px] cursor-pointer  ${getMeetingStatusClass(
-                                      item.meetingStatus
-                                    )}`}
-                                  >
-                                    {label}
-                                  </button>
-                                ) : (
-                                  <span
-                                    className={`text-[12px] px-2 py-2 rounded-lg inline-block text-center w-[150px] ${getMeetingStatusClass(
-                                      item.meetingStatus
-                                    )}`}
-                                  >
-                                    {label}
-                                  </span>
-                                );
-                              })()}
+                                  return isStarted ? (
+                                    <button
+                                      onClick={() =>
+                                        router.push(
+                                          `/admin-main/ui/meeting/liveclass/`
+                                        )
+                                      }
+                                      className={`text-[10px] px-2 py-[7px] rounded-xl text-white inline-block text-center w-[130px] cursor-pointer ${className}`}
+                                    >
+                                      {label}
+                                    </button>
+                                  ) : (
+                                    <span
+                                      className={`text-[10px] px-2 py-[7px] rounded-lg inline-block text-center w-[130px] ${className}`}
+                                    >
+                                      {label}
+                                    </span>
+                                  );
+                                })()}
+                              
                             </>
                           ) : (
                             <>
                               {/* Completed Meetings */}
-                              <button className="bg-[#79D67B] text-[12px] px-2 py-2 rounded-lg inline-block text-center w-[150px]">
+                              <button className="bg-[#79D67B] text-[10px] px-2 py-[7px] rounded-xl inline-block text-center w-[150px]">
                                 Completed
                               </button>
                             </>

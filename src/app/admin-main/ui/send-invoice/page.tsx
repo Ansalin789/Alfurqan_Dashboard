@@ -4,14 +4,12 @@ import { useState } from "react"
 import { Calendar, File, MapPin, Phone, Upload, X } from "lucide-react"
 import BaseLayout4 from "@/components/BaseLayout4"
 export default function InvoicePage() {
-  const [attachedFile, setAttachedFile] = useState({
+  const [attachedFile] = useState({
     name: "Contact_2020.pdf",
     size: "456 KB",
   })
 
-  const removeFile = () => {
-    setAttachedFile(null)
-  }
+  
 
   return (
     <BaseLayout4>
@@ -181,7 +179,7 @@ export default function InvoicePage() {
                     </div>
                   </div>
                   <button
-                    onClick={removeFile}
+                    
                     className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center"
                   >
                     <X className="w-3 h-3 text-white" />

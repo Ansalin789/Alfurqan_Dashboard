@@ -16,9 +16,10 @@ const GaugeChart = () => {
   const angle = (needleValue / 100) * 180; // Rotate needle based on percentage
 
   return (
-    <div className="bg-white p-5 rounded-lg shadow-md border border-gray-200 h-[250px] w-[250px]">
+    <div className="bg-white p-5 rounded-lg shadow-md border border-gray-200 h-[250px] w-[300px]">
       {/* Title */}
-      <h2 className="text-lg font-semibold text-gray-700">Gender</h2>
+      <h2 className="text-lg font-semibold  text-gray-700">
+        Gender</h2>
 
       {/* Chart Container */}
       <div className="flex flex-col items-center">
