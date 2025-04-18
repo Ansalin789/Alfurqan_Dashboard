@@ -1,11 +1,60 @@
+'use client'
+import { useState, useEffect } from "react"
 import { Check, Clock, X } from "lucide-react"
 
+
+interface TrialRequestData {
+  totalTrialRequest: number
+  pendingRequest: number
+  pendingRequestPercentage: number
+  joinedStudents: number
+  joinedStudentsPercentage: number
+  notJoinedStudents: number
+  notJoinedrequestPercentage: number
+}
+
 export default function TrialRequests() {
-  const requests = [
-    { status: "Joined", icon: Check, percentage: 20, total: 100, color: "bg-[#012A4A]" },
-    { status: "Pending", icon: Clock, percentage: 30, total: 70, color: "bg-[#012A4A]" },
-    { status: "Not joined", icon: X, percentage: 20, total: 20, color: "bg-[#012A4A]" },
-  ]
+
+  const [data, setData] = useState<TrialRequestData | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("https://alfurqanacademy.tech/dashboard/admin/totaltrialrequest")
+        const result = await response.json()
+        setData(result)
+      } catch (error) {
+        console.error("Failed to fetch trial request data:", error)
+      }
+    }
+
+    fetchData()
+  }, [])
+  const requests = data
+  ? [
+      {
+        status: "Joined",
+        icon: Check,
+        percentage: data.joinedStudentsPercentage,
+        total: data.joinedStudents,
+        color: "bg-[#012A4A]",
+      },
+      {
+        status: "Pending",
+        icon: Clock,
+        percentage: data.pendingRequestPercentage,
+        total: data.pendingRequest,
+        color: "bg-[#012A4A]",
+      },
+      {
+        status: "Not joined",
+        icon: X,
+        percentage: data.notJoinedrequestPercentage,
+        total: data.notJoinedStudents,
+        color: "bg-[#012A4A]",
+      },
+    ]
+  : []
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-5 h-42">
@@ -22,7 +71,7 @@ export default function TrialRequests() {
               <div className="flex justify-between mb-1">
                 <span className="text-sm font-medium">{request.status}</span>
                 <span className="text-xs text-gray-500">
-                  {request.percentage}%({request.total})
+                  {request.percentage.toFixed(1)}%({request.total})
                 </span>
               </div>
               <div className="h-3 w-full bg-blue-500 rounded-full overflow-hidden">
