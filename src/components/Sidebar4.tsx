@@ -129,57 +129,87 @@ export default function Sidebar4() {
     };
 
     return (
-        <div className="sidebar__wrapper bg-[#012A4A] h-full md:h-[100vh] overflow-y-auto">
-            <aside className="sidebar bg-[#012A4A] shadow-lg">
-                <div className='flex justify-center align-middle p-4 gap-2'>
-                    <Image src="/assets/images/alfwhite.png" width={150} height={150} className='bg-cover bg-center w-8 h-12' alt='logo' />
-                    <div className="text-white">
-                        <h3 className="font-bold text-[19px]">AL FURQAN</h3>
-                        <h4 className="font-light text-[17px] justify-end ml-8 -mt-3 font-sans">academy</h4>
-                    </div>
-                </div>
-                <ul className="ml-6">
-                    {SidebarItems.map(({ name, href, icon: Icon, subItems }) => (
-                        <li key={name}>
-                            <button
-                                className={`text-center justify-center hover:no-underline hover:flex hover:text-[#476a9b] hover:align-middle hover:justify-center hover:pl-2 pl-2 pr-2 py-2 hover:rounded-lg rounded-lg ${subItems ? 'cursor-pointer' : ''} ${currentPath === href || (subItems && isSubItemActive(subItems)) ? 'bg-[#476a9b] text-[#fff]' : ''}`}
-                                onClick={() => subItems && toggleSubItems(name)}
-                            >
-                                <Link href={href} className='no-underline hover:text-[#a0c4ff] flex align-middle justify-start w-[100%] text-[#fff] pt-[10px] pb-[10px] text-[14px]'>
-                                    <span className="text-[20px] inline-block mr-[10px]">
-                                        {typeof Icon === 'string' ? (
-                                            <Image src={Icon} width={20} height={20} alt={name} />
-                                        ) : (
-                                            <Icon />
-                                        )}
-                                    </span>
-                                    <span className="sidebar__name">{name}</span>
-                                    {subItems && (
-                                        <span className="ml-1 mr-2 mt-[6px]">
-                                            {expandedItem === name ? <IoIosArrowDown /> : <IoIosArrowForward />}
-                                        </span>
-                                    )}
-                                </Link>
-                            </button>
+        <div className="sidebar__wrapper bg-[#0e2231] h-full overflow-y-auto">
+  <aside className="sidebar bg-[#0e2536] p-4 h-full flex flex-col">
+    {/* Logo Section */}
+    <div className='flex items-center gap-3 mt-5 mb-6 px-2'>
+      <Image 
+        src="/assets/images/alfwhite.png" 
+        width={40} 
+        height={40} 
+        className='w-10 h-10 object-contain' 
+        alt='logo' 
+      />
+      <div className="text-white leading-tight">
+        <h3 className="font-bold text-[18px]">AL FURQAN</h3>
+        <h4 className="font-light text-[14px] font-sans">academy</h4>
+      </div>
+    </div>
+  
+    {/* Menu List - fills remaining space */}
+    <ul className="space-y-1.5 flex-1">
+      {SidebarItems.map(({ name, href, icon: Icon, subItems }) => (
+        <li key={name}>
+          <Link href={href} className="block no-underline">
+            <button
+              onClick={() => subItems && toggleSubItems(name)}
+              className={`
+                w-full flex items-center gap-3 px-3 py-3
+                text-[13px] cursor-pointer rounded
+                ${currentPath === href || (subItems && isSubItemActive(subItems))
+                  ? 'text-[#a0c4ff] font-medium'
+                  : 'text-white hover:text-[#a0c4ff]'}
+                transition-colors duration-200
+              `}
+            >
+              {/* Icon with consistent sizing */}
+              <span className="text-[18px] w-5 flex justify-center">
+                {typeof Icon === 'string' ? (
+                  <Image src={Icon} width={20} height={20} alt={name} />
+                ) : (
+                  <Icon size={20} />
+                )}
+              </span>
 
-                            {subItems && expandedItem === name && (
-                                <ul className="ml-8 mt-1 mb-1">
-                                    {subItems.map((subItem) => (
-                                        <li key={subItem.name} className="py-1">
-                                            <Link
-                                                href={subItem.href}
-                                                className={`text-[#fff] text-[10px] hover:text-[#a0c4ff] no-underline ${currentPath === subItem.href ? 'text-[#a0c4ff] font-semibold' : ''}`}
-                                            >
-                                                {subItem.name}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            </aside>
-        </div>
+              {/* Label with consistent spacing */}
+              <span className="flex-1 text-left">{name}</span>
+
+              {/* Arrow if subitems */}
+              {subItems && (
+                <span className="text-sm">
+                  {expandedItem === name ? <IoIosArrowDown /> : <IoIosArrowForward />}
+                </span>
+              )}
+            </button>
+          </Link>
+
+          {/* Submenu */}
+          {subItems && expandedItem === name && (
+            <ul className="ml-10 mt-1 space-y-1.5">
+              {subItems.map((subItem) => (
+                <li key={subItem.name}>
+                  <Link
+                    href={subItem.href}
+                    className={`
+                      block text-[13px] no-underline py-1.5 px-3
+                      ${currentPath === subItem.href 
+                        ? 'text-[#a0c4ff] font-medium' 
+                        : 'text-white hover:text-[#a0c4ff]'}
+                      transition-colors duration-150
+                    `}
+                  >
+                    {subItem.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
+  </aside>
+</div>
+      
+
     );
 }
