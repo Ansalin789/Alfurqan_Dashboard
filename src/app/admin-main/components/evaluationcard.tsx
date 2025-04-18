@@ -268,12 +268,12 @@ const CoursesChart = () => {
 
       <ResponsiveContainer width="100%" height={198}>
         <BarChart data={courseData} barCategoryGap={30}>
-          <XAxis
+          {/* <XAxis
             dataKey="name"
             tick={{ fill: "#7f9cb6", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
-          />
+          /> */}
           <Tooltip
             content={<CustomTooltip active={undefined} payload={undefined} />}
             wrapperStyle={{ backgroundColor: "transparent", border: "none" }} // Remove tooltip bg
