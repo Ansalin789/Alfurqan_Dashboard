@@ -3,9 +3,8 @@
 import { useRouter } from 'next/navigation';
 import React, { useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import { BsCalendar4Event, BsClockHistory } from "react-icons/bs";
+import {  BsClockHistory } from "react-icons/bs";
 import { MdOutlineCurrencyExchange, MdOutlineCancel } from "react-icons/md";
-import { IoSunnyOutline } from "react-icons/io5";
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar'
 import { format } from 'date-fns/format'
 import { parse } from 'date-fns/parse'
@@ -13,9 +12,8 @@ import { startOfWeek } from 'date-fns/startOfWeek'
 import { getDay } from 'date-fns/getDay'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { FaUserGraduate } from "react-icons/fa6";
-import { FaRegEye } from "react-icons/fa";
+import { FaRegEye, FaCalendarAlt } from "react-icons/fa";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
-import { FaCalendarAlt } from "react-icons/fa";
 
 
 const locales = {
@@ -246,8 +244,8 @@ const Teacher = () => {
 
                   <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
                     <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr>
+                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                        <tr className='border-b-[1px] border-[#1C3557]'>
                           <th className="p-4 font-semibold text-[12px] text-center">Student ID</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Student's name</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Country</th>
@@ -336,7 +334,7 @@ const Teacher = () => {
 
             {activeTab === "ScheduledClass" && (
               <div className="space-y-6">
-                <div className="bg-white p-6 rounded-lg">
+                <div className="bg-white rounded-lg">
                   <div className="flex justify-between items-center mb-0">
                     <div className="space-x-4">
                       <button
@@ -368,7 +366,7 @@ const Teacher = () => {
                       </div>
                     )}
                   </div>
-                  <div className="overflow-x-auto max-h-[213px] overflow-y-auto custom-scrollbar scrollbar-none">
+                  <div className="overflow-x-auto overflow-y-auto custom-scrollbar scrollbar-none">
                     {view === 'month' ? (
                       <Calendar
                         localizer={localizer}
@@ -393,12 +391,12 @@ const Teacher = () => {
                       />
                     ) : (
                       <div className="space-y-6 mt-2">
-                        <div className="rounded-xl border border-[#000]">
+                        <div className="rounded-xl border border-[#000] shadow overflow-hidden">
                           <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">Total Students</h2>
-                          <div className="overflow-x-auto max-h-[170px] overflow-y-scroll  scrollbar-none">
+                          <div className="overflow-x-auto max-h-[240px] overflow-y-scroll  scrollbar-none">
                             <table className="w-full min-w-[900px] text-sm text-left">
-                              <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                                <tr>
+                              <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                                <tr className='border-b-[1px] border-[#1C3557]'>
                                   <th className="p-4 font-semibold text-[12px] text-center">Student name</th>
                                   <th className="p-4 font-semibold text-[12px] text-center">Student ID</th>
                                   <th className="p-4 font-semibold text-[12px] text-center">Courses</th>
@@ -410,14 +408,14 @@ const Teacher = () => {
                               </thead>
                               <tbody className="text-xs text-[#1D2939]">
                                 {scheduledclass.map((event, index) => (
-                                  <tr key={index} className={`border-b hover:bg-gray-50 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-white'}`}>
-                                    <td className="p-4 text-center">{event.studentName}</td>
-                                    <td className="p-4 text-center text-blue-600 font-medium">{event.studentId}</td>
-                                    <td className="p-4 text-center">{event.course}</td>
-                                    <td className="p-4 text-center">{event.courseType}</td>
-                                    <td className="p-4 text-center">{event.courseDuration}</td>
-                                    <td className="p-4 text-center">{format(event.start, 'MMMM d, yyyy – hh:mm a')}</td>
-                                    <td className="p-4 text-center">
+                                  <tr key={index} className={`border-b hover:bg-gray-50 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}>
+                                    <td className="p-2 text-center">{event.studentName}</td>
+                                    <td className="p-2 text-center text-blue-600 font-medium">{event.studentId}</td>
+                                    <td className="p-2 text-center">{event.course}</td>
+                                    <td className="p-2 text-center">{event.courseType}</td>
+                                    <td className="p-2 text-center">{event.courseDuration}</td>
+                                    <td className="p-2 text-center">{format(event.start, 'MMMM d, yyyy – hh:mm a')}</td>
+                                    <td className="p-2 text-center">
                                       <span className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${statusStyle[event.status as keyof typeof statusStyle]}`}>
                                         {event.status}
                                       </span>
@@ -471,8 +469,8 @@ const Teacher = () => {
                   <div className="rounded-xl border border-[#000] shadow overflow-hidden">
                     <div className="overflow-x-auto max-h-[181px] overflow-y-auto custom-scrollbar scrollbar-none">
                       <table className="w-full min-w-[900px] text-sm text-left">
-                        <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                          <tr>
+                        <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                          <tr className='border-b-[1px] border-[#1C3557]'>
                             <th className="p-4 font-semibold text-[12px] text-center">Month</th>
                             <th className="p-4 font-semibold text-[12px] text-center">Total Classes</th>
                             <th className="p-4 font-semibold text-[12px] text-center">Total Hours</th>
@@ -563,8 +561,8 @@ const Teacher = () => {
                 <div className="rounded-xl border border-[#000] shadow overflow-hidden">
                   <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
                     <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr>
+                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                        <tr className='border-b-[1px] border-[#1C3557]'>
                           <th className="p-4 font-semibold text-[12px] text-center">Payment Date</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Amount</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Description</th>
@@ -637,19 +635,19 @@ const Teacher = () => {
                             <td className="p-3">
                               {item.status === "Paid" ? (
                                 <span className="inline-flex items-center justify-center  gap-1">
-                                  <span className="text-lg"><IoIosCheckmarkCircleOutline className="text-green-600" />
+                                  <span className="text-lg"><IoIosCheckmarkCircleOutline className="text-green-600 text-xs" />
                                   </span> Paid
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center justify-center  gap-1">
-                                  <span className="text-lg"><MdOutlineCancel className="text-red-600" />
+                                  <span className="text-lg"><MdOutlineCancel className="text-red-600 text-xs" />
                                   </span> Pending
                                 </span>
                               )}
                             </td>
                             <td className="p-3"></td>
                             <td className="p-3 text-center">
-                              <button className="text-gray-600 hover:text-blue-500 text-lg">
+                              <button className="text-gray-600 hover:text-blue-500 text-xs">
                                 ⬇️
                               </button>
                             </td>
@@ -667,8 +665,8 @@ const Teacher = () => {
                 <div className="rounded-xl border border-[#000] shadow overflow-hidden">
                   <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
                     <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr>
+                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                        <tr className='border-b-[1px] border-[#1C3557]'>
                           <th className="p-4 font-semibold text-[12px] text-center">Class Type</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Rate</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Currency</th>
@@ -742,8 +740,8 @@ const Teacher = () => {
                 <div className="rounded-xl border border-[#000] shadow overflow-hidden">
                   <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
                     <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-gray-600 border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr>
+                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                        <tr className='border-b-[1px] border-[#1C3557]'>
                           <th className="p-4 font-semibold text-[12px] text-center">Day</th>
                           <th className="p-4 font-semibold text-[12px] text-center">Working Hours</th>
                           <th className="p-4 font-semibold text-[12px] text-center">GMT</th>

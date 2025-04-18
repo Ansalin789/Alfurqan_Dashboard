@@ -53,7 +53,7 @@ export default function DashboardClasses() {
   const [range, setRange] = useState("Today");
 
   return (
-<div className="w-full max-w-[1365px] mx-auto px-4">
+<div className="w-full max-w-[1365px] mx-auto ">
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">      {/* Line Chart Panel */}
       <div className="bg-white rounded-xl p-3 shadow-md h-[250px]  flex flex-col justify-between min-w-0">
         <div className="flex justify-between items-center mb-1">

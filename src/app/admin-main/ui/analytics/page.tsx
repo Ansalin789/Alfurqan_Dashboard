@@ -211,7 +211,7 @@ export default function Home() {
     <BaseLayout4>
       {/* Main Content */}
       <div className="flex-1 overflow-auto scrollbar-hide">
-        <div className="p-5 mr-6">
+        <div className="py-2 px-5">
           <div className="mb-3">
             <h1 className="text-lg font-bold mb-4">Analytics</h1>
             </div>
