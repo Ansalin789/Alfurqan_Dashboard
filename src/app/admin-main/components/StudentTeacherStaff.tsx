@@ -1,33 +1,71 @@
-import React from "react";
+'use client';
+
+import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Tooltip } from "recharts";
 import { ArrowUpRight } from "lucide-react";
 
-const data = [
-  {
-    title: "Students",
-    count: 1738,
-    male: 1200,
-    female: 538,
-  },
-  {
-    title: "Teachers",
-    count: 200,
-    male: 100,
-    female: 100,
-  },
-  {
-    title: "Staffs",
-    count: 180,
-    male: 60,
-    female: 120,
-  },
-];
+interface DashboardCount {
+  totalStudents: number;
+  maleStudents: number;
+  femaleStudents: number;
+  totalTeachers: number;
+  maleTeachers: number;
+  femaleTeachers: number;
+  totalStaffs: number;
+  maleStaffs: number;
+  femaleStaffs: number;
+}
 
-const COLORS = ["#4B9EFF", "#FF9EE2"];
+interface GroupedData {
+  title: string;
+  count: number;
+  male: number;
+  female: number;
+}
+
 
 const StudentTeacherStaff = () => {
+  const COLORS = ["#4B9EFF", "#FF9EE2"];
+const [data, setData] = useState<GroupedData[]>([]);
+  
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await fetch('https://alfurqanacademy.tech/dashboard/admin/count');
+      const json: DashboardCount = await res.json();
+
+      const grouped: GroupedData[] = [
+        {
+          title: 'Students',
+          count: json.totalStudents,
+          male: json.maleStudents,
+          female: json.femaleStudents,
+        },
+        {
+          title: 'Teachers',
+          count: json.totalTeachers,
+          male: json.maleTeachers,
+          female: json.femaleTeachers,
+        },
+        {
+          title: 'Staffs',
+          count: json.totalStaffs,
+          male: json.maleStaffs,
+          female: json.femaleStaffs,
+        },
+      ];
+
+      setData(grouped);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+    } 
+  };
+
+  fetchData();
+}, []);
   return (
-    <div className="flex flex-col md:flex-row justify-center items-center gap-4 ">
+    <div className="flex flex-col md:flex-row justify-center items-center gap-4">
       {data.map((item) => (
         <div
           key={item.title}

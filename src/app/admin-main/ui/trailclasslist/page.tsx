@@ -545,7 +545,7 @@ const Trailclasslist = () => {
 
   return (
     <BaseLayout4>
-      <div className="p-8 mx-auto w-[1250px] pr-16">
+      <div className="py-2 px-4 mx-auto w-full ">
         <div className="flex items-center space-x-2">
           <h2 className="text-[18px] font-semibold ">Trial Class Request</h2>
         </div>

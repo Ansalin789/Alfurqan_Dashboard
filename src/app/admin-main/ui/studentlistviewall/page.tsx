@@ -12,7 +12,7 @@ const TrailManagement = () => {
   const router = useRouter();
 
 const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 10;
 
 
   const students = [
@@ -173,8 +173,11 @@ const [currentPage, setCurrentPage] = useState(1);
   return (
     <BaseLayout4>
       <div className="pt-3 mx-auto w-[1160px]">
+      <div className="text-start">
+    <h2 className="text-black text-[22px] font-semibold">Student Lists</h2>
+  </div> <br/>
         {/* Search & Filter */}
-        <div className="flex justify-between items-center p-2">
+        <div className="flex justify-between items-center  ">
           <div className="flex space-x-4 items-center">
             <input
               type="text"
@@ -197,7 +200,7 @@ const [currentPage, setCurrentPage] = useState(1);
             </select>
           </div>
         </div>
-
+<br/>
         {/* Table */}
         <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
         <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-[11px]">

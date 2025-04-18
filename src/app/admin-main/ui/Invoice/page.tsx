@@ -493,7 +493,7 @@ export default function Page() {
         <td className="p-2 text-center">2 days</td>
         <td className="p-2 text-center">June 4, 2020, 08:22 AM</td>
         <td className="p-2 text-center">
-          <span className="bg-green-100 text-green-800 border border-green-900 text-[7px] px-3 py-[3px] rounded-md">PAID</span>
+          <span className="inline-flex items-center justify-center  w-12 h-4.5 px-3 py-1 rounded-md bg-green-100 text-green-800 border border-green-900 text-[7px] ">Paid</span>
         </td>
       </tr>
 
@@ -507,7 +507,7 @@ export default function Page() {
         <td className="p-2 text-center">2 days</td>
         <td className="p-2 text-center">-</td>
         <td className="p-2 text-center">
-          <span className="bg-yellow-100 text-yellow-800 border border-yellow-900 text-[7px] px-3 py-[3px] rounded-md">Pending</span>
+          <span className="inline-flex items-center justify-center  w-12 h-4.5 px-3 py-1 rounded-md bg-yellow-100 text-yellow-800 border border-yellow-900 text-[7px] ">Pending</span>
         </td>
       </tr>
 
@@ -521,16 +521,20 @@ export default function Page() {
         <td className="p-2 text-center">2 days</td>
         <td className="p-2 text-center">June 4, 2020, 08:22 AM</td>
         <td className="p-2 text-center">
-          <span className="bg-green-100 text-green-800 border border-green-900 text-[7px] px-3 py-[3px] rounded-md">PAID</span>
+          <span className="inline-flex items-center justify-center  w-12 h-4.5 px-3 py-1 bg-green-100 text-green-800 border border-green-900 text-[7px]  rounded-md">Paid</span>
         </td>
       </tr>
     </tbody>
   </table>
-
-  <div className="mt-1 text-right px-4 pb-2">
-    <button className="text-blue-500 text-xs hover:underline" onClick={handleviewlist}>View all &gt;</button>
-  </div>
 </div>
+<div className="flex justify-end">
+            <button
+              className="text-[#fff] mt-3 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
+              onClick={handleviewlist}
+            >
+              View All
+            </button>
+          </div>
 
         </div>
       </BaseLayout4>

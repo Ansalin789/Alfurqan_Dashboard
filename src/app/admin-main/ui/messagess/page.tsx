@@ -175,237 +175,220 @@ const Message = () => {
 
   return (
     <BaseLayout4>
-      <div className='ml-10'>
-        <h1 className='text-[20px] mt-3 font-semibold mb-3'>Messages</h1>
-        <div className="flex p-3 h-[85vh]">
-          <main className="flex">
-            {/* Left Panel - User List */}
-            <motion.div 
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="w-[350px] bg-white p-4 ml-6 rounded-lg shadow-md flex flex-col border border-gray-100"
-            >
-              <div className="flex items-center space-x-3 p-2">
-                <motion.div whileHover={{ scale: 1.05 }}>
-                  <img
-                    src="/assets/images/account.png"
-                    alt="Admin"
-                    className="w-12 h-12 rounded-lg border border-[#dbdbdb]"
-                  />
-                </motion.div>
-                <div>
-                  <h3 className="text-sm font-semibold text-[#374557]">Admin</h3>
-                  <p className="text-xs text-gray-400">Administrator</p>
-                </div>
-                <button className="ml-auto text-gray-500">
-                  <IoIosMore size={18} />
-                </button>
-              </div>
+      <div className="py-3 px-5" >
+      <h1 className="text-[20px] mt-3 font-semibold mb-3">Messages</h1>
+      <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
 
-              {/* Search Bar */}
-              <motion.div 
-                whileHover={{ scale: 1.01 }}
-                className="relative mt-2 mb-3"
-              >
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiSearch className="text-gray-400 text-xs" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search messages..."
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#4CBC9A]"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </motion.div>
-
-              {/* Tabs */}
-              <div className="flex border-b">
-                <button
-                  className={`px-3 py-1.5 text-xs font-medium ${activeTab === 'supervisors' ? 'text-[#4CBC9A] border-b-2 border-[#4CBC9A]' : 'text-gray-500'}`}
-                  onClick={() => setActiveTab('supervisors')}
-                >
-                  Supervisors
-                </button>
-                <button
-                  className={`px-3 py-1.5 text-xs font-medium ${activeTab === 'academic-coaches' ? 'text-[#4CBC9A] border-b-2 border-[#4CBC9A]' : 'text-gray-500'}`}
-                  onClick={() => setActiveTab('academic-coaches')}
-                >
-                  Academic Coaches
-                </button>
-              </div>
-
-              {/* User List */}
-              <div className="mt-2 overflow-y-auto flex-1">
-                <AnimatePresence>
-                  {filteredUsers.map((user) => (
-                    <motion.button
-                      key={user.id}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className={`flex items-center justify-between w-full p-2 rounded-lg cursor-pointer ${
-                        selectedUser?.id === user.id ? 'bg-gray-100' : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => handleUserClick(user)}
-                    >
-                      <div className="flex space-x-2 items-center">
-                        <div className="relative">
-                          <motion.div 
-                            whileHover={{ scale: 1.05 }}
-                            className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center"
-                          >
-                            <span className="text-gray-600 text-xs">
-                              {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-                            </span>
-                          </motion.div>
-                          <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(user.status ?? 'offline')}`}></div>
-                        </div>
-                        <div className="text-left">
-                          <h5 className="font-medium text-xs text-[#374557]">
-                            {user.firstName} {user.lastName}
-                          </h5>
-                          <p className="text-[10px] text-gray-400 truncate max-w-[180px]">{user.email}</p>
-                        </div>
-                      </div>
-                      <span className="text-[9px] text-gray-400">{user.lastSeen}</span>
-                    </motion.button>
-                  ))}
-                </AnimatePresence>
-              </div>
+        {/* Left Panel */}
+        <motion.div
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="w-full md:w-[350px] bg-white p-4 rounded-lg shadow-md flex flex-col border border-gray-100"
+        >
+          <div className="flex items-center space-x-3 p-2">
+            <motion.div whileHover={{ scale: 1.05 }}>
+              <img
+                src="/assets/images/account.png"
+                alt="Admin"
+                className="w-12 h-12 rounded-lg border border-[#dbdbdb]"
+              />
             </motion.div>
+            <div>
+              <h3 className="text-sm font-semibold text-[#374557]">Admin</h3>
+              <p className="text-xs text-gray-400">Administrator</p>
+            </div>
+            <button className="ml-auto text-gray-500">
+              <IoIosMore size={18} />
+            </button>
+          </div>
 
-            {/* Chat Panel */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="w-[600px] bg-white p-0 rounded-lg shadow-md ml-6 flex flex-col border border-gray-100 overflow-hidden"
+          {/* Search Bar */}
+          <motion.div whileHover={{ scale: 1.01 }} className="relative mt-2 mb-3">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiSearch className="text-gray-400 text-xs" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search messages..."
+              className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#4CBC9A]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </motion.div>
+
+          {/* Tabs */}
+          <div className="flex border-b">
+            <button
+              className={`px-3 py-1.5 text-xs font-medium ${activeTab === 'supervisors' ? 'text-[#4CBC9A] border-b-2 border-[#4CBC9A]' : 'text-gray-500'}`}
+              onClick={() => setActiveTab('supervisors')}
             >
-              {selectedUser ? (
-                <>
-                  <div className="border-b border-gray-200 p-3">
-                    <div className="flex items-center space-x-2">
-                      <motion.div whileHover={{ scale: 1.05 }} className="relative">
-                        <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                          <span className="text-gray-600 text-sm">
-                            {selectedUser.firstName.charAt(0)}{selectedUser.lastName.charAt(0)}
-                          </span>
-                        </div>
-                        <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(selectedUser.status ?? 'offline')}`}></div>
+              Supervisors
+            </button>
+            <button
+              className={`px-3 py-1.5 text-xs font-medium ${activeTab === 'academic-coaches' ? 'text-[#4CBC9A] border-b-2 border-[#4CBC9A]' : 'text-gray-500'}`}
+              onClick={() => setActiveTab('academic-coaches')}
+            >
+              Academic Coaches
+            </button>
+          </div>
+
+          {/* User List */}
+          <div className="mt-2 overflow-y-auto flex-1">
+            <AnimatePresence>
+              {filteredUsers.map((user) => (
+                <motion.button
+                  key={user.id}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`flex items-center justify-between w-full p-2 rounded-lg cursor-pointer ${selectedUser?.id === user.id ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-50'}`}
+                  onClick={() => handleUserClick(user)}
+                >
+                  <div className="flex space-x-2 items-center">
+                    <div className="relative">
+                      <motion.div whileHover={{ scale: 1.05 }} className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <span className="text-gray-600 text-xs">
+                          {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                        </span>
                       </motion.div>
-                      <div>
-                        <h3 className="text-xs font-semibold">
-                          {selectedUser.firstName} {selectedUser.lastName}
-                        </h3>
-                        <div className="flex items-center">
-                          <span className={`inline-block w-2 h-2 rounded-full mr-1 ${getStatusColor(selectedUser.status ?? 'offline')}`}></span>
-                          <p className="text-[10px] text-gray-400 capitalize">
-                            {selectedUser.status} • {selectedUser.role}
-                          </p>
-                        </div>
-                      </div>
+                      <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(user.status ?? 'offline')}`}></div>
+                    </div>
+                    <div className="text-left">
+                      <h5 className="font-medium text-xs text-[#374557]">
+                        {user.firstName} {user.lastName}
+                      </h5>
+                      <p className="text-[10px] text-gray-400 truncate max-w-[180px]">{user.email}</p>
                     </div>
                   </div>
+                  <span className="text-[9px] text-gray-400">{user.lastSeen}</span>
+                </motion.button>
+              ))}
+            </AnimatePresence>
+          </div>
+        </motion.div>
 
-                  {/* Chat Messages */}
-                  <div className="flex-1 p-3 overflow-y-auto bg-gray-50">
-                    <AnimatePresence>
-                      {messages.map((msg) => (
-                        <motion.div
-                          key={msg.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className={`flex flex-col mb-3 ${
-                            msg.senderId === 'admin1' ? 'items-end' : 'items-start'
-                          }`}
-                        >
-                          <motion.div
-                            whileHover={{ scale: 1.01 }}
-                            className={`${
-                              msg.senderId === 'admin1' 
-                                ? 'bg-[#4CBC9A] text-white rounded-tr-none' 
-                                : 'bg-white border border-gray-200 rounded-tl-none'
-                            } p-2 rounded-lg max-w-[80%] shadow-sm`}
-                          >
-                            <p className="text-xs">{msg.message}</p>
-                            <div className="flex items-center justify-end mt-1 space-x-1">
-                              {msg.isEdited && (
-                                <span className="text-[9px] italic opacity-70">edited</span>
-                              )}
-                              <span className="text-[9px] opacity-70">
-                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                              {msg.senderId === 'admin1' && (
-                                <span className="text-[9px]">
-                                  {msg.status === 'read' ? '✓✓' : msg.status === 'delivered' ? '✓' : ''}
-                                </span>
-                              )}
-                            </div>
-                          </motion.div>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                    <div ref={messagesEndRef} />
+        {/* Chat Panel */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="w-full md:flex-1 bg-white rounded-lg shadow-md flex flex-col border border-gray-100 overflow-hidden"
+        >
+          {selectedUser ? (
+            <>
+              <div className="border-b border-gray-200 p-3">
+                <div className="flex items-center space-x-2">
+                  <motion.div whileHover={{ scale: 1.05 }} className="relative">
+                    <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <span className="text-gray-600 text-sm">
+                        {selectedUser.firstName.charAt(0)}{selectedUser.lastName.charAt(0)}
+                      </span>
+                    </div>
+                    <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(selectedUser.status ?? 'offline')}`}></div>
+                  </motion.div>
+                  <div>
+                    <h3 className="text-xs font-semibold">
+                      {selectedUser.firstName} {selectedUser.lastName}
+                    </h3>
+                    <div className="flex items-center">
+                      <span className={`inline-block w-2 h-2 rounded-full mr-1 ${getStatusColor(selectedUser.status ?? 'offline')}`}></span>
+                      <p className="text-[10px] text-gray-400 capitalize">
+                        {selectedUser.status} • {selectedUser.role}
+                      </p>
+                    </div>
                   </div>
+                </div>
+              </div>
 
-                  {/* Input Section */}
-                  <motion.div 
-                    initial={{ y: 10, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="border-t border-gray-200 p-3 bg-white"
-                  >
-                    <div className="flex items-center rounded-lg bg-gray-50 p-1">
-                      <button className="p-1 text-gray-500 hover:text-gray-700 ml-1">
-                        <GrAttachment size={14} />
-                      </button>
-                      <input
-                        type="text"
-                        placeholder="Type a message..."
-                        className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none"
-                        value={messageText}
-                        onChange={(e) => setMessageText(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      />
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleSendMessage}
-                        disabled={!messageText.trim()}
-                        className={`p-1 rounded-lg flex items-center ${
-                          messageText.trim() 
-                            ? 'bg-[#4CBC9A] text-white' 
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              <div className="flex-1 p-3 overflow-y-auto bg-gray-50">
+                <AnimatePresence>
+                  {messages.map((msg) => (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className={`flex flex-col mb-3 ${msg.senderId === 'admin1' ? 'items-end' : 'items-start'}`}
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        className={`p-2 rounded-lg max-w-[80%] shadow-sm ${
+                          msg.senderId === 'admin1'
+                            ? 'bg-[#4CBC9A] text-white rounded-tr-none'
+                            : 'bg-white border border-gray-200 rounded-tl-none'
                         }`}
                       >
-                        <FaTelegramPlane size={14} />
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                </>
-              ) : (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center justify-center h-full bg-gray-50"
-                >
-                  <div className="text-center">
-                    <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full mb-3 flex items-center justify-center">
-                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                      </svg>
-                    </div>
-                    <p className="text-xs text-gray-500">Select a conversation to start chatting</p>
-                  </div>
-                </motion.div>
-              )}
+                        <p className="text-xs">{msg.message}</p>
+                        <div className="flex items-center justify-end mt-1 space-x-1">
+                          {msg.isEdited && (
+                            <span className="text-[9px] italic opacity-70">edited</span>
+                          )}
+                          <span className="text-[9px] opacity-70">
+                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          {msg.senderId === 'admin1' && (
+                            <span className="text-[9px]">
+                              {msg.status === 'read' ? '✓✓' : msg.status === 'delivered' ? '✓' : ''}
+                            </span>
+                          )}
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                <div ref={messagesEndRef} />
+              </div>
+
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="border-t border-gray-200 p-3 bg-white"
+              >
+                <div className="flex items-center rounded-lg bg-gray-50 p-1">
+                  <button className="p-1 text-gray-500 hover:text-gray-700 ml-1">
+                    <GrAttachment size={14} />
+                  </button>
+                  <input
+                    type="text"
+                    placeholder="Type a message..."
+                    className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none"
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  />
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleSendMessage}
+                    disabled={!messageText.trim()}
+                    className={`p-1 rounded-lg flex items-center ${messageText.trim() ? 'bg-[#4CBC9A] text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                  >
+                    <FaTelegramPlane size={14} />
+                  </motion.button>
+                </div>
+              </motion.div>
+            </>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center justify-center h-full bg-gray-50"
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full mb-3 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                  </svg>
+                </div>
+                <p className="text-xs text-gray-500">Select a conversation to start chatting</p>
+              </div>
             </motion.div>
-          </main>
-        </div>
+          )}
+        </motion.div>
       </div>
+    </div>
     </BaseLayout4>
   );
 };

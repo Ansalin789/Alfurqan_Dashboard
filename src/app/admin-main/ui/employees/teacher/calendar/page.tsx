@@ -81,14 +81,14 @@ const SchedulePage = () => {
   return (
     <BaseLayout4>
       <div className="flex flex-col mx-auto">
-        <div className="flex-1 p-6 -ml-10 mt-2">
+        <div className="flex-1 py-3 px-6  mt-2">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-[20px] font-semibold">Scheduled Section</h1>
           </div>
 
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-5 gap-6">
             {/* Calendar Component */}
-            <div className="col-span-3">
+            <div className="col-span-4">
               <div className="bg-white p-4 rounded-lg shadow overflow-hidden">
                 <Calendar
                   localizer={localizer}
@@ -121,7 +121,7 @@ const SchedulePage = () => {
 
             {/* List Schedule */}
             <div className="col-span-1">
-              <div className="bg-white p-6 w-60 rounded-lg shadow overflow-y-scroll h-[530px] scrollbar-none">
+              <div className="bg-white p-6 w-58 rounded-lg shadow overflow-y-scroll h-[530px] scrollbar-none">
                 <h2 className="text-[13px] font-semibold mb-6 text-center p-4">
                   List Schedule for {moment(selectedDate).format("DD MMM YYYY")}
                 </h2>

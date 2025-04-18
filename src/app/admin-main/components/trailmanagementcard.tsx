@@ -25,13 +25,13 @@ const TotalScheduledChart = () => {
   ];
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow-md w-64 border border-gray-200 -ml-4">
+    <div>
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-sm font-semibold text-gray-900">
           Total Trial Classes
         </h2>
-        <MoreHorizontal size={16} className="text-gray-500" />
+        
       </div>
 
       {/* Pie Chart with Centered Text */}
@@ -65,17 +65,16 @@ const TotalScheduledChart = () => {
       </div>
 
       {/* Legend Section */}
-      <div className="grid grid-cols-2 gap-y-2 px-3 mt-2">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-2 px-3 mt-9">
         {data.map((entry) => (
           <div key={entry.name} className="flex items-center">
             <span
-              className="w-3 h-3 rounded-sm mr-2"
+              className="w-2 h-2 rounded-full mr-1"
               style={{ backgroundColor: entry.color }}
             ></span>
             <div className="flex flex-col">
-              <span className="text-[10px] text-gray-600">{entry.name}</span>
-              <span className="text-[10px] font-semibold text-gray-900">
-                {entry.value}
+              <span className="text-[9px] text-gray-600 whitespace-nowrap">
+                {entry.name} ({entry.value})
               </span>
             </div>
           </div>
@@ -108,17 +107,17 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
 
 const CoursesChart = () => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-60 border border-gray-200 ">
+    <div>
       <h2 className="text-sm font-semibold text-gray-900">Student Status</h2>
 
       <ResponsiveContainer width="100%" height={198}>
         <BarChart data={courseData} barCategoryGap={30}>
-          <XAxis
-            dataKey="name"
-            tick={{ fill: "#7f9cb6", fontSize: 10 }}
+          {/* <XAxis
+            // dataKey="name"
+            // tick={{ fill: "#7f9cb6", fontSize: 10 }}
             axisLine={false}
             tickLine={false}
-          />
+          /> */}
           <Tooltip
             content={<CustomTooltip active={undefined} payload={undefined} />}
             wrapperStyle={{ backgroundColor: "transparent", border: "none" }} // Remove tooltip bg
@@ -137,7 +136,7 @@ const CoursesChart = () => {
         {courseData.map((entry) => (
           <div
             key={entry.name}
-            className="flex items-center space-x-2 whitespace-nowrap mt-6"
+            className="flex items-center space-x-2 whitespace-nowrap mt-5"
           >
             <div
               className="w-2 h-2 rounded-full"
@@ -166,12 +165,12 @@ const COLORS = ["#0D1B2A", "#4B9EFF", "#81878B"];
 
 const PreferredTeachersCard = () => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-60 border border-gray-200 justify-between flex flex-col">
+    <div>
       <div>
         <h2 className="text-sm font-semibold text-gray-900">
           Teacher Assigned - Not Assigned
         </h2>
-        <div className="relative flex items-center justify-center">
+        <div className="relative flex items-center justify-center pt-4">
           {data.map((item) => (
             <div key={item.count}>
               <PieChart width={150} height={150}>
@@ -239,14 +238,14 @@ const PreferredTeachersCard = () => {
         </div>
       </div>
       <div>
-        <div className="flex justify-center gap-4 mt- text-gray-700 text-sm">
+        <div className="flex justify-center gap-4 mt-16 text-gray-700 text-sm">
           <div className="flex items-center text-[10px]">
-            <span className="w-3 h-3 bg-[#0D1B2A] rounded-sm mr-1"></span>
-            Male
+            <span className="w-2 h-2 bg-[#0D1B2A] rounded-sm mr-1"></span>
+            Assigned
           </div>
           <div className="flex items-center text-[10px]">
-            <span className="w-3 h-3 bg-[#4B9EFF] rounded-sm mr-1"></span>
-            Female
+            <span className="w-2 h-2 bg-[#4B9EFF] rounded-sm mr-1"></span>
+            Not-Assigned
           </div>
         </div>
       </div>
@@ -285,27 +284,27 @@ const TeachersStudents = () => {
       name: "Hassan Ibrahim",
       trials: 5,
       joined: 4,
-      avatar:"/assets/images/student-profile1.png", 
+      avatar: "/assets/images/student-profile1.png",
     },
     {
       id: 4,
       name: "Maryam Hossan",
       trials: 6,
       joined: 1,
-      avatar: "/assets/images/student-profile.png", 
+      avatar: "/assets/images/student-profile.png",
     },
     {
       id: 5,
       name: "Ayesha Islam",
       trials: 6,
       joined: 1,
-      avatar: "/assets/images/student-profile1.png", 
+      avatar: "/assets/images/student-profile1.png",
     },
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 ">
-      <h2 className="text-[15px] font-semibold text-gray-800 mb-3">
+    <div>
+      <h2 className="text-sm font-semibold text-gray-900 mb-3">
         Teachers - Students
       </h2>
       <div className="flex justify-between text-[10px] mb-2 border-b pb-2">
@@ -322,7 +321,9 @@ const TeachersStudents = () => {
               src={teacher.avatar}
               width={24}
               height={24}
-              className="rounded-full mr-3" alt={""}            />
+              className="rounded-full mr-3"
+              alt={""}
+            />
             {/* Name */}
             <div className="flex-grow truncate">
               <span className="text-[12px] text-gray-900">{teacher.name}</span>
@@ -340,11 +341,19 @@ const TeachersStudents = () => {
 
 export default function Dashboard() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4  w-full max-w-[1300px] mx-auto">
-      <TotalScheduledChart />
-      <CoursesChart />
-      <PreferredTeachersCard />
-      <TeachersStudents />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full w-full px-4 py-4 md:mr-10 scrollbar-none">
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+        <TotalScheduledChart />
+      </div>
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+        <CoursesChart />
+      </div>
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+        <PreferredTeachersCard />
+      </div>
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+        <TeachersStudents />
+      </div>
     </div>
   );
 }

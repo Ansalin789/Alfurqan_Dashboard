@@ -45,16 +45,7 @@ const students = [
     scheduledClass: "Mon to Fri - 7 AM",
     level: "Advanced",
   },
-  {
-    studentId: "STU005",
-    dateOfJoining: "2024-02-28",
-    studentName: "Fatima Noor",
-    teacherName: "Ustadha Fatima",
-    courseName: "Quran with Translation",
-    contact: "+91-9876541230",
-    scheduledClass: "Wed, Fri - 8 PM",
-    level: "Beginner",
-  },
+  
 ];
 
 const TrailManagement = () => {
@@ -83,9 +74,9 @@ const TrailManagement = () => {
   };
 
   return (
-    <div className="pt-3 mx-auto w-[1220px]">
+    <div className="pt-3 mx-auto w-[1220px] mt-1">
       {/* Search & Filter Section */}
-      <div className="flex justify-between items-center p-2">
+      <div className="flex justify-between items-center p-2 ">
         <div className="flex space-x-4 items-center">
           <input
             type="text"
@@ -113,7 +104,7 @@ const TrailManagement = () => {
       {/* Table Section */}
  <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
   <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-[11px]">
-    <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
+    <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold ">
       <tr>
         <th className="p-3 py-5 font-semibold text-center">Student ID</th>
         <th className="p-3 py-5 font-semibold text-center">Date of Joining</th>

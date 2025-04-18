@@ -27,15 +27,21 @@ const UpcomingClasses: React.FC = () => {
           id: "1",
           date: new Date(Date.now() + 86400000).toLocaleDateString(), // Tomorrow
           time: "10:00 AM - 11:30 AM",
-          title: "Mathematics",
+          title: "Islamic",
           color: "blue-500" // Female teacher
         },
         {
           id: "2",
           date: new Date(Date.now() + 2 * 86400000).toLocaleDateString(), // Day after tomorrow
           time: "02:00 PM - 03:30 PM",
-          title: "Physics",
+          title: "Quran",
           color: "red-500" // Male teacher
+        },{
+          id: "3",
+          date: new Date(Date.now() + 2 * 86400000).toLocaleDateString(), // Day after tomorrow
+          time: "02:00 PM - 03:30 PM",
+          title: "Arabic",
+          color: "green-500" // Male teacher
         }
       ];
 
@@ -56,7 +62,7 @@ const UpcomingClasses: React.FC = () => {
 
   return (
     <div className="p-4 shadow-lg rounded-[20px] bg-[#e0dfdf] w-full max-w-md mx-auto">
-      <h3 className="text-[13px] font-semibold text-gray-800 mb-4 text-center">
+      <h3 className="text-[13px] font-semibold text-gray-800 mb-3 text-center">
         Upcoming Classes
       </h3>
       
@@ -68,16 +74,19 @@ const UpcomingClasses: React.FC = () => {
         ) : (
           classes.map((classItem) => (
             <div
-              key={classItem.id}
-              className={`p-3 rounded-md shadow-sm bg-[#e5e5e5] border-t-2 border-r-2 ${
-                classItem.color === "blue-500" 
-                  ? "border-blue-500" 
-                  : "border-red-500"
-              }`}
-            >
+            key={classItem.id}
+            className={`p-3 rounded-md shadow-sm bg-[#e5e5e5] border-t-2 border-r-2 ${
+              classItem.color === "blue-500"
+                ? "border-blue-500"
+                : classItem.color === "red-500"
+                ? "border-red-500"
+                : "border-green-500"
+            }`}
+          >
+          
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="text-[13px] font-medium text-gray-800">
+                  <h4 className="text-[12px] font-medium text-gray-800">
                     {classItem.title}
                   </h4>
                   <p className="text-[11px] text-gray-600 mt-1">
