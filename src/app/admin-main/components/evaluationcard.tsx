@@ -305,7 +305,7 @@ const CoursesChart = () => {
 
 export default function Dashboard() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-[1300px] mx-auto p-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full w-full px-4 py-4 md:mr-10 scrollbar-none">
       <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
         <TotalScheduledChart />
       </div>

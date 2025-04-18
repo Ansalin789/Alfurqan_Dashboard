@@ -6,7 +6,7 @@ import { FaEdit, FaFilter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { User } from "@/types";
 
-import Dashboard from "../../components/dashhh";
+import Dashboard from "../../components/evaluationcard";
 import BaseLayout4 from "@/components/BaseLayout4";
 
 const evaluation: EvaluationItem[] = [
@@ -548,7 +548,7 @@ const TrailSection = () => {
 
   return (
     <BaseLayout4>
-      <div className="p-4 w-full pr-9 mx-auto h-full">
+      <div className="h-full w-full  py-2 md:mr-10 scrollbar-none">
         <div className="flex justify-between ml-7">
          
             <h2 className="text-[20px] font-semibold">Trail class Request</h2>
