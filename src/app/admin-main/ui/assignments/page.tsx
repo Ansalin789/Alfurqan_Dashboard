@@ -125,7 +125,7 @@ const AssignmentsPage = () => {
           <h2 className="text-lg font-bold mt-1">100</h2>
         </div>
         <div className="bg-[#8280ff77] p-4 rounded-3xl">
-          <PiBookOpenTextFill className="text-[#2742A6]" size={30} />
+          <PiBookOpenTextFill className="text-[#2742A6]" size={25} />
         </div>
       </div>
 
@@ -135,7 +135,7 @@ const AssignmentsPage = () => {
           <h2 className="text-lg font-bold mt-1">90</h2>
         </div>
         <div className="bg-[#778197] p-4 rounded-3xl">
-          <BiSolidTime className="text-[#5D6472]" size={30} />
+          <BiSolidTime className="text-[#5D6472]" size={25} />
         </div>
       </div>
 
@@ -145,7 +145,7 @@ const AssignmentsPage = () => {
           <h2 className="text-lg font-bold mt-1">20</h2>
         </div>
         <div className="bg-[#f8f6f6] border border-[#979797] p-4 rounded-3xl">
-          <BsCalendar2Check className="text-[#717C92]" size={30} />
+          <BsCalendar2Check className="text-[#717C92]" size={25} />
         </div>
       </div>
     </div>
