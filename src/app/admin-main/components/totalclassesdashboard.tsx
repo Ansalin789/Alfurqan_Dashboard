@@ -58,29 +58,29 @@ export default function TotalClasses() {
       </div>
 
       {/* Chart Section */}
-      <div className="flex flex-wrap justify-center h-[50px] sm:h-[75px] md:h-[100px] xl:h-[200px]">
+      <div className="h-48 flex">
         {/* Y-Axis Labels */}
-        <div className="flex flex-col justify-between text-gray-700 text-xs pl-1 pr-2  sm:block">
+        <div className="flex flex-col justify-between text-gray-700 text-xs pl-1 pr-2">
           {[125, 100, 75, 50, 25, 0].map((label) => (
-            <div key={label} className="h-8 flex items-center justify-end">
+            <div key={label} className="h-6 flex items-center justify-end">
               {label}
             </div>
           ))}
         </div>
 
         {/* Bar Chart */}
-        <div className="flex-1 flex flex-col items-center justify-end px-4 sm:px-8 py-4">
-          <div className="flex-1 w-full flex items-end justify-center gap-4 sm:gap-6 md:gap-10 lg:gap-14 h-full">
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex items-end justify-between sm:justify-center sm:gap-x-3 md:gap-x-8 lg:gap-x-10 h-full pl-4">
             {classData.map((item) => (
-              <div key={item.type} className="flex flex-col items-center h-full" style={{ minWidth: '60px', maxWidth: '100px' }}>
+              <div key={item.type} className="flex flex-col items-center h-full" style={{ minWidth: '40px' }}>
                 {/* Bar container */}
                 <div className="flex-1 w-full flex flex-col justify-end items-center">
                   {/* Actual bar */}
                   <div
-                    className={`w-full sm:w-[30%] md:w-[50%] lg:w-[70%] xl:w-[90%] rounded-t-md ${item.color}`}
+                    className={`w-8 sm:w-10 md:w-10 rounded-t-md ${item.color}`}
                     style={{
                       height: `${(item.count / maxCount) * 100}%`,
-                      minHeight: '2px',
+                      minHeight: '2px'
                     }}
                   ></div>
                 </div>
