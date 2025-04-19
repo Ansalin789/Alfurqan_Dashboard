@@ -74,7 +74,7 @@ const TrailManagement = () => {
   };
 
   return (
-    <div className="pt-3 mx-auto w-[1220px] mt-1">
+    <div className="pt-3 mx-auto w-full mt-1">
       {/* Search & Filter Section */}
       <div className="flex justify-between items-center p-2 ">
         <div className="flex space-x-4 items-center">

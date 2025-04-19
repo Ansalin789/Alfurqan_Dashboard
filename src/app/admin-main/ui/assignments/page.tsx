@@ -81,107 +81,94 @@ const AssignmentsPage = () => {
                 {/* Header */}
                 <h2 className="text-xl font-semibold mb-4">Assignments</h2>
 
-                <div className="flex flex-wrap gap-10 mb-0 justify-between mx-auto w-full">
-                    <div className="gap-10 justify-between mb-2 align-middle">
-                        <div className="flex gap-8 mb-1 w-full">
-                            <div className="relative bg-[#002D62] text-white rounded-xl w-56 px-4 py-2 shadow-md text-center">
-                                {/* Ribbon badge */}
-                                <div className="absolute top-2 right-2 w-[50px] h-[50px] rounded-full bg-red-700 flex items-center justify-center z-10">
-                                    <div className="absolute w-10 h-10 rounded-full bg-[#012A4A] flex items-center justify-center z-10">
-                                        <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-                                            <span className="text-[#813300] font-bold text-lg">
-                                                1
-                                            </span>
-                                        </div>
-                                        {/* Tail */}
-                                        <div className="absolute bottom-[-24px] w-7 h-6 bg-red-700 rounded-b-[2px] [clip-path:polygon(0%_0%,100%_0%,100%_100%,50%_80%,0%_100%)]"></div>
-                                    </div>
-                                </div>
-                                {/* Profile Image */}
-                                <img
-                                    src="/assets/images/avatar.png"
-                                    alt="Profile"
-                                    className="w-16 h-16 rounded-full mx-auto mb-4 object-cover"
-                                />
+                <div className="flex flex-col gap-6 w-full  mx-auto">
+  {/* Top Section with Cards */}
+  <div className="flex flex-col lg:flex-row flex-wrap gap-6 justify-center lg:justify-between">
+    {/* Profile Card */}
+    <div className="relative bg-[#002D62] text-white rounded-xl w-full sm:w-64 px-4 py-4 shadow-md text-center">
+      {/* Ribbon badge */}
+      <div className="absolute top-2 right-2 w-[50px] h-[50px] rounded-full bg-red-700 flex items-center justify-center z-10">
+        <div className="absolute w-10 h-10 rounded-full bg-[#012A4A] flex items-center justify-center z-10">
+          <div className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+            <span className="text-[#813300] font-bold text-lg">1</span>
+          </div>
+          <div className="absolute bottom-[-24px] w-7 h-6 bg-red-700 rounded-b-[2px] [clip-path:polygon(0%_0%,100%_0%,100%_100%,50%_80%,0%_100%)]"></div>
+        </div>
+      </div>
 
-                                {/* Name */}
-                                <h3 className="font-semibold text-[14px] mb-1">Angela Moss</h3>
+      <img
+        src="/assets/images/avatar.png"
+        alt="Profile"
+        className="w-16 h-16 rounded-full mx-auto mb-4 object-cover"
+      />
+      <h3 className="font-semibold text-[14px] mb-1">Angela Moss</h3>
+      <p className="text-[10px] font-semibold text-cyan-500">Student ID : KOL231231293201</p>
+      <p className="text-[10px] font-semibold text-cyan-500 mb-3">Arabic Language</p>
 
-                                {/* Student Info */}
-                                <p className="text-[10px] font-semibold text-cyan-500">
-                                    Student ID : KOL231231293201
-                                </p>
-                                <p className="text-[10px] font-semibold text-cyan-500 mb-3">
-                                    Arabic Language
-                                </p>
+      <div className="flex justify-center mb-2">
+        {Array(5)
+          .fill(0)
+          .map((_, i) => (
+            <span key={i} className="text-yellow-400 text-lg">★</span>
+          ))}
+      </div>
+      <button className="bg-[#88BADF] text-black font-semibold px-6 py-1 rounded-md text-[12px]">
+        View Report
+      </button>
+    </div>
 
-                                {/* Stars */}
-                                <div className="flex justify-center mb-2">
-                                    {Array(5)
-                                        .fill(0)
-                                        .map((_, i) => (
-                                            <span key={i} className="text-yellow-400 text-lg">
-                                                ★
-                                            </span>
-                                        ))}
-                                </div>
+    {/* Stat Cards */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 flex-1">
+      <div className="bg-[#2D49AD] text-white rounded-xl p-4 flex items-center justify-between w-full h-40 shadow-md">
+        <div>
+          <p className="text-base">Total Assignments</p>
+          <h2 className="text-lg font-bold mt-1">100</h2>
+        </div>
+        <div className="bg-[#8280ff77] p-4 rounded-3xl">
+          <PiBookOpenTextFill className="text-[#2742A6]" size={25} />
+        </div>
+      </div>
 
-                                {/* Button */}
-                                <button className="bg-[#88BADF] text-black font-semibold px-8 py-1 rounded-md text-[12px]">
-                                    View Report
-                                </button>
-                            </div>
-                            <div className="bg-[#2D49AD] text-white rounded-xl p-4 flex items-center justify-between w-72 h-40 shadow-md">
-                                <div>
-                                    <p className="text-base">Total Assignments</p>
-                                    <h2 className="text-lg font-bold mt-1">100</h2>
-                                </div>
-                                <div className="bg-[#8280ff77] p-4 rounded-3xl text-sm">
-                                    <PiBookOpenTextFill className="text-[#2742A6]" size={30} />
-                                </div>
-                            </div>
-                            <div className="bg-[#667085] text-white rounded-xl p-4 flex items-center justify-between w-72 h-40 shadow-md">
-                                <div>
-                                    <p className="text-base">Total pending</p>
-                                    <h2 className="text-lg font-bold mt-1">90</h2>
-                                </div>
-                                <div className="bg-[#778197] p-4 rounded-3xl text-sm">
-                                    <BiSolidTime className="text-[#5D6472]" size={30} />
-                                </div>
-                            </div>
-                            <div className="bg-[#FFFFFF] text-[#6D7D93] rounded-xl p-4 flex items-center justify-between w-72 h-40 shadow-md">
-                                <div>
-                                    <p className="text-base">Total Completed</p>
-                                    <h2 className="text-lg font-bold mt-1">20</h2>
-                                </div>
-                                <div className="bg-[#f8f6f6] border border-[#979797] p-4 rounded-3xl text-sm">
-                                    <BsCalendar2Check className="text-[#717C92]" size={30} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="justify-between flex gap-4 mt-6">
-                            <div>
-                                <h3 className="font-semibold text-md text-[#012A4A] mt-4">
-                                    Total Assignments
-                                </h3>
-                            </div>
-                            <div className="flex gap-4">
-                                <div className="justify-end text-end">
-                                    <button
-                                        onClick={handleAddNewClick}
-                                        className=" px-4 text-end mt-[2px] py-[11px] bg-[#012A4A] p-2 rounded-lg text-white text-[12px]"
-                                    >
-                                        + Add New
-                                    </button>
-                                </div>
-                                <select className="border px-3 rounded-lg py-1 text-[12px] text-gray-600 text-center justify-center">
-                                    <option>Last month</option>
-                                    <option>This month</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <div className="bg-[#667085] text-white rounded-xl p-4 flex items-center justify-between w-full h-40 shadow-md">
+        <div>
+          <p className="text-base">Total pending</p>
+          <h2 className="text-lg font-bold mt-1">90</h2>
+        </div>
+        <div className="bg-[#778197] p-4 rounded-3xl">
+          <BiSolidTime className="text-[#5D6472]" size={25} />
+        </div>
+      </div>
+
+      <div className="bg-[#FFFFFF] text-[#6D7D93] rounded-xl p-4 flex items-center justify-between w-full h-40 shadow-md">
+        <div>
+          <p className="text-base">Total Completed</p>
+          <h2 className="text-lg font-bold mt-1">20</h2>
+        </div>
+        <div className="bg-[#f8f6f6] border border-[#979797] p-4 rounded-3xl">
+          <BsCalendar2Check className="text-[#717C92]" size={25} />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Bottom Filter/Action Row */}
+  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
+    <h3 className="font-semibold text-md text-[#012A4A]">Total Assignments</h3>
+    <div className="flex flex-wrap gap-3">
+      <button
+        onClick={handleAddNewClick}
+        className="bg-[#012A4A] px-4 py-2 rounded-lg text-white text-[12px]"
+      >
+        + Add New
+      </button>
+      <select className="border px-3 py-2 rounded-lg text-[12px] text-gray-600">
+        <option>Last month</option>
+        <option>This month</option>
+      </select>
+    </div>
+  </div>
+</div>
+
 
                 {/* Total Assignments Table */}
                 <div className="">

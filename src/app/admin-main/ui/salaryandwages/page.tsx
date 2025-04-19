@@ -188,8 +188,8 @@ const SalaryCard = () => {
 
   return (
     <BaseLayout4>
-      <div className="w-full h-screen bg-[#e9e9e9] px-4 py-6 mr-6">
-        <div className="flex justify-between items-start mb-1.5">
+      <div className="w-full min-h-screen bg-[#e9e9e9] px-4 py-6 md:mr-6 overflow-y-auto">       
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-1.5 w-full px-4">
           {/* Left Side - Expenses Heading */}
           <div className="text-start">
             <h2 className="text-black text-[22px] font-semibold">
@@ -318,19 +318,19 @@ const SalaryCard = () => {
           </div>
         </div>
 
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end mb-2 mt-2 mr-1">
           {/* Duration Filter */}
           <div className="flex items-center rounded border border-gray-300 bg-white px-4 py-[5px] mt-2 md:mt-0">
             <label
               htmlFor="duration"
-              className="font-medium text-gray-600 text-[10px] rounded-lg flex items-center mr-3"
+              className="font-medium text-gray-600 text-[12px] rounded-lg flex items-center mr-3"
             >
               Duration :
             </label>
             <select
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
-              className="text-[10px] bg-transparent focus:outline-none"
+              className="text-[12px] bg-transparent focus:outline-none"
             >
               <option>Last week</option>
               <option>Last month</option>
