@@ -73,7 +73,7 @@ const SidebarItems = [
                 icon: MdBookmarks,
             },
             {
-                name: 'Salery and Wages',
+                name: 'Salary and Wages',
                 href: '/admin-main/ui/salaryandwages',
                 icon: MdBookmarks,
             },

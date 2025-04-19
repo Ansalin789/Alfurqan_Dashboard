@@ -172,22 +172,22 @@ const Expenses = () => {
 
   return (
     <BaseLayout4>
-      <div className="w-full h-screen bg-[#e9e9e9] px-4 py-6 mr-6">
-      <div className="flex justify-between items-start mb-1.5">
+      <div className="w-full min-h-screen bg-[#e9e9e9] px-4 py-6 md:mr-6 overflow-y-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-1.5 w-full px-4">
   {/* Left Side - Expenses Heading */}
   <div className="text-start">
     <h2 className="text-black text-[22px] font-semibold">Expenses</h2>
   </div>
 
   {/* Right Side - Icons and Duration */}
-  <div className="flex items-center gap-4">
+  <div className="flex items-center gap-4 w-full md:w-auto justify-start md:justify-end">
     {/* Icons */}
     <div className="flex items-center gap-4 relative">
       <button className="p-2 bg-[#CED4DC] rounded-lg shadow hover:bg-gray-200">
         <Sun size={16} className="text-black" />
       </button>
 
-      <button 
+      <button
         className="p-2 bg-[#CED4DC] rounded-lg shadow hover:bg-gray-200 relative transition-all duration-200 hover:scale-105"
         onClick={toggleNotifications}
       >
@@ -224,8 +224,8 @@ const Expenses = () => {
                   key={notification.id}
                   className={`p-2 border-b border-white/20 transition-colors duration-200 rounded-lg
                               ${notification.seen
-                                ? "bg-white/50 text-gray-700 hover:bg-white/60"
-                                : "bg-blue-100 text-gray-900 font-semibold hover:bg-blue-200"} 
+                    ? "bg-white/50 text-gray-700 hover:bg-white/60"
+                    : "bg-blue-100 text-gray-900 font-semibold hover:bg-blue-200"} 
                               backdrop-blur-md`}
                 >
                   <div className="flex items-start gap-3">
@@ -250,16 +250,16 @@ const Expenses = () => {
         </div>
       )}
     </div>
-
-   
   </div>
 </div>
 
+
 <br/>
-<div className="flex justify-between items-start mb-6 flex-wrap ml-3">
+<div className="flex flex-wrap justify-between items-start gap-6 mb-6 px-4">
   {/* Cards Section */}
-  <div className="flex gap-10 flex-wrap">
-    <div className="w-[240px] h-[120px] p-5 rounded-xl bg-[#304DAF] text-white shadow-md">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+    {/* Card 1 */}
+    <div className="w-full p-5 rounded-xl bg-[#304DAF] text-white shadow-md">
       <h4 className="text-sm mb-2 opacity-90">Total Expenses</h4>
       <h1 className="text-xl font-bold">$ 120,000</h1>
       <div className="flex justify-between items-center mt-2 text-sm opacity-90">
@@ -268,7 +268,8 @@ const Expenses = () => {
       </div>
     </div>
 
-    <div className="w-[240px] h-[120px] p-5 rounded-xl bg-white text-[#475569] shadow-md">
+    {/* Card 2 */}
+    <div className="w-full p-5 rounded-xl bg-white text-[#475569] shadow-md">
       <h4 className="text-sm mb-2 opacity-90">Pending</h4>
       <h1 className="text-xl font-bold">$ 16,500</h1>
       <div className="flex justify-between items-center mt-2 text-sm opacity-90">
@@ -277,7 +278,8 @@ const Expenses = () => {
       </div>
     </div>
 
-    <div className="w-[240px] h-[120px] p-5 rounded-xl bg-white text-[#475569] shadow-md">
+    {/* Card 3 */}
+    <div className="w-full p-5 rounded-xl bg-white text-[#475569] shadow-md">
       <h4 className="text-sm mb-2 opacity-90">Revenue</h4>
       <h1 className="text-xl font-bold">$ 48,670</h1>
       <div className="flex justify-between items-center mt-2 text-sm opacity-90">
@@ -286,7 +288,8 @@ const Expenses = () => {
       </div>
     </div>
 
-    <div className="w-[240px] h-[120px] p-5 rounded-xl bg-white text-[#475569] shadow-md">
+    {/* Card 4 */}
+    <div className="w-full p-5 rounded-xl bg-white text-[#475569] shadow-md">
       <h4 className="text-sm mb-2 opacity-90">Balance</h4>
       <h1 className="text-xl font-bold">$ 48,670</h1>
       <div className="flex justify-between items-center mt-2 text-sm opacity-90">
@@ -295,12 +298,11 @@ const Expenses = () => {
       </div>
     </div>
   </div>
-
- 
 </div>
 
 
-        <div className="flex justify-end mb-2">
+
+        <div className="flex justify-end mb-2 mt-2 mr-1">
            {/* Duration Filter */}
   <div className="flex items-center rounded border border-gray-300 bg-white px-4 py-[5px] mt-2 md:mt-0">
     <label
