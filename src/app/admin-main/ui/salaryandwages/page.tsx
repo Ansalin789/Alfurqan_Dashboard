@@ -318,7 +318,7 @@ const SalaryCard = () => {
           </div>
         </div>
 
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end mb-2 mt-2">
           {/* Duration Filter */}
           <div className="flex items-center rounded border border-gray-300 bg-white px-4 py-[5px] mt-2 md:mt-0">
             <label
