@@ -301,7 +301,7 @@ const TrailManagement = () => {
   return (
     <BaseLayout4>
       <div className="py-2 md:mr-10 w-full scrollbar-none mx-auto h-full">
-        <div className="flex justify-between ml-7">
+        <div className="flex justify-between ml-4">
           <h2 className="text-[20px] font-semibold">Scheduled Trail Classes</h2>
         </div>
 
@@ -340,36 +340,27 @@ const TrailManagement = () => {
             <table className="min-w-full table-fixed bg-white shadow rounded-lg">
               <thead className="border-b-[1px] border-[#1C3557] text-[10px] font-semibold">
                 <tr>
-                  <th className="p-3 text-center w-[15%] break-words">
-                    Trial ID
-                  </th>
-                  <th className="p-3 text-center w-[15%] break-words">
-                    Student Name
-                  </th>
-                  <th className="p-3 text-center w-[15%] break-words">
-                    Mobile
-                  </th>
-                  <th className="p-3 text-center w-[15%]">Country</th>
-                  <th className="p-3 text-center w-[13%] break-words">
-                    Course
-                  </th>
-                  <th className="p-3 text-center w-[18%] break-words">
-                    Preferred Teacher
-                  </th>
-                  <th className="p-3 text-center w-[18%] break-words">
-                    Assigned Teacher
-                  </th>
-                  <th className="p-3 text-center w-[10%]">Time</th>
-                  <th className="p-3 text-center w-[25%] break-words">
-                    Class Status
-                  </th>
-                  <th className="p-3 text-center w-[15%] break-words">
-                    Payment Status
-                  </th>
-                  <th className="p-3 text-center w-[13%] break-words">
-                    Student Status
-                  </th>
-                  <th className="p-3 text-center w-[10%]">Action</th>
+                  {[
+                    "Trial ID",
+                    "Student Name",
+                    "Mobile",
+                    "Country",
+                    "Course",
+                    "Preferred Teacher",
+                    "Assigned Teacher",
+                    "Time",
+                    "Class Status",
+                    "Payment Status",
+                    "Student Status",
+                    "Action",
+                  ].map((header, i) => (
+                    <th
+                      key={i}
+                      className="p-3 text-center w-[8.33%] break-words"
+                    >
+                      {header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="text-[9px] font-medium">
@@ -406,7 +397,6 @@ const TrailManagement = () => {
                       <td className="p-3 text-center break-words">
                         {item.student.preferredFromTime}
                       </td>
-
                       <td className="p-3 text-center">
                         <span
                           className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
@@ -418,7 +408,6 @@ const TrailManagement = () => {
                           {item.trialClassStatus}
                         </span>
                       </td>
-
                       <td className="p-3 text-center">
                         <span
                           className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
@@ -430,7 +419,6 @@ const TrailManagement = () => {
                           {item.paymentStatus}
                         </span>
                       </td>
-
                       <td className="p-3 text-center">
                         <span
                           className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
@@ -442,7 +430,6 @@ const TrailManagement = () => {
                           {item.student.status}
                         </span>
                       </td>
-
                       <td className="p-3 text-center">
                         <button
                           onClick={() => handleClick(item._id.toString())}
