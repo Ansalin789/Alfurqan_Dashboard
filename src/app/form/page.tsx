@@ -196,6 +196,7 @@ const MultiStepForm = () => {
         firstName: firstName.trim().padEnd(3),
         lastName: lastName.trim().padEnd(3),
         email: email.trim().toLowerCase(),
+        gender: "Male",
         phoneNumber: Number(phoneNumber),
         country: country.length >= 3 ? country : country.padEnd(3, " "),
         countryCode: countryCode.toLowerCase(),
@@ -220,7 +221,7 @@ const MultiStepForm = () => {
       // Debug log to check the data being sent
       console.log("Sending data:", formattedData);
     
-      const response = await fetch(`https://alfurqanacademy.tech/student`, {
+      const response = await fetch(`http://localhost:5001/student`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -282,28 +283,40 @@ const MultiStepForm = () => {
    */
   
 
-  const formatTime = (hours: number, minutes: number) => {
+  const formatTime = (hours: number, minutes: number): string => {
     const period = hours >= 12 ? "PM" : "AM";
-    const formattedHours = hours % 12 || 12; // Convert to 12-hour format
-    const formattedMinutes = minutes.toString().padStart(2, "0");
-    return `${formattedHours}:${formattedMinutes} ${period}`;
+    const adjustedHours = hours % 12 === 0 ? 12 : hours % 12;
+    const paddedHours = adjustedHours.toString().padStart(2, "0");
+    const paddedMinutes = minutes.toString().padStart(2, "0");
+    return `${paddedHours}:${paddedMinutes} ${period}`;
   };
-
+  
+  
   const calculatePreferredToTime = (fromTime: string) => {
-    const timeParts = fromTime.split(":");
-    if (timeParts.length !== 2) return "12:00 AM"; // Default to '12:00 AM' if format is incorrect
-
-    const hours = parseInt(timeParts[0].trim(), 10);
-    const minutes = parseInt(timeParts[1].trim(), 10);
-
-    if (isNaN(hours) || isNaN(minutes)) return "12:00 AM"; // Default to '12:00 AM' if parsing fails
-
-    const totalMinutes = hours * 60 + minutes + 30; // Add 30 minutes
-    const newHours = Math.floor(totalMinutes / 60) % 24; // Ensure hours wrap around after 24
-    const newMinutes = totalMinutes % 60;
-
-    return formatTime(newHours, newMinutes); // Format the time correctly
+    try {
+      const [timePart, period] = fromTime.trim().split(" ");
+      if (!timePart || !period) return "12:00 AM";
+  
+      const [hourStr, minuteStr] = timePart.split(":");
+      const rawHours = parseInt(hourStr, 10);
+      const rawMinutes = parseInt(minuteStr, 10);
+  
+      if (isNaN(rawHours) || isNaN(rawMinutes)) return "12:00 AM";
+  
+      // Convert to 24-hour time
+      let hours = rawHours % 12;
+      if (period.toUpperCase() === "PM") hours += 12;
+  
+      const totalMinutes = hours * 60 + rawMinutes + 30; // Add 30 mins
+      const newHours = Math.floor(totalMinutes / 60) % 24;
+      const newMinutes = totalMinutes % 60;
+  
+      return formatTime(newHours, newMinutes);
+    } catch (error) {
+      return "12:00 AM";
+    }
   };
+  
 
   useEffect(() => {
     const fetchedCities = countriesCities.getCities(country);
@@ -695,8 +708,7 @@ const MultiStepForm = () => {
                                 fromTime.includes(":")
                               ) {
                                 setPreferredFromTime(fromTime);
-                                const toTime =
-                                  calculatePreferredToTime(fromTime);
+                                const toTime =calculatePreferredToTime(fromTime);
                                 setPreferredToTime(toTime);
                               } else {
                                 console.error(
