@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Tooltip } from "recharts";
 import { ArrowUpRight } from "lucide-react";
-
 interface DashboardCount {
   totalStudents: number;
   maleStudents: number;
@@ -64,8 +63,20 @@ useEffect(() => {
 
   fetchData();
 }, []);
+
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white text-black text-xs px-2 py-1 rounded shadow-sm">
+        <p>{`${payload[0].name}: ${payload[0].value}`}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
   return (
-    <div className="flex flex-col md:flex-row justify-center items-center gap-4">
+    <div className="flex flex-col md:flex-row justify-center items-center gap-4 ">
       {data.map((item) => (
         <div
           key={item.title}
@@ -98,10 +109,10 @@ useEffect(() => {
             {/* Responsive Pie Chart */}
             <div className="relative -mr-2 -mt-4">
               <PieChart width={70} height={50}>
-                <Tooltip />
-                {/* Male segment */}
+              <Tooltip content={<CustomTooltip />} />
+              {/* Male segment */}
                 <Pie
-                  data={[{ value: item.male }]}
+                  data={[{ name:'male', value: item.male }]}
                   cx={35}
                   cy={18}
                   innerRadius={0}
@@ -114,7 +125,7 @@ useEffect(() => {
                 />
                 {/* Female segment */}
                 <Pie
-                  data={[{ value: item.female }]}
+                  data={[{ name:'female', value: item.female }]}
                   cx={35}
                   cy={18}
                   innerRadius={0}
@@ -127,7 +138,7 @@ useEffect(() => {
                 />
                 {/* Male outline */}
                 <Pie
-                  data={[{ value: item.male }]}
+                  data={[{ name:'male', value: item.male }]}
                   cx={35}
                   cy={18}
                   innerRadius={20}

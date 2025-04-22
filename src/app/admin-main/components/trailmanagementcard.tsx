@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from "react";
 import { MoreHorizontal } from "lucide-react";
 import Image from "next/image"; // ✅ Correct Import
 
@@ -13,6 +14,16 @@ import {
   ResponsiveContainer,
   TooltipProps,
 } from "recharts";
+
+
+type TeacherAPI = {
+  _id: string;
+  teacherName: string;
+  teacherEmail: string;
+  studentCount: number;
+  maleCount: number;
+  femaleCount: number;
+};
 
 //Total trail class
 
@@ -152,18 +163,48 @@ const CoursesChart = () => {
 
 //Teacher Assigned - Not Assigned
 
-const data = [
-  {
-    title: "Students",
-    count: 1738,
-    assigned: 1200,
-    notassigned: 538,
-  },
-];
 
 const COLORS = ["#0D1B2A", "#4B9EFF", "#81878B"];
 
+const CustomTooltips = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const label = payload[0]?.name;
+    const value = payload[0]?.value;
+    return (
+      <div className="bg-white border rounded px-2 py-1 text-xs text-gray-800 shadow">
+        {label} - {value}
+      </div>
+    );
+  }
+  return null;
+};
+
 const PreferredTeachersCard = () => {
+  const [teacherData, setTeacherData] = useState({
+    total: 0,
+    assignedTeacherPercentage: "0",
+    notAssignedTeacherPercentage: "0",
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("https://alfurqanacademy.tech/teacherstatus");
+        const data = await res.json();
+        setTeacherData(data);
+      } catch (err) {
+        console.error("Error fetching teacher status:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const assigned = Number(
+    ((parseFloat(teacherData.assignedTeacherPercentage) / 100) *
+      teacherData.total).toFixed(0)
+  );
+  const notassigned = teacherData.total - assigned;
   return (
     <div>
       <div>
@@ -171,82 +212,75 @@ const PreferredTeachersCard = () => {
           Teacher Assigned - Not Assigned
         </h2>
         <div className="relative flex items-center justify-center pt-4">
-          {data.map((item) => (
-            <div key={item.count}>
-              <PieChart width={150} height={150}>
-                <Tooltip />
-                {/* Male segment - larger */}
-                <Pie
-                  data={[{ value: item.assigned }]}
-                  cx={75}
-                  cy={75}
-                  innerRadius={0}
-                  outerRadius={55}
-                  startAngle={-90}
-                  endAngle={
-                    -90 +
-                    (item.assigned / (item.assigned + item.notassigned)) * 360
-                  }
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={500}
-                  animationEasing="ease-in-out"
-                  strokeWidth={0}
-                  fill={COLORS[0]}
-                />
-                {/* Female segment - smaller */}
-                <Pie
-                  data={[{ value: item.notassigned }]}
-                  cx={75}
-                  cy={75}
-                  innerRadius={0}
-                  outerRadius={50}
-                  startAngle={
-                    -90 +
-                    (item.assigned / (item.assigned + item.notassigned)) * 360
-                  }
-                  endAngle={270}
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={500}
-                  animationEasing="ease-in-out"
-                  strokeWidth={0}
-                  fill={COLORS[1]}
-                />
-                {/* Outline for male segment */}
-                <Pie
-                  data={[{ value: item.assigned }]}
-                  cx={75}
-                  cy={75}
-                  innerRadius={58}
-                  outerRadius={62}
-                  startAngle={-90}
-                  endAngle={
-                    -90 +
-                    (item.assigned / (item.assigned + item.notassigned)) * 360
-                  }
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={500}
-                  animationEasing="ease-in-out"
-                  strokeWidth={0}
-                  fill={COLORS[2]}
-                />
-              </PieChart>
-            </div>
-          ))}
+          <PieChart width={150} height={150}>
+            <Tooltip content={<CustomTooltips />}/>
+            {/* Assigned */}
+            <Pie
+              data={[{ name:'Assigned', value: assigned }]}
+              cx={75}
+              cy={75}
+              innerRadius={0}
+              outerRadius={55}
+              startAngle={-90}
+              endAngle={
+                -90 + (assigned / (assigned + notassigned)) * 360
+              }
+              dataKey="value"
+              animationBegin={0}
+              animationDuration={500}
+              animationEasing="ease-in-out"
+              strokeWidth={0}
+              fill={COLORS[0]}
+            />
+            {/* Not Assigned */}
+            <Pie
+              data={[{name:'Not-Assigned', value: notassigned }]}
+              cx={75}
+              cy={75}
+              innerRadius={0}
+              outerRadius={50}
+              startAngle={
+                -90 + (assigned / (assigned + notassigned)) * 360
+              }
+              endAngle={270}
+              dataKey="value"
+              animationBegin={0}
+              animationDuration={500}
+              animationEasing="ease-in-out"
+              strokeWidth={0}
+              fill={COLORS[1]}
+            />
+            {/* Outline */}
+            <Pie
+              data={[{ name:'asssigned', value: assigned }]}
+              cx={75}
+              cy={75}
+              innerRadius={58}
+              outerRadius={62}
+              startAngle={-90}
+              endAngle={
+                -90 + (assigned / (assigned + notassigned)) * 360
+              }
+              dataKey="value"
+              animationBegin={0}
+              animationDuration={500}
+              animationEasing="ease-in-out"
+              strokeWidth={0}
+              fill={COLORS[2]}
+            />
+          </PieChart>
         </div>
       </div>
-      <div>
-        <div className="flex justify-center gap-4 mt-16 text-gray-700 text-sm">
-          <div className="flex items-center text-[10px]">
-            <span className="w-2 h-2 bg-[#0D1B2A] rounded-sm mr-1"></span>
-            Assigned
-          </div>
-          <div className="flex items-center text-[10px]">
-            <span className="w-2 h-2 bg-[#4B9EFF] rounded-sm mr-1"></span>
-            Not-Assigned
-          </div>
+
+      {/* Legend */}
+      <div className="flex justify-center gap-4 mt-16 text-gray-700 text-sm">
+        <div className="flex items-center text-[10px]">
+          <span className="w-2 h-2 bg-[#0D1B2A] rounded-sm mr-1"></span>
+          Assigned
+        </div>
+        <div className="flex items-center text-[10px]">
+          <span className="w-2 h-2 bg-[#4B9EFF] rounded-sm mr-1"></span>
+          Not-Assigned
         </div>
       </div>
     </div>
@@ -264,43 +298,19 @@ type Teacher = {
 };
 
 const TeachersStudents = () => {
-  const teachers: Teacher[] = [
-    {
-      id: 1,
-      name: "Abdullah Sulaiman",
-      trials: 5,
-      joined: 3,
-      avatar: "/assets/images/student-profile1.png", // Replace with actual image paths
-    },
-    {
-      id: 2,
-      name: "Iman Gabel",
-      trials: 6,
-      joined: 4,
-      avatar: "/assets/images/student-profile.png",
-    },
-    {
-      id: 3,
-      name: "Hassan Ibrahim",
-      trials: 5,
-      joined: 4,
-      avatar: "/assets/images/student-profile1.png",
-    },
-    {
-      id: 4,
-      name: "Maryam Hossan",
-      trials: 6,
-      joined: 1,
-      avatar: "/assets/images/student-profile.png",
-    },
-    {
-      id: 5,
-      name: "Ayesha Islam",
-      trials: 6,
-      joined: 1,
-      avatar: "/assets/images/student-profile1.png",
-    },
-  ];
+  const [teachers, setTeachers] = useState<TeacherAPI[]>([]);
+  const colors = ["bg-red-800", "bg-yellow-800", "bg-red-500", "bg-green-700", "bg-purple-600", "bg-blue-500"];
+
+  useEffect(() => {
+    fetch("https://alfurqanacademy.tech/teacher-student-count")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setTeachers(data.data);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch teachers:", err));
+  }, []);
 
   return (
     <div>
@@ -314,23 +324,18 @@ const TeachersStudents = () => {
 
       {/* Scrollable List */}
       <div className="max-h-48 p-4 overflow-y-auto pr-2 scrollbar-none scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-        {teachers.map((teacher) => (
-          <div key={teacher.id} className="flex items-center py-2 border-b">
-            {/* Avatar */}
-            <Image
-              src={teacher.avatar}
-              width={24}
-              height={24}
-              className="rounded-full mr-3"
-              alt={""}
-            />
+        {teachers.map((teacher, index) => (
+          <div key={teacher._id} className="flex items-center py-2 border-b">
+            <div className="w-5 flex-shrink-0">
+              <div className={`w-3 h-3 rounded-full ${colors[index % colors.length]}`}></div>
+              </div>
             {/* Name */}
             <div className="flex-grow truncate">
-              <span className="text-[12px] text-gray-900">{teacher.name}</span>
+              <span className="text-[12px] text-gray-900">{teacher.teacherName}</span>
             </div>
             {/* Students Count */}
             <div className="text-sm font-medium text-gray-900">
-              {teacher.trials}
+              {teacher.studentCount}
             </div>
           </div>
         ))}
@@ -341,7 +346,7 @@ const TeachersStudents = () => {
 
 export default function Dashboard() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full w-full px-4 py-4 md:mr-10 scrollbar-none">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full w-full px-2 py-4 md:mr-10 scrollbar-none">
       <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
         <TotalScheduledChart />
       </div>

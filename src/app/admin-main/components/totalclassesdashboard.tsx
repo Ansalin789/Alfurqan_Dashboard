@@ -1,31 +1,106 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ChevronDown } from "lucide-react"
+import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
 
-type TimeFrame = "Last Week" | "Last Month" | "Last Year"
+type TimeFrame = "Last Week" | "Last Month" | "Last Year";
+
+interface ClassRecord {
+  date: string;
+  classCompleted: number;
+  classPending: number;
+  classReschedule: number;
+  classCancelled: number;
+}
+
+interface ChartItem {
+  type: string;
+  count: number;
+  color: string;
+}
+
+const getDateRangeParam = (timeFrame: TimeFrame) => {
+  switch (timeFrame) {
+    case "Last Month":
+      return "monthly";
+    case "Last Year":
+      return "yearly";
+    default:
+      return "weekly";
+  }
+};
 
 export default function TotalClasses() {
-  const [timeFrame, setTimeFrame] = useState<TimeFrame>("Last Week")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [timeFrame, setTimeFrame] = useState<TimeFrame>("Last Week");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [classData, setClassData] = useState<ChartItem[]>([]);
 
-  const classData = [
-    { type: "Completed", count: 110, color: "bg-gray-900" },
-    { type: "Pending", count: 30, color: "bg-blue-300" },
-    { type: "Rescheduled", count: 75, color: "bg-purple-500" },
-    { type: "Cancelled", count: 70, color: "bg-blue-500" },
-  ]
+  const fetchClassData = async (range: TimeFrame) => {
+    try {
+      const res = await fetch(
+        `https://alfurqanacademy.tech/dashboard/admin/totalclass?dateRange=${getDateRangeParam(
+          range
+        )}`
+      );
+      const data: ClassRecord[] = await res.json();
 
-  const maxCount = Math.max(...classData.map(item => item.count), 125)
+      // Aggregate totals
+      const totals = data.reduce(
+        (acc, item) => {
+          acc.classCompleted += item.classCompleted;
+          acc.classPending += item.classPending;
+          acc.classReschedule += item.classReschedule;
+          acc.classCancelled += item.classCancelled;
+          return acc;
+        },
+        {
+          classCompleted: 0,
+          classPending: 0,
+          classReschedule: 0,
+          classCancelled: 0,
+        }
+      );
+
+      // Update chart data
+      const chartData: ChartItem[] = [
+        {
+          type: "Completed",
+          count: totals.classCompleted,
+          color: "bg-gray-900",
+        },
+        { type: "Pending", count: totals.classPending, color: "bg-blue-300" },
+        {
+          type: "Rescheduled",
+          count: totals.classReschedule,
+          color: "bg-purple-500",
+        },
+        {
+          type: "Cancelled",
+          count: totals.classCancelled,
+          color: "bg-blue-500",
+        },
+      ];
+
+      setClassData(chartData);
+    } catch (error) {
+      console.error("Failed to fetch class data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchClassData(timeFrame);
+  }, [timeFrame]);
+
+  const maxCount = Math.max(...classData.map((item) => item.count), 1);
 
   const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen)
-  }
+    setIsDropdownOpen(!isDropdownOpen);
+  };
 
   const selectTimeFrame = (selected: TimeFrame) => {
-    setTimeFrame(selected)
-    setIsDropdownOpen(false)
-  }
+    setTimeFrame(selected);
+    setIsDropdownOpen(false);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 w-full">
@@ -42,15 +117,17 @@ export default function TotalClasses() {
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg z-10">
               <div className="py-1">
-                {(["Last Week", "Last Month", "Last Year"] as TimeFrame[]).map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => selectTimeFrame(option)}
-                    className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
-                  >
-                    {option}
-                  </button>
-                ))}
+                {(["Last Week", "Last Month", "Last Year"] as TimeFrame[]).map(
+                  (option) => (
+                    <button
+                      key={option}
+                      onClick={() => selectTimeFrame(option)}
+                      className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                    >
+                      {option}
+                    </button>
+                  )
+                )}
               </div>
             </div>
           )}
@@ -61,8 +138,10 @@ export default function TotalClasses() {
       <div className="h-48 flex">
         {/* Y-Axis Labels */}
         <div className="flex flex-col justify-between text-gray-700 text-xs pl-1 pr-2">
-          {[125, 100, 75, 50, 25, 0].map((label) => (
-            <div key={label} className="h-6 flex items-center justify-end">
+          {Array.from({ length: 5 }, (_, i) =>
+            Math.round((maxCount / 4) * (4 - i))
+          ).map((label, index) => (
+            <div key={index} className="h-6 flex items-center justify-end">
               {label}
             </div>
           ))}
@@ -72,7 +151,11 @@ export default function TotalClasses() {
         <div className="flex-1 flex flex-col">
           <div className="flex-1 flex items-end justify-between sm:justify-center sm:gap-x-3 md:gap-x-8 lg:gap-x-10 h-full pl-4">
             {classData.map((item) => (
-              <div key={item.type} className="flex flex-col items-center h-full" style={{ minWidth: '40px' }}>
+              <div
+                key={item.type}
+                className="flex flex-col items-center h-full"
+                style={{ minWidth: "40px" }}
+              >
                 {/* Bar container */}
                 <div className="flex-1 w-full flex flex-col justify-end items-center">
                   {/* Actual bar */}
@@ -80,18 +163,21 @@ export default function TotalClasses() {
                     className={`w-8 sm:w-10 md:w-10 rounded-t-md ${item.color}`}
                     style={{
                       height: `${(item.count / maxCount) * 100}%`,
-                      minHeight: '2px'
+                      minHeight: "2px",
                     }}
+                    title={`${item.count} ${item.type}`}
                   ></div>
                 </div>
 
                 {/* Bar Label */}
-                <span className="text-xs text-gray-700 mt-2 text-center">{item.type}</span>
+                <span className="text-xs text-gray-700 mt-2 text-center">
+                  {item.type}
+                </span>
               </div>
             ))}
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -75,7 +75,6 @@ const evaluation: EvaluationItem[] = [
   },
 ];
 
-
 // Define interfaces for the API response structure
 interface Student {
   learningInterest: string; // Replace with the exact type if known
@@ -549,10 +548,8 @@ const TrailSection = () => {
   return (
     <BaseLayout4>
       <div className="h-full w-full  py-2 md:mr-10 scrollbar-none">
-        <div className="flex justify-between ml-7">
-         
-            <h2 className="text-[20px] font-semibold">Trail class Request</h2>
-        
+        <div className="flex justify-between ml-4">
+          <h2 className="text-[20px] font-semibold">Trail class Request</h2>
         </div>
         <div className="p-2">
           <Dashboard />
@@ -585,39 +582,30 @@ const TrailSection = () => {
             </div>
           </div>
           <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] h-full  flex flex-col justify-between">
-            <table className="min-w-full table-fixed bg-white shadow rounded-lg">
+            <table className="min-w-full bg-white shadow rounded-lg table-fixed">
               <thead className="border-b-[1px] border-[#1C3557] text-[10px] font-semibold">
                 <tr>
-                  <th className="p-3 text-center w-[15%] break-words">
-                    Trial ID
-                  </th>
-                  <th className="p-3 text-center w-[15%] break-words">
-                    Student Name
-                  </th>
-                  <th className="p-3 text-center w-[15%] break-words">
-                    Mobile
-                  </th>
-                  <th className="p-3 text-center w-[15%]">Country</th>
-                  <th className="p-3 text-center w-[13%] break-words">
-                    Course
-                  </th>
-                  <th className="p-3 text-center w-[18%] break-words">
-                    Preferred Teacher
-                  </th>
-                  <th className="p-3 text-center w-[18%] break-words">
-                    Assigned Teacher
-                  </th>
-                  <th className="p-3 text-center w-[10%]">Time</th>
-                  <th className="p-3 text-center w-[25%] break-words">
-                    Class Status
-                  </th>
-                  <th className="p-3 text-center w-[15%] break-words">
-                    Payment Status
-                  </th>
-                  <th className="p-3 text-center w-[13%] break-words">
-                    Student Status
-                  </th>
-                  <th className="p-3 text-center w-[10%]">Action</th>
+                  {[
+                    "Trial ID",
+                    "Student Name",
+                    "Mobile",
+                    "Country",
+                    "Course",
+                    "Preferred Teacher",
+                    "Assigned Teacher",
+                    "Time",
+                    "Class Status",
+                    "Payment Status",
+                    "Student Status",
+                    "Action",
+                  ].map((header, i) => (
+                    <th
+                      key={i}
+                      className="p-3 text-center w-[120px] break-words"
+                    >
+                      {header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="text-[9px] font-medium">

@@ -1,23 +1,33 @@
-type Teacher = {
-    id: number;
-    name: string;
-    students: number;
-    color: string;
-  };
+import { useEffect, useState } from "react";
+
+
+type TeacherAPI = {
+  _id: string;
+  teacherName: string;
+  teacherEmail: string;
+  studentCount: number;
+  maleCount: number;
+  femaleCount: number;
+};
   
   export default function TeachersStudents() {
-    const teachers: Teacher[] = [
-      { id: 1, name: "Abdullah Sulaiman", students: 20, color: "bg-red-800" },
-      { id: 2, name: "Iman Gabel", students: 10, color: "bg-yellow-800" },
-      { id: 3, name: "Hassan Ibrahim", students: 40, color: "bg-red-500" },
-      { id: 4, name: "Abdullah Sulaiman", students: 20, color: "bg-red-800" },
-      { id: 5, name: "Iman Gabel", students: 10, color: "bg-yellow-800" },
-      { id: 6, name: "Hassan Ibrahim", students: 40, color: "bg-red-500" },
-    ];
+    const [teachers, setTeachers] = useState<TeacherAPI[]>([]);
+    const colors = ["bg-red-800", "bg-yellow-800", "bg-red-500", "bg-green-700", "bg-purple-600", "bg-blue-500"];
+
+    useEffect(() => {
+      fetch("https://alfurqanacademy.tech/teacher-student-count")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setTeachers(data.data);
+          }
+        })
+        .catch((err) => console.error("Failed to fetch teachers:", err));
+    }, []);
   
   
     return (
-      <div className="bg-white rounded-lg shadow-sm p-5 ">
+      <div className="bg-white rounded-lg shadow-sm p-5 h-[265px]">
         <h2 className="text-[15px] font-semibold text-gray-800 mb-3">Teachers - Students</h2>
         <div className="flex justify-between text-sm font-medium mb-2">
           <span>Teachers</span>
@@ -25,16 +35,16 @@ type Teacher = {
         </div>
   
         <div className="max-h-40 overflow-y-auto pr-2">
-          {teachers.map((teacher) => (
-            <div key={teacher.id} className="flex items-center py-[2px] my-1">
+          {teachers.map((teacher, index) => (
+            <div key={teacher._id} className="flex items-center py-[2px] my-1">
               <div className="w-5 flex-shrink-0">
-                <div className={`w-3 h-3 rounded-full ${teacher.color}`}></div>
+              <div className={`w-3 h-3 rounded-full ${colors[index % colors.length]}`}></div>
               </div>
               <div className="flex-grow truncate">
-                <span className="text-xs text-gray-700">{teacher.name}</span>
+                <span className="text-xs text-gray-700">{teacher.teacherName}</span>
               </div>
               <div className="w-10 text-right">
-                <span className="text-xs">{teacher.students}</span>
+                <span className="text-xs">{teacher.studentCount}</span>
               </div>
             </div>
           ))}
