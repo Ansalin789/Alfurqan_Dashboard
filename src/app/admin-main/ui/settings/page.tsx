@@ -8,23 +8,23 @@ import { PiDotsThreeCircle } from "react-icons/pi";
 
 const Page: React.FC = () => {
   const [employees, setEmployees] = useState([
-    { id: '#0983867', name: 'Robert James', contact: '9876545234', designation: 'Supervisor', date: '11/02/2024', role: 'Supervisor', module: 'Supervisor' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Human Resource', date: '11/02/2024', role: 'Human Resource', module: 'Human Resource' },
-    { id: '#0983867', name: 'Gio Rose', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Prasanna Popz', contact: '9876545234', designation: 'Teacher', date: '11/02/2024', role: 'Teacher', module: 'Teacher' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', name: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', date: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Robert James', contact: '9876545234', designation: 'Supervisor', dateOfJoining: '11/02/2024', role: 'Supervisor', module: 'Supervisor' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Human Resource', dateOfJoining: '11/02/2024', role: 'Human Resource', module: 'Human Resource' },
+    { id: '#0983867', employeeName: 'Gio Rose', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Prasanna Popz', contact: '9876545234', designation: 'Teacher', dateOfJoining: '11/02/2024', role: 'Teacher', module: 'Teacher' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
+    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
   ]);
 
   const router = useRouter();
@@ -32,13 +32,10 @@ const Page: React.FC = () => {
   const [openModuleDropdownIndex, setOpenModuleDropdownIndex] = useState<number | null>(null);
   const [isFilterPopupOpen, setFilterPopupOpen] = useState(false);
   const [filterCriteria, setFilterCriteria] = useState({
-    id: '',
     name: '',
-    contact: '',
     designation: '',
-    date: '',
-    role: '',
-    module: ''
+    fromDate: '',
+    toDate: ''
   });
 
   const toggleRoleDropdown = (index: number) => {
@@ -78,20 +75,32 @@ const Page: React.FC = () => {
 
   const applyFilters = () => {
     const filteredEmployees = employees.filter(emp => {
+      const empDate = new Date(emp.dateOfJoining); // Assuming this field exists
+
+      const fromDateMatch = filterCriteria.fromDate ? empDate >= new Date(filterCriteria.fromDate) : true;
+      const toDateMatch = filterCriteria.toDate ? empDate <= new Date(filterCriteria.toDate) : true;
+
       return (
-        (filterCriteria.id ? emp.id.includes(filterCriteria.id) : true) &&
-        (filterCriteria.name ? emp.name.toLowerCase().includes(filterCriteria.name.toLowerCase()) : true) &&
-        (filterCriteria.contact ? emp.contact.includes(filterCriteria.contact) : true) &&
-        (filterCriteria.designation ? emp.designation.toLowerCase().includes(filterCriteria.designation.toLowerCase()) : true) &&
-        (filterCriteria.date ? emp.date === filterCriteria.date : true) &&
-        (filterCriteria.role ? emp.role === filterCriteria.role : true) &&
-        (filterCriteria.module ? emp.module === filterCriteria.module : true)
+        (filterCriteria.name ? emp.employeeName.toLowerCase().includes(filterCriteria.name.toLowerCase()) : true) &&
+        (filterCriteria.designation ? emp.designation.includes(filterCriteria.designation) : true) &&
+        fromDateMatch &&
+        toDateMatch
       );
     });
 
-    setEmployees(filteredEmployees); // Update the employees state with filtered results
-    setFilterPopupOpen(false); // Close the popup after applying filters
+    setEmployees(filteredEmployees);
+    setFilterPopupOpen(false);
   };
+
+  const resetFilters = () => {
+    setFilterCriteria({
+      name: '',
+      designation: '',
+      fromDate: '',
+      toDate: ''
+    });
+  };
+
 
   return (
     <BaseLayout4>
@@ -134,24 +143,24 @@ const Page: React.FC = () => {
               <table className="w-full border-collapse min-w-[800px]">
                 <thead className="sticky top-0 bg-gray-100 z-10">
                   <tr className="text-gray-600 text-xs sm:text-xs border-b border-black">
-                    <th className="px-4 py-3 text-center">Employee ID</th>
-                    <th className="px-4 py-3 text-center">Employee Name</th>
-                    <th className="px-4 py-3 text-center">Contact</th>
-                    <th className="px-4 py-3 text-center">Designation</th>
-                    <th className="px-4 py-3 text-center">Date of Joining</th>
-                    <th className="px-4 py-3 text-center">Role Access</th>
-                    <th className="px-4 py-3 text-center">Module Access</th>
-                    <th className="px-4 py-3 text-center">Actions</th>
+                    <th className="px-4 py-4 text-center">Employee ID</th>
+                    <th className="px-4 py-4 text-center">Employee Name</th>
+                    <th className="px-4 py-4 text-center">Contact</th>
+                    <th className="px-4 py-4 text-center">Designation</th>
+                    <th className="px-4 py-4 text-center">Date of Joining</th>
+                    <th className="px-4 py-4 text-center">Role Access</th>
+                    <th className="px-4 py-4 text-center">Module Access</th>
+                    <th className="px-4 py-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {employees.map((emp, index) => (
                     <tr key={emp.id} className="border-t border-gray-200 text-gray-700 text-xs sm:text-xs">
                       <td className="py-3 px-4 text-center">{emp.id}</td>
-                      <td className="py-3 px-4 text-center">{emp.name}</td>
+                      <td className="py-3 px-4 text-center">{emp.employeeName}</td>
                       <td className="py-3 px-4 text-center">{emp.contact}</td>
                       <td className="py-3 px-4 text-center">{emp.designation}</td>
-                      <td className="py-3 px-4 text-center">{emp.date}</td>
+                      <td className="py-3 px-4 text-center">{emp.dateOfJoining}</td>
                       {/* Role Dropdown (Modified to match the custom Module dropdown) */}
                       <td className="py-1 px-1 text-center align-middle relative">
                         <button
@@ -223,6 +232,89 @@ const Page: React.FC = () => {
         </div>
 
       </div>
+
+
+      {isFilterPopupOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-sm p-6 rounded-2xl shadow-lg relative">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Filter</h2>
+              <button
+                onClick={() => setFilterPopupOpen(false)}
+                className="text-gray-500 text-xl focus:outline-none"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label htmlFor='employeename' className="text-sm text-gray-700">Employee Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={filterCriteria.name}
+                  onChange={handleFilterChange}
+                  placeholder="Enter name"
+                  className="w-full mt-1 rounded-lg border px-4 py-2 text-sm text-gray-700 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label htmlFor='designation' className="text-sm text-gray-700">Designation</label>
+                <select
+                  name="designation"
+                  value={filterCriteria.designation}
+                  onChange={handleFilterChange}
+                  className="w-full mt-1 rounded-lg border px-4 py-2 text-sm text-gray-700 bg-white focus:outline-none"
+                >
+                  <option value="">Select designation</option>
+                  <option value="ACADEMICCOACH">ACADEMICCOACH</option>
+                  <option value="TEACHER">TEACHER</option>
+                  <option value="SUPERVISOR">SUPERVISOR</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor='fromdate' className="text-sm text-gray-700">From Date</label>
+                <input
+                  type="date"
+                  name="fromDate"
+                  value={filterCriteria.fromDate}
+                  onChange={handleFilterChange}
+                  className="w-full mt-1 rounded-lg border px-4 py-2 text-sm text-gray-700 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label htmlFor='todate' className="text-sm text-gray-700">To Date</label>
+                <input
+                  type="date"
+                  name="toDate"
+                  value={filterCriteria.toDate}
+                  onChange={handleFilterChange}
+                  className="w-full mt-1 rounded-lg border px-4 py-2 text-sm text-gray-700 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center mt-6">
+              <button
+                onClick={applyFilters}
+                className="bg-[#012A4A] text-white px-4 py-2 text-sm font-medium rounded-xl"
+              >
+                Show Results
+              </button>
+              <button
+                onClick={resetFilters}
+                className="border border-gray-300 px-4 py-2 text-sm font-medium rounded-xl text-gray-700"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Your Filter Popup here remains unchanged */}
     </BaseLayout4>
