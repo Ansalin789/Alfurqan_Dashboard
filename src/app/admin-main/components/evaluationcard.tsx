@@ -1,4 +1,11 @@
 "use client";
+
+import { useEffect, useState } from "react";
+import countries from "i18n-iso-countries";
+import Flag from "react-world-flags";
+
+countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
+
 import {
   PieChart,
   Pie,
@@ -10,6 +17,23 @@ import {
   ResponsiveContainer,
   TooltipProps,
 } from "recharts";
+
+interface CourseStats {
+  totalPercentage: number;
+  quranPercentage: string;
+  arabicPercentage: string;
+  islamicPercentage: string;
+}
+
+interface CountryData {
+  country: string;
+  count: number;
+  percentage: number;
+}
+interface ApiResponse {
+  evaluationCount: number;
+  studentCountByCountry: CountryData[];
+}
 
 //////////////////TotalScheduledChart//////////////
 
@@ -60,7 +84,9 @@ const TotalScheduledChart = () => {
                 className="w-2 h-2 rounded-sm mr-1"
                 style={{ backgroundColor: entry.color }}
               ></span>
-              <span className="text-[10px] text-gray-600 ">{entry.name}({entry.value})</span>
+              <span className="text-[10px] text-gray-600 ">
+                {entry.name}({entry.value})
+              </span>
             </div>
           </div>
         ))}
@@ -71,75 +97,78 @@ const TotalScheduledChart = () => {
 
 /////////////////countriesData//////////////////
 
-const countriesData = [
-  {
-    name: "United States",
-    flag: "/assets/images/flags/us.png",
-    value: 110002,
-    color: "#002c5f",
-  },
-  {
-    name: "Germany",
-    flag: "/assets/images/flags/germany.png",
-    value: 103499,
-    color: "#5b9bd5",
-  },
-  {
-    name: "United Kingdom",
-    flag: "/assets/images/flags/united-kingdom.png",
-    value: 96998,
-    color: "#002c5f",
-  },
-  {
-    name: "England",
-    flag: "/assets/images/flags/england.png",
-    value: 89061,
-    color: "#5b9bd5",
-  },
-];
-
 const CountriesCard = () => {
-  const maxValue = Math.max(...countriesData.map((c) => c.value)); // Find max for bar scaling
+  const [data, setData] = useState<CountryData[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("https://alfurqanacademy.tech/countiescount");
+        const result: ApiResponse = await res.json();
+        setData(result.studentCountByCountry);
+      } catch (err) {
+        console.error("Failed to fetch country data:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const maxCount = Math.max(...data.map((c) => c.count), 1); // prevent divide by zero
 
   return (
     <div>
       <h2 className="text-sm font-semibold text-gray-900">Countries</h2>
 
       <div className="space-y-4 mt-4">
-        {countriesData.map((country) => (
-          <div key={country.name}>
-            {/* Country Row */}
-            <div className="flex items-center justify-between">
-              {/* Flag & Name */}
-              <div className="flex items-center space-x-3">
-                <img
-                  src={country.flag}
-                  alt={country.name}
-                  className="w-6 h-6 rounded-full"
-                />
-                <span className="text-[12px] text-gray-700">
-                  {country.name}
+        {data.map((countryInfo) => {
+          const countryCode = countries.getAlpha2Code(
+            countryInfo.country,
+            "en"
+          );
+
+          return (
+            <div key={countryInfo.country}>
+              {/* Country Row */}
+              <div className="flex items-center justify-between">
+                {/* Flag & Name */}
+                <div className="flex items-center space-x-3">
+                  {countryCode ? (
+                    <Flag
+                      code={countryCode}
+                      style={{
+                        width: "24px",
+                        height: "24px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-gray-300" />
+                  )}
+                  <span className="text-[12px] text-gray-700">
+                    {countryInfo.country}
+                  </span>
+                </div>
+
+                {/* Count */}
+                <span className="text-[12px] font-medium text-gray-900">
+                  {countryInfo.count}
                 </span>
               </div>
 
-              {/* Value */}
-              <span className="text-[12px] font-medium text-gray-900">
-                {country.value.toLocaleString()}
-              </span>
+              {/* Progress Bar */}
+              <div className="w-full h-2 rounded-full bg-[#7F9CB6] mt-1">
+                <div
+                  className="h-2 rounded-full bg-[#0d1b2a]"
+                  style={{
+                    width: `${(countryInfo.count / maxCount) * 100}%`,
+                  }}
+                ></div>
+              </div>
             </div>
-
-            {/* Progress Bar */}
-            <div className="w-full h-2 rounded-full bg-gray-200 mt-1">
-              <div
-                className="h-2 rounded-full"
-                style={{
-                  width: `${(country.value / maxValue) * 100}%`,
-                  background: country.color,
-                }}
-              ></div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -157,7 +186,45 @@ const data = [
 
 const COLORS = ["#0D1B2A", "#4B9EFF", "#81878B"];
 
+const CustomTooltips = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const label = payload[0]?.name;
+    const value = payload[0]?.value;
+    return (
+      <div className="bg-white border rounded px-2 py-1 text-xs text-gray-800 shadow">
+        {label} - {value}
+      </div>
+    );
+  }
+  return null;
+};
+
 const PreferredTeachersCard = () => {
+  const [male, setMale] = useState(0);
+  const [female, setFemale] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch(
+        "https://alfurqanacademy.tech/preferedteacher"
+      );
+      const result = await response.json();
+
+      // Calculate actual counts based on percentage
+      const total = result.preferedTeacherPercentage;
+      const maleCount = Math.round(
+        (parseFloat(result.preferedTeacherMalePercentage) / 100) * total
+      );
+      const femaleCount = Math.round(
+        (parseFloat(result.preferedTeacherFemalePercentage) / 100) * total
+      );
+
+      setMale(maleCount);
+      setFemale(femaleCount);
+    };
+
+    fetchData();
+  }, []);
   return (
     <div>
       <div>
@@ -165,75 +232,62 @@ const PreferredTeachersCard = () => {
           Preferred Teachers
         </h2>
         <div className="relative flex items-center justify-center">
-          {data.map((item) => (
-            <div key={item.count}>
-              <PieChart width={150} height={150}>
-                <Tooltip />
-                {/* Male segment - larger */}
-                <Pie
-                  data={[{ value: item.male }]}
-                  cx={75}
-                  cy={75}
-                  innerRadius={0}
-                  outerRadius={55}
-                  startAngle={-90}
-                  endAngle={-90 + (item.male / (item.male + item.female)) * 360}
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={500}
-                  animationEasing="ease-in-out"
-                  strokeWidth={0}
-                  fill={COLORS[0]}
-                />
-                {/* Female segment - smaller */}
-                <Pie
-                  data={[{ value: item.female }]}
-                  cx={75}
-                  cy={75}
-                  innerRadius={0}
-                  outerRadius={50}
-                  startAngle={
-                    -90 + (item.male / (item.male + item.female)) * 360
-                  }
-                  endAngle={270}
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={500}
-                  animationEasing="ease-in-out"
-                  strokeWidth={0}
-                  fill={COLORS[1]}
-                />
-                {/* Outline for male segment */}
-                <Pie
-                  data={[{ value: item.male }]}
-                  cx={75}
-                  cy={75}
-                  innerRadius={58}
-                  outerRadius={62}
-                  startAngle={-90}
-                  endAngle={-90 + (item.male / (item.male + item.female)) * 360}
-                  dataKey="value"
-                  animationBegin={0}
-                  animationDuration={500}
-                  animationEasing="ease-in-out"
-                  strokeWidth={0}
-                  fill={COLORS[2]}
-                />
-              </PieChart>
-            </div>
-          ))}
+          <PieChart width={150} height={150}>
+            <Tooltip content={<CustomTooltips />} />
+
+            {/* Male Segment */}
+            <Pie
+              data={[{ name: "Male", value: male }]}
+              cx={75}
+              cy={75}
+              innerRadius={0}
+              outerRadius={55}
+              startAngle={-90}
+              endAngle={-90 + (male / (male + female)) * 360}
+              dataKey="value"
+              strokeWidth={0}
+              fill={COLORS[0]}
+            />
+
+            {/* Female Segment */}
+            <Pie
+              data={[{ name: "Female", value: female }]}
+              cx={75}
+              cy={75}
+              innerRadius={0}
+              outerRadius={50}
+              startAngle={-90 + (male / (male + female)) * 360}
+              endAngle={270}
+              dataKey="value"
+              strokeWidth={0}
+              fill={COLORS[1]}
+            />
+
+            {/* Outline */}
+            <Pie
+              data={[{ name: "Male", value: male }]}
+              cx={75}
+              cy={75}
+              innerRadius={58}
+              outerRadius={62}
+              startAngle={-90}
+              endAngle={-90 + (male / (male + female)) * 360}
+              dataKey="value"
+              strokeWidth={0}
+              fill={COLORS[2]}
+            />
+          </PieChart>
         </div>
       </div>
-      <div>
-        <div className="flex justify-center gap-4 mt-14 text-gray-700 text-sm">
-          <div className="flex items-center text-[10px]">
-            <span className="w-2 h-2 bg-[#0D1B2A] rounded-sm mr-1"></span>
-            Male
-          </div>
-          <div className="flex items-center text-[10px] ">
-            <span className="w-2 h-2 bg-[#4B9EFF] rounded-sm mr-1"></span>
-            Female
-          </div>
+
+      <div className="flex justify-center gap-4 mt-14 text-gray-700 text-sm">
+        <div className="flex items-center text-[10px]">
+          <span className="w-2 h-2 bg-[#0D1B2A] rounded-sm mr-1"></span>
+          Male
+        </div>
+        <div className="flex items-center text-[10px]">
+          <span className="w-2 h-2 bg-[#4B9EFF] rounded-sm mr-1"></span>
+          Female
         </div>
       </div>
     </div>
@@ -242,11 +296,6 @@ const PreferredTeachersCard = () => {
 
 ///////////////////////CoursesCard/////////////////
 
-const courseData = [
-  { name: "Quran", value: 30, color: "#7f9cb6" },
-  { name: "Arabic", value: 45, color: "#001d3d" },
-  { name: "Islamic", value: 60, color: "#4a90e2" },
-];
 const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
   active,
   payload,
@@ -254,7 +303,7 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
   if (active && payload?.length) {
     return (
       <div className="bg-white text-gray-900 text-sm px-2 py-1 rounded shadow-md border">
-        {payload[0]?.value}
+        {payload[0]?.value}%
       </div>
     );
   }
@@ -262,24 +311,52 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
 };
 
 const CoursesChart = () => {
+  const [courseData, setCourseData] = useState([
+    { name: "Quran", value: 0, color: "#7f9cb6" },
+    { name: "Arabic", value: 0, color: "#001d3d" },
+    { name: "Islamic", value: 0, color: "#4a90e2" },
+  ]);
+
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      try {
+        const res = await fetch("https://alfurqanacademy.tech/studentcourse");
+        const data: CourseStats = await res.json();
+
+        setCourseData([
+          {
+            name: "Quran",
+            value: parseFloat(parseFloat(data.quranPercentage).toFixed()),
+            color: "#7f9cb6",
+          },
+          {
+            name: "Arabic",
+            value: parseFloat(parseFloat(data.arabicPercentage).toFixed()),
+            color: "#001d3d",
+          },
+          {
+            name: "Islamic",
+            value: parseFloat(parseFloat(data.islamicPercentage).toFixed(1)),
+            color: "#4a90e2",
+          },
+        ]);
+      } catch (err) {
+        console.error("Error fetching course data:", err);
+      }
+    };
+
+    fetchCourseData();
+  }, []);
   return (
     <div>
       <h2 className="text-sm font-semibold text-gray-900">Courses</h2>
 
       <ResponsiveContainer width="100%" height={198}>
         <BarChart data={courseData} barCategoryGap={30}>
-          {/* <XAxis
-            dataKey="name"
-            tick={{ fill: "#7f9cb6", fontSize: 10 }}
-            axisLine={false}
-            tickLine={false}
-          /> */}
           <Tooltip
             content={<CustomTooltip active={undefined} payload={undefined} />}
-            wrapperStyle={{ backgroundColor: "transparent", border: "none" }} // Remove tooltip bg
+            wrapperStyle={{ backgroundColor: "transparent", border: "none" }}
           />
-
-          {/* Bar with border radius on both top and bottom */}
           <Bar dataKey="value" radius={[15, 15, 15, 15]} barSize={25}>
             {courseData.map((entry) => (
               <Cell key={entry.name} fill={entry.color} fillOpacity={1} />
