@@ -65,7 +65,15 @@ interface IMessagesend {
 
 
 const Message = () => {
-  const userId = localStorage.getItem('SupervisorPortalId'); // Set a sample userId, it should be dynamic based on logged-in user
+    const [userId, setUserId] = useState('');
+    const [senderName, setSenderName] = useState('');
+    
+    useEffect(() => {
+      if (typeof window !== 'undefined') {
+        setUserId(localStorage.getItem('SupervisorPortalId') ?? '');
+        setSenderName(localStorage.getItem('SupervisorPortalName') ?? '');
+      }
+    }, []); // Set a sample userId, it should be dynamic based on logged-in user
   const [supervisors, setSupervisors] = useState<IUser[]>([]);
   const [activeTab, setActiveTab] = useState<'admin'>('admin');
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
@@ -175,8 +183,8 @@ const Message = () => {
     // Create the message object in IMessagesend format
     const newMessage: IMessagesend = {
       messages: messageText,
-      senderId: localStorage.getItem('SupervisorPortalId') ?? '',
-      senderName: localStorage.getItem('SupervisorPortalName') ?? '',
+      senderId: userId,
+      senderName: senderName,
       receiverId: selectedUser._id,
       receiverName: `${selectedUser.userName}`,
       createdDate: new Date(),
@@ -257,7 +265,7 @@ const Message = () => {
               />
             </motion.div>
             <div>
-              <h3 className="text-sm font-semibold text-[#374557]">{localStorage.getItem('SupervisorPortalName')}</h3>
+              <h3 className="text-sm font-semibold text-[#374557]">{senderName}</h3>
               <p className="text-xs text-gray-400">Supervisor</p>
             </div>
             <button className="ml-auto text-gray-500">
