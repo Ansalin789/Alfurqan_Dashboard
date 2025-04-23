@@ -1,10 +1,14 @@
 "use client";
+
+
 import BaseLayout4 from "@/components/BaseLayout4";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Sun, Bell, FileText } from "lucide-react";
 import Link from "next/link";
+import countries from "i18n-iso-countries";
+import enLocale from "i18n-iso-countries/langs/en.json";
 import {
   BarChart,
   Bar,
@@ -28,6 +32,7 @@ import {
   Filler,
 } from "chart.js";
 import ApplicantsPage from "../../components/employeesrecruitment";
+import axios from "axios";
 
 // Register chart.js modules
 ChartJS.register(
@@ -59,17 +64,7 @@ const empdata = [
   { name: "Supervisor", value: 50, color: "#A6C3E5" },
 ];
 
-const countriesData = [
-  { name: "United States", flag: "/assets/images/flags/us.png", value: 110002 },
-  { name: "Germany", flag: "/assets/images/flags/germany.png", value: 103499 },
-  {
-    name: "United Kingdom",
-    flag: "/assets/images/flags/united-kingdom.png",
-    value: 96998,
-  },
-  { name: "England", flag: "/assets/images/flags/england.png", value: 89061 },
-  { name: "France", flag: "/assets/images/flags/france.png", value: 82000 },
-];
+
 
 const empcountriesData = [
   { name: "United States", flag: "/assets/images/flags/us.png", value: 110002 },
@@ -88,10 +83,11 @@ interface Teacher {
   userId: string;
   userName: string;
   email: string;
-  profileImage?: string | null;
-  level: string;
-  subject: string;
-  rating: number;
+  profileImage: string | null;
+  level?: string;
+  subject?: string;
+  rating?: number;
+  gender?: string;
 }
 interface OtherEmployees {
   _id: string;
@@ -103,7 +99,29 @@ interface OtherEmployees {
   subject: string;
   rating: number;
 }
+type ChartData = {
+  name: string;
+  value: number;
+  color: string;
+};
+interface GenderResponse {
+  teacherPercentage: number;
+  teacherMalePercentage: string;   // or number if you convert it
+  teacherFemalePercentage: string; // or number
+}
 
+interface GenderChartData {
+  name: string;
+  value: number;
+  color: string;
+}
+countries.registerLocale(enLocale);
+
+interface CountryStat {
+  country: string;
+  count: number;
+  percentage: number;
+}
 // Mock data for teachers
 const mockTeachers: Teacher[] = [
   {
@@ -402,26 +420,18 @@ const leaveData = [
     status: "Declined",
   },
 ];
-const barData = [
-  { name: "Total", value: 100, color: "#012A4A" },
-  { name: "Active", value: 80, color: "#6D5DD3" },
-  { name: "Inactive", value: 50, color: "#00CFFF" },
-  { name: "Leave", value: 60, color: "#007BFF" },
-];
 
-const genderData = [
-  { name: "Female", value: 40, color: "#FF82F5" },
-  { name: "Male", value: 60, color: "#00CFFF" },
-];
 
-const maxValue = Math.max(...countriesData.map((c) => c.value));
+
+
+
 
 const Page = () => {
   const [activeTab, setActiveTab] = useState<
     "teachers" | "otheremployees" | "recruitment" | "leave"
   >("teachers");
-  const maxValue = Math.max(...countriesData.map((c) => c.value));
-  const maxValue1 = Math.max(...empcountriesData.map((c) => c.value));
+  
+ 
 
   const needleValue = 40; // Adjust needle based on percentage
 
@@ -430,7 +440,6 @@ const Page = () => {
   const needleLength = 35; // Adjusted needle length
   const angle = (needleValue / 100) * 180; // Rotate needle based on percentage
   const router = useRouter();
-  const [teachers, setTeachers] = useState<Teacher[]>(mockTeachers);
   const [otherEmployees, setOtherEmployees] =
     useState<OtherEmployees[]>(mockOtherEmployees);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -457,6 +466,72 @@ const Page = () => {
     profileImage: null,
     lastUpdatedBy: "SYSTEM",
   });
+  const [barData, setBarData] = useState<ChartData[]>([]);
+  const [genderData, setGenderData] = useState<GenderChartData[]>([]);
+  const [countryData, setCountryData] = useState<CountryStat[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  useEffect(() => {
+    axios
+      .get("http://localhost:5001/teacher/statuscount")
+      .then((response) => {
+        const data = response.data;
+        if (data && data.length > 0) {
+          const count = data[0];
+          const chartData = [
+            { name: "Total", value: count.teacherTotalCount, color: "#012A4A" },
+            { name: "Active", value: count.activeTeacher, color: "#6D5DD3" },
+            { name: "Inactive", value: count.inActiveTeacher, color: "#00CFFF" },
+            { name: "Leave", value: count.leaveOnTeacher, color: "#007BFF" },
+          ];
+          setBarData(chartData);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching teacher status count:", error);
+      });
+      axios
+      .get<GenderResponse>("http://localhost:5001/teacher/gendercount")
+      .then((response) => {
+        const res = response.data;
+
+        const chartData: GenderChartData[] = [
+          { name: "Female", value: parseFloat(res.teacherFemalePercentage), color: "#FF82F5" },
+          { name: "Male", value: parseFloat(res.teacherMalePercentage), color: "#00CFFF" },
+        ];
+
+        setGenderData(chartData);
+      })
+      .catch((error) => {
+        console.error("Error fetching gender count:", error);
+      });
+      axios
+      .get("http://localhost:5001/applicants/countriescount")
+      .then((res) => {
+        setCountryData(res.data.studentCountByCountry);
+      })
+      .catch((err) => console.error("Failed to fetch country stats", err));
+      const fetchTeachers = async () => {
+        try {
+          const res = await axios.get("http://localhost:5001/users?role=TEACHER");
+          const teacherData: Teacher[] = res.data.users.map((user: any) => ({
+            _id: user._id,
+            userId: user.userId,
+            userName: user.userName,
+            email: user.email,
+            profileImage: user.profileImage || "/assets/images/proff.jpg",
+            level: "Junior", // mock default or pull from another source
+            subject: "General", // same here
+            rating: 1.0, // optionally calculate or default
+            gender: user.gender,
+          }));
+          setTeachers(teacherData);
+        } catch (error) {
+          console.error("Error fetching teachers:", error);
+        }
+      };
+  
+      fetchTeachers();
+  }, []);
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -702,83 +777,94 @@ const Page = () => {
                         </div>
                       </div>
                     </div>
-
+                    
                     {/* Gender Chart */}
-                    <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[280px] flex flex-col items-center relative">
-                      <h2 className="text-[16px] font-semibold text-gray-800 self-start">
-                        Gender
-                      </h2>
-                      <div className="relative w-full h-[170px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={genderData}
-                              dataKey="value"
-                              cx="50%"
-                              cy="90%"
-                              startAngle={180}
-                              endAngle={0}
-                              innerRadius={70}
-                              outerRadius={90}
-                            >
-                              {genderData.map((entry, index) => (
-                                <Cell
-                                  key={`cell-${index}`}
-                                  fill={entry.color}
-                                />
-                              ))}
-                            </Pie>
-                          </PieChart>
-                        </ResponsiveContainer>
+                    <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[280px] flex flex-col items-center justify-between relative">
+  <h2 className="text-[16px] font-semibold text-gray-800 self-start">Gender</h2>
 
-                        <div className="absolute left-1/2 bottom-[25px] w-1 h-[45px] bg-[#00CFFF] transform -translate-x-1/2 rotate-[40deg] origin-bottom rounded-sm"></div>
-                      </div>
+  {/* Chart */}
+  <div className="relative w-[170px] h-[100px] flex items-center justify-center">
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={genderData}
+          dataKey="value"
+          cx="50%"
+          cy="100%"
+          startAngle={180}
+          endAngle={0}
+          innerRadius={60}
+          outerRadius={80}
+        >
+          {genderData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+      </PieChart>
+    </ResponsiveContainer>
+    {/* Optional center line below pie */}
+    <div className="absolute left-1/2 bottom-0 w-1 h-[45px] bg-[#00CFFF] transform -translate-x-1/2 rotate-[40deg] origin-bottom rounded-sm"></div>
+  </div>
 
-                      <div className="flex justify-between w-full px-6 text-gray-700 text-[14px] mb-5">
-                        <div className="flex flex-col items-center">
-                          <span className="text-[18px] font-bold">40%</span>
-                          <span className="text-[12px]">Female</span>
-                          <div className="w-10 h-1 bg-[#FF82F5] mt-1 rounded-full"></div>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <span className="text-[18px] font-bold">60%</span>
-                          <span className="text-[12px]">Male</span>
-                          <div className="w-10 h-1 bg-[#00CFFF] mt-1 rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
+  {/* Labels */}
+  <div className="flex justify-between w-full px-5 text-gray-700 text-[14px] mb-5">
+    {genderData.map((item) => (
+      <div key={item.name} className="flex flex-col items-center">
+        <span className="text-[18px] font-bold">{item.value}%</span>
+        <span className="text-[12px]">{item.name}</span>
+        <div
+          className="w-10 h-1 mt-1 rounded-full"
+          style={{ backgroundColor: item.color }}
+        ></div>
+      </div>
+    ))}
+  </div>
+</div>
 
+                 
                     {/* Countries Block */}
                     <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[280px] space-y-3">
-                      <h2 className="text-[16px] font-semibold text-gray-800">
-                        Countries
-                      </h2>
-                      {countriesData.map((country, i) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <img
-                            src={country.flag}
-                            alt={country.name}
-                            className="w-5 h-5 rounded-full"
-                          />
-                          <div className="w-full">
-                            <div className="flex justify-between text-[13px] font-medium text-gray-800">
-                              <span>{country.name}</span>
-                              <span className="text-[#809FB8]">
-                                {country.value.toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                              <div
-                                className="h-2 bg-[#012A4A] rounded-full"
-                                style={{
-                                  width: `${(country.value / maxValue) * 100}%`,
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+      <h2 className="text-[16px] font-semibold text-gray-800">Countries</h2>
+      {countryData.map((country, i) => {
+        // Get 2-letter country code
+        const countryCode = countries.getAlpha2Code(country.country, "en");
+        // Construct the flag URL
+        const flagUrl = countryCode
+          ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`
+          : "/assets/images/flags/default.png"; // Use a default image if no flag is found
+
+        return (
+          <div key={i} className="flex items-center gap-2">
+            {/* Flag */}
+            <img
+              src={flagUrl}
+              alt={country.country}
+              className="w-5 h-5 rounded-full"
+            />
+
+            <div className="w-full">
+              {/* Country name and value */}
+              <div className="flex justify-between text-[13px] font-medium text-gray-800">
+                <span>{country.country}</span>
+                <span className="text-[#809FB8]">
+                  {country.count.toLocaleString()}
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
+                <div
+                  className="h-2 bg-[#012A4A] rounded-full"
+                  style={{
+                    width: `${country.percentage}%`, // Using percentage directly from response
+                  }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
                   </div>
 
                   {/* Search & Cards Section */}
