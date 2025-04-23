@@ -118,6 +118,11 @@ const Message = () => {
       console.error("Error fetching messages:", error);
     }
   };
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   // Initialize socket connection
   useEffect(() => {
@@ -178,8 +183,8 @@ const Message = () => {
     // Create the message object in IMessagesend format
     const newMessage: IMessagesend = {
       messages: messageText,
-      senderId: localStorage.getItem('SupervisorPortalId') ?? '',
-      senderName: localStorage.getItem('SupervisorPortalName') ?? '',
+      senderId: userId,
+      senderName:'Admin',
       receiverId: selectedUser._id,
       receiverName: `${selectedUser.userName}`,
       createdDate: new Date(),
@@ -372,8 +377,7 @@ const Message = () => {
                 </div>
               </div>
 
-              <div className="flex-1 p-3 overflow-y-auto bg-gray-50 flex flex-col"> {/* Added flex-col-reverse */}
-  <div ref={messagesEndRef} /> {/* Moved to top since we're reversing */}
+              <div className="flex-1 p-3 overflow-y-auto scrollbar-none bg-gray-50 flex flex-col"> {/* Added flex-col-reverse */}
   <AnimatePresence>
     {[...messages].reverse().map((msg) => ( // Reverse the messages array
       <motion.div
@@ -409,6 +413,7 @@ const Message = () => {
       </motion.div>
     ))}
   </AnimatePresence>
+  <div ref={messagesEndRef} />
 </div>
 
               <motion.div
