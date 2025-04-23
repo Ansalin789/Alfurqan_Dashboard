@@ -94,7 +94,11 @@ const Message = () => {
       return [];
     }
   };
-
+useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
  
 
   // Filter users based on search query
@@ -373,7 +377,6 @@ const Message = () => {
               </div>
 
               <div className="flex-1 p-3 overflow-y-auto bg-gray-50 flex flex-col"> {/* Added flex-col-reverse */}
-  <div ref={messagesEndRef} /> {/* Moved to top since we're reversing */}
   <AnimatePresence>
     {[...messages].reverse().map((msg) => ( // Reverse the messages array
       <motion.div
@@ -409,6 +412,7 @@ const Message = () => {
       </motion.div>
     ))}
   </AnimatePresence>
+  <div ref={messagesEndRef} /> {/* Moved to top since we're reversing */}
 </div>
 
               <motion.div
