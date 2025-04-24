@@ -1,135 +1,268 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
 import StudentsRecord from "./studentcourseprogress";
+import axios from "axios";
 
-const TabbedTable = () => {
+type TabbedTableProps = {
+  studentId: string;
+};
+// types.ts (or wherever you define your types)
+interface ClassSchedule {
+  _id: string;
+  package: string;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  createdBy: string;
+  sessionClassType: string;
+  sessionStarttime: string;
+  sessionsEndtime: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  amount: string;
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    gender: string;
+  };
+  teacher: {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  };
+}
+
+type Stats = {
+  level: number;
+  totalAttendance: number;
+  totalClasses: number;
+  totalduration: number;
+};
+
+
+interface StudentResponse {
+  students: StudentItem[];
+}
+
+interface StudentItem {
+  avatar?: string;
+  rating?: number;
+  percentage?: any;
+  _id: string;
+  username: string;
+  password: string;
+  role: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  __v: number;
+  classScheduleCount?: number;
+  student: StudentDetails;
+  studentEvaluationDetails?: EvaluationDetails;
+}
+
+interface StudentDetails {
+  studentId: string;
+  studentEmail: string;
+  studentPhone: number;
+  course: string;
+  package: string;
+  city: string;
+  country: string;
+  gender: string;
+}
+
+interface EvaluationDetails {
+  classStartDate: string;
+  subscription: {
+    subscriptionName: string;
+  };
+  status: string;
+  [key: string]: any; // You can extend this as needed
+}
+interface StudentResponse {
+  studentDetails: any;
+}
+
+interface CourseRow {
+  id: string;
+  name: string;
+  date: string;
+  package: string;
+  status: string;
+}
+
+interface Invoice {
+  _id: string;
+  student: {
+    studentId: string;
+    studentName: string;
+    studentEmail: string;
+    studentPhone: number;
+  };
+  courseName: string;
+  amount: number;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  lastUpdatedDate: string;
+  lastUpdatedBy: string;
+  invoiceStatus: string;
+}
+
+interface PaymentRow {
+  invoiceid: string;
+  date: string;
+  course: string;
+  duebydays: number;
+  paiddate: string;
+  status: string;
+}
+
+
+
+const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
+  console.log(studentId);
   const [activeTab, setActiveTab] = useState("Class");
   const tabs = ["Class", "Courses", "Payment", "Assessments"];
+  const [classData, setClassData] = useState<ClassSchedule[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loading, setLoading] = useState<boolean>(true); // Loading state
+  const [coursesData, setCoursesData] = useState<CourseRow[]>([]);
+
+  const [transactions, setTransactions] = useState<PaymentRow[]>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+////////////////courses///////////////////
+  useEffect(() => {
+    if (!studentId) return;
 
-  const classData = [
-    {
-      id: 798,
-      name: "Robert James",
-      course: "Arabic",
-      date: "Jan 2, 2020",
-      time: "8:00-10:30 AM",
-    },
-    {
-      id: 799,
-      name: "Robert James",
-      course: "Quran",
-      date: "Jan 2, 2020",
-      time: "8:00-10:30 AM",
-    },
-    {
-      id: 800,
-      name: "Robert James",
-      course: "Islamic Studies",
-      date: "Jan 2, 2020",
-      time: "8:00-10:30 AM",
-    },
-    {
-      id: 801,
-      name: "Robert James",
-      course: "Islamic Studies",
-      date: "Jan 2, 2020",
-      time: "Reschedule",
-      reschedule: true,
-    },
-    {
-      id: 802,
-      name: "Robert James",
-      course: "Quran",
-      date: "Jan 2, 2020",
-      time: "8:00-10:30 AM",
-    },
+    axios
+      .get<StudentResponse>(`https://alfurqanacademy.tech/alstudents/${studentId}`)
+      .then((res) => {
+        const student = res.data.studentDetails;
 
-    {
-      id: 803,
-      name: "Robert James",
-      course: "Tajweed Masterclass",
-      date: "Jan 2, 2020",
-      time: "8:00-10:30 AM",
-    },
-    {
-      id: 804,
-      name: " James",
-      course: " Masterclass",
-      date: "Jan 4, 2020",
-      time: "8:10-10:30 AM",
-    },
-  ];
+        const formatted: CourseRow = {
+          id:"1234",
+          name: student.student.course,
+          package: student.student.package,
+          status: student.status,
+          date: new Date(student.createdDate).toLocaleDateString(), 
+        };
 
-  const coursesData = [
-    {
-      id: "#0983867",
-      name: "Arabic",
-      date: "11/02/2024",
-      package: "Elite",
-      status: "Active",
-    },
-    {
-      id: "#0983867",
-      name: "Quran",
-      date: "15/04/2024",
-      package: "Premium",
-      status: "Active",
-    },
-    {
-      id: "#0983867",
-      name: "Islamic Studies",
-      date: "15/04/2024",
-      package: "Standard",
-      status: "Inactive",
-    },
-  ];
+        setCoursesData([formatted]); // one entry, so array with one object
+      })
+      .catch((err) => {
+        console.error("Failed to fetch student data", err);
+      });
 
+  }, [studentId]);
+
+/////////////////transaction//////////////
+useEffect(() => {
+  axios
+    .get(`https://alfurqanacademy.tech/studentinvoice/${studentId}`)
+    .then((res) => {
+      console.log("Raw API response:", res.data);
+
+      // Make sure it's an array even if one object is returned
+      const data = Array.isArray(res.data) ? res.data : [res.data];
+
+      const formatted = data.map((item) => {
+        const created = new Date(item.createdDate);
+        const today = new Date();
+        const diff = Math.floor((today.getTime() - created.getTime()) / (1000 * 3600 * 24)); // duebydays
+
+        return {
+          invoiceid: item._id,
+          date: created.toLocaleDateString(),
+          course: item.courseName,
+          duebydays: diff,
+          paiddate: new Date(item.lastUpdatedDate).toLocaleDateString(),
+          status: item.invoiceStatus,
+        };
+      });
+
+      setTransactions(formatted);
+    })
+    .catch((err) => {
+      console.error("Failed to fetch transactions", err);
+    });
+}, [studentId]);
+
+
+
+  
+  ////////////////classdata////////////////////
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(
+          `https://alfurqanacademy.tech/classShedule/students?studentId=${studentId}`
+        );
+        const data = await res.json();
+        console.log("API Response Data:", data); // Log the full API response to inspect the structure
+
+        setClassData(data.classSchedule);
+        console.log("State after setting classData:", data.classSchedule); // Log the updated state
+      } catch (error) {
+        console.error("Error fetching schedules:", error);
+      }
+    };  
+    if (studentId) {
+      fetchData();
+      console.log(">?>", fetchData);
+    }
+  }, [studentId]);
+
+  
+ /////////////////////////counts in course///////////////////
+  // Fetch stats data from an API
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Use backticks (`) for string interpolation
+        const response = await fetch(`https://alfurqanacademy.tech/classShedule/studentsclasscount?studentId=${studentId}`);
+        const data: Stats = await response.json();
+        
+        setStats(data); // Set fetched stats data to state
+        setLoading(false); // Set loading to false once data is fetched
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        setLoading(false); // Set loading to false in case of error
+      }
+    };
+
+    if (studentId) {
+      fetchStats(); // Fetch stats only when studentId is available
+    }
+  }, [studentId]); // Depend on studentId to refetch stats when it changes
+
+  if (loading) {
+    return <div>Loading...</div>; // Show loading state while fetching
+  }
+
+  if (!stats) {
+    return <div>Error: Stats could not be loaded.</div>; // Handle case where stats are not available
+  }
+
+  // Define progressData using the fetched stats
   const progressData = [
-    { label: "Level", value: 20, color: "#00C8FF" },
-    { label: "Attendance", value: 68, color: "#003F88" },
-    { label: "Total Classes", value: 70, color: "#503291" },
-    { label: "Duration", value: 40, color: "#72A4F7" },
+    { label: "Level", value: stats.level, color: "#00C8FF" },
+    { label: "Attendance", value: stats.totalAttendance, color: "#003F88" },
+    { label: "Total Classes", value: stats.totalClasses, color: "#503291" },
+    { label: "Duration", value: stats.totalduration, color: "#72A4F7" },
   ];
-
-  const transactions = [
-    {
-      invoiceid: "1",
-      date: "11/1/2022",
-      course: "arabic",
-      duebydays: "2 days",
-      paiddate: "11/2/2024",
-      status: "Paid",
-    },
-    {
-      invoiceid: "1",
-      date: "11/1/2022",
-      course: "arabic",
-      duebydays: "2 days",
-      paiddate: "11/2/2024",
-      status: "Cancelled",
-    },
-    {
-      invoiceid: "1",
-      date: "11/1/2022",
-      course: "arabic",
-      duebydays: "2 days",
-      paiddate: "11/2/2024",
-      status: "Void",
-    },
-    {
-      invoiceid: "1",
-      date: "11/1/2022",
-      course: "arabic",
-      duebydays: "2 days",
-      paiddate: "11/2/2024",
-      status: "Pending",
-    },
-  ];
-
+ 
   const assessment = [
     {
       subject: "islamic hisztory",
@@ -147,6 +280,7 @@ const TabbedTable = () => {
     },
   ];
   // Calculate paginated assignments
+
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedClassData = classData.slice(
     startIndex,
@@ -164,6 +298,7 @@ const TabbedTable = () => {
     startIndex,
     startIndex + itemsPerPage
   );
+
 
   return (
     <div className=" overflow-x-auto mt-4 bg-white shadow-md rounded-lg p-3 ">
@@ -199,30 +334,42 @@ const TabbedTable = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedClassData.map((row, index) => (
-                  <tr
-                    key={row.id}
-                    className={`text-[9px] text-center font-medium mt-0 ${
-                      index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                    }`}
-                  >
-                    <td className="p-2">{row.id}</td>
-                    <td className="p-2">{row.name}</td>
-                    <td className="p-2">{row.course}</td>
-                    <td className="p-2">{row.date}</td>
-                    <td className="p-2">
-                      <span
-                        className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-2xl ${
-                          row.reschedule
-                            ? "bg-green-200 text-green-700"
-                            : "bg-[#002c5f] text-white"
-                        }`}
-                      >
-                        {row.time}
-                      </span>
+                {paginatedClassData.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center p-4">
+                      No data found
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  paginatedClassData.map((row, index) => (
+                    <tr
+                      key={row._id}
+                      className={`text-[9px] text-center font-medium mt-0 ${
+                        index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                      }`}
+                    >
+                      <td className="p-2">{row.student.studentId}</td>
+                      <td className="p-2">{row.teacher.teacherName}</td>
+                      <td className="p-2">{row.package}</td>
+                      <td className="p-2">
+                        {new Date(row.startDate).toLocaleDateString()}
+                      </td>
+                      <td className="p-2">
+                        <span
+                          className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-2xl whitespace-nowrap ${
+                            row.scheduleStatus === "Rescheduled"
+                              ? "bg-green-200 text-green-700"
+                              : "bg-[#002c5f] text-white"
+                          }`}
+                        >
+                          {row.scheduleStatus === "Rescheduled"
+                            ? "Rescheduled"
+                            : `${row.startTime[0]} - ${row.endTime[0]}`}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
 
@@ -255,107 +402,115 @@ const TabbedTable = () => {
         </div>
       )}
 
-      {/* Courses Tab */}
-      {activeTab === "Courses" && (
-        <div className="mt-4 p-4">
-          <div className="grid grid-cols-4 gap-4 text-center">
-            {progressData.map((item) => {
-              let suffix = "";
-              if (item.label === "Attendance") {
-                suffix = "%";
-              } else if (item.label === "Duration") {
-                suffix = "hrs";
-              }
+{/* Courses Tab */}
+{activeTab === "Courses" && (
+  <div className="mt-4 p-4">
+    <div className="grid grid-cols-4 gap-4 text-center">
+      {progressData.map((item) => {
+        let suffix = "";
+        let isPercentage = false; // Default value
 
-              return (
-                <div key={item.label} className="flex flex-col items-center">
-                  <div className="relative w-24 h-20 flex items-center justify-center">
-                    <CircularProgressbar
-                      value={item.value}
-                      maxValue={item.label === "Attendance" ? 100 : undefined}
-                      strokeWidth={15}
-                      styles={buildStyles({
-                        pathColor: item.color,
-                        trailColor: "#D3D3D3",
-                        strokeLinecap: "round",
-                      })}
-                    />
-                    <div className="absolute text-sm font-semibold text-black">
-                      {item.value}
-                      {suffix}
-                    </div>
-                  </div>
-                  <p className="mt-4 text-xs font-medium">{item.label}</p>
-                </div>
-              );
-            })}
-          </div>
-          <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto mt-3">
-            <table className="w-full text-[12px]">
-              <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
-                <tr>
-                  <th className="p-2">Course ID</th>
-                  <th className="p-2">Course Name</th>
-                  <th className="p-2">Start Date</th>
-                  <th className="p-2">Package</th>
-                  <th className="p-2">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedCourseData.map((row, index) => (
-                  <tr
-                    key={row.id}
-                    className={`text-[9px] text-center font-medium mt-0 ${
-                      index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                    }`}
-                  >
-                    <td className="p-2">{row.id}</td>
-                    <td className="p-2">{row.name}</td>
-                    <td className="p-2">{row.date}</td>
-                    <td className="p-2">{row.package}</td>
-                    <td className="p-2">
-                      <span
-                        className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-2xl ${
-                          row.status === "Active"
-                            ? "bg-green-500 text-white"
-                            : "bg-red-500 text-white"
-                        }`}
-                      >
-                        {row.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {/* Pagination Controls */}
-            <div className="flex justify-between items-center mt-4 text-sm text-gray-600 p-1">
-              <p className="text-[11px]">
-                Showing {paginatedCourseData.length} of {coursesData.length}{" "}
-                classes
-              </p>
-              <div className="flex gap-2">
-                {Array.from(
-                  { length: Math.ceil(coursesData.length / itemsPerPage) },
-                  (_, i) => (
-                    <button
-                      key={i}
-                      className={`w-4 h-4 text-[13px] flex items-center justify-center rounded ${
-                        currentPage === i + 1
-                          ? "bg-[#1C3557] text-white"
-                          : "text-[#1C3557] border border-[#1C3557]"
-                      }`}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </button>
-                  )
-                )}
+        // Check conditions to determine if the item is a percentage or needs a suffix
+        if (item.label === "Attendance") {
+          suffix = "%";
+          isPercentage = true; // Set isPercentage to true for Attendance
+        } else if (item.label === "Duration") {
+          suffix = "hrs";
+        }
+
+        return (
+          <div key={item.label} className="flex flex-col items-center">
+            <div className="relative w-24 h-20 flex items-center justify-center">
+              <CircularProgressbar
+                value={item.value}
+                maxValue={isPercentage ? 100 : undefined} 
+                strokeWidth={15}
+                styles={buildStyles({
+                  pathColor: item.color,
+                  trailColor: "#D3D3D3",
+                  strokeLinecap: "round",
+                })}
+              />
+              <div className="absolute text-sm font-semibold text-black">
+                {item.value}
+                {suffix} {/* Display the suffix */}
               </div>
             </div>
+            <p className="mt-4 text-xs font-medium">{item.label}</p>
           </div>
+        );
+      })}
+    </div>
+
+    {/* Course Table */}
+    <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto mt-3">
+      <table className="w-full text-[12px]">
+        <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
+          <tr>
+            <th className="p-2">Course ID</th>
+            <th className="p-2">Course Name</th>
+            <th className="p-2">Start Date</th>
+            <th className="p-2">Package</th>
+            <th className="p-2">Status</th>
+          </tr>
+        </thead>
+       <tbody>
+          {paginatedCourseData.map((row, index) => (
+            <tr
+              key={row.id}
+              className={`text-[9px] text-center font-medium mt-0 ${
+                index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+              }`}
+            >
+              <td className="p-2">{row.id}</td>
+              <td className="p-2">{row.name}</td>
+              <td className="p-2">{row.date}</td>
+              <td className="p-2">{row.package}</td>
+              <td className="p-2">
+                <span
+                  className={`inline-flex items-center justify-center w-16 h-6 px-3 py-1 rounded-2xl ${
+                    row.status === "Active"
+                      ? "bg-green-500 text-white"
+                      : "bg-red-500 text-white"
+                  }`}
+                >
+                  {row.status}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4 text-sm text-gray-600 p-1">
+        <p className="text-[11px]">
+          Showing {paginatedCourseData.length} of {coursesData.length}{" "}
+          classes
+        </p>
+        <div className="flex gap-2">
+          {Array.from(
+            { length: Math.ceil(coursesData.length / itemsPerPage) },
+            (_, i) => (
+              <button
+                key={i}
+                className={`w-4 h-4 text-[13px] flex items-center justify-center rounded ${
+                  currentPage === i + 1
+                    ? "bg-[#1C3557] text-white"
+                    : "text-[#1C3557] border border-[#1C3557]"
+                }`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            )
+          )}
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
+
 
       {/* Table for 'Payment' Tab */}
       {activeTab === "Payment" && (
