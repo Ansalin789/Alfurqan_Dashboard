@@ -35,31 +35,68 @@ interface ApiResponse {
   studentCountByCountry: CountryData[];
 }
 
-//////////////////TotalScheduledChart//////////////
+interface TrialClassData {
+  _id: string | null;
+  totalCount: number;
+  maleCount: number;
+  femaleCount: number;
+  completedCount: number;
+  pendingCount: number;
+  studentJointCount: number;
+  studentNotJointCount: number;
+}
 
-const TotalScheduledChart = () => {
-  const data = [
-    { name: "Completed", value: 234, color: "#002c5f" },
-    { name: "Pending", value: 123, color: "#5b9bd5" },
-  ];
+//////////////////TotalRequestChart//////////////
+
+const TotalRequestChart = () => {
+  const [chartData, setChartData] = useState([
+    { name: "male", value: 0, color: "#002c5f" },
+    { name: "female", value: 0, color: "#5b9bd5" },
+  ]);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("https://alfurqanacademy.tech/totaltrialclass");
+        const result: TrialClassData[] = await res.json();
+
+        if (result && result.length > 0) {
+          const { totalCount = 0, maleCount = 0, femaleCount = 0 } = result[0];
+
+          setChartData([
+            { name: "male", value: maleCount, color: "#002c5f" },
+            { name: "female", value: femaleCount, color: "#5b9bd5" },
+          ]);
+
+          setTotal(totalCount);
+        }
+      } catch (error) {
+        console.error("Failed to fetch chart data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div>
-      <h2 className="text-sm font-semibold text-gray-900">Total Scheduled</h2>
+      <h2 className="text-sm font-semibold text-gray-900">Total Request</h2>
 
       <div className="relative flex items-center justify-center">
         <ResponsiveContainer width={150} height={189}>
           <PieChart>
             <Pie
-              data={data}
+              data={chartData}
               cx="50%"
               cy="50%"
               innerRadius={40}
               outerRadius={65}
               dataKey="value"
               startAngle={90}
-              endAngle={-270} // Ensures the gap is at the top
+              endAngle={-270}
             >
-              {data.map((entry) => (
+              {chartData.map((entry) => (
                 <Cell key={entry.name} fill={entry.color} />
               ))}
             </Pie>
@@ -69,22 +106,20 @@ const TotalScheduledChart = () => {
         {/* Center text inside the chart */}
         <div className="absolute text-center">
           <div className="text-gray-500 text-sm">Total</div>
-          <div className="text-2xl font-bold text-gray-900">
-            {data.reduce((sum, entry) => sum + entry.value, 0)}
-          </div>
+          <div className="text-2xl font-bold text-gray-900">{total}</div>
         </div>
       </div>
 
       {/* Legend */}
       <div className="flex justify-between mt-3 px-3">
-        {data.map((entry) => (
+        {chartData.map((entry) => (
           <div key={entry.name} className="flex flex-col items-center">
             <div className="flex items-center">
               <span
                 className="w-2 h-2 rounded-sm mr-1"
                 style={{ backgroundColor: entry.color }}
               ></span>
-              <span className="text-[10px] text-gray-600 ">
+              <span className="text-[10px] text-gray-600">
                 {entry.name}({entry.value})
               </span>
             </div>
@@ -175,14 +210,6 @@ const CountriesCard = () => {
 };
 
 ///////////////////PreferredTeachersCard//////////////
-const data = [
-  {
-    title: "Students",
-    count: 1738,
-    male: 1200,
-    female: 538,
-  },
-];
 
 const COLORS = ["#0D1B2A", "#4B9EFF", "#81878B"];
 
@@ -355,7 +382,10 @@ const CoursesChart = () => {
         <BarChart data={courseData} barCategoryGap={30}>
           <Tooltip
             content={<CustomTooltip active={undefined} payload={undefined} />}
-            wrapperStyle={{ backgroundColor: "transparent", border: "none" }}
+            wrapperStyle={{ backgroundColor: "transparent", border: "none", boxShadow: "none",
+              padding: 0, }}
+              cursor={{ fill: 'transparent' }} // Optional: removes the bar hover highlight
+
           />
           <Bar dataKey="value" radius={[15, 15, 15, 15]} barSize={25}>
             {courseData.map((entry) => (
@@ -384,7 +414,7 @@ export default function Dashboard() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full w-full px-2 py-4 md:mr-10 scrollbar-none">
       <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
-        <TotalScheduledChart />
+        <TotalRequestChart />
       </div>
       <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
         <CountriesCard />
