@@ -1,29 +1,34 @@
 'use client';
 
 import BaseLayout4 from '@/components/BaseLayout4';
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { FaRegSquare, FaRegCheckSquare } from 'react-icons/fa';
+import { FaRegCheckSquare, FaRegSquare } from 'react-icons/fa';
 
 type PermissionType = 'read' | 'write' | 'delete';
 
-const SupervisorModuleAccess = () => {
+const AdminModuleAccess = () => {
   const searchParams = useSearchParams();
   const employeeId = searchParams.get('employeeId');
-  
+
   const [selectedModules, setSelectedModules] = useState<{ [key: string]: boolean }>({});
-  const [permissions, setPermissions] = useState<{ [key: string]: { read: boolean; write: boolean; delete: boolean } }>({});
+  const [permissions, setPermissions] = useState<{
+    [key: string]: { read: boolean; write: boolean; delete: boolean };
+  }>({});
 
   const modules = [
     'Dashboard',
-    'Recuirement',
-    'Meeting',
-    'Teachers',
+    'Evaluation',
+    'Student',
+    'Employees',
+    'Courses',
+    'Classes',
+    'Invoice',
+    'Analytics',
     'Messages',
     'Support',
   ];
 
-  // Log the state every time it changes
   const toggleModule = (module: string) => {
     setSelectedModules((prev) => ({ ...prev, [module]: !prev[module] }));
   };
@@ -37,38 +42,30 @@ const SupervisorModuleAccess = () => {
       },
     }));
   };
-  
- 
+
   const handleSubmit = async () => {
     if (!employeeId) {
       alert('Employee ID not found in the URL!');
       return;
     }
-
-    const supervisormodules: { [key: string]: boolean } = {};
-
+  
+    const adminmodules: { [key: string]: boolean } = {};
+  
+    // Debugging: log the selectedModules object before proceeding
+    console.log('selectedModules:', selectedModules);
+  
     modules.forEach((module) => {
-      const key = module.toLowerCase().replace(/\s+/g, '');
-      supervisormodules[key] = selectedModules[module] || false;
+      const key = module.toLowerCase().replace(/\s+/g, '');  // "dashboard" for "Dashboard"
+      adminmodules[key] = selectedModules[module] || false;  // Get value from selectedModules
     });
   
-    console.log('Supervisormodules before submit:', supervisormodules);
+    // Debugging: Log the adminmodules to see the final structure
+    console.log('Adminmodules before submit:', adminmodules);
   
     const payload = {
       roleAccess: {
-        admin: false,
-        adminmodules: {
-          dashboard: false,
-          evaluation: false,
-          student: false,
-          employees: false,
-          courses: false,
-          classes: false,
-          invoice: false,
-          analytics: false,
-          messages: false,
-          settings: false,
-        },
+        admin: true,
+        adminmodules, // This will include the "dashboard" module
         academicCoach: false,
         academicmodules: {
           dashboard: false,
@@ -79,9 +76,15 @@ const SupervisorModuleAccess = () => {
           messages: false,
           support: false,
         },
-        supervisor: true,
-        supervisormodules,
-  
+        supervisor: false,
+        supervisormodules: {
+          dashboard: false,
+          recuirement: false, // Consider renaming 'recuirement' to 'requirement'
+          meeting: false,
+          teachers: false,
+          messages: false,
+          support: false,
+        },
         student: false,
         studentmodules: {
           dashboard: false,
@@ -103,7 +106,8 @@ const SupervisorModuleAccess = () => {
       },
     };
   
-    console.log('Payload before submitting:', payload);
+    // Log payload before submitting to check the final structure
+    console.log('Payload:', payload);
   
     try {
       const res = await fetch(`http://localhost:5001/update-access/${employeeId}`, {
@@ -126,12 +130,11 @@ const SupervisorModuleAccess = () => {
   };
   
 
-
   return (
     <BaseLayout4>
       <div className="w-full min-h-screen p-5 flex flex-col items-center">
         <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
-          Supervisor Module Access
+          Admin Module Access
         </h1>
 
         <div className="bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
@@ -149,7 +152,7 @@ const SupervisorModuleAccess = () => {
                 <tr key={module} className="border-t hover:bg-gray-50 transition">
                   <td className="p-4 flex items-center space-x-3">
                     <button onClick={() => toggleModule(module)}>
-                      {selectedModules[module.toLowerCase().replace(/\s+/g, '')] ? (
+                      {selectedModules[module] ? (
                         <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
                       ) : (
                         <FaRegSquare className="text-gray-400 text-sm" />
@@ -158,7 +161,7 @@ const SupervisorModuleAccess = () => {
                     <span className="text-[12px] text-[#344054]">{module}</span>
                   </td>
                   {['read', 'write', 'delete'].map((perm) => (
-                      <td key={perm} className="p-2 text-center">
+                    <td key={perm} className="p-2 text-center">
                       <input
                         type="checkbox"
                         checked={permissions[module]?.[perm as PermissionType] || false}
@@ -186,4 +189,4 @@ const SupervisorModuleAccess = () => {
   );
 };
 
-export default SupervisorModuleAccess;
+export default AdminModuleAccess;
