@@ -1,10 +1,13 @@
 'use client';
 
 import BaseLayout4 from '@/components/BaseLayout4';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { FaRegSquare, FaRegCheckSquare } from 'react-icons/fa';
 type PermissionType = 'read' | 'write' | 'delete';
+
+
+
 const TeacherModuleAccess = () => {
 
   const searchParams = useSearchParams();
@@ -12,7 +15,7 @@ const TeacherModuleAccess = () => {
   
   const [selectedModules, setSelectedModules] = useState<{ [key: string]: boolean }>({});
   const [permissions, setPermissions] = useState<{ [key: string]: { read: boolean; write: boolean; delete: boolean } }>({});
-
+  const router =useRouter();
   const modules = [
     'Dashboard',
     'Recruitment',
@@ -21,7 +24,6 @@ const TeacherModuleAccess = () => {
     'Messages',
     'Support',
   ];
-
 
   const handleSubmit = async () => {
     if (!employeeId) {
@@ -56,7 +58,7 @@ const TeacherModuleAccess = () => {
           analytics: false,
           messages: false,
           settings: false,
-        }, // This will include the "dashboard" module
+        },
         academicCoach: false,
         academicmodules: {
           dashboard: false,
@@ -75,7 +77,8 @@ const TeacherModuleAccess = () => {
           teachers: false,
           messages: false,
           support: false,
-        },  student: false,
+        },
+        student: false,
         studentmodules: {
           dashboard: false,
           recuirement: false,
@@ -101,16 +104,32 @@ const TeacherModuleAccess = () => {
         body: JSON.stringify(payload),
       });
   
-      if (!res.ok) throw new Error('Failed to update access');
+      // Log the raw response to see it
+      console.log('Response Status:', res.status);
   
+      if (!res.ok) {
+        const errorText = await res.text(); // Read response body only once
+        console.error('Error response:', errorText);
+        throw new Error('Failed to update access');
+      }
+  
+      // Now read the response as JSON (we've already consumed the body once)
       const data = await res.json();
       alert('Access updated successfully!');
       console.log('✅ Response:', data);
+  
+      // Reset the selectedModules to clear the checkboxes
+      setSelectedModules({});
+  
+      // Navigate to the settings page after submission
+      router.push('/admin-main/ui/settings'); // Navigate to settings page
+  
     } catch (err) {
       console.error('❌ Error:', err);
       alert('Something went wrong while updating access.');
     }
   };
+  
 
   const toggleModule = (module: string) => {
     setSelectedModules((prev) => ({ ...prev, [module]: !prev[module] }));
