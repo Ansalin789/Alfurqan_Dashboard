@@ -21,7 +21,7 @@ import {
   PieChart,
   Pie,
 } from "recharts";
-import { Line, Line as LineChart } from "react-chartjs-2";
+import { Line} from "react-chartjs-2";
 import {
   Chart as ChartJS,
   LineElement,
@@ -43,40 +43,51 @@ ChartJS.register(
   ChartTooltip,
   Filler
 );
+interface OtherEmployeess {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: number;
+  nationality: string;
+  country: string;
+  city: string;
+  dateOfBirth: string;
+  gender: string;
+  residentialAddress: string;
+  higherQualification: string;
+  universityName: string;
+  previousJob: string;
+  experience: string;
+  bankName: string;
+  accountNumber: number;
+  bankCode: string;
+  passportNumber: string;
+  languagesKnown: string[];
+  emergencyContactNumber: number;
+  relationshipWithEmployee: string;
+  address: string;
+  designation: string;
+  department: string;
+  preferedWorkingHours: number;
+  preferedShiftFrom: string;
+  preferedShiftTo: string;
+  comments: string;
+  profileImage: string | null;
+  applicationDate: string;
+  currency: string;
+  expectedSalary: number;
+  applicationStatus: string;
+  preferedWorkingDays: string[];
+  status: string;
+}
 
-const datas = [
-  { name: "Female", value: 40, color: "#FF82F5" }, // Pink for Female
-  { name: "Male", value: 60, color: "#00CCFF" }, // Blue for Male
-];
-const empdatas = [
-  { name: "Female", value: 40, color: "#FF82F5" }, // Pink for Female
-  { name: "Male", value: 60, color: "#00CCFF" }, // Blue for Male
-];
-const data = [
-  { name: "Admin", value: 100, color: "#012A4A" },
-  { name: "Academic Coach", value: 80, color: "#6256BA" },
-  { name: "Supervisor", value: 50, color: "#00CCFF" },
-  { name: "Others", value: 60, color: "#0074FF" },
-];
-
-const empdata = [
-  { name: "Academic Coach", value: 100, color: "#012A4A" },
-  { name: "Supervisor", value: 50, color: "#A6C3E5" },
-];
+interface EmpCountryData {
+  country: string;
+  count: number;
+  percentage: number;
+}
 
 
-
-const empcountriesData = [
-  { name: "United States", flag: "/assets/images/flags/us.png", value: 110002 },
-  { name: "Germany", flag: "/assets/images/flags/germany.png", value: 103499 },
-  {
-    name: "United Kingdom",
-    flag: "/assets/images/flags/united-kingdom.png",
-    value: 96998,
-  },
-  { name: "England", flag: "/assets/images/flags/england.png", value: 89061 },
-  { name: "France", flag: "/assets/images/flags/france.png", value: 82000 },
-];
 
 interface Teacher {
   _id: string;
@@ -89,20 +100,37 @@ interface Teacher {
   rating?: number;
   gender?: string;
 }
-interface OtherEmployees {
+interface OtherEmployee {
   _id: string;
   userId: string;
   userName: string;
   email: string;
-  profileImage?: string | null;
-  level: string;
-  subject: string;
-  rating: number;
+  profileImage: string | null;
+  role: string[];
+  status: string;
+  gender: string;
+  createdBy: string;
+  lastUpdatedBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  lastLoginDate: string;
+}
+
+interface OtherEmployeesResponse {
+  users: OtherEmployee[];
+  totalCount: number;
 }
 type ChartData = {
   name: string;
   value: number;
   color: string;
+};
+
+const ROLE_COLORS: Record<string, string> = {
+  ADMIN: "#012A4A",
+  ACADEMICCOACH: "#6256BA",
+  SUPERVISOR: "#00CCFF",
+  USER: "#0074FF",
 };
 interface GenderResponse {
   teacherPercentage: number;
@@ -122,193 +150,46 @@ interface CountryStat {
   count: number;
   percentage: number;
 }
-// Mock data for teachers
-const mockTeachers: Teacher[] = [
-  {
-    _id: "1",
-    userId: "user1",
-    userName: "John Smith",
-    email: "john.smith@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Senior",
-    subject: "Mathematics",
-    rating: 4.5,
-  },
-  {
-    _id: "2",
-    userId: "user2",
-    userName: "Sarah Johnson",
-    email: "sarah.j@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Physics",
-    rating: 4.2,
-  },
-  {
-    _id: "3",
-    userId: "user3",
-    userName: "Michael Brown",
-    email: "michael.b@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Senior",
-    subject: "Chemistry",
-    rating: 4.8,
-  },
-  {
-    _id: "4",
-    userId: "user4",
-    userName: "Emily Davis",
-    email: "emily.d@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Biology",
-    rating: 4.0,
-  },
-  {
-    _id: "5",
-    userId: "user4",
-    userName: "Emily Davis",
-    email: "emily.d@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Biology",
-    rating: 4.0,
-  },
-  {
-    _id: "6",
-    userId: "user4",
-    userName: "Emily Davis",
-    email: "emily.d@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Biology",
-    rating: 4.0,
-  },
-  {
-    _id: "7",
-    userId: "user4",
-    userName: "Emily Davis",
-    email: "emily.d@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Biology",
-    rating: 4.0,
-  },
-  {
-    _id: "8",
-    userId: "user4",
-    userName: "Emily Davis",
-    email: "emily.d@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Biology",
-    rating: 4.0,
-  },
-  {
-    _id: "9",
-    userId: "user4",
-    userName: "Emily Davis",
-    email: "emily.d@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Biology",
-    rating: 4.0,
-  },
-];
+interface OtherEmpCountResponse {
+  totalOtherEmpCount: number;
+  otherEmpCount: OtherEmpEntry[];
+}
 
-// Mock data for other employees
-const mockOtherEmployees: OtherEmployees[] = [
-  {
-    _id: "1",
-    userId: "user5",
-    userName: "David Wilson",
-    email: "david.w@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Senior",
-    subject: "Administration",
-    rating: 4.3,
-  },
-  {
-    _id: "2",
-    userId: "user6",
-    userName: "Lisa Anderson",
-    email: "lisa.a@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "HR",
-    rating: 4.1,
-  },
-  {
-    _id: "3",
-    userId: "user6",
-    userName: "Lisa Anderson",
-    email: "lisa.a@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Teacher",
-    rating: 4.1,
-  },
-  {
-    _id: "4",
-    userId: "user6",
-    userName: "Lisa Anderson",
-    email: "lisa.a@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Supervisor",
-    rating: 4.1,
-  },
-  {
-    _id: "5",
-    userId: "user6",
-    userName: "Lisa Anderson",
-    email: "lisa.a@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "HR",
-    rating: 4.1,
-  },
-  {
-    _id: "6",
-    userId: "user6",
-    userName: "Lisa Anderson",
-    email: "lisa.a@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Teacher",
-    rating: 4.1,
-  },
-  {
-    _id: "7",
-    userId: "user6",
-    userName: "Lisa Anderson",
-    email: "lisa.a@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "Academic",
-    rating: 4.1,
-  },
-  {
-    _id: "8",
-    userId: "user6",
-    userName: "Lisa Anderson",
-    email: "lisa.a@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "HR",
-    rating: 4.1,
-  },
-  {
-    _id: "9",
-    userId: "user6",
-    userName: "Lisa Anderson",
-    email: "lisa.a@example.com",
-    profileImage: "/assets/images/proff.jpg",
-    level: "Junior",
-    subject: "HR",
-    rating: 4.1,
-  },
-];
+interface OtherEmpEntry {
+  country: string[]; // e.g., ["ADMIN"]
+  count: number;
+  percentage: number;
+}
+const formatRole = (role: string) => {
+  switch (role) {
+    case "ACADEMICCOACH":
+      return "Academic Coach";
+    case "SUPERVISOR":
+      return "Supervisor";
+    case "USER":
+      return "User";
+    case "ADMIN":
+      return "Admin";
+    default:
+      return role;
+  }
+};
+const COLORS = {
+  Female: "#FF82F5", // Pink
+  Male: "#00CCFF",   // Blue
+};
+interface GenderCountResponse {
+  employeePercentage: number;
+  employeeMalePercentage: string;
+  employeeFemalePercentage: string;
+}
+interface DashboardCounts {
+  totalApplication: number;
+  shortlisted: number;
+  rejected: number;
+  waiting: number;
+}
+
 
 const leaveData = [
   {
@@ -430,22 +311,11 @@ const Page = () => {
   const [activeTab, setActiveTab] = useState<
     "teachers" | "otheremployees" | "recruitment" | "leave"
   >("teachers");
-  
  
-
-  const needleValue = 40; // Adjust needle based on percentage
-
-  const cx = 90; // Center X (Adjusted for new size)
-  const cy = 90; // Center Y
-  const needleLength = 35; // Adjusted needle length
-  const angle = (needleValue / 100) * 180; // Rotate needle based on percentage
   const router = useRouter();
-  const [otherEmployees, setOtherEmployees] =
-    useState<OtherEmployees[]>(mockOtherEmployees);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchQuery1, setSearchQuery1] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLeave, setSelectedLeave] = useState<{
     id: string;
     name: string;
@@ -455,21 +325,61 @@ const Page = () => {
     reason: string;
     status: string;
   } | null>(null);
-
-  const [newTeacher, setNewTeacher] = useState({
-    userName: "",
-    email: "",
-    password: "",
-    role: ["TEACHER"],
-    status: "Active",
-    createdBy: "SYSTEM",
-    profileImage: null,
-    lastUpdatedBy: "SYSTEM",
-  });
   const [barData, setBarData] = useState<ChartData[]>([]);
   const [genderData, setGenderData] = useState<GenderChartData[]>([]);
   const [countryData, setCountryData] = useState<CountryStat[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [chartData, setChartData] = useState<
+  { name: string; value: number; color: string }[]
+>([]);
+const [empData, setEmpData] = useState<
+{ name: string; value: number; color: string }[]
+>([]);
+const [employees, setEmployees] = useState<OtherEmployee[]>([]);
+const [counts, setCounts] = useState<DashboardCounts>({
+  totalApplication: 0,
+  shortlisted: 0,
+  rejected: 0,
+  waiting: 0,
+});
+const [formData, setFormData] = useState<OtherEmployeess>({
+  firstName: "",
+  lastName: "",
+  email: "",
+  phoneNumber: 0,
+  nationality: "",
+  country: "",
+  city: "",
+  dateOfBirth: "",
+  gender: "",
+  residentialAddress: "",
+  higherQualification: "",
+  universityName: "",
+  previousJob: "",
+  experience: "",
+  bankName: "",
+  accountNumber: 0,
+  bankCode: "",
+  passportNumber: "",
+  languagesKnown: [],
+  emergencyContactNumber: 0,
+  relationshipWithEmployee: "",
+  address: "",
+  designation: "",
+  department: "",
+  preferedWorkingHours: 8,
+  preferedShiftFrom: "09:00 AM",
+  preferedShiftTo: "09:00 PM",
+  comments: "",
+  profileImage: null,
+  applicationDate: new Date().toISOString(),
+  currency: "USD",
+  expectedSalary: 0,
+  applicationStatus: "Pending",
+  preferedWorkingDays: [],
+  status: "Active",
+});
+const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
   useEffect(() => {
     axios
       .get("http://localhost:5001/teacher/statuscount")
@@ -518,7 +428,7 @@ const Page = () => {
             userId: user.userId,
             userName: user.userName,
             email: user.email,
-            profileImage: user.profileImage || "/assets/images/proff.jpg",
+            profileImage: user.profileImage ?? "/assets/images/proff.jpg",
             level: "Junior", // mock default or pull from another source
             subject: "General", // same here
             rating: 1.0, // optionally calculate or default
@@ -531,38 +441,72 @@ const Page = () => {
       };
   
       fetchTeachers();
-  }, []);
+      const fetchDataemp = async () => {
+        try {
+          const res = await fetch("http://localhost:5001/otherempcount");
+      const json: OtherEmpCountResponse = await res.json();
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewTeacher((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSave = async () => {
-    console.log("New Teacher Data:", newTeacher);
-    try {
-      const response = await fetch(`https://alfurqanacademy.tech/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newTeacher),
+      const transformed = json.otherEmpCount.map((entry) => {
+        const role = entry.country[0];
+        return {
+          name: formatRole(role),
+          value: entry.count,
+          color: ROLE_COLORS[role] || "#999999",
+        };
       });
-      const responseData = await response.json();
-      console.log("Response:", response.status, responseData);
-    } catch {
-      console.error("Error saving new teacher:");
-    }
-    closeModal();
-  };
 
+      setChartData(transformed);
+        } catch (error) {
+          console.error("Error fetching role data", error);
+        }
+      };
+  
+      fetchDataemp();
+      const fetchGenderData = async () => {
+        const res = await fetch("http://localhost:5001/otheremp/gendercount");
+        const json: GenderCountResponse = await res.json();
+  
+        const data = [
+          {
+            name: "Female",
+            value: parseFloat(json.employeeFemalePercentage),
+            color: COLORS.Female,
+          },
+          {
+            name: "Male",
+            value: parseFloat(json.employeeMalePercentage),
+            color: COLORS.Male,
+          },
+        ];
+  
+        setEmpData(data);
+      };
+  
+      fetchGenderData();
+      const fetchEmployees = async () => {
+        const res = await fetch("http://localhost:5001/otheremployees");
+        const data: OtherEmployeesResponse = await res.json();
+        setEmployees(data.users);
+      };
+  
+      fetchEmployees();
+      const fetchCounts = async () => {
+        try {
+          const response = await axios.get<DashboardCounts>("http://localhost:5001/dashboard/supervisor/counts");
+          setCounts(response.data);
+        } catch (error) {
+          console.error("Error fetching dashboard counts:", error);
+        }
+      };
+      axios
+      .get("http://localhost:5001/otheremp/countriescount")
+      .then((res) => {
+        setCountryDataemp(res.data.otherEmpCountByCountry);
+      })
+      .catch((err) => console.error("Failed to fetch country stats", err));
+  
+      fetchCounts();
+  }, []);
   const handleViewTeacher = (teacherId: string) => {
     if (!teacherId) {
       console.error("Teacher ID is undefined.");
@@ -651,6 +595,44 @@ const Page = () => {
     const portalURL = `http://localhost:3000/supervisor/ui/sign?username=${username}&password=${password}`;
     window.location.href = portalURL;
   }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      
+    }));
+  };
+  const formatTime = (value:any) => {
+    // if you're using a 24h input, convert to AM/PM
+    const [hour, minute] = value.split(":");
+    const h = parseInt(hour, 10);
+    const suffix = h >= 12 ? "PM" : "AM";
+    const formattedHour = h % 12 === 0 ? 12 : h % 12;
+    return `${formattedHour.toString().padStart(2, '0')}:${minute} ${suffix}`;
+  };
+
+  const handleSubmit = async () => {
+    try {
+      console.log(formData);
+      const form = new FormData();
+      for (const key in formData) {
+        const value = (formData as any)[key];
+        form.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
+      }
+
+      await axios.post("http://localhost:5001/otheremployee", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      alert("Employee added successfully!");
+      setShowForm(false);
+    } catch (error) {
+      console.error(error);
+      alert("Error adding employee.");
+    }
+  };
 
   return (
     <BaseLayout4>
@@ -768,8 +750,8 @@ const Page = () => {
                               <YAxis hide />
                               <Tooltip cursor={{ fill: "transparent" }} />
                               <Bar dataKey="value" radius={[5, 5, 0, 0]}>
-                                {barData.map((entry, index) => (
-                                  <Cell key={index} fill={entry.color} />
+                                {barData.map((entry) => (
+                                  <Cell key={entry.name} fill={entry.color} />
                                 ))}
                               </Bar>
                             </BarChart>
@@ -796,8 +778,8 @@ const Page = () => {
           innerRadius={60}
           outerRadius={80}
         >
-          {genderData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color} />
+          {genderData.map((entry) => (
+            <Cell key={`cell-${entry.name}`} fill={entry.color} />
           ))}
         </Pie>
       </PieChart>
@@ -834,7 +816,7 @@ const Page = () => {
           : "/assets/images/flags/default.png"; // Use a default image if no flag is found
 
         return (
-          <div key={i} className="flex items-center gap-2">
+          <div key={country.country} className="flex items-center gap-2">
             {/* Flag */}
             <img
               src={flagUrl}
@@ -979,106 +961,109 @@ const Page = () => {
                           </div>
                         </div>
                         <div className="flex-1 h-[230px]">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={data} barSize={40}>
-                              <CartesianGrid
-                                vertical={false}
-                                strokeDasharray="3 3"
-                              />
-                              <XAxis
-                                dataKey="name"
-                                axisLine={false}
-                                tick={false}
-                              />
-                              <YAxis hide />
-                              <Tooltip cursor={{ fill: "transparent" }} />
-                              <Bar dataKey="value" radius={[5, 5, 0, 0]}>
-                                {data.map((entry, index) => (
-                                  <Cell key={index} fill={entry.color} />
-                                ))}
-                              </Bar>
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} barSize={40}>
+          <CartesianGrid vertical={false} strokeDasharray="3 3" />
+          <XAxis dataKey="name" axisLine={false} tick={false} />
+          <YAxis hide />
+          <Tooltip cursor={{ fill: "transparent" }} />
+          <Bar dataKey="value" radius={[5, 5, 0, 0]}>
+            {chartData.map((entry) => (
+              <Cell key={entry.name} fill={entry.color} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
                       </div>
                     </div>
 
                     {/* Gender Chart */}
-                    <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[280px] flex flex-col items-center relative">
-                      <h2 className="text-[16px] font-semibold text-gray-800 self-start">
-                        Gender
-                      </h2>
-                      <div className="relative w-full h-[170px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={empdatas}
-                              dataKey="value"
-                              cx="50%"
-                              cy="90%"
-                              startAngle={180}
-                              endAngle={0}
-                              innerRadius={70}
-                              outerRadius={90}
-                            >
-                              {empdatas.map((entry, index) => (
-                                <Cell
-                                  key={`cell-${index}`}
-                                  fill={entry.color}
-                                />
-                              ))}
-                            </Pie>
-                          </PieChart>
-                        </ResponsiveContainer>
+                    <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[280px] flex flex-col items-center justify-between relative">
+  <h2 className="text-[16px] font-semibold text-gray-800 self-start">Gender</h2>
 
-                        <div className="absolute left-1/2 bottom-[25px] w-1 h-[45px] bg-[#00CFFF] transform -translate-x-1/2 rotate-[40deg] origin-bottom rounded-sm"></div>
-                      </div>
+  {/* Chart */}
+  <div className="relative w-[170px] h-[100px] flex items-center justify-center">
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={empData}
+          dataKey="value"
+          cx="50%"
+          cy="100%"
+          startAngle={180}
+          endAngle={0}
+          innerRadius={60}
+          outerRadius={80}
+        >
+          {empData.map((entry) => (
+            <Cell key={`cell-${entry.name}`} fill={entry.color} />
+          ))}
+        </Pie>
+      </PieChart>
+    </ResponsiveContainer>
+    {/* Optional center line below pie */}
+    <div className="absolute left-1/2 bottom-0 w-1 h-[45px] bg-[#00CFFF] transform -translate-x-1/2 rotate-[40deg] origin-bottom rounded-sm"></div>
+  </div>
 
-                      <div className="flex justify-between w-full px-6 text-gray-700 text-[14px] mb-5">
-                        <div className="flex flex-col items-center">
-                          <span className="text-[18px] font-bold">40%</span>
-                          <span className="text-[12px]">Female</span>
-                          <div className="w-10 h-1 bg-[#FF82F5] mt-1 rounded-full"></div>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <span className="text-[18px] font-bold">60%</span>
-                          <span className="text-[12px]">Male</span>
-                          <div className="w-10 h-1 bg-[#00CFFF] mt-1 rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
+  {/* Labels */}
+  <div className="flex justify-between w-full px-5 text-gray-700 text-[14px] mb-5">
+    {empData.map((item) => (
+      <div key={item.name} className="flex flex-col items-center">
+        <span className="text-[18px] font-bold">{item.value}%</span>
+        <span className="text-[12px]">{item.name}</span>
+        <div
+          className="w-10 h-1 mt-1 rounded-full"
+          style={{ backgroundColor: item.color }}
+        ></div>
+      </div>
+    ))}
+  </div>
+</div>
 
                     {/* Countries Block */}
                     <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[280px] space-y-3">
-                      <h2 className="text-[16px] font-semibold text-gray-800">
-                        Countries
-                      </h2>
-                      {empcountriesData.map((country, i) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <img
-                            src={country.flag}
-                            alt={country.name}
-                            className="w-5 h-5 rounded-full"
-                          />
-                          <div className="w-full">
-                            <div className="flex justify-between text-[13px] font-medium text-gray-800">
-                              <span>{country.name}</span>
-                              <span className="text-[#809FB8]">
-                                {country.value.toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                              <div
-                                className="h-2 bg-[#012A4A] rounded-full"
-                                style={{
-                                  width: `${(country.value / maxValue) * 100}%`,
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+      <h2 className="text-[16px] font-semibold text-gray-800">Countries</h2>
+      {countryDataemp.map((country, i) => {
+        // Get 2-letter country code
+        const countryCode = countries.getAlpha2Code(country.country, "en");
+        // Construct the flag URL
+        const flagUrl = countryCode
+          ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`
+          : "/assets/images/flags/default.png"; // Use a default image if no flag is found
+
+        return (
+          <div key={country.country} className="flex items-center gap-2">
+            {/* Flag */}
+            <img
+              src={flagUrl}
+              alt={country.country}
+              className="w-5 h-5 rounded-full"
+            />
+
+            <div className="w-full">
+              {/* Country name and value */}
+              <div className="flex justify-between text-[13px] font-medium text-gray-800">
+                <span>{country.country}</span>
+                <span className="text-[#809FB8]">
+                  {country.count.toLocaleString()}
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
+                <div
+                  className="h-2 bg-[#012A4A] rounded-full"
+                  style={{
+                    width: `${country.percentage}%`, // Using percentage directly from response
+                  }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
                   </div>
                   <div className="mt-6 w-full">
                     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-4">
@@ -1115,7 +1100,7 @@ const Page = () => {
 
                     {/* Teacher Cards */}
                     <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-7 max-h-[300px] ">
-                      {otherEmployees
+                      {employees
                         .filter(
                           (employee) =>
                             employee.userName
@@ -1147,10 +1132,10 @@ const Page = () => {
                                 {employee.userName}
                               </h3>
                               <p className="text-[#717579] text-xs">
-                                {employee.level}
+                                {employee.role}
                               </p>
                               <p className="text-[#717579] p-1 text-xs">
-                                {employee.subject}
+                                {employee.gender}
                               </p>
                               <div className="flex flex-col justify-center gap-3 px-5 mt-2">
                                 <button
@@ -1187,7 +1172,7 @@ const Page = () => {
                     {[
                       {
                         title: "Total Applications",
-                        count: "250",
+                        count: counts.totalApplication,
                         color: "gray",
                         iconBg: "bg-gray-100",
                         iconColor: "text-gray-500",
@@ -1195,7 +1180,7 @@ const Page = () => {
                       },
                       {
                         title: "Shortlisted Candidates",
-                        count: "135",
+                        count: counts.shortlisted,
                         color: "indigo",
                         iconBg: "bg-indigo-100",
                         iconColor: "text-indigo-500",
@@ -1203,7 +1188,7 @@ const Page = () => {
                       },
                       {
                         title: "Rejected Candidates",
-                        count: "100",
+                        count: counts.rejected,
                         color: "cyan",
                         iconBg: "bg-cyan-100",
                         iconColor: "text-cyan-500",
@@ -1211,15 +1196,15 @@ const Page = () => {
                       },
                       {
                         title: "Waiting Candidates",
-                        count: "15",
+                        count: counts.waiting,
                         color: "blue",
                         iconBg: "bg-blue-100",
                         iconColor: "text-blue-500",
                         chartColor: "#3b82f6",
                       },
-                    ].map((card, i) => (
+                    ].map((card) => (
                       <div
-                        key={i}
+                        key={card.title}
                         className="bg-white shadow-md rounded-xl flex flex-col justify-between w-full"
                       >
                         <div className="flex items-start justify-between px-4 mt-4 mb-2">
@@ -1315,9 +1300,9 @@ const Page = () => {
                           "Date Range",
                           "Reason For Leave",
                           "Status",
-                        ].map((title, idx) => (
+                        ].map((title) => (
                           <th
-                            key={idx}
+                            key={title}
                             className="px-6 py-3 text-sm font-semibold text-center bg-[#F4F5F7] text-gray-700 whitespace-nowrap"
                           >
                             {title}
@@ -1326,9 +1311,9 @@ const Page = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100 text-center">
-                      {leaveData.map((item, idx) => (
+                      {leaveData.map((item) => (
                         <tr
-                          key={idx}
+                          key={item.id}
                           className="hover:bg-gray-50 align-middle border-b border-gray-300"
                         >
                           <td className="px-6 py-3 text-xs whitespace-nowrap text-center align-middle border-b border-gray-300">
@@ -1627,93 +1612,196 @@ const Page = () => {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto scrollbar-none">
+        <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
           <div className="w-full max-w-4xl h-[90vh] bg-white rounded-2xl shadow-lg overflow-hidden m-4">
-            <div className="h-full overflow-y-auto p-6 space-y-4 scrollbar-none">
+            <div className="h-full overflow-y-auto p-6 space-y-6">
               <h2 className="text-xl font-semibold mb-4">Add Employee</h2>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  ["First name", "text"],
-                  ["Last name", "text"],
-                  ["Email", "email"],
-                  ["Phone number", "tel"],
-                  ["City", "select"],
-                  ["Nationality", "select"],
-                  ["Date of Birth", "date"],
-                  ["Gender", "select"],
-                  ["Residential Address", "text", true],
-                  ["Highest Qualification", "select"],
-                  ["University/Institute Name", "text"],
-                  ["Previous Job Title (if applicable)", "text"],
-                  ["Experience (in years)", "select"],
-                  ["Bank Name", "text"],
-                  ["Account Number", "text"],
-                  ["Bank Code", "text", true],
-                  ["Passport Number", "text"],
-                  ["Languages Known", "text"],
-                  ["Emergency Contact Number", "text"],
-                  ["Relationship with Employee", "select"],
-                  ["Address", "text", true],
-                  ["Designation", "select"],
-                  ["Department", "select"],
-                  ["Preferred Working Hours", "time"],
-                  ["Preferred Shift", "select"],
-                ].map((field, index) => {
-                  const label = field[0] as string;
-                  const type = field[1] as string;
-                  const full = field[2] === true;
+                  { label: "First name", name: "firstName", type: "text" },
+                  { label: "Last name", name: "lastName", type: "text" },
+                  { label: "Email", name: "email", type: "email" },
+                  { label: "Phone number", name: "phoneNumber", type: "number" },
+                  { label: "City", name: "city", type: "text" },
+                  { label: "Nationality", name: "nationality", type: "text" },
+                  { label: "Date of Birth", name: "dateOfBirth", type: "date" },
+                  { label: "Country", name: "country", type: "text" },
+                  { label: "Gender", name: "gender", type: "text" },
+                  { label: "Residential Address", name: "residentialAddress", type: "text", full: true },
+                  { label: "Highest Qualification", name: "higherQualification", type: "text" },
+                  { label: "University/Institute Name", name: "universityName", type: "text" },
+                  { label: "Previous Job Title", name: "previousJob", type: "text" },
+                  { label: "Experience (in years)", name: "experience", type: "text" },
+                  { label: "Bank Name", name: "bankName", type: "text" },
+                  { label: "Account Number", name: "accountNumber", type: "number" },
+                  { label: "Bank Code", name: "bankCode", type: "text", full: true },
+                  { label: "Passport Number", name: "passportNumber", type: "text" },
+                  { label: "Emergency Contact Number", name: "emergencyContactNumber", type: "number" },
+                  { label: "Relationship with Employee", name: "relationshipWithEmployee", type: "text" },
+                  { label: "Address", name: "address", type: "text", full: true },
+                  { label: "Designation", name: "designation", type: "text" },
+                  { label: "Department", name: "department", type: "text" },
+                  { label: "Preferred Working Hours", name: "preferedWorkingHours", type: "number" },
+                ].map((field, index) => (
+                  <div key={index} className={`flex flex-col ${field.full ? "col-span-2" : ""}`}>
+                    <label className="text-xs font-medium text-gray-700 mb-1">{field.label}</label>
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      value={
+                        Array.isArray(formData[field.name as keyof OtherEmployeess])
+                          ? (formData[field.name as keyof OtherEmployeess] as string[]).join(", ")
+                          : formData[field.name as keyof OtherEmployeess] ?? ""
+                      }
+                      onChange={(e) => {
+                        if (field.name === "languagesKnown" || field.name === "preferedWorkingDays") {
+                          setFormData((prev) => ({
+                            ...prev,
+                            [field.name]: e.target.value.split(",").map((item) => item.trim()),
+                          }));
+                        } else {
+                          handleChange(e);
+                        }
+                      }}
+                      className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
+                    />
+                  </div>
+                ))}
 
-                  return (
-                    <div
-                      key={`field-${index}`}
-                      className={`flex flex-col ${full ? "col-span-2" : ""}`}
-                    >
-                      <label className="text-xs font-medium text-[#0A0338] mb-1">
-                        {label}
-                      </label>
-                      {type === "select" ? (
-                        <select className="w-full bg-[#F7F7F8] border border-gray-400 rounded-lg px-4 py-2 focus:outline-none text-gray-400 text-xs">
-                          <option>{label}</option>
-                        </select>
-                      ) : (
+                {/* Time Picker with Formatting */}
+                {["preferedShiftFrom", "preferedShiftTo"].map((name, index) => (
+                  <div key={index} className="flex flex-col">
+                    <label className="text-xs font-medium text-gray-700 mb-1">
+                      {name === "preferedShiftFrom" ? "Preferred Shift From" : "Preferred Shift To"}
+                    </label>
+                    <input
+                      type="time"
+                      name={name}
+                      onChange={(e) => {
+                        const formatted = formatTime(e.target.value);
+                        setFormData((prev) => ({ ...prev, [name]: formatted }));
+                      }}
+                      className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
+                    />
+                  </div>
+                ))}
+
+                {/* Language Input */}
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">Languages Known</label>
+                  <input
+                    type="text"
+                    name="languagesKnown"
+                    value={formData.languagesKnown.join(", ")}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        languagesKnown: e.target.value.split(",").map((item) => item.trim()),
+                      }))
+                    }
+                    className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
+                  />
+                </div>
+
+                {/* Currency Dropdown */}
+                <div>
+                  <label className="text-xs font-medium text-gray-700 block">Currency</label>
+                  <select
+                    name="currency"
+                    value={formData.currency}
+                    onChange={handleChange}
+                    className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
+                  >
+                    <option value="">Select Currency</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="INR">INR</option>
+                    <option value="AED">AED</option>
+                  </select>
+                </div>
+
+                {/* Expected Salary */}
+                <div>
+                  <label className="text-xs font-medium text-gray-700 block">Expected Salary</label>
+                  <input
+                    type="number"
+                    name="expectedSalary"
+                    value={formData.expectedSalary}
+                    onChange={handleChange}
+                    className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
+                  />
+                </div>
+
+                {/* Working Days Checkbox */}
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-700 block">Preferred Working Days</label>
+                  <div className="flex flex-wrap gap-3">
+                    {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
+                      <label key={day} className="flex items-center space-x-2 text-xs">
                         <input
-                          type={type}
-                          placeholder=""
-                          className="w-full bg-[#F7F7F8] border border-gray-400 rounded-lg px-4 py-2 focus:outline-none text-gray-400 text-xs"
+                          type="checkbox"
+                          value={day}
+                          checked={formData.preferedWorkingDays.includes(day)}
+                          onChange={(e) => {
+                            const { checked, value } = e.target;
+                            setFormData((prev) => {
+                              const days = new Set(prev.preferedWorkingDays);
+                              checked ? days.add(value) : days.delete(value);
+                              return { ...prev, preferedWorkingDays: Array.from(days) };
+                            });
+                          }}
                         />
-                      )}
-                    </div>
-                  );
-                })}
+                        <span>{day}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Profile Image */}
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-700 block">Profile Image</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setFormData((prev) => ({ ...prev, profileImage: reader.result as string }));
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="w-full text-xs bg-gray-100 border border-gray-300 rounded-lg px-4 py-2"
+                  />
+                </div>
+
+                {/* Comments */}
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-700 block">Additional Comments</label>
+                  <textarea
+                    name="comments"
+                    value={formData.comments}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
+                  />
+                </div>
               </div>
 
-              <div className="col-span-2 mt-4">
-                <label
-                  htmlFor="additional"
-                  className="block  font-medium text-gray-700 mb-1 text-xs"
-                >
-                  Additional Comments (Optional)
-                </label>
-                <textarea
-                  placeholder="Additional Comments (Optional)"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none text-xs"
-                  rows={3}
-                />
-              </div>
-
-              <div className="border-dashed border-2 border-gray-300 rounded-xl h-40 flex justify-center items-center mt-4">
-                <span className="text-gray-400">Upload Profile Picture</span>
-              </div>
-
-              <div className="flex justify-end space-x-2 mt-4">
+              {/* Actions */}
+              <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setShowForm(false)}
-                  className="px-4 py-2 rounded-lg border border-gray-300 text-sm"
+                  className="px-4 py-2 border border-gray-400 rounded-lg text-sm hover:bg-gray-100"
                 >
                   Cancel
                 </button>
-                <button className="px-6 py-2 bg-[#012A4A] text-white rounded-lg text-sm">
+                <button
+                  onClick={handleSubmit}
+                  className="px-6 py-2 bg-blue-900 text-white rounded-lg text-sm hover:bg-blue-800"
+                >
                   Save
                 </button>
               </div>
@@ -1721,6 +1809,8 @@ const Page = () => {
           </div>
         </div>
       )}
+
+
     </BaseLayout4>
   );
 };
