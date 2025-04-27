@@ -1,18 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, File, MapPin, Phone, Upload, X } from "lucide-react";
+import {  File, MapPin, Phone, Upload, X } from "lucide-react";
 import BaseLayout4 from "@/components/BaseLayout4";
 import axios from "axios";
-import { Student } from "../studentlistviewall/page";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-export interface IStudent {
+interface IStudent {
   student: {
     studentId: string;
     studentEmail: string;
     studentPhone: number;
     gender: string;
     package: string;
+    course: string;
+    city: string;
+    country: string;
   };
   _id: string;
   username: string;
@@ -26,10 +30,8 @@ export interface IStudent {
   classScheduleCount: number;
 }
 
-// If you are handling a list:
-export type IStudentList = IStudent[];
 
-export interface IStudentInvoice {
+interface IStudentInvoice {
   student: {
     studentId: string;
     studentName: string;
@@ -55,12 +57,8 @@ export interface IStudentInvoice {
 }
 
 export default function InvoicePage() {
-  const [attachedFile] = useState({
-    name: "Contact_2020.pdf",
-    size: "456 KB",
-  });
 
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<IStudent[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<
     (typeof students)[0] | null
   >(null);
@@ -69,24 +67,17 @@ export default function InvoicePage() {
     const fetchStudents = async () => {
       try {
         const response = await axios.get(
-          "https://alfurqanacademy.tech/alstudents"
+          "http://localhost:5001/alstudents"
         );
 
         // Remove duplicates based on studentId
         const uniqueStudentsMap = new Map();
-        response.data.students.forEach((student: Student) => {
+        response.data.students.forEach((student: IStudent) => {
           uniqueStudentsMap.set(student.student.studentId, student);
         });
-
-        const uniqueStudents = Array.from(uniqueStudentsMap.values());
-
-        const sorted = uniqueStudents.sort(
-          (a, b) =>
-            new Date(b.createdDate).getTime() -
-            new Date(a.createdDate).getTime()
-        );
-
-        setStudents(sorted.slice(0, 5)); // Take most recent 5 students
+        const uniqueStudentsArray = Array.from(uniqueStudentsMap.values());
+        setStudents(uniqueStudentsArray); 
+        console.log(uniqueStudentsArray);
       } catch (error) {
         console.error("Failed to fetch students:", error);
       }
@@ -115,16 +106,67 @@ export default function InvoicePage() {
     attachFile: '',
     status: "Active",
     dueDate: '',
-    createdBy: '',
-    lastUpdatedBy: '',
+    createdBy: 'Admin',
+    lastUpdatedBy: "",
   });
 
+   // useEffect to track changes in invoiceData and log the reset state
+   useEffect(() => {
+    console.log('Invoice data reset to initial state:', invoiceData);
+  }, [invoiceData]);  // This will log when invoiceData changes
+
+  // Submit function to handle invoice creation
   const handleSubmit = async () => {
     try {
+      // Send data to backend
       const response = await axios.post('http://localhost:5001/invoice/send', invoiceData);
-      console.log('Invoice created successfully:', response.data);
+      console.log('Invoice created successfully:', response.data);  
+
+      // Check if response is successful
+      if (response.status === 201) {
+        // Show success toast notification
+        toast.success('Invoice created successfully!', {
+          position: 'top-right',
+          autoClose: 3000, // Toast will auto-close after 3 seconds
+        });
+
+        // Reset the form data to initial state
+        setInvoiceData({
+          student: {
+            studentId: '',
+            studentName: '',
+            studentEmail: '',
+            studentPhone: '',
+            country: '',
+            city: '',
+          },
+          courseName: '',
+          amount: 0,
+          invoiceNumber: 0,
+          invoiceStatus: "Pending",
+          packageType: '',
+          itemDescription: '',
+          duration: '',
+          rate: '',
+          description: '',
+          attachFile: '',
+          status: "Active",
+          dueDate: '',
+          createdBy: 'Admin',
+          lastUpdatedBy: "",
+        });
+
+      setSelectedStudent(null);
+
+
+     setAttachedFile(null);
+      }
     } catch (error) {
       console.error('Error creating invoice:', error);
+      toast.error('Error creating invoice!', {
+        position: 'top-right',
+        autoClose: 3000, // Toast will auto-close after 3 seconds
+      });
     }
   };
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
@@ -139,296 +181,255 @@ export default function InvoicePage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
-      setInvoiceData({ ...invoiceData, attachFile: file });
-      setAttachedFile(file);
+      const reader = new FileReader();
+  
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        
+        // Remove the "data:*/*;base64," prefix to get only the base64 string
+        const base64String = result.split(',')[1];
+  
+        setInvoiceData({ 
+          ...invoiceData, 
+          attachFile: base64String // only pure base64 string
+        });
+  
+        setAttachedFile(file);
+      };
+  
+      reader.readAsDataURL(file);
     }
   };
 
   // Remove the attached file
   const removeFile = () => {
-    setInvoiceData({ ...invoiceData, attachFile: null });
+    setInvoiceData({ ...invoiceData, attachFile: "" });
     setAttachedFile(null);
   };
 
   return (
     <BaseLayout4>
-      <div className="flex items-center justify-center py-4 ml-16">
-        <div className="w-full max-w-5xl mx-auto p-5 ml-5  bg-white rounded-xl shadow-sm">
-          <div className="space-y-4">
-            {/* SELECT STUDENT */}
+  <div className="min-h-screen w-full px-4 md:px-6 lg:px-8">
+    {/* Heading */}
+    <div className="max-w-7xl mx-auto mb-6 mt-6">
+      <h1 className="text-2xl font-bold text-gray-800">Send Invoice</h1>
+    </div>
 
-            <div>
-              <h2 className="text-base font-semibold mb-3">SELECT STUDENT</h2>
+    {/* Invoice Box */}
+    <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
+      <div className="space-y-3">
 
-              {/* Dropdown and Student Details in one row */}
-              <div className="flex flex-wrap md:flex-nowrap gap-6 flex-grow">
-                {/* Dropdown */}
-                <div className="w-full md:w-64 mb-6">
-                <select
-              className="w-full p-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-              value={selectedStudent?._id || ""}
-              onChange={(e) => {
-                const selected = students.find((stu) => stu._id === e.target.value);
-                setSelectedStudent(selected || null);
+        {/* Select Student */}
+        <section>
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Select Student</h2>
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Dropdown */}
+            <div className="flex-1 md:max-w-xs">
+              <select
+                className="w-full p-3 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                value={selectedStudent?._id ?? ""}
+                onChange={(e) => {
+                  const selected = students.find((stu) => stu._id === e.target.value);
+                  setSelectedStudent(selected || null);
+                  if (selected) {
+                    setInvoiceData((prev) => ({
+                      ...prev,
+                     
+                      lastUpdatedBy: new Date().toISOString(),  
+                      student: {
+                        studentId: selected._id,
+                        studentName: selected.username,
+                        studentEmail: selected.student.studentEmail,
+                        studentPhone: String(selected.student.studentPhone), // fixed
+                        country: selected.student.country,
+                        city: selected.student.city,
+                      },
+                      courseName: selected.student.course,
+                      packageType: selected.student.package,
+                      itemDescription: "Regular Class",
+                      rate: "10",        // <-- fix: string not number
+                      duration: "30",    // <-- fix: string not number
+                    }));
+                  }
+                }}
+              >
+                <option value="" disabled>Select a student</option>
+                {students.map((student) => (
+                  <option key={student._id} value={student._id}>
+                    {student.username}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                if (selected) {
-                  setInvoiceData((prev: any) => ({
-                    ...prev,
-                    student: {
-                      studentId: selected._id,
-                      studentName: selected.username,
-                      studentEmail: selected.student.studentEmail,
-                      studentPhone: selected.student.studentPhone,
-                      country: selected.student.country,
-                      city: selected.student.city,
-                    },
-                  }));
-                }
-              }}
-            >
-              <option value="" disabled>Select a student</option>
-            {students.map((student) => (
-              <option key={student._id} value={student._id}>
-                {student.username}
-              </option>
-            ))}
-          </select>
-                </div>
-
-                {/* Selected Student Details */}
-                {selectedStudent && (
-                  <div className="flex flex-wrap md:flex-nowrap gap-32 flex-grow">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">ADDRESS</p>
-                      <div className="flex items-center gap-2 whitespace-nowrap">
-                        <MapPin className="w-4 h-4 text-gray-700 mt-0.5" />
-                        <p className="text-xs">
-                          {selectedStudent.student.city || "No City Provided"},{" "}
-                          {selectedStudent.student.country ||
-                            "No Country Provided"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">EMAIL</p>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 flex items-center justify-center text-gray-700">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <rect width="20" height="16" x="2" y="4" rx="2" />
-                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                          </svg>
-                        </div>
-                        <p className="text-xs">
-                          {selectedStudent.student.studentEmail}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">TELEPHONE</p>
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-gray-700" />
-                        <p className="text-xs">
-                          {selectedStudent.student.studentPhone}
-                        </p>
-                      </div>
-                    </div>
+            {/* Student Details */}
+            {selectedStudent && (
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+                <div>
+                  <p className="text-gray-500 mb-1">Address</p>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gray-700" />
+                    <p>{selectedStudent.student.city || "No City"}, {selectedStudent.student.country || "No Country"}</p>
                   </div>
+                </div>
+                <div>
+                  <p className="text-gray-500 mb-1">Email</p>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <rect width="20" height="16" x="2" y="4" rx="2" />
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                    </svg>
+                    <p>{selectedStudent.student.studentEmail}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-gray-500 mb-1">Telephone</p>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-gray-700" />
+                    <p>{selectedStudent.student.studentPhone}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* General Info */}
+        <section>
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">General</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="hvhuvu" className="block text-gray-500 text-xs mb-1">Amount (USD)</label>
+              <input
+                type="number"
+                className="w-full p-3 border rounded-md text-xs"
+                value={invoiceData.amount || ''}
+                onChange={(e) => setInvoiceData({ ...invoiceData, amount: parseFloat(e.target.value) })}
+              />
+            </div>
+            <div>
+              <label htmlFor="hvuv" className="block text-gray-500 text-xs mb-1">Due Date</label>
+              <input
+                type="date"
+                className="w-full p-3 border rounded-md text-xs"
+                value={invoiceData.dueDate || ''} 
+                onChange={(e) => setInvoiceData({ ...invoiceData, dueDate: e.target.value })}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Item Description */}
+        <section>
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Item Description</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-xs">
+              <thead className="bg-gray-100 text-gray-600 text-xs">
+                <tr>
+                  <th className="p-3 text-left">Package</th>
+                  <th className="p-3 text-left">Course</th>
+                  <th className="p-3 text-left">Item</th>
+                  <th className="p-3 text-left">Duration</th>
+                  <th className="p-3 text-left">Rate</th>
+                  <th className="p-3 text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-t">
+                  <td className="p-3"><input className="w-full border rounded p-2 text-xs" value={selectedStudent?.student.package ?? ''} readOnly /></td>
+                  <td className="p-3"><input className="w-full border rounded p-2 text-xs" value={selectedStudent?.student.course ?? ''} readOnly /></td>
+                  <td className="p-3"><input className="w-full border rounded p-2 text-xs " value="Regular Class" readOnly /></td>
+                  <td className="p-3"><input className="w-full border rounded p-2 text-xs" value={30} readOnly /></td>
+                  <td className="p-3"><input className="w-full border rounded p-2 text-xs" value={10} readOnly /></td>
+                  <td className="p-3 text-right"><input className="w-full border rounded p-2 text-right text-xs" value={300} readOnly /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Additional Notes */}
+          <div className="mt-4">
+            <textarea
+              className="w-full p-3 border rounded-md min-h-[80px] text-sm"
+              placeholder="Additional description..."
+              value={invoiceData.itemDescription ?? ''}
+              onChange={(e) => setInvoiceData({ ...invoiceData, itemDescription: e.target.value })}
+            />
+          </div>
+        </section>
+
+        {/* Attach Files */}
+        <section>
+          <h2 className="text-sm font-semibold text-gray-700 mb-4">Attach File</h2>
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Upload box */}
+            <div className="flex-1 flex items-center gap-2 p-2 bg-green-50 border border-dashed border-green-200 rounded-lg">
+              <div className="w-12 h-12 bg-blue-900 flex items-center justify-center rounded-md">
+                <Upload className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-700">Upload Files</p>
+                <p className="text-[10px] text-gray-500">PDF, DOC, PPT, JPG, PNG</p>
+                <button
+                  type="button"
+                  className="mt-2 text-blue-900 text-xs underline"
+                  onClick={triggerFileInput}
+                >
+                  Choose a file
+                </button>
+                <input
+                  id="fileInput"
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.doc,.ppt,.jpg,.png"
+                  onChange={handleFileChange}
+                />
+                {invoiceData.attachFile && (
+                  <p className="text-xs mt-1">{attachedFile?.name}</p>
                 )}
               </div>
             </div>
 
-            {/* GENERAL */}
-            <div>
-              <h2 className="text-base font-semibold mb-3">GENERAL</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">AMOUNT (USD)</p>
-                  <input
-                    type="text"
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm"
-                    onChange={(e) =>
-                      setInvoiceData({ ...invoiceData, amount: parseFloat(e.target.value) })
-                    }/>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">DUE DATE</p>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      className="w-full border border-gray-300 rounded-md p-2 pr-8 text-sm"
-                      onChange={(e) =>
-                        setInvoiceData({ ...invoiceData, dueDate: e.target.value })
-                      }/>
-                    <Calendar className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-700" />
+            {/* File Preview */}
+            {attachedFile && (
+              <div className="flex-1 flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-2">
+                  <File className="w-5 h-5 text-blue-900" />
+                  <div>
+                    <p className="text-xs font-medium">{attachedFile.name}</p>
+                    <p className="text-xs text-gray-500">{attachedFile.size} bytes</p>
                   </div>
                 </div>
+                <button
+                  className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full"
+                  onClick={removeFile}
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </div>
-            </div>
-
-            {/* ITEM DESCRIPTION */}
-            <div>
-              <h2 className="text-base font-semibold mb-3">Item Description</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-xs text-gray-500">
-                      <th className="pb-2 font-normal">PACKAGE TYPE</th>
-                      <th className="pb-2 font-normal">ITEM DESCRIPTION</th>
-                      <th className="pb-2 font-normal">DURATION</th>
-                      <th className="pb-2 font-normal">RATE</th>
-                      <th className="pb-2 font-normal text-right">AMOUNT</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-gray-200">
-                      <td className="py-3 text-sm">
-                        <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded p-1 text-sm"
-                          placeholder="Package Type"
-                          onChange={(e) =>
-                            setInvoiceData({ ...invoiceData, packageType: e.target.value })
-                          }/>
-                      </td>
-                      <td className="py-3 text-sm">
-                        <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded p-1 text-sm"
-                          placeholder="item description"
-                          onChange={(e) =>
-                            setInvoiceData({ ...invoiceData, itemDescription: e.target.value })
-                          }/>
-                      </td>
-                      <td className="py-3 text-sm">
-                        <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded p-1 text-sm"
-                          placeholder="Duration"
-                          onChange={(e) =>
-                            setInvoiceData({ ...invoiceData, duration: e.target.value })
-                          }/>
-                      </td>
-                      <td className="py-3 text-sm">
-                        <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded p-1 text-sm"
-                          placeholder="Rate"
-                          onChange={(e) =>
-                            setInvoiceData({ ...invoiceData, rate: e.target.value })
-                          }/>
-                      </td>
-                      <td className="py-3 text-sm text-right">
-                        <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded p-1 text-sm text-right"
-                          placeholder="Amount"
-                          onChange={(e) =>
-                            setInvoiceData({ ...invoiceData, amount: parseFloat(e.target.value) || 0 })
-                          }/>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="mt-3">
-                <textarea
-                  placeholder="Type description here..."
-                  className="w-full border border-gray-300 rounded-md p-2 text-sm min-h-[60px]"
-                />
-              </div>
-            </div>
-
-            {/* ATTACH FILE */}
-            <div>
-      <h2 className="text-base font-semibold mb-3">Attach File</h2>
-      <div className="flex flex-col md:flex-row gap-3">
-        <div className="border border-dashed border-green-200 bg-green-50 rounded-lg p-3 flex items-center gap-2">
-          <div className="w-10 h-10 bg-blue-900 rounded-md flex items-center justify-center">
-            <Upload className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <p className="font-medium text-sm">Upload Files</p>
-            <p className="text-xs text-gray-500">
-              PDF, DOC, PPT, JPG, PNG
-            </p>
-
-            {/* Custom button to trigger file input */}
-            <button
-              type="button"
-              className="text-blue-500"
-              onClick={triggerFileInput}
-            >
-              Choose a file
-            </button>
-
-            {/* Hidden file input */}
-            <input
-              id="fileInput"
-              type="file"
-              className="hidden"
-              accept=".pdf,.doc,.ppt,.jpg,.png"
-              onChange={handleFileChange}
-            />
-
-            {/* Display selected file */}
-            {invoiceData.attachFile && (
-              <p className="text-sm text-gray-700">Selected File: {invoiceData.attachFile.name}</p>
             )}
           </div>
-        </div>
+        </section>
 
-        {/* Display attached file */}
-        {attachedFile && (
-          <div className="border rounded-lg p-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <File className="w-4 h-4 text-blue-900" />
-              <div>
-                <p className="text-xs font-medium">
-                  {attachedFile.name}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {attachedFile.size} bytes
-                </p>
-              </div>
-            </div>
-            <button
-              className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center"
-              onClick={removeFile}
-            >
-              <X className="w-3 h-3 text-white" />
-            </button>
-          </div>
-        )}
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-4 mt-8">
+          <button
+            className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-2 rounded-lg text-sm"
+            onClick={handleSubmit}
+          >
+            Send Invoice
+          </button>
+          <button
+            className="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg text-sm"
+          >
+            Save for Later
+          </button>
+        </div>
+        <ToastContainer />
       </div>
     </div>
+  </div>
+</BaseLayout4>
 
-            {/* ACTION BUTTONS */}
-            <div className="flex justify-end gap-3 mt-4">
-              <button className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-1.5 rounded-md text-sm"
-                onClick={handleSubmit}
-              >
-                SEND INVOICE
-              </button>
-              <button className="border border-gray-300 text-gray-700 px-6 py-1.5 rounded-md text-sm">
-                SAVE TO LATER
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </BaseLayout4>
   );
 }
