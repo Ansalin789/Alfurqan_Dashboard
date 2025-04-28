@@ -5,6 +5,41 @@ import BaseLayout4 from "@/components/BaseLayout4";
 import { FaEdit } from "react-icons/fa";
 import { AiOutlinePlus } from "react-icons/ai";
 import { Bell, Sun, X } from "lucide-react";
+import axios from "axios";
+
+
+// Define the Expense interface
+interface Expense {
+  _id: string;
+  paymentDate: string;
+  expenseType: string;
+  amount: string;
+  category: string;
+  paymentMethod: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  __v: number;
+}
+
+// Define the API Response interface
+interface ApiResponse {
+  totalCount: number;
+  expenses: Expense[];
+}
+interface ExpensePayload {
+  paymentDate: string;
+  expenseType: string;
+  amount: string;
+  category: string;
+  paymentMethod: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+}
+
 
 const Expenses = () => {
   const [duration, setDuration] = useState("Last month");
@@ -13,7 +48,14 @@ const Expenses = () => {
   const [isPopupOpens, setIsPopupOpens] = useState<number | null>(null);
  const [showNotifications, setShowNotifications] = useState(false);
    const [notificationCount, setNotificationCount] = useState(5);
-   const [notifications, setNotifications] = useState([
+   const [salaryData, setSalaryData] = useState<Expense[]>([]);
+   const [paymentDate, setPaymentDate] = useState('');
+   const [expenseType, setExpenseType] = useState('');
+   const [amount, setAmount] = useState('');
+   const [category, setCategory] = useState('');
+   const [paymentMethod, setPaymentMethod] = useState('');
+   const [status, setStatus] = useState('');
+    const [notifications, setNotifications] = useState([
      { id: 1, message: "New student registration pending approval", seen: false, time: "2 mins ago", type: "urgent" },
      { id: 2, message: "Class rescheduled for tomorrow", seen: false, time: "1 hour ago", type: "important" },
      { id: 3, message: "Payment received from student", seen: false, time: "3 hours ago", type: "payment" },
@@ -61,104 +103,7 @@ const Expenses = () => {
 
   const itemsPerPage = 7;
 
-  const salaryData = [
-    {
-      date: "2024-02-01",
-      expenseType: "Office Rent",
-      amount: "15000",
-      category: "Facilities",
-      paymentMethod: "Bank Transfer",
-      status: "Paid",
-    },
-    {
-      date: "2024-02-02",
-      expenseType: "Electricity Bill",
-      amount: "3200",
-      category: "Utilities",
-      paymentMethod: "Credit Card",
-      status: "Paid",
-    },
-    {
-      date: "2024-02-03",
-      expenseType: "Internet Bill",
-      amount: "1200",
-      category: "Utilities",
-      paymentMethod: "Bank Transfer",
-      status: "Pending",
-    },
-    {
-      date: "2024-02-04",
-      expenseType: "Software Subscription",
-      amount: "899",
-      category: "IT",
-      paymentMethod: "Credit Card",
-      status: "Paid",
-    },
-    {
-      date: "2024-02-05",
-      expenseType: "Marketing Campaign",
-      amount: "2500",
-      category: "Marketing",
-      paymentMethod: "Cash",
-      status: "Pending",
-    },
-    {
-      date: "2024-02-06",
-      expenseType: "Travel Reimbursement",
-      amount: "1800",
-      category: "HR",
-      paymentMethod: "Cash",
-      status: "Paid",
-    },
-    {
-      date: "2024-02-07",
-      expenseType: "Training Program",
-      amount: "4000",
-      category: "HR",
-      paymentMethod: "Bank Transfer",
-      status: "Paid",
-    },
-    {
-      date: "2024-02-08",
-      expenseType: "Stationery",
-      amount: "750",
-      category: "Admin",
-      paymentMethod: "Cash",
-      status: "Paid",
-    },
-    {
-      date: "2024-02-09",
-      expenseType: "Equipment Purchase",
-      amount: "8000",
-      category: "IT",
-      paymentMethod: "Credit Card",
-      status: "Pending",
-    },
-    {
-      date: "2024-02-10",
-      expenseType: "Office Supplies",
-      amount: "1300",
-      category: "Admin",
-      paymentMethod: "Cash",
-      status: "Paid",
-    },
-    {
-      date: "2024-02-11",
-      expenseType: "Maintenance",
-      amount: "1500",
-      category: "Facilities",
-      paymentMethod: "Bank Transfer",
-      status: "Paid",
-    },
-    {
-      date: "2024-02-12",
-      expenseType: "Client Meeting Expenses",
-      amount: "900",
-      category: "Operations",
-      paymentMethod: "Cash",
-      status: "Pending",
-    },
-  ];
+
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCourseData = salaryData.slice(
@@ -166,9 +111,63 @@ const Expenses = () => {
     startIndex + itemsPerPage
   );
 
-  function setIsOpenPopups(arg0: number | null): void {
-    throw new Error("Function not implemented.");
-  }
+  useEffect(() => {
+    // Only make the API call if salaryData is empty
+    if (salaryData.length === 0) {
+      // Replace with your actual API endpoint
+      axios.get('http://localhost:5001/expense')
+        .then((response) => {
+          const fetchedData = response.data.expenses;
+  
+          // Ensure the data is unique by checking the 'paymentDate' (or any other unique field)
+          const uniqueData = fetchedData.filter((expense: { paymentDate: any; }, index: any, self: { paymentDate: any; }[]) =>
+            index === self.findIndex((t: { paymentDate: any; }) => t.paymentDate === expense.paymentDate)
+          );
+  
+          setSalaryData(uniqueData); // Set the unique list of expenses
+        })
+        .catch((error) => {
+          console.error('Error fetching data:', error);
+        });
+    }
+  }, [salaryData]);
+
+    const handleSubmit = () => {
+      const expenseData: ExpensePayload = {
+        paymentDate,
+        expenseType,
+        amount,
+        category,
+        paymentMethod,
+        status :'Active',
+        createdDate: new Date().toISOString(),
+        createdBy: 'Admin', // Adjust as necessary
+        updatedDate: new Date().toISOString(),
+        updatedBy: 'Admin', // Adjust as necessary
+      };
+    
+      // Sending the POST request
+      axios
+        .post('http://localhost:5001/expense', expenseData)
+        .then((response) => {
+          console.log('Expense added:', response.data);
+          
+          // Clear all form data after submission
+          setPaymentDate('');
+          setExpenseType('');
+          setAmount('');
+          setCategory('');
+          setPaymentMethod('');
+         
+    
+          // Close the modal after successful submission
+          setIsPopupOpen(false);
+        })
+        .catch((error) => {
+          console.error('Error adding expense:', error);
+        });
+    };
+    
 
   return (
     <BaseLayout4>
@@ -331,126 +330,150 @@ const Expenses = () => {
           </button>
         </div>
         {isPopupOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 scrollbar-none">
-            <div className="relative w-[500px] h-[600px] bg-white rounded-2xl shadow-2xl px-4 py-6 overflow-y-auto scrollbar-none">
-              <button
-                className="absolute top-4 right-4 text-black text-xl font-bold"
-                onClick={() => setIsPopupOpen(false)}
-              >
-                ×
-              </button>
-              <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">
-                Add Payment
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 scrollbar-none">
+          <div className="relative w-[500px] h-[600px] bg-white rounded-2xl shadow-2xl px-4 py-6 overflow-y-auto scrollbar-none">
+            <button
+              className="absolute top-4 right-4 text-black text-xl font-bold"
+              onClick={() => setIsPopupOpen(false)}
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">
+              Add Payment
+            </h2>
 
-              <div className="space-y-4 text-[11px]">
-                <div>
-                  <label
-                    htmlFor="payment-date"
-                    className="block font-medium text-gray-800 mb-1 text-left"
-                  >
-                    Payment Date
-                  </label>
-                  <input
-                    type="date"
-                    id="payment-date"
-                    className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="expense-type"
-                    className="block font-medium text-gray-800 mb-1 text-left"
-                  >
-                    Expense Type
-                  </label>
-                  <input
-                    type="text"
-                    id="expense-type"
-                    className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
-                    placeholder="e.g. Internet Bills"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="amount"
-                    className="block font-medium text-gray-800 mb-1 text-left"
-                  >
-                    Amount
-                  </label>
-                  <input
-                    type="text"
-                    id="amount"
-                    className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
-                    placeholder="$300"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="category"
-                    className="block font-medium text-gray-800 mb-1 text-left"
-                  >
-                    Category
-                  </label>
-                  <select
-                    id="category"
-                    className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
-                  >
-                    <option>Utilities</option>
-                    <option>Rent</option>
-                    <option>Supplies</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="method"
-                    className="block font-medium text-gray-800 mb-1 text-left"
-                  >
-                    Payment Method
-                  </label>
-                  <select
-                    id="method"
-                    className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
-                  >
-                    <option>Bank Transfer</option>
-                    <option>Cash</option>
-                    <option>Cheque</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="status"
-                    className="block font-medium text-gray-800 mb-1 text-left"
-                  >
-                    Status
-                  </label>
-                  <select
-                    id="status"
-                    className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
-                  >
-                    <option>Paid</option>
-                    <option>Pending</option>
-                    <option>Failed</option>
-                  </select>
-                </div>
+            <div className="space-y-4 text-[11px]">
+              {/* Payment Date */}
+              <div>
+                <label
+                  htmlFor="payment-date"
+                  className="block font-medium text-gray-800 mb-1 text-left"
+                >
+                  Payment Date
+                </label>
+                <input
+                  type="date"
+                  id="payment-date"
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                  className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
+                />
               </div>
 
-              <div className="mt-8 flex justify-between gap-4">
-                <button className="w-1/2 h-9 rounded-xl border border-gray-400 text-gray-700 font-medium text-[12px]">
-                  Cancel
-                </button>
-                <button className="w-1/2 h-9 rounded-xl bg-blue-900 text-white font-medium text-[12px]">
-                  Add Payment
-                </button>
+              {/* Expense Type */}
+              <div>
+                <label
+                  htmlFor="expense-type"
+                  className="block font-medium text-gray-800 mb-1 text-left"
+                >
+                  Expense Type
+                </label>
+                <input
+                  type="text"
+                  id="expense-type"
+                  value={expenseType}
+                  onChange={(e) => setExpenseType(e.target.value)}
+                  className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
+                  placeholder="e.g. Internet Bills"
+                />
+              </div>
+
+              {/* Amount */}
+              <div>
+                <label
+                  htmlFor="amount"
+                  className="block font-medium text-gray-800 mb-1 text-left"
+                >
+                  Amount
+                </label>
+                <input
+                  type="text"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
+                  placeholder="$300"
+                />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label
+                  htmlFor="category"
+                  className="block font-medium text-gray-800 mb-1 text-left"
+                >
+                  Category
+                </label>
+                <select
+                  id="category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
+                >
+                  <option>Utilities</option>
+                  <option>Rent</option>
+                  <option>Supplies</option>
+                </select>
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label
+                  htmlFor="method"
+                  className="block font-medium text-gray-800 mb-1 text-left"
+                >
+                  Payment Method
+                </label>
+                <select
+                  id="method"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
+                >
+                  <option>Bank Transfer</option>
+                  <option>Cash</option>
+                  <option>Cheque</option>
+                </select>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label
+                  htmlFor="status"
+                  className="block font-medium text-gray-800 mb-1 text-left"
+                >
+                  Status
+                </label>
+                <select
+                  id="status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full h-10 px-4 rounded-xl border border-gray-300 bg-gray-100 text-gray-600"
+                >
+                  <option>Paid</option>
+                 
+                </select>
               </div>
             </div>
+
+            <div className="mt-8 flex justify-between gap-4">
+              <button
+                className="w-1/2 h-9 rounded-xl border border-gray-400 text-gray-700 font-medium text-[12px]"
+                onClick={() => setIsPopupOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="w-1/2 h-9 rounded-xl bg-blue-900 text-white font-medium text-[12px]"
+                onClick={handleSubmit}
+              >
+                Add Payment
+              </button>
+            </div>
           </div>
-        )}
+        </div>
+      )}
+
 
         <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] mx-auto">
           <table className="w-full table-auto bg-[#fff] rounded-lg shadow text-xs">
@@ -467,8 +490,8 @@ const Expenses = () => {
             </thead>
             <tbody>
               {paginatedCourseData.map((row, index) => (
-        <tr key={row.date} className={`text-[9px] text-center font-medium mt-0 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}` }>
-                  <td className="p-2">{row.date}</td>
+        <tr key={row.paymentDate} className={`text-[9px] text-center font-medium mt-0 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}` }>
+                  <td className="p-2">{row.paymentDate}</td>
                   <td className="p-2">{row.expenseType}</td>
                   <td className="p-2">{row.amount}</td>
                   <td className="p-2">{row.category}</td>
@@ -477,11 +500,11 @@ const Expenses = () => {
                     <span
                       className={`inline-flex items-center justify-center  w-14 h-6 px-3 py-1 rounded-2xl ${
                         row.status === "Paid"
-                          ? "bg-green-500 text-white"
-                          : "bg-red-500 text-white"
+                          ? "bg-red-500 text-white"
+                          : "bg-green-500 text-white"
                       }`}
                     >
-                      {row.status}
+                      Paid
                     </span>
                   </td>
                   <td className="p-1 text-center align-middle relative">
