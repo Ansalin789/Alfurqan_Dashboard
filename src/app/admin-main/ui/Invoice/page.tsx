@@ -145,10 +145,10 @@ export default function Page() {
     }
   };
 
-
-
   type InvoiceType = "total" | "paid" | "pending" | "void";
-  const [invoiceCounts, setInvoiceCounts] = useState<Record<InvoiceType, number>>({
+  const [invoiceCounts, setInvoiceCounts] = useState<
+    Record<InvoiceType, number>
+  >({
     total: 0,
     paid: 0,
     pending: 0,
@@ -175,7 +175,8 @@ export default function Page() {
     key: InvoiceType;
     iconBg: string;
     iconColor: string;
-    chartColor: string;}[] = [
+    chartColor: string;
+  }[] = [
     {
       title: "Total Invoices",
       key: "total",
@@ -207,17 +208,29 @@ export default function Page() {
   ];
 
   type InvoiceMonthData = {
-    date: string; 
+    date: string;
     total: number;
     paid: number;
   };
 
   const monthOrder = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
-  
-  const [monthlyInvoices, setMonthlyInvoices] = useState<InvoiceMonthData[]>([]);
+
+  const [monthlyInvoices, setMonthlyInvoices] = useState<InvoiceMonthData[]>(
+    []
+  );
 
   useEffect(() => {
     const fetchMonthlyInvoices = async () => {
@@ -233,6 +246,30 @@ export default function Page() {
     };
 
     fetchMonthlyInvoices();
+  }, []);
+
+  const COLORS = ["#0f172a", "#8b5cf6", "#0ea5e9", "#3b82f6"];
+  const [dueData, setDueData] = useState({
+    range_0_10: 0,
+    range_11_20: 0,
+    range_21_30: 0,
+    range_30_plus: 0,
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("http://localhost:5001/invoiceduebydates");
+        const json = await res.json();
+        if (json.success) {
+          setDueData(json.data);
+        }
+      } catch (err) {
+        console.error("Error fetching invoiceduebydates", err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const barData = {
@@ -328,14 +365,17 @@ export default function Page() {
     },
   };
 
-
-
   const doughnutData = {
-    labels: ["0-10", "10-20", "20-30", "More than 30"],
+    labels: ["0-10", "11-20", "21-30", "More than 30"],
     datasets: [
       {
-        data: [35, 20, 18, 10],
-        backgroundColor: ["#0f172a", "#8b5cf6", "#0ea5e9", "#3b82f6"],
+        data: [
+          dueData.range_0_10,
+          dueData.range_11_20,
+          dueData.range_21_30,
+          dueData.range_30_plus,
+        ],
+        backgroundColor: COLORS,
         borderWidth: 0,
       },
     ],
@@ -347,61 +387,40 @@ export default function Page() {
     cutout: "70%",
     plugins: {
       legend: {
-        display: false, // Disable default legend
+        display: false,
       },
     },
   };
-  
+
+  const legendLabels = [
+    { label: "0-10 days", value: dueData.range_0_10, color: COLORS[0] },
+    { label: "11-20 days", value: dueData.range_11_20, color: COLORS[1] },
+    { label: "21-30 days", value: dueData.range_21_30, color: COLORS[2] },
+    {
+      label: "More than 30 days",
+      value: dueData.range_30_plus,
+      color: COLORS[3],
+    },
+  ];
 
   const InvoiceLegend = () => (
     <div className="space-y-3">
-      {/* Legend Item 1 */}
-      <div className="flex items-center gap-3">
-        <div className="w-3 h-3 rounded-full bg-gray-900" />
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">0-10 days</span>
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-            35
-          </span>
+      {legendLabels.map(({ label, value, color }, idx) => (
+        <div key={idx} className="flex items-center gap-3">
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: color }}
+          />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">{label}</span>
+            <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
+              {value}
+            </span>
+          </div>
         </div>
-      </div>
-
-      {/* Legend Item 2 */}
-      <div className="flex items-center gap-3">
-        <div className="w-3 h-3 rounded-full bg-purple-500" />
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">10-20 days</span>
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-            35
-          </span>
-        </div>
-      </div>
-
-      {/* Legend Item 3 */}
-      <div className="flex items-center gap-3">
-        <div className="w-3 h-3 rounded-full bg-sky-500" />
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">20-30 days</span>
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-            35
-          </span>
-        </div>
-      </div>
-
-      {/* Legend Item 4 */}
-      <div className="flex items-center gap-3">
-        <div className="w-3 h-3 rounded-full bg-blue-500" />
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">More than 30 days</span>
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-            35
-          </span>
-        </div>
-      </div>
+      ))}
     </div>
   );
-
-
 
   const handleviewlist = () => {
     router.push("/admin-main/ui/invoicelist");
@@ -597,9 +616,6 @@ export default function Page() {
               </div>
             </div>
 
-
-
-
             {/* Invoices Due by Days */}
             <div className="bg-white rounded-xl shadow-sm p-4 h-[300px] w-full">
               <h3 className="text-sm font-semibold text-gray-800 mb-2">
@@ -630,11 +646,6 @@ export default function Page() {
                 </div>
               </div>
             </div>
-
-
-
-
-
           </div>
 
           {/* Invoice Table */}
