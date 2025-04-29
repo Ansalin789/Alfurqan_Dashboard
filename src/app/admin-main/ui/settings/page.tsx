@@ -126,35 +126,32 @@ const Page: React.FC = () => {
 
 
   const handleChanges = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-    emp: string
+    empId: string,
+    role:string[],
   ) => {
-    const role = e.target.value;
-    setSelectedRole(role);
-
     let path = "";
-
-    switch (role) {
-      case "AcademicCoach":
-        path = `/admin-main/ui/settings/academic-coach?employeeId=${emp}`;
+     console.log(role[0])
+    switch (role[0]) {
+      case "ACADEMICCOACH":
+        path = `/admin-main/ui/settings/academic-coach?employeeId=${empId}`;
         break;
-      case "Student":
-        path = `/admin-main/ui/settings/student?employeeId=${emp}`;
+      case "STUDENT":
+        path = `/admin-main/ui/settings/student?employeeId=${empId}`;
         break;
-      case "Teacher":
-        path = `/admin-main/ui/settings/teacher?employeeId=${emp}`;
+      case "TEACHER":
+        path = `/admin-main/ui/settings/teacher?employeeId=${empId}`;
         break;
-      case "Supervisor":
-        path = `/admin-main/ui/settings/supervisor?employeeId=${emp}`;
+      case "SUPERVISOR":
+        path = `/admin-main/ui/settings/supervisor?employeeId=${empId}`;
         break;
-      case "Admin":
-        path = `/admin-main/ui/settings/admin?employeeId=${emp}`;
+      case "ADMIN":
+        path = `/admin-main/ui/settings/admin?employeeId=${empId}`;
         break;
       default:
         path = "/";
         break;
     }
-    console.log(emp);
+    console.log(empId);
 
     router.push(path); // Navigate to correct page
   };
@@ -224,36 +221,14 @@ const Page: React.FC = () => {
                       {/* Uncomment below for Role Dropdown */}
 
                       <td className="py-1 px-1 text-center align-middle relative">
-                        <select
-                          name=""
-                          id=""
-                          className="px-2 py-[5px] rounded-lg border-2"
-                          value={selectedRole}
-                          onChange={handleChange}
-                        >
-                          <option value="Academic Coach">Academic Coach</option>
-                          <option value="Student">Student</option>
-                          <option value="Teacher">Teacher</option>
-                          <option value="Supervisor">Supervisor</option>
-                          <option value="Admin">Admin</option>
-                        </select>
+                        <div className="px-2 py-[5px] rounded-lg border-2">{emp.role}</div>
                       </td>
 
                       <td className="py-1 px-1 text-center align-middle relative">
-                        <select
-                          name=""
-                          id=""
-                          className="px-2 py-[5px] rounded-lg border-2"
-                          value={selectedRole}
-                          onChange={(e) => handleChanges(e, emp._id)} // passing employeeId
-                        >
-                          <option value="">Select a Role</option>
-                          <option value="AcademicCoach">Academic Coach</option>
-                          <option value="Student">Student</option>
-                          <option value="Teacher">Teacher</option>
-                          <option value="Supervisor">Supervisor</option>
-                          <option value="Admin">Admin</option>
-                        </select>
+                      <button
+                       className="px-2 py-[5px] rounded-lg border-2"
+                       onClick={()=>handleChanges(emp._id,emp.role)}
+                       >{emp.role}</button>
                       </td>
                     </tr>
                   ))}

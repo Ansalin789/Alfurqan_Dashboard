@@ -1,22 +1,116 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import { BsCalendar4Event, BsClockHistory } from "react-icons/bs";
-import { RiMenu2Fill } from "react-icons/ri";
-import { GrCurrency } from "react-icons/gr";
+
 import {
-  MdOutlineCurrencyExchange,
-  MdOutlineTimer,
   MdOutlineCancel,
 } from "react-icons/md";
-import { IoSunnyOutline } from "react-icons/io5";
+import { useSearchParams } from 'next/navigation'; 
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
+import axios from "axios";
+interface Employee {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: number;
+  nationality: string;
+  country: string;
+  city: string;
+  dateOfBirth: string;
+  gender: string;
+  residentialAddress: string;
+  higherQualification: string;
+  universityName: string;
+  previousJob: string;
+  experience: string;
+  bankName: string;
+  accountNumber: number;
+  bankCode: string;
+  passportNumber: string;
+  languagesKnown: string; // or JSON.parse to array
+  emergencyContactNumber: number;
+  relationshipWithEmployee: string;
+  address: string;
+  designation: string;
+  department: string;
+  preferedWorkingHours: number;
+  preferedShiftFrom: string;
+  preferedShiftTo: string;
+  comments: string;
+  profileImage: string;
+  applicationDate: string;
+  currency: string;
+  expectedSalary: number;
+  applicationStatus: string;
+  preferedWorkingDays: string; // or JSON.parse to array
+  status: string;
+  __v: number;
+}
+interface ClassType {
+  className: string;
+  hoursMins: string;
+  rate: string;
+  currency: string;
+}
+
+interface EmployeeWage {
+  _id: string;
+  employeeId: string;
+  employeeName: string;
+  classType: ClassType;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+}
 
 const EmployeePage = () => {
   const [activeTab, setActiveTab] = useState("Wages");
-  const tabs = ["Wages", "Earnings", "Leave Records", "Working Hours"];
+  const tabs = ["Wages", "Leave Records", "Working Hours"];
+  const [employee, setEmployee] = useState<Employee | null>(null);
+  const [isFetched, setIsFetched] = useState(false);  // Flag to check if data is fetched
+  const searchParams = useSearchParams();  // Get the search params from the URL
+  const [wages, setWages] = useState<EmployeeWage[]>([]);
+  const fetchEmployee = async (employeeId: string) => {
+    try {
+      const response = await axios.get<Employee>(`http://localhost:5001/otheremp/${employeeId}`);
+      setEmployee(response.data);
+      setIsFetched(true);  // Mark the data as fetched
+    } catch (error: any) {
+      console.error('Error:', error.response?.data ?? error.message);
+    }
+  };
+  const fetchWages = async (userId :string) => {
+    if (!userId) {
+      console.error('No employee ID in URL.');
+      return;
+    }
 
+    try {
+      const response = await axios.get<EmployeeWage[]>(`http://localhost:5001/empwages/${userId}`);
+      setWages(response.data);
+    } catch (error: any) {
+      console.error('Error fetching wages:', error.response?.data ?? error.message);
+    } 
+  };
+  useEffect(() => {
+    // Retrieve employeeId from search params
+    const employeeId = searchParams.get('employeeId');
+    const userId = searchParams.get('userId');
+    if (!employeeId) {
+      console.error('No employee ID found in search params');
+      return;
+    }
+
+    // Fetch employee data if not already fetched
+    if (!isFetched && employee === null) {
+      fetchEmployee(employeeId); 
+      fetchWages(userId ?? ''); // Call the API function with employeeId
+    }
+  }, [isFetched, employee, searchParams]); 
   return (
     <BaseLayout4>
       <div className="p-4 min-h-screen w-full">
@@ -24,110 +118,89 @@ const EmployeePage = () => {
 
         <div className="grid grid-cols-5 gap-4">
           {/* Profile Card (60%) with Contact Details */}
-          <div className="col-span-3 bg-white p-4 rounded-xl shadow flex justify-between flex-row">
-            <div className="flex flex-col items-center md:w-1/3 text-center">
-              <div className="border-r-2 p-6 -ml-8">
-                <div className="w-10 h-10 rounded-full overflow-hidden ml-2">
-                  <img
-                    src="/assets/images/Avatar.png"
-                    alt="Avatar"
-                    width={96}
-                    height={96}
-                  />
-                </div>
-                <h2 className="text-xs font-medium mt-4"> Alen Smith</h2>
-                <p className="text-xs text-gray-500">Admin</p>
-              </div>
-            </div>
-            <div className="flex justify-between gap-20">
-              <div>
-                <div className="mt-4 text-xs w-full">
-                  <h4 className="text-xs py-4 font-medium -mt-10">
-                    Contact & Details
-                  </h4>
-                  <p className="text-[12px] text-gray-500">Email:</p>
-                  <span className="text-[10px] text-gray-400">
-                    asulaiman403@gmail.com
-                  </span>
-                  <p className="text-[12px] text-gray-500">Phone: </p>
-                  <span className="text-[10px] text-gray-400">
-                    +880 1234 567891
-                  </span>
-                  <p className="text-[12px] text-gray-500">Date of Birth:</p>
-                  <span className="text-[10px] text-gray-400">
-                    {" "}
-                    28, July 2000
-                  </span>
-                  <p className="text-[12px] text-gray-500">Country:</p>
-                  <span className="text-[10px] text-gray-400"> Canada</span>
-                  <p className="text-[12px] text-gray-500">Gender:</p>{" "}
-                  <span className="text-[10px] text-gray-400">Male</span>
-                </div>
-              </div>
-              <div>
-                <div className="mt-4 text-gray-600 text-xs w-full">
-                  <p className="text-[12px] text-gray-500">Languages Known:</p>{" "}
-                  <span className="text-[10px] text-gray-400">
-                    {" "}
-                    English, Hindi, Arabic
-                  </span>
-                  <p className="text-[12px] text-gray-500"> City:</p>{" "}
-                  <span className="text-[10px] text-gray-400"> Toronto</span>
-                  <p className="text-[12px] text-gray-500">
-                    Residential Address:
-                  </p>
-                  <span className="text-[10px] text-gray-400">
-                    {" "}
-                    325, Residences on Bloor, Bloor St E, Toronto, Ontario.
-                  </span>
-                  <p className="text-[12px] text-gray-500">Nationality:</p>{" "}
-                  <span className="text-[10px] text-gray-400"> Canadian</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <div className="col-span-3 bg-white p-6 rounded-xl shadow flex flex-col md:flex-row gap-8">
+  {/* Avatar and Basic Info */}
+  <div className="flex flex-col items-center md:items-start text-center md:text-left md:w-1/4 border-r pr-6">
+    <div className="w-20 h-20 rounded-full overflow-hidden mb-4">
+      <img
+        src="/assets/images/Avatar.png"
+        alt="Avatar"
+        width={96}
+        height={96}
+        className="object-cover"
+      />
+    </div>
+    <h2 className="text-sm font-semibold">{employee?.firstName} {employee?.lastName}</h2>
+    <p className="text-xs text-gray-500">{employee?.designation}</p>
+  </div>
+
+  {/* Contact & Details */}
+  <div className="flex flex-col md:w-1/2 gap-4">
+    <h4 className="text-sm font-semibold mb-2">Contact & Details</h4>
+    <div className="text-xs space-y-2">
+      <div><span className="text-gray-800">Email:</span> <span className="text-gray-500">{employee?.email}</span></div>
+      <div><span className="text-gray-800">Phone:</span> <span className="text-gray-500">{employee?.phoneNumber}</span></div>
+      <div><span className="text-gray-800">Date of Birth:</span> <span className="text-gray-500">{employee?.dateOfBirth}</span></div>
+      <div><span className="text-gray-800">Country:</span> <span className="text-gray-500">{employee?.country}</span></div>
+      <div><span className="text-gray-800">Gender:</span> <span className="text-gray-500">{employee?.gender}</span></div>
+    </div>
+  </div>
+
+  {/* Other Details */}
+  <div className="flex flex-col md:w-1/2 gap-4  mt-11">
+    <div className="text-xs space-y-2">
+      <div><span className="text-gray-800">Languages Known:</span> <span className="text-gray-500">{employee?.languagesKnown}</span></div>
+      <div><span className="text-gray-800">City:</span> <span className="text-gray-500">{employee?.city}</span></div>
+      <div><span className="text-gray-800">Residential Address:</span> <span className="text-gray-500">{employee?.address}</span></div>
+      <div><span className="text-gray-800">Nationality:</span> <span className="text-gray-500">{employee?.nationality}</span></div>
+    </div>
+  </div>
+</div>
+
+
+
           {/* Educational Details Card (20%) */}
           <div className="col-span-1 bg-white p-6 rounded-lg shadow">
             <div className="mt-2 text-xs w-full">
               <h4 className="text-xs py-4 font-medium -mt-10">
                 Educational Information
               </h4>
-              <p className="text-[12px] text-gray-500">
+              <p className="text-[12px] text-gray-800">
                 Highest Qualification:{" "}
               </p>{" "}
-              <span className="text-[10px] text-gray-400">MBA</span>
-              <p className="text-[12px] text-gray-500">
+              <span className="text-[10px] text-gray-400">{employee?.higherQualification}</span>
+              <p className="text-[12px] text-gray-800">
                 University/Institute:
               </p>{" "}
               <span className="text-[10px] text-gray-400">
                 {" "}
-                ABC School of Education
+              {employee?.universityName}
               </span>
-              <p className="text-[12px] text-gray-500">
+              <p className="text-[12px] text-gray-800">
                 Previous Job Title:{" "}
               </p>{" "}
               <span className="text-[10px] text-gray-400">
-                Junior Developer
+                {employee?.previousJob}
               </span>
-              <p className="text-[12px] text-gray-500">Experience: </p>
-              <span className="text-[10px] text-gray-400">2 years</span>
+              <p className="text-[12px] text-gray-800">Experience: </p>
+              <span className="text-[10px] text-gray-400">{employee?.experience}</span>
             </div>
           </div>
           {/* Bank Details Card (20%) */}
           <div className="col-span-1 bg-white p-6 rounded-lg shadow">
             <div className="mt-2 text-xs w-full">
               <h4 className="text-xs py-4 font-medium -mt-10">Bank Details</h4>
-              <p className="text-[12px] text-gray-500">Bank Name:</p>
+              <p className="text-[12px] text-gray-800">Bank Name:</p>
               <span className="text-[10px] text-gray-400">
-                Lorem Ipsum
+                {employee?.bankName}
               </span>{" "}
               <br />
-              <p className="text-[12px] text-gray-500">Account Number:</p>{" "}
-              <span className="text-[10px] text-gray-400"> 1234567890</span>
-              <p className="text-[12px] text-gray-500">Bank Code:</p>{" "}
-              <span className="text-[10px] text-gray-400">000-00000</span>
-              <p className="text-[12px] text-gray-500">Passport Number:</p>
-              <span className="text-[10px] text-gray-400"> ABCD00000</span>
+              <p className="text-[12px] text-gray-800">Account Number:</p>{" "}
+              <span className="text-[10px] text-gray-400"> {employee?.accountNumber}</span>
+              <p className="text-[12px] text-gray-800">Bank Code:</p>{" "}
+              <span className="text-[10px] text-gray-400">{employee?.bankCode}</span>
+              <p className="text-[12px] text-gray-800">Passport Number:</p>
+              <span className="text-[10px] text-gray-400"> {employee?.passportNumber}</span>
             </div>
           </div>
         </div>
@@ -153,206 +226,78 @@ const EmployeePage = () => {
 
           {/* Tab Content */}
           <div className="p-4">
-            {activeTab === "Wages" && (
-              <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] h-[270px] mx-auto">
-                <table className="w-full border-gray-200 rounded-md">
-                  <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                    <tr className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold text-center">
-                      <th className="p-4 text-[12px]">
-                        <div className="flex justify-center items-center space-x-2">
-                          <span>Class Type</span>
-                        </div>
-                      </th>
-                      <th className="p-4 text-[12px]">
-                        <div className="flex justify-center items-center space-x-2">
-                          <span>Rate</span>
-                        </div>
-                      </th>
-                      <th className="p-4 text-[12px]">
-                        <div className="flex justify-center items-center space-x-2">
-                          <span>Currency</span>
-                        </div>
-                      </th>
-                      <th className="p-4 text-[12px]">
-                        <div className="flex justify-center items-center space-x-2">
-                          <span>Duration</span>
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-[12px] text-gray-900 text-center">
-                    {[
-                      ["Trial Class", "-", "-", "-"],
-                      ["Regular Class", "-", "-", "-"],
-                      ["Group Class", "-", "-", "-"],
-                      ["Team Class", "-", "-", "-"],
-                      ["Group Class", "-", "-", "-"],
-                      ["Fixed Salary", "$2000", "Dirhams", "Monthly"],
-                      ["Special Class", "-", "-", "-"],
-                      ["Group Class", "-", "-", "-"],
-                      ["Group Class", "-", "-", "-"],
-                    ].map(([type, rate, currency, duration], index) => (
-                      <tr
-                        key={index}
-                        className={`text-[12px] ${
-                          index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                        }`}
-                      >
-                        <td className="p-4">{type}</td>
-                        <td className="p-4">{rate}</td>
-                        <td className="p-4">
-                          {type === "Fixed Salary" ? (
-                            <select className="p-1 focus:outline-none text-[12px] bg-transparent">
-                              <option>Dirhams</option>
-                              <option>USD</option>
-                              <option>INR</option>
-                            </select>
-                          ) : (
-                            currency
-                          )}
-                        </td>
-                        <td className="p-4">
-                          {type === "Fixed Salary" ? (
-                            <select className="p-1 focus:outline-none bg-transparent">
-                              <option>Monthly</option>
-                              <option>Weekly</option>
-                              <option>Daily</option>
-                            </select>
-                          ) : (
-                            duration
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+          {activeTab === "Wages" && (
+  <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] h-[270px] mx-auto">
+    <table className="w-full border-gray-200 rounded-md">
+      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+        <tr className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold text-center">
+          <th className="p-4 text-[12px]">
+            <div className="flex justify-center items-center space-x-2">
+              <span>Class Type</span>
+            </div>
+          </th>
+          <th className="p-4 text-[12px]">
+            <div className="flex justify-center items-center space-x-2">
+              <span>Rate</span>
+            </div>
+          </th>
+          <th className="p-4 text-[12px]">
+            <div className="flex justify-center items-center space-x-2">
+              <span>Currency</span>
+            </div>
+          </th>
+          <th className="p-4 text-[12px]">
+            <div className="flex justify-center items-center space-x-2">
+              <span>Duration</span>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody className="text-[12px] text-gray-900 text-center">
+        {wages.length === 0 ? (
+          <tr>
+            <td colSpan={4} className="p-4">No wage records found.</td>
+          </tr>
+        ) : (
+          wages.map((wage, index) => (
+            <tr
+              key={wage._id}
+              className={`text-[12px] ${
+                index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+              }`}
+            >
+              <td className="p-4">{wage.classType.className}</td>
+              <td className="p-4">{wage.classType.rate}</td>
+              <td className="p-4">
+                {wage.classType.className === "Fixed Salary" ? (
+                  <select className="p-1 focus:outline-none text-[12px] bg-transparent">
+                    <option>Dirhams</option>
+                    <option>USD</option>
+                    <option>INR</option>
+                  </select>
+                ) : (
+                  wage.classType.currency
+                )}
+              </td>
+              <td className="p-4">
+                {wage.classType.className === "Fixed Salary" ? (
+                  <select className="p-1 focus:outline-none bg-transparent">
+                    <option>Monthly</option>
+                    <option>Weekly</option>
+                    <option>Daily</option>
+                  </select>
+                ) : (
+                  wage.classType.hoursMins
+                )}
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+)}
 
-            {/* Earnings Tab */}
-            {activeTab === "Earnings" && (
-              <div className="space-y-2">
-                {/* Top Cards */}
-                <div className="flex flex-wrap gap-4">
-                  <div className="bg-[#11244D] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Earnings</p>
-                      <h2 className="text-lg font-bold mt-1">$2800</h2>
-                    </div>
-                    <div className="bg-[#1D3D70] p-2 rounded-lg text-sm">
-                      <MdOutlineCurrencyExchange />
-                    </div>
-                  </div>
-                  <div className="bg-[#4F4CD1] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Deductions</p>
-                      <h2 className="text-lg font-bold mt-1">$400</h2>
-                    </div>
-                    <div className="bg-[#6D6BF1] p-2 rounded-lg text-sm">
-                      <BsClockHistory />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Scrollable Table */}
-                <div className="space-y-6">
-                  <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                    <div className="overflow-x-auto max-h-[181px] overflow-y-auto custom-scrollbar scrollbar-none">
-                      <table className="w-full min-w-[900px] text-sm text-left">
-                        <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                          <tr className="border-b-[1px] border-[#1C3557]">
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Month
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Working Hours
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Earnings
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Deductions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="text-xs text-[#1D2939]">
-                          {[
-                            {
-                              month: "January",
-                              hours: "170 Hours",
-                              earnings: "$1050",
-                              deductions: "$0",
-                            },
-                            {
-                              month: "February",
-                              hours: "185 Hours",
-                              earnings: "$170",
-                              deductions: "$0",
-                            },
-                            {
-                              month: "March",
-                              hours: "178 Hours",
-                              earnings: "$140",
-                              deductions: "$0",
-                            },
-                            {
-                              month: "April",
-                              hours: "180 Hours",
-                              earnings: "$125",
-                              deductions: "$100",
-                            },
-                            {
-                              month: "May",
-                              hours: "100 Hours",
-                              earnings: "$190",
-                              deductions: "$0",
-                            },
-                            {
-                              month: "June",
-                              hours: "180 Hours",
-                              earnings: "$138",
-                              deductions: "$100",
-                            },
-                            {
-                              month: "July",
-                              hours: "120 Hours",
-                              earnings: "$210",
-                              deductions: "$0",
-                            },
-                            {
-                              month: "August",
-                              hours: "130 Hours",
-                              earnings: "$260",
-                              deductions: "$100",
-                            },
-                            {
-                              month: "September",
-                              hours: "100 Hours",
-                              earnings: "$186",
-                              deductions: "$100",
-                            },
-                          ].map((item, index) => (
-                            <tr
-                              key={index}
-                              className={`border-t border-gray-100 text-center ${
-                                index % 2 === 0
-                                  ? "bg-[#faf9f9]"
-                                  : "bg-[#ebebeb]"
-                              }`}
-                            >
-                              <td className="p-2">{item.month}</td>
-                              <td className="p-2">{item.hours}</td>
-                              <td className="p-2">{item.earnings}</td>
-                              <td className="p-2">{item.deductions}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Leave Record Tab */}
 
@@ -467,7 +412,7 @@ const EmployeePage = () => {
                           },
                         ].map((item, index) => (
                           <tr
-                            key={index}
+                            key={item.id}
                             className={`border-t border-gray-100 text-center ${
                               index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
                             }`}
@@ -514,61 +459,58 @@ const EmployeePage = () => {
 
             {/* Working Hours Tab */}
 
-            {activeTab === "Working Hours" && (
-              <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                <div className="overflow-x-auto max-h-[270px] overflow-y-auto custom-scrollbar scrollbar-none">
-                  <table className="w-full min-w-[600px] text-sm text-left">
-                    <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                      <tr className="text-black border-b border-gray-900">
-                        <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
-                          <div className="flex items-center justify-center gap-2">
-                            <span>Day</span>
-                          </div>
-                        </th>
-                        <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
-                          <div className="flex items-center justify-center gap-2">
-                            <span>Working Hours</span>
-                          </div>
-                        </th>
-                        <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
-                          <div className="flex items-center justify-center gap-2">
-                            <span>GMT</span>
-                          </div>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-800">
-                      {[
-                        "Monday",
-                        "Tuesday",
-                        "Wednesday",
-                        "Thursday",
-                        "Friday",
-                        "Friday", // duplicate as per image
-                        "Sunday",
-                      ].map((day, index) => (
-                        <tr
-                          key={index}
-                          className={`border-t border-gray-100 text-center ${
-                            index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                          }`}
-                        >
-                          <td className="px-4 py-2 text-[12px] border-r border-gray-200 w-1/3">
-                            {day}
-                          </td>
-                          <td className="px-4 py-2 text-[12px] border-r border-gray-200 w-1/3">
-                            9 AM - 2 PM / 4 PM - 7 PM
-                          </td>
-                          <td className="px-4 py-2 text-[12px] w-1/3">
-                            GMT +4
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+            {activeTab === "Working Hours" && employee && (
+  <div className="rounded-xl border border-[#000] shadow overflow-hidden">
+    <div className="overflow-x-auto max-h-[270px] overflow-y-auto custom-scrollbar scrollbar-none">
+      <table className="w-full min-w-[600px] text-sm text-left">
+        <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+          <tr className="text-black border-b border-gray-900">
+            <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
+              <div className="flex items-center justify-center gap-2">
+                <span>Day</span>
               </div>
-            )}
+            </th>
+            <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
+              <div className="flex items-center justify-center gap-2">
+                <span>Working Hours</span>
+              </div>
+            </th>
+            <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
+              <div className="flex items-center justify-center gap-2">
+                <span>GMT</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="text-gray-800">
+  {employee.preferedWorkingDays &&
+    JSON.parse(
+      employee.preferedWorkingDays.replace(/\b([A-Z]+)\b/g, '"$1"')
+    ).map((day: string, index: number) => (
+      <tr
+        key={day}
+        className={`border-t border-gray-100 text-center ${
+          index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+        }`}
+      >
+        <td className="px-4 py-2 text-[12px] border-r border-gray-200 w-1/3">
+          {day}
+        </td>
+        <td className="px-4 py-2 text-[12px] border-r border-gray-200 w-1/3">
+          {employee.preferedShiftFrom} - {employee.preferedShiftTo}
+        </td>
+        <td className="px-4 py-2 text-[12px] w-1/3">
+          GMT +4
+        </td>
+      </tr>
+    ))}
+</tbody>
+
+      </table>
+    </div>
+  </div>
+)}
+
           </div>
         </div>
       </div>

@@ -487,6 +487,7 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
         const res = await fetch("http://localhost:5001/otheremployees");
         const data: OtherEmployeesResponse = await res.json();
         setEmployees(data.users);
+        console.log(data.users);
       };
   
       fetchEmployees();
@@ -512,19 +513,19 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
       console.error("Teacher ID is undefined.");
       return;
     }
-    localStorage.setItem("manageTeacherId", teacherId);
+    
     console.log("Teacher ID:", teacherId);
-    router.push("/admin-main/ui/employees/teacher");
+    router.push(`/admin-main/ui/employees/teacher?teacherId=${teacherId}`);
   };
 
-  const handleViewEmployee = (employeeId: string) => {
+  const handleViewEmployee = (employeeId: string,userId :string) => {
     if (!employeeId) {
       console.error("Employee ID is undefined.");
       return;
     }
-    localStorage.setItem("manageTeacherId", employeeId);
-    console.log("Employee ID:", employeeId);
-    router.push("/admin-main/ui/employees/otheremployees");
+  // Log employeeId (for debugging)
+  console.log(employeeId);
+    router.push(`/admin-main/ui/employees/otheremployees?employeeId=${employeeId}&userId=${userId}`);
   };
   // Generate month names for the chart labels
   const chartTemplate = (color: string) => ({
@@ -1149,7 +1150,7 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
                                 <button
                                   className="text-[12px] bg-[#223857] text-white px-2 py-1 rounded-lg"
                                   onClick={() =>
-                                    handleViewEmployee(employee._id)
+                                    handleViewEmployee(employee.userId,employee._id)
                                   }
                                 >
                                   View Profile
