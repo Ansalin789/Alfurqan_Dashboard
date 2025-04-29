@@ -1,33 +1,150 @@
-'use client';
+"use client";
 
-import BaseLayout4 from '@/components/BaseLayout4';
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { FaRegCheckSquare, FaRegSquare } from 'react-icons/fa';
+import BaseLayout4 from "@/components/BaseLayout4";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { FaRegCheckSquare, FaRegSquare } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-type PermissionType = 'read' | 'write' | 'delete';
+interface EmployeeAccessData {
+  _id: string;
+  employeeId: string;
+  employeeName: string;
+  contact: string;
+  designation: string[];
+  dateOfJoining: string;
+  roleAccess: {
+    admin: boolean;
+    adminmodules: {
+      dashboard: boolean;
+      evaluation: boolean;
+      student: boolean;
+      employees: boolean;
+      courses: boolean;
+      classes: boolean;
+      invoice: boolean;
+      analytics: boolean;
+      messages: boolean;
+      settings: boolean;
+    };
+    academicCoach: boolean;
+    academicmodules: {
+      dashboard: boolean;
+      scheduledevaluation: boolean;
+      scheduledtrail: boolean;
+      students: boolean;
+      teachers: boolean;
+      messages: boolean;
+      support: boolean;
+    };
+    supervisor: boolean;
+    supervisormodules: {
+      dashboard: boolean;
+      recuirement: boolean;
+      meeting: boolean;
+      teachers: boolean;
+      messages: boolean;
+      support: boolean;
+    };
+    student: boolean;
+    studentmodules: {
+      dashboard: boolean;
+      classes: boolean;
+      assignments: boolean;
+      payments: boolean;
+      knowledgebase: boolean;
+      support: boolean;
+    };
+    teacher: boolean;
+    teachermodules: {
+      dashboard: boolean;
+      liveclasses: boolean;
+      scheduledclasses: boolean;
+      assignments: boolean;
+      messages: boolean;
+      analytics: boolean;
+      support: boolean;
+    };
+  };
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  __v: number;
+}
+
+type PermissionType = "read" | "write" | "delete";
 
 const AdminModuleAccess = () => {
   const searchParams = useSearchParams();
-  const employeeId = searchParams.get('employeeId');
+  const router = useRouter();
+  const employeeId = searchParams.get("employeeId");
 
-  const [selectedModules, setSelectedModules] = useState<{ [key: string]: boolean }>({});
+  const [employeeData, setEmployeeData] = useState<EmployeeAccessData | null>(
+    null
+  );
+  const [selectedModules, setSelectedModules] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [permissions, setPermissions] = useState<{
     [key: string]: { read: boolean; write: boolean; delete: boolean };
   }>({});
+  const [isRedirecting, setIsRedirecting] = useState(false); // Add state for controlling the redirect process
 
   const modules = [
-    'Dashboard',
-    'Evaluation',
-    'Student',
-    'Employees',
-    'Courses',
-    'Classes',
-    'Invoice',
-    'Analytics',
-    'Messages',
-    'Support',
+    "Dashboard",
+    "Evaluation",
+    "Student",
+    "Employees",
+    "Courses",
+    "Classes",
+    "Invoice",
+    "Analytics",
+    "Messages",
+    "Support",
   ];
+
+  useEffect(() => {
+    console.log("Search params:", searchParams.toString()); // Logs all search params
+    if (!employeeId) {
+      toast.error("Employee ID not found in the URL!");
+      setIsRedirecting(true); // Set the state to trigger redirection
+      return;
+    }
+
+    const fetchEmployeeData = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5001/update-access/${employeeId}`
+        );
+        const json = await res.json();
+        setEmployeeData(json.data);
+
+        // Preload modules with consistent casing
+        if (json.data.roleAccess?.adminmodules) {
+          setSelectedModules(json.data.roleAccess.adminmodules);
+        }
+
+        // Preload permissions if they exist
+        if (json.data.roleAccess?.adminmodulesPermissions) {
+          setPermissions(json.data.roleAccess.adminmodulesPermissions);
+        }
+      } catch (error) {
+        console.error("Failed to fetch employee data:", error);
+      }
+    };
+
+    if (employeeId) fetchEmployeeData();
+  }, [employeeId]);
+
+  useEffect(() => {
+    // Trigger redirection only after the error state is set
+    if (isRedirecting) {
+      router.push("/admin-main/ui/settings"); // Redirect after the state change
+    }
+  }, [isRedirecting, router]);
 
   const toggleModule = (module: string) => {
     setSelectedModules((prev) => ({ ...prev, [module]: !prev[module] }));
@@ -45,27 +162,21 @@ const AdminModuleAccess = () => {
 
   const handleSubmit = async () => {
     if (!employeeId) {
-      alert('Employee ID not found in the URL!');
+      toast.error("Employee ID not found in the URL!");
       return;
     }
-  
-    const adminmodules: { [key: string]: boolean } = {};
-  
-    // Debugging: log the selectedModules object before proceeding
-    console.log('selectedModules:', selectedModules);
-  
-    modules.forEach((module) => {
-      const key = module.toLowerCase().replace(/\s+/g, '');  // "dashboard" for "Dashboard"
-      adminmodules[key] = selectedModules[module] || false;  // Get value from selectedModules
-    });
-  
-    // Debugging: Log the adminmodules to see the final structure
-    console.log('Adminmodules before submit:', adminmodules);
-  
+
+    const adminmodules = Object.fromEntries(
+      modules.map((module) => [
+        module.toLowerCase(),
+        selectedModules[module.toLowerCase()] || false,
+      ])
+    );
+
     const payload = {
       roleAccess: {
         admin: true,
-        adminmodules, // This will include the "dashboard" module
+        adminmodules,
         academicCoach: false,
         academicmodules: {
           dashboard: false,
@@ -79,7 +190,7 @@ const AdminModuleAccess = () => {
         supervisor: false,
         supervisormodules: {
           dashboard: false,
-          recuirement: false, // Consider renaming 'recuirement' to 'requirement'
+          recuirement: false,
           meeting: false,
           teachers: false,
           messages: false,
@@ -88,54 +199,73 @@ const AdminModuleAccess = () => {
         student: false,
         studentmodules: {
           dashboard: false,
-          recuirement: false,
-          meeting: false,
-          teachers: false,
-          messages: false,
+          classes: false,
+          assignments: false,
+          payments: false,
+          knowledgebase: false,
           support: false,
         },
         teacher: false,
         teachermodules: {
           dashboard: false,
-          recuirement: false,
-          meeting: false,
-          teachers: false,
+          liveclasses: false,
+          scheduledclasses: false,
+          assignments: false,
           messages: false,
+          analytics: false,
           support: false,
         },
       },
     };
-  
-    // Log payload before submitting to check the final structure
-    console.log('Payload:', payload);
-  
+
     try {
-      const res = await fetch(`http://localhost:5001/update-access/${employeeId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-  
-      if (!res.ok) throw new Error('Failed to update access');
-  
+      const res = await fetch(
+        `http://localhost:5001/update-access/${employeeId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to update access");
+
       const data = await res.json();
-      alert('Access updated successfully!');
-      console.log('✅ Response:', data);
+      console.log("✅ Response:", data);
+
+      toast.success("Access updated successfully!");
+
+      setTimeout(() => {
+        router.push("/admin-main/ui/settings");
+      }, 2000);
     } catch (err) {
-      console.error('❌ Error:', err);
-      alert('Something went wrong while updating access.');
+      console.error("❌ Error:", err);
+      toast.error("Something went wrong while updating access.");
     }
   };
-  
 
   return (
     <BaseLayout4>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+      />
+
       <div className="w-full min-h-screen p-5 flex flex-col items-center">
         <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
           Admin Module Access
         </h1>
+
+        {/* {employeeData && (
+          <div className="w-full max-w-6xl mb-6">
+            <h2 className="text-lg font-bold">Employee: {employeeData.employeeName}</h2>
+            <p className="text-sm text-gray-600">Email: {employeeData.contact}</p>
+            <p className="text-sm text-gray-600">Designation: {employeeData.designation.join(', ')}</p>
+          </div>
+        )} */}
 
         <div className="bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
           <table className="w-full text-left min-w-[900px]">
@@ -148,30 +278,43 @@ const AdminModuleAccess = () => {
               </tr>
             </thead>
             <tbody>
-              {modules.map((module) => (
-                <tr key={module} className="border-t hover:bg-gray-50 transition">
-                  <td className="p-4 flex items-center space-x-3">
-                    <button onClick={() => toggleModule(module)}>
-                      {selectedModules[module] ? (
-                        <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
-                      ) : (
-                        <FaRegSquare className="text-gray-400 text-sm" />
-                      )}
-                    </button>
-                    <span className="text-[12px] text-[#344054]">{module}</span>
-                  </td>
-                  {['read', 'write', 'delete'].map((perm) => (
-                    <td key={perm} className="p-2 text-center">
-                      <input
-                        type="checkbox"
-                        checked={permissions[module]?.[perm as PermissionType] || false}
-                        onChange={() => togglePermission(module, perm as PermissionType)}
-                        className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
-                      />
+              {modules.map((module) => {
+                const moduleKey = module.toLowerCase();
+                return (
+                  <tr
+                    key={module}
+                    className="border-t hover:bg-gray-50 transition"
+                  >
+                    <td className="p-4 flex items-center space-x-3">
+                      <button onClick={() => toggleModule(moduleKey)}>
+                        {selectedModules[moduleKey] ? (
+                          <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
+                        ) : (
+                          <FaRegSquare className="text-gray-400 text-sm" />
+                        )}
+                      </button>
+                      <span className="text-[12px] text-[#344054]">
+                        {module}
+                      </span>
                     </td>
-                  ))}
-                </tr>
-              ))}
+                    {["read", "write", "delete"].map((perm) => (
+                      <td key={perm} className="p-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={
+                            permissions[module]?.[perm as PermissionType] ||
+                            false
+                          }
+                          onChange={() =>
+                            togglePermission(module, perm as PermissionType)
+                          }
+                          className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
 

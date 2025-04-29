@@ -1,48 +1,166 @@
 'use client';
 
 import BaseLayout4 from '@/components/BaseLayout4';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { FaRegSquare, FaRegCheckSquare } from 'react-icons/fa';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+interface EmployeeAccessData {
+  _id: string;
+  employeeId: string;
+  employeeName: string;
+  contact: string;
+  designation: string[];
+  dateOfJoining: string;
+  roleAccess: {
+    admin: boolean;
+    adminmodules: {
+      dashboard: boolean;
+      evaluation: boolean;
+      student: boolean;
+      employees: boolean;
+      courses: boolean;
+      classes: boolean;
+      invoice: boolean;
+      analytics: boolean;
+      messages: boolean;
+      settings: boolean;
+    };
+    academicCoach: boolean;
+    academicmodules: {
+      dashboard: boolean;
+      scheduledevaluation: boolean;
+      scheduledtrail: boolean;
+      students: boolean;
+      teachers: boolean;
+      messages: boolean;
+      support: boolean;
+    };
+    supervisor: boolean;
+    supervisormodules: {
+      dashboard: boolean;
+      recuirement: boolean;
+      meeting: boolean;
+      teachers: boolean;
+      messages: boolean;
+      support: boolean;
+    };
+    student: boolean;
+    studentmodules: {
+      dashboard: boolean;
+      classes: boolean;
+      assignments: boolean;
+      payments: boolean;
+      knowledgebase: boolean;
+      support: boolean;
+    };
+    teacher: boolean;
+    teachermodules: {
+      dashboard: boolean;
+      liveclasses: boolean;
+      scheduledclasses: boolean;
+      assignments: boolean;
+      messages: boolean;
+      analytics: boolean;
+      support: boolean;
+    };
+  };
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  __v: number;
+}
+
 type PermissionType = 'read' | 'write' | 'delete';
 
 
 
 const TeacherModuleAccess = () => {
-
   const searchParams = useSearchParams();
+  const router = useRouter();
   const employeeId = searchParams.get('employeeId');
-  
+
+  const [employeeData, setEmployeeData] = useState<EmployeeAccessData | null>(null);
   const [selectedModules, setSelectedModules] = useState<{ [key: string]: boolean }>({});
   const [permissions, setPermissions] = useState<{ [key: string]: { read: boolean; write: boolean; delete: boolean } }>({});
-  const router =useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   const modules = [
     'Dashboard',
-    'Recruitment',
-    'Meeting & Training',
-    'Teachers',
+    'Live Classes',
+    'Schedule Classes',
+    'Assignments',
     'Messages',
+    'Analytics',
     'Support',
   ];
 
-  const handleSubmit = async () => {
+  // Key normalization function
+  const getModuleKey = (moduleName: string) => 
+    moduleName.toLowerCase().replace(/ & /g, '').replace(/\s+/g, '');
+
+  useEffect(() => {
     if (!employeeId) {
-      alert('Employee ID not found in the URL!');
+      toast.error("Employee ID not found in the URL!");
+      setIsRedirecting(true);
       return;
     }
+
+    const fetchEmployeeData = async () => {
+      try {
+        const res = await fetch(`http://localhost:5001/update-access/${employeeId}`);
+        const json = await res.json();
+        
+        // Normalize backend keys to UI display names
+        if (json.data.roleAccess?.teachermodules) {
+          const normalizedModules = modules.reduce((acc, module) => ({
+            ...acc,
+            [module]: json.data.roleAccess.teachermodules[getModuleKey(module)] || false
+          }), {});
+          setSelectedModules(normalizedModules);
+        }
+
+        if (json.data.roleAccess?.teachermodulesPermissions) {
+          const normalizedPerms = modules.reduce((acc, module) => ({
+            ...acc,
+            [module]: json.data.roleAccess.teachermodulesPermissions[getModuleKey(module)] || 
+                      { read: false, write: false, delete: false }
+          }), {});
+          setPermissions(normalizedPerms);
+        }
+      } catch (error) {
+        console.error("Failed to fetch employee data:", error);
+      }
+    };
+
+    if (employeeId) fetchEmployeeData();
+  }, [employeeId]);
+
+  useEffect(() => {
+    // Trigger redirection only after the error state is set
+    if (isRedirecting) {
+      router.push("/admin-main/ui/settings"); // Redirect after the state change
+    }
+  }, [isRedirecting, router]);
+
+
+  const handleSubmit = async () => {
+    if (!employeeId) {
+      toast.error('Employee ID not found in the URL!');
+      return;
+    }
+
   
-    const teachermodules: { [key: string]: boolean } = {};
-  
-    // Debugging: log the selectedModules object before proceeding
-    console.log('selectedModules:', selectedModules);
-  
-    modules.forEach((module) => {
-      const key = module.toLowerCase().replace(/\s+/g, '');  // "dashboard" for "Dashboard"
-      teachermodules[key] = selectedModules[module] || false;  // Get value from selectedModules
-    });
-  
-    // Debugging: Log the adminmodules to see the final structure
-    console.log('Adminmodules before submit:', teachermodules);
+    const teachermodules = Object.fromEntries(
+      modules.map(module => [
+        module.toLowerCase().replace(/ & /g, '').replace(/\s+/g, ''),
+        selectedModules[module] || false
+      ])
+    );
   
     const payload = {
       roleAccess: {
@@ -72,7 +190,7 @@ const TeacherModuleAccess = () => {
         supervisor: false,
         supervisormodules: {
           dashboard: false,
-          recuirement: false, // Consider renaming 'recuirement' to 'requirement'
+          recuirement: false,
           meeting: false,
           teachers: false,
           messages: false,
@@ -81,10 +199,10 @@ const TeacherModuleAccess = () => {
         student: false,
         studentmodules: {
           dashboard: false,
-          recuirement: false,
-          meeting: false,
-          teachers: false,
-          messages: false,
+          classes: false,
+          assignments: false,
+          payments: false,
+          knowledgebase: false,
           support: false,
         },
         teacher: false,
@@ -115,18 +233,16 @@ const TeacherModuleAccess = () => {
   
       // Now read the response as JSON (we've already consumed the body once)
       const data = await res.json();
-      alert('Access updated successfully!');
       console.log('✅ Response:', data);
-  
-      // Reset the selectedModules to clear the checkboxes
-      setSelectedModules({});
-  
-      // Navigate to the settings page after submission
-      router.push('/admin-main/ui/settings'); // Navigate to settings page
-  
+
+      toast.success('Access updated successfully!');
+
+      setTimeout(() => {
+        router.push('/admin-main/ui/settings'); // 👈 Change this to your desired page
+      }, 2000);
     } catch (err) {
       console.error('❌ Error:', err);
-      alert('Something went wrong while updating access.');
+      toast.error('Something went wrong while updating access.');
     }
   };
   
@@ -148,6 +264,8 @@ const TeacherModuleAccess = () => {
 
   return (
     <BaseLayout4>
+              <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} />
+
           <div className="w-full min-h-screen p-5 flex flex-col items-center">
             <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
               Teacher Module Access

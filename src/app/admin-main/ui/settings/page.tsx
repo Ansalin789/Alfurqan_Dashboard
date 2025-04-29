@@ -6,56 +6,42 @@ import { FaChevronDown, FaFilter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-// types/RoleAccess.ts
-export interface RoleAccess {
-  adminmodules: ModuleAccess;
-  academicmodules: ModuleAccess;
-  supervisormodules: ModuleAccess;
-  teachermodules: ModuleAccess;
-  studentmodules: ModuleAccess;
-  admin: boolean;
-  academicCoach: boolean;
-  supervisor: boolean;
-  teacher: boolean;
-  student: boolean;
-}
-
-export interface ModuleAccess {
-  [key: string]: boolean;
-}
-
-export interface EmployeeAccess {
+export interface OtherEmployee {
   _id: string;
-  employeeId: string;
-  employeeName: string;
-  contact: string;
-  designation: string[];
-  dateOfJoining: string;
+  userName: string;
+  email: string;
+  password: string;
+  role: string[];
+  profileImage: string | null;
   status: string;
-  roleAccess: RoleAccess;
-  createdDate: string;
   createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
+  lastUpdatedBy: string;
+  userId: string;
+  lastLoginDate: string;
+  createdDate: string;
+  lastUpdatedDate: string;
   __v: number;
+  gender: string;
+  country?: string; // optional since some users have country field
 }
 
-interface AccessListResponse {
-  data: EmployeeAccess[];
+interface OtherEmployeesResponse {
+  users: OtherEmployee[];
+  totalCount: number;
 }
 
 const Page: React.FC = () => {
-  const [employees, setEmployees] = useState<EmployeeAccess[]>([]);
+  const [employees, setEmployees] = useState<OtherEmployee[]>([]);
+  const [selectedRole, setSelectedRole] = useState("Academic Coach");
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRole(e.target.value);
+  };
 
   const router = useRouter();
-  const [openRoleDropdownIndex, setOpenRoleDropdownIndex] = useState<
-    number | null
-  >(null);
-  const [openModuleDropdownIndex, setOpenModuleDropdownIndex] = useState<
-    number | null
-  >(null);
+
   const [isFilterPopupOpen, setFilterPopupOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  // const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
     null
   );
@@ -70,63 +56,27 @@ const Page: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchAccessList = async () => {
+    const fetchOtherEmployees = async () => {
       try {
-        const res = await axios.get<AccessListResponse>(
-          "http://localhost:5001/update-access/list"
+        const res = await axios.get<OtherEmployeesResponse>(
+          "http://localhost:5001/otheremployees"
         );
-        setEmployees(res.data.data);
+        setEmployees(res.data.users);
 
         console.log(res.data);
 
         setError(null);
       } catch (error: any) {
-        console.error("Error fetching access list:", error);
-        setError("Failed to load employee access data.");
+        console.error("Error fetching other employees:", error);
+        setError("Failed to load employee data.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAccessList();
+    fetchOtherEmployees();
   }, []);
 
-  const toggleRoleDropdown = (index: number) => {
-    setOpenRoleDropdownIndex(openRoleDropdownIndex === index ? null : index);
-  };
-
-  const toggleModuleDropdown = (index: number) => {
-    setOpenModuleDropdownIndex(
-      openModuleDropdownIndex === index ? null : index
-    );
-  };
-
-  const handleModuleClick = (module: string, employeeId: string) => {
-    if (module === "Supervisor") {
-      router.push(`/admin-main/ui/settings/supervisor?employeeId=${employeeId}`);
-    }
-    if (module === "Admin") {
-      router.push(`/admin-main/ui/settings/admin?employeeId=${employeeId}`);
-    }
-    if (module === "Teacher") {
-      router.push(`/admin-main/ui/settings/teacher?employeeId=${employeeId}`);
-    }
-    if (module === "Student") {
-      router.push(`/admin-main/ui/settings/student?employeeId=${employeeId}`);
-    }
-    if (module === "AcademicCoach") {
-      router.push(`/admin-main/ui/settings/academic-coach?employeeId=${employeeId}`);
-    }
-  };
-  
-  
-
-  const handleRoleChange = (index: number, newRole: string) => {
-    const updatedEmployees = employees.map((emp, i) =>
-      i === index ? { ...emp, role: newRole } : emp
-    );
-    setEmployees(updatedEmployees);
-  };
 
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -137,7 +87,7 @@ const Page: React.FC = () => {
 
   const applyFilters = () => {
     const filteredEmployees = employees.filter((emp) => {
-      const empDate = new Date(emp.dateOfJoining); // Assuming this field exists
+      const empDate = new Date(emp.createdDate); // Assuming this field exists
 
       const fromDateMatch = filterCriteria.fromDate
         ? empDate >= new Date(filterCriteria.fromDate)
@@ -148,12 +98,12 @@ const Page: React.FC = () => {
 
       return (
         (filterCriteria.name
-          ? emp.employeeName
+          ? emp.userName
               .toLowerCase()
               .includes(filterCriteria.name.toLowerCase())
           : true) &&
         (filterCriteria.designation
-          ? emp.designation.includes(filterCriteria.designation)
+          ? emp.role.includes(filterCriteria.designation)
           : true) &&
         fromDateMatch &&
         toDateMatch
@@ -173,13 +123,40 @@ const Page: React.FC = () => {
     });
   };
 
-  const getPrimaryRole = (roleAccess: RoleAccess): string => {
-    if (roleAccess.supervisor) return "Supervisor";
-    if (roleAccess.academicCoach) return "Academic Coach";
-    if (roleAccess.teacher) return "Teacher";
-    if (roleAccess.student) return "Student";
-    if (roleAccess.admin) return "Admin";
-    return "N/A";
+
+
+  const handleChanges = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+    emp: string
+  ) => {
+    const role = e.target.value;
+    setSelectedRole(role);
+
+    let path = "";
+
+    switch (role) {
+      case "AcademicCoach":
+        path = `/admin-main/ui/settings/academic-coach?employeeId=${emp}`;
+        break;
+      case "Student":
+        path = `/admin-main/ui/settings/student?employeeId=${emp}`;
+        break;
+      case "Teacher":
+        path = `/admin-main/ui/settings/teacher?employeeId=${emp}`;
+        break;
+      case "Supervisor":
+        path = `/admin-main/ui/settings/supervisor?employeeId=${emp}`;
+        break;
+      case "Admin":
+        path = `/admin-main/ui/settings/admin?employeeId=${emp}`;
+        break;
+      default:
+        path = "/";
+        break;
+    }
+    console.log(emp);
+
+    router.push(path); // Navigate to correct page
   };
 
   return (
@@ -236,102 +213,48 @@ const Page: React.FC = () => {
                       key={emp._id}
                       className="border-t border-gray-200 text-gray-700 text-xs sm:text-xs"
                     >
+                      <td className="py-3 px-4 text-center">{emp.userId}</td>
+                      <td className="py-3 px-4 text-center">{emp.userName}</td>
+                      <td className="py-3 px-4 text-center">{emp.email}</td>
+                      <td className="py-3 px-4 text-center">{emp.role}</td>
                       <td className="py-3 px-4 text-center">
-                        {emp.employeeId}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {emp.employeeName}
-                      </td>
-                      <td className="py-3 px-4 text-center">{emp.contact}</td>
-                      <td className="py-3 px-4 text-center">
-                        {emp.designation.join(", ")}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {new Date(emp.dateOfJoining).toLocaleDateString()}
+                        {new Date(emp.createdDate).toLocaleDateString()}
                       </td>
 
                       {/* Uncomment below for Role Dropdown */}
 
                       <td className="py-1 px-1 text-center align-middle relative">
-                        <button
-                          className="w-[140px] h-[30px] border border-gray-300 rounded-md text-xs flex items-center justify-between px-2 mx-auto cursor-pointer"
-                          onClick={() => toggleRoleDropdown(index)}
+                        <select
+                          name=""
+                          id=""
+                          className="px-2 py-[5px] rounded-lg border-2"
+                          value={selectedRole}
+                          onChange={handleChange}
                         >
-                          <span className="w-full text-center truncate">
-                            {getPrimaryRole(emp.roleAccess)}
-                          </span>
-                          <FaChevronDown size={10} className="ml-1 mt-[2px]" />
-                        </button>
-                        {openRoleDropdownIndex === index && (
-                          <ul className="absolute z-50 bg-white border border-gray-300 mt-1 w-[140px] left-1/2 transform -translate-x-1/2 rounded shadow-md">
-                            {[
-                              "Supervisor",
-                              "Academic Coach",
-                              "Student",
-                              "Teacher",
-                              "Admin",
-                            ].map((role) => (
-                              <li key={role}>
-                                <button
-                                  className="w-full p-1 hover:bg-gray-100 text-xs text-center"
-                                  onClick={() => {
-                                    handleRoleChange(index, role);
-                                    setOpenRoleDropdownIndex(null);
-                                  }}
-                                >
-                                  {role}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                          <option value="Academic Coach">Academic Coach</option>
+                          <option value="Student">Student</option>
+                          <option value="Teacher">Teacher</option>
+                          <option value="Supervisor">Supervisor</option>
+                          <option value="Admin">Admin</option>
+                        </select>
                       </td>
-
-                      {/* Uncomment below for Module Dropdown */}
 
                       <td className="py-1 px-1 text-center align-middle relative">
-                        <button
-                          className="w-[140px] h-[30px] border border-gray-300 rounded-md text-xs flex items-center justify-between px-2 mx-auto cursor-pointer"
-                          onClick={() => {
-                            toggleModuleDropdown(index);
-                            setSelectedEmployeeId(emp.employeeId); // 👈 capture the ID of the selected row
-                          }}
+                        <select
+                          name=""
+                          id=""
+                          className="px-2 py-[5px] rounded-lg border-2"
+                          value={selectedRole}
+                          onChange={(e) => handleChanges(e, emp._id)} // passing employeeId
                         >
-                          <span className="w-full text-center truncate">
-                            {getPrimaryRole(emp.roleAccess)}
-                          </span>
-                          <FaChevronDown size={10} className="ml-1 mt-[2px]" />
-                        </button>
-
-                        {openModuleDropdownIndex === index && (
-                          <ul className="absolute z-50 bg-white border border-gray-300 mt-1 w-[140px] left-1/2 transform -translate-x-1/2 rounded shadow-md">
-                            {[
-                              "Supervisor",
-                              "AcademicCoach",
-                              "Student",
-                              "Teacher",
-                              "Admin",
-                            ].map((mod) => (
-                              <li key={mod}>
-                                <button
-                                  className="w-full p-1 hover:bg-gray-100 text-xs text-center"
-                                  onClick={() => {
-                                    handleModuleClick(mod, emp.employeeId); // 👈 now passing both arguments
-                                    setSelectedRole(mod);
-                                    setOpenModuleDropdownIndex(null);
-                                  }}
-                                  
-                                >
-                                  {mod}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                          <option value="">Select a Role</option>
+                          <option value="AcademicCoach">Academic Coach</option>
+                          <option value="Student">Student</option>
+                          <option value="Teacher">Teacher</option>
+                          <option value="Supervisor">Supervisor</option>
+                          <option value="Admin">Admin</option>
+                        </select>
                       </td>
-
-
-
                     </tr>
                   ))}
                 </tbody>
