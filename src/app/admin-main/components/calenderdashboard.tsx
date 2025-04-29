@@ -77,7 +77,7 @@ const Academic: React.FC = () => {
 
   useEffect(() => {
     const styleSheet = document.createElement("style");
-    // styleSheet.textContent = styles;
+    styleSheet.textContent = styles;
     document.head.appendChild(styleSheet);
 
     return () => {
@@ -124,4 +124,90 @@ const Academic: React.FC = () => {
 
 export default Academic;
 
-// Same CSS styles below...
+const styles = `
+.custom-calendar {
+  width: 250px !important;
+  border: none !important;
+  background: #ced4dc !important;
+}
+.custom-calendar .react-calendar__navigation {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  height: auto;
+  background: #ced4dc;
+}
+.custom-calendar .react-calendar__navigation button {
+  min-width: 28px;
+  background: none;
+  font-size: 20px;
+  color: #333;
+}
+.custom-calendar .react-calendar__navigation__label {
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  color: #333;
+}
+.custom-calendar .react-calendar__month-view__weekdays {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+}
+.custom-calendar .react-calendar__month-view__weekdays__weekday {
+  padding: 10px 0;
+}
+.custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+  font-weight: normal;
+}
+.custom-calendar .react-calendar__month-view__days__day {
+  font-size: 11px;
+  padding: 0px;
+  color: #333;
+}
+.custom-calendar .react-calendar__tile {
+  padding: 10px 0;
+  font-weight: normal;
+  background: none;
+}
+.custom-calendar .react-calendar__month-view__days__day--weekend:last-child {
+  color: #2563eb;
+}
+.custom-calendar .react-calendar__tile--now {
+  background: #2563eb !important;
+  color: white !important;
+  border-radius: 4px;
+}
+.custom-calendar .react-calendar__tile--active {
+  background: #223857 !important;
+  color: white !important;
+  border-radius: 4px;
+}
+.custom-calendar .react-calendar__tile:enabled:hover {
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+.custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
+  color: #ccc;
+}
+.custom-calendar .react-calendar__navigation__arrow {
+  font-size: 20px;
+  color: #666;
+}
+.event-day {
+  position: relative;
+  color: #31517e !important;
+  border-radius: 6px !important;
+}
+.event-day::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background-color: #223857;
+  border-radius: 50%;
+}
+`;
