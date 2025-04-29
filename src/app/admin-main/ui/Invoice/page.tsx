@@ -145,28 +145,108 @@ export default function Page() {
     }
   };
 
-  // Generate month names for the chart labels
 
-  // Bar chart data
+
+  type InvoiceType = "total" | "paid" | "pending" | "void";
+  const [invoiceCounts, setInvoiceCounts] = useState<Record<InvoiceType, number>>({
+    total: 0,
+    paid: 0,
+    pending: 0,
+    void: 0,
+  });
+  useEffect(() => {
+    const fetchInvoiceCounts = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/invoicecounts");
+        const result = await response.json();
+        if (result.success) {
+          setInvoiceCounts(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching invoice counts:", error);
+      }
+    };
+
+    fetchInvoiceCounts();
+  }, []);
+
+  const cards: {
+    title: string;
+    key: InvoiceType;
+    iconBg: string;
+    iconColor: string;
+    chartColor: string;}[] = [
+    {
+      title: "Total Invoices",
+      key: "total",
+      iconBg: "bg-gray-100",
+      iconColor: "text-gray-500",
+      chartColor: "#64748b",
+    },
+    {
+      title: "Paid Invoices",
+      key: "paid",
+      iconBg: "bg-indigo-100",
+      iconColor: "text-indigo-500",
+      chartColor: "#6366f1",
+    },
+    {
+      title: "Unpaid Invoices",
+      key: "pending",
+      iconBg: "bg-cyan-100",
+      iconColor: "text-cyan-500",
+      chartColor: "#06b6d4",
+    },
+    {
+      title: "Void Invoices",
+      key: "void",
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-500",
+      chartColor: "#3b82f6",
+    },
+  ];
+
+  type InvoiceMonthData = {
+    date: string; 
+    total: number;
+    paid: number;
+  };
+
+  const monthOrder = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+  
+  const [monthlyInvoices, setMonthlyInvoices] = useState<InvoiceMonthData[]>([]);
+
+  useEffect(() => {
+    const fetchMonthlyInvoices = async () => {
+      try {
+        const res = await fetch("http://localhost:5001/totalinvoice");
+        const json = await res.json();
+        if (json.success) {
+          setMonthlyInvoices(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch monthly invoice data", error);
+      }
+    };
+
+    fetchMonthlyInvoices();
+  }, []);
+
   const barData = {
-    labels: [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ],
+    labels: monthOrder,
     datasets: [
       {
-        data: [80, 70, 80, 90, 70, 78, 85, 70, 75, 35, 35, 65], // Total invoices
-        backgroundColor: "#217EFD", // Light gray background for total
+        label: "Total",
+        data: monthOrder.map((month) => {
+          const entry = monthlyInvoices.find((item) =>
+            item.date.startsWith(month)
+          );
+          return entry?.total ?? 0;
+        }),
+        backgroundColor: "#217EFD",
         borderRadius: {
           bottomLeft: 10,
           bottomRight: 10,
@@ -174,8 +254,14 @@ export default function Page() {
         barThickness: 25,
       },
       {
-        data: [45, 50, 43, 60, 34, 50, 58, 39, 48, 35, 35, 65], // Paid invoices
-        backgroundColor: "#012A4A", // Blue color for paid portion
+        label: "Paid",
+        data: monthOrder.map((month) => {
+          const entry = monthlyInvoices.find((item) =>
+            item.date.startsWith(month)
+          );
+          return entry?.paid ?? 0;
+        }),
+        backgroundColor: "#012A4A",
         borderRadius: {
           topLeft: 10,
           topRight: 10,
@@ -189,7 +275,7 @@ export default function Page() {
 
   const barOptions = {
     responsive: true,
-    maintainAspectRatio: false, // allow height to be controlled by container
+    maintainAspectRatio: false,
     layout: {
       padding: {
         top: 10,
@@ -211,8 +297,7 @@ export default function Page() {
             const total = chart.data.datasets[0].data[index];
             const paid = chart.data.datasets[1].data[index];
 
-            if (!total || !paid) return [`No data`];
-
+            if (!total) return [`Total: 0`, `Paid: ${paid}`];
             return [
               `Total: ${total}`,
               `Paid: ${paid} (${Math.round((paid / total) * 100)}%)`,
@@ -232,7 +317,7 @@ export default function Page() {
         stacked: true,
         beginAtZero: true,
         ticks: {
-          stepSize: 20,
+          stepSize: 5000,
         },
         grid: {
           drawBorder: false,
@@ -242,6 +327,8 @@ export default function Page() {
       },
     },
   };
+
+
 
   const doughnutData = {
     labels: ["0-10", "10-20", "20-30", "More than 30"],
@@ -264,6 +351,7 @@ export default function Page() {
       },
     },
   };
+  
 
   const InvoiceLegend = () => (
     <div className="space-y-3">
@@ -312,6 +400,9 @@ export default function Page() {
       </div>
     </div>
   );
+
+
+
   const handleviewlist = () => {
     router.push("/admin-main/ui/invoicelist");
   };
@@ -335,6 +426,7 @@ export default function Page() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return `${diffDays} days`;
   };
+
   return (
     <div>
       <BaseLayout4>
@@ -403,38 +495,9 @@ export default function Page() {
 
           {/* Invoice Stats Cards */}
           <div className="grid grid-cols-4 gap-4 mb-3">
-            {[
-              {
-                title: "Total Invoices",
-                count: "2,478",
-                iconBg: "bg-gray-100",
-                iconColor: "text-gray-500",
-                chartColor: "#64748b",
-              },
-              {
-                title: "Paid Invoices",
-                count: "983",
-                iconBg: "bg-indigo-100",
-                iconColor: "text-indigo-500",
-                chartColor: "#6366f1",
-              },
-              {
-                title: "Unpaid Invoices",
-                count: "1,256",
-                iconBg: "bg-cyan-100",
-                iconColor: "text-cyan-500",
-                chartColor: "#06b6d4",
-              },
-              {
-                title: "Void Invoices",
-                count: "652",
-                iconBg: "bg-blue-100",
-                iconColor: "text-blue-500",
-                chartColor: "#3b82f6",
-              },
-            ].map((card, i) => (
+            {cards.map((card, index) => (
               <div
-                key={i}
+                key={index}
                 className="bg-white shadow-sm rounded-lg flex flex-col justify-between overflow-hidden"
               >
                 <div className="px-4 pt-3 pb-1">
@@ -446,7 +509,7 @@ export default function Page() {
                     </div>
                     <div className="text-right">
                       <h3 className="text-xl font-semibold text-gray-800">
-                        {card.count}
+                        {invoiceCounts[card.key]}
                       </h3>
                       <p className="text-xs text-gray-500">{card.title}</p>
                     </div>
@@ -461,12 +524,12 @@ export default function Page() {
                         {
                           data: [3, 8, 4, 6, 5, 9],
                           borderColor: card.chartColor,
-                          backgroundColor: `${card.chartColor}20`, // 20% opacity of border color
+                          backgroundColor: `${card.chartColor}20`,
                           borderWidth: 4,
                           fill: {
                             target: "origin",
-                            above: `${card.chartColor}10`, // Lighter fill above origin (if needed)
-                            below: `${card.chartColor}20`, // Fill below the line
+                            above: `${card.chartColor}10`,
+                            below: `${card.chartColor}20`,
                           },
                           tension: 0.4,
                         },
@@ -477,9 +540,7 @@ export default function Page() {
                       maintainAspectRatio: false,
                       plugins: {
                         legend: { display: false },
-                        filler: {
-                          propagate: false,
-                        },
+                        filler: { propagate: false },
                       },
                       scales: {
                         x: {
@@ -491,16 +552,11 @@ export default function Page() {
                           display: false,
                           grid: { display: false },
                           ticks: { padding: 0 },
-                          beginAtZero: true, // Ensures fill goes to bottom
+                          beginAtZero: true,
                         },
                       },
                       layout: {
-                        padding: {
-                          left: 0,
-                          right: 0,
-                          top: 0,
-                          bottom: 0,
-                        },
+                        padding: { left: 0, right: 0, top: 0, bottom: 0 },
                       },
                       elements: {
                         point: { radius: 0 },
@@ -541,6 +597,9 @@ export default function Page() {
               </div>
             </div>
 
+
+
+
             {/* Invoices Due by Days */}
             <div className="bg-white rounded-xl shadow-sm p-4 h-[300px] w-full">
               <h3 className="text-sm font-semibold text-gray-800 mb-2">
@@ -571,6 +630,11 @@ export default function Page() {
                 </div>
               </div>
             </div>
+
+
+
+
+
           </div>
 
           {/* Invoice Table */}
