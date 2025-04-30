@@ -586,14 +586,14 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
     const username = encodeURIComponent("David");
     const password = encodeURIComponent("David@123");
 
-    const portalURL = `http://localhost:3000/teacher/ui/sign?username=${username}&password=${password}`;
+    const portalURL = `https://blackstoneinfomaticstech.com/teacher/ui/sign?username=${username}&password=${password}`;
     window.location.href = portalURL;
   }
   function handlePortalAccessforemployee(employeeID: string) {
     const username = encodeURIComponent("Arthi");
     const password = encodeURIComponent("Supervisor@123");
 
-    const portalURL = `http://localhost:3000/supervisor/ui/sign?username=${username}&password=${password}`;
+    const portalURL = `https://blackstoneinfomaticstech.com/supervisor/ui/sign?username=${username}&password=${password}`;
     window.location.href = portalURL;
   }
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {

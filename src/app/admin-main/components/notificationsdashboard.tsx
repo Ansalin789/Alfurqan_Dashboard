@@ -13,7 +13,7 @@ type Notification = {
         name: "Alex Campbell",
         message: "Just wanted to check in on how everyone's progress...",
         time: "2:36 PM",
-        avatar: "/Imageuser.svg?height=40&width=40",
+        avatar: "/placeholder.svg?height=40&width=40",
       },
       {
         id: 2,
