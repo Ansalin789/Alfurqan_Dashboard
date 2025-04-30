@@ -132,6 +132,7 @@ useEffect(() => {
 
   // Initialize socket connection
   useEffect(() => {
+    if(!userId) return;
     if (!socketRef.current) {
       socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
         transports: ["websocket"],
@@ -144,6 +145,7 @@ useEffect(() => {
       socketRef.current.on("connect", () => {
         console.log("Connected to Socket.IO with ID:", socketRef.current?.id);
         socketRef.current?.emit("subscribe", userId);
+        console.log(userId);
       });
 
       socketRef.current.on("disconnect", () => {

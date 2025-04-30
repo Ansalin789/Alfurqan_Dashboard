@@ -71,7 +71,7 @@ export default function TrialRequests() {
               <div className="flex justify-between mb-1">
                 <span className="text-sm font-medium">{request.status}</span>
                 <span className="text-xs text-gray-500">
-                  {request.percentage.toFixed(1)}%({request.total})
+                {request?.percentage?.toFixed(1) ?? '0.0'}%({request?.total ?? '0'})
                 </span>
               </div>
               <div className="h-3 w-full bg-blue-500 rounded-full overflow-hidden">
