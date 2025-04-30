@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import BaseLayout4 from '@/components/BaseLayout4';
+import BaseLayout3 from '@/components/BaseLayout3';
 import { io, Socket } from 'socket.io-client';
 
 interface Student {
@@ -65,17 +65,15 @@ function LiveClass() {
 
   useEffect(() => {
     // WebSocket connection for signaling
-    socket = io('http://alfurqanacademy.tech'); // Replace with your actual socket URL
+    socket = io('http://localhost:5001'); // Replace with your actual socket URL
 
     socket.on('connect', () => {
       console.log('Connected to the signaling server');
-      
+      startCall()
       // ✅ Emit join-meeting after connection is established
       socket!.emit('join-meeting', { meetingId: '123456', userId: '1' });
     });
    
-   
-
     socket.on('offer', handleOffer);
     socket.on('answer', handleAnswer);
     socket.on('ice-candidate', handleIceCandidate);
@@ -88,9 +86,6 @@ function LiveClass() {
       try {
         const response = await axios.get<ClassData>('https://alfurqanacademy.tech/classShedule/yourClassId'); // Replace with actual class ID
         setClassData(response.data);
-
-       
-        // Join the room with the meetingId
       } catch (error) {
         console.error('Error fetching class data:', error);
       }
@@ -121,33 +116,47 @@ function LiveClass() {
     }
   };
 
-  const createPeerConnection = () => {
+  const createPeerConnection = (meetingId: string) => {
     const peerConnection = new RTCPeerConnection();
-
+  
+    // Add local media tracks if available
     if (localStream) {
       localStream.getTracks().forEach(track => {
         peerConnection.addTrack(track, localStream);
       });
     }
-
+  
+    // Handling incoming remote tracks
     peerConnection.ontrack = (event) => {
-      setRemoteStream(event.streams[0]);
+      const remoteStream = event.streams[0];
+      setRemoteStream(remoteStream);
+  
       if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = event.streams[0];
+        remoteVideoRef.current.srcObject = remoteStream;
       }
     };
-
+  
+    // Handling ICE candidates
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
-        socket?.emit('ice-candidate', { meetingId: '123456', candidate: event.candidate });
+        socket?.emit('ice-candidate', { meetingId, candidate: event.candidate });
       }
-    }
-
+    };
+  
+    // Optionally: Handle connection state or any error
+    peerConnection.onconnectionstatechange = () => {
+      if (peerConnection.connectionState === 'failed') {
+        console.error('Connection failed!');
+        // Handle disconnection or retry logic here
+      }
+    };
+  
     return peerConnection;
   };
+  
 
   const handleOffer = async (offer: RTCSessionDescriptionInit) => {
-    const peerConnection = createPeerConnection();
+    const peerConnection = createPeerConnection('123456');
     peerConnectionRef.current = peerConnection;
 
     await peerConnection.setRemoteDescription(offer);
@@ -173,7 +182,7 @@ function LiveClass() {
   const startCall = async () => {
     if (!classData) return;
 
-    const peerConnection = createPeerConnection();
+    const peerConnection = createPeerConnection('123456');
     peerConnectionRef.current = peerConnection;
 
     const offer = await peerConnection.createOffer();
@@ -212,7 +221,7 @@ function LiveClass() {
   };
 
   return (
-    <BaseLayout4>
+    <BaseLayout3>
       <div className="flex h-screen bg-[#E6E9ED]">
         <div className="flex-1 overflow-auto w-[1100px] ml-5 h-[700px] scrollbar-none">
           <div className="p-6 w-[100%]">
@@ -234,7 +243,11 @@ function LiveClass() {
                   {/* Video Call Stream */}
                   <div className="flex justify-center gap-4 mt-4">
                     <video ref={localVideoRef} autoPlay muted className="w-[500px] h-[400px] rounded-md" />
-                    <video ref={remoteVideoRef} autoPlay className="w-[600px] h-[400px] rounded-md" />
+                    <video
+                      ref={remoteVideoRef} 
+                      autoPlay 
+                      className="w-[500px] h-[400px] rounded-md" 
+                    />
                   </div>
                 </div>
 
@@ -257,7 +270,7 @@ function LiveClass() {
           </div>
         </div>
       </div>
-    </BaseLayout4>
+    </BaseLayout3>
   );
 }
 
