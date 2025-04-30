@@ -27,6 +27,94 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 })
+interface StudentData {
+  studentId: string;
+  name: string;
+  studentDetails: StudentDetails;
+}
+
+ interface StudentDetails {
+  student: Student;
+  teacher: Teacher;
+  subscription: Subscription;
+  _id: string;
+  academicCoachId: string;
+  classDay: string[];
+  startTime: string[];
+  endTime: string[];
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  planTotalPrice: number;
+  classStartDate: string;
+  classEndDate: string;
+  classStartTime: string;
+  classEndTime: string;
+  accomplishmentTime: string;
+  studentRate: number;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  studentStatus: string;
+  classStatus: string;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  expectedFinishingDate: number;
+  assignedTeacherId: string;
+  assignedTeacherEmail: string;
+  __v: number;
+  teacherStatus: string;
+}
+
+ interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  studentGender?: string;
+  studentPhone: number;
+  studentCity: string;
+  studentCountry: string;
+  studentCountryCode: string;
+  learningInterest: string;
+  numberOfStudents: number;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  timeZone: string;
+  referralSource: string;
+  preferredDate: string;
+  evaluationStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+}
+
+ interface Teacher {
+  teacherName: string;
+}
+
+ interface Subscription {
+  subscriptionName: string;
+}
+
 interface User {
   _id: string;
   userName: string;
@@ -100,6 +188,7 @@ const Teacher = () => {
   const [users, setUsers] = useState<User>();
   const [scheduledclass, setScheduledClass] = useState<ScheduledClass[]>([]);
   const [wages, setWages] = useState<WageData[]>([]);
+  const [students, setStudents] = useState<StudentData[]>([]);
   const events = [
     {
       title: 'Evaluation Class (20)',
@@ -158,6 +247,18 @@ const Teacher = () => {
     }
   };
    fetchWages();
+   const fetchClasses = async () => {
+    try {
+      const res = await axios.get<StudentData[]>(
+        `http://localhost:5001/classShedule/teacher/list?teacherId=${employeeId}`
+      );
+      setStudents(res.data);
+    } catch (error) {
+      console.error("Failed to fetch classes", error);
+    } 
+  };
+
+  fetchClasses();
   }, [employeeId]);
 
   const CustomToolbar = (toolbar: any) => (
@@ -321,77 +422,23 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-xs text-[#1D2939]">
-                        {[
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                        ].map((item, index) => (
-                          <tr
-                            key={index}
-                            className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
-                          >
-                            <td className="p-3">{item.id}</td>
-                            <td className="p-3">{item.name}</td>
-                            <td className="p-3">{item.country}</td>
-                            <td className="p-3">{item.subject}</td>
-                            <td className="p-3">{item.duration}</td>
-                            <td className="p-3">{item.classes}</td>
-                          </tr>
-                        ))}
-                      </tbody>
+  {students.map((item, index) => {
+    const student = item.studentDetails?.student;
+    return (
+      <tr
+        key={item.studentId || index}
+        className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+      >
+        <td className="p-3">{item.studentId || "N/A"}</td>
+        <td className="p-3">{student?.studentFirstName || "N/A"}</td>
+        <td className="p-3">{student?.studentCountry || "N/A"}</td>
+        <td className="p-3">{student?.learningInterest || "N/A"}</td>
+        <td className="p-3">{item.studentDetails?.hours ? `${item.studentDetails.hours} hrs` : "N/A"}</td>
+        <td className="p-3">{item.studentDetails?.classDay?.join(', ') || "N/A"}</td>
+      </tr>
+    );
+  })}
+</tbody>
                     </table>
                   </div>
                 </div>
