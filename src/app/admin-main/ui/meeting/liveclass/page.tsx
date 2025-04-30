@@ -65,7 +65,7 @@ function LiveClass() {
 
   useEffect(() => {
     // WebSocket connection for signaling
-    socket = io('http://localhost:5001'); // Replace with your actual socket URL
+    socket = io('http://alfurqanacademy.tech:5001'); // Replace with your actual socket URL
 
     socket.on('connect', () => {
       console.log('Connected to the signaling server');
