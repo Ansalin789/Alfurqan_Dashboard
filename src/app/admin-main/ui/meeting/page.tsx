@@ -5,12 +5,17 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { IoMdArrowDropdownCircle, IoMdClose } from "react-icons/io";
 
-import { FaCalendarAlt, FaEdit, FaFilter, FaPlus, FaUserCircle } from "react-icons/fa";
+import {
+  FaCalendarAlt,
+  FaEdit,
+  FaFilter,
+  FaPlus,
+  FaUserCircle,
+} from "react-icons/fa";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { User } from "lucide-react";
-
 
 // Define interfaces for data structure
 interface Teacher {
@@ -52,7 +57,6 @@ interface ApiResponse {
   candidateEmail: string;
 }
 
-
 export interface User {
   _id: string;
   userName: string;
@@ -76,7 +80,6 @@ export interface UsersResponse {
   totalCount: number;
 }
 
-
 const Meeting = () => {
   const [meetingsData, setMeetingsData] = useState<MeetingsResponse | null>(
     null
@@ -93,52 +96,45 @@ const Meeting = () => {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date | null>(null);
   const router = useRouter();
-  const [showAttendeesDropdown, setShowAttendeesDropdown] = useState(false);
   const [isAutoClose, setIsAutoClose] = useState(false);
   const [meetingName, setMeetingName] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [description, setDescription] = useState("");
-  const [allTeachers, setAllTeachers] = useState<Teacher[]>([]); // Array of teacher objects
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
-  
+
   const [selectedFilter, setSelectedFilter] = useState<
     "all" | "Arabic Teacher" | "Quran Teacher"
   >("all");
   const [teachers, setTeachers] = useState<Teacher[]>([]);
 
-  // Filter teachers based on the selected filter
-  const filteredTeachers =
-    selectedFilter === "all"
-      ? teachers
-      : teachers.filter((t) => {
-          const normalizedSubject = t.subject.trim(); // Normalize subject
-          return selectedFilter.includes(normalizedSubject); // Check if filter includes it
-        });
+
 
   // Toggle teacher selection
   const toggleSelections = (teacher: Teacher) => {
-      setSelectedTeachers((prev) =>
-        prev.some((t) => t.teacherId === teacher.teacherId)
-          ? prev.filter((t) => t.teacherId !== teacher.teacherId)
-          : [...prev, teacher]
-      );
-    };
-    
-  useEffect(()=>{
+    setSelectedTeachers((prev) =>
+      prev.some((t) => t.teacherId === teacher.teacherId)
+        ? prev.filter((t) => t.teacherId !== teacher.teacherId)
+        : [...prev, teacher]
+    );
+  };
+
+  useEffect(() => {
     console.log(selectedTeachers);
     console.log(teachers);
-  },[teachers]);
+  }, [teachers]);
 
   const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
   useEffect(() => {
     axios
-      .get<{ totalCount: number; users: User[] }>("http://localhost:5001/otheremployees")
+      .get<{ totalCount: number; users: User[] }>(
+        "http://localhost:5001/otheremployees"
+      )
       .then((response) => {
         console.log("API Response:", response.data); // ✅ Debugging step
-  
+
         const userList = response.data.users;
-  
+
         if (Array.isArray(userList)) {
           const mappedTeachers = userList.map((user) => ({
             teacherId: user._id, // Prefer userId for a unique teacherId
@@ -146,7 +142,7 @@ const Meeting = () => {
             teacherEmail: user.email ?? "no-email@example.com",
             _id: user._id,
           }));
-  
+
           setTeachers(mappedTeachers);
           console.log("Mapped Teachers:", mappedTeachers);
         } else {
@@ -155,14 +151,9 @@ const Meeting = () => {
       })
       .catch((error) => console.error("Error fetching teachers:", error));
   }, []);
-  
-
-
 
   // Ensure selectedDate is properly formatted
   const handleSubmit = async () => {
-   
-
     // Convert selectedDate to string (ISO format) if it's not null
     const formattedDate = (selectedDates ?? new Date()).toISOString();
 
@@ -179,7 +170,7 @@ const Meeting = () => {
       createdBy: "Admin",
       updatedDate: new Date().toISOString(),
     };
-    
+
     try {
       const response = await fetch("http://localhost:5001/addadminMeeting", {
         method: "POST",
@@ -226,22 +217,6 @@ const Meeting = () => {
     setSelectedItemId((prev) => (prev === id ? null : id));
   };
 
-  const toggleTeacher = (teacherId: string) => {
-    setSelectedTeachers((prev) =>
-      prev.includes(teacherId)
-        ? prev.filter((t) => t !== teacherId)
-        : [...prev, teacherId]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    setSelectedTeachers(
-      selectedTeachers.length === allTeachers.length
-        ? []
-        : allTeachers.map((t) => t.teacherId)
-    );
-  };
-
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -278,13 +253,41 @@ const Meeting = () => {
     router.push("/admin-main/ui/meeting/schedule");
   };
 
-  const handleRescheduleSubmit = () => {
-    setShowSuccess(true);
+  const handleRescheduleSubmit = async () => {
+    if (!rescheduleReason.trim() || !selectedItemId) return;
 
-    setTimeout(() => {
-      setShowSuccess(false);
-      setIsRescheduleModalOpen(false);
-    }, 2000); // hides message & closes modal after 3 seconds
+    try {
+      const response = await fetch(
+        `http://localhost:5001/allAdminMeeting/${selectedItemId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            selectedDate: "2025-05-01T10:00:00.000Z", // Replace with dynamic value if needed
+            startTime: "10:00", // Replace with dynamic input if needed
+            endTime: "11:00", // Replace with dynamic input if needed
+            meetingStatus: "rescheduled",
+            updatedBy: "Admin",
+          }),
+        }
+      );
+
+      if (response.ok) {
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          setIsRescheduleModalOpen(false);
+          setRescheduleReason("");
+          setSelectedItemId(null);
+        }, 2000);
+      } else {
+        console.error("Failed to update meeting");
+      }
+    } catch (error) {
+      console.error("Error updating meeting:", error);
+    }
   };
 
   // Expect 'status' as a string
@@ -434,7 +437,9 @@ const Meeting = () => {
                   className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md shadow text-sm hover:bg-gray-50"
                 >
                   <span>
-                    {selectedDates ? selectedDates.toLocaleDateString() : "Date"}
+                    {selectedDates
+                      ? selectedDates.toLocaleDateString()
+                      : "Date"}
                   </span>
                   <IoMdArrowDropdownCircle className="text-[#1C3557]" />
                 </button>
@@ -603,7 +608,7 @@ const Meeting = () => {
                                       className="block text-left px-3 py-1 text-[12px] font-medium text-[#223857] hover:bg-gray-100"
                                       onClick={() => {
                                         setIsRescheduleModalOpen(true);
-                                        setSelectedItemId(null);
+                                        setSelectedItemId(meeting._id); // ← this sets the ID for API call
                                       }}
                                     >
                                       Request
@@ -713,11 +718,15 @@ const Meeting = () => {
                   Scheduled Date
                 </label>
                 <input
-                type="date"
-                className="w-full bg-[#f4f4f4] border border-gray-300 rounded-xl p-2 text-xs"
-                value={selectedDates ? selectedDates.toISOString().split("T")[0] : ""}
-                onChange={(e) => setSelectedDates(new Date(e.target.value))}
-              />
+                  type="date"
+                  className="w-full bg-[#f4f4f4] border border-gray-300 rounded-xl p-2 text-xs"
+                  value={
+                    selectedDates
+                      ? selectedDates.toISOString().split("T")[0]
+                      : ""
+                  }
+                  onChange={(e) => setSelectedDates(new Date(e.target.value))}
+                />
               </div>
 
               {/* Scheduled Time */}
@@ -825,7 +834,9 @@ const Meeting = () => {
                             <input
                               type="checkbox"
                               className="h-5 w-5 text-[#1C3557] border-gray-300 rounded focus:ring-[#1C3557]"
-                              checked={selectedTeachers.some((t) => t._id === teacher.teacherId)}
+                              checked={selectedTeachers.some(
+                                (t) => t._id === teacher.teacherId
+                              )}
                               onChange={() => toggleSelections(teacher)}
                             />
                           </div>
@@ -896,207 +907,31 @@ const Meeting = () => {
 
         {/* Reschedule Modal */}
         {isRescheduleModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-3xl p-6 w-[460px]">
-              <h2 className="text-[14px] font-bold text-[#0F1D40] mb-6">
-                Meeting Reschedule
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="absolute inset-0 bg-black bg-opacity-50" />
+            <div className="bg-gray-100 rounded-3xl p-6 w-96 relative z-50">
+              <h2 className="text-xl mb-4 text-gray-700">
+                Reason for Re-Schedule
               </h2>
-
               {showSuccess ? (
-                <div className="flex flex-col items-center justify-center space-y-4 py-10">
-                  <div className="bg-[#108422] text-white py-6 px-6 rounded-2xl flex items-center justify-center space-x-2 max-w-[380px]">
-                    <img
-                      src="/assets/images/success.png"
-                      alt="success"
-                      className="w-5 h-5"
-                    />
-                    <span>Request Has Been Sent to Admin</span>
-                  </div>
+                <div className="bg-[#108422] text-white py-3 px-6 rounded-lg flex items-center justify-center space-x-2 mb-4 mx-auto max-w-[280px]">
+                  <img src="/assets/images/success.png" alt="" />
+                  <span>Request Has Been Sent to Admin</span>
                 </div>
               ) : (
                 <>
-                  {/* Meeting Title */}
-                  <div className="mb-2">
-                    <label
-                      htmlFor=" meetingTitle"
-                      className="text-xs text-[#0F1D40] font-medium block mb-1"
-                    >
-                      Meeting Title
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Weekly Meeting"
-                      className="w-full bg-[#F8F8F8] border border-[#CBD5E1] rounded-lg px-2 py-2 text-xs text-[#94A3B8]"
-                    />
-                  </div>
-
-                  {/* Scheduled Date */}
-                  <div className="mb-2">
-                    <label
-                      htmlFor="scheduled date"
-                      className="text-xs text-[#0F1D40] font-medium block mb-1"
-                    >
-                      Scheduled Date
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="11/02/2024"
-                        readOnly
-                        className="w-full bg-[#F8F8F8] border border-[#CBD5E1] rounded-lg px-2 py-2 pr-10 text-xs text-[#0F1D40]"
-                      />
-                      <i className="fas fa-calendar-alt absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                    </div>
-                  </div>
-
-                  {/* Scheduled Time */}
-                  <div className="mb-2">
-                    <label
-                      htmlFor=" scedule time"
-                      className="text-xs text-[#0F1D40] font-medium block mb-1"
-                    >
-                      Scheduled Time
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="07.30 PM"
-                        readOnly
-                        className="w-full bg-[#F8F8F8] border border-[#CBD5E1] rounded-lg px-2 py-2 pr-10 text-xs text-[#0F1D40]"
-                      />
-                      <i className="fas fa-clock absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                    </div>
-                  </div>
-
-                  {/* Attendees Dropdown */}
-                  <div className="mb-2 relative">
-                    <label
-                      htmlFor=" attendees"
-                      className="text-xs font-medium text-gray-700"
-                    >
-                      Attendees
-                    </label>
-                    <button
-                      className="flex items-center border border-gray-300 bg-[#f4f4f4] rounded-xl p-2 justify-between cursor-pointer"
-                      onClick={() =>
-                        setShowAttendeesDropdown(!showAttendeesDropdown)
-                      }
-                    >
-                      <span className="text-sm text-gray-600">
-                        {selectedTeachers.length > 0
-                          ? `${selectedTeachers.length} Selected`
-                          : "Select Teachers"}
-                      </span>
-                      <i
-                        className={`fas fa-chevron-${
-                          showAttendeesDropdown ? "up" : "down"
-                        } text-gray-500`}
-                      />
-                    </button>
-
-                    {showAttendeesDropdown && (
-                      <div className="absolute bg-white border border-gray-300 rounded-xl shadow-md w-full mt-2 max-h-44 overflow-y-auto z-50 p-4">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-semibold text-[#1C3557]">
-                            Add Teachers
-                          </span>
-                        </div>
-
-                        {/* Select All */}
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-sm font-medium text-gray-700">
-                            Select All
-                          </span>
-                          <input
-                            type="checkbox"
-                            checked={
-                              selectedTeachers.length === allTeachers.length
-                            }
-                            onChange={toggleSelectAll}
-                            className="h-3 w-3"
-                          />
-                        </div>
-
-                        {/* Teacher List */}
-                        <div className="space-y-3 max-h-32 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300">
-                          {allTeachers.map((teacher) => (
-                            <div
-                              key={teacher.teacherId} // Use a unique key, like teacherId
-                              className="flex justify-between items-center"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="w-6 h-6 bg-[#D1D5DB] rounded-full flex items-center justify-center">
-                                  <i className="fas fa-user text-white text-xs" />
-                                </span>
-                                <span className="text-xs text-gray-800">
-                                  {teacher.teacherName}{" "}
-                                  {/* Display teacher's name */}
-                                </span>
-                              </div>
-                              <input
-                                type="checkbox"
-                                checked={selectedTeachers.includes(
-                                  teacher.teacherId
-                                )}
-                                onChange={() =>
-                                  toggleTeacher(teacher.teacherId)
-                                }
-                                className="h-3 w-3"
-                              />
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Dropdown Actions */}
-                        <div className="flex justify-between mt-4">
-                          <button
-                            onClick={() => setShowAttendeesDropdown(false)}
-                            className="w-[25%] border border-[#1C3557] text-[#1C3557] py-1 rounded-lg hover:bg-gray-100 text-xs"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={() => setShowAttendeesDropdown(false)}
-                            className="w-[25%] bg-[#1C3557] text-white py-1 rounded-lg hover:bg-[#15294a] text-xs"
-                          >
-                            Done
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor=" reason"
-                      className="text-xs text-[#0F1D40] font-medium block mb-1"
-                    >
-                      Reason for Reschedule
-                    </label>
-                    <textarea
-                      className="w-full bg-[#F8F8F8] border border-[#CBD5E1] rounded-lg px-2 py-2 text-sm h-28 resize-none text-[#0F1D40]"
-                      placeholder="Type here..."
-                      value={rescheduleReason}
-                      onChange={(e) => setRescheduleReason(e.target.value)}
-                    ></textarea>
-                  </div>
-
-                  {/* Footer Buttons */}
-                  <div className="flex justify-between mt-4">
-                    <button
-                      onClick={() => setIsRescheduleModalOpen(false)}
-                      className="w-[28%] border border-[#1B2B65] text-[#1B2B65] py-2 rounded-lg hover:bg-gray-100 text-xs font-semibold"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleRescheduleSubmit}
-                      className="w-[28%] bg-[#1B2B65] text-white py-2 rounded-lg hover:bg-[#0f1839] text-sm font-semibold flex items-center justify-center gap-2"
-                    >
-                      <i className="fas fa-save" /> Reschedule
-                    </button>
-                  </div>
+                  <textarea
+                    className="w-full p-4 border rounded-2xl mb-4 h-32 resize-none bg-white"
+                    placeholder="Type here..."
+                    value={rescheduleReason}
+                    onChange={(e) => setRescheduleReason(e.target.value)}
+                  />
+                  <button
+                    onClick={handleRescheduleSubmit}
+                    className="w-32 bg-[#1B2B65] text-white py-2 rounded-full hover:bg-[#0f1839] mx-auto block"
+                  >
+                    Submit
+                  </button>
                 </>
               )}
             </div>
