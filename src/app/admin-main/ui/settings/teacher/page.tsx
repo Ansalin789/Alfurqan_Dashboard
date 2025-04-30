@@ -1,12 +1,13 @@
 'use client';
 
 import BaseLayout4 from '@/components/BaseLayout4';
+import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { FaRegSquare, FaRegCheckSquare } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+type PermissionType = 'read' | 'write' | 'delete';
 interface EmployeeAccessData {
   _id: string;
   employeeId: string;
@@ -75,18 +76,37 @@ interface EmployeeAccessData {
   __v: number;
 }
 
-type PermissionType = 'read' | 'write' | 'delete';
+type Permission = {
+  read: boolean;
+  write: boolean;
+  delete: boolean;
+};
 
+type ModuleAccess = {
+  [key: string]: Permission;
+};
 
+type RoleAccess = {
+  admin: boolean;
+  adminmodules: ModuleAccess;
+  academicCoach: boolean;
+  academicmodules: ModuleAccess;
+  supervisor: boolean;
+  supervisormodules: ModuleAccess;
+  student: boolean;
+  studentmodules: ModuleAccess;
+  teacher: boolean;
+  teachermodules: ModuleAccess;
+};
 
 const TeacherModuleAccess = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const employeeId = searchParams.get('employeeId');
-
-  const [employeeData, setEmployeeData] = useState<EmployeeAccessData | null>(null);
-  const [selectedModules, setSelectedModules] = useState<{ [key: string]: boolean }>({});
-  const [permissions, setPermissions] = useState<{ [key: string]: { read: boolean; write: boolean; delete: boolean } }>({});
+  const [permissions, setPermissions] = useState<Record<string, ModuleAccess>>({
+    teachermodules: {},
+  });
+  const [selectedModules, setSelectedModules] = useState<Record<string, boolean>>({});
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const modules = [
@@ -99,226 +119,182 @@ const TeacherModuleAccess = () => {
     'Support',
   ];
 
-  // Key normalization function
-  const getModuleKey = (moduleName: string) => 
+  const getModuleKey = (moduleName: string) =>
     moduleName.toLowerCase().replace(/ & /g, '').replace(/\s+/g, '');
+
+  
 
   useEffect(() => {
     if (!employeeId) {
-      toast.error("Employee ID not found in the URL!");
+      toast.error('Employee ID not found in the URL!');
       setIsRedirecting(true);
       return;
     }
-
+  
     const fetchEmployeeData = async () => {
       try {
         const res = await fetch(`http://localhost:5001/update-access/${employeeId}`);
         const json = await res.json();
+        console.log('Fetched data:', json);
+  
+        const access = json?.data?.roleAccess;
+        const teacherModules = access?.teachermodules ?? {};
         
-        // Normalize backend keys to UI display names
-        if (json.data.roleAccess?.teachermodules) {
-          const normalizedModules = modules.reduce((acc, module) => ({
-            ...acc,
-            [module]: json.data.roleAccess.teachermodules[getModuleKey(module)] || false
-          }), {});
-          setSelectedModules(normalizedModules);
-        }
-
-        if (json.data.roleAccess?.teachermodulesPermissions) {
-          const normalizedPerms = modules.reduce((acc, module) => ({
-            ...acc,
-            [module]: json.data.roleAccess.teachermodulesPermissions[getModuleKey(module)] || 
-                      { read: false, write: false, delete: false }
-          }), {});
-          setPermissions(normalizedPerms);
-        }
+        // Updated: permissions object
+        const selected: Record<string, boolean> = {};
+        const modulePermissions: ModuleAccess = {};
+  
+        modules.forEach((module) => {
+          const key = getModuleKey(module);
+          const perms = teacherModules[key] ?? { read: false, write: false, delete: false };
+  
+          // Determine if module is selected (if any permission is true)
+          selected[key] = perms.read ?? perms.write ?? perms.delete;
+  
+          // Always store full permissions
+          modulePermissions[key] = perms;
+        });
+  
+        setSelectedModules(selected);
+        setPermissions((prev) => ({
+          ...prev,
+          teachermodules: modulePermissions,
+        }));
       } catch (error) {
-        console.error("Failed to fetch employee data:", error);
+        console.error('Failed to fetch employee data:', error);
+        toast.error('Error loading employee access data');
       }
     };
-
-    if (employeeId) fetchEmployeeData();
+  
+    fetchEmployeeData();
   }, [employeeId]);
+  
 
   useEffect(() => {
-    // Trigger redirection only after the error state is set
     if (isRedirecting) {
-      router.push("/admin-main/ui/settings"); // Redirect after the state change
+      router.push('/admin-main/ui/settings');
     }
   }, [isRedirecting, router]);
 
-
-  const handleSubmit = async () => {
-    if (!employeeId) {
-      toast.error('Employee ID not found in the URL!');
-      return;
-    }
-
-  
-    const teachermodules = Object.fromEntries(
-      modules.map(module => [
-        module.toLowerCase().replace(/ & /g, '').replace(/\s+/g, ''),
-        selectedModules[module] || false
-      ])
-    );
-  
-    const payload = {
-      roleAccess: {
-        admin: false,
-        adminmodules: {
-          dashboard: false,
-          evaluation: false,
-          student: false,
-          employees: false,
-          courses: false,
-          classes: false,
-          invoice: false,
-          analytics: false,
-          messages: false,
-          settings: false,
-        },
-        academicCoach: false,
-        academicmodules: {
-          dashboard: false,
-          trailManagement: false,
-          scheduled: false,
-          students: false,
-          teachers: false,
-          messages: false,
-          support: false,
-        },
-        supervisor: false,
-        supervisormodules: {
-          dashboard: false,
-          recuirement: false,
-          meeting: false,
-          teachers: false,
-          messages: false,
-          support: false,
-        },
-        student: false,
-        studentmodules: {
-          dashboard: false,
-          classes: false,
-          assignments: false,
-          payments: false,
-          knowledgebase: false,
-          support: false,
-        },
-        teacher: false,
-        teachermodules,
-      },
-    };
-  
-    // Log payload before submitting to check the final structure
-    console.log('Payload:', payload);
-  
-    try {
-      const res = await fetch(`http://localhost:5001/update-access/${employeeId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+  const toggleModule = (module: string, permission?: PermissionType) => {
+    if (!permission) {
+      // Toggle selection for the entire module
+      setSelectedModules((prev) => {
+        const newSelectedModules = { ...prev };
+        newSelectedModules[module] = !prev[module];
+        return newSelectedModules;
       });
-  
-      // Log the raw response to see it
-      console.log('Response Status:', res.status);
-  
-      if (!res.ok) {
-        const errorText = await res.text(); // Read response body only once
-        console.error('Error response:', errorText);
-        throw new Error('Failed to update access');
-      }
-  
-      // Now read the response as JSON (we've already consumed the body once)
-      const data = await res.json();
-      console.log('✅ Response:', data);
 
-      toast.success('Access updated successfully!');
-
-      setTimeout(() => {
-        router.push('/admin-main/ui/settings'); // 👈 Change this to your desired page
-      }, 2000);
-    } catch (err) {
-      console.error('❌ Error:', err);
-      toast.error('Something went wrong while updating access.');
+      setPermissions((prev) => ({
+        ...prev,
+        teachermodules: {
+          ...prev.teachermodules,
+          [module]: {
+            read: !prev[module]?.read,
+            write: !prev[module]?.write,
+            delete: !prev[module]?.delete,
+          },
+        },
+      }));
+    } else {
+      // Toggle a specific permission
+      setPermissions((prev) => ({
+        ...prev,
+        teachermodules: {
+          ...prev.teachermodules,
+          [module]: {
+            ...prev.teachermodules[module],
+            [permission]: !prev.teachermodules[module]?.[permission],
+          },
+        },
+      }));
     }
   };
-  
 
-  const toggleModule = (module: string) => {
-    setSelectedModules((prev) => ({ ...prev, [module]: !prev[module] }));
-  };
+  const handleUpdateAccess = async () => {
+    const roleAccess = {
+      teacher:true,
+      teachermodules: permissions.teachermodules,
+    };
 
-  // ✅ Now uses the alias
-  const togglePermission = (module: string, type: PermissionType) => {
-    setPermissions((prev) => ({
-      ...prev,
-      [module]: {
-        ...prev[module],
-        [type]: !prev[module]?.[type],
-      },
-    }));
+    try {
+      const response = await axios.put(
+        `http://localhost:5001/update-access/${employeeId}`,
+        { roleAccess }
+      );
+      console.log('Access updated successfully:', response.data);
+      toast.success('Access updated successfully!'); // ✅ Show success toast
+      setTimeout(() => {
+        router.push('/admin-main/ui/settings'); // <-- change this to your desired route
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to update access:', error);
+      toast.error('Failed to update access'); // ✅ Show error toast
+
+    }
   };
 
   return (
     <BaseLayout4>
-              <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} />
+      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} />
+      <div className="w-full min-h-screen p-5 flex flex-col items-center">
+        <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
+          Teacher Module Access
+        </h1>
 
-          <div className="w-full min-h-screen p-5 flex flex-col items-center">
-            <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
-              Teacher Module Access
-            </h1>
-    
-            <div className=" bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
-              <table className="w-full text-left min-w-[900px]">
-                <thead>
-                  <tr className="border-b text-[#101828] font-medium text-sm">
-                    <th className="p-3">Modules</th>
-                    <th className="p-3 text-center">Read</th>
-                    <th className="p-3 text-center">Write</th>
-                    <th className="p-3 text-center">Delete</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {modules.map((module) => (
-                    <tr key={module} className="border-t hover:bg-gray-50 transition">
-                      <td className="p-4 flex items-center space-x-3">
-                        <button onClick={() => toggleModule(module)}>
-                          {selectedModules[module] ? (
-                            <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
-                          ) : (
-                            <FaRegSquare className="text-gray-400 text-sm" />
-                          )}
-                        </button>
-                        <span className="text-[12px] text-[#344054]">{module}</span>
+        <div className="bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
+          <table className="w-full text-left min-w-[900px]">
+            <thead>
+              <tr className="border-b text-[#101828] font-medium text-sm">
+                <th className="p-3">Modules</th>
+                <th className="p-3 text-center">Read</th>
+                <th className="p-3 text-center">Write</th>
+                <th className="p-3 text-center">Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {modules.map((module) => {
+                const moduleKey = module.toLowerCase();
+
+                return (
+                  <tr key={module} className="border-t hover:bg-gray-50 transition">
+                    <td className="p-4 flex items-center space-x-3">
+                      <button type="button" onClick={() => toggleModule(moduleKey)}>
+                        {selectedModules[moduleKey] ? (
+                          <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
+                        ) : (
+                          <FaRegSquare className="text-gray-400 text-sm" />
+                        )}
+                      </button>
+                      <span className="text-[12px] text-[#344054]">{module}</span>
+                    </td>
+                    {['read', 'write', 'delete'].map((perm) => (
+                      <td key={perm} className="p-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={permissions.teachermodules[moduleKey]?.[perm as PermissionType] || false}
+                          onChange={() => toggleModule(moduleKey, perm as PermissionType)}
+                          className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
+                        />
                       </td>
-                      {['read', 'write', 'delete'].map((perm) => (
-                        <td key={perm} className="p-2 text-center">
-                          <input
-                        type="checkbox"
-                        checked={permissions[module]?.[perm as PermissionType] || false}
-                        onChange={() => togglePermission(module, perm as PermissionType)}
-                        className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
-                      />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-    
-              <div className="flex justify-center mt-4">
-                <button 
-                onClick={handleSubmit}
-                className="bg-[#012A4A] hover:bg-[#011d33] text-white font-sm px-4 py-1 rounded-lg shadow-md transition">
-                  Submit
-                </button>
-              </div>
-            </div>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={handleUpdateAccess}
+              className="bg-[#012A4A] hover:bg-[#011d33] text-white font-sm px-4 py-1 rounded-lg shadow-md transition"
+            >
+              Submit
+            </button>
           </div>
-        </BaseLayout4>
+        </div>
+      </div>
+    </BaseLayout4>
   );
 };
 

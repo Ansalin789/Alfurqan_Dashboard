@@ -193,7 +193,7 @@ const Page: React.FC = () => {
           <div className="overflow-x-auto">
             <div className="max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-none">
               <table className="w-full border-collapse min-w-[800px]">
-                <thead className="sticky top-0 bg-gray-100 z-10">
+                <thead className="sticky top-0 z-10">
                   <tr className="text-gray-600 text-xs sm:text-xs border-b border-black">
                     <th className="px-4 py-4 text-center">Employee ID</th>
                     <th className="px-4 py-4 text-center">Employee Name</th>
@@ -208,25 +208,25 @@ const Page: React.FC = () => {
                   {employees.map((emp, index) => (
                     <tr
                       key={emp._id}
-                      className="border-t border-gray-200 text-gray-700 text-xs sm:text-xs"
+                      className="border-t border-gray-200 text-gray-700 text-[10px]"
                     >
-                      <td className="py-3 px-4 text-center">{emp.userId}</td>
-                      <td className="py-3 px-4 text-center">{emp.userName}</td>
-                      <td className="py-3 px-4 text-center">{emp.email}</td>
-                      <td className="py-3 px-4 text-center">{emp.role}</td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-4 px-4 text-center">{emp.userId}</td>
+                      <td className="py-4 px-4 text-center">{emp.userName}</td>
+                      <td className="py-4 px-4 text-center">{emp.email}</td>
+                      <td className="py-4 px-4 text-center">{emp.role}</td>
+                      <td className="py-4 px-4 text-center">
                         {new Date(emp.createdDate).toLocaleDateString()}
                       </td>
 
                       {/* Uncomment below for Role Dropdown */}
 
                       <td className="py-1 px-1 text-center align-middle relative">
-                        <div className="px-2 py-[5px] rounded-lg border-2">{emp.role}</div>
+                        <div className="px-2 py-[5px] rounded-md border-[1px] border-gray-500 text-[9px]">{emp.role}</div>
                       </td>
 
                       <td className="py-1 px-1 text-center align-middle relative">
                       <button
-                       className="px-2 py-[5px] rounded-lg border-2"
+                       className="px-3 w-28 py-[5px] rounded-md border-[1px] border-gray-500 text-[9px]"
                        onClick={()=>handleChanges(emp._id,emp.role)}
                        >{emp.role}</button>
                       </td>

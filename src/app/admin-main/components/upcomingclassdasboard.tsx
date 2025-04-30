@@ -18,16 +18,27 @@ const UpcomingClasses: React.FC = () => {
       try {
         const response = await axios.get("http://localhost:5001/allAdminMeeting");
         const meetings = response.data?.data?.meetings || [];
-
-        const mappedMeetings: ClassItem[] = meetings.map((meeting: any) => {
+  
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to compare only date
+  
+        const filteredMeetings = meetings.filter((meeting: any) => {
+          const meetingDate = new Date(meeting.selectedDate);
+          meetingDate.setHours(0, 0, 0, 0);
+          return meetingDate >= today; // Only keep future or today's meetings
+        });
+  
+        const mappedMeetings: ClassItem[] = filteredMeetings.map((meeting: any) => {
           const start = meeting.startTime;
           const end = meeting.endTime;
           const title = meeting.meetingName || "Untitled";
           const date = new Date(meeting.selectedDate).toLocaleDateString();
-          const color = meeting.teachers?.[0]?.[0]?.teacherName === "David" ? "red-500"
-                      : meeting.teachers?.[0]?.[0]?.teacherName === "Steve" ? "blue-500"
-                      : "green-500";
-
+          const color = meeting.teachers?.[0]?.[0]?.teacherName === "David"
+            ? "red-500"
+            : meeting.teachers?.[0]?.[0]?.teacherName === "Steve"
+            ? "blue-500"
+            : "green-500";
+  
           return {
             id: meeting._id,
             date,
@@ -36,23 +47,24 @@ const UpcomingClasses: React.FC = () => {
             color,
           };
         });
-
+  
         setClasses(mappedMeetings);
       } catch (err) {
         setError("Failed to load meeting data");
         console.error("API Error:", err);
       }
     };
-
+  
     fetchMeetings();
   }, []);
+  
 
   if (error) {
     return <div className="text-center text-red-500 p-4">Error: {error}</div>;
   }
 
   return (
-    <div className="p-4 shadow-lg rounded-[20px] bg-[#e0dfdf] w-full max-w-md mx-auto">
+    <div className="p-4 shadow-lg rounded-[20px] bg-[#e0dfdf] w-full max-w-md mx-auto h-[282px]">
       <h3 className="text-[13px] font-semibold text-gray-800 mb-3 text-center">
         Upcoming Classes
       </h3>

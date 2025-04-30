@@ -222,8 +222,13 @@ const SupervisorModuleAccess = () => {
         { roleAccess }
       );
       console.log('Access updated successfully:', response.data);
+      toast.success('Access updated successfully!'); // ✅ Show success toast
+      setTimeout(() => {
+        router.push('/admin-main/ui/settings'); // <-- change this to your desired route
+      }, 2000);
     } catch (error) {
       console.error('Failed to update access:', error);
+      toast.error('Failed to update access'); // ✅ Show error toast
     }
   };
 
