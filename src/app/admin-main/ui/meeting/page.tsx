@@ -31,8 +31,8 @@ interface Meeting {
   selectedDate: string; // ISO date format
   meetingStatus: string;
   description: string;
-  starttime: string;
-  endtime: string;
+  startTime: string;
+  endTime: string;
   status: string;
   createdDate: string; // ISO date format
   createdBy: string;
@@ -47,14 +47,6 @@ interface MeetingsResponse {
     totalCount: number;
     meetings: Meeting[];
   };
-}
-
-interface ApiResponse {
-  candidateFirstName: string;
-  candidateLastName: string;
-  positionApplied: string; // Use this field to determine the subject
-  _id: string;
-  candidateEmail: string;
 }
 
 export interface User {
@@ -84,7 +76,7 @@ const Meeting = () => {
   const [meetingsData, setMeetingsData] = useState<MeetingsResponse | null>(
     null
   );
-  const [activeTab, setActiveTab] = useState<string>("upcoming");
+  const [activeTab, setActiveTab] = useState("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const [showSuccess, setShowSuccess] = useState(false);
@@ -107,8 +99,6 @@ const Meeting = () => {
     "all" | "Arabic Teacher" | "Quran Teacher"
   >("all");
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-
-
 
   // Toggle teacher selection
   const toggleSelections = (teacher: Teacher) => {
@@ -223,25 +213,8 @@ const Meeting = () => {
       // Optional: fetch new data here
     }
   };
-  const allMeetings = meetingsData?.data.meetings || [];
 
-  const upcomingClasses = allMeetings.filter(
-    (item) =>
-      item.meetingStatus.toLowerCase() === "scheduled" ||
-      item.meetingStatus.toLowerCase() === "start" ||
-      item.meetingStatus.toLowerCase() === "rescheduled"
-  );
-
-  const completedData = allMeetings.filter(
-    (item) => item.meetingStatus.toLowerCase() === "completed"
-  );
-
-  const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = dataToShow.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
+ 
 
   // Set the expected type for page number
   const handlePageChange = (page: number) => {
@@ -289,6 +262,7 @@ const Meeting = () => {
       console.error("Error updating meeting:", error);
     }
   };
+  
 
   // Expect 'status' as a string
   const getMeetingStatusClass = (
@@ -324,70 +298,106 @@ const Meeting = () => {
     return "text-white bg-gray-400"; // fallback/default
   };
 
-  const parseDateTime = (date: string | Date, time?: string): Date => {
-    const dateStr =
-      typeof date === "string" ? date : date.toISOString().split("T")[0];
+// 1. First, declare helper functions
+const parseDateTime = (date: string | Date, time?: string): Date => {
+  let parsed: Date;
 
-    // Safeguard against undefined or null time
-    const safeTime = time ?? "00:00 AM"; // default fallback time
-    const normalizedTime = safeTime.replace(".", ":").toUpperCase();
+  if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const [year, month, day] = date.split("-").map(Number);
+    parsed = new Date(year, month - 1, day);
+  } else {
+    parsed = new Date(date);
+  }
 
-    return new Date(`${dateStr} ${normalizedTime}`);
-  };
+  if (typeof time === "string" && /^\d{2}:\d{2}$/.test(time)) {
+    const [hours, minutes] = time.split(":").map(Number);
+    parsed.setHours(hours, minutes, 0, 0);
+  } else {
+    parsed.setHours(0, 0, 0, 0);
+  }
 
-  const getMeetingStatusLabel = (
-    status: string,
-    selectedDate: string | Date,
-    startTime: string,
-    endTime?: string
-  ): string => {
-    const now = new Date();
-    const start = parseDateTime(selectedDate, startTime);
-    let end: Date | null = null;
+  return parsed;
+};
 
-    const normalizedStatus = status.toLowerCase();
+const getMeetingStatusLabel = (
+  status: string,
+  selectedDate: string | Date,
+  startTime?: string,
+  endTime?: string
+): string => {
+  const now = new Date();
+  const start = parseDateTime(selectedDate, startTime);
+  let end: Date | null = null;
 
-    if (endTime) {
-      end = parseDateTime(selectedDate, endTime);
-      if (end < start) {
-        end.setDate(end.getDate() + 1); // handle overnight meetings
-      }
+  if (endTime) {
+    end = parseDateTime(selectedDate, endTime);
+    if (end < start) {
+      end.setDate(end.getDate() + 1); // Overnight
     }
+  }
 
-    const isToday =
-      start.getFullYear() === now.getFullYear() &&
-      start.getMonth() === now.getMonth() &&
-      start.getDate() === now.getDate();
+  const isToday =
+    start.getFullYear() === now.getFullYear() &&
+    start.getMonth() === now.getMonth() &&
+    start.getDate() === now.getDate();
 
-    if (normalizedStatus === "scheduled" && isToday) {
-      return (
-        "Today at " +
-        start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      );
-    }
+  if (end && now >= start && now <= end) {
+    return "Start";
+  }
 
-    if (end && now >= start && now <= end) {
-      return "Start";
-    }
-    if (end && now < start) {
-      return (
-        "Today at (" +
-        start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
-        ")"
-      );
-    }
-    if (end && now > end) {
-      return "Completed";
-    }
+  if (end && now > end) {
+    return "Completed";
+  }
 
-    if (normalizedStatus === "scheduled") return "Scheduled";
-    if (normalizedStatus === "reschedule" || normalizedStatus === "rescheduled")
-      return "Rescheduled";
-    if (normalizedStatus === "start") return "Start";
-    if (normalizedStatus === "completed") return "Completed";
+  if (isToday && now < start) {
+    return "Today at " + start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
 
-    return "Started";
-  };
+  const normalizedStatus = status.toLowerCase();
+  if (normalizedStatus === "reschedule" || normalizedStatus === "rescheduled") {
+    return "Rescheduled";
+  }
+
+  if (normalizedStatus === "completed") {
+    return "Completed";
+  }
+
+  return "Scheduled";
+};
+
+// 2. Then access and filter the data
+const allMeetings = meetingsData?.data?.meetings || [];
+
+const upcomingClasses = allMeetings.filter((item) => {
+  const label = getMeetingStatusLabel(
+    item.meetingStatus,
+    item.selectedDate,
+    item.startTime,
+    item.endTime
+  );
+  return label !== "Completed";
+});
+
+const completedData = allMeetings.filter((item) => {
+  const label = getMeetingStatusLabel(
+    item.meetingStatus,
+    item.selectedDate,
+    item.startTime,
+    item.endTime
+  );
+  return label === "Completed";
+});
+
+const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
+
+const indexOfLastItem = currentPage * itemsPerPage;
+const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+const currentItems = dataToShow.slice(indexOfFirstItem, indexOfLastItem);
+
+const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
+
+  
+
 
   return (
     <BaseLayout4>
@@ -466,17 +476,23 @@ const Meeting = () => {
                       ? "bg-[#1C3557] text-white"
                       : "bg-transparent text-black"
                   }`}
-                  onClick={() => setActiveTab("upcoming")}
+                  onClick={() => {
+                    setActiveTab("upcoming");
+                    setCurrentPage(1);
+                  }}
                 >
                   Scheduled
                 </button>
                 <button
                   className={`px-4 py-1 rounded-xl text-sm ${
-                    activeTab === "completed"
+                    activeTab === "Completed"
                       ? "bg-[#1C3557] text-white"
                       : "bg-transparent text-black"
                   }`}
-                  onClick={() => setActiveTab("completed")}
+                  onClick={() => {
+                    setActiveTab("Completed");
+                    setCurrentPage(1);
+                  }}
                 >
                   Completed
                 </button>
@@ -502,7 +518,7 @@ const Meeting = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {dataToShow.map((meeting, index) => (
+                    {currentItems.map((meeting, index) => (
                       <tr
                         key={meeting._id}
                         className={`text-[12px] font-medium ${
@@ -516,8 +532,8 @@ const Meeting = () => {
                         <td className="px-2 py-2 text-center text-xs">
                           {meeting.meetingName}
                         </td>
-                        <td className="px-2 py-2 text-center text-xs">
-                          <select className="p-2">
+                        <td className="px-2 py-2 text-center text-xs ">
+                          <select className="p-2 ">
                             <option disabled selected>
                               View List
                             </option>
@@ -536,7 +552,7 @@ const Meeting = () => {
                           </select>
                         </td>
                         <td className="px-2 py-2 text-center text-xs">
-                          {new Date(meeting.selectedDate).toLocaleString()}
+                          {new Date(meeting.selectedDate).toLocaleDateString()}
                         </td>
                         <td className="px-2 py-[6px] text-center text-[8px] whitespace-nowrap">
                           {activeTab === "upcoming" ? (
@@ -544,8 +560,8 @@ const Meeting = () => {
                               const label = getMeetingStatusLabel(
                                 meeting.meetingStatus,
                                 meeting.selectedDate,
-                                meeting.starttime,
-                                meeting.endtime
+                                meeting.startTime,
+                                meeting.endTime
                               );
                               const className = getMeetingStatusClass(
                                 label,
