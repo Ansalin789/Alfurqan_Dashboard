@@ -83,7 +83,7 @@ const AddStudentModal = ({
 
       const auth = localStorage.getItem("authToken");
       console.log(auth);
-      const response = await fetch(`https://alfurqanacademy.tech/student`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/student`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

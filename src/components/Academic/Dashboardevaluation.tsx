@@ -21,7 +21,7 @@ const StudentEvaluation = () => {
     const academicId = localStorage.getItem("academicId");
     console.log("academicId>>", academicId);
     axios
-      .get(`https://alfurqanacademy.tech/evaluationlist`, {
+      .get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
         params: { academicCoachId: academicId },
       })
       .then((response) => {

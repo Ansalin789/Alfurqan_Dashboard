@@ -45,7 +45,7 @@ const StudentsRecord = () => {
 
   useEffect(() => {
     axios
-      .get("https://alfurqanacademy.tech/alstudents/studentsrecordcount")
+      .get("https://api.blackstoneinfomaticstech.com/alstudents/studentsrecordcount")
       .then((response) => {
         const count = response.data[0];
         const chartData: ChartDataItem[] = [
@@ -61,7 +61,7 @@ const StudentsRecord = () => {
   
 
       axios
-      .get<GenderResponse>("https://alfurqanacademy.tech/alstudents/studentsGender")
+      .get<GenderResponse>("https://api.blackstoneinfomaticstech.com/alstudents/studentsGender")
       .then((res) => {
         const genderChartData: ChartDataItem[] = [
           { name: "Female", value: parseFloat(res.data.studentFemalePercentage), color: "#FF82F5" },
@@ -73,7 +73,7 @@ const StudentsRecord = () => {
 
 
       axios
-      .get("https://alfurqanacademy.tech/alstudents/studentscountrycount")
+      .get("https://api.blackstoneinfomaticstech.com/alstudents/studentscountrycount")
       .then((res) => {
         setCountryData(res.data.studentCountByCountry);
       })

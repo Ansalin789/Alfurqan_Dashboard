@@ -79,7 +79,7 @@ const Message = () => {
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
       const response = await axios.get<{ users: IUser[] }>(
-        "https://alfurqanacademy.tech/users",
+        "https://api.blackstoneinfomaticstech.com/users",
         {
           params: { role },
         }
@@ -112,7 +112,7 @@ const Message = () => {
   const fetchMessages = async (receiverId: string) => {
     try {
       const { data } = await axios.get<IMessageResponse>(
-        `https://alfurqanacademy.tech/realtimemessage/${receiverId}`
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`
       );
       const fetchedMessages = data?.data?.[0]?.messages ?? [];
       setMessages(fetchedMessages); // Set messages to state
@@ -133,7 +133,7 @@ const Message = () => {
   // Initialize socket connection
   useEffect(() => {
     if (!socketRef.current) {
-      socketRef.current = io("https://alfurqanacademy.tech", {
+      socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
         transports: ["websocket"],
         withCredentials: true,
         reconnection: true,
@@ -207,7 +207,7 @@ const Message = () => {
     try {
       // Send the new message to the backend API
       const response = await axios.post(
-        "https://alfurqanacademy.tech/realtimemessage",
+        "https://api.blackstoneinfomaticstech.com/realtimemessage",
         newMessage,
         {
           headers: {

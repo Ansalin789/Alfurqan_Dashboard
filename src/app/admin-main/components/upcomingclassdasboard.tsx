@@ -16,7 +16,7 @@ const UpcomingClasses: React.FC = () => {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get("http://localhost:5001/allAdminMeeting");
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting");
         const meetings = response.data?.data?.meetings || [];
   
         const today = new Date();

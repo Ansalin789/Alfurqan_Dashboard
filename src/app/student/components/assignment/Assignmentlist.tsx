@@ -32,7 +32,7 @@ const AssignmentList = () => {
       console.log( ">>>>>>>>>>",storedStudentId);
       
       try {
-        const response = await axios.get("https://alfurqanacademy.tech/allAssignment", {
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAssignment", {
           headers: {
           
             "Content-Type": "application/json",

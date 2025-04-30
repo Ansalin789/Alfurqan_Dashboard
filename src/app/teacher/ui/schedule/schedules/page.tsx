@@ -88,7 +88,7 @@ const SchedulePage = () => {
 
       try {
         const response = await axios.get<ApiResponse>(
-          `https://alfurqanacademy.tech/classShedule`,
+          `https://api.blackstoneinfomaticstech.com/classShedule`,
           {
             params: { teacherId },
           

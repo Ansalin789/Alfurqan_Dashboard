@@ -157,7 +157,7 @@ useEffect(() => {
               return;
           }
 
-          const response = await axios.get<ApiResponse>(`https://alfurqanacademy.tech/classShedule/students`, {
+          const response = await axios.get<ApiResponse>(`https://api.blackstoneinfomaticstech.com/classShedule/students`, {
               params: { studentId },
              
           });
@@ -222,7 +222,7 @@ useEffect(() => {
       };
   
       try {
-        const response = await axios.post("https://alfurqanacademy.tech/feedback", feedbackData, {
+        const response = await axios.post("https://api.blackstoneinfomaticstech.com/feedback", feedbackData, {
           headers: {
             "Content-Type": "application/json",
           },

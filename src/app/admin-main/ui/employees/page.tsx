@@ -382,7 +382,7 @@ const [formData, setFormData] = useState<OtherEmployeess>({
 const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
   useEffect(() => {
     axios
-      .get("http://localhost:5001/teacher/statuscount")
+      .get("https://api.blackstoneinfomaticstech.com/teacher/statuscount")
       .then((response) => {
         const data = response.data;
         if (data && data.length > 0) {
@@ -400,7 +400,7 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
         console.error("Error fetching teacher status count:", error);
       });
       axios
-      .get<GenderResponse>("http://localhost:5001/teacher/gendercount")
+      .get<GenderResponse>("https://api.blackstoneinfomaticstech.com/teacher/gendercount")
       .then((response) => {
         const res = response.data;
 
@@ -415,14 +415,14 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
         console.error("Error fetching gender count:", error);
       });
       axios
-      .get("http://localhost:5001/applicants/countriescount")
+      .get("https://api.blackstoneinfomaticstech.com/applicants/countriescount")
       .then((res) => {
         setCountryData(res.data.studentCountByCountry);
       })
       .catch((err) => console.error("Failed to fetch country stats", err));
       const fetchTeachers = async () => {
         try {
-          const res = await axios.get("http://localhost:5001/users?role=TEACHER");
+          const res = await axios.get("https://api.blackstoneinfomaticstech.com/users?role=TEACHER");
           const teacherData: Teacher[] = res.data.users.map((user: any) => ({
             _id: user._id,
             userId: user.userId,
@@ -443,7 +443,7 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
       fetchTeachers();
       const fetchDataemp = async () => {
         try {
-          const res = await fetch("http://localhost:5001/otherempcount");
+          const res = await fetch("https://api.blackstoneinfomaticstech.com/otherempcount");
       const json: OtherEmpCountResponse = await res.json();
 
       const transformed = json.otherEmpCount.map((entry) => {
@@ -463,7 +463,7 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
   
       fetchDataemp();
       const fetchGenderData = async () => {
-        const res = await fetch("http://localhost:5001/otheremp/gendercount");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/otheremp/gendercount");
         const json: GenderCountResponse = await res.json();
   
         const data = [
@@ -484,7 +484,7 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
   
       fetchGenderData();
       const fetchEmployees = async () => {
-        const res = await fetch("http://localhost:5001/otheremployees");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/otheremployees");
         const data: OtherEmployeesResponse = await res.json();
         setEmployees(data.users);
         console.log(data.users);
@@ -493,14 +493,14 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
       fetchEmployees();
       const fetchCounts = async () => {
         try {
-          const response = await axios.get<DashboardCounts>("http://localhost:5001/dashboard/supervisor/counts");
+          const response = await axios.get<DashboardCounts>("https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts");
           setCounts(response.data);
         } catch (error) {
           console.error("Error fetching dashboard counts:", error);
         }
       };
       axios
-      .get("http://localhost:5001/otheremp/countriescount")
+      .get("https://api.blackstoneinfomaticstech.com/otheremp/countriescount")
       .then((res) => {
         setCountryDataemp(res.data.otherEmpCountByCountry);
       })
@@ -623,7 +623,7 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
         form.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
       }
 
-      await axios.post("http://localhost:5001/otheremployee", form, {
+      await axios.post("https://api.blackstoneinfomaticstech.com/otheremployee", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

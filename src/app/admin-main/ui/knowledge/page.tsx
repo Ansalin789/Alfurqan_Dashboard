@@ -81,7 +81,7 @@ export default function KnowledgeBase() {
 
 const fetchKnowledgeBaseList = async () => {
   try {
-    const response = await fetch('http://localhost:5001/knowledgebase/list');
+    const response = await fetch('https://api.blackstoneinfomaticstech.com/knowledgebase/list');
     const result = await response.json();
      console.log(result);
     if (result.status === 'success') {
@@ -153,7 +153,7 @@ const videoFiles = knowledgeBaseList.filter(
     try {
       console.log('Sending API request...');
   
-      const response = await fetch('http://localhost:5001/knowledgebase', {
+      const response = await fetch('https://api.blackstoneinfomaticstech.com/knowledgebase', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

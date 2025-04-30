@@ -75,7 +75,7 @@ const TrailManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       const auth = localStorage.getItem("authToken");
-      const response = await fetch(`https://alfurqanacademy.tech/alstudents`);
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/alstudents`);
       const data = await response.json();
       console.log(auth);
       setUsers(data);

@@ -100,7 +100,7 @@ const NextClass = () => {
         }
 
         const response = await axios.get<ApiResponse>(
-          `https://alfurqanacademy.tech/classShedule/teacher`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacher`,
           {
             params: { teacherId },
           }

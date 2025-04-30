@@ -25,7 +25,7 @@ export default function SignInSignUp(): JSX.Element {
         'https://www.googleapis.com/oauth2/v3/userinfo');
 
       // Send the Google token to your backend
-      const response = await axios.post(`https://alfurqanacademy.tech/google-signin`, {
+      const response = await axios.post(`https://api.blackstoneinfomaticstech.com/google-signin`, {
         googleToken: tokenResponse.access_token,
         email: userInfo.data.email
       });
@@ -75,7 +75,7 @@ export default function SignInSignUp(): JSX.Element {
     event.preventDefault();
     setError('');
     try {
-      const response = await axios.post(`https://alfurqanacademy.tech/signin`, { username, password });
+      const response = await axios.post(`https://api.blackstoneinfomaticstech.com/signin`, { username, password });
       const {accessToken, role } = response.data;
            console.log(response.data);
            console.log(accessToken);

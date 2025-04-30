@@ -20,7 +20,7 @@ const Page = () => {
         const studentId = localStorage.getItem("StudentPortalId");
        
 
-        const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule/totalhours", {
+        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule/totalhours", {
           params: { studentId },
          
         });

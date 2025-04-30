@@ -83,7 +83,7 @@ const  ApplicantsList: React.FC = () => {
 
   const tabs = ["All", "NewApplication", "Shortlisted", "Rejected", "Waiting"];
    useEffect(() => {
-    axios.get('http://localhost:5001/applicants')
+    axios.get('https://api.blackstoneinfomaticstech.com/applicants')
       .then((res) => {
         setApplicants(res.data.applicants); 
       })

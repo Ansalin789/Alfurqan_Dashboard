@@ -60,7 +60,7 @@ const Page = () => {
   useEffect(() => {
     // Initialize socket if not already connected
     if (!socketRef.current) {
-      socketRef.current = io("https://alfurqanacademy.tech", {
+      socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
         transports: ["websocket"],
         withCredentials: true,
         reconnection: true,
@@ -103,7 +103,7 @@ const Page = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const { data } = await axios.get(`https://alfurqanacademy.tech/notification/getlist?receiverId=${userId}`);
+        const { data } = await axios.get(`https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`);
         console.log("📦 API response:", data);
     
         // Safely access the notifications array
@@ -124,7 +124,7 @@ const Page = () => {
   // 👁️ Mark notification as seen
   const handleNotificationClick = async (notificationId: string) => {
     try {
-      await axios.put(`https://alfurqanacademy.tech/notification/${notificationId}`, {
+      await axios.put(`https://api.blackstoneinfomaticstech.com/notification/${notificationId}`, {
         isRead: true,
         notificationStatus: "Seen",
       });

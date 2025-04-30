@@ -206,7 +206,7 @@ const Step2: React.FC<{
       try {
         setLoading(true);
         const response = await fetch(
-          `https://alfurqanacademy.tech/studentlist/${studentId}` );
+          `https://api.blackstoneinfomaticstech.com/studentlist/${studentId}` );
         console.log("response>>>", response);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -1153,7 +1153,7 @@ const Step6 = ({
     const fetchTeachers = async () => {
       try {
         const response = await fetch(
-          "https://alfurqanacademy.tech/users?role=TEACHER");
+          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER");
         const data = await response.json();
 
         console.log("Fetched data:", data);
@@ -2043,7 +2043,7 @@ classEndDate.setDate(classEndDate.getDate() + 28);
       };
       console.log("Payload being sent:", JSON.stringify(submitData, null, 2));
       // Make POST request to your API
-      const response = await fetch(`https://alfurqanacademy.tech/evaluation`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

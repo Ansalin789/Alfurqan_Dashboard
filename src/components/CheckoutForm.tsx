@@ -35,7 +35,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId 
     if (error) {
       setMessage(error.message ?? 'An unexpected error occurred.');
     } else if (paymentIntent?.status === 'succeeded') {
-      await fetch(`https://alfurqanacademy.tech/create-payment-intent`, {
+      await fetch(`https://api.blackstoneinfomaticstech.com/create-payment-intent`, {
 
         method: 'POST',
         headers: { 

@@ -45,7 +45,7 @@ export default function Teachers() {
   useEffect(() => {
     const fetchTeacherData = async () => {
       try {
-        const response = await axios.get("https://alfurqanacademy.tech/users", {
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/users", {
           params: { role: "TEACHER" },
         });
 

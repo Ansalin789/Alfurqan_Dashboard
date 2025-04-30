@@ -95,7 +95,7 @@ const Message = () => {
                     return;
                 }
 
-                const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule");
+                const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule");
 
                 const filteredData = response.data.students.filter(
                     (item) => item.teacher.teacherId === teacherIdToFilter
@@ -129,7 +129,7 @@ const Message = () => {
            
             const teacherIdToFilter = localStorage.getItem('TeacherPortalId');
             // Fetch messages from backend (Mock API or Database)
-            const response = await axios.get(`https://alfurqanacademy.tech/message/studentmessage`,{
+            const response = await axios.get(`https://api.blackstoneinfomaticstech.com/message/studentmessage`,{
                 params: {
                     studentId: studentId,
                     teacherId: teacherIdToFilter,
@@ -152,7 +152,7 @@ const Message = () => {
     
         try {
            
-            const response = await fetch("https://alfurqanacademy.tech/message", {
+            const response = await fetch("https://api.blackstoneinfomaticstech.com/message", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" ,
                     

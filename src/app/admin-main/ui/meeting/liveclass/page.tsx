@@ -65,7 +65,7 @@ function LiveClass() {
 
   useEffect(() => {
     // WebSocket connection for signaling
-    socket = io('http://alfurqanacademy.tech:5001'); // Replace with your actual socket URL
+    socket = io('https://api.blackstoneinfomaticstech.com'); // Replace with your actual socket URL
 
     socket.on('connect', () => {
       console.log('Connected to the signaling server');
@@ -84,7 +84,7 @@ function LiveClass() {
     // Fetch class data and join the meeting room based on meetingId
     const fetchClassData = async () => {
       try {
-        const response = await axios.get<ClassData>('https://alfurqanacademy.tech/classShedule/yourClassId'); // Replace with actual class ID
+        const response = await axios.get<ClassData>('https://api.blackstoneinfomaticstech.com/classShedule/yourClassId'); // Replace with actual class ID
         setClassData(response.data);
       } catch (error) {
         console.error('Error fetching class data:', error);

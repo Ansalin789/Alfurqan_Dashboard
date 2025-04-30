@@ -157,7 +157,7 @@ export default function Page() {
   useEffect(() => {
     const fetchInvoiceCounts = async () => {
       try {
-        const response = await fetch("http://localhost:5001/invoicecounts");
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/invoicecounts");
         const result = await response.json();
         if (result.success) {
           setInvoiceCounts(result.data);
@@ -235,7 +235,7 @@ export default function Page() {
   useEffect(() => {
     const fetchMonthlyInvoices = async () => {
       try {
-        const res = await fetch("http://localhost:5001/totalinvoice");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/totalinvoice");
         const json = await res.json();
         if (json.success) {
           setMonthlyInvoices(json.data);
@@ -259,7 +259,7 @@ export default function Page() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("http://localhost:5001/invoiceduebydates");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/invoiceduebydates");
         const json = await res.json();
         if (json.success) {
           setDueData(json.data);
@@ -428,7 +428,7 @@ export default function Page() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5001/studentinvoice/list")
+      .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list")
       .then((response) => {
         setInvoices(response.data.data); // adjust based on your API response structure
       })

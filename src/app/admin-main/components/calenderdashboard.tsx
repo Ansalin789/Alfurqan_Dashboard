@@ -48,7 +48,7 @@ const Academic: React.FC = () => {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await fetch("http://localhost:5001/allAdminMeeting");
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting");
         const data: MeetingsResponse = await response.json();
 
         const mappedEvents: Event[] = data.data.meetings.map((item) => {

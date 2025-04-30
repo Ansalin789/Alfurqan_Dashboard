@@ -24,7 +24,7 @@ const TeacherDetails = () => {
       
           const fetchTeachers = async () => {
             try {
-              const response = await fetch(`https://alfurqanacademy.tech/users/${localStorage.getItem('supervisormanageTeacherId')}`);
+              const response = await fetch(`https://api.blackstoneinfomaticstech.com/users/${localStorage.getItem('supervisormanageTeacherId')}`);
               const data = await response.json();
       
               console.log('Fetched data:', data);

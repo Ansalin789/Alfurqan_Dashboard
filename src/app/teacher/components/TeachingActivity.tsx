@@ -17,7 +17,7 @@ const TeachingActivity: React.FC = () => {
           return;
         }
 
-        const response = await axios.get("https://alfurqanacademy.tech/classShedule");
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule");
 
         const filteredData = response.data.students.filter(
           (item: any) => item.teacher.teacherId === teacherId

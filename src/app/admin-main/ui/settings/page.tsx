@@ -59,7 +59,7 @@ const Page: React.FC = () => {
     const fetchOtherEmployees = async () => {
       try {
         const res = await axios.get<OtherEmployeesResponse>(
-          "http://localhost:5001/otheremployees"
+          "https://api.blackstoneinfomaticstech.com/otheremployees"
         );
         setEmployees(res.data.users);
 

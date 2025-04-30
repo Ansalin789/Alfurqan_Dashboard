@@ -147,7 +147,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
     if (!studentId) return;
 
     axios
-      .get<StudentResponse>(`https://alfurqanacademy.tech/alstudents/${studentId}`)
+      .get<StudentResponse>(`https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`)
       .then((res) => {
         const student = res.data.studentDetails;
 
@@ -170,7 +170,7 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
 /////////////////transaction//////////////
 useEffect(() => {
   axios
-    .get(`https://alfurqanacademy.tech/studentinvoice/${studentId}`)
+    .get(`https://api.blackstoneinfomaticstech.com/studentinvoice/${studentId}`)
     .then((res) => {
       console.log("Raw API response:", res.data);
 
@@ -207,7 +207,7 @@ useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `https://alfurqanacademy.tech/classShedule/students?studentId=${studentId}`
+          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`
         );
         const data = await res.json();
         console.log("API Response Data:", data); // Log the full API response to inspect the structure
@@ -231,7 +231,7 @@ useEffect(() => {
     const fetchStats = async () => {
       try {
         // Use backticks (`) for string interpolation
-        const response = await fetch(`https://alfurqanacademy.tech/classShedule/studentsclasscount?studentId=${studentId}`);
+        const response = await fetch(`https://api.blackstoneinfomaticstech.com/classShedule/studentsclasscount?studentId=${studentId}`);
         const data: Stats = await response.json();
         
         setStats(data); // Set fetched stats data to state

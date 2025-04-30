@@ -52,7 +52,7 @@ const Calender: React.FC = () => {
         const teacherId = localStorage.getItem('TeacherPortalId');
        
 
-        const response = await axios.get<ApiResponse>('https://alfurqanacademy.tech/classShedule/teacher', {
+        const response = await axios.get<ApiResponse>('https://api.blackstoneinfomaticstech.com/classShedule/teacher', {
           params: { teacherId: teacherId },
         });
 

@@ -219,7 +219,7 @@ const Teacher = () => {
     async function fetchUsers() {
       if (!employeeId || employeeId === "null") return;
       try {
-        const response = await axios.get(`http://localhost:5001/users/${employeeId}`);
+        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/users/${employeeId}`);
         setUsers(response.data);
         console.log(response.data);
       } catch (error) {
@@ -230,7 +230,7 @@ const Teacher = () => {
     const fetchSchedule = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5001/classShedule/teacher?teacherId=${employeeId}`
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`
         );
         setScheduledClass(response.data.classSchedule);
       } catch (error) {
@@ -240,7 +240,7 @@ const Teacher = () => {
   fetchSchedule();
   const fetchWages = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/empwages/${employeeId}`);
+      const response = await axios.get(`https://api.blackstoneinfomaticstech.com/empwages/${employeeId}`);
       setWages(response.data); 
     } catch (error) {
       console.error("Error fetching wages:", error);
@@ -250,7 +250,7 @@ const Teacher = () => {
    const fetchClasses = async () => {
     try {
       const res = await axios.get<StudentData[]>(
-        `http://localhost:5001/classShedule/teacher/list?teacherId=${employeeId}`
+        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`
       );
       setStudents(res.data);
     } catch (error) {

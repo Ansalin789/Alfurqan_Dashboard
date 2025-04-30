@@ -128,7 +128,7 @@ const Meeting = () => {
   useEffect(() => {
     axios
       .get<{ totalCount: number; users: User[] }>(
-        "http://localhost:5001/otheremployees"
+        "https://api.blackstoneinfomaticstech.com/otheremployees"
       )
       .then((response) => {
         console.log("API Response:", response.data); // ✅ Debugging step
@@ -172,7 +172,7 @@ const Meeting = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:5001/addadminMeeting", {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/addadminMeeting", {
         method: "POST",
         headers: {
           "Content-Type": "application/json", // required for JSON
@@ -194,7 +194,7 @@ const Meeting = () => {
 
   useEffect(() => {
     async function fetchMeetings() {
-      const response = await fetch("http://localhost:5001/allAdminMeeting");
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting");
       const data: MeetingsResponse = await response.json();
       console.log(data);
       setMeetingsData(data);
@@ -258,7 +258,7 @@ const Meeting = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5001/allAdminMeeting/${selectedItemId}`,
+        `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${selectedItemId}`,
         {
           method: "PUT",
           headers: {

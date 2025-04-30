@@ -20,7 +20,7 @@ export default function TrialRequests() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://alfurqanacademy.tech/dashboard/admin/totaltrialrequest")
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/dashboard/admin/totaltrialrequest")
         const result = await response.json()
         setData(result)
       } catch (error) {

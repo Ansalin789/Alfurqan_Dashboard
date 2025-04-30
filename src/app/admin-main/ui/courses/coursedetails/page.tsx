@@ -70,7 +70,7 @@ const Page = () => {
     try {
       setIsLoading(true);
 
-      const response = await fetch('http://localhost:5001/courses');
+      const response = await fetch('https://api.blackstoneinfomaticstech.com/courses');
       console.log("✅ Response received:", response);
 
       if (!response.ok) {
@@ -170,7 +170,7 @@ const Page = () => {
       console.log('Sending data to API:', newCourse);
 
       // API call to create course
-      const response = await fetch('http://localhost:5001/courses', {
+      const response = await fetch('https://api.blackstoneinfomaticstech.com/courses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

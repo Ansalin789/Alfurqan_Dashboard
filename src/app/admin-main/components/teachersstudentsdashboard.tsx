@@ -15,7 +15,7 @@ type TeacherAPI = {
     const colors = ["bg-red-800", "bg-yellow-800", "bg-red-500", "bg-green-700", "bg-purple-600", "bg-blue-500"];
 
     useEffect(() => {
-      fetch("https://alfurqanacademy.tech/teacher-student-count")
+      fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count")
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {

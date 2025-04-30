@@ -46,7 +46,7 @@ export default function StudentList() {
     const fetchAndFilterStudent = async () => {
       try {
         const response = await axios.get(
-          "https://alfurqanacademy.tech/alstudents"
+          "https://api.blackstoneinfomaticstech.com/alstudents"
         );
         const allStudents: StudentItem[] = response.data.students;
 

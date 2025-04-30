@@ -97,7 +97,7 @@ export default function DashboardClasses() {
     const fetchClassData = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5001/classShedule/totalclasses?dateRange=last8months"
+          "https://api.blackstoneinfomaticstech.com/classShedule/totalclasses?dateRange=last8months"
         );
         const data: ClassScheduleData[] = await response.json();
 
@@ -121,7 +121,7 @@ export default function DashboardClasses() {
     const fetchClassStatus = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5001/classShedule/classstatuscount"
+          "https://api.blackstoneinfomaticstech.com/classShedule/classstatuscount"
         );
         const data: ClassStatusData = await response.json();
 
@@ -158,7 +158,7 @@ export default function DashboardClasses() {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:5001/classShedule/classwisecount")
+    fetch("https://api.blackstoneinfomaticstech.com/classShedule/classwisecount")
       .then((res) => res.json())
       .then((data: ClassWiseCountResponse) => {
         const regular = data.classschedule?.[0]?.totalRegularClassCount || 0;

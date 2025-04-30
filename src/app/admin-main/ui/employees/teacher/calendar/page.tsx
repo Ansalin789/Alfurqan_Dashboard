@@ -63,7 +63,7 @@ const SchedulePage = () => {
     const fetchSchedule = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5001/classShedule/teacher?teacherId=${employeeId}`
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`
         );
         const scheduledClasses: ScheduledClass[] = response.data.classSchedule ?? [];
 

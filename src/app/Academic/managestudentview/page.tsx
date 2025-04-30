@@ -153,7 +153,7 @@ const ManageStudentView = () => {
         try {
           const studentId = localStorage.getItem("studentManageID");
           const response = await fetch(
-            `https://alfurqanacademy.tech/alstudents/${studentId}`);
+            `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`);
           const data = await response.json();
           setStudentData(data);
           console.log("student data form evalutional" + JSON.stringify(data));
@@ -165,7 +165,7 @@ const ManageStudentView = () => {
     }
     const studentlist = async () => {
       try {
-        const response = await fetch(`https://alfurqanacademy.tech/classShedule`, {
+        const response = await fetch(`https://api.blackstoneinfomaticstech.com/classShedule`, {
           method: "GET"
       });
         const data = await response.json();

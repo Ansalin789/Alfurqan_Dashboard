@@ -56,7 +56,7 @@ const TotalScheduledChart = () => {
   useEffect(() => {
     const fetchChartData = async () => {
       try {
-        const response = await fetch("https://alfurqanacademy.tech/totaltrialclass");
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass");
         const result: TrialClassData[] = await response.json();
 
         const apiData = result[0];
@@ -158,7 +158,7 @@ const CoursesChart = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("https://alfurqanacademy.tech/totaltrialclass");
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass");
       const data: TrialClassData[] = await response.json();
 
       const transformedData: CourseBar[] = [
@@ -257,7 +257,7 @@ const PreferredTeachersCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("https://alfurqanacademy.tech/teacherstatus");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/teacherstatus");
         const data = await res.json();
         setTeacherData(data);
       } catch (err) {
@@ -370,7 +370,7 @@ const TeachersStudents = () => {
   const colors = ["bg-red-800", "bg-yellow-800", "bg-red-500", "bg-green-700", "bg-purple-600", "bg-blue-500"];
 
   useEffect(() => {
-    fetch("https://alfurqanacademy.tech/teacher-student-count")
+    fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count")
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {

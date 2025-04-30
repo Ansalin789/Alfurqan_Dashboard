@@ -58,7 +58,7 @@ const TotalRequestChart = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("https://alfurqanacademy.tech/totaltrialclass");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass");
         const result: TrialClassData[] = await res.json();
 
         if (result && result.length > 0) {
@@ -138,7 +138,7 @@ const CountriesCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("https://alfurqanacademy.tech/countiescount");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/countiescount");
         const result: ApiResponse = await res.json();
         setData(result.studentCountByCountry);
       } catch (err) {
@@ -233,7 +233,7 @@ const PreferredTeachersCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch(
-        "https://alfurqanacademy.tech/preferedteacher"
+        "https://api.blackstoneinfomaticstech.com/preferedteacher"
       );
       const result = await response.json();
 
@@ -347,7 +347,7 @@ const CoursesChart = () => {
   useEffect(() => {
     const fetchCourseData = async () => {
       try {
-        const res = await fetch("https://alfurqanacademy.tech/studentcourse");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/studentcourse");
         const data: CourseStats = await res.json();
 
         setCourseData([

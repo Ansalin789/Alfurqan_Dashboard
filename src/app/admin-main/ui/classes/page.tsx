@@ -97,7 +97,7 @@ const SalaryCard = () => {
   useEffect(() => {
     const fetchClassData = async () => {
       try {
-        const response = await fetch("http://localhost:5001/classShedule");
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/classShedule");
         const data: StudentClassApiResponse = await response.json();
         setClassData(data.students || []);
       } catch (error) {
