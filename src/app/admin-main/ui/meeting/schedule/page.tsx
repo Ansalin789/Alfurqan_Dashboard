@@ -4,12 +4,6 @@ import React, { useEffect, useState } from "react";
 import { Calendar, dateFnsLocalizer, View, Views } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { format, parse, startOfWeek, getDay } from "date-fns";
-import BaseLayout3 from "@/components/BaseLayout3";
-import { IoMdClose } from "react-icons/io";
-import { FaCalendarAlt, FaUserCircle } from "react-icons/fa";
-import DatePicker from "react-datepicker";
-import { User } from "lucide-react";
-import axios from "axios";
 import moment from "moment";
 import BaseLayout4 from "@/components/BaseLayout4";
 

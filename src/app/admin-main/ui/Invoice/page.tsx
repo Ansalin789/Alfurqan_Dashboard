@@ -1,9 +1,33 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import BaseLayout4 from '@/components/BaseLayout4';
-import { Sun, Bell, X, FileText } from 'lucide-react';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import React, { useEffect, useRef, useState } from "react";
+import BaseLayout4 from "@/components/BaseLayout4";
+import { Sun, Bell, X, FileText } from "lucide-react";
+import { Bar, Doughnut, Line } from "react-chartjs-2";
+import axios from "axios";
+
+interface Student {
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  studentPhone: string;
+  country?: string;
+  city?: string;
+}
+
+interface Invoice {
+  _id: string;
+  courseName: string;
+  amount: number;
+  invoiceStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  lastUpdatedDate: string;
+  lastUpdatedBy: string;
+  dueDate?: string;
+  student: Student;
+}
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,9 +39,9 @@ import {
   Legend,
   Filler,
   BarElement,
-  ArcElement
-} from 'chart.js';
-import { useRouter } from 'next/navigation';
+  ArcElement,
+} from "chart.js";
+import { useRouter } from "next/navigation";
 
 // Register ChartJS components
 ChartJS.register(
@@ -26,7 +50,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
-  ArcElement, 
+  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -37,19 +61,53 @@ export default function Page() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationCount, setNotificationCount] = useState(5);
   const router = useRouter();
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [notifications, setNotifications] = useState([
-    { id: 1, message: "New student registration pending approval", seen: false, time: "2 mins ago", type: "urgent" },
-    { id: 2, message: "Class rescheduled for tomorrow", seen: false, time: "1 hour ago", type: "important" },
-    { id: 3, message: "Payment received from student", seen: false, time: "3 hours ago", type: "payment" },
-    { id: 4, message: "System maintenance scheduled", seen: true, time: "Yesterday", type: "system" },
-    { id: 5, message: "New message from teacher", seen: true, time: "2 days ago", type: "message" },
+    {
+      id: 1,
+      message: "New student registration pending approval",
+      seen: false,
+      time: "2 mins ago",
+      type: "urgent",
+    },
+    {
+      id: 2,
+      message: "Class rescheduled for tomorrow",
+      seen: false,
+      time: "1 hour ago",
+      type: "important",
+    },
+    {
+      id: 3,
+      message: "Payment received from student",
+      seen: false,
+      time: "3 hours ago",
+      type: "payment",
+    },
+    {
+      id: 4,
+      message: "System maintenance scheduled",
+      seen: true,
+      time: "Yesterday",
+      type: "system",
+    },
+    {
+      id: 5,
+      message: "New message from teacher",
+      seen: true,
+      time: "2 days ago",
+      type: "message",
+    },
   ]);
 
   const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
         setShowNotifications(false);
       }
     };
@@ -60,9 +118,9 @@ export default function Page() {
 
   const toggleNotifications = () => {
     if (!showNotifications) {
-      const updatedNotifications = notifications.map(notif => ({
+      const updatedNotifications = notifications.map((notif) => ({
         ...notif,
-        seen: true
+        seen: true,
       }));
       setNotifications(updatedNotifications);
       setNotificationCount(0);
@@ -71,48 +129,190 @@ export default function Page() {
   };
 
   const getNotificationIcon = (type: string) => {
-    switch(type) {
-      case 'urgent': return '🔴';
-      case 'important': return '🟡';
-      case 'payment': return '💰';
-      case 'system': return '⚙️';
-      case 'message': return '✉️';
-      default: return '🔵';
+    switch (type) {
+      case "urgent":
+        return "🔴";
+      case "important":
+        return "🟡";
+      case "payment":
+        return "💰";
+      case "system":
+        return "⚙️";
+      case "message":
+        return "✉️";
+      default:
+        return "🔵";
     }
   };
 
-  // Generate month names for the chart labels
+  type InvoiceType = "total" | "paid" | "pending" | "void";
+  const [invoiceCounts, setInvoiceCounts] = useState<
+    Record<InvoiceType, number>
+  >({
+    total: 0,
+    paid: 0,
+    pending: 0,
+    void: 0,
+  });
+  useEffect(() => {
+    const fetchInvoiceCounts = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/invoicecounts");
+        const result = await response.json();
+        if (result.success) {
+          setInvoiceCounts(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching invoice counts:", error);
+      }
+    };
 
-  // Bar chart data
+    fetchInvoiceCounts();
+  }, []);
+
+  const cards: {
+    title: string;
+    key: InvoiceType;
+    iconBg: string;
+    iconColor: string;
+    chartColor: string;
+  }[] = [
+    {
+      title: "Total Invoices",
+      key: "total",
+      iconBg: "bg-gray-100",
+      iconColor: "text-gray-500",
+      chartColor: "#64748b",
+    },
+    {
+      title: "Paid Invoices",
+      key: "paid",
+      iconBg: "bg-indigo-100",
+      iconColor: "text-indigo-500",
+      chartColor: "#6366f1",
+    },
+    {
+      title: "Unpaid Invoices",
+      key: "pending",
+      iconBg: "bg-cyan-100",
+      iconColor: "text-cyan-500",
+      chartColor: "#06b6d4",
+    },
+    {
+      title: "Void Invoices",
+      key: "void",
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-500",
+      chartColor: "#3b82f6",
+    },
+  ];
+
+  type InvoiceMonthData = {
+    date: string;
+    total: number;
+    paid: number;
+  };
+
+  const monthOrder = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const [monthlyInvoices, setMonthlyInvoices] = useState<InvoiceMonthData[]>(
+    []
+  );
+
+  useEffect(() => {
+    const fetchMonthlyInvoices = async () => {
+      try {
+        const res = await fetch("http://localhost:5001/totalinvoice");
+        const json = await res.json();
+        if (json.success) {
+          setMonthlyInvoices(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch monthly invoice data", error);
+      }
+    };
+
+    fetchMonthlyInvoices();
+  }, []);
+
+  const COLORS = ["#0f172a", "#8b5cf6", "#0ea5e9", "#3b82f6"];
+  const [dueData, setDueData] = useState({
+    range_0_10: 0,
+    range_11_20: 0,
+    range_21_30: 0,
+    range_30_plus: 0,
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("http://localhost:5001/invoiceduebydates");
+        const json = await res.json();
+        if (json.success) {
+          setDueData(json.data);
+        }
+      } catch (err) {
+        console.error("Error fetching invoiceduebydates", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const barData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep','Oct','Nov','Dec'],
+    labels: monthOrder,
     datasets: [
       {
-        data: [80, 70, 80, 90, 70, 78, 85, 70, 75,35,35,65], // Total invoices
-        backgroundColor: '#217EFD', // Light gray background for total
+        label: "Total",
+        data: monthOrder.map((month) => {
+          const entry = monthlyInvoices.find((item) =>
+            item.date.startsWith(month)
+          );
+          return entry?.total ?? 0;
+        }),
+        backgroundColor: "#217EFD",
         borderRadius: {
           bottomLeft: 10,
-          bottomRight: 10
+          bottomRight: 10,
         },
         barThickness: 25,
       },
       {
-        data: [45, 50, 43, 60, 34, 50, 58, 39, 48,35,35,65], // Paid invoices
-        backgroundColor: '#012A4A', // Blue color for paid portion
+        label: "Paid",
+        data: monthOrder.map((month) => {
+          const entry = monthlyInvoices.find((item) =>
+            item.date.startsWith(month)
+          );
+          return entry?.paid ?? 0;
+        }),
+        backgroundColor: "#012A4A",
         borderRadius: {
           topLeft: 10,
           topRight: 10,
           bottomLeft: 0,
-          bottomRight: 0
+          bottomRight: 0,
         },
         barThickness: 25,
-      }
+      },
     ],
   };
-  
+
   const barOptions = {
     responsive: true,
-    maintainAspectRatio: false, // allow height to be controlled by container
+    maintainAspectRatio: false,
     layout: {
       padding: {
         top: 10,
@@ -130,12 +330,11 @@ export default function Page() {
           afterBody: function (context: any) {
             const chart = context[0].chart;
             const index = context[0].dataIndex;
-  
+
             const total = chart.data.datasets[0].data[index];
             const paid = chart.data.datasets[1].data[index];
-  
-            if (!total || !paid) return [`No data`];
-  
+
+            if (!total) return [`Total: 0`, `Paid: ${paid}`];
             return [
               `Total: ${total}`,
               `Paid: ${paid} (${Math.round((paid / total) * 100)}%)`,
@@ -155,7 +354,7 @@ export default function Page() {
         stacked: true,
         beginAtZero: true,
         ticks: {
-          stepSize: 20,
+          stepSize: 5000,
         },
         grid: {
           drawBorder: false,
@@ -165,81 +364,87 @@ export default function Page() {
       },
     },
   };
-  
-  
-  
+
   const doughnutData = {
-    labels: ['0-10', '10-20', '20-30', 'More than 30'],
+    labels: ["0-10", "11-20", "21-30", "More than 30"],
     datasets: [
       {
-        data: [35, 20, 18, 10],
-        backgroundColor: ['#0f172a', '#8b5cf6', '#0ea5e9', '#3b82f6'],
+        data: [
+          dueData.range_0_10,
+          dueData.range_11_20,
+          dueData.range_21_30,
+          dueData.range_30_plus,
+        ],
+        backgroundColor: COLORS,
         borderWidth: 0,
       },
     ],
   };
-  
+
   const doughnutOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '70%',
+    cutout: "70%",
     plugins: {
       legend: {
-        display: false // Disable default legend
-      }
-    }
+        display: false,
+      },
+    },
   };
-  
+
+  const legendLabels = [
+    { label: "0-10 days", value: dueData.range_0_10, color: COLORS[0] },
+    { label: "11-20 days", value: dueData.range_11_20, color: COLORS[1] },
+    { label: "21-30 days", value: dueData.range_21_30, color: COLORS[2] },
+    {
+      label: "More than 30 days",
+      value: dueData.range_30_plus,
+      color: COLORS[3],
+    },
+  ];
+
   const InvoiceLegend = () => (
     <div className="space-y-3">
-      {/* Legend Item 1 */}
-      <div className="flex items-center gap-3">
-        <div className="w-3 h-3 rounded-full bg-gray-900" />
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">0-10 days</span>
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-            35
-          </span>
+      {legendLabels.map(({ label, value, color }, idx) => (
+        <div key={idx} className="flex items-center gap-3">
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: color }}
+          />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">{label}</span>
+            <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
+              {value}
+            </span>
+          </div>
         </div>
-      </div>
-  
-      {/* Legend Item 2 */}
-      <div className="flex items-center gap-3">
-        <div className="w-3 h-3 rounded-full bg-purple-500" />
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">10-20 days</span>
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-            35
-          </span>
-        </div>
-      </div>
-  
-      {/* Legend Item 3 */}
-      <div className="flex items-center gap-3">
-        <div className="w-3 h-3 rounded-full bg-sky-500" />
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">20-30 days</span>
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-            35
-          </span>
-        </div>
-      </div>
-  
-      {/* Legend Item 4 */}
-      <div className="flex items-center gap-3">
-        <div className="w-3 h-3 rounded-full bg-blue-500" />
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">More than 30 days</span>
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-            35
-          </span>
-        </div>
-      </div>
+      ))}
     </div>
   );
+
   const handleviewlist = () => {
-    router.push('/admin-main/ui/invoicelist');
-  }
+    router.push("/admin-main/ui/invoicelist");
+  };
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:5001/studentinvoice/list")
+      .then((response) => {
+        setInvoices(response.data.data); // adjust based on your API response structure
+      })
+      .catch((error) => {
+        console.error("Error fetching invoices:", error);
+      });
+  }, []);
+
+  const calculateDueDays = (dueDate?: string) => {
+    if (!dueDate) return "-";
+    const due = new Date(dueDate);
+    const today = new Date();
+    const diffTime = due.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return `${diffDays} days`;
+  };
 
   return (
     <div>
@@ -252,8 +457,8 @@ export default function Page() {
               <button className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300">
                 <Sun size={16} className="text-gray-700" />
               </button>
-              
-              <button 
+
+              <button
                 className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 relative"
                 onClick={toggleNotifications}
               >
@@ -291,10 +496,14 @@ export default function Page() {
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <span className="text-sm mt-0.5">{getNotificationIcon(notification.type)}</span>
+                      <span className="text-sm mt-0.5">
+                        {getNotificationIcon(notification.type)}
+                      </span>
                       <div className="flex-1">
                         <p className="text-sm">{notification.message}</p>
-                        <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {notification.time}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -305,229 +514,265 @@ export default function Page() {
 
           {/* Invoice Stats Cards */}
           <div className="grid grid-cols-4 gap-4 mb-3">
-  {[
-    {
-      title: 'Total Invoices',
-      count: '2,478',
-      iconBg: 'bg-gray-100',
-      iconColor: 'text-gray-500',
-      chartColor: '#64748b',
-    },
-    {
-      title: 'Paid Invoices',
-      count: '983',
-      iconBg: 'bg-indigo-100',
-      iconColor: 'text-indigo-500',
-      chartColor: '#6366f1',
-    },
-    {
-      title: 'Unpaid Invoices',
-      count: '1,256',
-      iconBg: 'bg-cyan-100',
-      iconColor: 'text-cyan-500',
-      chartColor: '#06b6d4',
-    },
-    {
-      title: 'Void Invoices',
-      count: '652',
-      iconBg: 'bg-blue-100',
-      iconColor: 'text-blue-500',
-      chartColor: '#3b82f6',
-    },
-  ].map((card, i) => (
-    <div
-      key={i}
-      className="bg-white shadow-sm rounded-lg flex flex-col justify-between overflow-hidden"
-    >
-      <div className="px-4 pt-3 pb-1">
-        <div className="flex items-start justify-between">
-          <div className={`w-8 h-8 rounded-full ${card.iconBg} flex items-center justify-center`}>
-            <FileText size={16} className={card.iconColor} />
+            {cards.map((card, index) => (
+              <div
+                key={index}
+                className="bg-white shadow-sm rounded-lg flex flex-col justify-between overflow-hidden"
+              >
+                <div className="px-4 pt-3 pb-1">
+                  <div className="flex items-start justify-between">
+                    <div
+                      className={`w-8 h-8 rounded-full ${card.iconBg} flex items-center justify-center`}
+                    >
+                      <FileText size={16} className={card.iconColor} />
+                    </div>
+                    <div className="text-right">
+                      <h3 className="text-xl font-semibold text-gray-800">
+                        {invoiceCounts[card.key]}
+                      </h3>
+                      <p className="text-xs text-gray-500">{card.title}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="h-12 w-full relative">
+                  <Line
+                    data={{
+                      labels: ["", "", "", "", "", ""],
+                      datasets: [
+                        {
+                          data: [3, 8, 4, 6, 5, 9],
+                          borderColor: card.chartColor,
+                          backgroundColor: `${card.chartColor}20`,
+                          borderWidth: 4,
+                          fill: {
+                            target: "origin",
+                            above: `${card.chartColor}10`,
+                            below: `${card.chartColor}20`,
+                          },
+                          tension: 0.4,
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { display: false },
+                        filler: { propagate: false },
+                      },
+                      scales: {
+                        x: {
+                          display: false,
+                          grid: { display: false },
+                          ticks: { padding: 0 },
+                        },
+                        y: {
+                          display: false,
+                          grid: { display: false },
+                          ticks: { padding: 0 },
+                          beginAtZero: true,
+                        },
+                      },
+                      layout: {
+                        padding: { left: 0, right: 0, top: 0, bottom: 0 },
+                      },
+                      elements: {
+                        point: { radius: 0 },
+                        line: { tension: 0.4, borderWidth: 2 },
+                      },
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="text-right">
-            <h3 className="text-xl font-semibold text-gray-800">{card.count}</h3>
-            <p className="text-xs text-gray-500">{card.title}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="h-12 w-full relative">
-        <Line 
-          data={{
-            labels: ['', '', '', '', '', ''],
-            datasets: [{
-              data: [3, 8, 4, 6, 5, 9],
-              borderColor: card.chartColor,
-              backgroundColor: `${card.chartColor}20`, // 20% opacity of border color
-              borderWidth: 4,
-              fill: {
-                target: 'origin',
-                above: `${card.chartColor}10`, // Lighter fill above origin (if needed)
-                below: `${card.chartColor}20`  // Fill below the line
-              },
-              tension: 0.4
-            }]
-          }}
-          options={{ 
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-              legend: { display: false },
-              filler: {
-                propagate: false
-              }
-            },
-            scales: {
-              x: { 
-                display: false,
-                grid: { display: false },
-                ticks: { padding: 0 }
-              },
-              y: { 
-                display: false,
-                grid: { display: false },
-                ticks: { padding: 0 },
-                beginAtZero: true // Ensures fill goes to bottom
-              }
-            },
-            layout: {
-              padding: {
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0
-              }
-            },
-            elements: {
-              point: { radius: 0 },
-              line: { tension: 0.4, borderWidth: 2 },
-            },
-          }} 
-        />
-      </div>
-    </div>
-  ))}
-</div>
 
           {/* Middle Sections */}
           <div className="grid grid-cols-2 gap-6 mb-6 items-start">
-  {/* Total Invoice Section */}
-  <div className="bg-white rounded-xl shadow-sm p-3 h-[300px] w-full">
-      <div className="flex justify-between items-center mb-4">
-      <h3 className="text-base font-semibold text-gray-800">Total Invoice</h3>
-       <div className="flex gap-3 items-center flex-wrap">
-    <div className="flex items-center gap-1">
-      <div className="w-2 h-2 rounded-full bg-[#012A4A]" />
-      <span className="text-xs text-gray-600">Total</span>
-    </div>
-    <div className="flex items-center gap-1">
-      <div className="w-2 h-2 rounded-full bg-[#217EFD]" />
-      <span className="text-xs text-gray-600">Paid</span>
-    </div>
-      <div className="bg-gray-100 text-gray-500 text-[10px] px-2 py-[2px] rounded shadow-sm">
-      Last year
-      </div>
-   </div>
-     </div>
+            {/* Total Invoice Section */}
+            <div className="bg-white rounded-xl shadow-sm p-3 h-[300px] w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-base font-semibold text-gray-800">
+                  Total Invoice
+                </h3>
+                <div className="flex gap-3 items-center flex-wrap">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-[#012A4A]" />
+                    <span className="text-xs text-gray-600">Total</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-[#217EFD]" />
+                    <span className="text-xs text-gray-600">Paid</span>
+                  </div>
+                  <div className="bg-gray-100 text-gray-500 text-[10px] px-2 py-[2px] rounded shadow-sm">
+                    Last year
+                  </div>
+                </div>
+              </div>
 
-    <div className="w-full" style={{ height: "240px" }}>
-      <Bar data={barData} options={barOptions} />
-    </div>
-  </div>
+              <div className="w-full" style={{ height: "240px" }}>
+                <Bar data={barData} options={barOptions} />
+              </div>
+            </div>
 
-  {/* Invoices Due by Days */}
-  <div className="bg-white rounded-xl shadow-sm p-4 h-[300px] w-full">
-  <h3 className="text-sm font-semibold text-gray-800 mb-2">Invoices Due by Days</h3>
-  <div className="flex h-[calc(100%-50px)]"> {/* Subtract title height */}
-    {/* Chart Container (60%) */}
-    <div className="w-[50%] h-full flex items-center justify-center mt-3">
-      <Doughnut 
-        data={doughnutData} 
-        options={{
-          ...doughnutOptions,
-          maintainAspectRatio: false,
-          plugins: {
-            ...doughnutOptions.plugins,
-            legend: {
-              display: false // Hide default legend since we're using custom one
-            }
-          }
-        }} 
-      />
-    </div>
-    
-    {/* Legend Container (40%) */}
-    <div className="w-[50%] h-full flex items-center justify-center pl-4">
-      <InvoiceLegend />
-    </div>
-  </div>
-  </div>
-</div>
-
-
-         
+            {/* Invoices Due by Days */}
+            <div className="bg-white rounded-xl shadow-sm p-4 h-[300px] w-full">
+              <h3 className="text-sm font-semibold text-gray-800 mb-2">
+                Invoices Due by Days
+              </h3>
+              <div className="flex h-[calc(100%-50px)]">
+                {" "}
+                {/* Subtract title height */}
+                {/* Chart Container (60%) */}
+                <div className="w-[50%] h-full flex items-center justify-center mt-3">
+                  <Doughnut
+                    data={doughnutData}
+                    options={{
+                      ...doughnutOptions,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        ...doughnutOptions.plugins,
+                        legend: {
+                          display: false, // Hide default legend since we're using custom one
+                        },
+                      },
+                    }}
+                  />
+                </div>
+                {/* Legend Container (40%) */}
+                <div className="w-[50%] h-full flex items-center justify-center pl-4">
+                  <InvoiceLegend />
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Invoice Table */}
-          <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] flex flex-col justify-between">
-  <table className="min-w-full rounded-lg shadow bg-white" style={{ width: "100%", tableLayout: "fixed" }}>
-    <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
-      <tr>
-        <th className="p-3 py-5 font-semibold text-center" style={{ width: "15%" }}>Invoice ID</th>
-        <th className="p-3 py-5 font-semibold text-center" style={{ width: "15%" }}>Date</th>
-        <th className="p-3 py-5 font-semibold text-center" style={{ width: "15%" }}>Student Name</th>
-        <th className="p-3 py-5 font-semibold text-center" style={{ width: "12%" }}>Student ID</th>
-        <th className="p-3 py-5 font-semibold text-center" style={{ width: "12%" }}>Course</th>
-        <th className="p-3 py-5 font-semibold text-center" style={{ width: "10%" }}>Due By Days</th>
-        <th className="p-3 py-5 font-semibold text-center" style={{ width: "15%" }}>Paid Date</th>
-        <th className="p-3 py-5 font-semibold text-center" style={{ width: "10%" }}>Status</th>
-      </tr>
-    </thead>
-    <tbody className="text-[10px] font-medium">
-      {/* Row 1 */}
-      <tr className="bg-[#faf9f9]">
-        <td className="p-2 text-center">#12342451</td>
-        <td className="p-2 text-center">June 1, 2020, 08:22 AM</td>
-        <td className="p-2 text-center">Jason Peros</td>
-        <td className="p-2 text-center">#0953587</td>
-        <td className="p-2 text-center">Article</td>
-        <td className="p-2 text-center">2 days</td>
-        <td className="p-2 text-center">June 4, 2020, 08:22 AM</td>
-        <td className="p-2 text-center">
-          <span className="inline-flex items-center justify-center  w-12 h-4.5 px-3 py-1 rounded-md bg-green-100 text-green-800 border border-green-900 text-[7px] ">Paid</span>
-        </td>
-      </tr>
-
-      {/* Row 2 */}
-      <tr className="bg-[#ebebeb]">
-        <td className="p-2 text-center">#12342451</td>
-        <td className="p-2 text-center">June 1, 2020, 08:22 AM</td>
-        <td className="p-2 text-center">Samantha Cool</td>
-        <td className="p-2 text-center">#0953587</td>
-        <td className="p-2 text-center">Queen</td>
-        <td className="p-2 text-center">2 days</td>
-        <td className="p-2 text-center">-</td>
-        <td className="p-2 text-center">
-          <span className="inline-flex items-center justify-center  w-12 h-4.5 px-3 py-1 rounded-md bg-yellow-100 text-yellow-800 border border-yellow-900 text-[7px] ">Pending</span>
-        </td>
-      </tr>
-
-      {/* Row 3 */}
-      <tr className="bg-[#faf9f9]">
-        <td className="p-2 text-center">#12342451</td>
-        <td className="p-2 text-center">June 1, 2020, 08:22 AM</td>
-        <td className="p-2 text-center">Mooncroft</td>
-        <td className="p-2 text-center">#0953587</td>
-        <td className="p-2 text-center">Islamic Studies</td>
-        <td className="p-2 text-center">2 days</td>
-        <td className="p-2 text-center">June 4, 2020, 08:22 AM</td>
-        <td className="p-2 text-center">
-          <span className="inline-flex items-center justify-center  w-12 h-4.5 px-3 py-1 bg-green-100 text-green-800 border border-green-900 text-[7px]  rounded-md">Paid</span>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-<div className="flex justify-end">
+          <div className="overflow-x-auto scrollbar-none h-[170px] bg-white rounded-lg border-2 border-[#1C3557] flex flex-col justify-between">
+            <table
+              className="min-w-full rounded-lg shadow bg-white"
+              style={{ width: "100%", tableLayout: "fixed" }}
+            >
+              <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
+                <tr>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "15%" }}
+                  >
+                    Invoice ID
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "15%" }}
+                  >
+                    Date
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "15%" }}
+                  >
+                    Student Name
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "12%" }}
+                  >
+                    Student ID
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "12%" }}
+                  >
+                    Course
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "10%" }}
+                  >
+                    Due By Days
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "15%" }}
+                  >
+                    Paid Date
+                  </th>
+                  <th
+                    className="p-3 py-5 font-semibold text-center"
+                    style={{ width: "10%" }}
+                  >
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="text-[10px] font-medium">
+                {invoices.length > 0 ? (
+                  invoices.map((invoice, index) => (
+                    <tr
+                      key={invoice._id}
+                      className={
+                        index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                      }
+                    >
+                      <td className="p-2 text-center">
+                        #{invoice._id.slice(-6)}
+                      </td>
+                      <td className="p-2 text-center">
+                        {new Date(invoice.createdDate).toLocaleDateString(
+                          undefined,
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )}
+                      </td>
+                      <td className="p-2 text-center">
+                        {invoice.student?.studentName || "-"}
+                      </td>
+                      <td className="p-2 text-center">
+                        {invoice.student?.studentId || "-"}
+                      </td>
+                      <td className="p-2 text-center">{invoice.courseName}</td>
+                      <td className="p-2 text-center">
+                        {calculateDueDays(invoice.dueDate)}
+                      </td>
+                      <td className="p-2 text-center">
+                        {invoice.invoiceStatus === "Paid"
+                          ? new Date(
+                              invoice.lastUpdatedDate
+                            ).toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : "-"}
+                      </td>
+                      <td className="p-2 text-center">
+                        <span
+                          className={`inline-flex items-center justify-center w-12 h-4.5 px-3 py-1 rounded-md ${
+                            invoice.invoiceStatus === "Paid"
+                              ? "bg-green-100 text-green-800 border border-green-900"
+                              : "bg-yellow-100 text-yellow-800 border border-yellow-900"
+                          } text-[7px]`}
+                        >
+                          {invoice.invoiceStatus}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="text-center py-4 text-sm">
+                      No invoices found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex justify-end">
             <button
               className="text-[#fff] mt-3 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
               onClick={handleviewlist}
@@ -535,7 +780,6 @@ export default function Page() {
               View All
             </button>
           </div>
-
         </div>
       </BaseLayout4>
     </div>

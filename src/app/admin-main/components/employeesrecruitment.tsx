@@ -1,111 +1,50 @@
 // components/ApplicantsList.tsx
-import React from "react";
-import { MoreHorizontal, FileText, Star, Upload, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {  FileText, Star, Upload, X } from "lucide-react";
+import axios from "axios";
+
+interface Supervisor {
+  supervisorId: string;
+  supervisorName: string;
+  supervisorEmail: string;
+  supervisorRole: string;
+}
 
 interface Applicant {
   _id: string;
   candidateFirstName: string;
   candidateLastName: string;
   candidateEmail: string;
-  candidatePhoneNumber: string;
+  candidatePhoneNumber: string | number;
   applicationStatus: string;
   positionApplied: string;
   applicationDate: string;
-  level: string;
+  level?: string;
+  gender?: string;
+  candidateCountry?: string;
+  candidateCity?: string;
+  currency?: string;
+  expectedSalary?: number;
+  preferedWorkingHours?: string;
+  uploadResume?: {
+    type: string;
+    data: any[];
+  };
+  comments?: string;
+  overallRating?: number;
+  professionalExperience?: string;
+  skills?: string;
+  status?: string;
+  createdDate?: string;
+  createdBy?: string;
+  __v?: number;
+  supervisor?: Supervisor;
 }
+
 
 const  ApplicantsList: React.FC = () => {
   // Static data for demonstration
-  const applicants: Applicant[] = [
-    {
-      _id: "1",
-      candidateFirstName: "John",
-      candidateLastName: "Doe",
-      candidateEmail: "john.doe@example.com",
-      candidatePhoneNumber: "+1234567890",
-      applicationStatus: "New Application",
-      positionApplied: "Arabic Teacher",
-      applicationDate: "2023-05-15",
-      level: "3"
-    },
-    {
-      _id: "2",
-      candidateFirstName: "Jane",
-      candidateLastName: "Smith",
-      candidateEmail: "jane.smith@example.com",
-      candidatePhoneNumber: "+1987654321",
-      applicationStatus: "Shortlisted",
-      positionApplied: "Quran Teacher",
-      applicationDate: "2023-05-10",
-      level: "4"
-    },
-    {
-      _id: "3",
-      candidateFirstName: "Michael",
-      candidateLastName: "Johnson",
-      candidateEmail: "michael.j@example.com",
-      candidatePhoneNumber: "+1122334455",
-      applicationStatus: "Rejected",
-      positionApplied: "Islamic Studies Teacher",
-      applicationDate: "2023-05-05",
-      level: "2"
-    },
-    {
-        _id: "4",
-        candidateFirstName: "Michael",
-        candidateLastName: "Johnson",
-        candidateEmail: "michael.j@example.com",
-        candidatePhoneNumber: "+1122334455",
-        applicationStatus: "Waiting",
-        positionApplied: "Islamic Studies Teacher",
-        applicationDate: "2023-05-05",
-        level: "2"
-      },
-      {
-        _id: "5",
-        candidateFirstName: "Michael",
-        candidateLastName: "Johnson",
-        candidateEmail: "michael.j@example.com",
-        candidatePhoneNumber: "+1122334455",
-        applicationStatus: "Waiting",
-        positionApplied: "Islamic Studies Teacher",
-        applicationDate: "2023-05-05",
-        level: "2"
-      },
-      {
-        _id: "6",
-        candidateFirstName: "Michael",
-        candidateLastName: "Johnson",
-        candidateEmail: "michael.j@example.com",
-        candidatePhoneNumber: "+1122334455",
-        applicationStatus: "Waiting",
-        positionApplied: "Islamic Studies Teacher",
-        applicationDate: "2023-05-05",
-        level: "2"
-      },
-      {
-        _id: "7",
-        candidateFirstName: "John",
-        candidateLastName: "Doe",
-        candidateEmail: "john.doe@example.com",
-        candidatePhoneNumber: "+1234567890",
-        applicationStatus: "New Application",
-        positionApplied: "Arabic Teacher",
-        applicationDate: "2023-05-15",
-        level: "3"
-      },
-      {
-        _id: "8",
-        candidateFirstName: "Jane",
-        candidateLastName: "Smith",
-        candidateEmail: "jane.smith@example.com",
-        candidatePhoneNumber: "+1987654321",
-        applicationStatus: "Shortlisted",
-        positionApplied: "Quran Teacher",
-        applicationDate: "2023-05-10",
-        level: "4"
-      }
-  ];
+   const [applicants, setApplicants] = useState<Applicant[]>([]);
 
   const [activeTab, setActiveTab] = React.useState("All");
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -142,24 +81,34 @@ const  ApplicantsList: React.FC = () => {
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
+  const tabs = ["All", "NewApplication", "Shortlisted", "Rejected", "Waiting"];
+   useEffect(() => {
+    axios.get('http://localhost:5001/applicants')
+      .then((res) => {
+        setApplicants(res.data.applicants); 
+      })
+      .catch((err) => {
+        console.error('Error fetching applicants:', err);
+      });
+  }, []);
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "New Application":
+    switch (status.toUpperCase()) {
+      case "NEWAPPLICATION":
         return "bg-blue-500 text-white px-2 text-[9px]";
-      case "Shortlisted":
+      case "SHORTLISTED":
         return "bg-[#79D67B] text-white px-3 text-[9px]";
-      case "Rejected":
+      case "REJECTED":
         return "bg-[#D12B36] text-white px-2 text-[9px]";
-      case "Waiting":
+      case "WAITING":
         return "bg-yellow-500 text-white px-2 text-[9px]";
-      case "Approved":
+      case "APPROVED":
         return "bg-green-500 text-white px-7 text-[9px]";
       default:
         return "bg-gray-300 text-black px-2 text-[9px]";
     }
   };
+  
 
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -218,7 +167,7 @@ const  ApplicantsList: React.FC = () => {
 
   const filteredApplicants = activeTab === "All" 
     ? applicants 
-    : applicants.filter(applicant => applicant.applicationStatus === activeTab);
+    : applicants.filter(applicant => applicant.applicationStatus === activeTab.toUpperCase());
 
   const itemsPerPage = 7;
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
@@ -320,7 +269,7 @@ const  ApplicantsList: React.FC = () => {
             <Star
               key={`star-${star}`}
               className={`w-3 h-3 ${
-                (Number(applicant?.level) || 0) >= star
+                (Number(applicant.overallRating) || 0) >= star
                   ? "text-[#FAAB3C] fill-[#68b806]"
                   : "text-[#F8D8AB] fill-[#f7f6f5]"
               }`}

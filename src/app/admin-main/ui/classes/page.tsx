@@ -6,10 +6,52 @@ import { Bell, Sun, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import DashboardClasses from "../../components/schedule";
 
+export interface StudentClassData {
+  _id: string;
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    gender: string;
+  };
+  teacher: {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  };
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+  classDay: string[];
+  package: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  createdBy: string;
+  sessionClassType: string;
+  sessionStarttime: string;
+  sessionsEndtime: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
+
+export interface StudentClassApiResponse {
+  students: StudentClassData[];
+}
+
 const SalaryCard = () => {
+  const [classData, setClassData] = useState<StudentClassData[]>([]);
   const [activeTab, setActiveTab] = useState("Upcoming");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 6;
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationCount, setNotificationCount] = useState(5);
   const [notifications, setNotifications] = useState([
@@ -51,6 +93,20 @@ const SalaryCard = () => {
   ]);
 
   const notificationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchClassData = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/classShedule");
+        const data: StudentClassApiResponse = await response.json();
+        setClassData(data.students || []);
+      } catch (error) {
+        console.error("Error fetching class data:", error);
+      }
+    };
+
+    fetchClassData();
+  }, []);
 
   // Close notifications when clicking outside
   useEffect(() => {
@@ -97,46 +153,14 @@ const SalaryCard = () => {
     }
   };
 
-  const upcomingData = [
-    {
-      employeeid: 798,
-      employeename: "Samantha William",
-      designation: "Angela Moss",
-      salaryamount: "Tajweed Masterclass",
-      paymentdate: "January 2, 2020",
-      class: "Trial Class",
-      status: " 7.30 AM",
-    },
-    {
-      employeeid: 799,
-      employeename: "Jordan Nico",
-      designation: "Angela Moss",
-      salaryamount: "Tajweed Masterclass",
-      paymentdate: "January 2, 2020",
-      class: "Trial Class",
-      status: " 7.30 AM",
-    },
-    {
-      employeeid: 800,
-      employeename: "Nadila Adja",
-      designation: "Angela Moss",
-      salaryamount: "Tajweed Masterclass",
-      paymentdate: "January 2, 2020",
-      class: "Group Class",
-      status: "Re-Schedule ",
-    },
-    // Add more upcoming records...
-  ];
   const router = useRouter();
 
   const handleView = () => {
     router.push("/admin-main/ui/schedulelistviewall");
   };
 
-  const completedData = upcomingData.map((row) => ({
-    ...row,
-    status: "Completed",
-  }));
+  const upcomingData = classData.filter((item) => item.status !== "Completed");
+  const completedData = classData.filter((item) => item.status === "Completed");
 
   const filteredData = activeTab === "Upcoming" ? upcomingData : completedData;
   const paginatedCourseData = filteredData.slice(
@@ -244,15 +268,15 @@ const SalaryCard = () => {
         <br />
         <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1340px] mx-auto  ">
           {/* Tabs */}
-          <div className=" flex gap-4 ">
+          <div className="flex gap-4 p-4 border-b">
             <button
               onClick={() => {
                 setActiveTab("Upcoming");
                 setCurrentPage(1);
               }}
-              className={`px-4 py-2 text-sm font-semibold border-b-2 transition duration-200 ${
+              className={`px-4 py-1 rounded-xl text-sm ${
                 activeTab === "Upcoming"
-                  ? "border-black text-black"
+                  ? "bg-[#1C3557] text-white"
                   : "border-transparent text-gray-700 hover:text-black"
               }`}
             >
@@ -263,9 +287,9 @@ const SalaryCard = () => {
                 setActiveTab("Completed");
                 setCurrentPage(1);
               }}
-              className={`px-4 py-2 text-sm font-semibold border-b-2 transition duration-200 ${
+              className={`px-4 py-1 rounded-xl text-sm ${
                 activeTab === "Completed"
-                  ? "border-black text-black"
+                  ? "bg-[#1C3557] text-white"
                   : "border-transparent text-gray-700 hover:text-black"
               }`}
             >
@@ -288,31 +312,29 @@ const SalaryCard = () => {
             <tbody>
               {paginatedCourseData.map((row, index) => (
                 <tr
-                  key={row.employeeid}
+                  key={row._id}
                   className={`text-[9px] text-center font-medium ${
                     index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
                   }`}
                 >
-                  <td className="p-2">{row.employeeid}</td>
-                  <td className="p-2">{row.employeename}</td>
-                  <td className="p-2">{row.designation}</td>
-                  <td className="p-2">{row.salaryamount}</td>
-                  <td className="p-2">{row.class}</td>
-                  <td className="p-2">{row.paymentdate}</td>
+                  <td className="p-2">{row._id}</td>
+                  <td className="p-2">
+                    {row.student.studentFirstName} {row.student.studentLastName}
+                  </td>
+                  <td className="p-2">{row.teacher.teacherName}</td>
+                  <td className="p-2">{row.course.courseName}</td>
+                  <td className="p-2">{row.sessionClassType}</td>
+                  <td className="p-2">
+                    {new Date(row.startDate).toLocaleDateString()}
+                  </td>
                   <td className="p-2">
                     {activeTab === "Completed" ? (
-                      <span className="inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-2xl bg-green-600 text-white">
+                      <span className="inline-flex items-center justify-center w-32 h-6 px-3 py-1 rounded-2xl bg-green-600 text-white">
                         Completed
                       </span>
                     ) : (
-                      <span
-                        className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-2xl ${
-                          row.status.trim() === "7.30 AM"
-                            ? "bg-[#1C3557] text-white"
-                            : "bg-[#79D67B] text-white"
-                        }`}
-                      >
-                        {row.status}
+                      <span className="inline-flex items-center justify-center w-32 h-6 px-3 py-1 rounded-2xl bg-[#1C3557] text-white">
+                        {row.startTime?.[0]} - {row.endTime?.[0]}
                       </span>
                     )}
                   </td>
@@ -321,7 +343,7 @@ const SalaryCard = () => {
             </tbody>
           </table>
           {/* Pagination */}
-          <div className="flex justify-between items-center mt-4 p-2 text-sm text-gray-600">
+          {/* <div className="flex justify-between items-center mt-4 p-2 text-sm text-gray-600">
             <p className="text-[11px]">
               Showing {paginatedCourseData.length} of {filteredData.length}{" "}
               classes
@@ -344,7 +366,7 @@ const SalaryCard = () => {
                 )
               )}
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="flex justify-end">
           <button

@@ -1,88 +1,110 @@
-'use client';
+"use client";
 
-import BaseLayout4 from '@/components/BaseLayout4';
-import React, { useState } from 'react';
-import { FaChevronDown, FaFilter, FaPlus } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
-import { PiDotsThreeCircle } from "react-icons/pi";
+import BaseLayout4 from "@/components/BaseLayout4";
+import React, { useEffect, useState } from "react";
+import { FaChevronDown, FaFilter } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+
+export interface OtherEmployee {
+  _id: string;
+  userName: string;
+  email: string;
+  password: string;
+  role: string[];
+  profileImage: string | null;
+  status: string;
+  createdBy: string;
+  lastUpdatedBy: string;
+  userId: string;
+  lastLoginDate: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+  gender: string;
+  country?: string; // optional since some users have country field
+}
+
+interface OtherEmployeesResponse {
+  users: OtherEmployee[];
+  totalCount: number;
+}
 
 const Page: React.FC = () => {
-  const [employees, setEmployees] = useState([
-    { id: '#0983867', employeeName: 'Robert James', contact: '9876545234', designation: 'Supervisor', dateOfJoining: '11/02/2024', role: 'Supervisor', module: 'Supervisor' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Human Resource', dateOfJoining: '11/02/2024', role: 'Human Resource', module: 'Human Resource' },
-    { id: '#0983867', employeeName: 'Gio Rose', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Prasanna Popz', contact: '9876545234', designation: 'Teacher', dateOfJoining: '11/02/2024', role: 'Teacher', module: 'Teacher' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-    { id: '#0983867', employeeName: 'Stefan Salvatore', contact: '9876545234', designation: 'Admin', dateOfJoining: '11/02/2024', role: 'Admin', module: 'Admin' },
-  ]);
+  const [employees, setEmployees] = useState<OtherEmployee[]>([]);
+  const [selectedRole, setSelectedRole] = useState("Academic Coach");
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRole(e.target.value);
+  };
 
   const router = useRouter();
-  const [openRoleDropdownIndex, setOpenRoleDropdownIndex] = useState<number | null>(null);
-  const [openModuleDropdownIndex, setOpenModuleDropdownIndex] = useState<number | null>(null);
+
   const [isFilterPopupOpen, setFilterPopupOpen] = useState(false);
+  // const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
+    null
+  );
   const [filterCriteria, setFilterCriteria] = useState({
-    name: '',
-    designation: '',
-    fromDate: '',
-    toDate: ''
+    name: "",
+    designation: "",
+    fromDate: "",
+    toDate: "",
   });
 
-  const toggleRoleDropdown = (index: number) => {
-    setOpenRoleDropdownIndex(openRoleDropdownIndex === index ? null : index);
-  };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleModuleDropdown = (index: number) => {
-    setOpenModuleDropdownIndex(openModuleDropdownIndex === index ? null : index);
-  };
+  useEffect(() => {
+    const fetchOtherEmployees = async () => {
+      try {
+        const res = await axios.get<OtherEmployeesResponse>(
+          "http://localhost:5001/otheremployees"
+        );
+        setEmployees(res.data.users);
 
-  const handleModuleClick = (module: string) => {
-    if (module === 'Supervisor') {
-      router.push('/admin-main/ui/settings/supervisor');
-    }
-    if (module === 'Teacher') {
-      router.push('/admin-main/ui/settings/teacher');
-    }
-    if (module === 'Student') {
-      router.push('/admin-main/ui/settings/student');
-    }
-    if (module === 'AcademicCoach') {
-      router.push('/admin-main/ui/settings/academic-coach');
-    }
-  };
+        console.log(res.data);
 
-  const handleRoleChange = (index: number, newRole: string) => {
-    const updatedEmployees = employees.map((emp, i) =>
-      i === index ? { ...emp, role: newRole } : emp
-    );
-    setEmployees(updatedEmployees);
-  };
+        setError(null);
+      } catch (error: any) {
+        console.error("Error fetching other employees:", error);
+        setError("Failed to load employee data.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    fetchOtherEmployees();
+  }, []);
+
+
+  const handleFilterChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFilterCriteria(prev => ({ ...prev, [name]: value }));
+    setFilterCriteria((prev) => ({ ...prev, [name]: value }));
   };
 
   const applyFilters = () => {
-    const filteredEmployees = employees.filter(emp => {
-      const empDate = new Date(emp.dateOfJoining); // Assuming this field exists
+    const filteredEmployees = employees.filter((emp) => {
+      const empDate = new Date(emp.createdDate); // Assuming this field exists
 
-      const fromDateMatch = filterCriteria.fromDate ? empDate >= new Date(filterCriteria.fromDate) : true;
-      const toDateMatch = filterCriteria.toDate ? empDate <= new Date(filterCriteria.toDate) : true;
+      const fromDateMatch = filterCriteria.fromDate
+        ? empDate >= new Date(filterCriteria.fromDate)
+        : true;
+      const toDateMatch = filterCriteria.toDate
+        ? empDate <= new Date(filterCriteria.toDate)
+        : true;
 
       return (
-        (filterCriteria.name ? emp.employeeName.toLowerCase().includes(filterCriteria.name.toLowerCase()) : true) &&
-        (filterCriteria.designation ? emp.designation.includes(filterCriteria.designation) : true) &&
+        (filterCriteria.name
+          ? emp.userName
+              .toLowerCase()
+              .includes(filterCriteria.name.toLowerCase())
+          : true) &&
+        (filterCriteria.designation
+          ? emp.role.includes(filterCriteria.designation)
+          : true) &&
         fromDateMatch &&
         toDateMatch
       );
@@ -94,13 +116,45 @@ const Page: React.FC = () => {
 
   const resetFilters = () => {
     setFilterCriteria({
-      name: '',
-      designation: '',
-      fromDate: '',
-      toDate: ''
+      name: "",
+      designation: "",
+      fromDate: "",
+      toDate: "",
     });
   };
 
+
+
+  const handleChanges = (
+    empId: string,
+    role:string[],
+  ) => {
+    let path = "";
+     console.log(role[0])
+    switch (role[0]) {
+      case "ACADEMICCOACH":
+        path = `/admin-main/ui/settings/academic-coach?employeeId=${empId}`;
+        break;
+      case "STUDENT":
+        path = `/admin-main/ui/settings/student?employeeId=${empId}`;
+        break;
+      case "TEACHER":
+        path = `/admin-main/ui/settings/teacher?employeeId=${empId}`;
+        break;
+      case "SUPERVISOR":
+        path = `/admin-main/ui/settings/supervisor?employeeId=${empId}`;
+        break;
+      case "ADMIN":
+        path = `/admin-main/ui/settings/admin?employeeId=${empId}`;
+        break;
+      default:
+        path = "/";
+        break;
+    }
+    console.log(empId);
+
+    router.push(path); // Navigate to correct page
+  };
 
   return (
     <BaseLayout4>
@@ -122,7 +176,6 @@ const Page: React.FC = () => {
             </button>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            
             <div className="w-[170px] h-[35px] border bg-[#fff] border-gray-300 rounded-md text-xs flex items-center justify-between px-2 py-2 shadow mx-auto">
               <select
                 className="w-full h-full bg-transparent text-xs text-center focus:outline-none appearance-none"
@@ -134,14 +187,13 @@ const Page: React.FC = () => {
               </select>
               <FaChevronDown size={10} className="ml-1 mt-[2px]" />
             </div>
-
           </div>
         </div>
         <div className="bg-white shadow-md border border-gray-900 rounded-lg overflow-hidden scrollbar-none">
           <div className="overflow-x-auto">
             <div className="max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-none">
               <table className="w-full border-collapse min-w-[800px]">
-                <thead className="sticky top-0 bg-gray-100 z-10">
+                <thead className="sticky top-0 z-10">
                   <tr className="text-gray-600 text-xs sm:text-xs border-b border-black">
                     <th className="px-4 py-4 text-center">Employee ID</th>
                     <th className="px-4 py-4 text-center">Employee Name</th>
@@ -150,78 +202,33 @@ const Page: React.FC = () => {
                     <th className="px-4 py-4 text-center">Date of Joining</th>
                     <th className="px-4 py-4 text-center">Role Access</th>
                     <th className="px-4 py-4 text-center">Module Access</th>
-                    <th className="px-4 py-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {employees.map((emp, index) => (
-                    <tr key={emp.id} className="border-t border-gray-200 text-gray-700 text-xs sm:text-xs">
-                      <td className="py-3 px-4 text-center">{emp.id}</td>
-                      <td className="py-3 px-4 text-center">{emp.employeeName}</td>
-                      <td className="py-3 px-4 text-center">{emp.contact}</td>
-                      <td className="py-3 px-4 text-center">{emp.designation}</td>
-                      <td className="py-3 px-4 text-center">{emp.dateOfJoining}</td>
-                      {/* Role Dropdown (Modified to match the custom Module dropdown) */}
-                      <td className="py-1 px-1 text-center align-middle relative">
-                        <button
-                          className="w-[140px] h-[30px] border border-gray-300 rounded-md text-xs flex items-center justify-between px-2 mx-auto cursor-pointer"
-                          onClick={() => toggleRoleDropdown(index)}
-                        >
-                          <span className="w-full text-center truncate">{emp.role}</span>
-                          <FaChevronDown size={10} className="ml-1 mt-[2px]" />
-                        </button>
-
-                        {openRoleDropdownIndex === index && (
-                          <ul className="absolute z-50 bg-white border border-gray-300 mt-1 w-[140px] left-1/2 transform -translate-x-1/2 rounded shadow-md">
-                            {["Supervisor", "Academic Coach", "Student", "Teacher"].map((role) => (
-                              <li key={role}>
-                                <button
-                                  className="w-full p-1 hover:bg-gray-100 text-xs text-center"
-                                  onClick={() => {
-                                    handleRoleChange(index, role);
-                                    setOpenRoleDropdownIndex(null);
-                                  }}
-                                >
-                                  {role}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                    <tr
+                      key={emp._id}
+                      className="border-t border-gray-200 text-gray-700 text-[10px]"
+                    >
+                      <td className="py-4 px-4 text-center">{emp.userId}</td>
+                      <td className="py-4 px-4 text-center">{emp.userName}</td>
+                      <td className="py-4 px-4 text-center">{emp.email}</td>
+                      <td className="py-4 px-4 text-center">{emp.role}</td>
+                      <td className="py-4 px-4 text-center">
+                        {new Date(emp.createdDate).toLocaleDateString()}
                       </td>
 
-                      {/* Module Dropdown (Unchanged, still matching) */}
-                      <td className="py-1 px-1 text-center align-middle relative">
-                        <button
-                          className="w-[140px] h-[30px] border border-gray-300 rounded-md text-xs flex items-center justify-between px-2 mx-auto cursor-pointer"
-                          onClick={() => toggleModuleDropdown(index)}
-                        >
-                          <span className="w-full text-center truncate">{emp.module}</span>
-                          <FaChevronDown size={10} className="ml-1 mt-[2px]" />
-                        </button>
+                      {/* Uncomment below for Role Dropdown */}
 
-                        {openModuleDropdownIndex === index && (
-                          <ul className="absolute z-50 bg-white border border-gray-300 mt-1 w-[140px] left-1/2 transform -translate-x-1/2 rounded shadow-md">
-                            {["Supervisor", "AcademicCoach", "Student", "Teacher"].map((mod) => (
-                              <li key={mod}>
-                                <button
-                                  className="w-full p-1 hover:bg-gray-100 text-xs text-center"
-                                  onClick={() => {
-                                    handleModuleClick(mod);
-                                    setOpenModuleDropdownIndex(null);
-                                  }}
-                                >
-                                  {mod}
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                      <td className="py-1 px-1 text-center align-middle relative">
+                        <div className="px-2 py-[5px] rounded-md border-[1px] border-gray-500 text-[9px]">{emp.role}</div>
                       </td>
 
-
-                      <td className="py-3 px-9 text-center text-gray-500 hover:text-gray-700 cursor-pointer">
-                        <PiDotsThreeCircle size={18} />
+                      <td className="py-1 px-1 text-center align-middle relative">
+                      <button
+                       className="px-3 w-28 py-[5px] rounded-md border-[1px] border-gray-500 text-[9px]"
+                       onClick={()=>handleChanges(emp._id,emp.role)}
+                       >{emp.role}</button>
                       </td>
                     </tr>
                   ))}
@@ -230,9 +237,7 @@ const Page: React.FC = () => {
             </div>
           </div>
         </div>
-
       </div>
-
 
       {isFilterPopupOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
@@ -249,7 +254,9 @@ const Page: React.FC = () => {
 
             <div className="space-y-4">
               <div>
-                <label htmlFor='employeename' className="text-sm text-gray-700">Employee Name</label>
+                <label htmlFor="employeename" className="text-sm text-gray-700">
+                  Employee Name
+                </label>
                 <input
                   type="text"
                   name="name"
@@ -261,7 +268,9 @@ const Page: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor='designation' className="text-sm text-gray-700">Designation</label>
+                <label htmlFor="designation" className="text-sm text-gray-700">
+                  Designation
+                </label>
                 <select
                   name="designation"
                   value={filterCriteria.designation}
@@ -272,11 +281,14 @@ const Page: React.FC = () => {
                   <option value="ACADEMICCOACH">ACADEMICCOACH</option>
                   <option value="TEACHER">TEACHER</option>
                   <option value="SUPERVISOR">SUPERVISOR</option>
+                  <option value="ADMIN">ADMIN</option>
                 </select>
               </div>
 
               <div>
-                <label htmlFor='fromdate' className="text-sm text-gray-700">From Date</label>
+                <label htmlFor="fromdate" className="text-sm text-gray-700">
+                  From Date
+                </label>
                 <input
                   type="date"
                   name="fromDate"
@@ -287,7 +299,9 @@ const Page: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor='todate' className="text-sm text-gray-700">To Date</label>
+                <label htmlFor="todate" className="text-sm text-gray-700">
+                  To Date
+                </label>
                 <input
                   type="date"
                   name="toDate"
@@ -318,7 +332,6 @@ const Page: React.FC = () => {
 
       {/* Your Filter Popup here remains unchanged */}
     </BaseLayout4>
-
   );
 };
 

@@ -99,23 +99,27 @@ type RoleAccess = {
   teachermodules: ModuleAccess;
 };
 
-const SupervisorModuleAccess = () => {
+const AdminModuleAccess = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const employeeId = searchParams.get('employeeId');
   const [permissions, setPermissions] = useState<Record<string, ModuleAccess>>({
-    supervisormodules: {},
+    adminmodules: {},
   });
   const [selectedModules, setSelectedModules] = useState<Record<string, boolean>>({});
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const modules = [
-    'Dashboard',
-    'Recuirement',
-    'Meeting',
-    'Teachers',
-    'Messages',
-    'Support',
+    "Dashboard",
+    "Evaluation",
+    "Student",
+    "Employees",
+    "Courses",
+    "Classes",
+    "Invoice",
+    "Analytics",
+    "Messages",
+    "Support",
   ];
 
   const getModuleKey = (moduleName: string) =>
@@ -137,7 +141,7 @@ const SupervisorModuleAccess = () => {
         console.log('Fetched data:', json);
   
         const access = json?.data?.roleAccess;
-        const supervisorModules = access?.supervisormodules ?? {};
+        const adminModules = access?.adminmodules ?? {};
         
         // Updated: permissions object
         const selected: Record<string, boolean> = {};
@@ -145,7 +149,7 @@ const SupervisorModuleAccess = () => {
   
         modules.forEach((module) => {
           const key = getModuleKey(module);
-          const perms = supervisorModules[key] ?? { read: false, write: false, delete: false };
+          const perms = adminModules[key] ?? { read: false, write: false, delete: false };
   
           // Determine if module is selected (if any permission is true)
           selected[key] = perms.read ?? perms.write ?? perms.delete;
@@ -157,7 +161,7 @@ const SupervisorModuleAccess = () => {
         setSelectedModules(selected);
         setPermissions((prev) => ({
           ...prev,
-          supervisormodules: modulePermissions,
+          adminmodules: modulePermissions,
         }));
       } catch (error) {
         console.error('Failed to fetch employee data:', error);
@@ -186,8 +190,8 @@ const SupervisorModuleAccess = () => {
 
       setPermissions((prev) => ({
         ...prev,
-        supervisormodules: {
-          ...prev.supervisormodules,
+        adminmodules: {
+          ...prev.adminmodules,
           [module]: {
             read: !prev[module]?.read,
             write: !prev[module]?.write,
@@ -199,11 +203,11 @@ const SupervisorModuleAccess = () => {
       // Toggle a specific permission
       setPermissions((prev) => ({
         ...prev,
-        supervisormodules: {
-          ...prev.supervisormodules,
+        adminmodules: {
+          ...prev.adminmodules,
           [module]: {
-            ...prev.supervisormodules[module],
-            [permission]: !prev.supervisormodules[module]?.[permission],
+            ...prev.adminmodules[module],
+            [permission]: !prev.adminmodules[module]?.[permission],
           },
         },
       }));
@@ -212,8 +216,8 @@ const SupervisorModuleAccess = () => {
 
   const handleUpdateAccess = async () => {
     const roleAccess = {
-      supervisor:true,
-      supervisormodules: permissions.supervisormodules,
+      admin:true,
+      adminmodules: permissions.adminmodules,
     };
 
     try {
@@ -237,7 +241,7 @@ const SupervisorModuleAccess = () => {
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} />
       <div className="w-full min-h-screen p-5 flex flex-col items-center">
         <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
-          Supervisor Module Access
+          Admin Module Access
         </h1>
 
         <div className="bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
@@ -270,7 +274,7 @@ const SupervisorModuleAccess = () => {
                       <td key={perm} className="p-2 text-center">
                         <input
                           type="checkbox"
-                          checked={permissions.supervisormodules[moduleKey]?.[perm as PermissionType] || false}
+                          checked={permissions.adminmodules[moduleKey]?.[perm as PermissionType] || false}
                           onChange={() => toggleModule(moduleKey, perm as PermissionType)}
                           className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
                         />
@@ -296,4 +300,4 @@ const SupervisorModuleAccess = () => {
   );
 };
 
-export default SupervisorModuleAccess;
+export default AdminModuleAccess;

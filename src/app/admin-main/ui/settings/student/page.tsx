@@ -1,90 +1,299 @@
 'use client';
 
 import BaseLayout4 from '@/components/BaseLayout4';
-import { useState } from 'react';
+import axios from 'axios';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { FaRegSquare, FaRegCheckSquare } from 'react-icons/fa';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 type PermissionType = 'read' | 'write' | 'delete';
+interface EmployeeAccessData {
+  _id: string;
+  employeeId: string;
+  employeeName: string;
+  contact: string;
+  designation: string[];
+  dateOfJoining: string;
+  roleAccess: {
+    admin: boolean;
+    adminmodules: {
+      dashboard: boolean;
+      evaluation: boolean;
+      student: boolean;
+      employees: boolean;
+      courses: boolean;
+      classes: boolean;
+      invoice: boolean;
+      analytics: boolean;
+      messages: boolean;
+      settings: boolean;
+    };
+    academicCoach: boolean;
+    academicmodules: {
+      dashboard: boolean;
+      scheduledevaluation: boolean;
+      scheduledtrail: boolean;
+      students: boolean;
+      teachers: boolean;
+      messages: boolean;
+      support: boolean;
+    };
+    supervisor: boolean;
+    supervisormodules: {
+      dashboard: boolean;
+      recuirement: boolean;
+      meeting: boolean;
+      teachers: boolean;
+      messages: boolean;
+      support: boolean;
+    };
+    student: boolean;
+    studentmodules: {
+      dashboard: boolean;
+      classes: boolean;
+      assignments: boolean;
+      payments: boolean;
+      knowledgebase: boolean;
+      support: boolean;
+    };
+    teacher: boolean;
+    teachermodules: {
+      dashboard: boolean;
+      liveclasses: boolean;
+      scheduledclasses: boolean;
+      assignments: boolean;
+      messages: boolean;
+      analytics: boolean;
+      support: boolean;
+    };
+  };
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  __v: number;
+}
+
+type Permission = {
+  read: boolean;
+  write: boolean;
+  delete: boolean;
+};
+
+type ModuleAccess = {
+  [key: string]: Permission;
+};
+
+type RoleAccess = {
+  admin: boolean;
+  adminmodules: ModuleAccess;
+  academicCoach: boolean;
+  academicmodules: ModuleAccess;
+  supervisor: boolean;
+  supervisormodules: ModuleAccess;
+  student: boolean;
+  studentmodules: ModuleAccess;
+  teacher: boolean;
+  teachermodules: ModuleAccess;
+};
+
 const StudentModuleAccess = () => {
-  const [selectedModules, setSelectedModules] = useState<{ [key: string]: boolean }>({});
-  const [permissions, setPermissions] = useState<{ [key: string]: Record<PermissionType, boolean> }>({});
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const employeeId = searchParams.get('employeeId');
+  const [permissions, setPermissions] = useState<Record<string, ModuleAccess>>({
+    studentmodules: {},
+  });
+  const [selectedModules, setSelectedModules] = useState<Record<string, boolean>>({});
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const modules = [
     'Dashboard',
-    'Recruitment',
-    'Meeting & Training',
-    'Teachers',
-    'Messages',
+    'Classes',
+    'Assignments',
+    'Payments',
+    'Knowledge Base',
     'Support',
   ];
 
-  const toggleModule = (module: string) => {
-    setSelectedModules((prev) => ({ ...prev, [module]: !prev[module] }));
+  const getModuleKey = (moduleName: string) =>
+    moduleName.toLowerCase().replace(/ & /g, '').replace(/\s+/g, '');
+
+  
+
+  useEffect(() => {
+    if (!employeeId) {
+      toast.error('Employee ID not found in the URL!');
+      setIsRedirecting(true);
+      return;
+    }
+  
+    const fetchEmployeeData = async () => {
+      try {
+        const res = await fetch(`http://localhost:5001/update-access/${employeeId}`);
+        const json = await res.json();
+        console.log('Fetched data:', json);
+  
+        const access = json?.data?.roleAccess;
+        const studentModules = access?.studentmodules ?? {};
+        
+        // Updated: permissions object
+        const selected: Record<string, boolean> = {};
+        const modulePermissions: ModuleAccess = {};
+  
+        modules.forEach((module) => {
+          const key = getModuleKey(module);
+          const perms = studentModules[key] ?? { read: false, write: false, delete: false };
+  
+          // Determine if module is selected (if any permission is true)
+          selected[key] = perms.read ?? perms.write ?? perms.delete;
+  
+          // Always store full permissions
+          modulePermissions[key] = perms;
+        });
+  
+        setSelectedModules(selected);
+        setPermissions((prev) => ({
+          ...prev,
+          studentmodules: modulePermissions,
+        }));
+      } catch (error) {
+        console.error('Failed to fetch employee data:', error);
+        toast.error('Error loading employee access data');
+      }
+    };
+  
+    fetchEmployeeData();
+  }, [employeeId]);
+  
+
+  useEffect(() => {
+    if (isRedirecting) {
+      router.push('/admin-main/ui/settings');
+    }
+  }, [isRedirecting, router]);
+
+  const toggleModule = (module: string, permission?: PermissionType) => {
+    if (!permission) {
+      // Toggle selection for the entire module
+      setSelectedModules((prev) => {
+        const newSelectedModules = { ...prev };
+        newSelectedModules[module] = !prev[module];
+        return newSelectedModules;
+      });
+
+      setPermissions((prev) => ({
+        ...prev,
+        studentmodules: {
+          ...prev.studentmodules,
+          [module]: {
+            read: !prev[module]?.read,
+            write: !prev[module]?.write,
+            delete: !prev[module]?.delete,
+          },
+        },
+      }));
+    } else {
+      // Toggle a specific permission
+      setPermissions((prev) => ({
+        ...prev,
+        studentmodules: {
+          ...prev.studentmodules,
+          [module]: {
+            ...prev.studentmodules[module],
+            [permission]: !prev.studentmodules[module]?.[permission],
+          },
+        },
+      }));
+    }
   };
 
-  // ✅ Now uses the alias
-  const togglePermission = (module: string, type: PermissionType) => {
-    setPermissions((prev) => ({
-      ...prev,
-      [module]: {
-        ...prev[module],
-        [type]: !prev[module]?.[type],
-      },
-    }));
+  const handleUpdateAccess = async () => {
+    const roleAccess = {
+      student:true,
+      studentmodules: permissions.studentmodules,
+    };
+
+    try {
+      const response = await axios.put(
+        `http://localhost:5001/update-access/${employeeId}`,
+        { roleAccess }
+      );
+      console.log('Access updated successfully:', response.data);
+      toast.error('Failed to update access'); // ✅ Show error toast
+      setTimeout(() => {
+        router.push('/admin-main/ui/settings'); // <-- change this to your desired route
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to update access:', error);
+      toast.error('Failed to update access'); // ✅ Show error toast
+
+    }
   };
 
   return (
     <BaseLayout4>
-          <div className="w-full min-h-screen p-5 flex flex-col items-center">
-            <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
-              Student Module Access
-            </h1>
-    
-            <div className=" bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
-              <table className="w-full text-left min-w-[900px]">
-                <thead>
-                  <tr className="border-b text-[#101828] font-medium text-sm">
-                    <th className="p-3">Modules</th>
-                    <th className="p-3 text-center">Read</th>
-                    <th className="p-3 text-center">Write</th>
-                    <th className="p-3 text-center">Delete</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {modules.map((module) => (
-                    <tr key={module} className="border-t hover:bg-gray-50 transition">
-                      <td className="p-4 flex items-center space-x-3">
-                        <button onClick={() => toggleModule(module)}>
-                          {selectedModules[module] ? (
-                            <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
-                          ) : (
-                            <FaRegSquare className="text-gray-400 text-sm" />
-                          )}
-                        </button>
-                        <span className="text-[12px] text-[#344054]">{module}</span>
+      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} />
+      <div className="w-full min-h-screen p-5 flex flex-col items-center">
+        <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
+        Student Module Access
+        </h1>
+
+        <div className="bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
+          <table className="w-full text-left min-w-[900px]">
+            <thead>
+              <tr className="border-b text-[#101828] font-medium text-sm">
+                <th className="p-3">Modules</th>
+                <th className="p-3 text-center">Read</th>
+                <th className="p-3 text-center">Write</th>
+                <th className="p-3 text-center">Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {modules.map((module) => {
+                const moduleKey = module.toLowerCase();
+
+                return (
+                  <tr key={module} className="border-t hover:bg-gray-50 transition">
+                    <td className="p-4 flex items-center space-x-3">
+                      <button type="button" onClick={() => toggleModule(moduleKey)}>
+                        {selectedModules[moduleKey] ? (
+                          <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
+                        ) : (
+                          <FaRegSquare className="text-gray-400 text-sm" />
+                        )}
+                      </button>
+                      <span className="text-[12px] text-[#344054]">{module}</span>
+                    </td>
+                    {['read', 'write', 'delete'].map((perm) => (
+                      <td key={perm} className="p-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={permissions.studentmodules[moduleKey]?.[perm as PermissionType] || false}
+                          onChange={() => toggleModule(moduleKey, perm as PermissionType)}
+                          className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
+                        />
                       </td>
-                      {['read', 'write', 'delete'].map((perm) => (
-                        <td key={perm} className="p-2 text-center">
-                          <input
-                            type="checkbox"
-                            checked={permissions[module]?.[perm as 'read' | 'write' | 'delete'] || false}
-                            onChange={() => togglePermission(module, perm as 'read' | 'write' | 'delete')}
-                            className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-    
-              <div className="flex justify-center mt-4">
-                <button className="bg-[#012A4A] hover:bg-[#011d33] text-white font-sm px-4 py-1 rounded-lg shadow-md transition">
-                  Submit
-                </button>
-              </div>
-            </div>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={handleUpdateAccess}
+              className="bg-[#012A4A] hover:bg-[#011d33] text-white font-sm px-4 py-1 rounded-lg shadow-md transition"
+            >
+              Submit
+            </button>
           </div>
-        </BaseLayout4>
+        </div>
+      </div>
+    </BaseLayout4>
   );
 };
 

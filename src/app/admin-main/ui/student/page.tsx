@@ -32,7 +32,7 @@ const Dashboard = () => {
 
     <div className="flex justify-end">
       <button
-        className="text-white text-xs bg-[#223857] cursor-pointer rounded-md px-2 py-1 mr-3"
+        className="text-white text-xs bg-[#223857] cursor-pointer rounded-md px-2 py-1"
         onClick={handleView}
       >
         View all

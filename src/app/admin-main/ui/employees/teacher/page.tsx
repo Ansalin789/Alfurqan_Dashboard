@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
 import {  BsClockHistory } from "react-icons/bs";
 import { MdOutlineCurrencyExchange, MdOutlineCancel } from "react-icons/md";
@@ -14,7 +13,8 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { FaUserGraduate } from "react-icons/fa6";
 import { FaRegEye, FaCalendarAlt } from "react-icons/fa";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
-
+import { useSearchParams,useRouter } from 'next/navigation'; 
+import axios from "axios";
 
 const locales = {
   'en-US': require('date-fns/locale/en-US'),
@@ -27,11 +27,168 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 })
+interface StudentData {
+  studentId: string;
+  name: string;
+  studentDetails: StudentDetails;
+}
+
+ interface StudentDetails {
+  student: Student;
+  teacher: Teacher;
+  subscription: Subscription;
+  _id: string;
+  academicCoachId: string;
+  classDay: string[];
+  startTime: string[];
+  endTime: string[];
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  planTotalPrice: number;
+  classStartDate: string;
+  classEndDate: string;
+  classStartTime: string;
+  classEndTime: string;
+  accomplishmentTime: string;
+  studentRate: number;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  studentStatus: string;
+  classStatus: string;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  expectedFinishingDate: number;
+  assignedTeacherId: string;
+  assignedTeacherEmail: string;
+  __v: number;
+  teacherStatus: string;
+}
+
+ interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  studentGender?: string;
+  studentPhone: number;
+  studentCity: string;
+  studentCountry: string;
+  studentCountryCode: string;
+  learningInterest: string;
+  numberOfStudents: number;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  timeZone: string;
+  referralSource: string;
+  preferredDate: string;
+  evaluationStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+}
+
+ interface Teacher {
+  teacherName: string;
+}
+
+ interface Subscription {
+  subscriptionName: string;
+}
+
+interface User {
+  _id: string;
+  userName: string;
+  email: string;
+  password: string;
+  role: string[];
+  profileImage: string | null;
+  status: string;
+  createdBy: string;
+  lastUpdatedBy: string;
+  userId: string;
+  lastLoginDate: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  gender: "Male" | "Female"; 
+}
+interface ScheduledClass {
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    gender: string;
+  };
+  teacher: {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  };
+  _id: string;
+  classDay: string[];
+  package: string;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  createdBy: string;
+  sessionClassType: string;
+  sessionStarttime: string;
+  sessionsEndtime: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  amount: string;
+}
+interface WageData {
+  _id: string;
+  employeeId: string;
+  employeeName: string;
+  classType: {
+    className: string;
+    hoursMins: string;
+    rate: string;
+    currency: string;
+  };
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+}
 
 const Teacher = () => {
   const [activeTab, setActiveTab] = useState("Studentslist");
   const [view, setView] = useState<'month' | 'week' | 'day' | 'agenda'>('agenda');
   const tabs = ["Studentslist", "ScheduledClass", "Earnings", "Payments", "Wages", "WorkingHours"];
+  const searchParams = useSearchParams();
+  const employeeId = searchParams.get('teacherId');
+  const [users, setUsers] = useState<User>();
+  const [scheduledclass, setScheduledClass] = useState<ScheduledClass[]>([]);
+  const [wages, setWages] = useState<WageData[]>([]);
+  const [students, setStudents] = useState<StudentData[]>([]);
   const events = [
     {
       title: 'Evaluation Class (20)',
@@ -51,49 +208,58 @@ const Teacher = () => {
   ]
 
   const statusStyle = {
-    Completed: 'bg-[#002F56] text-white',
-    Cancelled: 'bg-gray-300 text-gray-700',
+    Complete: 'bg-[#002F56] text-white',
+    Pending: 'bg-gray-300 text-gray-700',
     Rescheduled: 'bg-yellow-300 text-black',
   };
 
-  const scheduledclass = [
-    {
-      studentName: 'Robert James',
-      studentId: '#0938367',
-      course: 'Arabic',
-      courseType: 'Trial Class',
-      courseDuration: '30 Minutes',
-      start: new Date(2022, 0, 2, 9, 0),
-      status: 'Completed',
-    },
-    {
-      studentName: 'Stefan Salvatore',
-      studentId: '#0938367',
-      course: 'Quran',
-      courseType: 'Regular Class',
-      courseDuration: '60 Minutes',
-      start: new Date(2022, 0, 2, 9, 30),
-      status: 'Cancelled',
-    },
-    {
-      studentName: 'Gio Rose',
-      studentId: '#0938367',
-      course: 'Islamic Studies',
-      courseType: 'Group Class',
-      courseDuration: '45 Minutes',
-      start: new Date(2022, 0, 2, 8, 30),
-      status: 'Completed',
-    },
-    {
-      studentName: 'Stefan Salvatore',
-      studentId: '#0938367',
-      course: 'Arabic',
-      courseType: 'Regular Class',
-      courseDuration: '45 Minutes',
-      start: new Date(2022, 0, 2, 9, 30),
-      status: 'Rescheduled',
-    },
-  ]
+ 
+  useEffect(() => {
+   
+    async function fetchUsers() {
+      if (!employeeId || employeeId === "null") return;
+      try {
+        const response = await axios.get(`http://localhost:5001/users/${employeeId}`);
+        setUsers(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    }
+    fetchUsers();
+    const fetchSchedule = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5001/classShedule/teacher?teacherId=${employeeId}`
+        );
+        setScheduledClass(response.data.classSchedule);
+      } catch (error) {
+        console.error("Error fetching schedule:", error);
+      }
+    };
+  fetchSchedule();
+  const fetchWages = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5001/empwages/${employeeId}`);
+      setWages(response.data); 
+    } catch (error) {
+      console.error("Error fetching wages:", error);
+    }
+  };
+   fetchWages();
+   const fetchClasses = async () => {
+    try {
+      const res = await axios.get<StudentData[]>(
+        `http://localhost:5001/classShedule/teacher/list?teacherId=${employeeId}`
+      );
+      setStudents(res.data);
+    } catch (error) {
+      console.error("Failed to fetch classes", error);
+    } 
+  };
+
+  fetchClasses();
+  }, [employeeId]);
 
   const CustomToolbar = (toolbar: any) => (
     <div className="flex justify-center items-center py-2 px-4">
@@ -108,8 +274,9 @@ const Teacher = () => {
   };
 
   const handleclickcalender = () => {
-    router.push('/admin-main/ui/employees/teacher/calendar');
+    router.push(`/admin-main/ui/employees/teacher/calendar?teacherId=${employeeId}`);
   };
+  
 
   return (
     <BaseLayout4>
@@ -129,8 +296,8 @@ const Teacher = () => {
                   />
                 </div>
                 <div className="-ml-6">
-                  <h2 className="text-xs font-medium mt-4">Abdullah Sulaiman</h2>
-                  <p className="text-gray-500 text-[11px]">Mufti & imam</p>
+                  <h2 className="text-xs font-medium mt-4">{users?.userName}</h2>
+                  <p className="text-gray-500 text-[11px]">Teacher</p>
                   <div className="mt-4">
                     <div className=" h-1 bg-[#455E8F] rounded-full w-[120px]">
                       <div className="h-1 bg-[#8CB2FF] rounded-full" style={{ width: '75%' }}></div>
@@ -145,7 +312,7 @@ const Teacher = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-3">
                 <div className="text-[12px]">
                   <p className="text-gray-500">Email</p>
-                  <p className="text-[10px] text-gray-400">asul403@gmail.com</p>
+                  <p className="text-[10px] text-gray-400 ">{users?.email}</p>
                 </div>
                 <div className="text-[12px]">
                   <p className="text-gray-500">Phone</p>
@@ -153,7 +320,7 @@ const Teacher = () => {
                 </div>
                 <div className="text-[12px]">
                   <p className="text-gray-500">Gender</p>
-                  <p className="text-[10px] text-gray-400">Male</p>
+                  <p className="text-[10px] text-gray-400">{users?.gender}</p>
                 </div>
                 <div className="text-[12px]">
                   <p className="text-gray-500">Course</p>
@@ -255,77 +422,23 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-xs text-[#1D2939]">
-                        {[
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                          {
-                            id: "11/11/2022",
-                            name: "$500",
-                            country: "Monthly Salary",
-                            subject: "Monthly Salary",
-                            duration: "Monthly Salary",
-                            classes: "Monthly Salary",
-                          },
-                        ].map((item, index) => (
-                          <tr
-                            key={index}
-                            className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
-                          >
-                            <td className="p-3">{item.id}</td>
-                            <td className="p-3">{item.name}</td>
-                            <td className="p-3">{item.country}</td>
-                            <td className="p-3">{item.subject}</td>
-                            <td className="p-3">{item.duration}</td>
-                            <td className="p-3">{item.classes}</td>
-                          </tr>
-                        ))}
-                      </tbody>
+  {students.map((item, index) => {
+    const student = item.studentDetails?.student;
+    return (
+      <tr
+        key={item.studentId || index}
+        className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+      >
+        <td className="p-3">{item.studentId || "N/A"}</td>
+        <td className="p-3">{student?.studentFirstName || "N/A"}</td>
+        <td className="p-3">{student?.studentCountry || "N/A"}</td>
+        <td className="p-3">{student?.learningInterest || "N/A"}</td>
+        <td className="p-3">{item.studentDetails?.hours ? `${item.studentDetails.hours} hrs` : "N/A"}</td>
+        <td className="p-3">{item.studentDetails?.classDay?.join(', ') || "N/A"}</td>
+      </tr>
+    );
+  })}
+</tbody>
                     </table>
                   </div>
                 </div>
@@ -400,7 +513,7 @@ const Teacher = () => {
                                   <th className="p-4 font-semibold text-[12px] text-center">Student name</th>
                                   <th className="p-4 font-semibold text-[12px] text-center">Student ID</th>
                                   <th className="p-4 font-semibold text-[12px] text-center">Courses</th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">Course Type</th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">Package</th>
                                   <th className="p-4 font-semibold text-[12px] text-center">Course Duration</th>
                                   <th className="p-4 font-semibold text-[12px] text-center">Class - Date & Time</th>
                                   <th className="p-4 font-semibold text-[12px] text-center">Status</th>
@@ -408,16 +521,16 @@ const Teacher = () => {
                               </thead>
                               <tbody className="text-xs text-[#1D2939]">
                                 {scheduledclass.map((event, index) => (
-                                  <tr key={index} className={`border-b hover:bg-gray-50 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}>
-                                    <td className="p-2 text-center">{event.studentName}</td>
-                                    <td className="p-2 text-center text-blue-600 font-medium">{event.studentId}</td>
-                                    <td className="p-2 text-center">{event.course}</td>
-                                    <td className="p-2 text-center">{event.courseType}</td>
-                                    <td className="p-2 text-center">{event.courseDuration}</td>
-                                    <td className="p-2 text-center">{format(event.start, 'MMMM d, yyyy – hh:mm a')}</td>
+                                  <tr key={event._id} className={`border-b hover:bg-gray-50 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}>
+                                    <td className="p-2 text-center">{event.student.studentFirstName}</td>
+                                    <td className="p-2 text-center text-blue-600 font-medium">{event.student.studentId}</td>
+                                    <td className="p-2 text-center">Quran</td>
+                                    <td className="p-2 text-center">{event.package}</td>
+                                    <td className="p-2 text-center">30 Min</td>
+                                    <td className="p-2 text-center"> {new Date(event.startDate).toLocaleString()}-{event.startTime}</td>
                                     <td className="p-2 text-center">
-                                      <span className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${statusStyle[event.status as keyof typeof statusStyle]}`}>
-                                        {event.status}
+                                      <span className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${statusStyle[event.scheduleStatus as keyof typeof statusStyle]}`}>
+                                        {event.scheduleStatus}
                                       </span>
                                     </td>
                                   </tr>
@@ -674,61 +787,18 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-xs text-[#1D2939]">
-                        {[
-                          {
-                            type: "11/11/2022",
-                            rate: "$500",
-                            currency: "Monthly Salary",
-                            duration: "Monthly Salary",
-                          },
-                          {
-                            type: "11/11/2022",
-                            rate: "$500",
-                            currency: "Monthly Salary",
-                            duration: "Monthly Salary",
-                          },
-                          {
-                            type: "11/11/2022",
-                            rate: "$500",
-                            currency: "Monthly Salary",
-                            duration: "Monthly Salary",
-                          },
-                          {
-                            type: "11/11/2022",
-                            rate: "$500",
-                            currency: "Monthly Salary",
-                            duration: "Monthly Salary",
-                          },
-                          {
-                            type: "11/11/2022",
-                            rate: "$500",
-                            currency: "Monthly Salary",
-                            duration: "Monthly Salary",
-                          },
-                          {
-                            type: "11/11/2022",
-                            rate: "$500",
-                            currency: "Monthly Salary",
-                            duration: "Monthly Salary",
-                          },
-                          {
-                            type: "11/11/2022",
-                            rate: "$500",
-                            currency: "Monthly Salary",
-                            duration: "Monthly Salary",
-                          },
-                        ].map((item, index) => (
-                          <tr
-                            key={index}
-                            className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
-                          >
-                            <td className="p-3">{item.type}</td>
-                            <td className="p-3">{item.rate}</td>
-                            <td className="p-3">{item.currency}</td>
-                            <td className="p-3">{item.duration}</td>
-                          </tr>
-                        ))}
-                      </tbody>
+               {wages.map((item, index) => (
+    <tr
+      key={item._id}
+      className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+    >
+      <td className="p-3">{item.classType.className}</td>
+      <td className="p-3">{item.classType.rate}</td>
+      <td className="p-3">{item.classType.currency}</td>
+      <td className="p-3">{item.classType.hoursMins} mins</td>
+    </tr>
+  ))}
+</tbody>
                     </table>
                   </div>
                 </div>

@@ -25,15 +25,57 @@ type TeacherAPI = {
   femaleCount: number;
 };
 
+interface CourseBar {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface TotalTrailclassData{
+  name:string;
+  value:number;
+  color:string;
+}
+
+interface TrialClassData {
+  _id: string | null;
+  totalCount: number;
+  maleCount: number;
+  femaleCount: number;
+  completedCount: number;
+  pendingCount: number;
+  studentJointCount: number;
+  studentNotJointCount: number;
+}
+
 //Total trail class
 
 const TotalScheduledChart = () => {
-  const data = [
-    { name: "Completed", value: 134, color: "#012A4A" }, // Dark Blue
-    { name: "Scheduled", value: 63, color: "#3084D6" }, // Medium Blue
-    { name: "No Response", value: 85, color: "#6C94B3" }, // Light Blue
-    { name: "Cancelled", value: 48, color: "#9AC3E3" }, // Lightest Blue
-  ];
+  const [totalTrailclass, setTotalTrailclass] = useState<TotalTrailclassData[]>([]);
+
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        const response = await fetch("https://alfurqanacademy.tech/totaltrialclass");
+        const result: TrialClassData[] = await response.json();
+
+        const apiData = result[0];
+
+        const chartArray: TotalTrailclassData[] = [
+          { name: "completed", value: apiData.completedCount, color: "#012A4A" },
+          { name: "scheduled", value: apiData.pendingCount, color: "#3084D6" },
+          { name: "no response", value: 0, color: "#6C94B3" },
+          { name: "cancelled", value: 0, color: "#9AC3E3" },
+        ];
+
+        setTotalTrailclass(chartArray);
+      } catch (error) {
+        console.error("Error fetching course data:", error);
+      }
+    };
+
+    fetchChartData();
+  }, []);
 
   return (
     <div>
@@ -50,7 +92,7 @@ const TotalScheduledChart = () => {
         <ResponsiveContainer width={160} height={160}>
           <PieChart>
             <Pie
-              data={data}
+              data={totalTrailclass}
               cx="50%"
               cy="50%"
               innerRadius={45}
@@ -60,7 +102,7 @@ const TotalScheduledChart = () => {
               endAngle={-270} // Ensures the gap is at the top
               stroke="none"
             >
-              {data.map((entry) => (
+              {totalTrailclass.map((entry) => (
                 <Cell key={entry.name} fill={entry.color} />
               ))}
             </Pie>
@@ -70,14 +112,14 @@ const TotalScheduledChart = () => {
         {/* Center text inside the chart */}
         <div className="absolute text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.reduce((sum, entry) => sum + entry.value, 0)}
+            {totalTrailclass.reduce((sum, entry) => sum + entry.value, 0)}
           </div>
         </div>
       </div>
 
       {/* Legend Section */}
       <div className="grid grid-cols-2 gap-x-6 gap-y-2 px-3 mt-9">
-        {data.map((entry) => (
+        {totalTrailclass.map((entry) => (
           <div key={entry.name} className="flex items-center">
             <span
               className="w-2 h-2 rounded-full mr-1"
@@ -97,11 +139,6 @@ const TotalScheduledChart = () => {
 
 // Student -Status
 
-const courseData = [
-  { name: "Joined", value: 30, color: "#7f9cb6" },
-  { name: "Not Joined", value: 45, color: "#001d3d" },
-  { name: "No Response", value: 60, color: "#4a90e2" },
-];
 const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
   active,
   payload,
@@ -114,15 +151,45 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
     );
   }
   return null;
-};
+};  
 
 const CoursesChart = () => {
+  const [chartData, setChartData] = useState<CourseBar[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch("https://alfurqanacademy.tech/totaltrialclass");
+      const data: TrialClassData[] = await response.json();
+
+      const transformedData: CourseBar[] = [
+        {
+          name: "Joined",
+          value: data[0]?.studentJointCount || 0,
+          color: "#012A4A",
+        },
+        {
+          name: "Not Joined",
+          value: data[0]?.studentNotJointCount || 0,
+          color: "#3084D6",
+        },
+        {
+          name: "No Response",
+          value: 0,
+          color: "#6C94B3",
+        },
+      ];
+
+      setChartData(transformedData);
+    };
+
+    fetchData();
+  }, []);
   return (
     <div>
       <h2 className="text-sm font-semibold text-gray-900">Student Status</h2>
 
       <ResponsiveContainer width="100%" height={198}>
-        <BarChart data={courseData} barCategoryGap={30}>
+        <BarChart data={chartData} barCategoryGap={30}>
           {/* <XAxis
             // dataKey="name"
             // tick={{ fill: "#7f9cb6", fontSize: 10 }}
@@ -131,12 +198,13 @@ const CoursesChart = () => {
           /> */}
           <Tooltip
             content={<CustomTooltip active={undefined} payload={undefined} />}
-            wrapperStyle={{ backgroundColor: "transparent", border: "none" }} // Remove tooltip bg
+            wrapperStyle={{ backgroundColor: "transparent", border: "none" }}
+            cursor={{ fill: 'transparent' }}
           />
 
           {/* Bar with border radius on both top and bottom */}
           <Bar dataKey="value" radius={[15, 15, 15, 15]} barSize={25}>
-            {courseData.map((entry) => (
+            {chartData.map((entry) => (
               <Cell key={entry.name} fill={entry.color} fillOpacity={1} />
             ))}
           </Bar>
@@ -144,7 +212,7 @@ const CoursesChart = () => {
       </ResponsiveContainer>
 
       <div className="flex justify-center mt-4 space-x-2">
-        {courseData.map((entry) => (
+        {chartData.map((entry) => (
           <div
             key={entry.name}
             className="flex items-center space-x-2 whitespace-nowrap mt-5"
