@@ -132,7 +132,7 @@ const Page: React.FC = () => {
     let path = "";
      console.log(role[0])
     switch (role[0]) {
-      case "ACADEMICCOACH":
+      case "ACADEMIC COACH":
         path = `/admin-main/ui/settings/academic-coach?employeeId=${empId}`;
         break;
       case "STUDENT":
@@ -278,7 +278,7 @@ const Page: React.FC = () => {
                   className="w-full mt-1 rounded-lg border px-4 py-2 text-sm text-gray-700 bg-white focus:outline-none"
                 >
                   <option value="">Select designation</option>
-                  <option value="ACADEMICCOACH">ACADEMICCOACH</option>
+                  <option value="ACADEMIC COACH">ACADEMIC COACH</option>
                   <option value="TEACHER">TEACHER</option>
                   <option value="SUPERVISOR">SUPERVISOR</option>
                   <option value="ADMIN">ADMIN</option>

@@ -47,7 +47,7 @@ interface StudentInvoice {
   createdDate: string;
   createdBy: string;
   lastUpdatedDate: string;
-  lastUpdatedBy: string;
+  lastUpdatedBy: Date;
   invoiceStatus: string;
 }
 
@@ -162,7 +162,9 @@ const CountriesCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/amountbycountry");
+        const response = await fetch(
+          "https://api.blackstoneinfomaticstech.com/amountbycountry"
+        );
         const result = await response.json();
 
         if (Array.isArray(result) && result.length > 0) {
@@ -228,7 +230,7 @@ const CountriesCard = () => {
                         <div className="flex justify-between text-[13px] font-medium text-gray-800">
                           <span>{country.country}</span>
                           <span className="text-[#809FB8]">
-                            ₹{country.revenue.toLocaleString()}
+                            ${country.revenue.toLocaleString()}
                           </span>
                         </div>
 
@@ -245,7 +247,7 @@ const CountriesCard = () => {
 
                       {/* Tooltip for revenue */}
                       <div className="absolute top-[-30px] left-0 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                        Revenue: ₹{country.revenue} / Total: ₹
+                        Revenue: ${country.revenue} / Total: $
                         {totalAllCountriesRevenue}
                       </div>
                     </div>
@@ -308,7 +310,7 @@ const CoursesChart = () => {
             content={({ active, payload }) =>
               active && payload?.length ? (
                 <div className="bg-white text-gray-800 text-sm px-2 py-1 rounded shadow border border-gray-200">
-                  ₹{payload[0]?.value}
+                  ${payload[0]?.value}
                 </div>
               ) : null
             }
@@ -406,11 +408,11 @@ const getBarColor: (
 ) => {
   const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
 
-  if (percentage >= 90) return "#0ea5e9"; // sky-500
-  if (percentage >= 70) return "#38bdf8"; // sky-400
-  if (percentage >= 50) return "#7dd3fc"; // sky-300
-  if (percentage >= 30) return "#bae6fd"; // sky-200
-  return "#e0f2fe"; // sky-100
+  if (percentage >= 90) return "#0ea5e9";
+  if (percentage >= 70) return "#38bdf8";
+  if (percentage >= 50) return "#7dd3fc";
+  if (percentage >= 30) return "#bae6fd";
+  return "#e0f2fe";
 };
 
 export default function Home() {
@@ -527,7 +529,9 @@ export default function Home() {
   // Define the fetchRevenueData function outside of useEffect
   const fetchRevenueData = async (year: number) => {
     try {
-      const res = await fetch(`https://api.blackstoneinfomaticstech.com/studentrevenue?year=${year}`);
+      const res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/studentrevenue?year=${year}`
+      );
       const data = await res.json();
       console.log(`Revenue for ${year}:`, data);
       setRevenueDatas(data.data); // Update the state with the fetched data
@@ -539,9 +543,8 @@ export default function Home() {
   // Fetch the data whenever the year changes
   useEffect(() => {
     fetchRevenueData(selectedYear);
-  }, [selectedYear]); 
+  }, [selectedYear]);
 
-  
   return (
     <BaseLayout4>
       {/* Main Content */}
@@ -556,7 +559,7 @@ export default function Home() {
             <div className="bg-[#203e7b] text-white rounded-2xl p-3 relative overflow-hidden flex flex-col justify-left items-center h-40 w-full">
               <h3 className="text-sm font-medium mb-1">Total Income</h3>
               <div className="text-2xl md:text-3xl font-bold mb-1">
-                ₹{totalRevenue.toLocaleString()}
+                ${totalRevenue.toLocaleString()}
               </div>
 
               <div className="flex items-center text-sm text-white gap-1">
@@ -732,23 +735,23 @@ export default function Home() {
                 Revenue
               </h3>
               <select
-        className="bg-transparent border rounded-lg px-2 py-1 text-xs text-slate-500"
-        value={selectedYear}
-        onChange={async (e) => {
-          const year = Number(e.target.value);
-          setSelectedYear(year);  // Update selected year
-          await fetchRevenueData(year);  // Fetch new data
-        }}
-      >
-        {Array.from({ length: 5 }, (_, i) => {
-          const year = new Date().getFullYear() - i;
-          return (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          );
-        })}
-      </select>
+                className="bg-transparent border rounded-lg px-2 py-1 text-xs text-slate-500"
+                value={selectedYear}
+                onChange={async (e) => {
+                  const year = Number(e.target.value);
+                  setSelectedYear(year); // Update selected year
+                  await fetchRevenueData(year); // Fetch new data
+                }}
+              >
+                {Array.from({ length: 5 }, (_, i) => {
+                  const year = new Date().getFullYear() - i;
+                  return (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
 
             <ResponsiveContainer width="100%" height={170}>
@@ -773,7 +776,7 @@ export default function Home() {
                     padding: "10px",
                     fontSize: "13px",
                   }}
-                  formatter={(value: number) => [`$${value}K`, "Revenue"]}
+                  formatter={(value: number) => [`$${value}`, "Revenue"]}
                 />
                 <Bar
                   dataKey="revenue" // <-- updated
@@ -781,7 +784,7 @@ export default function Home() {
                   barSize={32}
                   label={{
                     position: "top",
-                    formatter: (value: number) => `$${value}K`,
+                    formatter: (value: number) => `$${value}`,
                     fill: "#0f172a",
                     fontSize: 10,
                   }}

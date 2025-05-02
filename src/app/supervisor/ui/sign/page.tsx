@@ -209,6 +209,12 @@ const SignIn: React.FC = () => {
               />
             </div>
             <div className="relative">
+            <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
@@ -220,7 +226,7 @@ const SignIn: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2.5 text-gray-500"
+                className="absolute right-3 top-7 text-gray-500"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? "🙈" : "👁️"}
