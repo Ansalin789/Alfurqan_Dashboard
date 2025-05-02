@@ -87,7 +87,7 @@ const fetchDashboardData = async (
   authToken: string | null
 ): Promise<ApiResponse> => {
   const response = await axios.get(
-    `https://alfurqanacademy.tech/dashboard/widgets`,
+    `https://api.blackstoneinfomaticstech.com/dashboard/widgets`,
     {
       method: "GET",
       headers: {

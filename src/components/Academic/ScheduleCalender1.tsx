@@ -28,7 +28,7 @@ const ScheduleCalender: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]); // Specify the event type here
 
   useEffect(() => {
-    fetch(`https://alfurqanacademy.tech/meetingSchedulelist`)
+    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`)
       .then((response) => response.json())
       .then((data) => {
         const mappedEvents = data.academicCoach.map((item: any) => {

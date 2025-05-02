@@ -150,7 +150,7 @@ export default function ApplicantsPage() {
   useEffect(() => {
    
     axios
-      .get("https://alfurqanacademy.tech/applicants")
+      .get("https://api.blackstoneinfomaticstech.com/applicants")
       .then((response) => setApplicants(response.data.applicants))
       .catch((error) => console.error("Error fetching applicants:", error));
   }, []);
@@ -192,7 +192,7 @@ export default function ApplicantsPage() {
       
       try {
         const response = await axios.get<ApiResponse>(
-          `https://alfurqanacademy.tech/applicants/${_id}`,
+          `https://api.blackstoneinfomaticstech.com/applicants/${_id}`,
           {
             headers: {
              
@@ -272,7 +272,7 @@ export default function ApplicantsPage() {
 
     try {
       const response = await axios.post(
-        "https://alfurqanacademy.tech/recruit",
+        "https://api.blackstoneinfomaticstech.com/recruit",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -332,7 +332,7 @@ export default function ApplicantsPage() {
     console.log(updateData);
     try {
       const response = await axios.put(
-        `https://alfurqanacademy.tech/applicants/${id}`,
+        `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
         updateData
       );
       console.log("Update successful:", response.data);

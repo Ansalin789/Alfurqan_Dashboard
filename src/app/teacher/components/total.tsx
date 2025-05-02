@@ -49,7 +49,7 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
 
 const fetchDashboardData = async (teacherId: string, authToken: string | null): Promise<ApiResponse> => {
   try {
-    const response = await axios.get(`https://alfurqanacademy.tech/dashboard/teacher/counts`, {
+    const response = await axios.get(`https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts`, {
       params: {
         teacherId: teacherId
       },

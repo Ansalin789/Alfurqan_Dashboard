@@ -22,7 +22,7 @@ const fetchTeacherData = async (): Promise<Teacher[] | null> => {
     const studentId = localStorage.getItem("TeacherPortalId");
     console.log(">>>>>", studentId);
     const response = await axios.get(
-      "http://localhost:5001/teacher-student-count",
+      "https://api.blackstoneinfomaticstech.com/teacher-student-count",
       {
         params: { teacherId: studentId },
       }

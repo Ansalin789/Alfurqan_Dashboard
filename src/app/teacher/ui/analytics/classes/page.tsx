@@ -60,7 +60,7 @@ const Classes = () => {
           return;
         }
 
-        const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule");
+        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule");
 
         const filteredData = response.data.students.filter(
           (item:any) => item.teacher.teacherId === teacherIdToFilter

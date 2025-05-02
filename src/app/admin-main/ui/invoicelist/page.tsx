@@ -50,7 +50,7 @@ const [filters, setFilters] = useState({
 
   useEffect(() => {
     axios
-      .get("http://localhost:5001/studentinvoice/list")
+      .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list")
       .then((response) => {
         setInvoices(response.data.data);
       })

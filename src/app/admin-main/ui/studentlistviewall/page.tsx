@@ -50,7 +50,7 @@ const TrailManagement = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await axios.get('https://alfurqanacademy.tech/alstudents');
+        const response = await axios.get('https://api.blackstoneinfomaticstech.com/alstudents');
   
         const uniqueStudentsMap = new Map();
         response.data.students.forEach((student: Student) => {

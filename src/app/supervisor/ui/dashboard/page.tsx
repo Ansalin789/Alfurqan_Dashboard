@@ -114,10 +114,10 @@ export default function Dashboard() {
       setPieData(filteredData);
     };
 
-    const fetchApplicants = axios.get("https://alfurqanacademy.tech/applicants");
+    const fetchApplicants = axios.get("https://api.blackstoneinfomaticstech.com/applicants");
 
     const fetchDashboardCounts = axios.get(
-      "https://alfurqanacademy.tech/dashboard/supervisor/counts"
+      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts"
     );
 
     Promise.all([fetchApplicants, fetchDashboardCounts])
@@ -218,7 +218,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get("https://alfurqanacademy.tech/allMeetings", {
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
           headers: { "Content-Type": "application/json" },
         });
 
@@ -275,7 +275,7 @@ export default function Dashboard() {
   const currentYear = today.getFullYear();
   const fetchApplicantsData = async (auth: string) => {
     try {
-      const response = await axios.get("https://alfurqanacademy.tech/applicants");
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/applicants");
 
       console.log("API Response:", response.data);
 

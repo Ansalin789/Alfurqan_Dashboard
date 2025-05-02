@@ -78,7 +78,7 @@ const Studentreschedule = () => {
     // Fetch student schedule data
     const studentlist = async () => {
       try {
-        const response = await fetch(`https://alfurqanacademy.tech/classShedule`, {
+        const response = await fetch(`https://api.blackstoneinfomaticstech.com/classShedule`, {
           method: 'GET',
           headers: {
             "Content-Type": "application/json",
@@ -93,7 +93,7 @@ const Studentreschedule = () => {
     studentlist();
 
     // Fetch teacher schedule data
-    fetch(`https://alfurqanacademy.tech/shiftschedule?role=TEACHER`, {
+    fetch(`https://api.blackstoneinfomaticstech.com/shiftschedule?role=TEACHER`, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -215,7 +215,7 @@ const Studentreschedule = () => {
       console.log("Updating schedule with ID:", filteredItem._id);
 
       // Make the API call to update the schedule
-      const response = await fetch(`https://alfurqanacademy.tech/classSchedule/${filteredItem._id}`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/classSchedule/${filteredItem._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

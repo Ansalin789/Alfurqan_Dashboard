@@ -136,7 +136,7 @@ const AdminModuleAccess = () => {
   
     const fetchEmployeeData = async () => {
       try {
-        const res = await fetch(`http://localhost:5001/update-access/${employeeId}`);
+        const res = await fetch(`https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`);
         const json = await res.json();
         console.log('Fetched data:', json);
   
@@ -222,7 +222,7 @@ const AdminModuleAccess = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:5001/update-access/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
         { roleAccess }
       );
       console.log('Access updated successfully:', response.data);

@@ -156,7 +156,7 @@ useEffect(() => {
               return;
           }
 
-          const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule");
+          const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule");
 
           const filteredData = response.data.students.filter(
               (item) => item.teacher.teacherId === teacherIdToFilter

@@ -170,7 +170,7 @@ const ViewTeachersList = () => {
     const fetchTeachers = async () => {
       const teacherId = localStorage.getItem('manageTeacherId');
       try {
-        const response = await fetch(`https://alfurqanacademy.tech/users/${teacherId}`);
+        const response = await fetch(`https://api.blackstoneinfomaticstech.com/users/${teacherId}`);
         const data = await response.json();
         setTeachers(data);
       } catch (error) {
@@ -184,7 +184,7 @@ const ViewTeachersList = () => {
   const studentlist = async () => {
     try {
       const teacherId = localStorage.getItem('manageTeacherId');
-      const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule");
+      const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule");
       const filteredData = response.data.students.filter(
         (item: any) => item.teacher.teacherId === teacherId
       );

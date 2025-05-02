@@ -74,7 +74,7 @@ const QuizPage = () => {
   useEffect(() => {
     const fetchAssignment = async () => {
       try {
-        const response = await axios.get(`https://alfurqanacademy.tech/allAssignment`);
+        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/allAssignment`);
         // Use find() instead of filter() to get single assignment
         const assignmentData = response.data.assignments.find(
           (assignment: Assignment) => assignment._id === assignmentId
@@ -232,7 +232,7 @@ if (assignment) {
   }
 
   try {
-   const response= await axios.put(`https://alfurqanacademy.tech/assignments/${assignmentId}`, formData, {
+   const response= await axios.put(`https://api.blackstoneinfomaticstech.com/assignments/${assignmentId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
    

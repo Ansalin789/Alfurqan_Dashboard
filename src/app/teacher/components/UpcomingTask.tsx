@@ -23,7 +23,7 @@ const UpcomingTask: React.FC = () => {
         const teacherId = localStorage.getItem("TeacherPortalId");
         
 
-        const response = await axios.get("https://alfurqanacademy.tech/classShedule/teacher", {
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule/teacher", {
           params: { teacherId: teacherId },
           headers: {
             "Content-Type": "application/json",

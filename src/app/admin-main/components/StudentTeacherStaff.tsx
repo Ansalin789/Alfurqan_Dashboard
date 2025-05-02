@@ -31,7 +31,7 @@ const [data, setData] = useState<GroupedData[]>([]);
 useEffect(() => {
   const fetchData = async () => {
     try {
-      const res = await fetch('https://alfurqanacademy.tech/dashboard/admin/count');
+      const res = await fetch('https://api.blackstoneinfomaticstech.com/dashboard/admin/count');
       const json: DashboardCount = await res.json();
 
       const grouped: GroupedData[] = [

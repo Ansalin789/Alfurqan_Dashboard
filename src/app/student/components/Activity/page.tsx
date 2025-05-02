@@ -42,7 +42,7 @@ const TeachingActivity = () => {
         }
 
         const response = await axios.get(
-          `https://alfurqanacademy.tech/classShedule/activity`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/activity`,
           {
             params: { studentId },
           }

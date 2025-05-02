@@ -55,7 +55,7 @@ const ViewSchedule = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get<ApiResponse>("https://alfurqanacademy.tech/classShedule");
+        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule");
   
         const now = new Date();
         const today = new Date();

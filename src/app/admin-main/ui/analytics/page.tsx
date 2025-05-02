@@ -162,7 +162,7 @@ const CountriesCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:5001/amountbycountry");
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/amountbycountry");
         const result = await response.json();
 
         if (Array.isArray(result) && result.length > 0) {
@@ -266,7 +266,7 @@ const CoursesChart = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5001/amountbycourse")
+      .get("https://api.blackstoneinfomaticstech.com/amountbycourse")
       .then((response) => {
         const allCourses = response.data;
 
@@ -420,7 +420,7 @@ export default function Home() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5001/amountbycourse")
+      .get("https://api.blackstoneinfomaticstech.com/amountbycourse")
       .then((response) => {
         const allCourses = response.data;
 
@@ -460,7 +460,7 @@ export default function Home() {
 
   useEffect(() => {
     // Fetch data from the API
-    fetch("http://localhost:5001/studentinvoice")
+    fetch("https://api.blackstoneinfomaticstech.com/studentinvoice")
       .then((response) => response.json())
       .then((data: ApiResponse) => {
         // Filter for Paid invoices and slice the last 3
@@ -502,7 +502,7 @@ export default function Home() {
   const maxRevenue = Math.max(...revenueDatas.map((d) => d.revenue), 0); // Place this before render
 
   useEffect(() => {
-    fetch("http://localhost:5001/studentvisitor")
+    fetch("https://api.blackstoneinfomaticstech.com/studentvisitor")
       .then((res) => res.json())
       .then((data) => {
         // Log raw API response
@@ -527,7 +527,7 @@ export default function Home() {
   // Define the fetchRevenueData function outside of useEffect
   const fetchRevenueData = async (year: number) => {
     try {
-      const res = await fetch(`http://localhost:5001/studentrevenue?year=${year}`);
+      const res = await fetch(`https://api.blackstoneinfomaticstech.com/studentrevenue?year=${year}`);
       const data = await res.json();
       console.log(`Revenue for ${year}:`, data);
       setRevenueDatas(data.data); // Update the state with the fetched data

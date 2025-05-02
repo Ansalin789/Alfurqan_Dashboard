@@ -85,7 +85,7 @@ const Message = () => {
   const socketRef = useRef<any>(null);
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
-      const response = await axios.get<{ users: IUser[] }>('https://alfurqanacademy.tech/users', {
+      const response = await axios.get<{ users: IUser[] }>('https://api.blackstoneinfomaticstech.com/users', {
         params: { role },
       });
       return response.data.users;
@@ -118,7 +118,7 @@ useEffect(() => {
   // Fetch messages from API
   const fetchMessages = async (receiverId: string) => {
     try {
-      const { data } = await axios.get<IMessageResponse>(`https://alfurqanacademy.tech/realtimemessage/${receiverId}`);
+      const { data } = await axios.get<IMessageResponse>(`https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`);
       const fetchedMessages = data?.data?.[0]?.messages ?? [];
       setMessages(fetchedMessages); // Set messages to state
 
@@ -132,8 +132,9 @@ useEffect(() => {
 
   // Initialize socket connection
   useEffect(() => {
+    if(!userId) return;
     if (!socketRef.current) {
-      socketRef.current = io("https://alfurqanacademy.tech", {
+      socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
         transports: ["websocket"],
         withCredentials: true,
         reconnection: true,
@@ -144,6 +145,7 @@ useEffect(() => {
       socketRef.current.on("connect", () => {
         console.log("Connected to Socket.IO with ID:", socketRef.current?.id);
         socketRef.current?.emit("subscribe", userId);
+        console.log(userId);
       });
 
       socketRef.current.on("disconnect", () => {
@@ -204,7 +206,7 @@ useEffect(() => {
   
     try {
       // Send the new message to the backend API
-      const response = await axios.post('https://alfurqanacademy.tech/realtimemessage', newMessage, {
+      const response = await axios.post('https://api.blackstoneinfomaticstech.com/realtimemessage', newMessage, {
         headers: {
           'Content-Type': 'application/json',
         },

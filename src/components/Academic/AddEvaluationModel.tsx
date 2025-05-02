@@ -161,7 +161,7 @@ gardianLanguage: '',
         throw new Error('First name must be at least 3 characters long');
       }
       
-      const response = await fetch(`https://alfurqanacademy.tech/evaluation`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

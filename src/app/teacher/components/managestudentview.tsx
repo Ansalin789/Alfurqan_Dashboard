@@ -101,7 +101,7 @@ const ManageStudentView = () => {
       const fetchData = async () => {
         try {
          
-          const response = await fetch(`https://alfurqanacademy.tech/alstudents/${studentId}`);
+          const response = await fetch(`https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`);
           const data = await response.json();
           setStudentData(data);
           console.log(data);

@@ -67,7 +67,7 @@ export default function InvoicePage() {
     const fetchStudents = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5001/alstudents"
+          "https://api.blackstoneinfomaticstech.com/alstudents"
         );
 
         // Remove duplicates based on studentId
@@ -119,7 +119,7 @@ export default function InvoicePage() {
   const handleSubmit = async () => {
     try {
       // Send data to backend
-      const response = await axios.post('http://localhost:5001/invoice/send', invoiceData);
+      const response = await axios.post('https://api.blackstoneinfomaticstech.com/invoice/send', invoiceData);
       console.log('Invoice created successfully:', response.data);  
 
       // Check if response is successful

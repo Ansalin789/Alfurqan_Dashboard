@@ -1,9 +1,11 @@
+'use client';
+
 type Notification = {
     id: number
     name: string
     message: string
     time: string
-    avatar: string
+    
   }
   
   export default function Notifications() {
@@ -13,28 +15,24 @@ type Notification = {
         name: "Alex Campbell",
         message: "Just wanted to check in on how everyone's progress...",
         time: "2:36 PM",
-        avatar: "/Imageuser.svg?height=40&width=40",
       },
       {
         id: 2,
         name: "Mrs. Patel",
         message: "Someone left a blue jacket in the library yesterday...",
-        time: "10:32 AM",
-        avatar: "/placeholder.svg?height=40&width=40",
+        time: "10:32 AM"
       },
       {
         id: 3,
         name: "Coach Daniels",
         message: "Practice canceled today due to weather...",
         time: "7:10 AM",
-        avatar: "/placeholder.svg?height=40&width=40",
       },
       {
         id: 4,
         name: "Jamie Lax",
         message: "Study session reminder for tomorrow!...",
-        time: "Yesterday, 8:29 PM",
-        avatar: "/placeholder.svg?height=40&width=40",
+        time: "Yesterday, 8:29 PM"
       },
     ]
   
@@ -46,15 +44,6 @@ type Notification = {
         <div className="space-y-4 mx-2 ">
           {notifications.map((notification) => (
             <div key={notification.id} className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
-                <div className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center">
-                  <img
-                    src={notification.avatar || "/placeholder.svg"}
-                    alt={notification.name}
-                    className="w-7 h-7 rounded-full"
-                  />
-                </div>
-              </div>
               <div className="flex-grow min-w-0">
                 <div className="flex justify-between items-start">
                   <p className="font-medium text-xs">{notification.name}</p>

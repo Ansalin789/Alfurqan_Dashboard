@@ -55,7 +55,7 @@ const Invoice = () => {
 
     try {
      
-      const response = await fetch(`https://alfurqanacademy.tech/evaluationlist/${studentId}`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluationlist/${studentId}`, {
         headers: {
           'Content-Type': 'application/json',
           
@@ -121,7 +121,7 @@ console.log(feesPerDay);
     const evaluationid = evaluationData._id; // Replace with your actual evaluation ID
     const totalprice = evaluationData.planTotalPrice;
    
-    const response = await fetch(`https://alfurqanacademy.tech/create-payment-intent`, {
+    const response = await fetch(`https://api.blackstoneinfomaticstech.com/create-payment-intent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

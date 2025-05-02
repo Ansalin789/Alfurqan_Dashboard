@@ -115,7 +115,7 @@ const Expenses = () => {
     // Only make the API call if salaryData is empty
     if (salaryData.length === 0) {
       // Replace with your actual API endpoint
-      axios.get('http://localhost:5001/expense')
+      axios.get('https://api.blackstoneinfomaticstech.com/expense')
         .then((response) => {
           const fetchedData = response.data.expenses;
   
@@ -148,7 +148,7 @@ const Expenses = () => {
     
       // Sending the POST request
       axios
-        .post('http://localhost:5001/expense', expenseData)
+        .post('https://api.blackstoneinfomaticstech.com/expense', expenseData)
         .then((response) => {
           console.log('Expense added:', response.data);
           

@@ -71,7 +71,7 @@ const StudentProfile = () => {
         try {
           const studentId = localStorage.getItem("StudentPortalId");
           const response = await axios.get<ApiResponse>(
-            "https://alfurqanacademy.tech/alstudents"
+            "https://api.blackstoneinfomaticstech.com/alstudents"
           );
 
           if (!studentId) {

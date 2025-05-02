@@ -73,7 +73,7 @@ const ClassAnalytics: React.FC = () => {
         }
   
         const response = await axios.get<{ classSchedule: ClassSchedule[] }>(
-          "https://alfurqanacademy.tech/classShedule/teacher",
+          "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
           {
             params: { teacherId },
             headers: {

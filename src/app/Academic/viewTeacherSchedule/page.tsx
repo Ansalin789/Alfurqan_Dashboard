@@ -37,7 +37,7 @@ const ViewTeacherSchedule = () => {
 
   useEffect(() => {
     const auth = localStorage.getItem("authToken");
-    fetch(`https://alfurqanacademy.tech/meetingSchedulelist`, {
+    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`, {
       headers: {
         Authorization: `Bearer ${auth}`,
       },

@@ -38,7 +38,7 @@ export default function TotalClasses() {
   const fetchClassData = async (range: TimeFrame) => {
     try {
       const res = await fetch(
-        `https://alfurqanacademy.tech/dashboard/admin/totalclass?dateRange=${getDateRangeParam(
+        `https://api.blackstoneinfomaticstech.com/dashboard/admin/totalclass?dateRange=${getDateRangeParam(
           range
         )}`
       );

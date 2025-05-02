@@ -163,7 +163,7 @@ function LiveClass() {
           return;
         }
   
-        const response = await axios.get<ApiResponse>(`https://alfurqanacademy.tech/classShedule/teacher`, {
+        const response = await axios.get<ApiResponse>(`https://api.blackstoneinfomaticstech.com/classShedule/teacher`, {
           params: { teacherId },
          
         });
@@ -286,7 +286,7 @@ function LiveClass() {
     };
 
     try {
-      const response = await axios.post("https://alfurqanacademy.tech/feedback", feedbackData, {
+      const response = await axios.post("https://api.blackstoneinfomaticstech.com/feedback", feedbackData, {
         headers: {
           "Content-Type": "application/json",
         },

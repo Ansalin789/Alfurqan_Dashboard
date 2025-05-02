@@ -86,7 +86,7 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     try {
       
-      const response = await fetch(`https://alfurqanacademy.tech/studentlist`);
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/studentlist`);
       const rawData = await response.json();
       console.log('Raw API Response:', rawData);
       // console.log(response) 

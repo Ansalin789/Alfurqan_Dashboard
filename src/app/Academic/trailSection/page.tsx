@@ -66,7 +66,7 @@ const getAllUsers = async (): Promise<{
     
     const academicId = localStorage.getItem("academicId");
     console.log("academicId>>", academicId);
-    const response = await axios.get(`https://alfurqanacademy.tech/evaluationlist`, {
+    const response = await axios.get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
       params: { academicCoachId: academicId },
       headers: {
         "Content-Type": "application/json",
@@ -449,7 +449,7 @@ const TrailSection = () => {
     try {
      
       const response = await fetch(
-        `https://alfurqanacademy.tech/evaluationlist/${id}`,
+        `https://api.blackstoneinfomaticstech.com/evaluationlist/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -476,7 +476,7 @@ const TrailSection = () => {
       setStudentStatus(data.studentStatus);
       setPaymentStatus(data.paymentStatus);
       setPaymentLink(
-        `https://web.alfurqanacademy.tech/invoice?id=${encodeURIComponent(data._id)}`
+        `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(data._id)}`
       );
       setFormData(data);
       console.log(data);
@@ -560,7 +560,7 @@ const TrailSection = () => {
     alert(JSON.stringify(formDataNames));
     try {
     
-      const response = await fetch(`https://alfurqanacademy.tech/evaluation/${id}`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

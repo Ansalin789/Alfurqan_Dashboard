@@ -40,7 +40,7 @@ const EmployeeCards: React.FC = () => {
       try {
         
         const response = await fetch(
-          `https://alfurqanacademy.tech/users?role=TEACHER`,
+          `https://api.blackstoneinfomaticstech.com/users?role=TEACHER`,
           
         );
         const data = await response.json();
@@ -103,7 +103,7 @@ const EmployeeCards: React.FC = () => {
     console.log("New Teacher Data:", newTeacher);
     try {
       
-      const response = await fetch(`https://alfurqanacademy.tech/users`, {
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

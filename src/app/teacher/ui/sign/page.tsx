@@ -51,7 +51,7 @@ const searchParams = useSearchParams();
   }, [error]);
   const signIn = async (username: string, password: string) => {
     try {
-      const response = await axios.post("https://alfurqanacademy.tech/signin", {
+      const response = await axios.post("https://api.blackstoneinfomaticstech.com/signin", {
         username,
         password,
       });
@@ -124,7 +124,7 @@ const searchParams = useSearchParams();
       try {
         // Send a POST request to the backend to check if the email exists
         const response = await axios.post(
-          `https://alfurqanacademy.tech/allcheck-email`,
+          `https://api.blackstoneinfomaticstech.com/allcheck-email`,
           { email }
         );
 

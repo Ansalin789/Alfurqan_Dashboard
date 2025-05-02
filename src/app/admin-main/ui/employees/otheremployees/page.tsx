@@ -76,7 +76,7 @@ const EmployeePage = () => {
   const [wages, setWages] = useState<EmployeeWage[]>([]);
   const fetchEmployee = async (employeeId: string) => {
     try {
-      const response = await axios.get<Employee>(`http://localhost:5001/otheremp/${employeeId}`);
+      const response = await axios.get<Employee>(`https://api.blackstoneinfomaticstech.com/otheremp/${employeeId}`);
       setEmployee(response.data);
       setIsFetched(true);  // Mark the data as fetched
     } catch (error: any) {
@@ -90,7 +90,7 @@ const EmployeePage = () => {
     }
 
     try {
-      const response = await axios.get<EmployeeWage[]>(`http://localhost:5001/empwages/${userId}`);
+      const response = await axios.get<EmployeeWage[]>(`https://api.blackstoneinfomaticstech.com/empwages/${userId}`);
       setWages(response.data);
     } catch (error: any) {
       console.error('Error fetching wages:', error.response?.data ?? error.message);

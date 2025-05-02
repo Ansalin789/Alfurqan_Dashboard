@@ -54,7 +54,7 @@ const Page = () => {
     const fetchLevels = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch(`http://localhost:5001/courseslevels?courseId=${courseId}`);
+            const response = await fetch(`https://api.blackstoneinfomaticstech.com/courseslevels?courseId=${courseId}`);
             if (!response.ok) throw new Error('Failed to fetch course details');
             
             const data = await response.json(); 
@@ -129,7 +129,7 @@ const Page = () => {
         };
 
         try {
-            const res = await fetch(`http://localhost:5001/courses/${courseId}`, {
+            const res = await fetch(`https://api.blackstoneinfomaticstech.com/courses/${courseId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

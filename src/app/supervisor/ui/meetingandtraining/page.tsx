@@ -97,7 +97,7 @@ const colorOptions = [
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   useEffect(() => {
     axios
-      .get<{ totalCount: number; applicants: ApiResponse[] }>("https://alfurqanacademy.tech/applicants")
+      .get<{ totalCount: number; applicants: ApiResponse[] }>("https://api.blackstoneinfomaticstech.com/applicants")
       .then((response) => {
         console.log("API Response:", response.data); // ✅ Debugging step
   
@@ -120,7 +120,7 @@ const colorOptions = [
   useEffect(() => {
     const fetchMeetings = async () => {
         try {
-            const response = await axios.get("https://alfurqanacademy.tech/allMeetings", {
+            const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
                 headers: { "Content-Type": "application/json" },
             });
 
@@ -308,7 +308,7 @@ const [teachersByMeetingId, setTeachersByMeetingId] = useState<TeachersByMeeting
     console.log(requestData);
 
     try {
-        const response = await axios.post("https://alfurqanacademy.tech/addMeeting", requestData);
+        const response = await axios.post("https://api.blackstoneinfomaticstech.com/addMeeting", requestData);
         if (response.status === 200 || response.status === 201 || response.status === 400) {
           setIsMeetingModalOpen(false);
             

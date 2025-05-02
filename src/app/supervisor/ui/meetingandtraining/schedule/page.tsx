@@ -149,7 +149,7 @@ const Schedules: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("https://alfurqanacademy.tech/allMeetings");
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings");
 
         const meetings = response.data?.data?.meetings;
 

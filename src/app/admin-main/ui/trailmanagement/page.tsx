@@ -103,7 +103,7 @@ const TrailManagement = () => {
   const getAllUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("http://localhost:5001/alltrialclass");
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass");
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
