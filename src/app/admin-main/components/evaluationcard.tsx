@@ -155,7 +155,7 @@ const CountriesCard = () => {
     <div>
       <h2 className="text-sm font-semibold text-gray-900">Countries</h2>
 
-      <div className="space-y-4 mt-4">
+      <div className="space-y-4 mt-4 h-52 overflow-y-scroll scrollbar-none">
         {data.map((countryInfo) => {
           const countryCode = countries.getAlpha2Code(
             countryInfo.country,

@@ -391,7 +391,7 @@ const TeachersStudents = () => {
       </div>
 
       {/* Scrollable List */}
-      <div className="max-h-48 p-4 overflow-y-auto pr-2 scrollbar-none scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      <div className="h-48 p-4 overflow-y-scroll scrollbar-none pr-2 scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         {teachers.map((teacher, index) => (
           <div key={teacher._id} className="flex items-center py-2 border-b">
             <div className="w-5 flex-shrink-0">
