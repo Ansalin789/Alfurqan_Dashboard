@@ -2,9 +2,10 @@
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { GrApple } from "react-icons/gr";
-import { useRouter ,useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import axios from "axios";
+
 const SignIn: React.FC = () => {
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -13,19 +14,21 @@ const SignIn: React.FC = () => {
   const [error, setError] = useState("");
   const [showError, setShowError] = useState(false);
   const router = useRouter();
+
   useEffect(() => {
     if (error) {
       setShowError(true);
       setTimeout(() => {
         setShowError(false);
-      }, 5000); // Hide the error after 5 seconds
+      }, 5000);
     }
     const user = searchParams.get("username");
     const pass = searchParams.get("password");
-  
+
     if (user) setUsername(user);
     if (pass) setPassword(pass);
   }, [error]);
+
   const signIn = async (username: string, password: string) => {
     try {
       const response = await axios.post("https://api.blackstoneinfomaticstech.com/signin", {
@@ -33,19 +36,15 @@ const SignIn: React.FC = () => {
         password,
       });
 
-      // Handle successful login response
       if (response.status === 200) {
         return response.data;
       }
 
       throw new Error("Unexpected error occurred");
     } catch (error: any) {
-      // Handle backend errors, e.g., user not found
       if (error.response && error.response.status === 404) {
-        throw new Error("Email not found"); // Specific error message
+        throw new Error("Email not found");
       }
-
-      // Handle other errors
       throw new Error(error.message || "Login failed");
     }
   };
@@ -56,16 +55,15 @@ const SignIn: React.FC = () => {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
     try {
       const data = await signIn(username, password);
       const { accessToken, role, _id, userName } = data;
+
       localStorage.setItem("AdminAuthToken", accessToken);
       localStorage.setItem("AdminPortalId", _id);
       localStorage.setItem("AdminPortalName", userName);
-      const authToken = localStorage.getItem("AdminAuthToken");
-      console.log(accessToken);
-      console.log(authToken);
+
       if (role?.includes("ADMIN")) {
         router.push("/admin-main/ui/dashboard");
         alert("Login successful as Admin");
@@ -76,9 +74,7 @@ const SignIn: React.FC = () => {
         if (status === 400) {
           console.log(error);
         } else {
-          setLoginError(
-            data.message || "Login failed. Please try again later."
-          );
+          setLoginError(data.message || "Login failed. Please try again later.");
         }
       } else {
         setLoginError("Login failed. Please try again later.");
@@ -94,64 +90,51 @@ const SignIn: React.FC = () => {
       setLoginError("Google login failed: No credential received");
       return;
     }
+
+    const email = extractEmailFromCredential(credential);
+
     const checkEmail = async (email: string) => {
       try {
-        // Send a POST request to the backend to check if the email exists
         const response = await axios.post(
-          `https://api.blackstoneinfomaticstech.com/allcheck-email`,
+          "https://api.blackstoneinfomaticstech.com/allcheck-email",
           { email }
         );
 
-        // If the response status is 200, the email exists
         if (response.status === 200) {
-          console.log("Email exists:", response.data);
-          return { message: "Email exists", data: response.data }; // Return email data
+          return { message: "Email exists", data: response.data };
         }
       } catch (error: any) {
-        // Handle errors based on status code if available
         if (error.response) {
           if (error.response.status === 404) {
-            console.log("Email not found");
-            return { message: "Email not found" }; // Email not found
+            return { message: "Email not found" };
           }
-
           if (error.response.status === 500) {
-            console.log("Internal Server Error");
-            return { message: "Internal Server Error" }; // Handle server errors
+            return { message: "Internal Server Error" };
           }
         }
-
-        // Handle non-HTTP errors or unexpected issues (network error, etc.)
-        console.log("Error occurred:", error.message || "Unknown error");
-        return { message: "Unknown error occurred" }; // Return unknown error message
+        return { message: "Unknown error occurred" };
       }
     };
-    const email = extractEmailFromCredential(credential); // Replace with your extraction logic
-    try {
-      // Call the checkEmail function to verify if the email exists
-      const result = await checkEmail(email);
 
-      // Handle result based on the returned message
+    try {
+      const result = await checkEmail(email);
       if (result?.message === "Email exists") {
         localStorage.setItem("AdminAuthToken", result.data.accessToken);
         localStorage.setItem("AdminPortalId", result.data.id);
         localStorage.setItem("AdminPortalName", result.data.username);
-        const authToken = localStorage.getItem("AdminAuthToken");
-        console.log(authToken);
-        router.push("/admin-main/ui/dashboard"); // Redirect to dashboard
+        router.push("/admin-main/ui/dashboard");
       } else {
-        setLoginError("Email not found"); // Display appropriate error message
-        console.log(result?.message); // Log the error message for debugging
+        setLoginError("Email not found");
+        console.log(result?.message);
       }
     } catch (error) {
-      // Handle unexpected errors during the checkEmail call
       console.error("Error during email verification:", error);
       setLoginError("An unexpected error occurred. Please try again.");
     }
   };
 
   const extractEmailFromCredential = (credential: string) => {
-    const decodedCredential = JSON.parse(atob(credential.split(".")[1])); // Decode the payload (base64)
+    const decodedCredential = JSON.parse(atob(credential.split(".")[1]));
     return decodedCredential.email;
   };
 
@@ -180,20 +163,13 @@ const SignIn: React.FC = () => {
         </div>
       )}
       <div className="flex w-full max-w-4xl rounded-lg shadow-lg overflow-hidden">
-        {/* Sign In Section */}
         <div className="w-1/2 bg-white rounded-br-[150px] p-8">
-          {/* <Image src="/assets/images/alf.png" alt="logo" width={150} height={150} className='justify-center ml-28 p-0'/> */}
-          {/* <h2 className="text-3xl font-bold mb-4">Sign In</h2> */}
-
           <form onSubmit={handleFormSubmit} className="space-y-6">
             {error && (
               <div className="text-red-500 text-sm text-center">{error}</div>
             )}
             <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 User Name
               </label>
               <input
@@ -209,10 +185,7 @@ const SignIn: React.FC = () => {
               />
             </div>
             <div className="relative">
-            <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
@@ -235,7 +208,7 @@ const SignIn: React.FC = () => {
             <div className="p-4">
               <button
                 type="submit"
-                className="w-[30%] ml-32 py-2 text-center  bg-[#293552] text-white rounded-3xl hover:bg-[#1a2133] transition"
+                className="w-[30%] ml-32 py-2 text-center bg-[#293552] text-white rounded-3xl hover:bg-[#1a2133] transition"
               >
                 Log In
               </button>
@@ -245,7 +218,7 @@ const SignIn: React.FC = () => {
           <div className="my-4 space-y-5">
             <div
               className="flex flex-col justify-center items-center w-full px-100"
-              style={{ maxWidth: "800px", border: "none", padding: 0 }} // Max width set here for Google login button
+              style={{ maxWidth: "800px", border: "none", padding: 0 }}
             >
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
@@ -267,21 +240,19 @@ const SignIn: React.FC = () => {
           </div>
         </div>
 
-        {/* Sign Up Section */}
         <div className="w-1/2 bg-[#293552] rounded-bl-[150px] text-white p-8 flex flex-col justify-center items-center">
           <Image
             src="/assets/images/alf.png"
             alt="logo"
             width={200}
             height={200}
-            className="justify-center mb-8 p-4 rounded-bl-[35px] rounded-md bg-[#fff] "
+            className="justify-center mb-8 p-4 rounded-bl-[35px] rounded-md bg-[#fff]"
           />
           <h2 className="text-3xl font-bold mb-4">Welcome to AL Furqan</h2>
           <i className="mb-4 text-center">
-            `&quot;` And do good`&ldquo;` indeed`&#34;` Allāh loves the doers of
-            good`&rdquo;`
+            “And do good; indeed, Allāh loves the doers of good.”
           </i>
-          <p>Quran 2:195:</p>
+          <p>Quran 2:195</p>
         </div>
       </div>
     </div>
