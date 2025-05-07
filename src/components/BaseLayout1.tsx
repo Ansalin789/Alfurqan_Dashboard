@@ -1,41 +1,55 @@
-'use client'
+'use client';
 
-import { ReactNode } from "react";
-import Sidebar1 from "@/components/Sidebar1";
-
-
-
+import { ReactNode, useEffect, useState } from "react";
+import Sidebar1 from "./Sidebar1";
 
 interface Props {
-    children: ReactNode | ReactNode [];
+  readonly children: ReactNode | ReactNode[];
 }
-export default function BaseLayout1({ children }: Readonly<Props>) {
 
-    return (
-    <div className={`layout bg-[#EDEDED]`}>
-        <Sidebar1 />
-        
-        {children}
-        {/* <div className="flex items-center justify-end -mt-[800px]">
-            <ToggleSwitch darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-            <button className={`bg-gray-200 p-2 rounded-full shadow ${darkMode ? 'bg-[#1f222a] text-white' : 'bg-white text-gray-800'}`}>
-              <FaBell />
-            </button>
-            <div className="flex items-center space-x-2">
-              <FaUserCircle className="text-2xl" />
-              <span>Harsh</span>
-              <button className={`bg-gray-200 p-2 rounded-full shadow ${darkMode ? 'bg-[#1f222a] text-white' : 'bg-white text-gray-800'}`}>
-                <FaChevronDown />
-              </button>
-              <button
-              type="submit"
-              className="w-full py-3"
-              onClick={handleSignOut}
-            >
-              <FaSignOutAlt />
-            </button>
-            </div>
-        </div> */}
+export default function BaseLayout1({ children }: Props) {
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const dpi = window.devicePixelRatio;
+
+    // Map DPI to scale values
+    if (dpi === 1.25) setScale(0.99);
+    else if (dpi === 1.5) setScale(0.985);
+    else if (dpi === 1.75) setScale(0.96);
+    else if (dpi === 2) setScale(0.94);
+    else setScale(1);
+  }, []);
+
+  const inverseScale = 1 / scale;
+
+  return (
+    <div
+      style={{
+        width: `100vw`,
+        height: `100vh`,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+          width: `${100 * inverseScale}vw`,
+          height: `${100 * inverseScale}vh`,
+        }}
+        className="flex"
+      >
+        {/* Sidebar - only visible from md and up */}
+        <div className="hidden md:block w-[200px] bg-[#012A4A]">
+          <Sidebar1 />
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 overflow-auto py-2 px-4 scrollbar-none">
+          {children}
+        </div>
+      </div>
     </div>
-    ) ;
+  );
 }

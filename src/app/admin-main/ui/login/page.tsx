@@ -1,141 +1,175 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
-import { useGoogleLogin } from "@react-oauth/google";
-import { useRouter } from "next/navigation";
-import { FaApple } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-
 import Image from "next/image";
+import React, { useState, useEffect } from "react";
+import { GrApple } from "react-icons/gr";
+import { useRouter, useSearchParams } from "next/navigation";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import axios from "axios";
 
-export default function SignInSignUp(): JSX.Element {
-  const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
+const SignIn: React.FC = () => {
+  const searchParams = useSearchParams();
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string>("");
-
-  // Define the handler functions first
-  const handleGoogleSuccess = async (tokenResponse: {
-    access_token: string;
-  }) => {
-    try {
-      // Get user info using the access token
-      const userInfo = await axios.get(
-        "https://www.googleapis.com/oauth2/v3/userinfo");
-
-      // Send the Google token to your backend
-      const response = await axios.post(
-        `https://api.blackstoneinfomaticstech.com/google-signin`,
-        {
-          googleToken: tokenResponse.access_token,
-          email: userInfo.data.email,
-        }
-      );
-
-      // Handle the response from your backend
-      const { token, role, _id } = response.data;
-      localStorage.setItem("authToken", token);
-      localStorage.setItem("AdminId", _id);
-      // Redirect based on role
-      if (role?.includes("Admin")) {
-        router.push("/admin-main/ui/dashboard");
-      } else {
-        router.push("/");
-      }
-    } catch (error) {
-      console.error("Google login error:", error);
-      setError("Google login failed. Please try again.");
-    }
-  };
-
-  const handleGoogleFailure = () => {
-    console.error("Google login error:");
-  };
-
-  // Now use the functions in the hook
-  const googleLogin = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      (async () => {
-        try {
-          await handleGoogleSuccess(tokenResponse);
-        } catch (error) {
-          console.error("Error in Google login success handler:", error);
-        }
-      })();
-    },
-    onError: handleGoogleFailure,
-    flow: "implicit",
-  });
+  const [error, setError] = useState("");
+  const [showError, setShowError] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (error) {
+      setShowError(true);
+      setTimeout(() => {
+        setShowError(false);
+      }, 5000);
+    }
+    const user = searchParams.get("username");
+    const pass = searchParams.get("password");
 
-  if (!isClient) {
-    return <div>Loading...</div>;
-  }
+    if (user) setUsername(user);
+    if (pass) setPassword(pass);
+  }, [error]);
 
-  const handleAppleSignIn = (response: unknown) => {
-    console.log("Apple login success:", response);
-    // Handle Apple login success here (e.g., redirect to dashboard)
-    router.push("/"); // Example redirect
+  const signIn = async (username: string, password: string) => {
+    try {
+      const response = await axios.post("https://api.blackstoneinfomaticstech.com/signin", {
+        username,
+        password,
+      });
+
+      if (response.status === 200) {
+        return response.data;
+      }
+
+      throw new Error("Unexpected error occurred");
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        throw new Error("Email not found");
+      }
+      throw new Error(error.message || "Login failed");
+    }
   };
 
-  const handleLogin = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const setLoginError = (message: string) => {
+    setError(message);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError("");
     try {
-      const response = await axios.post(
-        `https://api.blackstoneinfomaticstech.com/signin`,
-        { username, password }
-      );
-      const { role, _id } = response.data;
-      console.log(response.data);
-      // Store the token securely
-      //localStorage.setItem("authToken", accessToken);
-      localStorage.setItem("academicId", _id);
-      // Optional: Store token expiry
-      const tokenExpiry = new Date().getTime() + 24 * 60 * 60 * 1000; // 24 hours from now
-      localStorage.setItem("tokenExpiry", tokenExpiry.toString());
+      const data = await signIn(username, password);
+      const { accessToken, role, _id, userName } = data;
 
-      // Redirect based on role
+      localStorage.setItem("AdminAuthToken", accessToken);
+      localStorage.setItem("AdminPortalId", _id);
+      localStorage.setItem("AdminPortalName", userName);
+
       if (role?.includes("ADMIN")) {
         router.push("/admin-main/ui/dashboard");
-      } else {
-        router.push("/");
+        alert("Login successful as Admin");
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status === 400) {
+          console.log(error);
+        } else {
+          setLoginError(data.message || "Login failed. Please try again later.");
+        }
+      } else {
+        setLoginError("Login failed. Please try again later.");
+      }
       console.error("Login error:", error);
-      // Type guard to check if error is an AxiosError
-      if (axios.isAxiosError(error)) {
-        setError(
-          error.response?.data?.message || "Login failed. Please try again."
-        );
-      } else {
-        setError("Login failed. Please try again.");
-      }
     }
+  };
+
+  const handleGoogleSuccess = async (response: CredentialResponse) => {
+    const { credential } = response;
+    if (!credential) {
+      console.error("Google login failed: No credential received");
+      setLoginError("Google login failed: No credential received");
+      return;
+    }
+
+    const email = extractEmailFromCredential(credential);
+
+    const checkEmail = async (email: string) => {
+      try {
+        const response = await axios.post(
+          "https://api.blackstoneinfomaticstech.com/allcheck-email",
+          { email }
+        );
+
+        if (response.status === 200) {
+          return { message: "Email exists", data: response.data };
+        }
+      } catch (error: any) {
+        if (error.response) {
+          if (error.response.status === 404) {
+            return { message: "Email not found" };
+          }
+          if (error.response.status === 500) {
+            return { message: "Internal Server Error" };
+          }
+        }
+        return { message: "Unknown error occurred" };
+      }
+    };
+
+    try {
+      const result = await checkEmail(email);
+      if (result?.message === "Email exists") {
+        localStorage.setItem("AdminAuthToken", result.data.accessToken);
+        localStorage.setItem("AdminPortalId", result.data.id);
+        localStorage.setItem("AdminPortalName", result.data.username);
+        router.push("/admin-main/ui/dashboard");
+      } else {
+        setLoginError("Email not found");
+        console.log(result?.message);
+      }
+    } catch (error) {
+      console.error("Error during email verification:", error);
+      setLoginError("An unexpected error occurred. Please try again.");
+    }
+  };
+
+  const extractEmailFromCredential = (credential: string) => {
+    const decodedCredential = JSON.parse(atob(credential.split(".")[1]));
+    return decodedCredential.email;
+  };
+
+  interface GoogleError {
+    error: string;
+    details?: string;
+  }
+
+  const handleGoogleFailure = (error: GoogleError) => {
+    console.error("Google login failed:", error.error);
+    if (error.details) {
+      console.error("Error details:", error.details);
+    }
+  };
+
+  const errorWrapper = () => {
+    const error: GoogleError = { error: "Some error message" };
+    handleGoogleFailure(error);
   };
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
+      {showError && error && (
+        <div className="fixed top-0 right-4 p-4 bg-red-600 text-white rounded-lg shadow-lg z-50">
+          {error}
+        </div>
+      )}
       <div className="flex w-full max-w-4xl rounded-lg shadow-lg overflow-hidden">
-        {/* Sign In Section */}
         <div className="w-1/2 bg-white rounded-br-[150px] p-8">
-          {/* <Image src="/assets/images/alf.png" alt="logo" width={150} height={150} className='justify-center ml-28 p-0'/> */}
-          {/* <h2 className="text-3xl font-bold mb-4">Sign In</h2> */}
-
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleFormSubmit} className="space-y-6">
             {error && (
               <div className="text-red-500 text-sm text-center">{error}</div>
             )}
             <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 User Name
               </label>
               <input
@@ -150,70 +184,79 @@ export default function SignInSignUp(): JSX.Element {
                 className="w-full p-3 border border-gray-300 rounded-lg"
               />
             </div>
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
+            <div className="relative">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                placeholder="Enter Password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                className="w-full p-3 border border-gray-300 rounded-lg"
+                required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-7 text-gray-500"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
             </div>
             <div className="p-4">
               <button
                 type="submit"
-                className="w-[30%] ml-32 py-2 text-center  bg-[#293552] text-white rounded-3xl hover:bg-[#1a2133] transition"
+                className="w-[30%] ml-32 py-2 text-center bg-[#293552] text-white rounded-3xl hover:bg-[#1a2133] transition"
               >
                 Log In
               </button>
             </div>
           </form>
           <p className="text-center py-5">or</p>
-          <p className="text-center  text-gray-500 mb-4">
-            Sign In with{" "}
-            <button
-              onClick={() => googleLogin()}
-              className="p-2 bg-[#ccc] rounded-full hover:bg-[#293552] transition"
+          <div className="my-4 space-y-5">
+            <div
+              className="flex flex-col justify-center items-center w-full px-100"
+              style={{ maxWidth: "800px", border: "none", padding: 0 }}
             >
-              <FcGoogle className="text-xl" style={{ color: "#4285F4" }} />
-            </button>{" "}
-            or{" "}
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={errorWrapper}
+                useOneTap
+                shape="rectangular"
+                size="large"
+              />
+            </div>
             <button
-              onClick={handleAppleSignIn}
-              className=" bg-black hover:bg-[#293552] text-white p-2 rounded-lg  items-center"
+              type="button"
+              className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-md hover:bg-gray-100"
             >
-              <FaApple className="" />
+              <GrApple className="w-5 h-6 mr-2" />
+              <span className="text-sm leading-none font-semibold">
+                Sign in with Apple
+              </span>
             </button>
-          </p>
+          </div>
         </div>
 
-        {/* Sign Up Section */}
         <div className="w-1/2 bg-[#293552] rounded-bl-[150px] text-white p-8 flex flex-col justify-center items-center">
           <Image
             src="/assets/images/alf.png"
             alt="logo"
             width={200}
             height={200}
-            className="justify-center mb-8 p-4 rounded-bl-[35px] rounded-md bg-[#fff] "
+            className="justify-center mb-8 p-4 rounded-bl-[35px] rounded-md bg-[#fff]"
           />
           <h2 className="text-3xl font-bold mb-4">Welcome to AL Furqan</h2>
           <i className="mb-4 text-center">
-            `&quot;` And do good`&ldquo;` indeed`&#34;` Allāh loves the doers of
-            good`&rdquo;`
+            “And do good; indeed, Allāh loves the doers of good.”
           </i>
-          <p>Quran 2:195:</p>
+          <p>Quran 2:195</p>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default SignIn;
