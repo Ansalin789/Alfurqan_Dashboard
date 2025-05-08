@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { GrApple } from "react-icons/gr";
 import { useRouter, useSearchParams } from "next/navigation";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { GoogleLogin, CredentialResponse, GoogleOAuthProvider } from "@react-oauth/google";
 import axios from "axios";
 
 const SignIn: React.FC = () => {
@@ -28,31 +28,7 @@ const SignIn: React.FC = () => {
     if (user) setUsername(user);
     if (pass) setPassword(pass);
   }, [error]);
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-
-    script.onload = () => {
-      if(window.google?.accounts) {
-        window.google.accounts.id.initialize({
-          client_id:
-            "45636645803-6arfjuthmcvfj3r6e6qep23dlpfntrc7.apps.googleusercontent.com",
-          callback: handleGoogleSuccess,
-        });
-
-        window.google.accounts.id.renderButton(
-          document.getElementById("googleButton")!,
-          { theme: "outline", size: "large" }
-        );
-      } else {
-        console.error("Google Identity script not loaded properly");
-      }
-    };
-
-    document.body.appendChild(script);
-  }, []);
+ 
 
   const signIn = async (username: string, password: string) => {
     try {
@@ -184,6 +160,7 @@ const SignIn: React.FC = () => {
   };
 
   return (
+    <GoogleOAuthProvider clientId="45636645803-6arfjuthmcvfj3r6e6qep23dlpfntrc7.apps.googleusercontent.com">
     <div className="flex h-screen items-center justify-center bg-gray-100">
       {showError && error && (
         <div className="fixed top-0 right-4 p-4 bg-red-600 text-white rounded-lg shadow-lg z-50">
@@ -284,6 +261,7 @@ const SignIn: React.FC = () => {
         </div>
       </div>
     </div>
+    </GoogleOAuthProvider>
   );
 };
 
