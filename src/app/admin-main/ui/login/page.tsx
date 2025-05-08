@@ -29,8 +29,6 @@ const SignIn: React.FC = () => {
     if (pass) setPassword(pass);
   }, [error]);
   useEffect(() => {
-    // Load Google Identity script dynamically
-    if (typeof window === "undefined") return;
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
@@ -40,7 +38,7 @@ const SignIn: React.FC = () => {
       if(window.google?.accounts) {
         window.google.accounts.id.initialize({
           client_id:
-            "1014518276642-1q5idahgpupo12uu0or5ef35cnfvi3fm.apps.googleusercontent.com",
+            "45636645803-6arfjuthmcvfj3r6e6qep23dlpfntrc7.apps.googleusercontent.com",
           callback: handleGoogleSuccess,
         });
 
