@@ -28,6 +28,33 @@ const SignIn: React.FC = () => {
     if (user) setUsername(user);
     if (pass) setPassword(pass);
   }, [error]);
+  useEffect(() => {
+    // Load Google Identity script dynamically
+    if (typeof window === "undefined") return;
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+
+    script.onload = () => {
+      if(window.google?.accounts) {
+        window.google.accounts.id.initialize({
+          client_id:
+            "1014518276642-1q5idahgpupo12uu0or5ef35cnfvi3fm.apps.googleusercontent.com",
+          callback: handleGoogleSuccess,
+        });
+
+        window.google.accounts.id.renderButton(
+          document.getElementById("googleButton")!,
+          { theme: "outline", size: "large" }
+        );
+      } else {
+        console.error("Google Identity script not loaded properly");
+      }
+    };
+
+    document.body.appendChild(script);
+  }, []);
 
   const signIn = async (username: string, password: string) => {
     try {
@@ -45,7 +72,7 @@ const SignIn: React.FC = () => {
       if (error.response && error.response.status === 404) {
         throw new Error("Email not found");
       }
-      throw new Error(error.message || "Login failed");
+      throw new Error(error.message ?? "Login failed");
     }
   };
 
@@ -74,7 +101,7 @@ const SignIn: React.FC = () => {
         if (status === 400) {
           console.log(error);
         } else {
-          setLoginError(data.message || "Login failed. Please try again later.");
+          setLoginError(data.message ?? "Login failed. Please try again later.");
         }
       } else {
         setLoginError("Login failed. Please try again later.");
@@ -82,6 +109,7 @@ const SignIn: React.FC = () => {
       console.error("Login error:", error);
     }
   };
+ 
 
   const handleGoogleSuccess = async (response: CredentialResponse) => {
     const { credential } = response;
@@ -132,6 +160,8 @@ const SignIn: React.FC = () => {
       setLoginError("An unexpected error occurred. Please try again.");
     }
   };
+   
+;
 
   const extractEmailFromCredential = (credential: string) => {
     const decodedCredential = JSON.parse(atob(credential.split(".")[1]));
