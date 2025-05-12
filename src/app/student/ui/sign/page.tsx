@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { GrApple } from "react-icons/gr";
 import { useRouter } from "next/navigation";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { GoogleLogin, CredentialResponse, GoogleOAuthProvider } from "@react-oauth/google";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -143,8 +143,8 @@ const SignIn: React.FC = () => {
       // Call the checkEmail function to verify if the email exists
       const result = await checkEmail(email);
 
-      // Handle result based on the returned message
-      if (result?.message === "Email exists") {
+      const role = result?.data?.role;
+      if (result?.message === "Email exists" && role?.includes("STUDENT")) {
         localStorage.setItem("StudentAuthToken", result.data.accessToken);
         localStorage.setItem("StudentPortalId", result.data.id);
         localStorage.setItem("StudentPortalName", result.data.username);
@@ -187,6 +187,8 @@ const SignIn: React.FC = () => {
     router.push("https://alfurqanwebsite.vercel.app/StudentForm");
   };
   return (
+            <GoogleOAuthProvider clientId="45636645803-6arfjuthmcvfj3r6e6qep23dlpfntrc7.apps.googleusercontent.com">
+    
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-100 mx-auto">
       {showError && error && (
         <div className="fixed top-0 right-4 p-4 bg-red-600 text-white rounded-lg shadow-lg z-50">
@@ -382,6 +384,8 @@ const SignIn: React.FC = () => {
         </div>
       </div>
     </div>
+          </GoogleOAuthProvider>
+    
   );
 };
 

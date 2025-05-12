@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { GrApple } from "react-icons/gr";
 import { useRouter ,useSearchParams } from "next/navigation";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { GoogleLogin, CredentialResponse, GoogleOAuthProvider } from "@react-oauth/google";
 import axios from "axios";
 const SignIn: React.FC = () => {
   const searchParams = useSearchParams();
@@ -131,8 +131,8 @@ const SignIn: React.FC = () => {
       // Call the checkEmail function to verify if the email exists
       const result = await checkEmail(email);
 
-      // Handle result based on the returned message
-      if (result?.message === "Email exists") {
+      const role = result?.data?.role;
+      if (result?.message === "Email exists" && role?.includes("SUPERVISOR")) {
         localStorage.setItem("SupervisorAuthToken", result.data.accessToken);
         localStorage.setItem("SupervisorPortalId", result.data.id);
         localStorage.setItem("SupervisorPortalName", result.data.username);
@@ -173,6 +173,8 @@ const SignIn: React.FC = () => {
   };
 
   return (
+        <GoogleOAuthProvider clientId="45636645803-6arfjuthmcvfj3r6e6qep23dlpfntrc7.apps.googleusercontent.com">
+    
     <div className="flex h-screen items-center justify-center bg-gray-100">
       {showError && error && (
         <div className="fixed top-0 right-4 p-4 bg-red-600 text-white rounded-lg shadow-lg z-50">
@@ -285,6 +287,8 @@ const SignIn: React.FC = () => {
         </div>
       </div>
     </div>
+      </GoogleOAuthProvider>
+    
   );
 };
 

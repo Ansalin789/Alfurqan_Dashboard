@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { GrApple } from "react-icons/gr";
 import { useRouter ,useSearchParams } from "next/navigation";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { GoogleLogin, CredentialResponse, GoogleOAuthProvider } from "@react-oauth/google";
 import axios from "axios";
 const SignIn: React.FC = () => {
   const searchParams = useSearchParams();
@@ -94,6 +94,8 @@ const SignIn: React.FC = () => {
       setLoginError("Google login failed: No credential received");
       return;
     }
+    const email = extractEmailFromCredential(credential);
+
     const checkEmail = async (email: string) => {
       try {
         // Send a POST request to the backend to check if the email exists
@@ -126,13 +128,13 @@ const SignIn: React.FC = () => {
         return { message: "Unknown error occurred" }; // Return unknown error message
       }
     };
-    const email = extractEmailFromCredential(credential); // Replace with your extraction logic
     try {
       // Call the checkEmail function to verify if the email exists
       const result = await checkEmail(email);
+      const role = result?.data?.role;
 
       // Handle result based on the returned message
-      if (result?.message === "Email exists") {
+      if (result?.message === "Email exists" && role?.includes("ACADEMICCOACH")) {
         localStorage.setItem("AcademicCoachAuthToken", result.data.accessToken);
         localStorage.setItem("AcademicCoachPortalId", result.data.id);
         localStorage.setItem("AcademicCoachPortalName", result.data.username);
@@ -140,7 +142,7 @@ const SignIn: React.FC = () => {
         console.log(authToken);
         router.push("/Academic"); // Redirect to dashboard
       } else {
-        setLoginError("Email not found"); // Display appropriate error message
+        setLoginError("Access denied: Not an Admin");
         console.log(result?.message); // Log the error message for debugging
       }
     } catch (error) {
@@ -173,6 +175,7 @@ const SignIn: React.FC = () => {
   };
 
   return (
+    <GoogleOAuthProvider clientId="45636645803-6arfjuthmcvfj3r6e6qep23dlpfntrc7.apps.googleusercontent.com">
     <div className="flex h-screen items-center justify-center bg-gray-100">
       {showError && error && (
         <div className="fixed top-0 right-4 p-4 bg-red-600 text-white rounded-lg shadow-lg z-50">
@@ -279,6 +282,8 @@ const SignIn: React.FC = () => {
         </div>
       </div>
     </div>
+  </GoogleOAuthProvider>
+
   );
 };
 
