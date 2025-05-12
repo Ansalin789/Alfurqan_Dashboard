@@ -66,7 +66,7 @@ const SignIn: React.FC = () => {
       const authToken = localStorage.getItem("AcademicCoachAuthToken");
       console.log(accessToken);
       console.log(authToken);
-      if (role?.includes("ACADEMIC COACH")) {
+      if (role?.includes("ACADEMICCOACH")) {
         router.push("/Academic");
         alert("Login successful as AcademicCoach");
       }
