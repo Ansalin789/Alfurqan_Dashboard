@@ -14,10 +14,11 @@ import {
   DotProps,
 } from "recharts";
 import BaseLayout4 from "@/components/BaseLayout4";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
+import { io, Socket } from "socket.io-client";
 
 interface CountryStat {
   revenue: number;
@@ -416,10 +417,55 @@ const getBarColor: (
 };
 
 export default function Home() {
+   const socketRef = useRef<Socket | null>(null);
+    const userId = "6805da8c06542aa33858b889";
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [barData, setBarData] = useState<ChartDataItem[]>([]);
   const [data, setData] = useState<StudentInvoice[]>([]);
-
+  useEffect(() => {
+    if (!socketRef.current) {
+          socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
+            transports: ["websocket"],
+            withCredentials: true,
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+          });
+  
+      socketRef.current.on("connect", () => {
+        console.log("Connected to Socket.IO:", socketRef.current?.id);
+        socketRef.current?.emit("subscribe", userId);
+      });
+  
+      socketRef.current.on("disconnect", () => {
+        console.log("Disconnected from Socket.IO");
+      });
+  
+      socketRef.current.on("connect_error", (err: any) => {
+        console.error("Socket.IO connection error:", err);
+      });
+    }
+  
+    const handleRevenueUpdate = (updatedRevenue: any) => {
+      console.log("💸 Live revenue update:", updatedRevenue);
+    
+      // Extracting the 'TotalAllCourses' value from the updatedRevenue array
+      const totalAllCourses = updatedRevenue.find((item: any) => item.courseName === 'TotalAllCourses');
+      
+      // If the 'TotalAllCourses' exists, set the totalRevenue
+      if (totalAllCourses) {
+        setTotalRevenue(totalAllCourses.revenue);
+      }
+    };
+    
+  
+    socketRef.current.on("revenueUpdated", handleRevenueUpdate);
+  
+    return () => {
+      socketRef.current?.off("revenueUpdate", handleRevenueUpdate);
+    };
+  }, [userId]);
+  
   useEffect(() => {
     axios
       .get("https://api.blackstoneinfomaticstech.com/amountbycourse")
