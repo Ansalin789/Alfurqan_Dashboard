@@ -26,12 +26,26 @@ interface GroupedData {
 const StudentTeacherStaff = () => {
   const COLORS = ["#4B9EFF", "#FF9EE2"];
 const [data, setData] = useState<GroupedData[]>([]);
-  
-
 useEffect(() => {
-  const fetchData = async () => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchData(token);
+    } else {
+      alert("No auth token found.");
+    }
+  }
+}, []);
+
+  const fetchData = async (token: string) => {
     try {
-      const res = await fetch('https://api.blackstoneinfomaticstech.com/dashboard/admin/count');
+      const res = await fetch('https://api.blackstoneinfomaticstech.com/dashboard/admin/count', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+    });
       const json: DashboardCount = await res.json();
 
       const grouped: GroupedData[] = [
@@ -61,9 +75,6 @@ useEffect(() => {
     } 
   };
 
-  fetchData();
-}, []);
-
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -84,7 +95,7 @@ const CustomTooltip = ({ active, payload }: any) => {
         >
           {/* Top Section with Number and Icon */}
           <div className="flex justify-between items-center">
-            <div className="text-2xl font-semibold">{item.count.toLocaleString()}</div>
+            <div className="text-2xl font-semibold">{(item.count ?? 0).toLocaleString()}</div>
             <div className="w-6 h-6 border-2 border-white rounded-full flex items-center justify-center">
               <ArrowUpRight size={14} />
             </div>

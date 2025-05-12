@@ -771,10 +771,15 @@ const Step5 = ({
   const [expectedFinishingDate] = useState(28);
   const [subscriptionName, setSubscriptionName] = useState<string>();
   const [planTotalPrice, setPlanTotalPrice] = useState<number>();
-  const [selectedHours, setSelectedHours] = useState<number>(3); // Default to 3 hours
+  const [selectedHours, setSelectedHours] = useState<number>(0); // Default to 3 hours
 
   // First, add state to track which plan's total is being calculated
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+   const [classType, setClassType] = useState<string | null>(null);
+
+  const handleSelect = (type: string) => {
+    setClassType(type.toUpperCase());
+  };
   console.log(selectedPlan);
   // Modify the calculatePrice function to return null if plan isn't selected
   const calculatePrice = (rate: number, planLabel: string) => {
@@ -816,6 +821,7 @@ const Step5 = ({
       subscriptionName,
       selectedHours,
       planTotalPrice,
+      classType,
     };
     nextStep(updatedStudentData); // Pass updated data to nextStep
   };
@@ -847,16 +853,16 @@ const Step5 = ({
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-2xl">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
-          <h1 className="text-2xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+          <h1 className="text-2xl font-bold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
             Arabic Language Course Selection
           </h1>
 
-          <h2 className="text-white/90 font-normal hover:text-white transition-colors mb-4">
+          <h2 className="text-white/90 font-light hover:text-white transition-colors mb-2">
             Level
           </h2>
 
           {/* Level Section */}
-          <div className="flex items-center justify-between mb-8 bg-white/5 p-4 rounded-xl">
+          <div className="flex items-center justify-between mb-2 bg-white/5 p-3 rounded-xl">
             {/* My Beautiful Language Section */}
             <div className="flex items-center space-x-3">
               <div className="relative">
@@ -954,8 +960,8 @@ const Step5 = ({
           </div>
 
           {/* Hours Section */}
-          <div className="mb-8">
-            <h2 className="text-base font-normal text-white/90 mb-4">
+          <div className="mb-4">
+            <h2 className="text-base font-light text-white/90 mb-2">
               Select Preferred Hours / week
             </h2>
             <div className="flex flex-wrap gap-3">
@@ -967,7 +973,7 @@ const Step5 = ({
                     setAccomplishmentTime(hour * 4);
                     setStudentRate(hour);
                   }}
-                  className={`px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105
+                  className={`px-4 py-1 rounded-xl transition-all duration-300 transform hover:scale-105
                            ${
                              hour === selectedHours
                                ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
@@ -981,8 +987,8 @@ const Step5 = ({
           </div>
 
           {/* Pricing Section */}
-          <div className="mb-8">
-            <h2 className="text-base font-normal text-white/90 mb-4">
+          <div className="mb-2">
+            <h2 className="text-base font-light text-white/90 mb-2">
               Select Preferred Pricing per month
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1046,26 +1052,45 @@ const Step5 = ({
           </div>
 
           {/* Completion Section */}
-          <div className="flex flex-wrap items-center justify-between mt-8 bg-white/5 p-4 rounded-xl">
-            <div className="text-white/80 text-[13px]">
+          <div className="flex flex-wrap items-center justify-between mt-3 bg-white/5 p-3 rounded-xl">
+            <div className="text-white/80 text-[12px]">
               Accomplishment Time:{" "}
-              <span className="font-normal text-white text-[11px]">
+              <span className="font-normal text-white text-[10px]">
                 {accomplishmentTime} Hours
               </span>
             </div>
-            <div className="text-white/80 text-[13px]">
+            <div className="text-white/80 text-[12px]">
               Your Rate:{" "}
-              <span className="font-normal text-white text-[11px]">
+              <span className="font-normal text-white text-[10px]">
                 {studentRate} hr/week
               </span>
             </div>
-            <div className="text-white/80 text-[13px]">
+            <div className="text-white/80 text-[12px]">
               Expected Finishing Date:{" "}
-              <span className="font-normal text-[11px] text-white">
+              <span className="font-normal text-[10px] text-white">
                 28 Days
               </span>
             </div>
           </div>
+          <div className="mb-2 mt-2">
+      <h2 className="text-base font-light text-white/90 mb-3">Class Type :</h2>
+      <div className="flex gap-3">
+        {["REGULARCLASS", "GROUPCLASS"].map((type) => (
+          <button
+            key={type}
+            onClick={() => handleSelect(type)}
+            className={`px-3 py-1 rounded-md text-sm font-light uppercase transition-colors duration-200
+              ${classType === type
+                ? "bg-white text-black"
+                : "bg-white/10 text-white hover:bg-white/20"}`}
+          >
+            {type}
+          </button>
+        ))}
+      </div>
+    </div>
+
+
         </div>
 
         {/* Navigation Buttons - Add this at the bottom of the main content div */}
@@ -1173,6 +1198,7 @@ const Step6 = ({
   const weeklyHourLimit = updatedStudentData.selectedHours; // Example: Change this based on requirement
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
+  const isGroupClass = updatedStudentData.classType === "GROUPCLASS";
   const calculateTotalHours = () => {
     let totalHours = 0;
 
@@ -1219,47 +1245,55 @@ const Step6 = ({
     showRemainingHoursPopup();
   };
   const handleNextStep = () => {
-    const totalHours = calculateTotalHours();
-    if (totalHours > weeklyHourLimit) {
-      setPopupMessage(
-        `You've exceeded the weekly hour limit! You can select only ${weeklyHourLimit} hours.`
-      );
-      setShowPopup(true);
-      return;
-    }
+  const totalHours = calculateTotalHours();
 
-    const updatedStudentDatas = {
-      ...updatedStudentData,
-      teacher: {
-        teacherId: selectedTeacher?._id ?? "",
-        teacherName: selectedTeacher?.userName ?? "",
-        teacherEmail: selectedTeacher?.email ?? "",
-      },
-      classDay: schedule
-        .filter((item) => item.isSelected)
-        .map((item) => ({
-          label: item.day,
-          value: item.day,
-        })),
-      startTime: schedule
-        .filter((item) => item.isSelected)
-        .flatMap((item) =>
-          item.times.map((time) => ({
-            label: time.startTime,
-            value: time.startTime,
-          }))
-        ),
-      endTime: schedule
-        .filter((item) => item.isSelected)
-        .flatMap((item) =>
-          item.times.map((time) => ({
-            label: time.endTime,
-            value: time.endTime,
-          }))
-        ),
-    };
-    nextStep(updatedStudentDatas);
+  if (!isGroupClass && totalHours > weeklyHourLimit) {
+    setPopupMessage(
+      `You've exceeded the weekly hour limit! You can select only ${weeklyHourLimit} hours.`
+    );
+    setShowPopup(true);
+    return;
+  }
+
+  const updatedStudentDatas = {
+    ...updatedStudentData,
+    teacher: isGroupClass
+      ? { teacherId: '', teacherName: '', teacherEmail: '' }
+      : {
+          teacherId: selectedTeacher?._id ?? "",
+          teacherName: selectedTeacher?.userName ?? "",
+          teacherEmail: selectedTeacher?.email ?? "",
+        },
+    classDay: isGroupClass
+      ? []
+      : schedule
+          .filter((item) => item.isSelected)
+          .map((item) => ({ label: item.day, value: item.day })),
+    startTime: isGroupClass
+      ? []
+      : schedule
+          .filter((item) => item.isSelected)
+          .flatMap((item) =>
+            item.times.map((time) => ({
+              label: time.startTime,
+              value: time.startTime,
+            }))
+          ),
+    endTime: isGroupClass
+      ? []
+      : schedule
+          .filter((item) => item.isSelected)
+          .flatMap((item) =>
+            item.times.map((time) => ({
+              label: time.endTime,
+              value: time.endTime,
+            }))
+          ),
   };
+
+  nextStep(updatedStudentDatas);
+};
+
   interface TimeSlot {
     startTime: string;
     endTime: string;
@@ -1348,7 +1382,7 @@ const Step6 = ({
           {updatedStudentData.firstName} &nbsp; {updatedStudentData.lastName}
         </div>
       </div>
-      <div className="relative z-10 w-full max-w-4xl">
+     <div className={`relative z-10 w-full max-w-4xl ${updatedStudentData.classType === 'GROUPCLASS' ? 'pointer-events-none opacity-30' : ''}`}>
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
           <h2 className="text-[18px] font-medium mb-4 text-white">
             Schedule Classes
@@ -1369,6 +1403,7 @@ const Step6 = ({
                     type="checkbox"
                     className="w-3 h-3 bg-white/5"
                     checked={item.isSelected}
+                     disabled={isGroupClass}
                     onChange={() => handleClassSelection(index)}
                   />
                 </div>
@@ -1384,6 +1419,7 @@ const Step6 = ({
                         <input
                           type="time"
                           value={time.startTime}
+                          disabled={isGroupClass}
                           onChange={(e) =>
                             handleTimeChange(
                               index,
@@ -1398,6 +1434,7 @@ const Step6 = ({
                         <input
                           type="time"
                           value={time.endTime}
+                          disabled={isGroupClass}
                           onChange={(e) =>
                             handleTimeChange(
                               index,
@@ -1412,6 +1449,7 @@ const Step6 = ({
                     ))}
                     <button
                       onClick={() => handleAddTimeSlot(index)}
+                      disabled={isGroupClass}
                       className="mt-1 px-2 py-0.5 bg-[#1C2640] text-white rounded-md text-xs"
                     >
                       + Add
@@ -1432,6 +1470,7 @@ const Step6 = ({
                 </label>
                 <select
                   className="form-select w-full text-xs text-[#797878] border-[#4f5154] bg-white/5 p-1 rounded-lg"
+                  disabled={isGroupClass}
                   onChange={(e) => {
                     const selected = teachers.find(
                       (teacher) => teacher.userId === e.target.value
@@ -2017,6 +2056,7 @@ classEndDate.setDate(classEndDate.getDate() + 28);
         startTime: updatedStudentDatass.startTime,
         endTime: updatedStudentDatass.endTime,
         planTotalPrice: updatedStudentDatass.planTotalPrice,
+        classType:updatedStudentDatass.classType,
         classStartDate:startDate,
         classEndDate: classEndDate,
         classStartTime: updatedStudentDatass.preferredFromTime,

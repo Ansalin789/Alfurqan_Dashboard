@@ -120,13 +120,14 @@ const SignIn: React.FC = () => {
 
     try {
       const result = await checkEmail(email);
-      if (result?.message === "Email exists") {
+      const role = result?.data?.role;
+      if (result?.message === "Email exists" && role?.includes("ADMIN")) {
         localStorage.setItem("AdminAuthToken", result.data.accessToken);
         localStorage.setItem("AdminPortalId", result.data.id);
         localStorage.setItem("AdminPortalName", result.data.username);
         router.push("/admin-main/ui/dashboard");
       } else {
-        setLoginError("Email not found");
+        setLoginError("Access denied: Not an Admin");
         console.log(result?.message);
       }
     } catch (error) {
