@@ -6,6 +6,7 @@ import Image from "next/image";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from "next/navigation";
 import Modal from "react-modal";
+import { headers } from "next/headers";
 
 interface Teacher {
   _id: string;
@@ -35,14 +36,30 @@ const EmployeeCards: React.FC = () => {
     profileImage: null,
     lastUpdatedBy: "SYSTEM",
   });
+  
   useEffect(() => {
-    const fetchTeachers = async () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchTeachers(token); // pass token into the function
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+
+    const fetchTeachers = async (token: string) => {
+    
       try {
         
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/users?role=TEACHER`,
-          
-        );
+          `http://localhost:5001/users?role=TEACHER`,{
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+      });
         const data = await response.json();
 
         console.log("Fetched data:", data);
@@ -58,8 +75,7 @@ const EmployeeCards: React.FC = () => {
       }
     };
 
-    fetchTeachers();
-  }, []);
+   
   useEffect(() => {
     setMenuVisible(Array(teachers.length).fill(false));
   }, [teachers]);
@@ -103,7 +119,7 @@ const EmployeeCards: React.FC = () => {
     console.log("New Teacher Data:", newTeacher);
     try {
       
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/users`, {
+      const response = await fetch(`http://localhost:5001/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,6 @@
+'use client';
 import BaseLayout4 from "@/components/BaseLayout4";
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 
 const cardData = [
@@ -54,6 +55,34 @@ const cardData = [
 ];
 
 const Page = () => {
+  useEffect(() => {
+    const fetchCardData = async (token: string) => {
+      try {
+        const response = await fetch("http://localhost:5001/some-auth-endpoint", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        console.log("Fetched card data:", data);
+        // You can update `cardData` here using state if needed
+      } catch (error) {
+        console.error("Error fetching card data:", error);
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("AdminAuthToken");
+      if (token) {
+        fetchCardData(token);
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+
   return (
     <BaseLayout4>
       <div className="min-h-screen w-full px-4 sm:px-6 lg:px-10">

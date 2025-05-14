@@ -94,12 +94,26 @@ export default function DashboardClasses() {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    const fetchClassData = async () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchClassData(token); // pass token into the function
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+    const fetchClassData = async (token: string) => {
       try {
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/classShedule/totalclasses?dateRange=last8months"
-        );
-        const data: ClassScheduleData[] = await response.json();
+          "http://localhost:5001/classShedule/totalclasses?dateRange=last8months",{
+            method: "GET",
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          });        
+          const data: ClassScheduleData[] = await response.json();
 
         // Transform API data to match the AreaChart data format
         const transformedData = data.map((item) => ({
@@ -114,14 +128,13 @@ export default function DashboardClasses() {
       }
     };
 
-    fetchClassData();
-  }, []);
+
 
   useEffect(() => {
     const fetchClassStatus = async () => {
       try {
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/classShedule/classstatuscount"
+          "http://localhost:5001/classShedule/classstatuscount"
         );
         const data: ClassStatusData = await response.json();
 
@@ -158,7 +171,7 @@ export default function DashboardClasses() {
   }, []);
 
   useEffect(() => {
-    fetch("https://api.blackstoneinfomaticstech.com/classShedule/classwisecount")
+    fetch("http://localhost:5001/classShedule/classwisecount")
       .then((res) => res.json())
       .then((data: ClassWiseCountResponse) => {
         const regular = data.classschedule?.[0]?.totalRegularClassCount || 0;

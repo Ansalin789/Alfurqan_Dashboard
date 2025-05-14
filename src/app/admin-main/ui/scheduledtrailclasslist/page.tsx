@@ -97,10 +97,24 @@ const Trailclasslist = () => {
 
   const itemsPerPage = 11;
 
-  const getAllUsers = async () => {
+  useEffect(() => {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      getAllUsers(token); // Or call the function that performs the GET request
+    } else {
+      alert("No auth token found.");
+    }
+  }, []);
+  const getAllUsers = async (token: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass");
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass",{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
@@ -120,10 +134,6 @@ const Trailclasslist = () => {
   };
   const router = useRouter();
 
-
-    useEffect(() => {
-      getAllUsers(); // Fetch users when component mounts
-    }, []);
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;

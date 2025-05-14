@@ -48,10 +48,23 @@ const TrailManagement = () => {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    const fetchStudents = async () => {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchStudents(token); // call your function with token
+    } else {
+      alert("No auth token found.");
+    }
+  }, []);
+    const fetchStudents = async (token: string) => {
       try {
-        const response = await axios.get('https://api.blackstoneinfomaticstech.com/alstudents');
-  
+        const response = await axios.get('https://api.blackstoneinfomaticstech.com/alstudents',
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+          }
+        );
         const uniqueStudentsMap = new Map();
         response.data.students.forEach((student: Student) => {
           uniqueStudentsMap.set(student.student.studentId, student);
@@ -69,9 +82,7 @@ const TrailManagement = () => {
         console.error('Failed to fetch students:', error);
       }
     };
-  
-    fetchStudents();
-  }, []);
+
   
   
 

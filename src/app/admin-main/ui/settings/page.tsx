@@ -55,11 +55,27 @@ const Page: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchOtherEmployees = async () => {
+useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchOtherEmployees(token); // pass token into the function
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);      
+    const fetchOtherEmployees = async (token: string) => {
       try {
         const res = await axios.get<OtherEmployeesResponse>(
-          "https://api.blackstoneinfomaticstech.com/otheremployees"
+          "https://api.blackstoneinfomaticstech.com/otheremployees",
+          {
+          headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${token}`,
+
+          },
+        }
         );
         setEmployees(res.data.users);
 
@@ -74,8 +90,6 @@ const Page: React.FC = () => {
       }
     };
 
-    fetchOtherEmployees();
-  }, []);
 
 
   const handleFilterChange = (

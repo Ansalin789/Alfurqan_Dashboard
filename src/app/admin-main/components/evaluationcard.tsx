@@ -56,9 +56,25 @@ const TotalRequestChart = () => {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    const fetchData = async () => {
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('AdminAuthToken');
+        if (token) {
+          fetchData(token); // pass token into the function
+        } else {
+          alert("No auth token found.");
+        }
+      }
+    }, []);
+    const fetchData = async (token: string) => {
+
       try {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass",{
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         const result: TrialClassData[] = await res.json();
 
         if (result && result.length > 0) {
@@ -76,8 +92,7 @@ const TotalRequestChart = () => {
       }
     };
 
-    fetchData();
-  }, []);
+
 
   return (
     <div>
@@ -135,28 +150,42 @@ const TotalRequestChart = () => {
 const CountriesCard = () => {
   const [data, setData] = useState<CountryData[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
+ 
+     useEffect(() => {
+       if (typeof window !== 'undefined') {
+         const token = localStorage.getItem('AdminAuthToken');
+         if (token) {
+           fetchData(token); // pass token into the function
+         } else {
+           alert("No auth token found.");
+         }
+       }
+     }, []);
+
+    const fetchData = async (token: string) => {
       try {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/countiescount");
-        const result: ApiResponse = await res.json();
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/countiescount",
+          {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });        const result: ApiResponse = await res.json();
         setData(result.studentCountByCountry);
       } catch (err) {
         console.error("Failed to fetch country data:", err);
       }
     };
 
-    fetchData();
-  }, []);
 
-  const maxCount = Math.max(...data.map((c) => c.count), 1); // prevent divide by zero
-
+const maxCount = Math.max(...(data?.map?.((c) => c.count) || []), 1);
   return (
     <div>
       <h2 className="text-sm font-semibold text-gray-900">Countries</h2>
 
       <div className="space-y-4 mt-4 h-52 overflow-y-scroll scrollbar-none">
-        {data.map((countryInfo) => {
+        {data?.map((countryInfo) => {
           const countryCode = countries.getAlpha2Code(
             countryInfo.country,
             "en"
@@ -230,12 +259,27 @@ const PreferredTeachersCard = () => {
   const [male, setMale] = useState(0);
   const [female, setFemale] = useState(0);
 
-  useEffect(() => {
-    const fetchData = async () => {
+ useEffect(() => {
+       if (typeof window !== 'undefined') {
+         const token = localStorage.getItem('AdminAuthToken');
+         if (token) {
+           fetchData(token); // pass token into the function
+         } else {
+           alert("No auth token found.");
+         }
+       }
+     }, []);    
+     
+     const fetchData = async (token: string) => {
       const response = await fetch(
-        "https://api.blackstoneinfomaticstech.com/preferedteacher"
-      );
-      const result = await response.json();
+        "https://api.blackstoneinfomaticstech.com/preferedteacher",
+{
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });       const result = await response.json();
 
       // Calculate actual counts based on percentage
       const total = result.preferedTeacherPercentage;
@@ -250,8 +294,7 @@ const PreferredTeachersCard = () => {
       setFemale(femaleCount);
     };
 
-    fetchData();
-  }, []);
+
   return (
     <div>
       <div>
@@ -344,10 +387,25 @@ const CoursesChart = () => {
     { name: "Islamic", value: 0, color: "#4a90e2" },
   ]);
 
-  useEffect(() => {
-    const fetchCourseData = async () => {
+ useEffect(() => {
+       if (typeof window !== 'undefined') {
+         const token = localStorage.getItem('AdminAuthToken');
+         if (token) {
+           fetchCourseData(token); // pass token into the function
+         } else {
+           alert("No auth token found.");
+         }
+       }
+     }, []);    
+         const fetchCourseData = async (token: string) => {
       try {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/studentcourse");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/studentcourse",{
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        }); 
         const data: CourseStats = await res.json();
 
         setCourseData([
@@ -372,8 +430,7 @@ const CoursesChart = () => {
       }
     };
 
-    fetchCourseData();
-  }, []);
+
   return (
     <div>
       <h2 className="text-sm font-semibold text-gray-900">Courses</h2>

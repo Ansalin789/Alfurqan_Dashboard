@@ -100,10 +100,27 @@ const Page = () => {
       socketRef.current?.off("notification", handleNotification);
     };
   }, [userId]);
-  useEffect(() => {
-    const fetchNotifications = async () => {
+
+  
+   useEffect(() => {
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('AdminAuthToken');
+        if (token) {
+          fetchNotifications(token); // pass token into the function
+        } else {
+          alert("No auth token found.");
+        }
+      }
+    }, [userId]);
+    const fetchNotifications = async (token: string) => {
       try {
-        const { data } = await axios.get(`https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`);
+        const { data } = await axios.get(`https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,{
+            method: "GET",
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          });
         console.log("📦 API response:", data);
     
         // Safely access the notifications array
@@ -118,15 +135,19 @@ const Page = () => {
       }
     };
 
-    fetchNotifications();
-  }, [userId]);
+   
 
   // 👁️ Mark notification as seen
+  const token =localStorage.getItem("AdminAuthToken")
   const handleNotificationClick = async (notificationId: string) => {
     try {
       await axios.put(`https://api.blackstoneinfomaticstech.com/notification/${notificationId}`, {
         isRead: true,
         notificationStatus: "Seen",
+        header:{
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
       });
   
       setNotifications((prev) =>

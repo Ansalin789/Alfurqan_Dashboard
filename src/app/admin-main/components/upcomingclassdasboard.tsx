@@ -15,9 +15,25 @@ const UpcomingClasses: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMeetings = async () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchMeetings(token); // pass token into the function
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+    const fetchMeetings = async (token: string) => {
       try {
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting");
+        const response = await axios.get("http://localhost:5001/allAdminMeeting",{
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+  
         const meetings = response.data?.data?.meetings || [];
   
         const today = new Date();
@@ -56,8 +72,7 @@ const UpcomingClasses: React.FC = () => {
       }
     };
   
-    fetchMeetings();
-  }, []);
+
   
 
   if (error) {

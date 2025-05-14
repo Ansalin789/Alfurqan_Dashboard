@@ -64,13 +64,27 @@ const Page = () => {
   // Load courses from localStorage on component mount
 
 
-  // Fetch courses from API
-  const fetchCourses = async () => {
+  useEffect(() => {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchCourses(token); // call your function with token
+    } else {
+      alert("No auth token found.");
+    }
+  }, []);
+
+  const fetchCourses = async (token: string) => {
     console.log("📥 Fetching courses...");
     try {
       setIsLoading(true);
 
-      const response = await fetch('https://api.blackstoneinfomaticstech.com/courses');
+      const response = await fetch('http://localhost:5001/courses', {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       console.log("✅ Response received:", response);
 
       if (!response.ok) {
@@ -115,10 +129,6 @@ const Page = () => {
     }
   };
 
-  // Load courses on component mount
-  useEffect(() => {
-    fetchCourses();
-  }, []);
 
   const [form, setForm] = useState<Omit<Course, 'status'>>({
     courseId: '',
@@ -170,7 +180,7 @@ const Page = () => {
       console.log('Sending data to API:', newCourse);
 
       // API call to create course
-      const response = await fetch('https://api.blackstoneinfomaticstech.com/courses', {
+      const response = await fetch('http://localhost:5001/courses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -198,8 +208,6 @@ const Page = () => {
       });
       setShowForm(false);
 
-      // Fetch courses again to update the list
-      await fetchCourses();
 
     } catch (err) {
       console.error('Error creating course:', err);

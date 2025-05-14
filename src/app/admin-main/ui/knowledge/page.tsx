@@ -79,9 +79,24 @@ export default function KnowledgeBase() {
   };
   const [knowledgeBaseList, setKnowledgeBaseList] = useState<ProcessedKnowledgeBaseItem[]>([]);
 
-const fetchKnowledgeBaseList = async () => {
+  useEffect(() => {
+  const token = localStorage.getItem('AdminAuthToken');
+  if (token) {
+    fetchKnowledgeBaseList(token); // Or call the function that performs the GET request
+  } else {
+    alert("No auth token found.");
+  }
+}, []);
+const fetchKnowledgeBaseList = async (token: string) => {
   try {
-    const response = await fetch('https://api.blackstoneinfomaticstech.com/knowledgebase/list');
+    const response = await fetch('http://localhost:5001/knowledgebase/list',
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
     const result = await response.json();
      console.log(result);
     if (result.status === 'success') {
@@ -110,9 +125,6 @@ const arrayBufferToBase64 = (buffer: number[]) => {
   return window.btoa(binary);
 };
 
-useEffect(() => {
-  fetchKnowledgeBaseList();
-}, []);
 const pdfFiles = knowledgeBaseList.filter(
   (item) => item.uploadedFormat.toLowerCase() === 'pdf' && item.courseName === activeTab
 );
@@ -153,7 +165,7 @@ const videoFiles = knowledgeBaseList.filter(
     try {
       console.log('Sending API request...');
   
-      const response = await fetch('https://api.blackstoneinfomaticstech.com/knowledgebase', {
+      const response = await fetch('http://localhost:5001/knowledgebase', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

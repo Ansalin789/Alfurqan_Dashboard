@@ -112,62 +112,83 @@ const Expenses = () => {
   );
 
   useEffect(() => {
-    // Only make the API call if salaryData is empty
-    if (salaryData.length === 0) {
-      // Replace with your actual API endpoint
-      axios.get('https://api.blackstoneinfomaticstech.com/expense')
-        .then((response) => {
-          const fetchedData = response.data.expenses;
-  
-          // Ensure the data is unique by checking the 'paymentDate' (or any other unique field)
-          const uniqueData = fetchedData.filter((expense: { paymentDate: any; }, index: any, self: { paymentDate: any; }[]) =>
-            index === self.findIndex((t: { paymentDate: any; }) => t.paymentDate === expense.paymentDate)
-          );
-  
-          setSalaryData(uniqueData); // Set the unique list of expenses
-        })
-        .catch((error) => {
-          console.error('Error fetching data:', error);
-        });
+    const token = localStorage.getItem('AdminAuthToken');
+    
+    if (!token) {
+      alert("No auth token found.");
+      return;
     }
-  }, [salaryData]);
 
-    const handleSubmit = () => {
-      const expenseData: ExpensePayload = {
-        paymentDate,
-        expenseType,
-        amount,
-        category,
-        paymentMethod,
-        status :'Active',
-        createdDate: new Date().toISOString(),
-        createdBy: 'Admin', // Adjust as necessary
-        updatedDate: new Date().toISOString(),
-        updatedBy: 'Admin', // Adjust as necessary
-      };
-    
-      // Sending the POST request
-      axios
-        .post('https://api.blackstoneinfomaticstech.com/expense', expenseData)
-        .then((response) => {
-          console.log('Expense added:', response.data);
-          
-          // Clear all form data after submission
-          setPaymentDate('');
-          setExpenseType('');
-          setAmount('');
-          setCategory('');
-          setPaymentMethod('');
-         
-    
-          // Close the modal after successful submission
-          setIsPopupOpen(false);
-        })
-        .catch((error) => {
-          console.error('Error adding expense:', error);
-        });
+    // Fetch salary data only if it's empty
+    if (salaryData.length === 0) {
+      axios.get('http://localhost:5001/expense', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((response) => {
+        const fetchedData = response.data.expenses;
+
+        // Ensure the data is unique by checking the 'paymentDate' (or any other unique field)
+        const uniqueData = fetchedData.filter((expense: { paymentDate: any; }, index: any, self: { paymentDate: any; }[]) =>
+          index === self.findIndex((t: { paymentDate: any; }) => t.paymentDate === expense.paymentDate)
+        );
+
+        setSalaryData(uniqueData); // Set the unique list of expenses
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+      });
+    }
+  }, [salaryData]); // Empty state prevents unnecessary calls
+  
+  const handleSubmit = () => {
+    const token = localStorage.getItem('AdminAuthToken');
+  
+    if (!token) {
+      alert("No auth token found.");
+      return;
+    }  
+    const expenseData = {
+      paymentDate,
+      expenseType,
+      amount,
+      category,
+      paymentMethod,
+      status: 'Active',
+      createdDate: new Date().toISOString(),
+      createdBy: 'Admin', // Adjust as necessary
+      updatedDate: new Date().toISOString(),
+      updatedBy: 'Admin', // Adjust as necessary
     };
-    
+
+    // Sending the POST request
+    axios
+      .post('http://localhost:5001/expense', expenseData,{
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((response) => {
+        console.log('Expense added:', response.data);
+
+        // Clear all form data after submission
+        setPaymentDate('');
+        setExpenseType('');
+        setAmount('');
+        setCategory('');
+        setPaymentMethod('');
+
+        // Close the modal after successful submission
+        setIsPopupOpen(false);
+      })
+      .catch((error) => {
+        console.error('Error adding expense:', error);
+      });
+  };
+
 
   return (
     <BaseLayout4>

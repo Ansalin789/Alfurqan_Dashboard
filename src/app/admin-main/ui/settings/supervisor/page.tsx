@@ -123,16 +123,31 @@ const SupervisorModuleAccess = () => {
 
   
 
-  useEffect(() => {
+useEffect(() => {
     if (!employeeId) {
       toast.error('Employee ID not found in the URL!');
       setIsRedirecting(true);
       return;
+      
     }
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchEmployeeData(token); // call your function with token
+      } else {
+        alert("No auth token found.");
+      }
+    }, [employeeId]);
   
-    const fetchEmployeeData = async () => {
+    const fetchEmployeeData = async (token: string) => {
       try {
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`);
+        const res = await fetch(`https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+          }
+        );
         const json = await res.json();
         console.log('Fetched data:', json);
   
@@ -165,8 +180,7 @@ const SupervisorModuleAccess = () => {
       }
     };
   
-    fetchEmployeeData();
-  }, [employeeId]);
+
   
 
   useEffect(() => {
@@ -217,9 +231,16 @@ const SupervisorModuleAccess = () => {
     };
 
     try {
+      const token = localStorage.getItem('AdminAuthToken');
       const response = await axios.put(
         `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
-        { roleAccess }
+        { roleAccess },
+        {
+          headers:{
+            'Content-Type':"application/json",
+            "Authorization": `Bearer ${token}`,
+          }
+        }        
       );
       console.log('Access updated successfully:', response.data);
       toast.success('Access updated successfully!'); // ✅ Show success toast

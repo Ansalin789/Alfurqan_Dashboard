@@ -155,9 +155,23 @@ export default function Page() {
     void: 0,
   });
   useEffect(() => {
-    const fetchInvoiceCounts = async () => {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchInvoiceCounts(token); // call your function with token
+    } else {
+      alert("No auth token found.");
+    }
+  }, []);
+    const fetchInvoiceCounts = async (token: string) => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/invoicecounts");
+        const response = await fetch("http://localhost:5001/invoicecounts",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+          });
         const result = await response.json();
         if (result.success) {
           setInvoiceCounts(result.data);
@@ -166,9 +180,6 @@ export default function Page() {
         console.error("Error fetching invoice counts:", error);
       }
     };
-
-    fetchInvoiceCounts();
-  }, []);
 
   const cards: {
     title: string;
@@ -232,10 +243,25 @@ export default function Page() {
     []
   );
 
-  useEffect(() => {
-    const fetchMonthlyInvoices = async () => {
+    useEffect(() => {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchMonthlyInvoices(token); // call your function with token
+    } else {
+      alert("No auth token found.");
+    }
+  }, []);
+  
+  const fetchMonthlyInvoices = async (token: string) => {
       try {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/totalinvoice");
+        const res = await fetch("http://localhost:5001/totalinvoice",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+          });
         const json = await res.json();
         if (json.success) {
           setMonthlyInvoices(json.data);
@@ -245,8 +271,7 @@ export default function Page() {
       }
     };
 
-    fetchMonthlyInvoices();
-  }, []);
+
 
   const COLORS = ["#0f172a", "#8b5cf6", "#0ea5e9", "#3b82f6"];
   const [dueData, setDueData] = useState({
@@ -257,9 +282,23 @@ export default function Page() {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchData(token); // call your function with token
+    } else {
+      alert("No auth token found.");
+    }
+  }, []);    
+  const fetchData = async (token: string) => {
       try {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/invoiceduebydates");
+        const res = await fetch("http://localhost:5001/invoiceduebydates",
+           {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+          });
         const json = await res.json();
         if (json.success) {
           setDueData(json.data);
@@ -269,8 +308,7 @@ export default function Page() {
       }
     };
 
-    fetchData();
-  }, []);
+ 
 
   const barData = {
     labels: monthOrder,
@@ -426,16 +464,32 @@ export default function Page() {
     router.push("/admin-main/ui/invoicelist");
   };
 
-  useEffect(() => {
+
+useEffect(() => {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchStudentInvoices(token);
+    } else {
+      alert("No auth token found.");
+    }
+  }, []);
+
+   const fetchStudentInvoices  = (token:string) => {
     axios
-      .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list")
+      .get("http://localhost:5001/studentinvoice/list", {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      })
       .then((response) => {
-        setInvoices(response.data.data); // adjust based on your API response structure
+        setInvoices(response.data.data); // adapt to your API shape
       })
       .catch((error) => {
         console.error("Error fetching invoices:", error);
       });
-  }, []);
+  };
+
 
   const calculateDueDays = (dueDate?: string) => {
     if (!dueDate) return "-";

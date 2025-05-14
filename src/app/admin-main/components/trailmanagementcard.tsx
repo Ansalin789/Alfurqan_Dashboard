@@ -54,9 +54,24 @@ const TotalScheduledChart = () => {
   const [totalTrailclass, setTotalTrailclass] = useState<TotalTrailclassData[]>([]);
 
   useEffect(() => {
-    const fetchChartData = async () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchChartData(token); // pass token into the function
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+    const fetchChartData = async (token: string) => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass");
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass",{
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         const result: TrialClassData[] = await response.json();
 
         const apiData = result[0];
@@ -73,9 +88,6 @@ const TotalScheduledChart = () => {
         console.error("Error fetching course data:", error);
       }
     };
-
-    fetchChartData();
-  }, []);
 
   return (
     <div>
@@ -156,9 +168,25 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
 const CoursesChart = () => {
   const [chartData, setChartData] = useState<CourseBar[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass");
+ useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchData(token); // pass token into the function
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);    
+  
+  const fetchData = async (token: string) => {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass",{
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
       const data: TrialClassData[] = await response.json();
 
       const transformedData: CourseBar[] = [
@@ -182,8 +210,8 @@ const CoursesChart = () => {
       setChartData(transformedData);
     };
 
-    fetchData();
-  }, []);
+  
+    
   return (
     <div>
       <h2 className="text-sm font-semibold text-gray-900">Student Status</h2>
@@ -254,10 +282,25 @@ const PreferredTeachersCard = () => {
     notAssignedTeacherPercentage: "0",
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
+ useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchData(token); // pass token into the function
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);  
+  const fetchData = async (token: string) => {
       try {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/teacherstatus");
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/teacherstatus",{
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         const data = await res.json();
         setTeacherData(data);
       } catch (err) {
@@ -265,8 +308,6 @@ const PreferredTeachersCard = () => {
       }
     };
 
-    fetchData();
-  }, []);
 
   const assigned = Number(
     ((parseFloat(teacherData.assignedTeacherPercentage) / 100) *
@@ -369,16 +410,36 @@ const TeachersStudents = () => {
   const [teachers, setTeachers] = useState<TeacherAPI[]>([]);
   const colors = ["bg-red-800", "bg-yellow-800", "bg-red-500", "bg-green-700", "bg-purple-600", "bg-blue-500"];
 
-  useEffect(() => {
-    fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count")
+ useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+
+      if (token) {
+        fetchData(token); // call the fetch function with token
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+
+  const fetchData = (token: string) => {
+    fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count", {
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
           setTeachers(data.data);
+        } else {
+          console.error("Data fetch was unsuccessful:", data);
         }
       })
       .catch((err) => console.error("Failed to fetch teachers:", err));
-  }, []);
+  };
 
   return (
     <div>

@@ -213,53 +213,88 @@ const Teacher = () => {
     Rescheduled: 'bg-yellow-300 text-black',
   };
 
- 
   useEffect(() => {
-   
-    async function fetchUsers() {
-      if (!employeeId || employeeId === "null") return;
-      try {
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/users/${employeeId}`);
-        setUsers(response.data);
-        console.log(response.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
+    const token = localStorage.getItem("AdminAuthToken");
+  
+    if (token && employeeId && employeeId !== "null") {
+      fetchUsers(token);
+      fetchSchedule(token);
+      fetchWages(token);
+      fetchClasses(token);
+    } else {
+      alert("No auth token or employee ID found.");
     }
-    fetchUsers();
-    const fetchSchedule = async () => {
-      try {
-        const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`
-        );
-        setScheduledClass(response.data.classSchedule);
-      } catch (error) {
-        console.error("Error fetching schedule:", error);
-      }
-    };
-  fetchSchedule();
-  const fetchWages = async () => {
+  }, [employeeId]); // re-run if employeeId changes
+  
+  const fetchUsers = async (token: string) => {
     try {
-      const response = await axios.get(`https://api.blackstoneinfomaticstech.com/empwages/${employeeId}`);
-      setWages(response.data); 
+      const response = await axios.get(
+        `http://localhost:5001/users/${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+      setUsers(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+  
+  const fetchSchedule = async (token: string) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5001/classShedule/teacher?teacherId=${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+      setScheduledClass(response.data.classSchedule);
+    } catch (error) {
+      console.error("Error fetching schedule:", error);
+    }
+  };
+  
+  const fetchWages = async (token: string) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5001/empwages/${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+      setWages(response.data);
     } catch (error) {
       console.error("Error fetching wages:", error);
     }
   };
-   fetchWages();
-   const fetchClasses = async () => {
+  
+  const fetchClasses = async (token: string) => {
     try {
       const res = await axios.get<StudentData[]>(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`
+        `http://localhost:5001/classShedule/teacher/list?teacherId=${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
       );
       setStudents(res.data);
     } catch (error) {
       console.error("Failed to fetch classes", error);
-    } 
+    }
   };
-
-  fetchClasses();
-  }, [employeeId]);
+  
 
   const CustomToolbar = (toolbar: any) => (
     <div className="flex justify-center items-center py-2 px-4">

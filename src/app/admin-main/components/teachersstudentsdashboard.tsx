@@ -16,16 +16,34 @@ type TeacherAPI = {
     const colors = ["bg-red-800", "bg-yellow-800", "bg-red-500", "bg-green-700", "bg-purple-600", "bg-blue-500"];
 
     useEffect(() => {
-      fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            setTeachers(data.data);
-          }
-        })
-        .catch((err) => console.error("Failed to fetch teachers:", err));
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('AdminAuthToken');
+        if (token) {
+          fetchTeacherStudentCount(token);
+        } else {
+          alert("No auth token found.");
+        }
+      }
     }, []);
-  
+    
+    const fetchTeacherStudentCount = async (token: string) => {
+      try {
+        const res = await fetch("http://localhost:5001/teacher-student-count", {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+    
+        const data = await res.json();
+        if (data.success) {
+          setTeachers(data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch teachers:", err);
+      }
+    };
+    
   
     return (
       <div className="bg-white rounded-lg shadow-sm p-5 h-[265px]">

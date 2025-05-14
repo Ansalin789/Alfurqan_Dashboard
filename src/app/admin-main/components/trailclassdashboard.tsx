@@ -18,9 +18,24 @@ export default function TrialRequests() {
   const [data, setData] = useState<TrialRequestData | null>(null)
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchData(token); // pass token into the function
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+    const fetchData = async (token: string) => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/dashboard/admin/totaltrialrequest")
+        const response = await fetch("http://localhost:5001/dashboard/admin/totaltrialrequest",{
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         const result = await response.json()
         setData(result)
       } catch (error) {
@@ -28,8 +43,7 @@ export default function TrialRequests() {
       }
     }
 
-    fetchData()
-  }, [])
+
   const requests = data
   ? [
       {
