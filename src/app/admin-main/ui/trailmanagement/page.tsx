@@ -99,11 +99,28 @@ const TrailManagement = () => {
   console.log(setItemsPerPage);
 
   const router = useRouter();
-  // Fetch API Data
-  const getAllUsers = async () => {
+ useEffect(() => {
+   Modal.setAppElement("body");
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      getAllUsers(token); // call your function with token
+    } else {
+      alert("No auth token found.");
+    }
+  }, []);
+  
+  const getAllUsers = async (token: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass");
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
@@ -122,11 +139,7 @@ const TrailManagement = () => {
     }
   };
 
-  useEffect(() => {
-    Modal.setAppElement("body");
-    getAllUsers(); // Fetch users when component mounts
-  }, []);
-
+ 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setSearchTerm(query);

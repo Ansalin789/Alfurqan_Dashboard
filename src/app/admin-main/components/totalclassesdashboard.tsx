@@ -35,16 +35,20 @@ export default function TotalClasses() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [classData, setClassData] = useState<ChartItem[]>([]);
 
-  const fetchClassData = async (range: TimeFrame) => {
+  const fetchClassData = async (token: string, range: TimeFrame) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/dashboard/admin/totalclass?dateRange=${getDateRangeParam(
-          range
-        )}`
+        `http://localhost:5001/dashboard/admin/totalclass?dateRange=${getDateRangeParam(range)}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
       );
+  
       const data: ClassRecord[] = await res.json();
-
-      // Aggregate totals
+  
       const totals = data.reduce(
         (acc, item) => {
           acc.classCompleted += item.classCompleted;
@@ -60,36 +64,31 @@ export default function TotalClasses() {
           classCancelled: 0,
         }
       );
-
-      // Update chart data
+  
       const chartData: ChartItem[] = [
-        {
-          type: "Completed",
-          count: totals.classCompleted,
-          color: "bg-gray-900",
-        },
+        { type: "Completed", count: totals.classCompleted, color: "bg-gray-900" },
         { type: "Pending", count: totals.classPending, color: "bg-blue-300" },
-        {
-          type: "Rescheduled",
-          count: totals.classReschedule,
-          color: "bg-purple-500",
-        },
-        {
-          type: "Cancelled",
-          count: totals.classCancelled,
-          color: "bg-blue-500",
-        },
+        { type: "Rescheduled", count: totals.classReschedule, color: "bg-purple-500" },
+        { type: "Cancelled", count: totals.classCancelled, color: "bg-blue-500" },
       ];
-
+  
       setClassData(chartData);
     } catch (error) {
       console.error("Failed to fetch class data:", error);
     }
   };
-
+  
   useEffect(() => {
-    fetchClassData(timeFrame);
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchClassData(token, timeFrame);
+      } else {
+        alert("No auth token found.");
+      }
+    }
   }, [timeFrame]);
+  
 
   const maxCount = Math.max(...classData.map((item) => item.count), 1);
 

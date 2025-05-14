@@ -143,109 +143,172 @@ const TabbedTable: React.FC<TabbedTableProps> = ({ studentId }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 ////////////////courses///////////////////
-  useEffect(() => {
-    if (!studentId) return;
+useEffect(() => {
+  if (typeof window !== 'undefined' && studentId) {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchStudentDetails(token, studentId);
+    } else {
+      alert("No auth token found.");
+    }
+  }
+}, [studentId]);
 
-    axios
-      .get<StudentResponse>(`https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`)
-      .then((res) => {
-        const student = res.data.studentDetails;
+const fetchStudentDetails = async (token: string, studentId: string) => {
+  try {
+    const response = await axios.get<StudentResponse>(
+      `http://localhost:5001/alstudents/${studentId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+      }
+    );
 
-        const formatted: CourseRow = {
-          id:"1234",
-          name: student.student.course,
-          package: student.student.package,
-          status: student.status,
-          date: new Date(student.createdDate).toLocaleDateString(), 
-        };
+    const student = response.data.studentDetails;
 
-        setCoursesData([formatted]); // one entry, so array with one object
-      })
-      .catch((err) => {
-        console.error("Failed to fetch student data", err);
-      });
+    const formatted: CourseRow = {
+      id: "1234",
+      name: student.student.course,
+      package: student.student.package,
+      status: student.status,
+      date: new Date(student.createdDate).toLocaleDateString(),
+    };
 
-  }, [studentId]);
+    setCoursesData([formatted]);
+  } catch (err) {
+    console.error("Failed to fetch student data", err);
+  }
+};
+
 
 /////////////////transaction//////////////
 useEffect(() => {
-  axios
-    .get(`https://api.blackstoneinfomaticstech.com/studentinvoice/${studentId}`)
-    .then((res) => {
-      console.log("Raw API response:", res.data);
-
-      // Make sure it's an array even if one object is returned
-      const data = Array.isArray(res.data) ? res.data : [res.data];
-
-      const formatted = data.map((item) => {
-        const created = new Date(item.createdDate);
-        const today = new Date();
-        const diff = Math.floor((today.getTime() - created.getTime()) / (1000 * 3600 * 24)); // duebydays
-
-        return {
-          invoiceid: item._id,
-          date: created.toLocaleDateString(),
-          course: item.courseName,
-          duebydays: diff,
-          paiddate: new Date(item.lastUpdatedDate).toLocaleDateString(),
-          status: item.invoiceStatus,
-        };
-      });
-
-      setTransactions(formatted);
-    })
-    .catch((err) => {
-      console.error("Failed to fetch transactions", err);
-    });
+  if (typeof window !== 'undefined' && studentId) {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchStudentInvoice(token, studentId);
+    } else {
+      alert("No auth token found.");
+    }
+  }
 }, [studentId]);
+
+const fetchStudentInvoice = async (token: string, studentId: string) => {
+  try {
+    const response = await axios.get(
+      `http://localhost:5001/studentinvoice/${studentId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+      }
+    );
+
+    console.log("Raw API response:", response.data);
+
+    // Make sure it's an array even if one object is returned
+    const data = Array.isArray(response.data) ? response.data : [response.data];
+
+    const formatted = data.map((item) => {
+      const created = new Date(item.createdDate);
+      const today = new Date();
+      const diff = Math.floor((today.getTime() - created.getTime()) / (1000 * 3600 * 24)); // duebydays
+
+      return {
+        invoiceid: item._id,
+        date: created.toLocaleDateString(),
+        course: item.courseName,
+        duebydays: diff,
+        paiddate: new Date(item.lastUpdatedDate).toLocaleDateString(),
+        status: item.invoiceStatus,
+      };
+    });
+
+    setTransactions(formatted);
+  } catch (err) {
+    console.error("Failed to fetch transactions", err);
+  }
+};
+
 
 
 
   
   ////////////////classdata////////////////////
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`
-        );
-        const data = await res.json();
-        console.log("API Response Data:", data); // Log the full API response to inspect the structure
-
-        setClassData(data.classSchedule);
-        console.log("State after setting classData:", data.classSchedule); // Log the updated state
-      } catch (error) {
-        console.error("Error fetching schedules:", error);
+    if (typeof window !== 'undefined' && studentId) {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchClassSchedule(token, studentId);
+      } else {
+        alert("No auth token found.");
       }
-    };  
-    if (studentId) {
-      fetchData();
-      console.log(">?>", fetchData);
     }
   }, [studentId]);
+  
+  const fetchClassSchedule = async (token: string, studentId: string) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5001/classShedule/students?studentId=${studentId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+        }
+      );
+  
+      const data = await res.json();
+      console.log("API Response Data:", data);
+  
+      setClassData(data.classSchedule);
+      console.log("State after setting classData:", data.classSchedule);
+    } catch (error) {
+      console.error("Error fetching schedules:", error);
+    }
+  };
+  
 
   
  /////////////////////////counts in course///////////////////
   // Fetch stats data from an API
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        // Use backticks (`) for string interpolation
-        const response = await fetch(`https://api.blackstoneinfomaticstech.com/classShedule/studentsclasscount?studentId=${studentId}`);
-        const data: Stats = await response.json();
-        
-        setStats(data); // Set fetched stats data to state
-        setLoading(false); // Set loading to false once data is fetched
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-        setLoading(false); // Set loading to false in case of error
+    if (typeof window !== 'undefined' && studentId) {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchStatsData(token, studentId);
+      } else {
+        alert("No auth token found.");
+        setLoading(false);
       }
-    };
-
-    if (studentId) {
-      fetchStats(); // Fetch stats only when studentId is available
     }
-  }, [studentId]); // Depend on studentId to refetch stats when it changes
+  }, [studentId]);
+  
+  const fetchStatsData = async (token: string, studentId: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5001/classShedule/studentsclasscount?studentId=${studentId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+
+          },
+        }
+      );
+  
+      const data: Stats = await response.json();
+      setStats(data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      setLoading(false);
+    }
+  };
+   // Depend on studentId to refetch stats when it changes
 
   if (loading) {
     return <div>Loading...</div>; // Show loading state while fetching

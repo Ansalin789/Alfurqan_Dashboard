@@ -93,9 +93,22 @@ const SalaryCard = () => {
   const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchClassData = async () => {
+        const token = localStorage.getItem('AdminAuthToken');
+        if (token) {
+          fetchClassData(token); // Or call the function that performs the GET request
+        } else {
+          alert("No auth token found.");
+        }
+      }, []);
+    const fetchClassData = async (token: string) => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/classShedule");
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/classShedule", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
         const data: StudentClassApiResponse = await response.json();
         setClassData(data.students || []);
       } catch (error) {
@@ -103,8 +116,6 @@ const SalaryCard = () => {
       }
     };
 
-    fetchClassData();
-  }, []);
 
   // Close notifications when clicking outside
   useEffect(() => {

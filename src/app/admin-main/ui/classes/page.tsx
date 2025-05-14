@@ -95,19 +95,33 @@ const SalaryCard = () => {
   const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchClassData = async () => {
+    const fetchClassData = async (token: string) => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/classShedule");
+        const response = await fetch("http://localhost:5001/classShedule", {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+  
         const data: StudentClassApiResponse = await response.json();
         setClassData(data.students || []);
       } catch (error) {
         console.error("Error fetching class data:", error);
       }
     };
-
-    fetchClassData();
+  
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchClassData(token);
+      } else {
+        alert("No auth token found.");
+      }
+    }
   }, []);
-
+  
   // Close notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

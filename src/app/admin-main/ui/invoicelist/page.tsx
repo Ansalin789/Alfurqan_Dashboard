@@ -48,16 +48,30 @@ const [filters, setFilters] = useState({
 });
 
 
-  useEffect(() => {
-    axios
-      .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list")
-      .then((response) => {
-        setInvoices(response.data.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching invoices:", error);
-      });
-  }, []);
+useEffect(() => {
+  const token = localStorage.getItem('AdminAuthToken');
+  if (token) {
+    fetchInvoice(token); // Or call the function that performs the GET request
+  } else {
+    alert("No auth token found.");
+  }
+}, []);
+
+const fetchInvoice = (token: string) => {
+  axios
+    .get("http://localhost:5001/studentinvoice/list", {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+    .then((response) => {
+      setInvoices(response.data.data);
+    })
+    .catch((error) => {
+      console.error("Error fetching invoices:", error);
+    });
+};
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);

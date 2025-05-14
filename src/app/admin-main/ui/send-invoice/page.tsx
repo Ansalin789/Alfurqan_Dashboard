@@ -64,12 +64,23 @@ export default function InvoicePage() {
   >(null);
 
   useEffect(() => {
-    const fetchStudents = async () => {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchStudents(token); // Or call the function that performs the GET request
+    } else {
+      alert("No auth token found.");
+    }
+  }, []);
+    const fetchStudents = async (token: string) => {
       try {
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/alstudents"
-        );
-
+          "https://api.blackstoneinfomaticstech.com/alstudents",{
+            method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
         // Remove duplicates based on studentId
         const uniqueStudentsMap = new Map();
         response.data.students.forEach((student: IStudent) => {
@@ -83,8 +94,7 @@ export default function InvoicePage() {
       }
     };
 
-    fetchStudents();
-  }, []);
+
   const [invoiceData, setInvoiceData] = useState<IStudentInvoice>({
     student: {
       studentId: '',

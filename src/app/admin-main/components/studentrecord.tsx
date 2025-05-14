@@ -44,41 +44,75 @@ const StudentsRecord = () => {
   const [countryData, setCountryData] = useState<CountryStat[]>([]);
 
   useEffect(() => {
-    axios
-      .get("https://api.blackstoneinfomaticstech.com/alstudents/studentsrecordcount")
-      .then((response) => {
-        const count = response.data[0];
-        const chartData: ChartDataItem[] = [
-          { name: "Total Students", value: count.studentTotalCount, color: "#012A4A" },
-          { name: "Students on Hold", value: count.onHoldStudent, color: "#A6C3E5" },
-          { name: "Active Students", value: count.activeStudent, color: "#6D5DD3" },
-          { name: "Inactive Students", value: count.inActiveStudent, color: "#00CFFF" },
-          { name: "Students on Break", value: count.studentOnBreak, color: "#007BFF" },
-        ];
-        setBarData(chartData);
-      })
-      .catch((error) => console.error("Error fetching student status count:", error));
-  
-
-      axios
-      .get<GenderResponse>("https://api.blackstoneinfomaticstech.com/alstudents/studentsGender")
-      .then((res) => {
-        const genderChartData: ChartDataItem[] = [
-          { name: "Female", value: parseFloat(res.data.studentFemalePercentage), color: "#FF82F5" },
-          { name: "Male", value: parseFloat(res.data.studentMalePercentage), color: "#00CFFF" },
-        ];
-        setGenderData(genderChartData);
-      })
-      .catch((error) => console.error("Error fetching gender data:", error));
-
-
-      axios
-      .get("https://api.blackstoneinfomaticstech.com/alstudents/studentscountrycount")
-      .then((res) => {
-        setCountryData(res.data.studentCountByCountry);
-      })
-      .catch((err) => console.error("Failed to fetch country stats", err));
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchStudentCounts(token);
+        fetchGenderData(token);
+        fetchCountryStats(token);
+      } else {
+        alert("No auth token found.");
+      }
+    }
   }, []);
+  
+  const fetchStudentCounts = async (token: string) => {
+    try {
+      const response = await axios.get("http://localhost:5001/alstudents/studentsrecordcount", {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      const count = response.data[0];
+      const chartData: ChartDataItem[] = [
+        { name: "Total Students", value: count.studentTotalCount, color: "#012A4A" },
+        { name: "Students on Hold", value: count.onHoldStudent, color: "#A6C3E5" },
+        { name: "Active Students", value: count.activeStudent, color: "#6D5DD3" },
+        { name: "Inactive Students", value: count.inActiveStudent, color: "#00CFFF" },
+        { name: "Students on Break", value: count.studentOnBreak, color: "#007BFF" },
+      ];
+      setBarData(chartData);
+    } catch (error) {
+      console.error("Error fetching student status count:", error);
+    }
+  };
+  
+  const fetchGenderData = async (token: string) => {
+    try {
+      const response = await axios.get<GenderResponse>(
+        "http://localhost:5001/alstudents/studentsGender",
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const genderChartData: ChartDataItem[] = [
+        { name: "Female", value: parseFloat(response.data.studentFemalePercentage), color: "#FF82F5" },
+        { name: "Male", value: parseFloat(response.data.studentMalePercentage), color: "#00CFFF" },
+      ];
+      setGenderData(genderChartData);
+    } catch (error) {
+      console.error("Error fetching gender data:", error);
+    }
+  };
+  
+  const fetchCountryStats = async (token: string) => {
+    try {
+      const response = await axios.get("http://localhost:5001/alstudents/studentscountrycount", {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      setCountryData(response.data.studentCountByCountry);
+    } catch (error) {
+      console.error("Failed to fetch country stats", error);
+    }
+  };
+  
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-14 w-full">
@@ -156,7 +190,7 @@ const StudentsRecord = () => {
   </div>
   
                     {/* Countries Block */}
-                      <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[250px] space-y-3">
+  <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[250px] space-y-3 overflow-y-auto scrollbar-hide">
         <h2 className="text-[16px] font-semibold text-gray-800">Countries</h2>
         {countryData.map((country, i) => {
           // Get 2-letter country code

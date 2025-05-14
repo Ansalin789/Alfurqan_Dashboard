@@ -1,7 +1,7 @@
 "use client";
 
 import BaseLayout4 from "@/components/BaseLayout4";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { PiBookOpenTextFill } from "react-icons/pi";
 import { BiSolidTime } from "react-icons/bi";
 import { BsCalendar2Check } from "react-icons/bs";
@@ -124,11 +124,23 @@ const AssignmentsPage = () => {
       console.log(`${key}:`, value);
     });
     
-    
+    useEffect(() => {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        submitAssignment(token); // call your function with token
+      } else {
+        alert("No auth token found.");
+      }
+    }, []);
+       
+    const submitAssignment = async (token: string) => {
         try {
-          
-          const response = await fetch("https://api.blackstoneinfomaticstech.com/assignments", {
+          const response = await fetch("http://localhost:5001/assignments", {
             method: "POST",
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
             body: formData, // Use FormData instead of JSON
           });
           console.log(formData);
@@ -150,7 +162,9 @@ const AssignmentsPage = () => {
         } catch (error) {
           console.error("Error assigning assignment:", error);
         }
-      };const handleNoOptionsChange = (type: keyof typeof showNoOptions) => {
+      }
+      };
+      const handleNoOptionsChange = (type: keyof typeof showNoOptions) => {
           setShowNoOptions(prev => ({ ...prev, [type]: !prev[type] }));
         };
       

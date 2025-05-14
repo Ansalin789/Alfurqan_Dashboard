@@ -116,31 +116,48 @@ const Meeting = () => {
 
   const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
   useEffect(() => {
-    axios
-      .get<{ totalCount: number; users: User[] }>(
-        "https://api.blackstoneinfomaticstech.com/otheremployees"
-      )
-      .then((response) => {
-        console.log("API Response:", response.data); // ✅ Debugging step
-
-        const userList = response.data.users;
-
-        if (Array.isArray(userList)) {
-          const mappedTeachers = userList.map((user) => ({
-            teacherId: user._id, // Prefer userId for a unique teacherId
-            teacherName: user.userName,
-            teacherEmail: user.email ?? "no-email@example.com",
-            _id: user._id,
-          }));
-
-          setTeachers(mappedTeachers);
-          console.log("Mapped Teachers:", mappedTeachers);
-        } else {
-          console.error("Unexpected API response format:", response.data);
-        }
-      })
-      .catch((error) => console.error("Error fetching teachers:", error));
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      ScheduleClass(token); // call your function with token
+    } else {
+      alert("No auth token found.");
+    }
   }, []);
+  
+  const ScheduleClass = async (token: string) => {
+    try {
+      const response = await axios.get<{ totalCount: number; users: User[] }>(
+        "https://api.blackstoneinfomaticstech.com/otheremployees",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+  
+      console.log("API Response:", response.data); // ✅ Debugging step
+  
+      const userList = response.data.users;
+  
+      if (Array.isArray(userList)) {
+        const mappedTeachers = userList.map((user) => ({
+          teacherId: user._id,
+          teacherName: user.userName,
+          teacherEmail: user.email ?? "no-email@example.com",
+          _id: user._id,
+        }));
+  
+        setTeachers(mappedTeachers);
+        console.log("Mapped Teachers:", mappedTeachers);
+      } else {
+        console.error("Unexpected API response format:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+    }
+  };
+  
 
   // Ensure selectedDate is properly formatted
   const handleSubmit = async () => {
@@ -162,10 +179,12 @@ const Meeting = () => {
     };
 
     try {
+      const token = localStorage.getItem("AdminAuthToken")
       const response = await fetch("https://api.blackstoneinfomaticstech.com/addadminMeeting", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // required for JSON
+          "Content-Type": "application/json", 
+                      "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(data),
       });
@@ -184,7 +203,14 @@ const Meeting = () => {
 
   useEffect(() => {
     async function fetchMeetings() {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting");
+      const token = localStorage.getItem("AdminAuthToken")
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", 
+                      "Authorization": `Bearer ${token}`,
+        },
+      });
       const data: MeetingsResponse = await response.json();
       console.log(data);
       setMeetingsData(data);
@@ -230,12 +256,16 @@ const Meeting = () => {
     if (!rescheduleReason.trim() || !selectedItemId) return;
 
     try {
+            const token = localStorage.getItem("AdminAuthToken")
+
       const response = await fetch(
         `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${selectedItemId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+                                  "Authorization": `Bearer ${token}`,
+
           },
           body: JSON.stringify({
             selectedDate: "2025-05-01T10:00:00.000Z", // Replace with dynamic value if needed

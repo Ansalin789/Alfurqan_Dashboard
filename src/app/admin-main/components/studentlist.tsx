@@ -43,10 +43,24 @@ const TrailManagement = () => {
   const [students, setStudents] = useState<Student[]>([]);
   
   useEffect(() => {
-    const fetchStudents = async () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchStudents(token); // pass token into the function
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+    const fetchStudents = async (token: string) => {
       try {
-        const response = await axios.get('https://api.blackstoneinfomaticstech.com/alstudents');
-  
+        const response = await axios.get('http://localhost:5001/alstudents',{
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         // Remove duplicates based on studentId
         const uniqueStudentsMap = new Map();
         response.data.students.forEach((student: Student) => {
@@ -64,10 +78,7 @@ const TrailManagement = () => {
         console.error('Failed to fetch students:', error);
       }
     };
-  
-    fetchStudents();
-  }, []);
-  
+ 
   
   
   const [searchText, setSearchText] = useState('');

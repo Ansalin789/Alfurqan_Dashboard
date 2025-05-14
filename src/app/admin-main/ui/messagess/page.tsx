@@ -76,20 +76,34 @@ const Message = () => {
   const [messageCount, setMessageCount] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
+  
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
+      const token = localStorage.getItem("AdminAuthToken"); // Fetch token from localStorage
+  
+      if (!token) {
+        alert("No auth token found.");
+        return [];
+      }
+  
       const response = await axios.get<{ users: IUser[] }>(
         "https://api.blackstoneinfomaticstech.com/users",
         {
           params: { role },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
         }
       );
+  
       return response.data.users;
     } catch (err) {
       console.error(`❌ Failed to fetch users for role ${role}:`, err);
       return [];
     }
   };
+  
 
   // Filter users based on search query
   const filteredUsers = (
@@ -109,10 +123,19 @@ const Message = () => {
   };
 
   // Fetch messages from API
+  const token = localStorage.getItem("AdminAuthToken")
   const fetchMessages = async (receiverId: string) => {
     try {
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`,
+          {
+          headers: {
+            "Content-Type": "application/json",
+                          'Authorization': `Bearer ${token}`,
+
+          },
+        }
+        
       );
       const fetchedMessages = data?.data?.[0]?.messages ?? [];
       setMessages(fetchedMessages); // Set messages to state
@@ -206,12 +229,15 @@ const Message = () => {
 
     try {
       // Send the new message to the backend API
+      const token = localStorage.getItem("AdminAuthToken")
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/realtimemessage",
         newMessage,
         {
           headers: {
             "Content-Type": "application/json",
+                          'Authorization': `Bearer ${token}`,
+
           },
         }
       );

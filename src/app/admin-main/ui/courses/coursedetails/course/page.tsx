@@ -50,11 +50,24 @@ const Page = () => {
     const [currentLevelCount, setCurrentLevelCount] = useState<number>(0);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Fetch levels from database
-    const fetchLevels = async () => {
+    useEffect(() => {
+        const token = localStorage.getItem('AdminAuthToken');
+        if (token) {
+            fetchLevels(token); // call your function with token
+        } else {
+          alert("No auth token found.");
+        }
+      }, []);
+    const fetchLevels = async (token: string) => {
         try {
             setIsLoading(true);
-            const response = await fetch(`https://api.blackstoneinfomaticstech.com/courseslevels?courseId=${courseId}`);
+            const response = await fetch(`http://localhost:5001/courseslevels?courseId=${courseId}`, {
+                method: "GET",
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
             if (!response.ok) throw new Error('Failed to fetch course details');
             
             const data = await response.json(); 
@@ -80,13 +93,6 @@ const Page = () => {
         }
     };
     
-
-    useEffect(() => {
-        if (courseTitle) {
-            fetchLevels();
-        }
-    }, [courseTitle]);
-
     const [form, setForm] = useState<CourseData>({
         courseName: courseTitle || '',
         description: '',
@@ -129,7 +135,7 @@ const Page = () => {
         };
 
         try {
-            const res = await fetch(`https://api.blackstoneinfomaticstech.com/courses/${courseId}`, {
+            const res = await fetch(`http://localhost:5001/courses/${courseId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

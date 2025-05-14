@@ -160,13 +160,28 @@ const CountriesCard = () => {
   const [countryData, setCountryData] = useState<CountryStat[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
 
-  useEffect(() => {
-    const fetchData = async () => {
+ useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchData(token);
+      
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);    
+  const fetchData = async (token:string) => {
       try {
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/amountbycountry"
-        );
-        const result = await response.json();
+          "https://api.blackstoneinfomaticstech.com/amountbycountry",
+{
+            method: "GET",
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          });        const result = await response.json();
 
         if (Array.isArray(result) && result.length > 0) {
           // Assuming the expected structure is an array of objects
@@ -185,8 +200,7 @@ const CountriesCard = () => {
       }
     };
 
-    fetchData();
-  }, []);
+
 
   return (
     <div className="bg-white p-5 rounded-xl shadow-md w-full border border-gray-200">
@@ -267,38 +281,52 @@ const CountriesCard = () => {
 const CoursesChart = () => {
   const [barData, setBarData] = useState<ChartDataItem[]>([]);
 
-  useEffect(() => {
-    axios
-      .get("https://api.blackstoneinfomaticstech.com/amountbycourse")
-      .then((response) => {
-        const allCourses = response.data;
+ useEffect(() => {
+  const fetchData = async (token: string) => {
+    try {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/amountbycourse", {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
 
-        const filteredCourses = allCourses.filter((course: any) =>
-          ["Quran Studies", "Islamic Studies", "Arabic Studies"].includes(
-            course.courseName
-          )
-        );
+      const allCourses = response.data;
 
-        const colorMap: Record<string, string> = {
-          "Quran Studies": "#7f9cb6",
-          "Islamic Studies": "#4a90e2",
-          "Arabic Studies": "#001d3d",
-        };
-
-        const chartData: ChartDataItem[] = filteredCourses.map(
-          (course: { courseName: string; revenue: any }) => ({
-            courseName: course.courseName.replace(" Studies", ""), // 💡 Here
-            revenue: course.revenue,
-            color: colorMap[course.courseName] || "#ccc",
-          })
-        );
-
-        setBarData(chartData);
-      })
-      .catch((error) =>
-        console.error("Error fetching course revenue data:", error)
+      const filteredCourses = allCourses.filter((course: any) =>
+        ["Quran Studies", "Islamic Studies", "Arabic Studies"].includes(course.courseName)
       );
-  }, []);
+
+      const colorMap: Record<string, string> = {
+        "Quran Studies": "#7f9cb6",
+        "Islamic Studies": "#4a90e2",
+        "Arabic Studies": "#001d3d",
+      };
+
+      const chartData: ChartDataItem[] = filteredCourses.map(
+        (course: { courseName: string; revenue: any }) => ({
+          courseName: course.courseName.replace(" Studies", ""),
+          revenue: course.revenue,
+          color: colorMap[course.courseName] || "#ccc",
+        })
+      );
+
+      setBarData(chartData);
+    } catch (error) {
+      console.error("Error fetching course revenue data:", error);
+    }
+  };
+
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchData(token);
+    } else {
+      alert("No auth token found.");
+    }
+  }
+}, []);
+
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md w-full border border-gray-200">
@@ -466,65 +494,99 @@ export default function Home() {
     };
   }, [userId]);
   
-  useEffect(() => {
-    axios
-      .get("https://api.blackstoneinfomaticstech.com/amountbycourse")
-      .then((response) => {
-        const allCourses = response.data;
+useEffect(() => {
+  const fetchMeetings = async (token: string) => {
+    try {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/amountbycourse", {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-        // Set total revenue from TotalAllCourses entry
-        const totalCourse = allCourses.find(
-          (course: any) => course.courseName === "TotalAllCourses"
-        );
-        if (totalCourse) setTotalRevenue(totalCourse.revenue);
+      const allCourses = response.data;
 
-        // Prepare data for chart
-        const filteredCourses = allCourses.filter((course: any) =>
-          ["Quran Studies", "Islamic Studies", "Arabic Studies"].includes(
-            course.courseName
-          )
-        );
-
-        const colorMap: Record<string, string> = {
-          "Quran Studies": "#7f9cb6",
-          "Islamic Studies": "#4a90e2",
-          "Arabic Studies": "#001d3d",
-        };
-
-        const chartData: ChartDataItem[] = filteredCourses.map(
-          (course: { courseName: string; revenue: any }) => ({
-            courseName: course.courseName.replace(" Studies", ""),
-            revenue: course.revenue,
-            color: colorMap[course.courseName] || "#ccc",
-          })
-        );
-
-        setBarData(chartData);
-      })
-      .catch((error) =>
-        console.error("Error fetching course revenue data:", error)
+      // Set total revenue from TotalAllCourses entry
+      const totalCourse = allCourses.find(
+        (course: any) => course.courseName === "TotalAllCourses"
       );
-  }, []);
+      if (totalCourse) setTotalRevenue(totalCourse.revenue);
 
-  useEffect(() => {
-    // Fetch data from the API
-    fetch("https://api.blackstoneinfomaticstech.com/studentinvoice")
-      .then((response) => response.json())
-      .then((data: ApiResponse) => {
-        // Filter for Paid invoices and slice the last 3
-        const filteredData = data.invoice
-          .filter((invoice) => invoice.invoiceStatus === "Paid") // Only show Paid invoices
-          .sort(
-            (a, b) =>
-              new Date(b.createdDate).getTime() -
-              new Date(a.createdDate).getTime()
-          ) // Sort by createdDate (newest first)
-          .slice(0, 3); // Get the last 3 invoices
+      // Filter and map for chart
+      const filteredCourses = allCourses.filter((course: any) =>
+        ["Quran Studies", "Islamic Studies", "Arabic Studies"].includes(
+          course.courseName
+        )
+      );
 
-        setData(filteredData); // Set the filtered and sliced data
-      })
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
+      const colorMap: Record<string, string> = {
+        "Quran Studies": "#7f9cb6",
+        "Islamic Studies": "#4a90e2",
+        "Arabic Studies": "#001d3d",
+      };
+
+      const chartData: ChartDataItem[] = filteredCourses.map(
+        (course: { courseName: string; revenue: any }) => ({
+          courseName: course.courseName.replace(" Studies", ""),
+          revenue: course.revenue,
+          color: colorMap[course.courseName] || "#ccc",
+        })
+      );
+
+      setBarData(chartData);
+    } catch (error) {
+      console.error("Error fetching course revenue data:", error);
+    }
+  };
+
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchMeetings(token);
+    } else {
+      alert("No auth token found.");
+    }
+  }
+}, []);
+
+useEffect(() => {
+  const fetchInvoices = async (token: string) => {
+    try {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/studentinvoice", {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data: ApiResponse = await response.json();
+
+      const filteredData = data.invoice
+        .filter((invoice) => invoice.invoiceStatus === "Paid")
+        .sort(
+          (a, b) =>
+            new Date(b.createdDate).getTime() -
+            new Date(a.createdDate).getTime()
+        )
+        .slice(0, 3);
+
+      setData(filteredData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchInvoices(token);
+    } else {
+      alert("No auth token found.");
+    }
+  }
+}, []);
+
 
   type VisitorDataPoint = {
     date: string; // e.g., "2025-04-25"
@@ -550,13 +612,27 @@ export default function Home() {
   const maxRevenue = Math.max(...revenueDatas.map((d) => d.revenue), 0); // Place this before render
 
   useEffect(() => {
-    fetch("https://api.blackstoneinfomaticstech.com/studentvisitor")
-      .then((res) => res.json())
-      .then((data) => {
-        // Log raw API response
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchVisitorData(token);
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+    const fetchVisitorData = async (token: string) => {
+      try {
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/studentvisitor", {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = await res.json();
+  
         console.log("API raw response:", data);
-
-        // Log each field separately
+  
         data.forEach((item: VisitorDataPoint, index: number) => {
           console.log(`Item ${index + 1}:`, item);
           console.log("Date:", item.date);
@@ -566,30 +642,44 @@ export default function Home() {
           console.log("Google:", item.Google);
           console.log("Other:", item.Other);
         });
-
-        // Set formatted data to state
+  
         setVisitorData(data);
-      });
-  }, []);
-
-  // Define the fetchRevenueData function outside of useEffect
-  const fetchRevenueData = async (year: number) => {
-    try {
-      const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/studentrevenue?year=${year}`
-      );
-      const data = await res.json();
-      console.log(`Revenue for ${year}:`, data);
-      setRevenueDatas(data.data); // Update the state with the fetched data
-    } catch (error) {
-      console.error("Error fetching revenue:", error);
-    }
-  };
-
-  // Fetch the data whenever the year changes
-  useEffect(() => {
-    fetchRevenueData(selectedYear);
-  }, [selectedYear]);
+      } catch (error) {
+        console.error("Error fetching visitor data:", error);
+      }
+    };
+  
+    useEffect(() => {
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('AdminAuthToken');
+        if (token) {
+          fetchRevenueData(selectedYear, token); // ✅ pass both year and token
+        } else {
+          alert("No auth token found.");
+        }
+      }
+    }, [selectedYear]); // ✅ fetch whenever year changes
+    
+    const fetchRevenueData = async (year: number, token: string) => {
+      try {
+        const res = await fetch(
+          `https://api.blackstoneinfomaticstech.com/studentrevenue?year=${year}`,
+          {
+            method: "GET",
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await res.json();
+        console.log(`Revenue for ${year}:`, data);
+        setRevenueDatas(data.data);
+      } catch (error) {
+        console.error("Error fetching revenue:", error);
+      }
+    };
+    
 
   return (
     <BaseLayout4>
@@ -786,8 +876,13 @@ export default function Home() {
                 onChange={async (e) => {
                   const year = Number(e.target.value);
                   setSelectedYear(year); // Update selected year
-                  await fetchRevenueData(year); // Fetch new data
-                }}
+                  const token = localStorage.getItem("AdminAuthToken");
+                  if (token) {
+                    await fetchRevenueData(year, token);
+                  } else {
+                    alert("No auth token found.");
+                  }
+                }}              
               >
                 {Array.from({ length: 5 }, (_, i) => {
                   const year = new Date().getFullYear() - i;

@@ -43,30 +43,41 @@ export default function StudentList() {
   const studentId = searchParams.get("studentId");
 
   useEffect(() => {
-    const fetchAndFilterStudent = async () => {
-      try {
-        const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/alstudents"
-        );
-        const allStudents: StudentItem[] = response.data.students;
-
-        // Filter the student by studentId
-        const filteredStudent = allStudents.find(
-          (s) => s._id === studentId
-        );
-
-        setStudent(filteredStudent || null);
-        console.log("Filtered student:", filteredStudent);
-      } catch (error) {
-        console.error("Failed to fetch students:", error);
-      }
-    };
-
+    const token = localStorage.getItem("AdminAuthToken");
+  
+    if (!token) {
+      alert("No auth token found.");
+      return;
+    }
+  
     if (studentId) {
-      fetchAndFilterStudent();
+      fetchAndFilterStudent(token);
     }
   }, [studentId]);
-  // re-run when studentId changes
+  
+  const fetchAndFilterStudent = async (token: string) => {
+    try {
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/alstudents",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const allStudents: StudentItem[] = response.data.students;
+  
+      const filteredStudent = allStudents.find((s) => s._id === studentId);
+  
+      setStudent(filteredStudent || null);
+      console.log("Filtered student:", filteredStudent);
+    } catch (error) {
+      console.error("Failed to fetch students:", error);
+    }
+  };
+  
 
   const [student, setStudent] = useState<StudentItem | null>(null);
 

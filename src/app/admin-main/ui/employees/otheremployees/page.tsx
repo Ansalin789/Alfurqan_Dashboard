@@ -75,27 +75,61 @@ const EmployeePage = () => {
   const searchParams = useSearchParams();  // Get the search params from the URL
   const [wages, setWages] = useState<EmployeeWage[]>([]);
   const fetchEmployee = async (employeeId: string) => {
-    try {
-      const response = await axios.get<Employee>(`https://api.blackstoneinfomaticstech.com/otheremp/${employeeId}`);
-      setEmployee(response.data);
-      setIsFetched(true);  // Mark the data as fetched
-    } catch (error: any) {
-      console.error('Error:', error.response?.data ?? error.message);
-    }
-  };
-  const fetchWages = async (userId :string) => {
-    if (!userId) {
-      console.error('No employee ID in URL.');
+    const token = localStorage.getItem("AdminAuthToken");
+  
+    if (!token) {
+      alert("No auth token found.");
       return;
     }
-
+  
     try {
-      const response = await axios.get<EmployeeWage[]>(`https://api.blackstoneinfomaticstech.com/empwages/${userId}`);
+      const response = await axios.get<Employee>(
+        `http://localhost:5001/otheremp/${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+  
+      setEmployee(response.data);
+      setIsFetched(true); // Mark the data as fetched
+    } catch (error: any) {
+      console.error("Error fetching employee:", error.response?.data ?? error.message);
+    }
+  };
+  
+  const fetchWages = async (userId: string) => {
+    if (!userId) {
+      console.error("No employee ID provided.");
+      return;
+    }
+  
+    const token = localStorage.getItem("AdminAuthToken");
+  
+    if (!token) {
+      alert("No auth token found.");
+      return;
+    }
+  
+    try {
+      const response = await axios.get<EmployeeWage[]>(
+        `http://localhost:5001/empwages/${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+  
       setWages(response.data);
     } catch (error: any) {
-      console.error('Error fetching wages:', error.response?.data ?? error.message);
-    } 
+      console.error("Error fetching wages:", error.response?.data ?? error.message);
+    }
   };
+  
   useEffect(() => {
     // Retrieve employeeId from search params
     const employeeId = searchParams.get('employeeId');

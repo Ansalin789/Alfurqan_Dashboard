@@ -380,72 +380,104 @@ const [formData, setFormData] = useState<OtherEmployeess>({
   status: "Active",
 });
 const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
-  useEffect(() => {
-    axios
-      .get("https://api.blackstoneinfomaticstech.com/teacher/statuscount")
-      .then((response) => {
-        const data = response.data;
-        if (data && data.length > 0) {
-          const count = data[0];
-          const chartData = [
-            { name: "Total", value: count.teacherTotalCount, color: "#012A4A" },
-            { name: "Active", value: count.activeTeacher, color: "#6D5DD3" },
-            { name: "Inactive", value: count.inActiveTeacher, color: "#00CFFF" },
-            { name: "Leave", value: count.leaveOnTeacher, color: "#007BFF" },
-          ];
-          setBarData(chartData);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching teacher status count:", error);
-      });
-      axios
-      .get<GenderResponse>("https://api.blackstoneinfomaticstech.com/teacher/gendercount")
-      .then((response) => {
-        const res = response.data;
+useEffect(() => {
+  const token = localStorage.getItem("AdminAuthToken");
 
-        const chartData: GenderChartData[] = [
-          { name: "Female", value: parseFloat(res.teacherFemalePercentage), color: "#FF82F5" },
-          { name: "Male", value: parseFloat(res.teacherMalePercentage), color: "#00CFFF" },
+  if (!token) {
+    alert("No auth token found.");
+    return; // exit if no token is found
+  }
+
+  // Fetch teacher status count
+  axios
+    .get("http://localhost:5001/teacher/statuscount", {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+    .then((response) => {
+      const data = response.data;
+      if (data && data.length > 0) {
+        const count = data[0];
+        const chartData = [
+          { name: "Total", value: count.teacherTotalCount, color: "#012A4A" },
+          { name: "Active", value: count.activeTeacher, color: "#6D5DD3" },
+          { name: "Inactive", value: count.inActiveTeacher, color: "#00CFFF" },
+          { name: "Leave", value: count.leaveOnTeacher, color: "#007BFF" },
         ];
+        setBarData(chartData);
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching teacher status count:", error);
+    });
 
-        setGenderData(chartData);
-      })
-      .catch((error) => {
-        console.error("Error fetching gender count:", error);
+  // Fetch teacher gender count
+  axios
+    .get<GenderResponse>("http://localhost:5001/teacher/gendercount", {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+    .then((response) => {
+      const res = response.data;
+      const chartData: GenderChartData[] = [
+        { name: "Female", value: parseFloat(res.teacherFemalePercentage), color: "#FF82F5" },
+        { name: "Male", value: parseFloat(res.teacherMalePercentage), color: "#00CFFF" },
+      ];
+      setGenderData(chartData);
+    })
+    .catch((error) => {
+      console.error("Error fetching gender count:", error);
+    });
+
+  // Fetch student count by country
+  axios
+    .get("http://localhost:5001/applicants/countriescount", {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+    .then((res) => {
+      setCountryData(res.data.studentCountByCountry);
+    })
+    .catch((err) => console.error("Failed to fetch country stats", err));
+
+  // Fetch teachers list
+  const fetchTeachers = async () => {
+    try {
+      const res = await axios.get("http://localhost:5001/users?role=TEACHER", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
       });
-      axios
-      .get("https://api.blackstoneinfomaticstech.com/applicants/countriescount")
-      .then((res) => {
-        setCountryData(res.data.studentCountByCountry);
-      })
-      .catch((err) => console.error("Failed to fetch country stats", err));
-      const fetchTeachers = async () => {
-        try {
-          const res = await axios.get("https://api.blackstoneinfomaticstech.com/users?role=TEACHER");
-          const teacherData: Teacher[] = res.data.users.map((user: any) => ({
-            _id: user._id,
-            userId: user.userId,
-            userName: user.userName,
-            email: user.email,
-            profileImage: user.profileImage ?? "/assets/images/proff.jpg",
-            level: "Junior", // mock default or pull from another source
-            subject: "General", // same here
-            rating: 1.0, // optionally calculate or default
-            gender: user.gender,
-          }));
-          setTeachers(teacherData);
-        } catch (error) {
-          console.error("Error fetching teachers:", error);
-        }
-      };
-  
-      fetchTeachers();
-      const fetchDataemp = async () => {
-        try {
-          const res = await fetch("https://api.blackstoneinfomaticstech.com/otherempcount");
-      const json: OtherEmpCountResponse = await res.json();
+      const teacherData: Teacher[] = res.data.users.map((user: any) => ({
+        _id: user._id,
+        userId: user.userId,
+        userName: user.userName,
+        email: user.email,
+        profileImage: user.profileImage ?? "/assets/images/proff.jpg",
+        level: "Junior", // mock default or pull from another source
+        subject: "General", // same here
+        rating: 1.0, // optionally calculate or default
+        gender: user.gender,
+      }));
+      setTeachers(teacherData);
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+    }
+  };
+  fetchTeachers();
 
+  // Fetch other employee count data
+  const fetchDataemp = async () => {
+    try {
+      const res = await fetch("http://localhost:5001/otherempcount", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      const json: OtherEmpCountResponse = await res.json();
       const transformed = json.otherEmpCount.map((entry) => {
         const role = entry.country[0];
         return {
@@ -454,60 +486,89 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
           color: ROLE_COLORS[role] || "#999999",
         };
       });
-
       setChartData(transformed);
-        } catch (error) {
-          console.error("Error fetching role data", error);
-        }
-      };
-  
-      fetchDataemp();
-      const fetchGenderData = async () => {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/otheremp/gendercount");
-        const json: GenderCountResponse = await res.json();
-  
-        const data = [
-          {
-            name: "Female",
-            value: parseFloat(json.employeeFemalePercentage),
-            color: COLORS.Female,
-          },
-          {
-            name: "Male",
-            value: parseFloat(json.employeeMalePercentage),
-            color: COLORS.Male,
-          },
-        ];
-  
-        setEmpData(data);
-      };
-  
-      fetchGenderData();
-      const fetchEmployees = async () => {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/otheremployees");
-        const data: OtherEmployeesResponse = await res.json();
-        setEmployees(data.users);
-        console.log(data.users);
-      };
-  
-      fetchEmployees();
-      const fetchCounts = async () => {
-        try {
-          const response = await axios.get<DashboardCounts>("https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts");
-          setCounts(response.data);
-        } catch (error) {
-          console.error("Error fetching dashboard counts:", error);
-        }
-      };
-      axios
-      .get("https://api.blackstoneinfomaticstech.com/otheremp/countriescount")
-      .then((res) => {
-        setCountryDataemp(res.data.otherEmpCountByCountry);
-      })
-      .catch((err) => console.error("Failed to fetch country stats", err));
-  
-      fetchCounts();
-  }, []);
+    } catch (error) {
+      console.error("Error fetching role data", error);
+    }
+  };
+  fetchDataemp();
+
+  // Fetch gender data for employees
+  const fetchGenderData = async () => {
+    try {
+      const res = await fetch("http://localhost:5001/otheremp/gendercount", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      const json: GenderCountResponse = await res.json();
+      const data = [
+        {
+          name: "Female",
+          value: parseFloat(json.employeeFemalePercentage),
+          color: COLORS.Female,
+        },
+        {
+          name: "Male",
+          value: parseFloat(json.employeeMalePercentage),
+          color: COLORS.Male,
+        },
+      ];
+      setEmpData(data);
+    } catch (error) {
+      console.error("Error fetching gender data:", error);
+    }
+  };
+  fetchGenderData();
+
+  // Fetch employees list
+  const fetchEmployees = async () => {
+    try {
+      const res = await fetch("http://localhost:5001/otheremployees", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      const data: OtherEmployeesResponse = await res.json();
+      setEmployees(data.users);
+      console.log(data.users);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
+  };
+  fetchEmployees();
+
+  // Fetch supervisor dashboard counts
+  const fetchCounts = async () => {
+    try {
+      const response = await axios.get<DashboardCounts>("http://localhost:5001/dashboard/supervisor/counts", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      setCounts(response.data);
+    } catch (error) {
+      console.error("Error fetching dashboard counts:", error);
+    }
+  };
+  fetchCounts();
+
+  // Fetch other employee count by country
+  axios
+    .get("http://localhost:5001/otheremp/countriescount", {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+    .then((res) => {
+      setCountryDataemp(res.data.otherEmpCountByCountry);
+    })
+    .catch((err) => console.error("Failed to fetch country stats", err));
+
+}, []); // Empty dependency array means this effect runs once on component mount
+
+
+
   const handleViewTeacher = (teacherId: string) => {
     if (!teacherId) {
       console.error("Teacher ID is undefined.");
@@ -623,7 +684,7 @@ const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
         form.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
       }
 
-      await axios.post("https://api.blackstoneinfomaticstech.com/otheremployee", form, {
+      await axios.post("http://localhost:5001/otheremployee", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

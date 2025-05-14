@@ -82,15 +82,32 @@ const  ApplicantsList: React.FC = () => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const tabs = ["All", "NewApplication", "Shortlisted", "Rejected", "Waiting"];
-   useEffect(() => {
-    axios.get('https://api.blackstoneinfomaticstech.com/applicants')
-      .then((res) => {
-        setApplicants(res.data.applicants); 
-      })
-      .catch((err) => {
-        console.error('Error fetching applicants:', err);
-      });
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchApplicants(token);
+      } else {
+        alert("No auth token found.");
+      }
+    }
   }, []);
+  
+  const fetchApplicants = async (token: string) => {
+    try {
+      const response = await axios.get('http://localhost:5001/applicants', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+      });
+  
+      setApplicants(response.data.applicants);
+    } catch (error) {
+      console.error('Error fetching applicants:', error);
+    }
+  };
+  
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {

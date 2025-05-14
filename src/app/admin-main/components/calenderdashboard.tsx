@@ -45,35 +45,55 @@ const Academic: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [value, setValue] = useState<Date>(new Date());
 
-  useEffect(() => {
-    const fetchMeetings = async () => {
-      try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting");
-        const data: MeetingsResponse = await response.json();
 
+
+    useEffect(() => {
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('AdminAuthToken');
+        if (token) {
+          fetchMeetings(token); // pass token into the function
+        } else {
+          alert("No auth token found.");
+        }
+      }
+    }, []);
+
+    const fetchMeetings = async (token: string) => {
+  
+      try {
+          const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
+            method: "GET",
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+  
+        const data: MeetingsResponse = await response.json();
+  
         const mappedEvents: Event[] = data.data.meetings.map((item) => {
           const start = new Date(item.selectedDate);
           start.setHours(Number(item.startTime.split(":")[0]), Number(item.startTime.split(":")[1]));
-
+  
           const end = new Date(item.selectedDate);
           end.setHours(Number(item.endTime.split(":")[0]), Number(item.endTime.split(":")[1]));
-
+  
           return {
             title: item.meetingName,
             start,
             end,
           };
         });
-
+  
         setEvents(mappedEvents);
         console.log("Fetched Events: ", mappedEvents);
       } catch (error) {
         console.error("Failed to fetch meetings", error);
       }
     };
-
-    fetchMeetings();
-  }, []);
+  
+    
+  
 
   useEffect(() => {
     const styleSheet = document.createElement("style");
