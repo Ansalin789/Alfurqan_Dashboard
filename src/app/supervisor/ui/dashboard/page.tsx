@@ -242,8 +242,11 @@ export default function Dashboard() {
     console.error("❌ SupervisorAuthToken not found");
     return;
   } 
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
-          headers: { "Content-Type": "application/json" },
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", 
+          {
+          headers: { "Content-Type": "application/json" , 'Authorization': `Bearer ${token}`,},
+              
+           
         });
 
         const allMeetings: Meeting[] = response.data.data.meetings;
@@ -299,7 +302,21 @@ export default function Dashboard() {
   const currentYear = today.getFullYear();
   const fetchApplicantsData = async (auth: string) => {
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/applicants");
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
+    
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/applicants",{
+        headers:{
+          "Content-Type": "application/json" , 
+          'Authorization': `Bearer ${token}`,
+        }
+        
+      });
 
       console.log("API Response:", response.data);
 

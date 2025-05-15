@@ -83,10 +83,20 @@ const Message = () => {
   }
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+  } 
       const response = await axios.get<{ users: IUser[] }>(
         "https://api.blackstoneinfomaticstech.com/users",
         {
           params: { role },
+           headers:{
+              "Content-Type":"application/json",
+              "Authorization":`Bearer ${token}`
+            }
         }
       );
       return response.data.users;
@@ -116,8 +126,20 @@ const Message = () => {
   // Fetch messages from API
   const fetchMessages = async (receiverId: string) => {
     try {
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`,{
+           headers:{
+              "Content-Type":"application/json",
+              "Authorization":`Bearer ${token}`
+            }
+        }
       );
       const fetchedMessages = data?.data?.[0]?.messages ?? [];
       setMessages(fetchedMessages); // Set messages to state
