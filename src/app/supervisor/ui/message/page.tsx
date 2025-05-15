@@ -210,6 +210,13 @@ const Message = () => {
     };
 
     try {
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
       // Send the new message to the backend API
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/realtimemessage",
@@ -217,6 +224,9 @@ const Message = () => {
         {
           headers: {
             "Content-Type": "application/json",
+      "Authorization":`Bearer ${token}`,
+        
+      
           },
         }
       );

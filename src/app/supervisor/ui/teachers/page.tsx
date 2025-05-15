@@ -41,8 +41,21 @@ const ManageTeacher: React.FC = () => {
     useEffect(() => {
       const fetchTeachers = async () => {
         try {
-            
-            const response = await fetch(`https://api.blackstoneinfomaticstech.com/users?role=TEACHER`);
+              const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
+            const response = await fetch(`https://api.blackstoneinfomaticstech.com/users?role=TEACHER`,
+              {
+                headers:{
+                  "Authorization":`Bearer ${token}`,
+                  "Content-Type":"appliation/json"    
+                 }
+                    }
+            );
           const data = await response.json();
   
           console.log('Fetched data:', data);
@@ -104,11 +117,18 @@ const ManageTeacher: React.FC = () => {
   const handleSave = async() => {
     console.log('New Teacher Data:', newTeacher);
    try{
-    
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
     const response = await fetch(`https://api.blackstoneinfomaticstech.com/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        "Authorization":`Bearer ${token}`,
         
       },
       body: JSON.stringify(newTeacher),

@@ -148,9 +148,22 @@ export default function ApplicantsPage() {
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
   useEffect(() => {
-   
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
     axios
-      .get("https://api.blackstoneinfomaticstech.com/applicants")
+      .get("https://api.blackstoneinfomaticstech.com/applicants",
+        {
+          headers:{
+            "Authorization":`Bearer ${token}`, 
+            "Content-Type":"application/json"        
+           }
+        }
+      )
       .then((response) => setApplicants(response.data.applicants))
       .catch((error) => console.error("Error fetching applicants:", error));
   }, []);
@@ -191,12 +204,20 @@ export default function ApplicantsPage() {
     if (openMenuId !== _id) {
       
       try {
+          const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
         const response = await axios.get<ApiResponse>(
           `https://api.blackstoneinfomaticstech.com/applicants/${_id}`,
           {
             headers: {
              
               "Content-Type": "application/json",
+              "Authorization":`Bearer ${token}`
             },
           }
         );
@@ -271,11 +292,20 @@ export default function ApplicantsPage() {
     }
 
     try {
+        const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/recruit",
         formData,
         {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "multipart/form-data" ,
+            "Authorization":`Bearer ${token}`
+          },
         }
       );
 
@@ -331,9 +361,21 @@ export default function ApplicantsPage() {
     };
     console.log(updateData);
     try {
+        const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
       const response = await axios.put(
         `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
-        updateData
+        updateData,
+        {headers:{
+          "Authorization":`Bearer ${token}`,
+          "Content-Type":"application/json",
+        }
+        }
       );
       console.log("Update successful:", response.data);
     } catch (error) {

@@ -65,18 +65,18 @@ function LiveClass() {
     const fetchClassData = async () => {
       try {
        
-        const authToken = localStorage.getItem('SupervisorAuthToken');
-        
-        // Ensure studentId and authToken are valid
-        if (!authToken) {
-          console.log('Missing studentId or authToken');
-          return;
-        }
-  
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
         const response = await axios.get<ClassData>(`https://alfurqanacademy.tech/classShedule/${classScheduleid}`, {
           
           headers: {
-            'Authorization': `Bearer ${authToken}`
+            'Authorization': `Bearer ${token}`,
+            "Content-Type":"application/json",
           }
         });
         console.log('Full API Response:', response.data);  // ✅ Log full response
@@ -134,9 +134,17 @@ function LiveClass() {
       };
        console.log(feedbackData);
       try {
+           const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  } 
         const response = await axios.post("https://alfurqanacademy.tech/supervisorfeedback", feedbackData, {
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
           },
         });
   

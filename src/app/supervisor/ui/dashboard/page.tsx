@@ -104,20 +104,37 @@ export default function Dashboard() {
 
   useEffect(() => {
     setMounted(true);
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
 
-    const auth = localStorage.getItem("SupervisorAuthToken");
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  }
     const fetchData = async () => {
-      const applicants = await fetchApplicantsData(auth ?? " ");
+   
+      const applicants = await fetchApplicantsData(token ?? " ");
       console.log("Fetched Applicants:", applicants); // ✅ Debugging
       const filteredData = processApplicants(applicants);
       console.log("Filtered Pie Data:", filteredData); // ✅ Debugging
       setPieData(filteredData);
     };
 
-    const fetchApplicants = axios.get("https://api.blackstoneinfomaticstech.com/applicants");
+    const fetchApplicants = axios.get("https://api.blackstoneinfomaticstech.com/applicants",
+      {
+         headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
+      }
+    );
 
     const fetchDashboardCounts = axios.get(
-      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts"
+      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+      {
+         headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
+      }
     );
 
     Promise.all([fetchApplicants, fetchDashboardCounts])
@@ -218,6 +235,13 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
+        const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
         const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
           headers: { "Content-Type": "application/json" },
         });

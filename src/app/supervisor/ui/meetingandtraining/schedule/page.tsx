@@ -149,7 +149,21 @@ const Schedules: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings");
+          const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings",
+          {
+            headers:{
+              "Content-Type":"application/json",
+              "Authorization":`Bearer ${token}`
+            }
+          }
+        );
 
         const meetings = response.data?.data?.meetings;
 
