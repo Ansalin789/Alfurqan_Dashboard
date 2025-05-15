@@ -18,11 +18,19 @@ const Page = () => {
     const fetchClassHours = async () => {
       try {
         const studentId = localStorage.getItem("StudentPortalId");
-       
+        const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }  
 
         const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule/totalhours", {
           params: { studentId },
-         
+         headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
         });
 
         const { pendingPercentage, completedPercentage, totalHours } = response.data;

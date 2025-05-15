@@ -82,10 +82,19 @@ const Message = () => {
   }
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+  }  
       const response = await axios.get<{ users: IUser[] }>(
         "https://api.blackstoneinfomaticstech.com/users",
         {
           params: { role },
+            headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
         }
       );
       return response.data.users;
@@ -115,8 +124,20 @@ const Message = () => {
   // Fetch messages from API
   const fetchMessages = async (receiverId: string) => {
     try {
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }  
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`,
+        {
+          headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
+        }
       );
       const fetchedMessages = data?.data?.[0]?.messages ?? [];
 
@@ -149,6 +170,7 @@ const Message = () => {
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
+        
       });
 
       socketRef.current.on("connect", () => {
@@ -215,13 +237,19 @@ const Message = () => {
     };
 
     try {
-      // Send the new message to the backend API
-      const response = await axios.post(
+   const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }        const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/realtimemessage",
         newMessage,
         {
           headers: {
             "Content-Type": "application/json",
+            "Authorization":`Bearer ${token}`
           },
         }
       );

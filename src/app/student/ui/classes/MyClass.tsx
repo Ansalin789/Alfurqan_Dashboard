@@ -93,8 +93,13 @@ const NextClass = () => {
     const fetchClassData = async () => {
       try {
         const studentId = localStorage.getItem('StudentPortalId');
-        const authToken = localStorage.getItem('StudentAuthToken');
-        if (!studentId || !authToken) {
+ const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }          if (!studentId || !token) {
           console.log('Missing studentId or authToken');
           return;
         }
@@ -103,7 +108,9 @@ const NextClass = () => {
           `https://api.blackstoneinfomaticstech.com/classShedule/students`,
           {
             params: { studentId },
-          
+          headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
           }
         );
         setClassData(filterUpcomingClass(response.data));

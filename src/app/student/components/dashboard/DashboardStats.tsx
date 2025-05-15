@@ -16,9 +16,19 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+              const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }
         const studentId = localStorage.getItem('StudentPortalId');
         const response = await axios.get('https://api.blackstoneinfomaticstech.com/dashboard/student/counts', {
           params: { studentId },
+           headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
         });
         setData(response.data); // Set the fetched data into the state
       } catch (error) {

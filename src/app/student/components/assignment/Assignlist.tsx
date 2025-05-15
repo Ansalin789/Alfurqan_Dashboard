@@ -34,11 +34,17 @@ function  AssignList(){
       const storedStudentId = localStorage.getItem('StudentPortalId');
       
       try {
+              const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }
         const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAssignment", {
-          headers: {
-            
-            "Content-Type": "application/json",
-          },
+           headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
         });
 
         const filteredAssignments = response.data.assignments.filter(

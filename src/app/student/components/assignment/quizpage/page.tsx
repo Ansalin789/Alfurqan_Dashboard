@@ -74,7 +74,20 @@ const QuizPage = () => {
   useEffect(() => {
     const fetchAssignment = async () => {
       try {
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/allAssignment`);
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }
+        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/allAssignment`,
+          {
+              headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
+          }
+        );
         // Use find() instead of filter() to get single assignment
         const assignmentData = response.data.assignments.find(
           (assignment: Assignment) => assignment._id === assignmentId
@@ -232,8 +245,17 @@ if (assignment) {
   }
 
   try {
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }  
    const response= await axios.put(`https://api.blackstoneinfomaticstech.com/assignments/${assignmentId}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data',
+        "Authorization":`Bearer ${token}`
+       }
     });
    
     // Redirect after successful submission
