@@ -43,7 +43,7 @@ const EmployeeCards: React.FC = () => {
       if (token) {
         fetchTeachers(token); // pass token into the function
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }
   }, []);
@@ -53,7 +53,7 @@ const EmployeeCards: React.FC = () => {
       try {
         
         const response = await fetch(
-          `http://localhost:5001/users?role=TEACHER`,{
+          `https://api.blackstoneinfomaticstech.com/users?role=TEACHER`,{
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -118,11 +118,18 @@ const EmployeeCards: React.FC = () => {
   const handleSave = async () => {
     console.log("New Teacher Data:", newTeacher);
     try {
-      
-      const response = await fetch(`http://localhost:5001/users`, {
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+         'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(newTeacher),
       });

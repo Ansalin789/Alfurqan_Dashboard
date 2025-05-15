@@ -43,12 +43,14 @@ export default function StudentList() {
   const studentId = searchParams.get("studentId");
 
   useEffect(() => {
-    const token = localStorage.getItem("AdminAuthToken");
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
   
-    if (!token) {
-      alert("No auth token found.");
-      return;
-    }
   
     if (studentId) {
       fetchAndFilterStudent(token);

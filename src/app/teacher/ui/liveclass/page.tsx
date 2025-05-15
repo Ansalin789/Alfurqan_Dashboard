@@ -227,7 +227,7 @@ function LiveClass() {
     console.log(payload);
     try {
       const response = await axios.put(
-        `http://localhost:5001/classShedule/${classData._id}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/${classData._id}`,
         payload
       );
       console.log("Class schedule updated:", response.data);

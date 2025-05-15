@@ -381,16 +381,17 @@ const [formData, setFormData] = useState<OtherEmployeess>({
 });
 const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
 useEffect(() => {
-  const token = localStorage.getItem("AdminAuthToken");
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
   if (!token) {
-    alert("No auth token found.");
-    return; // exit if no token is found
+    console.error("❌ AdminAuthToken not found");
+    return;
   }
 
   // Fetch teacher status count
   axios
-    .get("http://localhost:5001/teacher/statuscount", {
+    .get("https://api.blackstoneinfomaticstech.com/teacher/statuscount", {
       headers: {
         "Authorization": `Bearer ${token}`,
       },
@@ -414,7 +415,7 @@ useEffect(() => {
 
   // Fetch teacher gender count
   axios
-    .get<GenderResponse>("http://localhost:5001/teacher/gendercount", {
+    .get<GenderResponse>("https://api.blackstoneinfomaticstech.com/teacher/gendercount", {
       headers: {
         "Authorization": `Bearer ${token}`,
       },
@@ -433,7 +434,7 @@ useEffect(() => {
 
   // Fetch student count by country
   axios
-    .get("http://localhost:5001/applicants/countriescount", {
+    .get("https://api.blackstoneinfomaticstech.com/applicants/countriescount", {
       headers: {
         "Authorization": `Bearer ${token}`,
       },
@@ -446,7 +447,7 @@ useEffect(() => {
   // Fetch teachers list
   const fetchTeachers = async () => {
     try {
-      const res = await axios.get("http://localhost:5001/users?role=TEACHER", {
+      const res = await axios.get("https://api.blackstoneinfomaticstech.com/users?role=TEACHER", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -472,7 +473,7 @@ useEffect(() => {
   // Fetch other employee count data
   const fetchDataemp = async () => {
     try {
-      const res = await fetch("http://localhost:5001/otherempcount", {
+      const res = await fetch("https://api.blackstoneinfomaticstech.com/otherempcount", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -496,7 +497,7 @@ useEffect(() => {
   // Fetch gender data for employees
   const fetchGenderData = async () => {
     try {
-      const res = await fetch("http://localhost:5001/otheremp/gendercount", {
+      const res = await fetch("https://api.blackstoneinfomaticstech.com/otheremp/gendercount", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -524,7 +525,7 @@ useEffect(() => {
   // Fetch employees list
   const fetchEmployees = async () => {
     try {
-      const res = await fetch("http://localhost:5001/otheremployees", {
+      const res = await fetch("https://api.blackstoneinfomaticstech.com/otheremployees", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -541,7 +542,7 @@ useEffect(() => {
   // Fetch supervisor dashboard counts
   const fetchCounts = async () => {
     try {
-      const response = await axios.get<DashboardCounts>("http://localhost:5001/dashboard/supervisor/counts", {
+      const response = await axios.get<DashboardCounts>("https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -555,7 +556,7 @@ useEffect(() => {
 
   // Fetch other employee count by country
   axios
-    .get("http://localhost:5001/otheremp/countriescount", {
+    .get("https://api.blackstoneinfomaticstech.com/otheremp/countriescount", {
       headers: {
         "Authorization": `Bearer ${token}`,
       },
@@ -683,9 +684,17 @@ useEffect(() => {
         const value = (formData as any)[key];
         form.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
       }
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
-      await axios.post("http://localhost:5001/otheremployee", form, {
-        headers: { "Content-Type": "multipart/form-data" },
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+      await axios.post("https://api.blackstoneinfomaticstech.com/otheremployee", form, {
+        headers: { "Content-Type": "multipart/form-data" ,
+          "Authorization" :`Bearer ${token}`
+         },
       });
 
       alert("Employee added successfully!");

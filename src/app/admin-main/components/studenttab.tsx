@@ -149,7 +149,7 @@ useEffect(() => {
     if (token) {
       fetchStudentDetails(token, studentId);
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }
 }, [studentId]);
@@ -157,7 +157,7 @@ useEffect(() => {
 const fetchStudentDetails = async (token: string, studentId: string) => {
   try {
     const response = await axios.get<StudentResponse>(
-      `http://localhost:5001/alstudents/${studentId}`,
+      `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -190,7 +190,7 @@ useEffect(() => {
     if (token) {
       fetchStudentInvoice(token, studentId);
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }
 }, [studentId]);
@@ -198,7 +198,7 @@ useEffect(() => {
 const fetchStudentInvoice = async (token: string, studentId: string) => {
   try {
     const response = await axios.get(
-      `http://localhost:5001/studentinvoice/${studentId}`,
+      `https://api.blackstoneinfomaticstech.com/studentinvoice/${studentId}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -244,7 +244,7 @@ const fetchStudentInvoice = async (token: string, studentId: string) => {
       if (token) {
         fetchClassSchedule(token, studentId);
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }
   }, [studentId]);
@@ -252,7 +252,7 @@ const fetchStudentInvoice = async (token: string, studentId: string) => {
   const fetchClassSchedule = async (token: string, studentId: string) => {
     try {
       const res = await fetch(
-        `http://localhost:5001/classShedule/students?studentId=${studentId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -281,7 +281,7 @@ const fetchStudentInvoice = async (token: string, studentId: string) => {
       if (token) {
         fetchStatsData(token, studentId);
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
         setLoading(false);
       }
     }
@@ -290,7 +290,7 @@ const fetchStudentInvoice = async (token: string, studentId: string) => {
   const fetchStatsData = async (token: string, studentId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:5001/classShedule/studentsclasscount?studentId=${studentId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/studentsclasscount?studentId=${studentId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,

@@ -51,14 +51,14 @@ const StudentsRecord = () => {
         fetchGenderData(token);
         fetchCountryStats(token);
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }
   }, []);
   
   const fetchStudentCounts = async (token: string) => {
     try {
-      const response = await axios.get("http://localhost:5001/alstudents/studentsrecordcount", {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/alstudents/studentsrecordcount", {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -81,7 +81,7 @@ const StudentsRecord = () => {
   const fetchGenderData = async (token: string) => {
     try {
       const response = await axios.get<GenderResponse>(
-        "http://localhost:5001/alstudents/studentsGender",
+        "https://api.blackstoneinfomaticstech.com/alstudents/studentsGender",
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -101,7 +101,7 @@ const StudentsRecord = () => {
   
   const fetchCountryStats = async (token: string) => {
     try {
-      const response = await axios.get("http://localhost:5001/alstudents/studentscountrycount", {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/alstudents/studentscountrycount", {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

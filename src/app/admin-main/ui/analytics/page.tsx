@@ -322,7 +322,7 @@ const CoursesChart = () => {
     if (token) {
       fetchData(token);
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }
 }, []);

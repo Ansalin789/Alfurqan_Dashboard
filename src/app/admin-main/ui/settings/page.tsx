@@ -61,7 +61,7 @@ useEffect(() => {
       if (token) {
         fetchOtherEmployees(token); // pass token into the function
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }
   }, []);      

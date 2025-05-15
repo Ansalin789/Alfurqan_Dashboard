@@ -98,11 +98,17 @@ const Trailclasslist = () => {
   const itemsPerPage = 11;
 
   useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       getAllUsers(token); // Or call the function that performs the GET request
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }, []);
   const getAllUsers = async (token: string) => {

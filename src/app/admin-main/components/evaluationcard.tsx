@@ -61,7 +61,7 @@ const TotalRequestChart = () => {
         if (token) {
           fetchData(token); // pass token into the function
         } else {
-          alert("No auth token found.");
+          console.log("No auth token found.");
         }
       }
     }, []);
@@ -157,7 +157,7 @@ const CountriesCard = () => {
          if (token) {
            fetchData(token); // pass token into the function
          } else {
-           alert("No auth token found.");
+           console.log("No auth token found.");
          }
        }
      }, []);
@@ -265,7 +265,7 @@ const PreferredTeachersCard = () => {
          if (token) {
            fetchData(token); // pass token into the function
          } else {
-           alert("No auth token found.");
+           console.log("No auth token found.");
          }
        }
      }, []);    
@@ -393,7 +393,7 @@ const CoursesChart = () => {
          if (token) {
            fetchCourseData(token); // pass token into the function
          } else {
-           alert("No auth token found.");
+           console.log("No auth token found.");
          }
        }
      }, []);    

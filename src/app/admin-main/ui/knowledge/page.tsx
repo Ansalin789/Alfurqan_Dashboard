@@ -80,16 +80,22 @@ export default function KnowledgeBase() {
   const [knowledgeBaseList, setKnowledgeBaseList] = useState<ProcessedKnowledgeBaseItem[]>([]);
 
   useEffect(() => {
-  const token = localStorage.getItem('AdminAuthToken');
+   const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
   if (token) {
     fetchKnowledgeBaseList(token); // Or call the function that performs the GET request
   } else {
-    alert("No auth token found.");
+    console.log("No auth token found.");
   }
 }, []);
 const fetchKnowledgeBaseList = async (token: string) => {
   try {
-    const response = await fetch('http://localhost:5001/knowledgebase/list',
+    const response = await fetch('https://api.blackstoneinfomaticstech.com/knowledgebase/list',
       {
         method: "GET",
         headers: {
@@ -164,11 +170,18 @@ const videoFiles = knowledgeBaseList.filter(
   
     try {
       console.log('Sending API request...');
-  
-      const response = await fetch('http://localhost:5001/knowledgebase', {
+   const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+      const response = await fetch('https://api.blackstoneinfomaticstech.com/knowledgebase', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+            "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(knowledgeBaseData),
       });

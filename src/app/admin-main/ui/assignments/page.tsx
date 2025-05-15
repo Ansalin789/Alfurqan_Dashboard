@@ -125,17 +125,23 @@ const AssignmentsPage = () => {
     });
     
     useEffect(() => {
-      const token = localStorage.getItem('AdminAuthToken');
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       if (token) {
         submitAssignment(token); // call your function with token
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }, []);
        
     const submitAssignment = async (token: string) => {
         try {
-          const response = await fetch("http://localhost:5001/assignments", {
+          const response = await fetch("https://api.blackstoneinfomaticstech.com/assignments", {
             method: "POST",
             headers: {
               'Content-Type': 'application/json',

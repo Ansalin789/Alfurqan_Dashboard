@@ -49,17 +49,23 @@ const [filters, setFilters] = useState({
 
 
 useEffect(() => {
-  const token = localStorage.getItem('AdminAuthToken');
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
   if (token) {
     fetchInvoice(token); // Or call the function that performs the GET request
   } else {
-    alert("No auth token found.");
+    console.log("No auth token found.");
   }
 }, []);
 
 const fetchInvoice = (token: string) => {
   axios
-    .get("http://localhost:5001/studentinvoice/list", {
+    .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list", {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,

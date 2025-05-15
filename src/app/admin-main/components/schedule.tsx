@@ -1,3 +1,5 @@
+'use client';
+
 import { Card } from "@nextui-org/react";
 import { useState, useEffect } from "react";
 import {
@@ -99,14 +101,14 @@ export default function DashboardClasses() {
       if (token) {
         fetchClassData(token); // pass token into the function
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }
   }, []);
     const fetchClassData = async (token: string) => {
       try {
         const response = await fetch(
-          "http://localhost:5001/classShedule/totalclasses?dateRange=last8months",{
+          "https://api.blackstoneinfomaticstech.com/classShedule/totalclasses?dateRange=last8months",{
             method: "GET",
             headers: {
               'Content-Type': 'application/json',
@@ -133,8 +135,20 @@ export default function DashboardClasses() {
   useEffect(() => {
     const fetchClassStatus = async () => {
       try {
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         const response = await fetch(
-          "http://localhost:5001/classShedule/classstatuscount"
+          "https://api.blackstoneinfomaticstech.com/classShedule/classstatuscount",{
+            headers:{
+               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            }
+          }
         );
         const data: ClassStatusData = await response.json();
 
@@ -170,21 +184,41 @@ export default function DashboardClasses() {
     fetchClassStatus();
   }, []);
 
-  useEffect(() => {
-    fetch("http://localhost:5001/classShedule/classwisecount")
-      .then((res) => res.json())
-      .then((data: ClassWiseCountResponse) => {
-        const regular = data.classschedule?.[0]?.totalRegularClassCount || 0;
-        const trial = data.evaluationStats?.[0]?.totalTrialClassCount || 0;
-        const totalCount = regular + trial;
+ useEffect(() => {
+  const fetchClassWiseCount = async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('AdminAuthToken') : null;
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
 
-        setPieData([
-          { name: "Regular", value: regular, color: "#29CDFF" },
-          { name: "Trial", value: trial, color: "#993AFF" },
-        ]);
-        setTotal(totalCount);
+    try {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/classShedule/classwisecount", {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
       });
-  }, []);
+
+      const data: ClassWiseCountResponse = await response.json();
+      const regular = data.classschedule?.[0]?.totalRegularClassCount || 0;
+      const trial = data.evaluationStats?.[0]?.totalTrialClassCount || 0;
+      const totalCount = regular + trial;
+
+      setPieData([
+        { name: "Regular", value: regular, color: "#29CDFF" },
+        { name: "Trial", value: trial, color: "#993AFF" },
+      ]);
+      setTotal(totalCount);
+    } catch (error) {
+      console.error("❌ Error fetching class wise count:", error);
+    }
+  };
+
+  fetchClassWiseCount();
+}, []);
+
   
 
   const maxValue = Math.max(...barData.map((item) => item.value), 100); // fallback for empty data

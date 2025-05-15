@@ -79,12 +79,12 @@ const Message = () => {
   
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
-      const token = localStorage.getItem("AdminAuthToken"); // Fetch token from localStorage
-  
-      if (!token) {
-        alert("No auth token found.");
-        return [];
-      }
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+  }
   
       const response = await axios.get<{ users: IUser[] }>(
         "https://api.blackstoneinfomaticstech.com/users",
@@ -123,9 +123,16 @@ const Message = () => {
   };
 
   // Fetch messages from API
-  const token = localStorage.getItem("AdminAuthToken")
+ 
   const fetchMessages = async (receiverId: string) => {
     try {
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const { data } = await axios.get<IMessageResponse>(
         `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`,
           {
@@ -229,7 +236,13 @@ const Message = () => {
 
     try {
       // Send the new message to the backend API
-      const token = localStorage.getItem("AdminAuthToken")
+   const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/realtimemessage",
         newMessage,

@@ -65,11 +65,17 @@ const Page = () => {
 
 
   useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       fetchCourses(token); // call your function with token
     } else {
-      alert("No auth token found.");
+     console.error("❌ AdminAuthToken not found");
     }
   }, []);
 
@@ -78,7 +84,7 @@ const Page = () => {
     try {
       setIsLoading(true);
 
-      const response = await fetch('http://localhost:5001/courses', {
+      const response = await fetch('https://api.blackstoneinfomaticstech.com/courses', {
         method: "GET",
         headers: {
           'Content-Type': 'application/json',
@@ -178,12 +184,19 @@ const Page = () => {
       };
 
       console.log('Sending data to API:', newCourse);
+const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       // API call to create course
-      const response = await fetch('http://localhost:5001/courses', {
+      const response = await fetch('https://api.blackstoneinfomaticstech.com/courses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(newCourse)
       });

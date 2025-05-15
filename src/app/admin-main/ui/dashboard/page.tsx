@@ -43,7 +43,7 @@ const Page = () => {
   const socketRef = useRef<Socket | null>(null);
   const [activeTab, setActiveTab] = useState("unseen");
   const userId = "6805da8c06542aa33858b889";
-
+ 
   // Close notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -104,11 +104,11 @@ const Page = () => {
   
    useEffect(() => {
       if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('AdminAuthToken');
+        const token =localStorage.getItem('AdminAuthToken');
         if (token) {
           fetchNotifications(token); // pass token into the function
         } else {
-          alert("No auth token found.");
+          console.log("No auth token found.");
         }
       }
     }, [userId]);
@@ -137,9 +137,15 @@ const Page = () => {
 
    
 
-  // 👁️ Mark notification as seen
-  const token =localStorage.getItem("AdminAuthToken")
+ 
   const handleNotificationClick = async (notificationId: string) => {
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     try {
       await axios.put(`https://api.blackstoneinfomaticstech.com/notification/${notificationId}`, {
         isRead: true,

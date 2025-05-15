@@ -48,13 +48,13 @@ const TrailManagement = () => {
       if (token) {
         fetchStudents(token); // pass token into the function
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }
   }, []);
     const fetchStudents = async (token: string) => {
       try {
-        const response = await axios.get('http://localhost:5001/alstudents',{
+        const response = await axios.get('https://api.blackstoneinfomaticstech.com/alstudents',{
           method: "GET",
           headers: {
             'Content-Type': 'application/json',

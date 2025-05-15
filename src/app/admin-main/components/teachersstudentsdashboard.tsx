@@ -21,14 +21,14 @@ type TeacherAPI = {
         if (token) {
           fetchTeacherStudentCount(token);
         } else {
-          alert("No auth token found.");
+          console.log("No auth token found.");
         }
       }
     }, []);
     
     const fetchTeacherStudentCount = async (token: string) => {
       try {
-        const res = await fetch("http://localhost:5001/teacher-student-count", {
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count", {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
