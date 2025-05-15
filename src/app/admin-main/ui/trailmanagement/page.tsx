@@ -101,11 +101,17 @@ const TrailManagement = () => {
   const router = useRouter();
  useEffect(() => {
    Modal.setAppElement("body");
-    const token = localStorage.getItem('AdminAuthToken');
+   const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       getAllUsers(token); // call your function with token
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }, []);
   

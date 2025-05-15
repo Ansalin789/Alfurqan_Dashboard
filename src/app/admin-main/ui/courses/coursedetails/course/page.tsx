@@ -51,17 +51,23 @@ const Page = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('AdminAuthToken');
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         if (token) {
             fetchLevels(token); // call your function with token
         } else {
-          alert("No auth token found.");
+          console.log("No auth token found.");
         }
       }, []);
     const fetchLevels = async (token: string) => {
         try {
             setIsLoading(true);
-            const response = await fetch(`http://localhost:5001/courseslevels?courseId=${courseId}`, {
+            const response = await fetch(`https://api.blackstoneinfomaticstech.com/courseslevels?courseId=${courseId}`, {
                 method: "GET",
                 headers: {
                   'Content-Type': 'application/json',
@@ -135,10 +141,18 @@ const Page = () => {
         };
 
         try {
-            const res = await fetch(`http://localhost:5001/courses/${courseId}`, {
+             const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+            const res = await fetch(`https://api.blackstoneinfomaticstech.com/courses/${courseId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
+                      'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify(payload),
             });

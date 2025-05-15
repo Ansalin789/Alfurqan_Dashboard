@@ -88,14 +88,14 @@ const  ApplicantsList: React.FC = () => {
       if (token) {
         fetchApplicants(token);
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }
   }, []);
   
   const fetchApplicants = async (token: string) => {
     try {
-      const response = await axios.get('http://localhost:5001/applicants', {
+      const response = await axios.get('https://api.blackstoneinfomaticstech.com/applicants', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

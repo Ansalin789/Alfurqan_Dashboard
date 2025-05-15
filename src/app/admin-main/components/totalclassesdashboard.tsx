@@ -38,7 +38,7 @@ export default function TotalClasses() {
   const fetchClassData = async (token: string, range: TimeFrame) => {
     try {
       const res = await fetch(
-        `http://localhost:5001/dashboard/admin/totalclass?dateRange=${getDateRangeParam(range)}`,
+        `https://api.blackstoneinfomaticstech.com/dashboard/admin/totalclass?dateRange=${getDateRangeParam(range)}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -84,7 +84,7 @@ export default function TotalClasses() {
       if (token) {
         fetchClassData(token, timeFrame);
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }
   }, [timeFrame]);

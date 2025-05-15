@@ -116,11 +116,17 @@ const Meeting = () => {
 
   const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
   useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
+   const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       ScheduleClass(token); // call your function with token
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }, []);
   
@@ -179,7 +185,13 @@ const Meeting = () => {
     };
 
     try {
-      const token = localStorage.getItem("AdminAuthToken")
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await fetch("https://api.blackstoneinfomaticstech.com/addadminMeeting", {
         method: "POST",
         headers: {
@@ -203,7 +215,13 @@ const Meeting = () => {
 
   useEffect(() => {
     async function fetchMeetings() {
-      const token = localStorage.getItem("AdminAuthToken")
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
         method: "POST",
         headers: {
@@ -256,7 +274,13 @@ const Meeting = () => {
     if (!rescheduleReason.trim() || !selectedItemId) return;
 
     try {
-            const token = localStorage.getItem("AdminAuthToken")
+           const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
 
       const response = await fetch(
         `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${selectedItemId}`,

@@ -20,13 +20,13 @@ const UpcomingClasses: React.FC = () => {
       if (token) {
         fetchMeetings(token); // pass token into the function
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }
   }, []);
     const fetchMeetings = async (token: string) => {
       try {
-        const response = await axios.get("http://localhost:5001/allAdminMeeting",{
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAdminMeeting",{
           method: "GET",
           headers: {
             'Content-Type': 'application/json',

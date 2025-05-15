@@ -48,11 +48,17 @@ const TrailManagement = () => {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
+   const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       fetchStudents(token); // call your function with token
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }, []);
     const fetchStudents = async (token: string) => {

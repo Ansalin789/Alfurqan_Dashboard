@@ -97,7 +97,7 @@ const SalaryCard = () => {
   useEffect(() => {
     const fetchClassData = async (token: string) => {
       try {
-        const response = await fetch("http://localhost:5001/classShedule", {
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/classShedule", {
           method: "GET",
           headers: {
             'Content-Type': 'application/json',

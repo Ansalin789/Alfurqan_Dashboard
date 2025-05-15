@@ -134,11 +134,17 @@ const AdminModuleAccess = () => {
       setIsRedirecting(true);
       return;
     }
-      const token = localStorage.getItem('AdminAuthToken');
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       if (token) {
         fetchEmployeeData(token); // call your function with token
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }, [employeeId]);
     const fetchEmployeeData = async (token: string) => {
@@ -233,7 +239,13 @@ const AdminModuleAccess = () => {
     };
 
     try {
-      const token = localStorage.getItem('AdminAuthToken');
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await axios.put(
         `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
         { roleAccess },

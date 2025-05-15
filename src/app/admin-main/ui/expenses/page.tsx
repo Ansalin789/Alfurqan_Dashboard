@@ -112,16 +112,17 @@ const Expenses = () => {
   );
 
   useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
-    
-    if (!token) {
-      alert("No auth token found.");
-      return;
-    }
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
 
     // Fetch salary data only if it's empty
     if (salaryData.length === 0) {
-      axios.get('http://localhost:5001/expense', {
+      axios.get('https://api.blackstoneinfomaticstech.com/expense', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -144,12 +145,13 @@ const Expenses = () => {
   }, [salaryData]); // Empty state prevents unnecessary calls
   
   const handleSubmit = () => {
-    const token = localStorage.getItem('AdminAuthToken');
-  
-    if (!token) {
-      alert("No auth token found.");
-      return;
-    }  
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     const expenseData = {
       paymentDate,
       expenseType,
@@ -165,7 +167,7 @@ const Expenses = () => {
 
     // Sending the POST request
     axios
-      .post('http://localhost:5001/expense', expenseData,{
+      .post('https://api.blackstoneinfomaticstech.com/expense', expenseData,{
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

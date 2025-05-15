@@ -93,11 +93,17 @@ const SalaryCard = () => {
   const notificationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-        const token = localStorage.getItem('AdminAuthToken');
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         if (token) {
           fetchClassData(token); // Or call the function that performs the GET request
         } else {
-          alert("No auth token found.");
+          console.log("No auth token found.");
         }
       }, []);
     const fetchClassData = async (token: string) => {

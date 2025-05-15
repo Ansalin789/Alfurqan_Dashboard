@@ -64,11 +64,17 @@ export default function InvoicePage() {
   >(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
+   const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       fetchStudents(token); // Or call the function that performs the GET request
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }, []);
     const fetchStudents = async (token: string) => {
@@ -128,8 +134,20 @@ export default function InvoicePage() {
   // Submit function to handle invoice creation
   const handleSubmit = async () => {
     try {
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       // Send data to backend
-      const response = await axios.post('https://api.blackstoneinfomaticstech.com/invoice/send', invoiceData);
+      const response = await axios.post('https://api.blackstoneinfomaticstech.com/invoice/send', invoiceData ,{
+        headers:{
+          'Content-Type' :'application/json',
+          'Authorization' :`Baerer ${token}`,
+        }
+      });
       console.log('Invoice created successfully:', response.data);  
 
       // Check if response is successful

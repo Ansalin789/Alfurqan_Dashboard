@@ -32,14 +32,14 @@ useEffect(() => {
     if (token) {
       fetchData(token);
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }
 }, []);
 
   const fetchData = async (token: string) => {
     try {
-      const res = await fetch('http://localhost:5001/dashboard/admin/count', {
+      const res = await fetch('https://api.blackstoneinfomaticstech.com/dashboard/admin/count', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

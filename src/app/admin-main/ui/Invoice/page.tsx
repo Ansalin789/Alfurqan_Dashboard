@@ -155,16 +155,22 @@ export default function Page() {
     void: 0,
   });
   useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       fetchInvoiceCounts(token); // call your function with token
     } else {
-      alert("No auth token found.");
+    console.log("No auth token found.");
     }
   }, []);
     const fetchInvoiceCounts = async (token: string) => {
       try {
-        const response = await fetch("http://localhost:5001/invoicecounts",
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/invoicecounts",
           {
             method: "GET",
             headers: {
@@ -244,17 +250,23 @@ export default function Page() {
   );
 
     useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       fetchMonthlyInvoices(token); // call your function with token
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }, []);
   
   const fetchMonthlyInvoices = async (token: string) => {
       try {
-        const res = await fetch("http://localhost:5001/totalinvoice",
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/totalinvoice",
           {
             method: "GET",
             headers: {
@@ -282,16 +294,22 @@ export default function Page() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       fetchData(token); // call your function with token
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }, []);    
   const fetchData = async (token: string) => {
       try {
-        const res = await fetch("http://localhost:5001/invoiceduebydates",
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/invoiceduebydates",
            {
             method: "GET",
             headers: {
@@ -466,17 +484,23 @@ export default function Page() {
 
 
 useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       fetchStudentInvoices(token);
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }, []);
 
    const fetchStudentInvoices  = (token:string) => {
     axios
-      .get("http://localhost:5001/studentinvoice/list", {
+      .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list", {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,

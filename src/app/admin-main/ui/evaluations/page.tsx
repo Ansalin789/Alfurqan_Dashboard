@@ -98,18 +98,24 @@ const TrailSection = () => {
   const router = useRouter();
 useEffect(() => {
   Modal.setAppElement("body");
-    const token = localStorage.getItem('AdminAuthToken');
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       getAllUsers(token); // call your function with token
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }, []);
   // Fetch API Data
   const getAllUsers = async (token: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch("http://localhost:5001/alltrialclass",
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass",
         {
           method: "GET",
           headers: {

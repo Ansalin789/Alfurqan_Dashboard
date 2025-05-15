@@ -58,7 +58,7 @@ const Page = () => {
   useEffect(() => {
     const fetchCardData = async (token: string) => {
       try {
-        const response = await fetch("http://localhost:5001/some-auth-endpoint", {
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/some-auth-endpoint", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -78,7 +78,7 @@ const Page = () => {
       if (token) {
         fetchCardData(token);
       } else {
-        alert("No auth token found.");
+        console.log("No auth token found.");
       }
     }
   }, []);

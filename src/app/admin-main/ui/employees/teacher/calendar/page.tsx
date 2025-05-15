@@ -60,17 +60,23 @@ const SchedulePage = () => {
   const employeeId = searchparam.get('teacherId'); // replace this with actual ID
 
   useEffect(() => {
-    const token = localStorage.getItem('AdminAuthToken');
+   const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     if (token) {
       fetchSchedule(token); // call your function with token
     } else {
-      alert("No auth token found.");
+      console.log("No auth token found.");
     }
   }, []);
     const fetchSchedule = async (token: string) => {
       try {
         const response = await axios.get(
-          `http://localhost:5001/classShedule/teacher?teacherId=${employeeId}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",

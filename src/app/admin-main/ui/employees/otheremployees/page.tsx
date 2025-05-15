@@ -75,16 +75,17 @@ const EmployeePage = () => {
   const searchParams = useSearchParams();  // Get the search params from the URL
   const [wages, setWages] = useState<EmployeeWage[]>([]);
   const fetchEmployee = async (employeeId: string) => {
-    const token = localStorage.getItem("AdminAuthToken");
-  
-    if (!token) {
-      alert("No auth token found.");
-      return;
-    }
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
   
     try {
       const response = await axios.get<Employee>(
-        `http://localhost:5001/otheremp/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/otheremp/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -106,16 +107,17 @@ const EmployeePage = () => {
       return;
     }
   
-    const token = localStorage.getItem("AdminAuthToken");
-  
-    if (!token) {
-      alert("No auth token found.");
-      return;
-    }
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
   
     try {
       const response = await axios.get<EmployeeWage[]>(
-        `http://localhost:5001/empwages/${userId}`,
+        `https://api.blackstoneinfomaticstech.com/empwages/${userId}`,
         {
           headers: {
             "Content-Type": "application/json",

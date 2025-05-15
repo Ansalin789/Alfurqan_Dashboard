@@ -214,7 +214,13 @@ const Teacher = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("AdminAuthToken");
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
   
     if (token && employeeId && employeeId !== "null") {
       fetchUsers(token);
@@ -222,14 +228,14 @@ const Teacher = () => {
       fetchWages(token);
       fetchClasses(token);
     } else {
-      alert("No auth token or employee ID found.");
+      console.log("No auth token or employee ID found.");
     }
   }, [employeeId]); // re-run if employeeId changes
   
   const fetchUsers = async (token: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/users/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/users/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -247,7 +253,7 @@ const Teacher = () => {
   const fetchSchedule = async (token: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/classShedule/teacher?teacherId=${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -264,7 +270,7 @@ const Teacher = () => {
   const fetchWages = async (token: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/empwages/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/empwages/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -281,7 +287,7 @@ const Teacher = () => {
   const fetchClasses = async (token: string) => {
     try {
       const res = await axios.get<StudentData[]>(
-        `http://localhost:5001/classShedule/teacher/list?teacherId=${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
