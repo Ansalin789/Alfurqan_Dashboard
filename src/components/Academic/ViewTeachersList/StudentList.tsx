@@ -14,8 +14,18 @@ const TotalStudents = () => {
           console.error("No teacher ID found in localStorage.");
           return;
         }
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
 
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule");
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule",{
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          }
+        });
 
         const filteredData = response.data.students.filter(
           (item: any) => item.teacher.teacherId === teacherIdToFilter

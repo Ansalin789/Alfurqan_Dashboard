@@ -78,10 +78,18 @@ const Studentreschedule = () => {
     // Fetch student schedule data
     const studentlist = async () => {
       try {
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         const response = await fetch(`https://api.blackstoneinfomaticstech.com/classShedule`, {
           method: 'GET',
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
           }
         });
         const data = await response.json();
@@ -91,11 +99,18 @@ const Studentreschedule = () => {
       }
     };
     studentlist();
+ const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
 
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     // Fetch teacher schedule data
     fetch(`https://api.blackstoneinfomaticstech.com/shiftschedule?role=TEACHER`, {
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
     })
       .then((response) => response.json())
@@ -213,12 +228,19 @@ const Studentreschedule = () => {
 
       console.log("Request Data for rescheduling:", requestData);
       console.log("Updating schedule with ID:", filteredItem._id);
+ const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
 
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       // Make the API call to update the schedule
       const response = await fetch(`https://api.blackstoneinfomaticstech.com/classSchedule/${filteredItem._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(requestData),
       });

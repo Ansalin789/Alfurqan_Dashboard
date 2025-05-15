@@ -74,10 +74,19 @@ const TrailManagement = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const auth = localStorage.getItem("authToken");
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/alstudents`);
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/alstudents`,{
+        headers:{
+          "Authorization": `Bearer ${token}`,
+        }
+      });
       const data = await response.json();
-      console.log(auth);
       setUsers(data);
       setTotalPages(Math.ceil(data.totalCount / itemsPerPage)); // Calculate total pages
     };

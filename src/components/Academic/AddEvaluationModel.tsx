@@ -160,11 +160,18 @@ gardianLanguage: '',
       if (!evaluationData.student.studentFirstName || evaluationData.student.studentFirstName.length < 3) {
         throw new Error('First name must be at least 3 characters long');
       }
-      
+        const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',
           
         },
@@ -175,7 +182,7 @@ gardianLanguage: '',
       console.log('Response:', response.status, responseData);
 
       if (!response.ok) {
-        throw new Error(`Server error: ${responseData.message || 'Unknown error'}`);
+        throw new Error(`Server error: ${responseData.message ?? 'Unknown error'}`);
       }
 
       onSave();

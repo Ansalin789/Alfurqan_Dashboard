@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -18,11 +20,22 @@ const StudentEvaluation = () => {
 
   useEffect(() => {
     // Fetch data from API
-    const academicId = localStorage.getItem("academicId");
+    const academicId = localStorage.getItem("AcademicCoachPortalId");
     console.log("academicId>>", academicId);
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     axios
       .get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
         params: { academicCoachId: academicId },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          },
       })
       .then((response) => {
         if (!response.data) {

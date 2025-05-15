@@ -205,8 +205,20 @@ const Step2: React.FC<{
     const fetchStudentData = async () => {
       try {
         setLoading(true);
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/studentlist/${studentId}` );
+          `https://api.blackstoneinfomaticstech.com/studentlist/${studentId}`,{
+            headers:{
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          } );
         console.log("response>>>", response);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -1177,8 +1189,19 @@ const Step6 = ({
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER");
+          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER",{
+            headers:{
+              "Authorization": `Bearer ${token}`,
+            }
+          });
         const data = await response.json();
 
         console.log("Fetched data:", data);
@@ -2083,10 +2106,18 @@ classEndDate.setDate(classEndDate.getDate() + 28);
       };
       console.log("Payload being sent:", JSON.stringify(submitData, null, 2));
       // Make POST request to your API
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(submitData),
       });

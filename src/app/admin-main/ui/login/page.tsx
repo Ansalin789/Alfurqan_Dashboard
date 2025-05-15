@@ -5,6 +5,99 @@ import { GrApple } from "react-icons/gr";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GoogleLogin, CredentialResponse, GoogleOAuthProvider } from "@react-oauth/google";
 import axios from "axios";
+export interface RoleModuleAccess {
+  read: boolean;
+  write: boolean;
+  delete: boolean;
+}
+
+export interface AdminModules {
+  dashboard: RoleModuleAccess;
+  evaluation: RoleModuleAccess;
+  student: RoleModuleAccess;
+  employees: RoleModuleAccess;
+  courses: RoleModuleAccess;
+  classes: RoleModuleAccess;
+  invoice: RoleModuleAccess;
+  analytics: RoleModuleAccess;
+  messages: RoleModuleAccess;
+  settings: RoleModuleAccess;
+}
+
+export interface AcademicModules {
+  dashboard: RoleModuleAccess;
+  scheduledevaluation: RoleModuleAccess;
+  scheduledtrail: RoleModuleAccess;
+  students: RoleModuleAccess;
+  teachers: RoleModuleAccess;
+  messages: RoleModuleAccess;
+  support: {
+    read: boolean;
+    write: boolean;
+  };
+}
+
+export interface SupervisorModules {
+  dashboard: RoleModuleAccess;
+  recuirement: RoleModuleAccess;
+  meeting: RoleModuleAccess;
+  teachers: RoleModuleAccess;
+  messages: RoleModuleAccess;
+  support: RoleModuleAccess;
+}
+
+export interface StudentModules {
+  dashboard: RoleModuleAccess;
+  classes: RoleModuleAccess;
+  assignments: RoleModuleAccess;
+  payments: RoleModuleAccess;
+  knowledgebase: RoleModuleAccess;
+  support: RoleModuleAccess;
+}
+
+export interface TeacherModules {
+  dashboard: RoleModuleAccess;
+  liveclasses: RoleModuleAccess;
+  scheduledclasses: RoleModuleAccess;
+  assignments: RoleModuleAccess;
+  messages: RoleModuleAccess;
+  analytics: RoleModuleAccess;
+  support: RoleModuleAccess;
+}
+
+export interface RoleAccess {
+  admin: boolean;
+  adminmodules: AdminModules;
+  academicCoach: boolean;
+  academicmodules: AcademicModules;
+  supervisor: boolean;
+  supervisormodules: SupervisorModules;
+  student: boolean;
+  studentmodules: StudentModules;
+  teacher: boolean;
+  teachermodules: TeacherModules;
+}
+
+export interface EmployeeAccessData {
+  _id: string;
+  employeeId: string;
+  employeeName: string;
+  contact: string;
+  designation: string[];
+  dateOfJoining: string;
+  roleAccess: RoleAccess;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  __v: number;
+}
+
+export interface AccessApiResponse {
+  success: boolean;
+  data: EmployeeAccessData;
+}
 
 const SignIn: React.FC = () => {
   const searchParams = useSearchParams();
@@ -49,6 +142,23 @@ const SignIn: React.FC = () => {
       throw new Error(error.message ?? "Login failed");
     }
   };
+  const fetchrolebasedaccesscontrol=async(id :string)=>{
+    try{
+       const response = await axios.get<AccessApiResponse>(`https://api.blackstoneinfomaticstech.com/update-access/${id}`,
+        {
+          headers:{
+            'Content-Type' :'application/json',
+          } 
+       });
+       if(response.status === 200){
+        localStorage.setItem('AdminRolePermission', JSON.stringify(response.data.data.roleAccess.adminmodules));
+       }else{
+        throw new Error('Failed to fetch role based access control');
+       }
+    }catch(error){
+    console.log(error);
+    }
+  };
 
   const setLoginError = (message: string) => {
     setError(message);
@@ -64,7 +174,7 @@ const SignIn: React.FC = () => {
       localStorage.setItem("AdminAuthToken", accessToken);
       localStorage.setItem("AdminPortalId", _id);
       localStorage.setItem("AdminPortalName", userName);
-
+      fetchrolebasedaccesscontrol(_id);
       if (role?.includes("ADMIN")) {
         router.push("/admin-main/ui/dashboard");
         alert("Login successful as Admin");

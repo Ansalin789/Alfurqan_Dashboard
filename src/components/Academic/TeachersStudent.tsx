@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import Link from "next/link";
@@ -20,11 +22,21 @@ export default function Academic() {
   useEffect(() => {
     const fetchTeachersData = async () => {
       try {
+          const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         const teacherId = "some_teacher_id"; // Replace with actual teacherId
         const response = await axios.get<ApiResponse>(
           `https://api.blackstoneinfomaticstech.com/teacher-student-count`,
           {
             params: { teacherId },
+            headers: {
+              Authorization: `Bearer ${token}`,
+              },
           }
         );
         setTeachersData(response.data.data);
@@ -58,7 +70,7 @@ export default function Academic() {
             </thead>
             <tbody className="mb-1">
               {teachersData.map((teacher) => (
-                <tr key={teacher._id || teacher.teacherEmail}>
+                <tr key={teacher._id ?? teacher.teacherEmail}>
                   <td className="px-4 py-1 text-[11px] text-center flex text-white ">
                     <FaUserCircle className="text-[#ffffff] mr-2 mt-1" />
                     {teacher.teacherName}

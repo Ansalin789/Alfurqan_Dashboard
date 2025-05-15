@@ -85,8 +85,17 @@ const Popup: React.FC<PopupProps> = ({ isOpen, onRequestClose, user, onSave }) =
 
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
     try {
-      
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/studentlist`);
+        const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+  }
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/studentlist`,{
+        headers:{
+          'Authorization': `Bearer ${token}`,
+        }
+      });
       const rawData = await response.json();
       console.log('Raw API Response:', rawData);
       // console.log(response) 

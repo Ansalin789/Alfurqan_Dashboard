@@ -1,3 +1,5 @@
+'use client';
+
 import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -86,12 +88,19 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
 const fetchDashboardData = async (
   authToken: string | null
 ): Promise<ApiResponse> => {
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+  }
   const response = await axios.get(
     `https://api.blackstoneinfomaticstech.com/dashboard/widgets`,
     {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
       },
     }
   );

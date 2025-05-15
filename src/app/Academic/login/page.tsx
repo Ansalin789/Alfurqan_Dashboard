@@ -46,7 +46,7 @@ const SignIn: React.FC = () => {
       }
 
       // Handle other errors
-      throw new Error(error.message || "Login failed");
+      throw new Error(error.message ?? "Login failed");
     }
   };
 
@@ -77,7 +77,7 @@ const SignIn: React.FC = () => {
           console.log(error);
         } else {
           setLoginError(
-            data.message || "Login failed. Please try again later."
+            data.message ?? "Login failed. Please try again later."
           );
         }
       } else {
@@ -124,7 +124,7 @@ const SignIn: React.FC = () => {
         }
 
         // Handle non-HTTP errors or unexpected issues (network error, etc.)
-        console.log("Error occurred:", error.message || "Unknown error");
+        console.log("Error occurred:", error.message ?? "Unknown error");
         return { message: "Unknown error occurred" }; // Return unknown error message
       }
     };

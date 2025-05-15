@@ -64,13 +64,19 @@ const getAllUsers = async (): Promise<{
 }> => {
   try {
     
-    const academicId = localStorage.getItem("academicId");
+    const academicId = localStorage.getItem("AcademicCoachPortalId");
     console.log("academicId>>", academicId);
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+  }
     const response = await axios.get(`https://api.blackstoneinfomaticstech.com/evaluationlist`, {
       params: { academicCoachId: academicId },
       headers: {
         "Content-Type": "application/json",
-       
+       "Authorization": `Bearer ${token}`
       },
     });
 
@@ -447,13 +453,19 @@ const TrailSection = () => {
 
   const handleClick = async (id: string) => {
     try {
-     
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await fetch(
         `https://api.blackstoneinfomaticstech.com/evaluationlist/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
-        
+             "Authorization": `Bearer ${token}`
           },
         }
       );
@@ -559,12 +571,18 @@ const TrailSection = () => {
 
     alert(JSON.stringify(formDataNames));
     try {
-    
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-         
+             "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(formDataNames),
       });
