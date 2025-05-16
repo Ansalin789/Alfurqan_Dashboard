@@ -142,12 +142,13 @@ const SignIn: React.FC = () => {
       throw new Error(error.message ?? "Login failed");
     }
   };
-  const fetchrolebasedaccesscontrol=async(id :string)=>{
+  const fetchrolebasedaccesscontrol=async(id :string ,token  :string)=>{
     try{
        const response = await axios.get<AccessApiResponse>(`https://api.blackstoneinfomaticstech.com/update-access/${id}`,
         {
           headers:{
             'Content-Type' :'application/json',
+            'Authorization' : `Bearer ${token}`
           } 
        });
        if(response.status === 200){
@@ -174,7 +175,7 @@ const SignIn: React.FC = () => {
       localStorage.setItem("AdminAuthToken", accessToken);
       localStorage.setItem("AdminPortalId", _id);
       localStorage.setItem("AdminPortalName", userName);
-      fetchrolebasedaccesscontrol(_id);
+      fetchrolebasedaccesscontrol(_id,accessToken);
       if (role?.includes("ADMIN")) {
         router.push("/admin-main/ui/dashboard");
         alert("Login successful as Admin");
