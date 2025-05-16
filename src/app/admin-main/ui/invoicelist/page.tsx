@@ -36,6 +36,7 @@ const Trailclasslist = () => {
   const itemsPerPage = 10;
   const router = useRouter();
   const [filterOpen, setFilterOpen] = useState(false);
+  const [dashboardRead,setdashboardRead]=useState(false);
 const [filters, setFilters] = useState({
   invoiceId: "",
   date: "",
@@ -61,6 +62,21 @@ useEffect(() => {
   } else {
     console.log("No auth token found.");
   }
+  if (typeof window !== "undefined") {
+      const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+      if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.invoice?.write ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
+    }
+
 }, []);
 
 const fetchInvoice = (token: string) => {
@@ -218,6 +234,7 @@ const fetchInvoice = (token: string) => {
           <div className="flex items-center space-x-3">
             <button
               onClick={handleclicksend}
+              disabled={!dashboardRead}
               className="flex items-center bg-[#002244] text-white px-4 py-2 rounded-sm text-[12px] font-medium shadow"
             >
               + New Invoice

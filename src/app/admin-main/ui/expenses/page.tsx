@@ -55,6 +55,7 @@ const Expenses = () => {
    const [category, setCategory] = useState('');
    const [paymentMethod, setPaymentMethod] = useState('');
    const [status, setStatus] = useState('');
+   const [dashboardRead,setdashboardRead]=useState(false);
     const [notifications, setNotifications] = useState([
      { id: 1, message: "New student registration pending approval", seen: false, time: "2 mins ago", type: "urgent" },
      { id: 2, message: "Class rescheduled for tomorrow", seen: false, time: "1 hour ago", type: "important" },
@@ -72,6 +73,20 @@ const Expenses = () => {
          setShowNotifications(false);
        }
      };
+     if (typeof window !== "undefined") {
+      const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+      if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.invoice?.write ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
+    }
  
      document.addEventListener("mousedown", handleClickOutside);
      return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -347,6 +362,7 @@ const Expenses = () => {
           <button
             className="bg-[#0F3659] hover:bg-[#0c2b46] text-white text-[10px] font-medium px-2 py-2 rounded-lg shadow-sm transition flex items-center mr-3 "
             onClick={() => setIsPopupOpen(true)}
+           disabled={!dashboardRead}
           >
             <AiOutlinePlus size={15} /> {/* Increase to 20 or more */}
             Add new Payment

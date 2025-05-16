@@ -60,7 +60,7 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+const [dashboardRead,setdashboardRead]=useState(false);
   // Load courses from localStorage on component mount
 
 
@@ -77,6 +77,21 @@ const Page = () => {
     } else {
      console.error("❌ AdminAuthToken not found");
     }
+    if (typeof window !== "undefined") {
+      const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+      if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.courses?.write ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
+    }
+
   }, []);
 
   const fetchCourses = async (token: string) => {
@@ -240,6 +255,7 @@ const token =
           {/* Add Course Card */}
           <button
             onClick={() => setShowForm(true)}
+            disabled={!dashboardRead}
             className="w-[260px] h-[310px] bg-white border border-gray-500 rounded-xl shadow flex items-center justify-center cursor-pointer hover:shadow-lg transition"
           >
             <div className="w-12 h-12 bg-[#0b2447] rounded-full flex items-center justify-center">
