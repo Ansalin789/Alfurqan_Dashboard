@@ -94,6 +94,7 @@ const Meeting = () => {
   const [endTime, setEndTime] = useState("");
   const [description, setDescription] = useState("");
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
+const [dashboardRead,setdashboardRead]=useState(false);
 
   const [selectedFilter, setSelectedFilter] = useState<
     "all" | "Arabic Teacher" | "Quran Teacher"
@@ -214,6 +215,18 @@ const Meeting = () => {
   };
 
   useEffect(() => {
+      const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+      if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.meetings?.read ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
     async function fetchMeetings() {
       const token =
     typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
@@ -484,13 +497,14 @@ const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
 
             {/* Right Side */}
             <div className="flex items-center gap-4">
-              <button onClick={() => nextPage()}>
+              <button onClick={() => nextPage()} disabled={!dashboardRead}>
                 <FaCalendarAlt className="text-[#1C3557]" />
               </button>
               <button
                 onClick={() => setIsMeetingModalOpen(true)}
                 className="flex items-center gap-2 bg-[#1C3557] text-white px-4 py-2 rounded-xl shadow hover:bg-[#15294a] text-sm"
-              >
+                disabled={!dashboardRead}
+                >
                 <FaPlus /> Add Meeting
               </button>
 

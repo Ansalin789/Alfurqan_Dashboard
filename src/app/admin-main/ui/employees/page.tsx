@@ -313,6 +313,7 @@ const Page = () => {
   >("teachers");
  
   const router = useRouter();
+  const [dashboardRead,setdashboardRead]=useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchQuery1, setSearchQuery1] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
@@ -388,6 +389,18 @@ useEffect(() => {
     console.error("❌ AdminAuthToken not found");
     return;
   }
+  const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+ if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.employees?.write ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
 
   // Fetch teacher status count
   axios
@@ -983,13 +996,17 @@ useEffect(() => {
                                   className="text-[12px] bg-[#c95b45] text-white px-2 py-1 rounded-lg"
                                   onClick={() =>
                                     handlePortalAccess(teacher._id)
+                                    
                                   }
+                                  disabled={!dashboardRead}
+
                                 >
                                   Portal Access
                                 </button>
                                 <button
                                   className="text-[12px] bg-[#223857] text-white px-2 py-1 rounded-lg"
                                   onClick={() => handleViewTeacher(teacher._id)}
+
                                 >
                                   View Profile
                                 </button>
@@ -1153,7 +1170,8 @@ useEffect(() => {
                         <button
                           onClick={() => setShowForm(true)}
                           className="flex items-center gap-2 bg-[#0D2444] text-white text-sm font-medium px-4 py-2 rounded-xl shadow"
-                        >
+                          disabled={!dashboardRead}
+>
                           <span className="text-sm">+</span> Add new
                         </button>
 
@@ -1214,6 +1232,7 @@ useEffect(() => {
                                   onClick={() =>
                                     handlePortalAccessforemployee(employee._id)
                                   }
+                                  disabled={!dashboardRead}
                                 >
                                   Portal Access
                                 </button>
