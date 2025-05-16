@@ -93,8 +93,13 @@ const NextClass = () => {
     const fetchClassData = async () => {
       try {
         const teacherId = localStorage.getItem('TeacherPortalId');
-        const authToken = localStorage.getItem('TeacherAuthToken');
-        if (!teacherId || !authToken) {
+const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  }        if (!teacherId || !token) {
           console.log('Missing studentId or authToken');
           return;
         }
@@ -103,6 +108,10 @@ const NextClass = () => {
           `https://api.blackstoneinfomaticstech.com/classShedule/teacher`,
           {
             params: { teacherId },
+             headers:{
+                 'Content-Type': 'application/json',
+        "Authorization":`Bearer ${token}`,
+          }
           }
         );
         setClassData(filterUpcomingClass(response.data));

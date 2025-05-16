@@ -50,10 +50,21 @@ const Calender: React.FC = () => {
     const fetchEvents = async () => {
       try {
         const teacherId = localStorage.getItem('TeacherPortalId');
-       
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  }
 
         const response = await axios.get<ApiResponse>('https://api.blackstoneinfomaticstech.com/classShedule/teacher', {
-          params: { teacherId: teacherId },
+          params: { teacherId: teacherId,},
+          headers:{
+                 'Content-Type': 'application/json',
+        "Authorization":`Bearer ${token}`,
+          }
+        
         });
 
         // ✅ Correct Mapping (Use `classSchedule`, not `teacher.map`)

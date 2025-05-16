@@ -9,15 +9,25 @@ const TeachingActivity: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const auth = localStorage.getItem("TeacherAuthToken");
-        const teacherId = localStorage.getItem("TeacherPortalId");
+const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
-        if (!auth || !teacherId) {
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  }        const teacherId = localStorage.getItem("TeacherPortalId");
+
+        if (!token || !teacherId) {
           console.error("Missing authentication token or teacher ID.");
           return;
         }
 
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule");
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule",{
+           headers:{
+                 'Content-Type': 'application/json',
+        "Authorization":`Bearer ${token}`,
+          }
+        });
 
         const filteredData = response.data.students.filter(
           (item: any) => item.teacher.teacherId === teacherId

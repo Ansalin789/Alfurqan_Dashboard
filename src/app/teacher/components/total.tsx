@@ -49,10 +49,20 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
 
 const fetchDashboardData = async (teacherId: string, authToken: string | null): Promise<ApiResponse> => {
   try {
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+  }
     const response = await axios.get(`https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts`, {
       params: {
         teacherId: teacherId
       },
+      headers:{
+         'Content-Type': 'application/json',
+        "Authorization":`Bearer ${token}`,
+      }
     });
 
     return response.data;
