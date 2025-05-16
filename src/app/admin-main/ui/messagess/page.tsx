@@ -557,6 +557,7 @@ if (typeof window !== "undefined") {
                       placeholder="Type a message..."
                       className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none"
                       value={messageText}
+                          disabled={!dashboardRead}
                       onChange={(e) => setMessageText(e.target.value)}
                       onKeyPress={(e) =>
                         e.key === "Enter" && handleSendMessage()

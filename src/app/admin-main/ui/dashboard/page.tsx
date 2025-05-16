@@ -155,22 +155,26 @@ const Page = () => {
  
   const handleNotificationClick = async (notificationId: string) => {
     console.log("clicked");
-     const token =
+     
+    try {
+      const token =
     typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
   if (!token) {
     console.error("❌ AdminAuthToken not found");
-    return;
+  }await axios.put(
+  `https://api.blackstoneinfomaticstech.com/notification/${notificationId}`,
+  {
+    isRead: true,
+    notificationStatus: "Seen",
+  },
+  {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
   }
-    try {
-      await axios.put(`https://api.blackstoneinfomaticstech.com/notification/${notificationId}`, {
-        isRead: true,
-        notificationStatus: "Seen",
-        header:{
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        }
-      });
+);
   
       setNotifications((prev) =>
         prev.map((n) => (n._id === notificationId ? { ...n, isRead: true, notificationStatus: "Seen" } : n))
