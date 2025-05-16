@@ -87,11 +87,20 @@ const SchedulePage = () => {
       }
 
       try {
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         const response = await axios.get<ApiResponse>(
           `https://api.blackstoneinfomaticstech.com/classShedule`,
           {
             params: { teacherId },
-          
+            headers:{
+              "Authorization": `Bearer ${token}`
+            }
           }
         );
 

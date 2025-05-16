@@ -155,8 +155,19 @@ useEffect(() => {
               console.error("No teacher ID found in localStorage.");
               return;
           }
+           const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
-          const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule");
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+          const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule",{
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+              },
+          });
 
           const filteredData = response.data.students.filter(
               (item) => item.teacher.teacherId === teacherIdToFilter

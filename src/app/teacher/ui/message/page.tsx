@@ -128,8 +128,18 @@ const Message = () => {
   // ✅ Fetch students from the student database
   const fetchStudents = async (): Promise<IStudent[]> => {
     try {
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+  }
       const response = await axios.get<IStudentResponse>(
-        "https://api.blackstoneinfomaticstech.com/alstudents"
+        "https://api.blackstoneinfomaticstech.com/alstudents",{
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+        }
       );
       return response.data.students;
     } catch (err) {
@@ -142,10 +152,19 @@ const Message = () => {
   // ✅ Fetch supervisor from the tenantUser database
   const fetchSupervisor = async (role: string): Promise<IUser[]> => {
     try {
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+  }
       const response = await axios.get<{ users: IUser[] }>(
         "https://api.blackstoneinfomaticstech.com/users",
         {
           params: { role },
+          headers: {
+            'Authorization': `Bearer ${token}`
+            },
         }
       );
       console.log(response.data);
@@ -192,8 +211,19 @@ const Message = () => {
   // Fetch messages from API
   const fetchMessages = async (receiverId: string) => {
     try {
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`,{
+          headers: {
+            Authorization: `Bearer ${token}`,
+            },
+        }
       );
 
     const fetchedMessages = data?.data?.[0]?.messages ?? [];
@@ -295,6 +325,13 @@ const Message = () => {
     };
 
     try {
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       // Send the new message to the backend API
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/realtimemessage",
@@ -302,6 +339,7 @@ const Message = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );

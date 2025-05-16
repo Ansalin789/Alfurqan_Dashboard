@@ -302,9 +302,17 @@ function LiveClass() {
     };
 
     try {
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await axios.post("https://api.blackstoneinfomaticstech.com/feedback", feedbackData, {
         headers: {
           "Content-Type": "application/json",
+          "Authorization" :`Bearer ${token}`
         },
       });
 

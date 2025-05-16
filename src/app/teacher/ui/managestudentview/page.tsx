@@ -34,12 +34,18 @@ const Page = () => {
   useEffect(() => {
     const fetchAssignments = async () => {
       const storedStudentId = localStorage.getItem('studentviewcontrol');
-      
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       try {
         const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAssignment", {
           headers: {
-           
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
           },
         });
 
