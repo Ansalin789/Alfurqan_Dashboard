@@ -96,8 +96,20 @@ const colorOptions = [
   
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   useEffect(() => {
+       const token =
+       typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  } 
     axios
-      .get<{ totalCount: number; applicants: ApiResponse[] }>("https://api.blackstoneinfomaticstech.com/applicants")
+      .get<{ totalCount: number; applicants: ApiResponse[] }>("https://api.blackstoneinfomaticstech.com/applicants",{
+        headers:{
+          "Authorization" :`Bearer ${token}`,
+          "Content-Type":"application/json",
+        }
+      })
       .then((response) => {
         console.log("API Response:", response.data); // ✅ Debugging step
   
@@ -120,8 +132,17 @@ const colorOptions = [
   useEffect(() => {
     const fetchMeetings = async () => {
         try {
+            const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
             const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json" ,
+                  "Authorization":`Bearer ${token}`
+                },
             });
 
             console.log("Full API Response:", response.data);
@@ -308,7 +329,19 @@ const [teachersByMeetingId, setTeachersByMeetingId] = useState<TeachersByMeeting
     console.log(requestData);
 
     try {
-        const response = await axios.post("https://api.blackstoneinfomaticstech.com/addMeeting", requestData);
+        const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
+        const response = await axios.post("https://api.blackstoneinfomaticstech.com/addMeeting", requestData,
+         { headers:{
+          "Authorization":`Bearer ${token}`,
+          "Content-Type":"application/json",
+          }
+    });
         if (response.status === 200 || response.status === 201 || response.status === 400) {
           setIsMeetingModalOpen(false);
             

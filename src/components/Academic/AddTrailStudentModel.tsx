@@ -81,12 +81,18 @@ const AddTrailStudentModal = ({
       }
 
       console.log("Sending data:", studentData);
-    
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await fetch(`https://api.blackstoneinfomaticstech.com/student`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(studentData),
       });
@@ -96,7 +102,7 @@ const AddTrailStudentModal = ({
 
       if (!response.ok) {
         throw new Error(
-          `Server error: ${responseData.status || "Unknown error"}`
+          `Server error: ${responseData.status ?? "Unknown error"}`
         );
       }
 

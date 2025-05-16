@@ -1,3 +1,5 @@
+'use client';
+
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 
@@ -30,8 +32,14 @@ const UpcomingClasses: React.FC = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-       
-        const academicId = localStorage.getItem("academicId");
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+        const academicId = localStorage.getItem("AcademicCoachPortalId");
         console.log("academicId>>", academicId);
         const response = await axios.get(
           `https://api.blackstoneinfomaticstech.com/evaluationlist`,
@@ -40,6 +48,7 @@ const UpcomingClasses: React.FC = () => {
             params: { academicCoachId: academicId },
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
             },
           }
         );

@@ -69,9 +69,20 @@ const StudentProfile = () => {
     if (studentId) {
       const fetchData = async () => {
         try {
+const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }  
           const studentId = localStorage.getItem("StudentPortalId");
           const response = await axios.get<ApiResponse>(
-            "https://api.blackstoneinfomaticstech.com/alstudents"
+            "https://api.blackstoneinfomaticstech.com/alstudents",{
+               headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
+            }
           );
 
           if (!studentId) {

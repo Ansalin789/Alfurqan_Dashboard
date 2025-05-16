@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -45,8 +47,18 @@ export default function Teachers() {
   useEffect(() => {
     const fetchTeacherData = async () => {
       try {
+          const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         const response = await axios.get("https://api.blackstoneinfomaticstech.com/users", {
           params: { role: "TEACHER" },
+          headers:{
+            "Authorization": `Bearer ${token}`
+          }
         });
 
         const users: User[] = response.data.users;

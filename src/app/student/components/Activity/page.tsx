@@ -31,9 +31,14 @@ const TeachingActivity = () => {
     const fetchTeachingActivity = async () => {
       try {
         const studentId = localStorage.getItem("StudentPortalId");
-        const authToken = localStorage.getItem("StudentAuthToken");
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
 
-        if (!studentId || !authToken) {
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }
+        if (!studentId || !token) {
           console.warn(
             "Missing StudentPortalId or StudentAuthToken in localStorage."
           );
@@ -45,6 +50,9 @@ const TeachingActivity = () => {
           `https://api.blackstoneinfomaticstech.com/classShedule/activity`,
           {
             params: { studentId },
+            headers:{
+              "Authorization":`Bearer ${token}`,
+            }
           }
         );
 

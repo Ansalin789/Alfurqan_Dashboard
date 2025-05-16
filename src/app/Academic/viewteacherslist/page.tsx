@@ -58,21 +58,6 @@ const ViewTeachersList = () => {
 
   const itemsPerPage = 5;  // Only show 5 items per page
 
-  const scheduledClasses: Class[] = Array.from({ length: 5 }).map(() => ({
-    name: 'Samantha William',
-    course: 'Tajweed Masterclass',
-    date: 'January 2, 2020',
-    status: 'Available'
-  }));
-
-  const completedClasses: Class[] = Array.from({ length: 50 }).map(() => ({
-    name: 'John Smith',
-    course: 'Advanced Quran Reading',
-    date: 'December 15, 2023',
-    status: 'Completed',
-    grade: 'A',
-    performance: '95%'
-  }));
 
   const totalPages = Math.ceil(
     (studentListData ? studentListData.length : 0) / itemsPerPage  // Use studentListData for totalPages
@@ -152,25 +137,26 @@ const ViewTeachersList = () => {
     rating: number;
   }
 
-  const [teacherIdLocal, setTeacherIdLocal] = useState<string | null>(null);
-  const [auth, setAuth] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const teacherId = localStorage.getItem('manageTeacherId');
-      setTeacherIdLocal(teacherId);
-      const seauth = localStorage.getItem('authToken');
-      setAuth(seauth);
-    }
-  }, []);
+ 
 
   const [teachers, setTeachers] = useState<Teacher>();
 
   useEffect(() => {
     const fetchTeachers = async () => {
       const teacherId = localStorage.getItem('manageTeacherId');
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       try {
-        const response = await fetch(`https://api.blackstoneinfomaticstech.com/users/${teacherId}`);
+        const response = await fetch(`https://api.blackstoneinfomaticstech.com/users/${teacherId}`,{
+          headers:{
+            'Authorization': `Bearer ${token}`,
+          }
+        });
         const data = await response.json();
         setTeachers(data);
       } catch (error) {
@@ -184,7 +170,18 @@ const ViewTeachersList = () => {
   const studentlist = async () => {
     try {
       const teacherId = localStorage.getItem('manageTeacherId');
-      const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule");
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+      const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule",{
+        headers:{
+          'Authorization': `Bearer ${token}`,
+        }
+      });
       const filteredData = response.data.students.filter(
         (item: any) => item.teacher.teacherId === teacherId
       );

@@ -41,7 +41,7 @@ export default function BaseLayout3({ children }: Props) {
         className="flex"
       >
         {/* Sidebar - only visible from md and up */}
-        <div className="hidden md:block w-[200px] bg-[#012A4A]">
+        <div className="hidden md:block w-[240px] bg-[#012A4A]">
           <Sidebar3 />
         </div>
 

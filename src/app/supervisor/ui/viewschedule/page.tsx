@@ -55,7 +55,20 @@ const ViewSchedule = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule");
+        const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
+        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule",
+           { headers: {
+        'Content-Type': 'application/json',
+        "Authorization":`Bearer ${token}`,
+        
+      },}
+        );
   
         const now = new Date();
         const today = new Date();

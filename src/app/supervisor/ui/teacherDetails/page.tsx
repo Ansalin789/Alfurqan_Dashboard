@@ -24,7 +24,19 @@ const TeacherDetails = () => {
       
           const fetchTeachers = async () => {
             try {
-              const response = await fetch(`https://api.blackstoneinfomaticstech.com/users/${localStorage.getItem('supervisormanageTeacherId')}`);
+                const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
+              const response = await fetch(`https://api.blackstoneinfomaticstech.com/users/${localStorage.getItem('supervisormanageTeacherId')}`,
+          {  headers:{
+                  "Authorization":`Bearer ${token}`,
+                  "Content-Type":"appliation/json"
+             } 
+            });
               const data = await response.json();
       
               console.log('Fetched data:', data);

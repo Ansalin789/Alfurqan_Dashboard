@@ -1,15 +1,14 @@
-'use client';
+"use client";
 
-import BaseLayout3 from '@/components/BaseLayout3';
-import React, { useState, useRef, useEffect } from 'react';
+import BaseLayout3 from "@/components/BaseLayout3";
+import React, { useState, useRef, useEffect } from "react";
 import { GrAttachment } from "react-icons/gr";
 import { FaTelegramPlane } from "react-icons/fa";
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiSearch } from 'react-icons/fi';
-import axios from 'axios';
-import { io } from 'socket.io-client';
-import { Bell } from 'lucide-react';
-
+import { motion, AnimatePresence } from "framer-motion";
+import { FiSearch } from "react-icons/fi";
+import axios from "axios";
+import { io } from "socket.io-client";
+import { Bell } from "lucide-react";
 
 // Define your interfaces
 interface IMessage {
@@ -44,7 +43,7 @@ interface IUser {
   role: string[];
   status: string;
   lastLoginDate?: string;
-  lastSeen?: string; 
+  lastSeen?: string;
 }
 interface IMessagesend {
   messages: string;
@@ -55,56 +54,65 @@ interface IMessagesend {
   receiverId: string;
   receiverName: string;
   receiverEmail: string;
-  notificationStatus: 'Unseen' | 'Seen';
-  status: 'Active' | 'Inactive';
-  createdDate: Date;  // ISO date string
+  notificationStatus: "Unseen" | "Seen";
+  status: "Active" | "Inactive";
+  createdDate: Date; // ISO date string
   createdBy: string;
-  updatedDate: Date;  // ISO date string
+  updatedDate: Date; // ISO date string
   updatedBy: string;
 }
 
-
 const Message = () => {
-    const [userId, setUserId] = useState('');
-    const [senderName, setSenderName] = useState('');
-    
-    useEffect(() => {
-      if (typeof window !== 'undefined') {
-        setUserId(localStorage.getItem('SupervisorPortalId') ?? '');
-        setSenderName(localStorage.getItem('SupervisorPortalName') ?? '');
-      }
-    }, []); // Set a sample userId, it should be dynamic based on logged-in user
-  const [supervisors, setSupervisors] = useState<IUser[]>([]);
-  const [activeTab, setActiveTab] = useState<'admin'>('admin');
+ // Set a sample userId, it should be dynamic based on logged-in user
+  const [teachers, setTeachers] = useState<IUser[]>([]);
+  const [admin, setAdmin] = useState<IUser[]>([]);
+  const [activeTab, setActiveTab] = useState<
+    "teachers" | "admin"
+  >("teachers");
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [messages, setMessages] = useState<IMessage[]>([]);
-  const [messageText, setMessageText] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [messageText, setMessageText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [messageCount, setMessageCount] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
+  let userId: string | null = null;
+
+  if (typeof window !== "undefined") {
+    userId = localStorage.getItem('SupervisorPortalId');
+  }
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
-      const response = await axios.get<{ users: IUser[] }>('https://api.blackstoneinfomaticstech.com/users', {
-        params: { role },
-      });
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+  } 
+      const response = await axios.get<{ users: IUser[] }>(
+        "https://api.blackstoneinfomaticstech.com/users",
+        {
+          params: { role },
+           headers:{
+              "Content-Type":"application/json",
+              "Authorization":`Bearer ${token}`
+            }
+        }
+      );
       return response.data.users;
     } catch (err) {
       console.error(`❌ Failed to fetch users for role ${role}:`, err);
       return [];
     }
   };
-useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
- 
 
   // Filter users based on search query
-  const filteredUsers = supervisors .filter(user =>
-    user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = (
+    activeTab === "teachers" ? teachers : admin
+  ).filter(
+    (user) =>
+      user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Handle message selection
@@ -118,7 +126,21 @@ useEffect(() => {
   // Fetch messages from API
   const fetchMessages = async (receiverId: string) => {
     try {
-      const { data } = await axios.get<IMessageResponse>(`https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`);
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
+      const { data } = await axios.get<IMessageResponse>(
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`,{
+           headers:{
+              "Content-Type":"application/json",
+              "Authorization":`Bearer ${token}`
+            }
+        }
+      );
       const fetchedMessages = data?.data?.[0]?.messages ?? [];
       setMessages(fetchedMessages); // Set messages to state
 
@@ -129,10 +151,14 @@ useEffect(() => {
       console.error("Error fetching messages:", error);
     }
   };
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   // Initialize socket connection
   useEffect(() => {
-    if(!userId) return;
     if (!socketRef.current) {
       socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
         transports: ["websocket"],
@@ -145,7 +171,6 @@ useEffect(() => {
       socketRef.current.on("connect", () => {
         console.log("Connected to Socket.IO with ID:", socketRef.current?.id);
         socketRef.current?.emit("subscribe", userId);
-        console.log(userId);
       });
 
       socketRef.current.on("disconnect", () => {
@@ -169,12 +194,14 @@ useEffect(() => {
 
     socketRef.current.on("newmessage", handleNewMessage);
     const fetchAllUsers = async () => {
-      const [sup] = await Promise.all([
-        fetchUsersByRole('ADMIN'),
+      const [sup, coaches] = await Promise.all([
+        fetchUsersByRole("TEACHER"),
+        fetchUsersByRole("ADMIN"),
       ]);
-      setSupervisors(sup);
+      setTeachers(sup);
+      setAdmin(coaches);
     };
-  
+
     fetchAllUsers();
     // Cleanup: remove only the message listener
     return () => {
@@ -185,35 +212,49 @@ useEffect(() => {
   // Handle sending messages
   const handleSendMessage = async () => {
     if (!selectedUser || !messageText.trim()) return;
-  
+
     // Create the message object in IMessagesend format
     const newMessage: IMessagesend = {
       messages: messageText,
-      senderId: userId,
-      senderName: senderName,
+      senderId: userId ?? '',
+      senderName: "Admin",
       receiverId: selectedUser._id,
       receiverName: `${selectedUser.userName}`,
       createdDate: new Date(),
-      notificationStatus: 'Unseen',
+      notificationStatus: "Unseen",
       isRead: false,
-      status: 'Active',
-      senderEmail: 'Blackstone@gmail.com',
+      status: "Active",
+      senderEmail: "Blackstone@gmail.com",
       receiverEmail: selectedUser.email,
-      createdBy: 'System',
+      createdBy: "System",
       updatedDate: new Date(),
-      updatedBy: 'System',
+      updatedBy: "System",
     };
-  
+
     try {
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
       // Send the new message to the backend API
-      const response = await axios.post('https://api.blackstoneinfomaticstech.com/realtimemessage', newMessage, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-  
+      const response = await axios.post(
+        "https://api.blackstoneinfomaticstech.com/realtimemessage",
+        newMessage,
+        {
+          headers: {
+            "Content-Type": "application/json",
+      "Authorization":`Bearer ${token}`,
+        
+      
+          },
+        }
+      );
+
       // Check if the message was successfully posted
-      if (response.data.status === 'success') {
+      if (response.data.status === "success") {
         // Convert IMessagesend to IMessage before updating state
         const convertedMessage: IMessage = {
           _id: Date.now().toString(), // Generate a unique _id
@@ -228,243 +269,326 @@ useEffect(() => {
           isRead: newMessage.isRead,
           status: newMessage.status,
         };
-  
+
         // Update messages state with the new message
         setMessages((prev) => [convertedMessage, ...prev]);
-        setMessageText(''); // Clear the message input
+        setMessageText(""); // Clear the message input
       } else {
-        console.error('Error posting message:', response.data.message);
+        console.error("Error posting message:", response.data.message);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
     }
   };
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'offline': return 'bg-gray-400';
-      case 'busy': return 'bg-yellow-500';
-      default: return 'bg-gray-400';
+      case "online":
+        return "bg-green-500";
+      case "offline":
+        return "bg-gray-400";
+      case "busy":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-400";
     }
   };
 
   return (
     <BaseLayout3>
-      <div className="py-3 px-5" >
-      <h1 className="text-[20px] mt-3 font-semibold mb-3">Messages</h1>
-      <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
+      <div className="py-3 px-5">
+        <h1 className="text-[20px] mt-3 font-semibold mb-3">Messages</h1>
+        <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
+          {/* Left Panel */}
+          <motion.div
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="w-full md:w-[350px] bg-white p-4 rounded-lg shadow-md flex flex-col border border-gray-100"
+          >
+            <div className="flex items-center space-x-3 p-2">
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <img
+                  src="/assets/images/account.png"
+                  alt="Admin"
+                  className="w-12 h-12 rounded-lg border border-[#dbdbdb]"
+                />
+              </motion.div>
+              <div>
+                <div className="flex">
+                <h3 className="text-sm font-semibold text-[#374557]">
+                  Admin{" "}
+                  
+                </h3>
+                <button className="ml-[1px] text-gray-500">
+                    <Bell size={16} className="text-white" />
+                    {messageCount > 0 && (
+                      <span className=" -mt-7 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
+                        {messageCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+                
 
-        {/* Left Panel */}
-        <motion.div
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="w-full md:w-[350px] bg-white p-4 rounded-lg shadow-md flex flex-col border border-gray-100"
-        >
-          <div className="flex items-center space-x-3 p-2">
-            <motion.div whileHover={{ scale: 1.05 }}>
-              <img
-                src="/assets/images/account.png"
-                alt="Admin"
-                className="w-12 h-12 rounded-lg border border-[#dbdbdb]"
+                <p className="text-xs text-gray-400">Administrator</p>
+              </div>
+            </div>
+
+            {/* Search Bar */}
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              className="relative mt-2 mb-3"
+            >
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400 text-xs" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search messages..."
+                className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#4CBC9A]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </motion.div>
-            <div>
-              <h3 className="text-sm font-semibold text-[#374557]">{senderName}</h3>
-              <p className="text-xs text-gray-400">Supervisor</p>
-            </div>
-            <button className="ml-auto text-gray-500">
-            <Bell size={16} className="text-white" />
-                 {messageCount > 0 && (
-                   <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                     {messageCount}
-                   </span>
-                 )}
-            </button>
-          </div>
 
-          {/* Search Bar */}
-          <motion.div whileHover={{ scale: 1.01 }} className="relative mt-2 mb-3">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiSearch className="text-gray-400 text-xs" />
+            {/* Tabs */}
+            <div className="flex border-b">
+              <button
+                className={`px-3 py-1.5 text-xs font-medium ${
+                  activeTab === "teachers"
+                    ? "text-[#002B4D] border-b-2 border-[#002B4D]"
+                    : "text-gray-500"
+                }`}
+                onClick={() => setActiveTab("teachers")}
+              >
+                Teachers
+              </button>
+              <button
+                className={`px-3 py-1.5 text-xs font-medium ${
+                  activeTab === "admin"
+                    ? "text-[#002B4D] border-b-2 border-[#002B4D]"
+                    : "text-gray-500"
+                }`}
+                onClick={() => setActiveTab("admin")}
+              >
+                Admin
+              </button>
             </div>
-            <input
-              type="text"
-              placeholder="Search messages..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#4CBC9A]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+
+            {/* User List */}
+            <div className="mt-2 overflow-y-auto flex-1">
+              <AnimatePresence>
+                {filteredUsers.map((user) => (
+                  <motion.button
+                    key={user._id}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex items-center border-b-2 justify-between w-full p-2 rounded cursor-pointer ${
+                      selectedUser?._id === user._id
+                        ? "bg-blue-100 text-blue-600"
+                        : "hover:bg-gray-50"
+                    }`}
+                    onClick={() => handleUserClick(user)}
+                  >
+                    <div className="flex space-x-2 items-center">
+                      <div className="relative">
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center"
+                        >
+                          <span className="text-gray-600 text-xs">
+                            {user.userName.charAt(0)}
+                          </span>
+                        </motion.div>
+                        <div
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
+                            user.status ?? "offline"
+                          )}`}
+                        ></div>
+                      </div>
+                      <div className="text-left">
+                        <h5 className="font-medium text-xs text-[#374557]">
+                          {user.userName}
+                        </h5>
+                        <p className="text-[10px] text-gray-400 truncate max-w-[180px]">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[9px] text-gray-400">
+                      {user.lastSeen}
+                    </span>
+                  </motion.button>
+                ))}
+              </AnimatePresence>
+            </div>
           </motion.div>
 
-          {/* Tabs */}
-          <div className="flex border-b">
-            <button
-              className={`px-3 py-1.5 text-xs font-medium ${activeTab === 'admin' ? 'text-[#4CBC9A] border-b-2 border-[#4CBC9A]' : 'text-gray-500'}`}
-              onClick={() => setActiveTab('admin')}
-            >
-              Supervisors
-            </button>
-           
-          </div>
-
-          {/* User List */}
-          <div className="mt-2 overflow-y-auto flex-1">
-            <AnimatePresence>
-              {filteredUsers.map((user) => (
-                <motion.button
-                  key={user._id}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className={`flex items-center justify-between w-full p-2 rounded-lg cursor-pointer ${selectedUser?._id === user._id ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-50'}`}
-                  onClick={() => handleUserClick(user)}
-                >
-                  <div className="flex space-x-2 items-center">
-                    <div className="relative">
-                      <motion.div whileHover={{ scale: 1.05 }} className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <span className="text-gray-600 text-xs">
-                          {user.userName.charAt(0)}
+          {/* Chat Panel */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="w-full md:flex-1 bg-white rounded-lg shadow-md flex flex-col border border-gray-100 overflow-hidden"
+          >
+            {selectedUser ? (
+              <>
+                <div className="border-b border-gray-200 p-3">
+                  <div className="flex items-center space-x-2">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      className="relative"
+                    >
+                      <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <span className="text-gray-600 text-sm">
+                          {selectedUser.userName.charAt(0)}
                         </span>
-                      </motion.div>
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(user.status ?? 'offline')}`}></div>
-                    </div>
-                    <div className="text-left">
-                      <h5 className="font-medium text-xs text-[#374557]">
-                        {user.userName} 
-                      </h5>
-                      <p className="text-[10px] text-gray-400 truncate max-w-[180px]">{user.email}</p>
-                    </div>
-                  </div>
-                  <span className="text-[9px] text-gray-400">{user.lastSeen}</span>
-                </motion.button>
-              ))}
-            </AnimatePresence>
-          </div>
-        </motion.div>
-
-        {/* Chat Panel */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="w-[800px] md:flex-1 bg-white rounded-lg shadow-md flex flex-col border border-gray-100 overflow-hidden"
-        >
-          {selectedUser ? (
-            <>
-              <div className="border-b border-gray-200 p-3">
-                <div className="flex items-center space-x-2">
-                  <motion.div whileHover={{ scale: 1.05 }} className="relative">
-                    <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <span className="text-gray-600 text-sm">
-                        {selectedUser.userName.charAt(0)}
-                      </span>
-                    </div>
-                    <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(selectedUser.status ?? 'offline')}`}></div>
-                  </motion.div>
-                  <div>
-                    <h3 className="text-xs font-semibold">
-                      {selectedUser.userName}
-                    </h3>
-                    <div className="flex items-center">
-                      <span className={`inline-block w-2 h-2 rounded-full mr-1 ${getStatusColor(selectedUser.status ?? 'offline')}`}></span>
-                      <p className="text-[10px] text-gray-400 capitalize">
-                        {selectedUser.status} • {selectedUser.role}
-                      </p>
+                      </div>
+                      <div
+                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
+                          selectedUser.status ?? "offline"
+                        )}`}
+                      ></div>
+                    </motion.div>
+                    <div>
+                      <h3 className="text-xs font-semibold">
+                        {selectedUser.userName}
+                      </h3>
+                      <div className="flex items-center">
+                        <span
+                          className={`inline-block w-2 h-2 rounded-full mr-1 ${getStatusColor(
+                            selectedUser.status ?? "offline"
+                          )}`}
+                        ></span>
+                        <p className="text-[10px] text-gray-400 capitalize">
+                          {selectedUser.status} • {selectedUser.role}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex-1 p-3 overflow-y-auto bg-gray-50 flex flex-col"> {/* Added flex-col-reverse */}
-  <AnimatePresence>
-    {[...messages].reverse().map((msg) => ( // Reverse the messages array
-      <motion.div
-        key={msg._id}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className={`flex flex-col mb-3 ${msg.senderId === userId ? 'items-end' : 'items-start'}`}
-      >
-        <motion.div
-          whileHover={{ scale: 1.01 }}
-          className={`p-2 rounded-lg max-w-[80%] shadow-sm ${
-            msg.senderId === userId
-              ? 'bg-[#4CBC9A] text-white rounded-tr-none'
-              : 'bg-white border border-gray-200 rounded-tl-none'
-          }`}
-        >
-          <p className="text-xs">{msg.messages}</p>
-          <div className="flex items-center justify-end mt-1 space-x-1">
-            <span className="text-[9px] opacity-70">
-              {new Date(msg.createdDate).toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </span>
-            {msg.senderId === userId && (
-              <span className="text-[9px]">
-                {msg.isRead ? '✓✓' : '✓'}
-              </span>
-            )}
-          </div>
-        </motion.div>
-      </motion.div>
-    ))}
-  </AnimatePresence>
-  <div ref={messagesEndRef} /> {/* Moved to top since we're reversing */}
-</div>
+                <div className="flex-1 p-3 overflow-y-auto scrollbar-none bg-gray-50 flex flex-col">
+                  {" "}
+                  {/* Added flex-col-reverse */}
+                  <AnimatePresence>
+                    {[...messages].reverse().map(
+                      (
+                        msg // Reverse the messages array
+                      ) => (
+                        <motion.div
+                          key={msg._id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className={`flex flex-col mb-3 ${
+                            msg.senderId === userId
+                              ? "items-end"
+                              : "items-start"
+                          }`}
+                        >
+                          <motion.div
+                            whileHover={{ scale: 1.01 }}
+                            className={`p-2 rounded-lg max-w-[80%] shadow-sm ${
+                              msg.senderId === userId
+                                ? "bg-[#223857] text-white shadow-lg rounded-tr-none"
+                                : "bg-white shadow-lg rounded-tl-none"
+                            }`}
+                          >
+                            <p className="text-xs">{msg.messages}</p>
+                            <div className="flex items-center justify-end mt-1 space-x-1">
+                              <span className="text-[9px] opacity-70">
+                                {new Date(msg.createdDate).toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
+                              </span>
+                              {msg.senderId === userId && (
+                                <span className="text-[9px]">
+                                  {msg.isRead ? "✓✓" : "✓"}
+                                </span>
+                              )}
+                            </div>
+                          </motion.div>
+                        </motion.div>
+                      )
+                    )}
+                  </AnimatePresence>
+                  <div ref={messagesEndRef} />
+                </div>
 
+                <motion.div
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="border-t border-gray-200 p-3 bg-white"
+                >
+                  <div className="flex items-center rounded-lg bg-gray-50 p-1">
+                    <button className="p-1 text-gray-500 hover:text-gray-700 ml-1">
+                      <GrAttachment size={14} />
+                    </button>
+                    <input
+                      type="text"
+                      placeholder="Type a message..."
+                      className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none"
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && handleSendMessage()
+                      }
+                    />
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleSendMessage}
+                      disabled={!messageText.trim()}
+                      className={`p-1 rounded-lg flex items-center ${
+                        messageText.trim()
+                          ? "bg-[#4CBC9A] text-white"
+                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      <FaTelegramPlane size={14} />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </>
+            ) : (
               <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                className="border-t border-gray-200 p-3 bg-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center justify-center h-full bg-gray-50"
               >
-                <div className="flex items-center rounded-lg bg-gray-50 p-1">
-                  <button className="p-1 text-gray-500 hover:text-gray-700 ml-1">
-                    <GrAttachment size={14} />
-                  </button>
-                  <input
-                    type="text"
-                    placeholder="Type a message..."
-                    className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none"
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  />
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleSendMessage}
-                    disabled={!messageText.trim()}
-                    className={`p-1 rounded-lg flex items-center ${messageText.trim() ? 'bg-[#4CBC9A] text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                  >
-                    <FaTelegramPlane size={14} />
-                  </motion.button>
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full mb-3 flex items-center justify-center">
+                    <svg
+                      className="w-8 h-8 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Select a conversation to start chatting
+                  </p>
                 </div>
               </motion.div>
-            </>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center justify-center h-full bg-gray-50"
-            >
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full mb-3 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                  </svg>
-                </div>
-                <p className="text-xs text-gray-500">Select a conversation to start chatting</p>
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
+            )}
+          </motion.div>
+        </div>
       </div>
-    </div>
     </BaseLayout3>
   );
 };

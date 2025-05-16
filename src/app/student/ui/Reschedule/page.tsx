@@ -16,23 +16,36 @@ const TeacherReschedule = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false); // For success modal
 
 
-  // Fetch events data
-  useEffect(() => {
-    
-    fetch('https://api.blackstoneinfomaticstech.com/meetingSchedulelist')
-      .then((response) => response.json())
-      .then((data) => {
-        const mappedEvents = data.academicCoach.map((item: any) => ({
-          title: item.subject,
-          start: new Date(item.scheduledStartDate),
-          end: new Date(item.scheduledEndDate),
-          allDay: false,
-          description: item.description,
-        }));
-        setEvents(mappedEvents);
-      })
-      .catch((error) => console.error('Error fetching data:', error));
-  }, []);
+useEffect(() => {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }
+
+  fetch('https://api.blackstoneinfomaticstech.com/meetingSchedulelist', {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      const mappedEvents = data.academicCoach.map((item: any) => ({
+        title: item.subject,
+        start: new Date(item.scheduledStartDate),
+        end: new Date(item.scheduledEndDate),
+        allDay: false,
+        description: item.description,
+      }));
+      setEvents(mappedEvents);
+    })
+    .catch((error) => console.error('Error fetching data:', error));
+}, []);
+
 
   // Helper function to generate 24-hour time slots
   const generateTimeSlots = () => {

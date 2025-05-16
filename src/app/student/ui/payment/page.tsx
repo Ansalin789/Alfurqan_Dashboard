@@ -75,6 +75,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, invoiceId,amo
         currency,
         invoiceId,
         paymentIntentResponse: paymentIntent,
+         
       });
 
       setMessage('Payment successful!');

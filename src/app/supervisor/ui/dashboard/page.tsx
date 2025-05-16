@@ -104,20 +104,37 @@ export default function Dashboard() {
 
   useEffect(() => {
     setMounted(true);
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
 
-    const auth = localStorage.getItem("SupervisorAuthToken");
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  }
     const fetchData = async () => {
-      const applicants = await fetchApplicantsData(auth ?? " ");
+   
+      const applicants = await fetchApplicantsData(token ?? " ");
       console.log("Fetched Applicants:", applicants); // ✅ Debugging
       const filteredData = processApplicants(applicants);
       console.log("Filtered Pie Data:", filteredData); // ✅ Debugging
       setPieData(filteredData);
     };
 
-    const fetchApplicants = axios.get("https://api.blackstoneinfomaticstech.com/applicants");
+    const fetchApplicants = axios.get("https://api.blackstoneinfomaticstech.com/applicants",
+      {
+         headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
+      }
+    );
 
     const fetchDashboardCounts = axios.get(
-      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts"
+      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+      {
+         headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
+      }
     );
 
     Promise.all([fetchApplicants, fetchDashboardCounts])
@@ -218,8 +235,18 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
-          headers: { "Content-Type": "application/json" },
+        const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", 
+          {
+          headers: { "Content-Type": "application/json" , 'Authorization': `Bearer ${token}`,},
+              
+           
         });
 
         const allMeetings: Meeting[] = response.data.data.meetings;
@@ -275,7 +302,21 @@ export default function Dashboard() {
   const currentYear = today.getFullYear();
   const fetchApplicantsData = async (auth: string) => {
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/applicants");
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
+    
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/applicants",{
+        headers:{
+          "Content-Type": "application/json" , 
+          'Authorization': `Bearer ${token}`,
+        }
+        
+      });
 
       console.log("API Response:", response.data);
 
@@ -355,36 +396,13 @@ export default function Dashboard() {
   const remainingRejected = 100 - percentageRejected;
   console.log(remainingApplications);
   return (
-    <BaseLayout3>
-      <div className="flex flex-col h-screen w-full mr-5 ">
+    <BaseLayout3 >
+      <div className="flex flex-col h-screen w-full">
         {/* Header - Made more compact on small screens */}
-        <header className="p-2 flex flex-col sm:flex-row justify-between items-center mt-2 mr-4  gap-2 sm:gap-3 text-sm">
-          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-            <div className="relative flex-1 sm:flex-none">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="pl-10 pr-4 py-1.5 rounded-lg bg-gray-100 w-full sm:w-[250px] text-sm"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="flex items-center gap-1">
-              <Sun size={16} className="text-gray-600" />
-              <div className="w-10 h-5 bg-gray-200 rounded-full p-0.5">
-                <div className="w-4 h-4 bg-white rounded-full transform transition-transform duration-200 translate-x-5"></div>
-              </div>
-              <Moon size={16} className="text-gray-600" />
-            </div>
-            <Bell size={16} className="text-gray-600" />
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center">
-                <User size={16} className="text-gray-600" />
-              </div>
-              <span className="font-medium hidden sm:inline text-sm">
-                Harsh
-              </span>
+        <header className=" flex flex-col sm:flex-row justify-between items-center text-sm">
+          <div className="flex items-center w-full sm:w-auto">
+            <div className="">
+              <h2 className="font-semibold text-[20px] pt-[39px] pb-[23px] pl-[16px]">Dashboard</h2>
             </div>
           </div>
         </header>
@@ -392,8 +410,8 @@ export default function Dashboard() {
         <div className="flex flex-1 min-h-0">
           <main className="flex-1 p-2 sm:p-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg">
-                <h3 className="text-gray-800 text-[13px] font-semibold mb-2">
+              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg w-[270px] h-[132px]">
+                <h3 className="text-gray-800 text-[14px] font-medium mb-2">
                   Total Applications
                 </h3>
                 <div className="flex justify-between items-center">
@@ -432,7 +450,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg">
+              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg w-[270px] h-[132px]">
                 <h3 className="text-gray-800 text-[13px] font-semibold mb-2">
                   Shortlisted Candidates
                 </h3>
@@ -471,7 +489,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg">
+              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg w-[270px] h-[132px]">
                 <h3 className="text-gray-800 text-[13px] font-semibold mb-2">
                   Rejected Candidates
                 </h3>
@@ -511,8 +529,8 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-2">
-              <div className="bg-white border border-[#BABABA] p-3 rounded-xl h-[calc(30vh-2rem)] shadow-lg">
+            <div className="grid grid-cols-2 lg:grid-cols-2 gap-[20px] mb-2 w-full">
+              <div className="bg-white  p-3 rounded-xl h-[calc(390px-2rem)] shadow-lg w-[557px]">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
                   <h3 className="text-gray-800 text-[13px] font-semibold sm:text-sm">
@@ -588,7 +606,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="border border-[#BABABA] bg-[#D0E0EC] p-3 rounded-xl h-[calc(30vh-2rem)] shadow-lg">
+              <div className=" bg-[#D0E0EC] p-3 rounded-xl h-[calc(390px-2rem)] shadow-lg w-[270px] ml-[70px]">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-gray-800 text-[13px] font-semibold sm:text-sm">
                     Teachers By Subject
@@ -655,7 +673,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-white border border-[#BABABA] p-3 rounded-lg">
+            <div className="bg-white p-3 rounded-lg h-[calc(390px-2rem)] shadow-lg w-[842px]">
               {/* Header */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
                 <div className="flex items-center gap-2">
@@ -748,12 +766,12 @@ export default function Dashboard() {
             </div>
           </main>
 
-          <aside className="w-64 p-2 hidden lg:block space-y-2 mt-1">
+          <aside className="w-[310px] h-[314px] hidden lg:block space-y-[16px] mt-1">
             {/* Calendar Section */}
-            <div className="bg-[#D0E0EC] p-2 rounded-lg">
+            <div className="bg-[#fff] p-2 rounded-lg shadow">
               {/* Calendar Header */}
               {/* Calendar Section */}
-              <div className="bg-[#D0E0EC] p-2 rounded-lg">
+              <div className="bg-[#fff] p-2 rounded-lg">
                 {/* Calendar Header */}
                 <div className="relative flex flex-col items-center pb-2">
                   <div className="w-full h-5 bg-gray-300 rounded-t-md"></div>
@@ -788,7 +806,7 @@ export default function Dashboard() {
             </div>
 
             {/* Teachers Section */}
-            <div className="bg-white p-2 rounded-xl border border-blue-300 shadow-lg">
+            <div className="bg-white p-2 h-[216px] rounded-xl shadow-lg">
               <h3 className="text-[13px] font-semibold text-gray-800 mb-1">
                 Teachers
               </h3>
@@ -846,7 +864,7 @@ export default function Dashboard() {
             </div>
 
             {/* Schedule Section */}
-            <div className="bg-white p-2 rounded-lg">
+            <div className="bg-white p-2 rounded-lg h-[389px]">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-[13px] font-semibold text-gray-700">
                   Schedule

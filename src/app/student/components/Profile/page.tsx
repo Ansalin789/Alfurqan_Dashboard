@@ -33,10 +33,20 @@ const Profile = () => {
 
       const fetchInvoice = async () => {
         try {
+           const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }
           const response = await axios.get<{ invoice: Invoice[] }>(
             "https://api.blackstoneinfomaticstech.com/classShedule/totalhours",
             {
               params: { studentId },
+              headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },  
            
             }
           );

@@ -36,10 +36,16 @@ const ViewTeacherSchedule = () => {
   const [newStartTime, setNewStartTime] = useState<string>("");
 
   useEffect(() => {
-    const auth = localStorage.getItem("authToken");
+   const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
     fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`, {
       headers: {
-        Authorization: `Bearer ${auth}`,
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((response) => response.json())

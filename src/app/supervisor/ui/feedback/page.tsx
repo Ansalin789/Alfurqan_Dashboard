@@ -64,9 +64,19 @@ console.log(isPopupOpen);
           setLoading(false);
           return;
         }
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  } 
 
         const response = await axios.get("https://api.blackstoneinfomaticstech.com/supervisorfeedback", {
           params: { supervisorId },
+          headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
         });
 
         if (Array.isArray(response.data.applicants)) {

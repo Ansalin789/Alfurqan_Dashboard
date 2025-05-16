@@ -39,13 +39,19 @@ interface GetAllUsersResponse {
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
   try {
     
-    const academicId = localStorage.getItem("academicId");
+    const academicId = localStorage.getItem("AcademicCoachPortalId");
     console.log("academicId>>", academicId);
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+  }
     const response = await axios.get(`https://api.blackstoneinfomaticstech.com/studentlist`, {
       params: { academicCoachId: academicId },
       headers: {
         "Content-Type": "application/json",
-        
+        "Authorization": `Bearer ${token}`,
       },
     });
     console.log("response>>>", response);

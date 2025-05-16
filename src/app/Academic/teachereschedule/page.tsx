@@ -39,8 +39,18 @@ const Teachereschedule = () => {
 
   // Fetch events data
   useEffect(() => {
-   
-    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`)
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`,{
+      headers:{
+        'Authorization': `Bearer ${token}`,
+      }
+    })
       .then((response) => response.json())
       .then((data) => {
         const mappedEvents = data.academicCoach.map((item: AcademicCoachItem) => ({

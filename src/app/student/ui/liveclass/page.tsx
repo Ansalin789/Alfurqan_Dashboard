@@ -149,16 +149,26 @@ useEffect(() => {
   const fetchClassData = async () => {
       try {
           const studentId = localStorage.getItem('StudentPortalId');
-          const authToken = localStorage.getItem('StudentAuthToken');
+const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
 
-          if (!studentId || !authToken) {
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }          if (!studentId || !token) {
+          console.log('Missing studentId or authToken');
+          return;
+        }
+          if (!studentId || !token) {
               console.log('Missing studentId or authToken');
               return;
           }
 
           const response = await axios.get<ApiResponse>(`https://api.blackstoneinfomaticstech.com/classShedule/students`, {
               params: { studentId },
-             
+             headers: { "Content-Type": "application/json",
+               'Authorization': `Bearer ${token}`,
+           },
           });
 
           console.log('Raw API Response:', response.data.classSchedule); // Check data format
@@ -221,9 +231,18 @@ useEffect(() => {
       };
   
       try {
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }  
         const response = await axios.post("https://api.blackstoneinfomaticstech.com/feedback", feedbackData, {
           headers: {
             "Content-Type": "application/json",
+                           'Authorization': `Bearer ${token}`,
+
           },
         });
   

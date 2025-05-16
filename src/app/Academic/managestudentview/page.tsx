@@ -151,9 +151,20 @@ const ManageStudentView = () => {
     if (studentId) {
       const fetchData = async () => {
         try {
+           const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
           const studentId = localStorage.getItem("studentManageID");
           const response = await fetch(
-            `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`);
+            `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,{
+              headers:{
+                "Authorization": `Bearer ${token}`,
+              }
+            });
           const data = await response.json();
           setStudentData(data);
           console.log("student data form evalutional" + JSON.stringify(data));
@@ -165,9 +176,18 @@ const ManageStudentView = () => {
     }
     const studentlist = async () => {
       try {
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         const response = await fetch(`https://api.blackstoneinfomaticstech.com/classShedule`, {
-          method: "GET"
-      });
+          method: "GET",
+        headers:{
+          "Authorization": `Bearer ${token}`,
+      }});
         const data = await response.json();
         setStudentllistdata(data);
         console.log(JSON.stringify(data));

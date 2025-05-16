@@ -39,10 +39,20 @@ const ManageTeacher: React.FC = () => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         const response = await fetch(
           `https://api.blackstoneinfomaticstech.com/users?role=TEACHER`,
-          
+          {
+            headers:{
+              "Authorization": `Bearer ${token}`,
+            }
+          }
         );
         const data = await response.json();
 
@@ -103,11 +113,18 @@ const ManageTeacher: React.FC = () => {
   const handleSave = async () => {
     console.log("New Teacher Data:", newTeacher);
     try {
-      
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
       const response = await fetch(`https://api.blackstoneinfomaticstech.com/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(newTeacher),
       });

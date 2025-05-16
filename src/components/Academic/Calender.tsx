@@ -21,9 +21,19 @@ const Academic: React.FC = () => {
   const [value, setValue] = useState<Date>(new Date());
 
   useEffect(() => {
-    
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
 
-    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`)
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+
+    fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`,{
+      headers:{
+        "Authorization": `Bearer ${token}`,
+      }
+    })
       .then((response) => response.json())
       .then((data) => {
         const mappedEvents = data.academicCoach.map(
