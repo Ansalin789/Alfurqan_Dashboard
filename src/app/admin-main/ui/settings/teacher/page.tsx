@@ -32,10 +32,10 @@ interface EmployeeAccessData {
     academicCoach: boolean;
     academicmodules: {
       dashboard: boolean;
-      scheduledevaluation: boolean;
-      scheduledtrail: boolean;
-      students: boolean;
-      teachers: boolean;
+      trailmanagement: boolean;
+      schedule: boolean;
+      managestudents: boolean;
+      manageteachers: boolean;
       messages: boolean;
       support: boolean;
     };
@@ -55,6 +55,7 @@ interface EmployeeAccessData {
       assignments: boolean;
       payments: boolean;
       knowledgebase: boolean;
+      mesages: boolean;
       support: boolean;
     };
     teacher: boolean;
@@ -112,7 +113,7 @@ const TeacherModuleAccess = () => {
   const modules = [
     'Dashboard',
     'Live Classes',
-    'Schedule Classes',
+    'Schedule',
     'Assignments',
     'Messages',
     'Analytics',

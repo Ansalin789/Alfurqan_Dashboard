@@ -236,14 +236,14 @@ const [dashboardRead,setdashboardRead]=useState(false);
     return;
   }
       const response = await fetch("https://api.blackstoneinfomaticstech.com/allAdminMeeting", {
-        method: "POST",
+        method: "GET",
         headers: {
           "Content-Type": "application/json", 
                       "Authorization": `Bearer ${token}`,
         },
       });
       const data: MeetingsResponse = await response.json();
-      console.log(data);
+      console.log("all meeting ",data);
       setMeetingsData(data);
     }
     fetchMeetings();

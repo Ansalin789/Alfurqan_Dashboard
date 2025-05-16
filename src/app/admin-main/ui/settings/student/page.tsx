@@ -114,7 +114,8 @@ const StudentModuleAccess = () => {
     'Classes',
     'Assignments',
     'Payments',
-    'Knowledge Base',
+    'Knowledge',
+    'Message',
     'Support',
   ];
 

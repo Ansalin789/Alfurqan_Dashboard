@@ -22,6 +22,7 @@ export interface AdminModules {
   analytics: RoleModuleAccess;
   messages: RoleModuleAccess;
   settings: RoleModuleAccess;
+  meetings:RoleModuleAccess;
 }
 
 export interface AcademicModules {
