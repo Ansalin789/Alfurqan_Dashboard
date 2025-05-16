@@ -547,7 +547,9 @@ if (typeof window !== "undefined") {
                   className="border-t border-gray-200 p-3 bg-white"
                 >
                   <div className="flex items-center rounded-lg bg-gray-50 p-1">
-                    <button className="p-1 text-gray-500 hover:text-gray-700 ml-1">
+                    <button 
+                    disabled={!dashboardRead}
+                    className="p-1 text-gray-500 hover:text-gray-700 ml-1">
                       <GrAttachment size={14} />
                     </button>
                     <input
@@ -556,7 +558,6 @@ if (typeof window !== "undefined") {
                       className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none"
                       value={messageText}
                       onChange={(e) => setMessageText(e.target.value)}
-                      disabled={!dashboardRead}
                       onKeyPress={(e) =>
                         e.key === "Enter" && handleSendMessage()
                       }
