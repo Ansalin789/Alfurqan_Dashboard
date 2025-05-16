@@ -21,12 +21,18 @@ const UpcomingTask: React.FC = () => {
     const fetchClassData = async () => {
       try {
         const teacherId = localStorage.getItem("TeacherPortalId");
-        
+           const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+  }
 
         const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule/teacher", {
           params: { teacherId: teacherId },
           headers: {
             "Content-Type": "application/json",
+            "Authorization" :`Bearer ${token}`
           },
         });
 

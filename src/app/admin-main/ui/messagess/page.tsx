@@ -76,7 +76,7 @@ const Message = () => {
   const [messageCount, setMessageCount] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
-  
+  const [dashboardRead,setdashboardRead]=useState(false);
   const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
       const token =
@@ -159,6 +159,22 @@ const Message = () => {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+  useEffect(()=>{
+if (typeof window !== "undefined") {
+      const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+      if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.messages?.write ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
+    }
+  },[]);
 
   // Initialize socket connection
   useEffect(() => {
@@ -531,7 +547,9 @@ const Message = () => {
                   className="border-t border-gray-200 p-3 bg-white"
                 >
                   <div className="flex items-center rounded-lg bg-gray-50 p-1">
-                    <button className="p-1 text-gray-500 hover:text-gray-700 ml-1">
+                    <button 
+                    disabled={!dashboardRead}
+                    className="p-1 text-gray-500 hover:text-gray-700 ml-1">
                       <GrAttachment size={14} />
                     </button>
                     <input

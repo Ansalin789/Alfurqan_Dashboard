@@ -57,7 +57,7 @@ export default function KnowledgeBase() {
   const [showPdf, setShowPdf] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
 
- 
+ const [dashboardRead,setdashboardRead]=useState(false);
  
   const [knowledgeBaseData, setKnowledgeBaseData] = useState<KnowledgeBaseEntry>({
     courseName: '',
@@ -92,6 +92,20 @@ export default function KnowledgeBase() {
   } else {
     console.log("No auth token found.");
   }
+  if (typeof window !== "undefined") {
+      const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+      if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.courses?.write ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
+    }
 }, []);
 const fetchKnowledgeBaseList = async (token: string) => {
   try {
@@ -318,7 +332,12 @@ const videoFiles = knowledgeBaseList.filter(
 
         <div className="relative w-full">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4 bg-white rounded-lg overflow-y-auto h-[240px] max-w-full scrollbar-none w-full">
-            <AddCard onClick={() => setShowModal(true)} />
+            <button
+            className="cursor-pointer"
+              disabled={!dashboardRead}
+            >
+<AddCard onClick={() => setShowModal(true)} />
+            </button>
             {pdfFiles.map((pdf) => (
               <div
                 key={pdf._id}
@@ -485,6 +504,7 @@ const videoFiles = knowledgeBaseList.filter(
             <button
               className="cursor-pointer"
               onClick={() => setShowUploadModal(true)}
+              disabled={!dashboardRead}
             >
               <AddCards isVideo onClicks={() => setShowUploadModal(true)} />
             </button>

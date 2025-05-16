@@ -14,6 +14,7 @@ import { Sun, Bell, X } from "lucide-react";
 import StudentTeacherStaff from "../../components/StudentTeacherStaff";
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
+import { json } from "stream/consumers";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface INotification {
@@ -43,7 +44,7 @@ const Page = () => {
   const socketRef = useRef<Socket | null>(null);
   const [activeTab, setActiveTab] = useState("unseen");
   const userId = "6805da8c06542aa33858b889";
- 
+ const [dashboardRead,setdashboardRead]=useState(false);
   // Close notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -51,6 +52,20 @@ const Page = () => {
         setShowNotifications(false);
       }
     };
+     if (typeof window !== "undefined") {
+      const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+      if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.dashboard?.write ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
+    }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -139,6 +154,7 @@ const Page = () => {
 
  
   const handleNotificationClick = async (notificationId: string) => {
+    console.log("clicked");
      const token =
     typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
@@ -266,6 +282,7 @@ const Page = () => {
                     handleNotificationClick(notification._id);
                   }
                 }}
+                disabled = {!dashboardRead}
                 className={`cursor-pointer p-3 mb-2 rounded-lg transition-all duration-200 ${
                   notification.notificationStatus === "Seen"
                     ? "bg-white/20 text-gray-900 hover:bg-white/30"

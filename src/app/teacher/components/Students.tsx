@@ -19,12 +19,22 @@ interface TeacherListProps {
 
 const fetchTeacherData = async (): Promise<Teacher[] | null> => {
   try {
+    const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+  }
     const studentId = localStorage.getItem("TeacherPortalId");
     console.log(">>>>>", studentId);
     const response = await axios.get(
       "https://api.blackstoneinfomaticstech.com/teacher-student-count",
       {
         params: { teacherId: studentId },
+         headers:{
+                 'Content-Type': 'application/json',
+        "Authorization":`Bearer ${token}`,
+          }
       }
     );
 

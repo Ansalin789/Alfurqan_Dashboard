@@ -51,16 +51,24 @@ const Classes = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const auth = localStorage.getItem("TeacherAuthToken");
+        const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
         const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
-         
-        console.log(auth);
         if (!teacherIdToFilter) {
           console.error("No teacher ID found in localStorage.");
           return;
         }
 
-        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule");
+        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule",{
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
 
         const filteredData = response.data.students.filter(
           (item:any) => item.teacher.teacherId === teacherIdToFilter

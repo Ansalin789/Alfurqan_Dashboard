@@ -112,6 +112,7 @@ export default function Page() {
       }
     };
 
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);

@@ -36,14 +36,7 @@ const AssignmentsPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 7; // Number of items per page
     const totalItems = 20; // Total number of items (replace with actual data length)
-   
-
-
-
-    
-      const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
       const [isFormOpen, setIsFormOpen] = useState(false);
-      const [isFormOpen1, setIsFormOpen1] = useState(false);
       const [title, setTitle] = useState("");
       const [showTypeDropdown, setShowTypeDropdown] = useState(false);
       const [showQuizModal, setShowQuizModal] = useState(false);
@@ -87,7 +80,24 @@ const AssignmentsPage = () => {
       const [dueDate, setDueDate] = useState("");
       const [comment, setComment] = useState("");
       const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+       const [dashboardRead,setdashboardRead]=useState(false);
       const fileInputRef = useRef<HTMLInputElement>(null);
+      useEffect(()=>{
+        if (typeof window !== "undefined") {
+      const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+      if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.courses?.write ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
+    }
+      },[]);
       const handleAssign = async () => {
         const formData = new FormData();
         formData.append("assignedTeacherId", '');
@@ -123,23 +133,14 @@ const AssignmentsPage = () => {
     formData.forEach((value, key) => {
       console.log(`${key}:`, value);
     });
-    
-    useEffect(() => {
-    const token =
+  
+      const token =
     typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
   if (!token) {
     console.error("❌ AdminAuthToken not found");
     return;
   }
-      if (token) {
-        submitAssignment(token); // call your function with token
-      } else {
-        console.log("No auth token found.");
-      }
-    }, []);
-       
-    const submitAssignment = async (token: string) => {
         try {
           const response = await fetch("https://api.blackstoneinfomaticstech.com/assignments", {
             method: "POST",
@@ -168,7 +169,6 @@ const AssignmentsPage = () => {
         } catch (error) {
           console.error("Error assigning assignment:", error);
         }
-      }
       };
       const handleNoOptionsChange = (type: keyof typeof showNoOptions) => {
           setShowNoOptions(prev => ({ ...prev, [type]: !prev[type] }));
@@ -428,6 +428,7 @@ const AssignmentsPage = () => {
   <div className="relative">
   <button
     onClick={handleAddNewClick}
+    disabled={!dashboardRead}
     className="bg-[#012A4A] text-white text-[12px] px-4 py-2 rounded-lg flex items-center gap-1 w-full"
   >
     + Add New

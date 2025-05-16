@@ -100,8 +100,21 @@ const ManageStudentView = () => {
     if (studentId) {
       const fetchData = async () => {
         try {
-         
-          const response = await fetch(`https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`);
+          const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  }
+          const response = await fetch(`https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
+            {
+                headers:{
+                 'Content-Type': 'application/json',
+        "Authorization":`Bearer ${token}`,
+          }
+            }
+          );
           const data = await response.json();
           setStudentData(data);
           console.log(data);

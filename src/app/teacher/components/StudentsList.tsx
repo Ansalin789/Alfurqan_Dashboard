@@ -49,13 +49,26 @@ const StudentList = () => {
       try {
        
         const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  }
         if (!teacherIdToFilter) {
           console.error("No teacher ID found in localStorage.");
           return;
         }
 
-        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule");
+        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule",
+          {
+             headers:{
+                 'Content-Type': 'application/json',
+        "Authorization":`Bearer ${token}`,
+          }
+          }
+        );
 
         const filteredData = response.data.students.filter(
           (item) => item.teacher.teacherId === teacherIdToFilter

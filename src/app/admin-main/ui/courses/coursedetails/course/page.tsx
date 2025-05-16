@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import BaseLayout4 from '@/components/BaseLayout4';
 import { useSearchParams } from 'next/navigation';
+import Dashboard from '@/app/admin-main/components/evaluationcard';
 
 interface Level {
     levelId: string;
@@ -49,7 +50,7 @@ const Page = () => {
     const maxLevels = parseInt(searchParams.get('maxLevels') || '0');
     const [currentLevelCount, setCurrentLevelCount] = useState<number>(0);
     const [isLoading, setIsLoading] = useState(true);
-
+const [dashboardRead,setdashboardRead]=useState(false);
     useEffect(() => {
       const token =
     typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
@@ -63,6 +64,21 @@ const Page = () => {
         } else {
           console.log("No auth token found.");
         }
+if (typeof window !== "undefined") {
+      const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+      if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.courses?.write ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
+    }
+
       }, []);
     const fetchLevels = async (token: string) => {
         try {
@@ -79,7 +95,7 @@ const Page = () => {
             const data = await response.json(); 
              console.log(data);
             // Because response is not an array, update accordingly
-            if (data && data.courses && data.courses.length > 0 && Array.isArray(data.courses[0].level)) {
+            if (data.courses && data.courses.length > 0 && Array.isArray(data.courses[0].level)) {
                 const levels = data.courses[0].level.map((level: any, index: number) => ({
                     courseName: data.courses[0].course?.courseTitle || courseTitle || '',
                     description: level.descriptions.data,
@@ -201,6 +217,7 @@ const Page = () => {
                     {currentLevelCount < maxLevels && (
                         <button
                             onClick={() => setShowForm(true)}
+                            disabled={!dashboardRead}
                             className="w-[260px] h-[220px] bg-white rounded-xl shadow flex items-center justify-center cursor-pointer hover:shadow-lg transition"
                         >
                             <div className="w-12 h-12 bg-[#0b2447] rounded-full flex items-center justify-center">
@@ -228,7 +245,8 @@ const Page = () => {
 
                             <div className="mt-4 flex justify-end gap-3">
                                 <button onClick={() => setShowForm(false)} className="px-6 py-2 border rounded-xl text-gray-700 hover:bg-gray-100 transition">Cancel</button>
-                                <button onClick={()=>handleSubmit()} className="px-6 py-2 bg-[#002b4d] text-white rounded-xl hover:bg-[#001f36] transition">Save</button>
+                                <button onClick={()=>handleSubmit()}
+                                className="px-6 py-2 bg-[#002b4d] text-white rounded-xl hover:bg-[#001f36] transition">Save</button>
                             </div>
                         </div>
                     </div>

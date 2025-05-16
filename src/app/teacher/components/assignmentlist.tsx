@@ -45,9 +45,18 @@ const AssignmentList = () => {
     const fetchAssignments = async () => {
       const storedStudentId = localStorage.getItem('studentviewcontrol');
       try {
+         const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  } 
         const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAssignment", {
           headers: {
             "Content-Type": "application/json",
+            "Authorization":`Bearer ${token}`,
+
           },
         });
 
@@ -211,10 +220,20 @@ formData.forEach((value, key) => {
 
 
     try {
-      
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  } 
       const response = await fetch("https://api.blackstoneinfomaticstech.com/assignments", {
         method: "POST",
-        body: formData, // Use FormData instead of JSON
+        body: formData, 
+        headers:{
+             "Content-Type": "application/json",
+            "Authorization":`Bearer ${token}`,
+        }
       });
       console.log(formData);
 
@@ -234,9 +253,22 @@ formData.forEach((value, key) => {
   const handleAssign1=async()=>{
     console.log("assigned is clicked");
     try {
-      // **Step 1: GET REQUEST** (Fetch assignment details)
-      const response = await axios.get(`https://api.blackstoneinfomaticstech.com/assignments/${selectedAssignmentId}`);
-  console.log(response.data);
+ const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  }       
+  const response = await axios.get(`https://api.blackstoneinfomaticstech.com/assignments/${selectedAssignmentId}`,{
+    headers:{
+      "Authorization" :`Bearer ${token}`,
+      "Content-Type":"application/json"
+    }
+  }
+
+  );
+      console.log(response.data);
       const data = response.data;
       // **Step 2: PUT REQUEST** (Update assignment)
       const formData = new FormData();
@@ -279,7 +311,11 @@ formData.forEach((value, key) => {
       formData.append("answerValidation", data.answerValidation);
       formData.append("studentId", data.studentId);
       console.log(formData);
-      await axios.put(`https://api.blackstoneinfomaticstech.com/assignments/${selectedAssignmentId}`, formData);
+      await axios.put(`https://api.blackstoneinfomaticstech.com/assignments/${selectedAssignmentId}`, formData ,{
+        headers:{
+          "Authorization":` Bearer ${token}`
+        }
+      });
       setIsFormOpen1(false);
     } catch (error) {
       console.error("Error:", error);
