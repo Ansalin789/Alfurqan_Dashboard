@@ -70,7 +70,7 @@ const Message = () => {
     "teachers" | "admin"
   >("teachers");
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
-  const [messages, setMessages] = useState<IMessage[]>([]);
+  const [messages, setMessages] = useState<IMessageData[]>([]);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [messageCount, setMessageCount] = useState<number>(0);
@@ -130,23 +130,28 @@ const Message = () => {
     typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
 
   if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
+    console.error("❌ AdminAuthToken not found");
     return;
-  } 
+  }
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`,{
-           headers:{
-              "Content-Type":"application/json",
-              "Authorization":`Bearer ${token}`
-            }
-        }
-      );
-      const fetchedMessages = data?.data?.[0]?.messages ?? [];
-      setMessages(fetchedMessages); // Set messages to state
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
+          {
+          headers: {
+            "Content-Type": "application/json",
+                          'Authorization': `Bearer ${token}`,
 
-      // Count unread messages
-      const unreadCount = fetchedMessages.filter((m) => !m.isRead).length;
-      setMessageCount(unreadCount); // Update the unread message count
+          },
+        }
+        
+      );
+      const fetchedMessages = data?.data;
+       setMessages(fetchedMessages); // for rendering
+
+// Count unread messages in all groups
+const allMessages = fetchedMessages.flatMap(group => group.messages);
+const unreadCount = allMessages.filter((m) => !m.isRead).length;
+setMessageCount(unreadCount);
+ // Update the unread message count
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
@@ -183,11 +188,37 @@ const Message = () => {
     }
 
     // Handle incoming messages
-    const handleNewMessage = (newMessage: IMessage) => {
+  const handleNewMessage = (newMessage: IMessage) => {
       console.log("Received new message:", newMessage);
-      setMessages((prev) => [newMessage, ...prev]);
+      const dateKey = new Date(newMessage.createdDate).toISOString().split("T")[0];
+       const isForCurrentChat =
+    (newMessage.senderId === userId && newMessage.receiverId === selectedUser?._id) ||
+    (newMessage.senderId === selectedUser?._id && newMessage.receiverId === userId);
+
+  if (isForCurrentChat) {
+
+  setMessages((prev) => {
+    const existingGroupIndex = prev.findIndex(group => group._id === dateKey);
+
+    if (existingGroupIndex !== -1) {
+      // Add to existing date group
+      const updated = [...prev];
+      updated[existingGroupIndex].messages.unshift(newMessage);
+      return updated;
+    } else {
+      // Create a new date group
+      return [
+        {
+          _id: dateKey,
+          messages: [newMessage],
+        },
+        ...prev,
+      ];
+    }
+  });
+}
       // Only increment count if message is unread
-      if (!newMessage.isRead) {
+      if (newMessage.receiverId === userId && !newMessage.isRead) {
         setMessageCount((prev) => prev + 1);
       }
     };
@@ -208,6 +239,29 @@ const Message = () => {
       socketRef.current?.off("newmessage", handleNewMessage);
     };
   }, [userId]);
+  const formatDateLabel = (dateString: string): string => {
+  const inputDate = new Date(dateString);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  const sameDay = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
+  if (sameDay(inputDate, today)) return "Today";
+  if (sameDay(inputDate, yesterday)) return "Yesterday";
+  return inputDate.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+};
+const groupedMessages = messages // messages: IMessageData[]
+  .flatMap(group => group.messages) // flatten to IMessage[]
+  .reduce((acc, msg) => {
+    const dateKey = new Date(msg.createdDate).toDateString();
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(msg);
+    return acc;
+  }, {} as Record<string, IMessage[]>);
 
   // Handle sending messages
   const handleSendMessage = async () => {
@@ -271,7 +325,27 @@ const Message = () => {
         };
 
         // Update messages state with the new message
-        setMessages((prev) => [convertedMessage, ...prev]);
+         setMessages((prev) => {
+  const dateKey = new Date(convertedMessage.createdDate).toISOString().split("T")[0]; // e.g. '2025-05-21'
+
+  const existingGroupIndex = prev.findIndex(group => group._id === dateKey);
+
+  if (existingGroupIndex !== -1) {
+    // Add to existing group
+    const updatedGroups = [...prev];
+    updatedGroups[existingGroupIndex].messages.unshift(convertedMessage);
+    return updatedGroups;
+  } else {
+    // Create new group
+    return [
+      {
+        _id: dateKey,
+        messages: [convertedMessage],
+      },
+      ...prev,
+    ];
+  }
+});
         setMessageText(""); // Clear the message input
       } else {
         console.error("Error posting message:", response.data.message);
@@ -475,50 +549,49 @@ const Message = () => {
                   {" "}
                   {/* Added flex-col-reverse */}
                   <AnimatePresence>
-                    {[...messages].reverse().map(
-                      (
-                        msg // Reverse the messages array
-                      ) => (
-                        <motion.div
-                          key={msg._id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className={`flex flex-col mb-3 ${
-                            msg.senderId === userId
-                              ? "items-end"
-                              : "items-start"
-                          }`}
-                        >
-                          <motion.div
-                            whileHover={{ scale: 1.01 }}
-                            className={`p-2 rounded-lg max-w-[80%] shadow-sm ${
-                              msg.senderId === userId
-                                ? "bg-[#223857] text-white shadow-lg rounded-tr-none"
-                                : "bg-white shadow-lg rounded-tl-none"
-                            }`}
-                          >
-                            <p className="text-xs">{msg.messages}</p>
-                            <div className="flex items-center justify-end mt-1 space-x-1">
-                              <span className="text-[9px] opacity-70">
-                                {new Date(msg.createdDate).toLocaleTimeString(
-                                  [],
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
-                              </span>
-                              {msg.senderId === userId && (
-                                <span className="text-[9px]">
-                                  {msg.isRead ? "✓✓" : "✓"}
-                                </span>
-                              )}
-                            </div>
-                          </motion.div>
-                        </motion.div>
-                      )
-                    )}
+                    {Object.entries(groupedMessages)
+                      .sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime()) // sort newest first
+                      .map(([date, msgs]) => (
+                        <div key={date}>
+                          <div className="text-center text-gray-500 text-xs my-2 font-medium">
+                            {formatDateLabel(date)}
+                          </div>
+                  
+                          {msgs.map((msg) => (
+                            <motion.div
+                              key={msg._id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className={`flex flex-col mb-3 ${
+                                msg.senderId === userId ? "items-end" : "items-start"
+                              }`}
+                            >
+                              <motion.div
+                                whileHover={{ scale: 1.01 }}
+                                className={`p-2 rounded-lg max-w-[80%] shadow-sm ${
+                                  msg.senderId === userId
+                                    ? "bg-[#4CBC9A] text-white rounded-tr-none"
+                                    : "bg-white border border-gray-200 rounded-tl-none"
+                                }`}
+                              >
+                                <p className="text-xs">{msg.messages}</p>
+                                <div className="flex items-center justify-end mt-1 space-x-1">
+                                  <span className="text-[9px] opacity-70">
+                                    {new Date(msg.createdDate).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </span>
+                                  {msg.senderId === userId && (
+                                    <span className="text-[9px]">{msg.isRead ? "✓✓" : "✓"}</span>
+                                  )}
+                                </div>
+                              </motion.div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      ))}
                   </AnimatePresence>
                   <div ref={messagesEndRef} />
                 </div>
