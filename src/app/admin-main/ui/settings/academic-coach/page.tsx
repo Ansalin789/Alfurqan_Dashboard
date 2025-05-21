@@ -110,11 +110,11 @@ const AcademiccoachModuleAccess = () => {
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const modules = [
-    'Dashboard',
-    'Scheduledevaluation',
-    'Scheduledtrail',
-    'Students',
-    'Teachers',
+   'Dashboard',
+   'Trail Management',
+    'Manage Students',
+    'Manage Teachers',
+    'Schedule',
     'Messages',
     'Support',
   ];

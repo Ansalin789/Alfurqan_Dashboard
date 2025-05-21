@@ -283,39 +283,37 @@ const MultiStepForm = () => {
    */
   
 
-  const formatTime = (hours: number, minutes: number): string => {
-    const period = hours >= 12 ? "PM" : "AM";
-    const adjustedHours = hours % 12 === 0 ? 12 : hours % 12;
-    const paddedHours = adjustedHours.toString().padStart(2, "0");
-    const paddedMinutes = minutes.toString().padStart(2, "0");
-    return `${paddedHours}:${paddedMinutes} ${period}`;
-  };
-  
-  
-  const calculatePreferredToTime = (fromTime: string) => {
-    try {
-      const [timePart, period] = fromTime.trim().split(" ");
-      if (!timePart || !period) return "12:00 AM";
-  
-      const [hourStr, minuteStr] = timePart.split(":");
-      const rawHours = parseInt(hourStr, 10);
-      const rawMinutes = parseInt(minuteStr, 10);
-  
-      if (isNaN(rawHours) || isNaN(rawMinutes)) return "12:00 AM";
-  
-      // Convert to 24-hour time
-      let hours = rawHours % 12;
-      if (period.toUpperCase() === "PM") hours += 12;
-  
-      const totalMinutes = hours * 60 + rawMinutes + 30; // Add 30 mins
-      const newHours = Math.floor(totalMinutes / 60) % 24;
-      const newMinutes = totalMinutes % 60;
-  
-      return formatTime(newHours, newMinutes);
-    } catch (error) {
-      return "12:00 AM";
-    }
-  };
+  const formatTime24 = (hours: number, minutes: number): string => {
+  const paddedHours = hours.toString().padStart(2, "0");
+  const paddedMinutes = minutes.toString().padStart(2, "0");
+  return `${paddedHours}:${paddedMinutes}`;
+};
+
+const calculatePreferredToTime = (fromTime: string) => {
+  try {
+    const [timePart, period] = fromTime.trim().split(" ");
+    if (!timePart || !period) return "00:00";
+
+    const [hourStr, minuteStr] = timePart.split(":");
+    const rawHours = parseInt(hourStr, 10);
+    const rawMinutes = parseInt(minuteStr, 10);
+
+    if (isNaN(rawHours) || isNaN(rawMinutes)) return "00:00";
+
+    // Convert to 24-hour format
+    let hours = rawHours % 12;
+    if (period.toUpperCase() === "PM") hours += 12;
+
+    const totalMinutes = hours * 60 + rawMinutes + 30; // Add 30 mins
+    const newHours = Math.floor(totalMinutes / 60) % 24;
+    const newMinutes = totalMinutes % 60;
+
+    return formatTime24(newHours, newMinutes);
+  } catch (error) {
+    return "00:00";
+  }
+};
+
   
 
   useEffect(() => {

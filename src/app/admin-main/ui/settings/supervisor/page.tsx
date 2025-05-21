@@ -111,8 +111,8 @@ const SupervisorModuleAccess = () => {
 
   const modules = [
     'Dashboard',
-    'Recuirement',
-    'Meeting',
+    'Recruitment',
+    'Meeting&Training',
     'Teachers',
     'Messages',
     'Support',
