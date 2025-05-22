@@ -69,6 +69,7 @@ const Message = () => {
   const [activeTab, setActiveTab] = useState<
     "teachers" | "admin"
   >("teachers");
+
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [messages, setMessages] = useState<IMessageData[]>([]);
   const [messageText, setMessageText] = useState("");
@@ -189,39 +190,55 @@ setMessageCount(unreadCount);
 
     // Handle incoming messages
   const handleNewMessage = (newMessage: IMessage) => {
-      console.log("Received new message:", newMessage);
-      const dateKey = new Date(newMessage.createdDate).toISOString().split("T")[0];
-       const isForCurrentChat =
+  console.log("Received new message:", newMessage);
+  
+  // Check if message is relevant to current chat or should increment count
+  const isForCurrentChat = 
     (newMessage.senderId === userId && newMessage.receiverId === selectedUser?._id) ||
     (newMessage.senderId === selectedUser?._id && newMessage.receiverId === userId);
+    console.log(userId);
+    console.log(selectedUser?._id);
+  // Always update message count for unread messages
+  if (newMessage.receiverId === userId && !newMessage.isRead) {
+    setMessageCount(prev => prev + 1);
+  }
 
+  // Only update messages if it's for the current chat
   if (isForCurrentChat) {
-
-  setMessages((prev) => {
-    const existingGroupIndex = prev.findIndex(group => group._id === dateKey);
-
-    if (existingGroupIndex !== -1) {
-      // Add to existing date group
-      const updated = [...prev];
-      updated[existingGroupIndex].messages.unshift(newMessage);
-      return updated;
-    } else {
-      // Create a new date group
-      return [
-        {
+    setMessages(prev => {
+      const dateKey = new Date(newMessage.createdDate).toISOString().split('T')[0];
+      console.log('enter');
+      // Find if we already have messages for this date
+      const existingGroupIndex = prev.findIndex(group => group._id === dateKey);
+      
+      // Create a new state array
+      const newState = [...prev];
+      
+      if (existingGroupIndex !== -1) {
+        // Add to existing date group - append to maintain chronological order
+        newState[existingGroupIndex] = {
+          ...newState[existingGroupIndex],
+          messages: [...newState[existingGroupIndex].messages, newMessage]
+        };
+      } else {
+        // Create new date group at the beginning (since we're using flex-col-reverse)
+        newState.unshift({
           _id: dateKey,
-          messages: [newMessage],
-        },
-        ...prev,
-      ];
-    }
-  });
-}
-      // Only increment count if message is unread
-      if (newMessage.receiverId === userId && !newMessage.isRead) {
-        setMessageCount((prev) => prev + 1);
+          messages: [newMessage]
+        });
       }
-    };
+      
+      return newState;
+    });
+
+    // Scroll to bottom after new message
+    setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  }
+};
 
     socketRef.current.on("newmessage", handleNewMessage);
     const fetchAllUsers = async () => {
@@ -238,7 +255,7 @@ setMessageCount(unreadCount);
     return () => {
       socketRef.current?.off("newmessage", handleNewMessage);
     };
-  }, [userId]);
+  }, [userId,selectedUser]);
   const formatDateLabel = (dateString: string): string => {
   const inputDate = new Date(dateString);
   const today = new Date();
@@ -254,8 +271,9 @@ setMessageCount(unreadCount);
   if (sameDay(inputDate, yesterday)) return "Yesterday";
   return inputDate.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 };
-const groupedMessages = messages // messages: IMessageData[]
-  .flatMap(group => group.messages) // flatten to IMessage[]
+// Replace your current groupedMessages logic with:
+const groupedMessages = messages
+  .flatMap(group => group.messages)
   .reduce((acc, msg) => {
     const dateKey = new Date(msg.createdDate).toDateString();
     if (!acc[dateKey]) acc[dateKey] = [];
@@ -324,25 +342,28 @@ const groupedMessages = messages // messages: IMessageData[]
           status: newMessage.status,
         };
 
-        // Update messages state with the new message
-         setMessages((prev) => {
-  const dateKey = new Date(convertedMessage.createdDate).toISOString().split("T")[0]; // e.g. '2025-05-21'
+       // In handleSendMessage and handleNewMessage, ensure new messages are appended:
 
+setMessages(prev => {
+  const dateKey = new Date(convertedMessage.createdDate).toISOString().split('T')[0];
   const existingGroupIndex = prev.findIndex(group => group._id === dateKey);
 
   if (existingGroupIndex !== -1) {
-    // Add to existing group
-    const updatedGroups = [...prev];
-    updatedGroups[existingGroupIndex].messages.unshift(convertedMessage);
-    return updatedGroups;
+    // Append to existing group
+    const updated = [...prev];
+    updated[existingGroupIndex] = {
+      ...updated[existingGroupIndex],
+      messages: [...updated[existingGroupIndex].messages, convertedMessage] // Append to end
+    };
+    return updated;
   } else {
-    // Create new group
+    // Add new group at the end
     return [
+      ...prev,
       {
         _id: dateKey,
-        messages: [convertedMessage],
-      },
-      ...prev,
+        messages: [convertedMessage]
+      }
     ];
   }
 });
@@ -550,14 +571,15 @@ const groupedMessages = messages // messages: IMessageData[]
                   {/* Added flex-col-reverse */}
                   <AnimatePresence>
                     {Object.entries(groupedMessages)
-                      .sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime()) // sort newest first
-                      .map(([date, msgs]) => (
+                      .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
+                       .map(([date, msgs]) => (
                         <div key={date}>
                           <div className="text-center text-gray-500 text-xs my-2 font-medium">
                             {formatDateLabel(date)}
                           </div>
                   
-                          {msgs.map((msg) => (
+                          {msgs.toSorted((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())
+                          .map((msg) => (
                             <motion.div
                               key={msg._id}
                               initial={{ opacity: 0, y: 10 }}
