@@ -152,18 +152,30 @@ function LiveClass() {
   useEffect(() => {
     const fetchClassData = async () => {
       try {
-        const teacherId = localStorage.getItem('TeacherPortalId');
-        const authToken = localStorage.getItem('TeacherAuthToken');
-        // Ensure studentId and authToken are valid
-        if (!teacherId || !authToken) {
+        const teacherId =  typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null;
+ const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  }
+          if (!teacherId || !token) {
           console.log('Missing studentId or authToken');
           return;
         }
-  
-        const response = await axios.get<ApiResponse>(`https://api.blackstoneinfomaticstech.com/classShedule/teacher`, {
-          params: { teacherId },
+       console.log("teacherid",teacherId);
+        const response = await axios.get<ApiResponse>(
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacher`,
+          {
+            params: { teacherId },
+             headers:{
+                 'Content-Type': 'application/json',
+        "Authorization":`Bearer ${token}`,
+          }
          
-        });
+          }
+        );
         
         console.log('Raw API Response:', response.data.classSchedule); // Check data format
 

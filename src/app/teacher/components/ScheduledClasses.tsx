@@ -66,7 +66,7 @@ const ScheduledClasses = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const teacherId = localStorage.getItem("TeacherPortalId");
+        const teacherId =   typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null;
  const token =
     typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
@@ -94,7 +94,8 @@ const ScheduledClasses = () => {
         const now = new Date();
         const upcoming = classes.filter((cls) => {
           const classDate = new Date(cls.startDate);
-          const [startHours, startMinutes] = cls.startTime[0]
+          const timeString =cls.startTime[0] ?? '';
+          const [startHours, startMinutes] = timeString
             .split(":")
             .map(Number);
           classDate.setHours(startHours, startMinutes, 0, 0);
@@ -104,7 +105,8 @@ const ScheduledClasses = () => {
         const completed = classes.filter(
           (cls) => new Date(cls.startDate) <= now
         );
-
+       console.log(upcoming);
+       console.log(completed);
         setUpcomingClasses(upcoming);
         setCompletedData(completed);
       } catch (error) {

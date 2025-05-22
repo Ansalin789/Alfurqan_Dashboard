@@ -115,7 +115,21 @@ const Invoice = () => {
     const fetchInvoices = async () => {
       try {
         const studentIdToFilter=localStorage.getItem('StudentPortalId');
-        const response = await axios.get<InvoiceResponse>('https://api.blackstoneinfomaticstech.com/studentinvoice');
+          const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  } 
+        const response = await axios.get<InvoiceResponse>('https://api.blackstoneinfomaticstech.com/studentinvoice',
+            {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization":`Bearer ${token}`
+          },
+        }
+        );
         const filteredInvoices = response.data.invoice.filter(invoice => invoice.student.studentId === studentIdToFilter);
         setInvoices(filteredInvoices);
       } catch (error) {

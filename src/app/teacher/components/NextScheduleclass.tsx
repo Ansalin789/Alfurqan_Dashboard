@@ -61,9 +61,14 @@ const NextScheduledClass = () => {
   
     const upcomingClasses = response.classSchedule.filter(cls => {
       const classDate = new Date(cls.startDate);
-      const [startHours, startMinutes] = cls.startTime[0].split(":").map(Number);
-      const [endHours, endMinutes] = cls.endTime[0].split(":").map(Number);
-  
+       const timeString =cls.startTime[0] ?? '';
+          const [startHours, startMinutes] = timeString
+            .split(":")
+            .map(Number);
+             const timeString1 =cls.endTime[0] ?? '';
+         const [endHours, endMinutes]= timeString1
+            .split(":")
+            .map(Number);
       classDate.setHours(startHours, startMinutes, 0, 0);
       const classEndTime = new Date(classDate);
       classEndTime.setHours(endHours, endMinutes, 0, 0);
@@ -77,9 +82,12 @@ const NextScheduledClass = () => {
       const dateA = new Date(a.startDate);
       const dateB = new Date(b.startDate);
   
-      const [hoursA, minutesA] = a.startTime[0].split(":").map(Number);
-      const [hoursB, minutesB] = b.startTime[0].split(":").map(Number);
-  
+     const timeA = a.startTime?.[0] ?? '';
+const [hoursA, minutesA] = timeA.split(":").map(Number);
+
+const timeB = b.startTime?.[0] ?? '';
+const [hoursB, minutesB] = timeB.split(":").map(Number);
+
       dateA.setHours(hoursA, minutesA, 0, 0);
       dateB.setHours(hoursB, minutesB, 0, 0);
   
@@ -93,7 +101,7 @@ const NextScheduledClass = () => {
   useEffect(() => {
     const fetchClassData = async () => {
       try {
-        const teacherId = localStorage.getItem('TeacherPortalId');
+        const teacherId =  typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null;
  const token =
     typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
@@ -105,7 +113,7 @@ const NextScheduledClass = () => {
           console.log('Missing studentId or authToken');
           return;
         }
-
+       console.log("teacherid",teacherId);
         const response = await axios.get<ApiResponse>(
           `https://api.blackstoneinfomaticstech.com/classShedule/teacher`,
           {
@@ -117,6 +125,7 @@ const NextScheduledClass = () => {
          
           }
         );
+        console.log(response.data);
         setClassData(filterUpcomingClass(response.data));
       } catch (err) {
         console.log('Error loading class details:', err);
@@ -131,8 +140,12 @@ const NextScheduledClass = () => {
     const updateRemainingTime = () => {
       const now = new Date();
       const classDate = new Date(classData.startDate);
-      const [startHours, startMinutes] = classData.startTime[0].split(":").map(Number);
-      const [endHours, endMinutes] = classData.endTime[0].split(":").map(Number);
+      const startTimeString = classData.startTime?.[0] ?? '';
+const [startHours, startMinutes] = startTimeString.split(":").map(Number);
+
+const endTimeString = classData.endTime?.[0] ?? '';
+const [endHours, endMinutes] = endTimeString.split(":").map(Number);
+
   
       classDate.setHours(startHours, startMinutes, 0, 0);
       const classEndTime = new Date(classDate);
