@@ -51,13 +51,7 @@ function LiveClass() {
   const [feedback, setFeedback] = useState('');
   
   const [classData, setClassData] = useState<ClassData | null>(null);
-  const [roomName, setRoomName] = useState('');
-        
-    useEffect(() => {
-      // Ideally this should come from your backend or query params
-      const room = 'MyLiveClassRoom123'; // Replace with dynamic value
-      setRoomName(room);
-    }, []);
+  const [roomName, setRoomName] = useState<string>('');  
   
   const filterUpcomingClass = (response: { totalCount: number; classSchedule: any[] }): ClassData | null => {
     const classes = response.classSchedule;
@@ -138,7 +132,6 @@ function LiveClass() {
         upcomingClass = cls;
       }
     });
-  
     console.log("Selected Class:", upcomingClass);
     return upcomingClass;
   };
@@ -155,7 +148,7 @@ const token =
   if (!token) {
     console.error("❌ StudentAuthToken not found");
     return;
-  }          if (!studentId || !token) {
+  }          if(!studentId || !token) {
           console.log('Missing studentId or authToken');
           return;
         }
@@ -174,7 +167,7 @@ const token =
           console.log('Raw API Response:', response.data.classSchedule); // Check data format
 
           const nextClass = filterUpcomingClass(response.data);
-          
+          setRoomName(nextClass?.classLink ?? '');
           console.log('Filtered Next Class:', nextClass); // Debug if nextClass is valid
 
           if (nextClass) {
