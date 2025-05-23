@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Timer,
   ChevronDown,
@@ -165,7 +165,7 @@ function LiveClass() {
         const teacherId =  typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null;
  const token =
     typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
-
+     console.log(token);
   if (!token) {
     console.error("❌ TeacherAuthToken not found");
     return;
@@ -361,9 +361,12 @@ function LiveClass() {
       console.log("Error submitting feedback. Please try again.");
     }
   };
+
   
-  
-  
+  const attendanceRef = useRef(attendance);
+useEffect(() => {
+  attendanceRef.current = attendance;
+}, [attendance]);
 
   
 
@@ -717,27 +720,26 @@ function LiveClass() {
   </div>
 
   <div className="ml-auto w-64">
-    <label htmlFor='ijbib' className="block text-sm font-semibold mb-1">Attendance</label>
-    <select className="w-full border p-2 rounded">
-     {attendance.map((s) => {
-  let statusLabel = '❌ Not Joined';
+  <label htmlFor='attendance-select' className="block text-sm font-semibold mb-1">Attendance</label>
+  <select id="attendance-select" className="w-full border p-2 rounded">
+    {attendance.map((s) => {
+      let statusLabel = '❌ Not Joined';
 
-  if (s.joined) {
-    if (s.leaveTime) {
-      statusLabel = `🚪 Left at ${s.leaveTime}`;
-    } else {
-      statusLabel = `✅ Joined at ${s.joinTime}`;
-    }
-  }
-  return (
-    <option key={s.studentId}>
-      {s.name} – {statusLabel}
-    </option>
-  );
-})}
+      if (s.joined) {
+        statusLabel = s.leaveTime
+          ? `🚪 Left at ${s.leaveTime}`
+          : `✅ Joined at ${s.joinTime}`;
+      }
 
-    </select>
-  </div>
+      return (
+        <option key={s.studentId} value={s.studentId}>
+          {s.name} – {statusLabel}
+        </option>
+      );
+    })}
+  </select>
+</div>
+
 </div>
 
 
@@ -788,40 +790,47 @@ function LiveClass() {
       hour12: true,
     });
 
-    const parts = event.displayName?.split('| ID:');
-    const name = parts?.[0]?.trim() ?? 'Unknown';
-    const studentId = parts?.[1]?.trim() ?? 'N/A';
+    console.log('Participant displayName:', event.displayName);
+const parts = event.displayName?.split('| ID :');
+console.log('Split parts:', parts);
 
+const name = parts?.[0]?.trim() ?? 'Unknown';
+const studentId = parts?.[1]?.trim() ?? 'N/A';
+
+alert(`Name: ${name}, studentId: ${studentId}`);
     setAttendance(prev =>
       prev.map(a =>
-        a.id === event.id && a.studentId === studentId
-          ? { ...a, id:event.id, joined: true, joinTime }
+         a.studentId === studentId
+          ? { ...a, id:event.id, joined: true, joinTime:joinTime }
           : a
       )
     );
-
-    console.log(`✅ Student joined: ${name} (ID: ${studentId}) at ${joinTime}`);
   });
 
   // 🔴 Handle Participant Left
   externalApi.addListener('participantLeft', (event: { id: string }) => {
+    console.log('participantLeft event fired:', event);
     const leaveTime = new Date().toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
     });
 
-    const participant =attendance.find(p => p.id === event.id);
+    const participant =attendanceRef.current.find(p => p.id === event.id);
+      console.log('Matching participant:', participant);
     if (participant) {
        setAttendance(prev =>
       prev.map(a =>
         a.id === event.id 
-          ? { ...a,  leaveTime }
+          ? { ...a,  leaveTime:leaveTime }
           : a
       )
     );
       console.log(`🔴 ${participant.name} left at ${leaveTime}`);
     }
+     else {
+    console.warn(`Participant with id ${event.id} not found in attendance.`);
+  }
   });
 
   // 🎥 Host/teacher Joined Call

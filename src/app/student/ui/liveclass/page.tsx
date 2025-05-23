@@ -403,7 +403,7 @@ const token =
           </button>
           {/* Student Info */}
           <div className="mb-4">
-            <h2 className="text-lg font-medium">{`${classData?.student.studentFirstName}+' '+${classData?.student.studentLastName}`}</h2>
+            <h2 className="text-lg font-medium">{`${classData?.student.studentFirstName} ${classData?.student.studentLastName}`}</h2>
             <span className="text-sm text-gray-500">{classData?.startDate && (() => {
   const date = new Date(classData.startDate);
   const day = String(date.getDate()).padStart(2, '0');
