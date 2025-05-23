@@ -52,6 +52,16 @@ interface ApiResponse {
   totalCount: number;
   classSchedule: ClassData[];
 }
+interface Attendance {
+  id: string | null;
+  studentId: string;
+  name:string;
+  startTime:string | null;
+  endTime:string | null;
+  joined :boolean;
+  joinTime:string;
+  leaveTime:string;
+}
 
 function LiveClass() {
     const [showFeedback, setShowFeedback] = useState(false);
@@ -62,7 +72,7 @@ function LiveClass() {
     const [classData, setClassData] = useState<ClassData | null>(null);
   const[isFormData,setIsFormData]=useState(true);
   const [roomName, setRoomName] = useState('');
-
+    const [attendance,setAttendance]=useState<Attendance[]>([]);
   
   const filterUpcomingClass = (response: { totalCount: number; classSchedule: any[] }): ClassData | null => {
     const classes = response.classSchedule;
@@ -187,6 +197,18 @@ function LiveClass() {
               console.log("Setting classData to:", nextClass);
               setClassData(nextClass);
               setRoomName(nextClass.classLink);
+              setAttendance([{
+                id: "",
+                studentId: nextClass.student.studentId,
+                name: nextClass.student.studentFirstName,
+                startTime: null,
+                endTime: null,
+                joined: false,
+                joinTime: '',
+                leaveTime: ''
+              }
+              ]
+              )
           } else {
               console.log("No upcoming class found."); 
               setClassData(null);
@@ -686,10 +708,38 @@ function LiveClass() {
           </button>
 
           {/* Student Info */}
-          <div className="mb-4">
-            <h2 className="text-lg font-medium">{classData?.student.studentFirstName + " "} {classData?.student.studentLastName }</h2>
-            <span className="text-sm text-gray-500">{classData?.student.course}</span>
-          </div>
+          <div className="flex justify-between items-start mb-4">
+  <div>
+    <h2 className="text-lg font-medium">
+      {classData?.student.studentFirstName} {classData?.student.studentLastName}
+    </h2>
+    <span className="text-sm text-gray-500">{classData?.student.course}</span>
+  </div>
+
+  <div className="ml-auto w-64">
+    <label htmlFor='ijbib' className="block text-sm font-semibold mb-1">Attendance</label>
+    <select className="w-full border p-2 rounded">
+     {attendance.map((s) => {
+  let statusLabel = '❌ Not Joined';
+
+  if (s.joined) {
+    if (s.leaveTime) {
+      statusLabel = `🚪 Left at ${s.leaveTime}`;
+    } else {
+      statusLabel = `✅ Joined at ${s.joinTime}`;
+    }
+  }
+  return (
+    <option key={s.studentId}>
+      {s.name} – {statusLabel}
+    </option>
+  );
+})}
+
+    </select>
+  </div>
+</div>
+
 
           {/* Jitsi Video Box */}
           <div className="flex-1 min-w-0 w-full h-[50vh] md:h-[60vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
@@ -715,21 +765,78 @@ function LiveClass() {
                     'videoquality',
                     'filmstrip',
                     'shortcuts',
-                    'tileview'
+                    'tileview',
+                    'recording'
                   ]
                 }}
                 onApiReady={(externalApi) => {
-                  externalApi.addEventListener('videoConferenceJoined', () => {
-                    const startCallTime = new Date().toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true,
-                    });
-              
-                    console.log('Call started at', startCallTime);
-                    setStartTime(startCallTime);
-                  });
-                }}
+  type ParticipantLog = {
+    id: string;
+    name?: string;
+    studentId?: string;
+    startCallTime: string;
+    endCallTime?: string;
+  };
+
+  const participantList: ParticipantLog[] = [];
+
+  // ✅ Handle Participant Joined
+  externalApi.addListener('participantJoined', (event: { id: string; displayName?: string }) => {
+    const joinTime = new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    const parts = event.displayName?.split('| ID:');
+    const name = parts?.[0]?.trim() ?? 'Unknown';
+    const studentId = parts?.[1]?.trim() ?? 'N/A';
+
+    setAttendance(prev =>
+      prev.map(a =>
+        a.id === event.id && a.studentId === studentId
+          ? { ...a, id:event.id, joined: true, joinTime }
+          : a
+      )
+    );
+
+    console.log(`✅ Student joined: ${name} (ID: ${studentId}) at ${joinTime}`);
+  });
+
+  // 🔴 Handle Participant Left
+  externalApi.addListener('participantLeft', (event: { id: string }) => {
+    const leaveTime = new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    const participant =attendance.find(p => p.id === event.id);
+    if (participant) {
+       setAttendance(prev =>
+      prev.map(a =>
+        a.id === event.id 
+          ? { ...a,  leaveTime }
+          : a
+      )
+    );
+      console.log(`🔴 ${participant.name} left at ${leaveTime}`);
+    }
+  });
+
+  // 🎥 Host/teacher Joined Call
+  externalApi.addEventListener('videoConferenceJoined', () => {
+    const startCallTime = new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    console.log('Call started at', startCallTime);
+    setStartTime(startCallTime);
+  });
+}}
+
                 getIFrameRef={(iframeRef) => {
                   iframeRef.style.border = '0px';
                   iframeRef.style.height = '100%';
