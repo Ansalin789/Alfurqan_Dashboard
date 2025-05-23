@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {LogOut} from 'lucide-react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import BaseLayout2 from '@/components/BaseLayout2';
@@ -271,6 +271,10 @@ const token =
       </div>
     );
   };
+  const userInfo = useMemo(() => ({
+  displayName: `${classData?.student?.studentFirstName} | ID : ${classData?.student?.studentId}`,
+  email: `${classData?.student?.studentEmail}`
+}), [classData?.student?.studentFirstName, classData?.student?.studentId, classData?.student?.studentEmail]);
   useEffect(() => {
     let timeoutId: number | undefined
     if (showPopup) {
@@ -419,12 +423,7 @@ const token =
         <JitsiMeeting
           roomName={roomName}
           domain="meet.blackstoneinfomaticstech.com"
-          userInfo={
-             {
-            displayName : `${classData?.student.studentFirstName} | ID : ${classData?.student.studentId}` ,
-            email: `${classData?.student.studentEmail}` ,
-            }
-          }
+         userInfo={userInfo}
           configOverwrite={{
             startWithAudioMuted: false,
             startWithVideoMuted: false,
