@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {LogOut} from 'lucide-react';
 import { JitsiMeeting } from '@jitsi/react-sdk';
 import BaseLayout2 from '@/components/BaseLayout2';
@@ -271,6 +271,10 @@ const token =
       </div>
     );
   };
+  const userInfo = useMemo(() => ({
+  displayName: `${classData?.student?.studentFirstName} | ID : ${classData?.student?.studentId}`,
+  email: `${classData?.student?.studentEmail}`
+}), [classData?.student?.studentFirstName, classData?.student?.studentId, classData?.student?.studentEmail]);
   useEffect(() => {
     let timeoutId: number | undefined
     if (showPopup) {
@@ -403,8 +407,14 @@ const token =
           </button>
           {/* Student Info */}
           <div className="mb-4">
-            <h2 className="text-lg font-medium">Student Name</h2>
-            <span className="text-sm text-gray-500">2022.4.16</span>
+            <h2 className="text-lg font-medium">{`${classData?.student.studentFirstName} ${classData?.student.studentLastName}`}</h2>
+            <span className="text-sm text-gray-500">{classData?.startDate && (() => {
+  const date = new Date(classData.startDate);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-indexed
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+})()}</span>
           </div>
     
           {/* Jitsi Video Box */}
@@ -413,6 +423,7 @@ const token =
         <JitsiMeeting
           roomName={roomName}
           domain="meet.blackstoneinfomaticstech.com"
+         userInfo={userInfo}
           configOverwrite={{
             startWithAudioMuted: false,
             startWithVideoMuted: false,
@@ -431,7 +442,8 @@ const token =
               'videoquality',
               'filmstrip',
               'shortcuts',
-              'tileview'
+              'tileview',
+              'recording'
             ]
           }}
           getIFrameRef={(iframeRef) => {
