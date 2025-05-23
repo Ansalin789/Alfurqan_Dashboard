@@ -165,7 +165,6 @@ function LiveClass() {
         const teacherId =  typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null;
  const token =
     typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
-     console.log(token);
   if (!token) {
     console.error("❌ TeacherAuthToken not found");
     return;
@@ -260,9 +259,16 @@ function LiveClass() {
     };
     console.log(payload);
     try {
+      const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
       const response = await axios.put(
         `https://api.blackstoneinfomaticstech.com/classShedule/${classData._id}`,
-        payload
+        payload,{
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+            },
+        }
       );
       console.log("Class schedule updated:", response.data);
     } catch (error) {
