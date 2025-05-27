@@ -3,16 +3,15 @@
 import { ReactNode, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname,useRouter  } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
 import { CalendarDays, Bell, User, Sun, Moon } from "lucide-react";
-
 import { RiDashboardFill } from "react-icons/ri";
 import { MdContactSupport, MdAssignment } from "react-icons/md";
 import { IoPeopleSharp } from "react-icons/io5";
 import { FaBookOpenReader } from "react-icons/fa6";
 import { LuMessagesSquare } from "react-icons/lu";
-
+import LeaveForm from "@/app/supervisor/components/leaveForm";
 interface Props {
   readonly children: ReactNode | ReactNode[];
 }
@@ -103,8 +102,9 @@ function Sidebar3() {
 export default function BaseLayout3({ children }: Props) {
   const [scale, setScale] = useState(1);
   const { darkMode, toggleDarkMode } = useTheme();
+  const [showLeaveForm, setShowLeaveForm] = useState(false);
   const pathname = usePathname();
-
+  const router = useRouter();
   // Find current section name based on pathname
   const currentSection = SidebarItems.find(item => item.href === pathname)?.name ?? 'Dashboard';
 
@@ -116,8 +116,41 @@ export default function BaseLayout3({ children }: Props) {
     else if (dpi === 2) setScale(0.94);
     else setScale(1);
   }, []);
-
+ 
   const inverseScale = 1 / scale;
+  const renderButton =()=>{
+    if(currentSection.startsWith("Dashboard")){
+     return  <button 
+             onClick={() => setShowLeaveForm(true)}
+             className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg ">
+              Request for Leave
+            </button>
+    }
+    if(currentSection.startsWith("Recruitment")){
+      return <button className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg ">
+              Add Applicant
+            </button>
+    }
+    if(currentSection.startsWith("Meeting & Training")){
+      return  <button className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg ">
+              Add Meeting
+            </button>
+    }
+    if(currentSection.startsWith("Teachers")){
+      return <div className="flex gap-2">
+             <button  onClick={() => router.push("/supervisor/ui/feedback")}
+              className=" text-[#5a65d1] border border-[#5a65d1] text-sm font-semibold px-4 py-2 rounded-lg ">
+             Feedback
+            </button>
+             <button 
+             onClick={() => router.push("/supervisor/ui/viewschedule")}
+             className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg ">
+             Scheduled Classes
+            </button>
+            </div>
+    }
+    return null;
+  };
 
  return (
   <div
@@ -138,7 +171,7 @@ export default function BaseLayout3({ children }: Props) {
       className="grid grid-cols-1 md:grid-cols-[240px_1fr] transition-all"
     >
       {/* Sidebar */}
-      <div className="hidden md:block h-screen bg-[#012A4A] dark:bg-[#001E34] overflow-y-auto">
+      <div className="hidden md:block min-h-screen bg-[#012A4A] dark:bg-[#001E34] overflow-y-auto">
         <Sidebar3 />
       </div>
 
@@ -152,18 +185,16 @@ export default function BaseLayout3({ children }: Props) {
 
           {/* Top right buttons */}
           <div className="flex items-center gap-3 flex-wrap">
-            <button className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg ">
-              Request for Leave
-            </button>
-            <button className="p-2 bg-white dark:bg-gray-700 rounded-lg">
+           {renderButton()}
+            <button className="p-2.5 bg-white dark:bg-gray-700 rounded-lg">
               <CalendarDays className="w-4 h-4 text-gray-800 dark:text-white" />
             </button>
-            <button className="p-2 bg-white dark:bg-gray-700 rounded-lg">
+            <button className="p-2.5 bg-white dark:bg-gray-700 rounded-lg">
               <Bell className="w-4 h-4 text-gray-800 dark:text-white" />
             </button>
             <button
               onClick={toggleDarkMode}
-              className="p-2 bg-white dark:bg-gray-700 rounded-lg"
+              className="p-2.5 bg-white dark:bg-gray-700 rounded-lg"
             >
               {darkMode ? (
                 <Sun className="w-4 h-4 text-gray-800 dark:text-white" />
@@ -171,11 +202,14 @@ export default function BaseLayout3({ children }: Props) {
                 <Moon className="w-4 h-4 text-gray-800 dark:text-white" />
               )}
             </button>
-            <div className="p-2 bg-white dark:bg-gray-700 rounded-full">
+            <div className="p-2.5 bg-white dark:bg-gray-700 rounded-full">
               <User className="w-4 h-4 text-gray-800 dark:text-white" />
             </div>
           </div>
         </div>
+        {showLeaveForm && (
+         <LeaveForm onClose={() => setShowLeaveForm(false)} />
+        )}
 
         {/* Children content */}
         {children}
