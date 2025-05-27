@@ -399,7 +399,7 @@ setMessages(prev => {
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="w-full md:w-[350px] bg-white p-4 rounded-lg shadow-md flex flex-col border border-gray-100"
+            className="w-full md:w-[350px] bg-[#fff] p-4 rounded-[12px] shadow-md flex flex-col border border-gray-100"
           >
             <div className="flex items-center space-x-3 p-2">
               <motion.div whileHover={{ scale: 1.05 }}>
@@ -411,7 +411,7 @@ setMessages(prev => {
               </motion.div>
               <div>
                 <div className="flex">
-                <h3 className="text-sm font-semibold text-[#374557]">
+                <h3 className="text-[18px] font-semibold text-[#010E30]">
                   Admin{" "}
                   
                 </h3>
@@ -426,7 +426,7 @@ setMessages(prev => {
                 </div>
                 
 
-                <p className="text-xs text-gray-400">Administrator</p>
+                <p className="text-[12px] text-[#010e30a7] font-semibold">Supervisor</p>
               </div>
             </div>
 
@@ -441,7 +441,7 @@ setMessages(prev => {
               <input
                 type="text"
                 placeholder="Search messages..."
-                className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#4CBC9A]"
+                className="block w-full pl-10 pr-3 py-2 border border-[#CBCBCB] rounded-lg text-[12px] focus:outline-none focus:ring-1 focus:ring-[#4CBC9A]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -450,9 +450,9 @@ setMessages(prev => {
             {/* Tabs */}
             <div className="flex border-b">
               <button
-                className={`px-3 py-1.5 text-xs font-medium ${
+                className={`px-3 py-1.5 text-[12px] font-medium ${
                   activeTab === "teachers"
-                    ? "text-[#002B4D] border-b-2 border-[#002B4D]"
+                    ? "text-[#576CBC] border-b-2 border-[#576CBC]"
                     : "text-gray-500"
                 }`}
                 onClick={() => setActiveTab("teachers")}
@@ -460,9 +460,9 @@ setMessages(prev => {
                 Teachers
               </button>
               <button
-                className={`px-3 py-1.5 text-xs font-medium ${
+                className={`px-3 py-1.5 text-[12px] font-medium ${
                   activeTab === "admin"
-                    ? "text-[#002B4D] border-b-2 border-[#002B4D]"
+                    ? "text-[#576CBC] border-b-2 border-[#576CBC]"
                     : "text-gray-500"
                 }`}
                 onClick={() => setActiveTab("admin")}
@@ -472,7 +472,7 @@ setMessages(prev => {
             </div>
 
             {/* User List */}
-            <div className="mt-2 overflow-y-auto flex-1">
+            <div className="mt-2  flex-1">
               <AnimatePresence>
                 {filteredUsers.map((user) => (
                   <motion.button
@@ -492,23 +492,23 @@ setMessages(prev => {
                       <div className="relative">
                         <motion.div
                           whileHover={{ scale: 1.05 }}
-                          className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center"
+                          className="w-9 h-9 bg-[#D0D0D0] rounded-lg flex items-center justify-center"
                         >
-                          <span className="text-gray-600 text-xs">
+                          <span className="text-[#959595] font-semibold text-[14px]">
                             {user.userName.charAt(0)}
                           </span>
                         </motion.div>
                         <div
-                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border bg-[#68D391] border-white ${getStatusColor(
                             user.status ?? "offline"
                           )}`}
                         ></div>
                       </div>
                       <div className="text-left">
-                        <h5 className="font-medium text-xs text-[#374557]">
+                        <h5 className="font-semibold  text-[12px] text-[#010E30]">
                           {user.userName}
                         </h5>
-                        <p className="text-[10px] text-gray-400 truncate max-w-[180px]">
+                        <p className="text-[10px] text-gray-500 truncate max-w-[180px]">
                           {user.email}
                         </p>
                       </div>
