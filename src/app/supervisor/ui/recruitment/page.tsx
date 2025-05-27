@@ -2,10 +2,24 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { CountryDropdown } from "react-country-region-selector";
-import { Star, MoreHorizontal, FileText, X, Upload } from "lucide-react";
+import {
+  Star,
+  MoreVertical,
+  FileText,
+  X,
+  Upload,
+  Search,
+
+} from "lucide-react";
+import { ImAttachment } from "react-icons/im";
+
+import { BsFilterLeft } from "react-icons/bs";
+
 import BaseLayout3 from "@/components/BaseLayout3";
 import axios from "axios";
 import { pdfjs } from "react-pdf";
+import Pagination from "@/components/Pagination/Pagination";
+
 type Status = "Shortlisted" | "Rejected" | "Waiting";
 type Position = "Arabic Teacher" | "Quran Teacher";
 interface Applicant {
@@ -148,35 +162,37 @@ export default function ApplicantsPage() {
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
   useEffect(() => {
-     const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorAuthToken")
+        : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
+    if (!token) {
+      console.error("❌ SupervisorAuthToken not found");
+      return;
+    }
     axios
-      .get("https://api.blackstoneinfomaticstech.com/applicants",
-        {
-          headers:{
-            "Authorization":`Bearer ${token}`, 
-            "Content-Type":"application/json"        
-           }
-        }
-      )
+      .get("https://api.blackstoneinfomaticstech.com/applicants", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
       .then((response) => setApplicants(response.data.applicants))
       .catch((error) => console.error("Error fetching applicants:", error));
   }, []);
 
-  const tabs = ["All", "NEWAPPLICATION", "SHORTLISTED", "REJECTED", "WAITING"];
+  const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
   const itemsPerPage = 10;
 
-  const filteredApplicants =
-    activeTab === "All"
-      ? applicants
-      : applicants.filter(
-        (applicant) => applicant.applicationStatus === activeTab
+const filteredApplicants =
+  activeTab === "All"
+    ? applicants
+    : applicants.filter((applicant) =>
+        applicant.applicationStatus.replace(/\s+/g, '').toUpperCase() ===
+        activeTab.replace(/\s+/g, '').toUpperCase()
       );
+
 
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -186,15 +202,15 @@ export default function ApplicantsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "NEWAPPLICATION":
-        return "bg-blue-500 text-white px-2 text-[10px]";
+        return "bg-[#3b82f61f] text-blue-500 rounded-md px-2 text-[10px]";
       case "SHORTLISTED":
-        return "bg-orange-500 text-white px-3 text-[10px]";
+        return "bg-[#ECFDF3] text-[#377E36] rounded-md px-6 text-[10px]";
       case "REJECTED":
-        return "bg-red-500 text-white px-2 text-[10px]";
+        return "bg-[#FDECEC] text-[#D34645] rounded-md px-8 text-[10px]";
       case "WAITING":
-        return "bg-yellow-500 text-white px-2 text-[10px]";
+        return "bg-[#FDF6EC] text-[#F0AD4E] rounded-md px-8 text-[10px]";
       case "APPROVED":
-        return "bg-green-500 text-white px-7 text-[10px]";
+        return "bg-[#ECFDF3] text-[#377E36] rounded-md px-8 text-[10px]";
     }
   };
 
@@ -202,22 +218,22 @@ export default function ApplicantsPage() {
     setOpenMenuId(openMenuId === _id ? null : _id);
 
     if (openMenuId !== _id) {
-      
       try {
-          const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorAuthToken")
+            : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
+        if (!token) {
+          console.error("❌ SupervisorAuthToken not found");
+          return;
+        }
         const response = await axios.get<ApiResponse>(
           `https://api.blackstoneinfomaticstech.com/applicants/${_id}`,
           {
             headers: {
-             
               "Content-Type": "application/json",
-              "Authorization":`Bearer ${token}`
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -292,19 +308,22 @@ export default function ApplicantsPage() {
     }
 
     try {
-        const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+        return;
+      }
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/recruit",
         formData,
         {
-          headers: { "Content-Type": "multipart/form-data" ,
-            "Authorization":`Bearer ${token}`
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -361,20 +380,23 @@ export default function ApplicantsPage() {
     };
     console.log(updateData);
     try {
-        const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+        return;
+      }
       const response = await axios.put(
         `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
         updateData,
-        {headers:{
-          "Authorization":`Bearer ${token}`,
-          "Content-Type":"application/json",
-        }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
       console.log("Update successful:", response.data);
@@ -395,16 +417,10 @@ export default function ApplicantsPage() {
 
   return (
     <BaseLayout3>
-      <div className="min-h-screen mx-auto w-[1280px]">
-        <div className="md:p-4 mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-            <h1 className="text-xl md:text-2xl font-semibold text-slate-800">
-              Applicants
-            </h1>
-          </div>
-
-          <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[600px]  flex flex-col justify-between">
-            <div className="p-4 justify-between flex flex-col">
+      <div className="">
+        <div className="md:p-0 mx-auto">
+          <div className="h-full w-full  flex flex-col justify-between">
+            <div className="p-0 justify-between flex flex-col">
               <div>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
                   <div className="flex flex-wrap gap-2 mb-0">
@@ -412,273 +428,167 @@ export default function ApplicantsPage() {
                       <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-3 py-1 md:px-3 md:py-1 rounded-md text-[13px] font-semibold ${activeTab === tab
-                          ? "text-[#fff] bg-[#012A4A] mt-2"
-                          : "text-[#05445E] py-4 hover:bg-slate-100 mt-4"
-                          }`}
+                        className={`px-3 py-1 md:px-3 md:py-1 text-[16px] font-medium
+                           ${
+                          activeTab === tab
+                            ? "text-[#576CBC] border-b-2 border-b-[#576CBC] mt-2"
+                            : "text-[#010E30] py-4 mt-4"
+                        }`}
                       >
                         {tab}
                       </button>
                     ))}
                   </div>
                   <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-slate-600 whitespace-nowrap">
-                        Sort by:
-                      </span>
-                      <select className="px-2 py-1 border rounded-md text-slate-600 bg-white text-[11px]">
-                        <option>Designation</option>
-                        <option>Date</option>
-                        <option>Status</option>
-                      </select>
-                    </div>
-                    <button
+                    {/* <button
                       onClick={() => setShowAddApplicant(true)}
                       className="bg-[#012A4A] font-medium text-[12px] hover:bg-[#0d202f] text-white px-2 py-0 rounded-md transition-colors"
                     >
                       + Add Applicant
-                    </button>
+                    </button> */}
                   </div>
                 </div>
 
-                <div className="overflow-x-auto ">
-                  <table className="table-auto w-full min-h-auto ">
-                    <thead className="text-[12px] font-bold">
-                      <tr className="bg-[#F4F5F7] py-2 rounded-2xl mb-2">
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
+                <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg shadow">
+                  {/* Header Search & Filter */}
+                  <div className="flex justify-between items-center px-4 py-0 rounded-md">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search by keyword"
+                        className="bg-transparent outline-none text-[15px] text-gray-700 w-52 py-3"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 py-2 border-r-2 border-l-2 px-48 -ml-60">
+                      {/* <BsFilterLeft /> */}
+                      <img src="/assets/images/filter.png" alt="" />
+                      <span>Filter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[14px] text-gray-500">
+                      <span className="text-left -ml-60">Showing {currentApplicants.length} Of 50</span>
+                    </div>
+                  </div>
+
+                  {/* Table */}
+                  <table className="table-auto border-separate border-spacing-0 w-full">
+                    <thead className="text-[12px] bg-[#4C6993] text-white">
+                      <tr className="font-medium">
+                        <th className="text-left px-3 py-4 font-medium">Applicant Name</th>
+                        <th className="text-left px-3 py-4 font-medium">
                           Application Date
                         </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
-                          Applicant Name
-                        </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
-                          Contact
-                        </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
-                          E-Mail
-                        </th>
-                        <th className="text-center px-4 py-2  font-semibold text-[#343942]">
+                        <th className="text-left px-3 py-4 font-medium">Contact</th>
+                        <th className="text-left px-3 py-4 font-medium">Email id</th>
+                        <th className="text-left px-3 py-4 font-medium">
                           Position Applied
                         </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
-                          Resume
-                        </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
-                          Status
-                        </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
-                          Level
-                        </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]"></th>
+                        <th className="text-left px-3 py-4 font-medium">Resume</th>
+                        <th className="text-left px-3 py-4 font-medium">Status</th>
+                        <th className="text-left px-3 py-4 font-medium">Level</th>
+                        <th className="text-left px-3 py-4 font-medium">Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {currentApplicants.map((applicant, index) => (
-                        <tr
-                          key={applicant._id}
-                          className={`text-[11px] font-medium mt-2 ${index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                      {currentApplicants.map(
+                        (applicant: any, index: number) => (
+                          <tr
+                            key={applicant._id}
+                            className={`text-[12px] ${
+                              index % 2 === 0 ? "bg-[#fff]" : "bg-[#F8F8F8]"
                             }`}
-                        >
-                          <td className="px-4 py-1 text-center text-[#17243E]">
-                            {formatDate(applicant.applicationDate)}
-                          </td>
-                          <td className="px-4 py-1 text-center">
-                            <div className="flex items-center gap-3">
-                              <div className="h-4 w-4 rounded-full bg-purple-100 flex items-center justify-center">
-                                <span className="text-purple-600 font-medium">
-                                  {applicant.candidateFirstName.charAt(0)}
-                                </span>
-                              </div>
-                              <span className=" font-medium text-slate-800">
+                          >
+                            <td className="px-3 py-2 text-[#3D8FDE] font-medium">
                                 {applicant.candidateFirstName}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-1 text-center text-[#17243E]">
-                            {applicant.candidatePhoneNumber}
-                          </td>
-                          <td className="px-4 py-1 text-center text-[#17243E]">
-                            {applicant.candidateEmail}
-                          </td>
-                          <td className="px-4 py-1 text-center text-[9px">
-                            {applicant.positionApplied}fghdhdfgh
-                          </td>
-                          <td className="px-4 py-1 text-center">
-                            <button className="text-[#17243E] hover:text-[#38619A] flex items-center">
-                              <FileText className="w-4 h-4 mr-2" />
-                              Resume
-                            </button>
-                          </td>
-                          <td className="px-4 py-1 text-center text-[12px]">
-                            <span
-                              className={`px-3 py-1 rounded-full ${getStatusColor(
-                                applicant.applicationStatus
-                              )}`}
-                            >
-                              {applicant.applicationStatus}
-                            </span>
-                          </td>
-                          <td className="px-4 py-1 text-center">
-                            <div className="flex gap-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={`star-${star}`} // Using a stable key instead of index
-                                  className={`w-4 h-4 ${(Number(applicant?.level) || 0) >= star
-                                    ? "text-[#FAAB3C] fill-[#68b806]"
-                                    : "text-[#F8D8AB] fill-[#f7f6f5]"
-                                    }`}
-                                />
-                              ))}
-                            </div>
-                          </td>
-                          <td className="px-4 py-1 text-center">
-                            <div className="relative">
-                              <button
-                                onClick={() => handleMenuClick(applicant._id)}
-                                className="hover:bg-gray-100 p-2 rounded-md"
-                              >
-                                <MoreHorizontal className="w-4 h-4 text-slate-600" />
+                            </td>
+                            <td className="px-3 py-2 text-[#17243E]">
+                              {formatDate(applicant.applicationDate)}
+                            </td>
+                            <td className="px-3 py-2 text-[#17243E]">
+                              {applicant.candidatePhoneNumber}
+                            </td>
+                            <td className="px-3 py-2 text-[#17243E]">
+                              {applicant.candidateEmail}
+                            </td>
+                            <td className="px-3 py-2 text-[#17243E]">
+                              {applicant.positionApplied}
+                            </td>
+                            <td className="px-3 py-2">
+                              <button className="text-[#38619A] hover:underline flex items-center gap-1">
+                                <ImAttachment className="w-4 h-4"/>
+                                Resume
                               </button>
-                              {openMenuId === applicant._id && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
-                                  <button
-                                    //   onClick={() => handleEditDetails(applicant)}
-                                    className="block w-full px-4 py-2 text-left text-[12px] text-[#353232]"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={() => handleViewDetails(applicant)}
-                                    className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
-                                  >
-                                    View Details
-                                  </button>
-                                  <button
-                                    onClick={() => setOpenMenuId(null)}
-                                    className="block w-full px-4 py-2 text-left text-[12px] text-red-600 hover:bg-gray-50"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className="px-3 py-2">
+                              <span
+                                className={`text-[10px] font-semibold px-3 py-1 rounded-full ${getStatusColor(
+                                  applicant.applicationStatus
+                                )}`}
+                              >
+                                {applicant.applicationStatus}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2">
+                              <div className="flex gap-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={`star-${star}`}
+                                    className={`w-4 h-4 ${
+                                      (Number(applicant?.level) || 0) >= star
+                                        ? "text-[#FAAB3C]"
+                                        : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </td>
+                            <td className="px-3 py-2">
+                              <div className="relative">
+                                <button
+                                  onClick={() => handleMenuClick(applicant._id)}
+                                  className="hover:bg-gray-100 p-2 rounded-md"
+                                >
+                                  <MoreVertical className="w-4 h-4 text-slate-600" />
+                                </button>
+                                {openMenuId === applicant._id && (
+                                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
+                                    <button className="block w-full px-4 py-2 text-left text-[12px] text-[#353232]">
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleViewDetails(applicant)
+                                      }
+                                      className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+                                    >
+                                      View Details
+                                    </button>
+                                    <button
+                                      onClick={() => setOpenMenuId(null)}
+                                      className="block w-full px-4 py-2 text-left text-[12px] text-red-600 hover:bg-gray-50"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      )}
                     </tbody>
                   </table>
                 </div>
               </div>
-              <div>
-                <div className="flex flex-col md:flex-row items-center justify-between px-4 py-4 border-t space-y-4 md:space-y-0">
-                  <div className="text-[10px] text-gray-600">
-                    Showing {startIndex + 1} -{" "}
-                    {Math.min(endIndex, filteredApplicants.length)} of{" "}
-                    {filteredApplicants.length} entries
-                  </div>
-                  <div className="flex space-x-2 text-[10px]">
-                    {/* Previous Button */}
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      className={`px-2 py-1 rounded ${currentPage === 1
-                        ? "bg-gray-100 text-gray-400"
-                        : "bg-gray-200 hover:bg-gray-300"
-                        }`}
-                    >
-                      &lt;
-                    </button>
 
-                    {/* Pagination Numbers */}
-                    {totalPages > 5 ? (
-                      <>
-                        {/* First Page */}
-                        <button
-                          onClick={() => setCurrentPage(1)}
-                          className={`px-2 py-1 rounded ${currentPage === 1
-                            ? "bg-[#1B2B65] text-white"
-                            : "bg-gray-200 hover:bg-gray-300"
-                            }`}
-                        >
-                          1
-                        </button>
-
-                        {/* Left Ellipsis */}
-                        {currentPage > 3 && (
-                          <span className="px-2 py-1">...</span>
-                        )}
-
-                        {/* Pages Around Current */}
-                        {Array.from(
-                          { length: 3 },
-                          (_, i) => currentPage - 1 + i
-                        )
-                          .filter((page) => page > 1 && page < totalPages)
-                          .map((page) => (
-                            <button
-                              key={page}
-                              onClick={() => setCurrentPage(page)}
-                              className={`px-2 py-1 rounded ${currentPage === page
-                                ? "bg-[#1B2B65] text-white"
-                                : "bg-gray-200 hover:bg-gray-300"
-                                }`}
-                            >
-                              {page}
-                            </button>
-                          ))}
-
-                        {/* Right Ellipsis */}
-                        {currentPage < totalPages - 2 && (
-                          <span className="px-2 py-1">...</span>
-                        )}
-
-                        {/* Last Page */}
-                        <button
-                          onClick={() => setCurrentPage(totalPages)}
-                          className={`px-2 py-1 rounded ${currentPage === totalPages
-                            ? "bg-[#1B2B65] text-white"
-                            : "bg-gray-200 hover:bg-gray-300"
-                            }`}
-                        >
-                          {totalPages}
-                        </button>
-                      </>
-                    ) : (
-                      // Display all pages when totalPages <= 5
-                      [...Array(totalPages)].map((_, index) => (
-                        <button
-                          key={index + 1}
-                          onClick={() => setCurrentPage(index + 1)}
-                          className={`px-2 py-1 rounded ${currentPage === index + 1
-                            ? "bg-[#1B2B65] text-white"
-                            : "bg-gray-200 hover:bg-gray-300"
-                            }`}
-                        >
-                          {index + 1}
-                        </button>
-                      ))
-                    )}
-
-                    {/* Next Button */}
-                    <button
-                      onClick={() =>
-                        setCurrentPage((p) => Math.min(totalPages, p + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                      className={`px-2 py-1 rounded ${currentPage === totalPages
-                        ? "bg-gray-100 text-gray-400"
-                        : "bg-gray-200 hover:bg-gray-300"
-                        }`}
-                    >
-                      &gt;
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <Pagination totalPages={0} currentPage={0} onPageChange={function (page: number): void {
+                throw new Error("Function not implemented.");
+              } } />
             </div>
           </div>
         </div>
       </div>
+
       {showAddApplicant && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-lg p-4 w-[500px]">
@@ -772,13 +682,14 @@ export default function ApplicantsPage() {
                     }
                     className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
                   >
-                    <option value="" disabled>Select Gender</option>
+                    <option value="" disabled>
+                      Select Gender
+                    </option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
-
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -1201,10 +1112,11 @@ export default function ApplicantsPage() {
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
-                            className={`text-xl cursor-pointer ${rating >= star
-                              ? "text-yellow-500"
-                              : "text-gray-300"
-                              }`}
+                            className={`text-xl cursor-pointer ${
+                              rating >= star
+                                ? "text-yellow-500"
+                                : "text-gray-300"
+                            }`}
                             onClick={() => setRating(star)}
                           >
                             ★
