@@ -67,7 +67,7 @@ const Message = () => {
   const [teachers, setTeachers] = useState<IUser[]>([]);
   const [admin, setAdmin] = useState<IUser[]>([]);
   const [activeTab, setActiveTab] = useState<
-    "teachers" | "admin"
+    "teachers" | "admin" | "all" | "supervisor" | "academic-coach"
   >("teachers");
 
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
@@ -392,7 +392,6 @@ setMessages(prev => {
   return (
     <BaseLayout3>
       <div className="py-3 px-5">
-        <h1 className="text-[20px] mt-3 font-semibold mb-3">Messages</h1>
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
           {/* Left Panel */}
           <motion.div
@@ -449,8 +448,18 @@ setMessages(prev => {
 
             {/* Tabs */}
             <div className="flex border-b">
+            <button
+                className={`px-2 py-1.5 text-[12px] font-medium ${
+                  activeTab === "all"
+                    ? "text-[#576CBC] border-b-2 border-[#576CBC]"
+                    : "text-gray-500"
+                }`}
+                onClick={() => setActiveTab("all")}
+              >
+                All
+              </button>
               <button
-                className={`px-3 py-1.5 text-[12px] font-medium ${
+                className={`px-2 py-1.5 text-[12px] font-medium ${
                   activeTab === "teachers"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC]"
                     : "text-gray-500"
@@ -460,7 +469,7 @@ setMessages(prev => {
                 Teachers
               </button>
               <button
-                className={`px-3 py-1.5 text-[12px] font-medium ${
+                className={`px-2 py-1.5 text-[12px] font-medium ${
                   activeTab === "admin"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC]"
                     : "text-gray-500"
@@ -468,6 +477,26 @@ setMessages(prev => {
                 onClick={() => setActiveTab("admin")}
               >
                 Admin
+              </button>
+              <button
+                className={`px-2 py-1.5 text-[12px] font-medium ${
+                  activeTab === "supervisor"
+                    ? "text-[#576CBC] border-b-2 border-[#576CBC]"
+                    : "text-gray-500"
+                }`}
+                onClick={() => setActiveTab("supervisor")}
+              >
+                Supervisor
+              </button>
+              <button
+                className={`px-2 py-1.5 text-[12px] font-medium ${
+                  activeTab === "academic-coach"
+                    ? "text-[#576CBC] border-b-2 border-[#576CBC]"
+                    : "text-gray-500"
+                }`}
+                onClick={() => setActiveTab("academic-coach")}
+              >
+                Academic
               </button>
             </div>
 
@@ -499,7 +528,7 @@ setMessages(prev => {
                           </span>
                         </motion.div>
                         <div
-                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border bg-[#68D391] border-white ${getStatusColor(
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border bg-green-600 ${getStatusColor(
                             user.status ?? "offline"
                           )}`}
                         ></div>
@@ -527,11 +556,11 @@ setMessages(prev => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="w-full md:flex-1 bg-white rounded-lg shadow-md flex flex-col border border-gray-100 overflow-hidden"
+            className="w-full md:flex-1 bg-white rounded-lg shadow-md flex flex-col overflow-hidden"
           >
             {selectedUser ? (
               <>
-                <div className="border-b border-gray-200 p-3">
+                <div className=" p-3">
                   <div className="flex items-center space-x-2">
                     <motion.div
                       whileHover={{ scale: 1.05 }}
@@ -543,7 +572,7 @@ setMessages(prev => {
                         </span>
                       </div>
                       <div
-                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
+                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white bg-green-500 ${getStatusColor(
                           selectedUser.status ?? "offline"
                         )}`}
                       ></div>
@@ -553,11 +582,6 @@ setMessages(prev => {
                         {selectedUser.userName}
                       </h3>
                       <div className="flex items-center">
-                        <span
-                          className={`inline-block w-2 h-2 rounded-full mr-1 ${getStatusColor(
-                            selectedUser.status ?? "offline"
-                          )}`}
-                        ></span>
                         <p className="text-[10px] text-gray-400 capitalize">
                           {selectedUser.status} • {selectedUser.role}
                         </p>
@@ -566,7 +590,7 @@ setMessages(prev => {
                   </div>
                 </div>
 
-                <div className="flex-1 p-3 overflow-y-auto scrollbar-none bg-gray-50 flex flex-col">
+                <div className="flex-1 p-3 overflow-y-auto scrollbar-none bg-[#fbfbfb] flex flex-col">
                   {" "}
                   {/* Added flex-col-reverse */}
                   <AnimatePresence>
@@ -591,10 +615,10 @@ setMessages(prev => {
                             >
                               <motion.div
                                 whileHover={{ scale: 1.01 }}
-                                className={`p-2 rounded-lg max-w-[80%] shadow-sm ${
+                                className={`p-2 rounded-lg max-w-[80%] ${
                                   msg.senderId === userId
-                                    ? "bg-[#4CBC9A] text-white rounded-tr-none"
-                                    : "bg-white border border-gray-200 rounded-tl-none"
+                                    ? "bg-[#576CBC] text-[#fff] rounded-lg"
+                                    : "bg-[#F1F1F1] rounded-lg"
                                 }`}
                               >
                                 <p className="text-xs">{msg.messages}</p>
@@ -621,9 +645,9 @@ setMessages(prev => {
                 <motion.div
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  className="border-t border-gray-200 p-3 bg-white"
+                  className="p-3 bg-white"
                 >
-                  <div className="flex items-center rounded-lg bg-gray-50 p-1">
+                  <div className="flex items-center rounded-lg bg-[#f3f3f3] p-1">
                     <button className="p-1 text-gray-500 hover:text-gray-700 ml-1">
                       <GrAttachment size={14} />
                     </button>
@@ -644,7 +668,7 @@ setMessages(prev => {
                       disabled={!messageText.trim()}
                       className={`p-1 rounded-lg flex items-center ${
                         messageText.trim()
-                          ? "bg-[#4CBC9A] text-white"
+                          ? "bg-[#576cbc] text-white"
                           : "bg-gray-200 text-gray-400 cursor-not-allowed"
                       }`}
                     >
