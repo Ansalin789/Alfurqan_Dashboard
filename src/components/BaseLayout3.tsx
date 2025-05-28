@@ -3,15 +3,12 @@
 import { ReactNode, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname,useRouter  } from "next/navigation";
-import { useTheme } from "@/context/ThemeContext";
-import { CalendarDays, Bell, User, Sun, Moon } from "lucide-react";
+import { usePathname} from "next/navigation";
 import { RiDashboardFill } from "react-icons/ri";
 import { MdContactSupport, MdAssignment } from "react-icons/md";
 import { IoPeopleSharp } from "react-icons/io5";
 import { FaBookOpenReader } from "react-icons/fa6";
 import { LuMessagesSquare } from "react-icons/lu";
-import LeaveForm from "@/app/supervisor/components/leaveForm";
 interface Props {
   readonly children: ReactNode | ReactNode[];
 }
@@ -94,20 +91,11 @@ function Sidebar3() {
     ))}
   </ul>
 </div>
-
-
   );
 }
 
 export default function BaseLayout3({ children }: Props) {
   const [scale, setScale] = useState(1);
-  const { darkMode, toggleDarkMode } = useTheme();
-  const [showLeaveForm, setShowLeaveForm] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
-  // Find current section name based on pathname
-  const currentSection = SidebarItems.find(item => item.href === pathname)?.name ?? 'Dashboard';
-
   useEffect(() => {
     const dpi = window.devicePixelRatio;
     if (dpi === 1.25) setScale(0.99);
@@ -118,39 +106,7 @@ export default function BaseLayout3({ children }: Props) {
   }, []);
  
   const inverseScale = 1 / scale;
-  const renderButton =()=>{
-    if(currentSection.startsWith("Dashboard")){
-     return  <button 
-             onClick={() => setShowLeaveForm(true)}
-             className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg ">
-              Request for Leave
-            </button>
-    }
-    if(currentSection.startsWith("Recruitment")){
-      return <button className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg ">
-              Add Applicant
-            </button>
-    }
-    if(currentSection.startsWith("Meeting & Training")){
-      return  <button className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg ">
-              Add Meeting
-            </button>
-    }
-    if(currentSection.startsWith("Teachers")){
-      return <div className="flex gap-2">
-             <button  onClick={() => router.push("/supervisor/ui/feedback")}
-              className=" text-[#5a65d1] border border-[#5a65d1] text-sm font-semibold px-4 py-2 rounded-lg ">
-             Feedback
-            </button>
-             <button 
-             onClick={() => router.push("/supervisor/ui/viewschedule")}
-             className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg ">
-             Scheduled Classes
-            </button>
-            </div>
-    }
-    return null;
-  };
+  
 
  return (
   <div
@@ -177,41 +133,6 @@ export default function BaseLayout3({ children }: Props) {
 
       {/* Main Content */}
       <div className="overflow-y-auto py-2 px-4 scrollbar-none h-screen">
-        <div className="flex justify-between items-center py-2 pl-1 mb-1">
-          {/* Dynamic Section Title */}
-          <h1 className="text-xl font-semibold text-[#000836] dark:text-white">
-            {currentSection}
-          </h1>
-
-          {/* Top right buttons */}
-          <div className="flex items-center gap-3 flex-wrap">
-           {renderButton()}
-            <button className="p-2.5 bg-white dark:bg-gray-700 rounded-lg">
-              <CalendarDays className="w-4 h-4 text-gray-800 dark:text-white" />
-            </button>
-            <button className="p-2.5 bg-white dark:bg-gray-700 rounded-lg">
-              <Bell className="w-4 h-4 text-gray-800 dark:text-white" />
-            </button>
-            <button
-              onClick={toggleDarkMode}
-              className="p-2.5 bg-white dark:bg-gray-700 rounded-lg"
-            >
-              {darkMode ? (
-                <Sun className="w-4 h-4 text-gray-800 dark:text-white" />
-              ) : (
-                <Moon className="w-4 h-4 text-gray-800 dark:text-white" />
-              )}
-            </button>
-            <div className="p-2.5 bg-white dark:bg-gray-700 rounded-full">
-              <User className="w-4 h-4 text-gray-800 dark:text-white" />
-            </div>
-          </div>
-        </div>
-        {showLeaveForm && (
-         <LeaveForm onClose={() => setShowLeaveForm(false)} />
-        )}
-
-        {/* Children content */}
         {children}
       </div>
     </div>

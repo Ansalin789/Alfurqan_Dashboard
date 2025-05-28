@@ -73,16 +73,16 @@ const handleSubmit = async (e:any) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
   <form
     onSubmit={handleSubmit}
-    className="bg-white rounded-lg shadow-xl p-5 w-full max-w-3xl mx-3 text-sm"
+    className="bg-white rounded-lg shadow-xl p-5 w-full max-w-3xl mx-3 text-sm dark:bg-[#1D1D1D]"
     style={{ maxHeight: '90vh', overflowY: 'auto' }}
   >
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Left Section */}
       <div>
-        <h1 className="text-lg font-semibold text-gray-800 mb-3">Fill Details</h1>
+        <h1 className="text-lg font-normal text-gray-800 mb-3 dark:text-[#FFFFFF] ">Fill Details</h1>
 
         <div className="mb-4">
-          <label htmlFor="employeeId" className="block text-xs font-medium text-gray-600 mb-1">
+          <label htmlFor="employeeId" className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
             Employee ID
           </label>
           <input
@@ -90,12 +90,12 @@ const handleSubmit = async (e:any) => {
             value={form.employeeId}
             readOnly
             type="text"
-            className="w-full border rounded px-3 py-2 text-xs"
+            className="w-full border  rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
 
         <div className="mb-4">
-          <label htmlFor="employeeName" className="block text-xs font-medium text-gray-600 mb-1">
+          <label htmlFor="employeeName" className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
             Employee Name
           </label>
           <input
@@ -103,12 +103,12 @@ const handleSubmit = async (e:any) => {
             value={form.name}
             readOnly
             type="text"
-            className="w-full border rounded px-3 py-2 text-xs"
+            className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
 
         <div className="mb-4">
-          <label htmlFor="designation" className="block text-xs font-medium text-gray-600 mb-1">
+          <label htmlFor="designation" className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
             Designation
           </label>
           <input
@@ -116,19 +116,19 @@ const handleSubmit = async (e:any) => {
             value="Supervisor"
             readOnly
             type="text"
-            className="w-full border rounded px-3 py-2 text-xs"
+            className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
 
         <div className="mb-4">
-  <label htmlFor="leaveType" className="block text-xs font-medium text-gray-600 mb-1">
+  <label htmlFor="leaveType" className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
     Leave Type
   </label>
   <select
     name="leaveType"
     value={form.leaveType}
     onChange={handleChange}
-    className="w-full border rounded px-3 py-2 text-xs"
+    className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
   >
     <option value="">Select Leave Type</option>
     <option value="SICK">SICK</option>
@@ -139,7 +139,7 @@ const handleSubmit = async (e:any) => {
 
 
         <div className="mb-4">
-          <label htmlFor="fromDate" className="block text-xs font-medium text-gray-600 mb-1">
+          <label htmlFor="fromDate" className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
             From Date
           </label>
           <input
@@ -147,12 +147,12 @@ const handleSubmit = async (e:any) => {
             value={form.fromDate}
             onChange={handleChange}
             type="date"
-            className="w-full border rounded px-3 py-2 text-xs"
+            className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
 
         <div className="mb-4">
-          <label htmlFor="toDate" className="block text-xs font-medium text-gray-600 mb-1">
+          <label htmlFor="toDate" className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
             To Date
           </label>
           <input
@@ -160,53 +160,53 @@ const handleSubmit = async (e:any) => {
             value={form.toDate}
             onChange={handleChange}
             type="date"
-            className="w-full border rounded px-3 py-2 text-xs"
+            className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
       </div>
 
       {/* Right Section */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">Leave Records</h2>
+        <h2 className="text-lg font-normal text-gray-800 mb-3 dark:text-[#FFFFFF]">Leave Records</h2>
 
         <div className="mb-4">
-          <label htmlFor="sickLeave" className="block text-xs font-medium text-gray-600 mb-1">
+          <label htmlFor="sickLeave" className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
             Sick Leave
           </label>
           <input
             type="text"
             value="2"
             readOnly
-            className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs"
+            className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
 
         <div className="mb-4">
-          <label htmlFor="casualLeave" className="block text-xs font-medium text-gray-600 mb-1">
+          <label htmlFor="casualLeave" className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
             Casual Leave
           </label>
           <input
             type="text"
             value="2"
             readOnly
-            className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs"
+            className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
 
         <div className="mb-4">
-          <label htmlFor="lossOfPay" className="block text-xs font-medium text-gray-600 mb-1">
+          <label htmlFor="lossOfPay" className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
             Loss of Pay
           </label>
           <input
             type="text"
             value="2"
             readOnly
-            className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs"
+            className="w-full border rounded px-3 py-2 bg-gray-100 text-gray-800 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
 
         <div className="mt-4">
-          <label htmlFor="reason" className="block text-xs font-medium text-gray-600 mb-1">
+          <label htmlFor="reason" className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
             Reason For Leave
           </label>
           <textarea
@@ -214,7 +214,7 @@ const handleSubmit = async (e:any) => {
             value={form.reason}
             onChange={handleChange}
             rows={2}
-            className="w-full border rounded px-3 py-3 h-full text-xs"
+            className="w-full border rounded px-3 py-3 h-full text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
           />
         </div>
       </div>
@@ -225,7 +225,7 @@ const handleSubmit = async (e:any) => {
       <button
         type="button"
         onClick={onClose}
-        className="px-3 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition"
+        className="px-3 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition "
       >
         Cancel
       </button>
