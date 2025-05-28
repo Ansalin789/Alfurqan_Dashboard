@@ -9,7 +9,8 @@ import {
   X,
   Upload,
   Search,
-
+  Mail,
+  Phone,
 } from "lucide-react";
 import { ImAttachment } from "react-icons/im";
 
@@ -185,14 +186,14 @@ export default function ApplicantsPage() {
   const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
   const itemsPerPage = 10;
 
-const filteredApplicants =
-  activeTab === "All"
-    ? applicants
-    : applicants.filter((applicant) =>
-        applicant.applicationStatus.replace(/\s+/g, '').toUpperCase() ===
-        activeTab.replace(/\s+/g, '').toUpperCase()
-      );
-
+  const filteredApplicants =
+    activeTab === "All"
+      ? applicants
+      : applicants.filter(
+          (applicant) =>
+            applicant.applicationStatus.replace(/\s+/g, "").toUpperCase() ===
+            activeTab.replace(/\s+/g, "").toUpperCase()
+        );
 
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -202,15 +203,15 @@ const filteredApplicants =
   const getStatusColor = (status: string) => {
     switch (status) {
       case "NEWAPPLICATION":
-        return "bg-[#3b82f61f] text-blue-500 rounded-md px-2 text-[10px]";
+        return "bg-[#F9E7FF] text-[#BE36D5] dark:bg-[#4C3151] dark:text-[#BE36D5] rounded-md px-2 text-[10px]";
       case "SHORTLISTED":
-        return "bg-[#ECFDF3] text-[#377E36] rounded-md px-6 text-[10px]";
+        return "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] rounded-md px-6 text-[10px]";
       case "REJECTED":
-        return "bg-[#FDECEC] text-[#D34645] rounded-md px-8 text-[10px]";
+        return "bg-[#FDECEC] dark:bg-[#503434] dark:text-[#D34645] text-[#D34645] rounded-md px-8 text-[10px]";
       case "WAITING":
-        return "bg-[#FDF6EC] text-[#F0AD4E] rounded-md px-8 text-[10px]";
+        return "bg-[#FDF6EC] dark:bg-[#534634] dark:text-[#F0AD4E] text-[#F0AD4E] rounded-md px-8 text-[10px]";
       case "APPROVED":
-        return "bg-[#ECFDF3] text-[#377E36] rounded-md px-8 text-[10px]";
+        return "bg-[#EEEEFF] text-[#38619A] dark:bg-[#2F3642] dark:text-[#225BAA] rounded-md px-8 text-[10px]";
     }
   };
 
@@ -430,10 +431,10 @@ const filteredApplicants =
                         onClick={() => setActiveTab(tab)}
                         className={`px-3 py-1 md:px-3 md:py-1 text-[16px] font-medium
                            ${
-                          activeTab === tab
-                            ? "text-[#576CBC] border-b-2 border-b-[#576CBC] mt-2"
-                            : "text-[#010E30] py-4 mt-4"
-                        }`}
+                             activeTab === tab
+                               ? "text-[#576CBC] border-b-2 border-b-[#576CBC] mt-[2px] dark:text-[#576CBC]"
+                               : "text-[#010E30] mt-0 dark:text-[white]"
+                           }`}
                       >
                         {tab}
                       </button>
@@ -449,44 +450,90 @@ const filteredApplicants =
                   </div>
                 </div>
 
-                <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg shadow">
+                <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
                   {/* Header Search & Filter */}
-                  <div className="flex justify-between items-center px-4 py-0 rounded-md">
+                  <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Search className="w-4 h-4 text-gray-400" />
+                      <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                       <input
                         type="text"
                         placeholder="Search by keyword"
-                        className="bg-transparent outline-none text-[15px] text-gray-700 w-52 py-3"
+                        className="bg-transparent outline-none text-[15px] w-52 py-3 "
                       />
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 py-2 border-r-2 border-l-2 px-48 -ml-60">
+                    <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 dark:text-gray-400">
                       {/* <BsFilterLeft /> */}
-                      <img src="/assets/images/filter.png" alt="" />
+                      <svg
+                        className="text-gray-400 dark:text-gray-400"
+                        width="25"
+                        height="24"
+                        viewBox="0 0 25 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <mask
+                          id="mask0_3603_6313"
+                          maskUnits="userSpaceOnUse"
+                          x="0"
+                          y="0"
+                          width="25"
+                          height="24"
+                        >
+                          <rect
+                            x="0.335938"
+                            width="24"
+                            height="24"
+                            fill="#D9D9D9"
+                          />
+                        </mask>
+                        <g mask="url(#mask0_3603_6313)">
+                          <path
+                            d="M4.33594 19C4.0526 19 3.81527 18.904 3.62394 18.712C3.43194 18.5207 3.33594 18.2833 3.33594 18C3.33594 17.7167 3.43194 17.4793 3.62394 17.288C3.81527 17.096 4.0526 17 4.33594 17H8.33594C8.61927 17 8.85694 17.096 9.04894 17.288C9.24027 17.4793 9.33594 17.7167 9.33594 18C9.33594 18.2833 9.24027 18.5207 9.04894 18.712C8.85694 18.904 8.61927 19 8.33594 19H4.33594ZM4.33594 7C4.0526 7 3.81527 6.90433 3.62394 6.713C3.43194 6.521 3.33594 6.28333 3.33594 6C3.33594 5.71667 3.43194 5.479 3.62394 5.287C3.81527 5.09567 4.0526 5 4.33594 5H12.3359C12.6193 5 12.8569 5.09567 13.0489 5.287C13.2403 5.479 13.3359 5.71667 13.3359 6C13.3359 6.28333 13.2403 6.521 13.0489 6.713C12.8569 6.90433 12.6193 7 12.3359 7H4.33594ZM12.3359 21C12.0526 21 11.8153 20.904 11.6239 20.712C11.4319 20.5207 11.3359 20.2833 11.3359 20V16C11.3359 15.7167 11.4319 15.479 11.6239 15.287C11.8153 15.0957 12.0526 15 12.3359 15C12.6193 15 12.8569 15.0957 13.0489 15.287C13.2403 15.479 13.3359 15.7167 13.3359 16V17H20.3359C20.6193 17 20.8566 17.096 21.0479 17.288C21.2399 17.4793 21.3359 17.7167 21.3359 18C21.3359 18.2833 21.2399 18.5207 21.0479 18.712C20.8566 18.904 20.6193 19 20.3359 19H13.3359V20C13.3359 20.2833 13.2403 20.5207 13.0489 20.712C12.8569 20.904 12.6193 21 12.3359 21ZM8.33594 15C8.0526 15 7.81494 14.904 7.62294 14.712C7.4316 14.5207 7.33594 14.2833 7.33594 14V13H4.33594C4.0526 13 3.81527 12.904 3.62394 12.712C3.43194 12.5207 3.33594 12.2833 3.33594 12C3.33594 11.7167 3.43194 11.479 3.62394 11.287C3.81527 11.0957 4.0526 11 4.33594 11H7.33594V10C7.33594 9.71667 7.4316 9.479 7.62294 9.287C7.81494 9.09567 8.0526 9 8.33594 9C8.61927 9 8.85694 9.09567 9.04894 9.287C9.24027 9.479 9.33594 9.71667 9.33594 10V14C9.33594 14.2833 9.24027 14.5207 9.04894 14.712C8.85694 14.904 8.61927 15 8.33594 15ZM12.3359 13C12.0526 13 11.8153 12.904 11.6239 12.712C11.4319 12.5207 11.3359 12.2833 11.3359 12C11.3359 11.7167 11.4319 11.479 11.6239 11.287C11.8153 11.0957 12.0526 11 12.3359 11H20.3359C20.6193 11 20.8566 11.0957 21.0479 11.287C21.2399 11.479 21.3359 11.7167 21.3359 12C21.3359 12.2833 21.2399 12.5207 21.0479 12.712C20.8566 12.904 20.6193 13 20.3359 13H12.3359ZM16.3359 9C16.0526 9 15.8153 8.904 15.6239 8.712C15.4319 8.52067 15.3359 8.28333 15.3359 8V4C15.3359 3.71667 15.4319 3.479 15.6239 3.287C15.8153 3.09567 16.0526 3 16.3359 3C16.6193 3 16.8566 3.09567 17.0479 3.287C17.2399 3.479 17.3359 3.71667 17.3359 4V5H20.3359C20.6193 5 20.8566 5.09567 21.0479 5.287C21.2399 5.479 21.3359 5.71667 21.3359 6C21.3359 6.28333 21.2399 6.521 21.0479 6.713C20.8566 6.90433 20.6193 7 20.3359 7H17.3359V8C17.3359 8.28333 17.2399 8.52067 17.0479 8.712C16.8566 8.904 16.6193 9 16.3359 9Z"
+                            fill="#252525"
+                            fill-opacity="0.3"
+                          />
+                        </g>
+                      </svg>
                       <span>Filter</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[14px] text-gray-500">
-                      <span className="text-left -ml-60">Showing {currentApplicants.length} Of 50</span>
+                    <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left -ml-60 ">
+                        Showing {currentApplicants.length} Of 50
+                      </span>
                     </div>
                   </div>
 
                   {/* Table */}
-                  <table className="table-auto border-separate border-spacing-0 w-full">
-                    <thead className="text-[12px] bg-[#4C6993] text-white">
+                  <table className="table-auto w-full">
+                    <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr className="font-medium">
-                        <th className="text-left px-3 py-4 font-medium">Applicant Name</th>
-                        <th className="text-left px-3 py-4 font-medium">
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                          Applicant Name
+                        </th>
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Application Date
                         </th>
-                        <th className="text-left px-3 py-4 font-medium">Contact</th>
-                        <th className="text-left px-3 py-4 font-medium">Email id</th>
-                        <th className="text-left px-3 py-4 font-medium">
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                          Contact
+                        </th>
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                          Email id
+                        </th>
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Position Applied
                         </th>
-                        <th className="text-left px-3 py-4 font-medium">Resume</th>
-                        <th className="text-left px-3 py-4 font-medium">Status</th>
-                        <th className="text-left px-3 py-4 font-medium">Level</th>
-                        <th className="text-left px-3 py-4 font-medium">Action</th>
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                          Resume
+                        </th>
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                          Status
+                        </th>
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                          Level
+                        </th>
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                          Action
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -495,27 +542,35 @@ const filteredApplicants =
                           <tr
                             key={applicant._id}
                             className={`text-[12px] ${
-                              index % 2 === 0 ? "bg-[#fff]" : "bg-[#F8F8F8]"
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C] "
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
                             <td className="px-3 py-2 text-[#3D8FDE] font-medium">
-                                {applicant.candidateFirstName}
+                              {applicant.candidateFirstName}
                             </td>
-                            <td className="px-3 py-2 text-[#17243E]">
-                              {formatDate(applicant.applicationDate)}
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                              {new Date(applicant.applicationDate)
+                                .toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                })
+                                .replace(",", ",")}
                             </td>
-                            <td className="px-3 py-2 text-[#17243E]">
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
                               {applicant.candidatePhoneNumber}
                             </td>
-                            <td className="px-3 py-2 text-[#17243E]">
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
                               {applicant.candidateEmail}
                             </td>
-                            <td className="px-3 py-2 text-[#17243E]">
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
                               {applicant.positionApplied}
                             </td>
                             <td className="px-3 py-2">
                               <button className="text-[#38619A] hover:underline flex items-center gap-1">
-                                <ImAttachment className="w-4 h-4"/>
+                                <ImAttachment className="w-4 h-4" />
                                 Resume
                               </button>
                             </td>
@@ -546,9 +601,9 @@ const filteredApplicants =
                               <div className="relative">
                                 <button
                                   onClick={() => handleMenuClick(applicant._id)}
-                                  className="hover:bg-gray-100 p-2 rounded-md"
+                                  className="p-2 rounded-md"
                                 >
-                                  <MoreVertical className="w-4 h-4 text-slate-600" />
+                                  <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
                                 </button>
                                 {openMenuId === applicant._id && (
                                   <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
@@ -581,9 +636,9 @@ const filteredApplicants =
                 </div>
               </div>
 
-              <Pagination totalPages={0} currentPage={0} onPageChange={function (page: number): void {
+              {/* <Pagination totalPages={0} currentPage={0} onPageChange={function (page: number): void {
                 throw new Error("Function not implemented.");
-              } } />
+              } } /> */}
             </div>
           </div>
         </div>
@@ -943,104 +998,169 @@ const filteredApplicants =
         </div>
       )}
 
-      {/* Application Details Popup */}
       {selectedApplicant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex max-h-[90vh] items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl relative  overflow-hidden">
-            <button
-              onClick={handleviewclose}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 z-50"
-            >
-              <X className="w-6 h-6" />
-            </button>
+        <>
+          {/* Dimmed background that closes the panel on click */}
+          <button
+            className="fixed inset-0 bg-black bg-opacity-60 z-40"
+            onClick={handleviewclose}
+            aria-label="Close panel"
+          />
 
-            <div className="flex h-full">
-              {/* Left Side - Resume */}
-              <div className="w-1/2 border-r relative bg-gray-50">
-                <div className="relative min-h-full">
-                  <iframe
-                    src={resumeImages ?? ""}
-                    title="Resume PDF"
-                    width="100%"
-                    height="800px"
-                  />
+          {/* Slide-over panel */}
+          <div className="fixed top-0 right-0 z-50 h-full w-[50vw] bg-[#fff] border-l border-gray-200 shadow-xl overflow-y-auto">
+            <div className="grid grid-cols-2 p-8 gap-6">
+              {/* Left Section */}
+              <div>
+                <div className="flex justify-between items-start mb-8">
+                  <div className="flex items-start gap-4">
+                    <img
+                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      alt="Profile"
+                      className="w-[60px] h-[60px] rounded-full border"
+                    />
 
-                  {/* Page Navigation Overlay */}
-                  <div className="none" />
-                </div>
-              </div>
+                    <div className="mt-4">
+                      <div className="flex items-center ">
+                        <h2 className="text-[16px] font-semibold text-gray-900">
+                          {Applicantbyid?.candidateFirstName}{" "}
+                          {Applicantbyid?.candidateLastName}
+                        </h2>
+                        <div className="flex items-center gap-1 text-sm text-gray-500">
+                          <FileText className="w-4 h-4" />
+                          <span>CV.pdf</span>
+                        </div>
+                      </div>
 
-              {/* Right Side - Questions and Details */}
-              <div className="w-1/2 flex flex-col h-full ">
-                {/* Header Section */}
-                <div className="flex items-start p-4 border-b">
-                  <img
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    alt="Profile"
-                    className="w-16 h-16 rounded-full mr-3"
-                  />
-                  <div>
-                    <h2 className="text-xl font-semibold">
-                      {Applicantbyid?.candidateFirstName}{" "}
-                      {Applicantbyid?.candidateLastName}
-                    </h2>
-                    <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-medium">
-                        {Applicantbyid?.positionApplied}
-                      </span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <FileText className="w-4 h-4 mr-1" /> CV.pdf
+                      <p className="text-[10px] text-gray-500 mt-1">
+                        Applied for{" "}
+                        <span className="bg-[#FFF5E7] text-[#E1972F] font-medium px-2 py-0.5 rounded-md">
+                          {Applicantbyid?.positionApplied}
+                        </span>
+                      </p>
                     </div>
                   </div>
-                  <div className="ml-auto mt-8">
-                    <div className="text-sm font-medium">
+
+                  <div className="flex items-center gap-2 mt-6">
+                    <div className="text-[14px] font-medium text-gray-800 tracking-wide">
+                      STATUS
+                    </div>
+                    <div className="text-sm font-medium text-gray-800 px-4 py-1 border border-gray-300 rounded-lg">
                       {Applicantbyid?.applicationStatus}
                     </div>
                   </div>
                 </div>
 
-                {/* Questions Section - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
-                  <h3 className="text-lg font-semibold mb-2">
+                <div className="border rounded-2xl p-6 text-sm text-gray-800 shadow-sm">
+                  <h3 className="text-lg font-bold mb-6 text-gray-900">
+                    Personal details
+                  </h3>
+
+                  <div className="flex justify-between items-center py-2 border-t border-gray-200">
+                    <div className="text-gray-600 font-medium">FULL NAME</div>
+                    <div className="font-medium text-[#010E30]">
+                      {Applicantbyid?.candidateFirstName}{" "}
+                      {Applicantbyid?.candidateLastName}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center py-2 border-t border-gray-200">
+                    <div className="text-gray-600 font-medium">E-MAIL</div>
+                    <div className="flex items-center gap-2 font-medium text-[#010E30]">
+                      <Mail className="w-4 h-4" />
+                      {Applicantbyid?.candidateEmail}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center py-2 border-t border-gray-200">
+                    <div className="text-gray-600 font-medium">PHONE</div>
+                    <div className="flex items-center gap-2 font-medium text-[#010E30]">
+                      <Phone className="w-4 h-4" />
+                      {Applicantbyid?.candidatePhoneNumber}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center py-2 border-t border-gray-200">
+                    <div className="text-gray-600 font-medium">LINKEDIN</div>
+                    <div className="font-medium text-[#010E30]">
+                      linkedInjd/in/j.str
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center py-2 border-t border-b border-gray-200">
+                    <div className="text-gray-600 font-medium">APPLIED</div>
+                    <div className="font-medium text-[#010E30]">
+                      {Applicantbyid?.createdDate}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h3 className="font-semibold text-gray-700 text-base border-b pb-1 mb-3">
+                    Professional Experience
+                  </h3>
+                  <ul className="text-sm text-gray-600 list-disc list-inside">
+                    <li>2 years teaching Arabic at XYZ School</li>
+                    <li>Fluent in Arabic and English communication</li>
+                  </ul>
+                </div>
+
+                <div className="mt-6">
+                  <h3 className="font-semibold text-gray-700 text-base border-b pb-1 mb-3">
+                    Documents
+                  </h3>
+                  <a
+                    href={resumeImages ?? ""}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 hover:underline text-sm"
+                  >
+                    Resume
+                  </a>
+                </div>
+              </div>
+
+              {/* Right Section */}
+              <div className="ml-auto h-full w-full max-w-5xl bg-white overflow-y-auto relative">
+                <div className="border rounded-lg p-4 flex-1 space-y-4">
+                  <h3 className="font-semibold text-gray-700 text-base border-b pb-1 mb-3">
                     Language Proficiency
                   </h3>
 
-                  {/* Reusable Language Proficiency Section */}
                   {[
                     {
-                      field: "Quran Reading",
+                      label: "Quran Reading",
                       state: quranReading,
                       setState: setQuranReading,
                     },
-                    { field: "Tajweed", state: tajweed, setState: setTajweed },
+                    { label: "Tajweed", state: tajweed, setState: setTajweed },
                     {
-                      field: "Arabic Speaking",
+                      label: "Arabic Speaking",
                       state: arabicSpeaking,
                       setState: setArabicSpeaking,
                     },
                     {
-                      field: "Arabic Writing",
+                      label: "Arabic Writing",
                       state: arabicWriting,
                       setState: setArabicWriting,
                     },
                     {
-                      field: "English Speaking",
+                      label: "English Speaking",
                       state: englishSpeaking,
                       setState: setEnglishSpeaking,
                     },
-                  ].map(({ field, state, setState }) => (
-                    <div key={field}>
-                      <p className="text-sm text-indigo-600 mb-1">{field}</p>
-                      <div className="flex gap-2">
+                  ].map(({ label, state, setState }) => (
+                    <div key={label}>
+                      <div className="text-sm text-gray-600">{label}</div>
+                      <div className="flex gap-4 mt-1">
                         {["Basic", "Medium", "Advanced"].map((level) => (
                           <label
                             key={level}
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 text-sm text-gray-700"
                           >
                             <input
                               type="radio"
-                              name={field}
+                              name={label}
                               value={level}
                               checked={state === level}
                               onChange={() => setState(level)}
@@ -1052,36 +1172,35 @@ const filteredApplicants =
                     </div>
                   ))}
 
-                  {/* Preferred Working Days */}
                   <div className="grid grid-cols-2 gap-4">
-                    {/* Preferred Working Days */}
                     <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
+                      <div className="text-sm text-gray-600">
                         Preferred Working Days
-                      </h3>
+                      </div>
                       <select
                         className="border rounded px-2 py-1 w-full"
                         value={workingDays}
                         onChange={(e) => setWorkingDays(e.target.value)}
                       >
-                        <option value="Monday-Saturday">Monday-Saturday</option>
-                        <option value="Monday-Friday">Monday-Friday</option>
-                        <option value="Sunday-Thursday">Sunday-Thursday</option>
-                        <option value="Sunday-Saturday">Sunday-Saturday</option>
-                        <option value="Tuesday-Saturday">
-                          Tuesday-Saturday
-                        </option>
-                        <option value="Wednesday-Saturday">
-                          Wednesday-Saturday
-                        </option>
+                        {[
+                          "Monday-Saturday",
+                          "Monday-Friday",
+                          "Sunday-Thursday",
+                          "Sunday-Saturday",
+                          "Tuesday-Saturday",
+                          "Wednesday-Saturday",
+                        ].map((day) => (
+                          <option key={day} value={day}>
+                            {day}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
-                    {/* Preferred Working Hours */}
                     <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
+                      <div className="text-sm text-gray-600">
                         Preferred Working Hours
-                      </h3>
+                      </div>
                       <input
                         type="text"
                         className="border rounded px-2 py-1 w-full"
@@ -1090,11 +1209,10 @@ const filteredApplicants =
                       />
                     </div>
 
-                    {/* Expected Salary */}
                     <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
+                      <div className="text-sm text-gray-600">
                         Expected Salary per Hour
-                      </h3>
+                      </div>
                       <input
                         type="text"
                         className="border rounded px-2 py-1 w-full"
@@ -1103,11 +1221,10 @@ const filteredApplicants =
                       />
                     </div>
 
-                    {/* Overall Rating */}
                     <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
+                      <div className="text-sm text-gray-600">
                         Overall Rating
-                      </h3>
+                      </div>
                       <div className="flex">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
@@ -1126,11 +1243,10 @@ const filteredApplicants =
                     </div>
                   </div>
 
-                  {/* Comments */}
                   <div>
-                    <h3 className="text-sm text-indigo-600 mb-1">Comments</h3>
+                    <div className="text-sm text-gray-600">Comments</div>
                     <textarea
-                      className="w-full p-2 border rounded h-15 resize-none"
+                      className="w-full p-2 border rounded h-20 resize-none"
                       placeholder="Add your comments here..."
                       value={comments}
                       onChange={(e) => setComments(e.target.value)}
@@ -1138,45 +1254,36 @@ const filteredApplicants =
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="p-3 border-t bg-white flex justify-end gap-2">
+                <div className="mt-6 flex flex-wrap justify-end gap-3 p-4">
                   <button
-                    onClick={() => {
-                      setApplicationStatus("REJECTED");
-                    }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
+                    onClick={() => setApplicationStatus("REJECTED")}
+                    className="px-4 py-2 text-sm text-white bg-red-600 rounded hover:bg-red-700"
                   >
-                    Reject
+                    Rejected
                   </button>
                   <button
-                    onClick={() => {
-                      setApplicationStatus("WAITING");
-                    }}
-                    className="px-3 py-1.5 text-sm font-semibold text-white bg-yellow-500 hover:bg-yellow-600 rounded transition-colors"
+                    onClick={() => setApplicationStatus("WAITING")}
+                    className="px-4 py-2 text-sm text-white bg-yellow-500 rounded hover:bg-yellow-600"
                   >
                     Waiting
                   </button>
                   <button
-                    onClick={() => {
-                      setApplicationStatus("SHORTLISTED");
-                    }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded transition-colors"
+                    onClick={() => setApplicationStatus("SHORTLISTED")}
+                    className="px-4 py-2 text-sm text-white bg-green-600 rounded hover:bg-green-700"
                   >
-                    Shortlist
+                    Shortlisted
                   </button>
                   <button
-                    onClick={() => {
-                      handlesendupdate(Applicantbyid?._id ?? "");
-                    }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+                    onClick={() => handlesendupdate(Applicantbyid?._id ?? "")}
+                    className="px-4 py-2 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
                   >
-                    Send
+                    Send for Approval
                   </button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </BaseLayout3>
   );

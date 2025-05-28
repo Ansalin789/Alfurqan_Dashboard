@@ -10,10 +10,9 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { DateRange } from 'react-date-range';
-import {format} from 'date-fns/format';
+import { format, addDays } from 'date-fns';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
-import { addDays } from 'date-fns';
 
 const data = [
   { date: '08 Nov', applied: 12, shortlisted: 6 },
@@ -54,19 +53,19 @@ const ApplicationChart = () => {
       <div className="bg-white p-4 rounded-xl shadow-md w-[550px] h-[270px]">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-[#0D356D] text-[14px] font-semibold">Application</h3>
+          <h3 className="text-[#010E30] text-[14px] font-semibold">Application</h3>
 
           <div className="flex items-center gap-4 relative">
             {/* Legend - Applied */}
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-sm bg-[#a6c1ff]" />
-              <span className="text-[12px] text-gray-600">Applied</span>
+              <span className="text-[10px] font-normal text-[#010E30]">Applied</span>
             </div>
 
             {/* Legend - Shortlisted */}
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-sm bg-[#d5e0ff]" />
-              <span className="text-[12px] text-gray-600">Shortlisted</span>
+              <span className="text-[10px] font-normal text-[#010E30]">Shortlisted</span>
             </div>
 
             {/* Date Picker Toggle */}
