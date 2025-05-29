@@ -2,13 +2,12 @@
 
 import BaseLayout3 from "@/components/BaseLayout3";
 import React, { useState, useRef, useEffect } from "react";
-import { GrAttachment } from "react-icons/gr";
 import { FaTelegramPlane } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
-import { Bell } from "lucide-react";
+import { CgAttachment } from "react-icons/cg";
 import SupervisorHeader from "../../components/supervisorHeader";
 
 // Define your interfaces
@@ -400,26 +399,25 @@ setMessages(prev => {
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="w-full md:w-[350px] bg-[#fff] dark:bg-[#343434] dark:text-[#fff] p-4 rounded-[12px] shadow-md flex flex-col border border-gray-100"
+            className="w-full md:w-[350px] bg-[#fff] dark:bg-[#343434] dark:text-[#fff] p-4 rounded-[12px] shadow-md flex flex-col"
           >
             <div className="flex items-center space-x-3 p-2">
               <motion.div whileHover={{ scale: 1.05 }}>
                 <img
                   src="/assets/images/account.png"
                   alt="Admin"
-                  className="w-12 h-12 rounded-lg border border-[#dbdbdb]"
+                  className="w-12 h-12 rounded-lg"
                 />
               </motion.div>
               <div>
                 <div className="flex">
-                <h3 className="text-[18px] font-semibold text-[#010E30]">
-                  Admin{" "}
+                <h3 className="text-[18px] font-medium text-[#010E30] dark:text-[#fff]">
+                  David{" "}
                   
                 </h3>
-                <button className="ml-[1px] text-gray-500">
-                    <Bell size={16} className="text-white" />
+                <button className="ml-[4px] text-gray-500">
                     {messageCount > 0 && (
-                      <span className=" -mt-7 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
+                      <span className=" -mt-2 ml-1 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
                         {messageCount}
                       </span>
                     )}
@@ -427,34 +425,34 @@ setMessages(prev => {
                 </div>
                 
 
-                <p className="text-[12px] text-[#010e30a7] font-semibold">Supervisor</p>
+                <p className="text-[12px] text-[#010e30a7] font-medium dark:text-[#fff] dark:opacity-[60%]">Supervisor</p>
               </div>
             </div>
 
             {/* Search Bar */}
             <motion.div
               whileHover={{ scale: 1.01 }}
-              className="relative mt-2 mb-3"
+              className="relative mt-2 mb-3 "
             >
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiSearch className="text-gray-400 text-xs" />
+                <FiSearch className="text-gray-400 text-xs dark:border " />
               </div>
               <input
                 type="text"
                 placeholder="Search messages..."
-                className="block w-full pl-10 pr-3 py-2 border border-[#CBCBCB] rounded-lg text-[12px] focus:outline-none focus:ring-1 focus:ring-[#4CBC9A]"
+                className="block w-full pl-10 pr-3 py-2 border border-[#CBCBCB] rounded-lg text-[12px] focus:outline-none focus:ring-1 focus:ring-[#576cbc] dark:text-[#fff] dark:opacity-[50%] dark:bg-[#343434] dark:border-[#504c4c]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </motion.div>
 
             {/* Tabs */}
-            <div className="flex border-b">
+            <div className="flex">
             <button
                 className={`px-2 py-1.5 text-[12px] font-medium ${
                   activeTab === "all"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC]"
-                    : "text-gray-500"
+                    : "text-[#010e30] dark:text-[#ffffff]"
                 }`}
                 onClick={() => setActiveTab("all")}
               >
@@ -464,7 +462,7 @@ setMessages(prev => {
                 className={`px-2 py-1.5 text-[12px] font-medium ${
                   activeTab === "teachers"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC]"
-                    : "text-gray-500"
+                    : "text-[#010e30] dark:text-[#ffffff]"
                 }`}
                 onClick={() => setActiveTab("teachers")}
               >
@@ -474,7 +472,7 @@ setMessages(prev => {
                 className={`px-2 py-1.5 text-[12px] font-medium ${
                   activeTab === "admin"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC]"
-                    : "text-gray-500"
+                    : "text-[#010e30] dark:text-[#ffffff]"
                 }`}
                 onClick={() => setActiveTab("admin")}
               >
@@ -484,7 +482,7 @@ setMessages(prev => {
                 className={`px-2 py-1.5 text-[12px] font-medium ${
                   activeTab === "supervisor"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC]"
-                    : "text-gray-500"
+                    : "text-[#010e30] dark:text-[#ffffff]"
                 }`}
                 onClick={() => setActiveTab("supervisor")}
               >
@@ -494,7 +492,7 @@ setMessages(prev => {
                 className={`px-2 py-1.5 text-[12px] font-medium ${
                   activeTab === "academic-coach"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC]"
-                    : "text-gray-500"
+                    : "text-[#010e30] dark:text-[#ffffff]"
                 }`}
                 onClick={() => setActiveTab("academic-coach")}
               >
@@ -512,10 +510,10 @@ setMessages(prev => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className={`flex items-center border-b-2 justify-between w-full p-2 rounded cursor-pointer ${
+                    className={`flex items-center border-b-2 dark:border-b-[#504c4c]  justify-between w-full p-2  cursor-pointer ${
                       selectedUser?._id === user._id
-                        ? "bg-blue-100 text-blue-600"
-                        : "hover:bg-gray-50"
+                        ? "bg-[#f0efef] dark:bg-[#3c3c3c] rounded"
+                        : "hover:bg-[#f0efef] dark:hover:bg-[#3c3c3c] hover:rounded"
                     }`}
                     onClick={() => handleUserClick(user)}
                   >
@@ -523,9 +521,9 @@ setMessages(prev => {
                       <div className="relative">
                         <motion.div
                           whileHover={{ scale: 1.05 }}
-                          className="w-9 h-9 bg-[#D0D0D0] rounded-lg flex items-center justify-center"
+                          className="w-9 h-9 bg-[#D0D0D0] dark:bg-[#D0D0D0] rounded-lg flex items-center justify-center"
                         >
-                          <span className="text-[#959595] font-semibold text-[14px]">
+                          <span className="text-[#959595] dark:text-[#959595] font-medium text-[14px]">
                             {user.userName.charAt(0)}
                           </span>
                         </motion.div>
@@ -536,10 +534,10 @@ setMessages(prev => {
                         ></div>
                       </div>
                       <div className="text-left">
-                        <h5 className="font-semibold  text-[12px] text-[#010E30]">
+                        <h5 className="font-medium  text-[12px] text-[#010E30] dark:text-[#fff]">
                           {user.userName}
                         </h5>
-                        <p className="text-[10px] text-gray-500 truncate max-w-[180px]">
+                        <p className="text-[10px] text-gray-500 dark:text-[#fff] dark:text-opacity-[60%] truncate max-w-[180px]">
                           {user.email}
                         </p>
                       </div>
@@ -558,7 +556,7 @@ setMessages(prev => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="w-full md:flex-1 bg-white dark:bg-[#343434] dark:text-[#fff] rounded-lg shadow-md flex flex-col overflow-hidden"
+            className="w-full md:flex-1 bg-white dark:bg-[#2c2c2c] dark:text-[#fff] rounded-lg shadow-md flex flex-col overflow-hidden"
           >
             {selectedUser ? (
               <>
@@ -568,8 +566,8 @@ setMessages(prev => {
                       whileHover={{ scale: 1.05 }}
                       className="relative"
                     >
-                      <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <span className="text-gray-600 text-sm">
+                      <div className="w-10 h-10 bg-[#D0D0D0] dark:bg-[#D0D0D0]  rounded-lg flex items-center justify-center">
+                        <span className="dark:text-[#959595] text-sm">
                           {selectedUser.userName.charAt(0)}
                         </span>
                       </div>
@@ -580,7 +578,7 @@ setMessages(prev => {
                       ></div>
                     </motion.div>
                     <div>
-                      <h3 className="text-xs font-semibold">
+                      <h3 className="text-xs font-medium">
                         {selectedUser.userName}
                       </h3>
                       <div className="flex items-center">
@@ -592,7 +590,7 @@ setMessages(prev => {
                   </div>
                 </div>
 
-                <div className="flex-1 p-3 overflow-y-auto scrollbar-none bg-[#fbfbfb] flex flex-col">
+                <div className="flex-1 p-3 overflow-y-auto scrollbar-none bg-[#fbfbfb] dark:bg-[#343434] flex flex-col">
                   {" "}
                   {/* Added flex-col-reverse */}
                   <AnimatePresence>
@@ -600,7 +598,7 @@ setMessages(prev => {
                       .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())
                        .map(([date, msgs]) => (
                         <div key={date}>
-                          <div className="text-center text-gray-500 text-xs my-2 font-medium">
+                          <div className="text-center text-gray-500  text-xs my-2 font-medium">
                             {formatDateLabel(date)}
                           </div>
                   
@@ -619,8 +617,8 @@ setMessages(prev => {
                                 whileHover={{ scale: 1.01 }}
                                 className={`p-2 rounded-lg max-w-[80%] ${
                                   msg.senderId === userId
-                                    ? "bg-[#576CBC] text-[#fff] rounded-lg"
-                                    : "bg-[#F1F1F1] rounded-lg"
+                                    ? "bg-[#576CBC] text-[#fff]  rounded-lg"
+                                    : "bg-[#F1F1F1] rounded-lg dark:bg-[#2c2c2c]"
                                 }`}
                               >
                                 <p className="text-xs">{msg.messages}</p>
@@ -647,11 +645,11 @@ setMessages(prev => {
                 <motion.div
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  className="p-3 bg-white"
+                  className="p-3 bg-white dark:bg-[#2c2c2c]"
                 >
-                  <div className="flex items-center rounded-lg bg-[#f3f3f3] p-1">
-                    <button className="p-1 text-gray-500 hover:text-gray-700 ml-1">
-                      <GrAttachment size={14} />
+                  <div className="flex items-center rounded-lg bg-[#f3f3f3] p-1 dark:bg-[#343434]">
+                    <button className="p-1 text-gray-400 ml-1">
+                      <CgAttachment size={14} />
                     </button>
                     <input
                       type="text"
@@ -671,7 +669,7 @@ setMessages(prev => {
                       className={`p-1 rounded-lg flex items-center ${
                         messageText.trim()
                           ? "bg-[#576cbc] text-white"
-                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                          : "bg-gray-200 dark:bg-[#2c2c2c] text-gray-400 cursor-not-allowed"
                       }`}
                     >
                       <FaTelegramPlane size={14} />
@@ -683,10 +681,10 @@ setMessages(prev => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center justify-center h-full bg-gray-50"
+                className="flex items-center justify-center h-full bg-gray-50 dark:bg-[#343434]"
               >
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full mb-3 flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto bg-gray-200 dark:bg-[#2c2c2c] rounded-full mb-3 flex items-center justify-center">
                     <svg
                       className="w-8 h-8 text-gray-400"
                       fill="none"
