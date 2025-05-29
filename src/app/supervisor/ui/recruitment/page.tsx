@@ -19,7 +19,7 @@ import { BsFilterLeft } from "react-icons/bs";
 import BaseLayout3 from "@/components/BaseLayout3";
 import axios from "axios";
 import { pdfjs } from "react-pdf";
-import Pagination from "@/components/Pagination/Pagination";
+import Pagination from "@/components/Pagination";
 
 type Status = "Shortlisted" | "Rejected" | "Waiting";
 type Position = "Arabic Teacher" | "Quran Teacher";
@@ -96,6 +96,11 @@ interface RadioOptionProps {
   onChange: () => void;
 }
 
+const items = Array.from({ length: 100 }, (_, i) => ({
+  id: i + 1,
+  name: `Item ${i + 1}`,
+}));
+
 const RadioOption: React.FC<RadioOptionProps> = ({
   label,
   checked,
@@ -124,7 +129,7 @@ const SkillBadge: React.FC<SkillBadgeProps> = ({ name }) => (
 
 export default function ApplicantsPage() {
   const [activeTab, setActiveTab] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
+  // const [currentPage, setCurrentPage] = useState(1);
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
     null
   );
@@ -133,6 +138,14 @@ export default function ApplicantsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [Applicantbyid, setApplicantbyid] = useState<ApiResponse | null>(null);
   const [resumeImages, setResumeImages] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+  
+
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = items.slice(indexOfFirst, indexOfLast);
   const [addApplicantForm, setAddApplicantForm] =
     useState<AddApplicantFormData>({
       applicationDate: new Date().toISOString().split("T")[0],
@@ -184,7 +197,7 @@ export default function ApplicantsPage() {
   }, []);
 
   const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
-  const itemsPerPage = 10;
+  // const itemsPerPage = 10;
 
   const filteredApplicants =
     activeTab === "All"
@@ -195,7 +208,7 @@ export default function ApplicantsPage() {
             activeTab.replace(/\s+/g, "").toUpperCase()
         );
 
-  const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
+  // const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = filteredApplicants.slice(startIndex, endIndex);
@@ -634,11 +647,14 @@ export default function ApplicantsPage() {
                     </tbody>
                   </table>
                 </div>
+                <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
               </div>
 
-              {/* <Pagination totalPages={0} currentPage={0} onPageChange={function (page: number): void {
-                throw new Error("Function not implemented.");
-              } } /> */}
+              
             </div>
           </div>
         </div>

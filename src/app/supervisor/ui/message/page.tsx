@@ -9,6 +9,7 @@ import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { Bell } from "lucide-react";
+import SupervisorHeader from "../../components/supervisorHeader";
 
 // Define your interfaces
 interface IMessage {
@@ -391,6 +392,7 @@ setMessages(prev => {
 
   return (
     <BaseLayout3>
+    <SupervisorHeader currentSection="Message"/>
       <div className="py-3 px-5">
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
           {/* Left Panel */}
@@ -398,7 +400,7 @@ setMessages(prev => {
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="w-full md:w-[350px] bg-[#fff] p-4 rounded-[12px] shadow-md flex flex-col border border-gray-100"
+            className="w-full md:w-[350px] bg-[#fff] dark:bg-[#343434] dark:text-[#fff] p-4 rounded-[12px] shadow-md flex flex-col border border-gray-100"
           >
             <div className="flex items-center space-x-3 p-2">
               <motion.div whileHover={{ scale: 1.05 }}>
@@ -556,7 +558,7 @@ setMessages(prev => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="w-full md:flex-1 bg-white rounded-lg shadow-md flex flex-col overflow-hidden"
+            className="w-full md:flex-1 bg-white dark:bg-[#343434] dark:text-[#fff] rounded-lg shadow-md flex flex-col overflow-hidden"
           >
             {selectedUser ? (
               <>
