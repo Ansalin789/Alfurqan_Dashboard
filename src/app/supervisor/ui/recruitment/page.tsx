@@ -21,6 +21,8 @@ import axios from "axios";
 import { pdfjs } from "react-pdf";
 import Pagination from "@/components/Pagination";
 
+import SupervisorHeader from "../../components/supervisorHeader";
+
 type Status = "Shortlisted" | "Rejected" | "Waiting";
 type Position = "Arabic Teacher" | "Quran Teacher";
 interface Applicant {
@@ -432,6 +434,7 @@ export default function ApplicantsPage() {
   return (
     <BaseLayout3>
       <div className="">
+        <SupervisorHeader currentSection="Applicants" />
         <div className="md:p-0 mx-auto">
           <div className="h-full w-full  flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
@@ -655,6 +658,7 @@ export default function ApplicantsPage() {
               </div>
 
               
+             
             </div>
           </div>
         </div>
