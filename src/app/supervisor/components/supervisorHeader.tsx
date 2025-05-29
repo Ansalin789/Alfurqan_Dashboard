@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import LeaveForm from "@/app/supervisor/components/leaveForm";
 import AddMeeting from "@/app/supervisor/components/addMeeting";
 import AddApplicants from "@/app/supervisor/components/addApplicants";
+import Notification from '@/app/supervisor/components/supervisorNotification';
 type Props = {
     readonly currentSection : string;
 }
@@ -15,7 +16,7 @@ export default function SupervisorHeader( {currentSection}: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
-
+  const [showNotification,setShowNotification]=useState(false);
   const [showLeaveForm, setShowLeaveForm] = useState(false);
   const [showAddMeeting,setAddMeetings]=useState(false);
   const [showAddApplicant,setAddApplicant]=useState(false);
@@ -79,12 +80,17 @@ export default function SupervisorHeader( {currentSection}: Props) {
         </h1>
         <div className="flex items-center gap-3 flex-wrap">
           {renderButton()}
-          <button className="p-2.5 bg-white dark:bg-gray-700 rounded-lg">
+          <button 
+          onClick={()=>router.push('/supervisor/ui/calendar')}
+          className="p-2.5 bg-white dark:bg-gray-700 rounded-lg">
             <CalendarDays className="w-4 h-4 text-gray-800 dark:text-white" />
           </button>
-          <button className="p-2.5 bg-white dark:bg-gray-700 rounded-lg">
+          <button 
+          onClick={()=>setShowNotification(true)}
+          className="p-2.5 bg-white dark:bg-gray-700 rounded-lg">
             <Bell className="w-4 h-4 text-gray-800 dark:text-white" />
           </button>
+           
           <button
             onClick={toggleDarkMode}
             className="p-2.5 bg-white dark:bg-gray-700 rounded-lg"
@@ -102,7 +108,15 @@ export default function SupervisorHeader( {currentSection}: Props) {
       </div>
         {showLeaveForm && <LeaveForm onClose={() => setShowLeaveForm(false)} />}
         {showAddMeeting && <AddMeeting onClose={()=>setAddMeetings(false)} />}
-            {showAddApplicant && <AddApplicants onClose={()=>setAddApplicant(false)} />}
+        {showAddApplicant && <AddApplicants onClose={()=>setAddApplicant(false)} />}
+        {showNotification && (
+          <div className="absolute right-8 z-50">
+          <Notification
+          onClose={() => setShowNotification(false)}
+          userId="6805da8c06542aa33858b889"
+          />
+          </div>
+        )}
     </div>
   );
 }
