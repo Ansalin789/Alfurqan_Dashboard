@@ -6,22 +6,20 @@ import {
   Star,
   MoreVertical,
   FileText,
-  X,
   Upload,
   Search,
   Mail,
   Phone,
+  Calendar,
 } from "lucide-react";
 import { ImAttachment } from "react-icons/im";
-
-import { BsFilterLeft } from "react-icons/bs";
-
 import BaseLayout3 from "@/components/BaseLayout3";
 import axios from "axios";
 import { pdfjs } from "react-pdf";
 import Pagination from "@/components/Pagination";
 
 import SupervisorHeader from "../../components/supervisorHeader";
+import { IoCloseOutline } from "react-icons/io5";
 
 type Status = "Shortlisted" | "Rejected" | "Waiting";
 type Position = "Arabic Teacher" | "Quran Teacher";
@@ -131,7 +129,6 @@ const SkillBadge: React.FC<SkillBadgeProps> = ({ name }) => (
 
 export default function ApplicantsPage() {
   const [activeTab, setActiveTab] = useState("All");
-  // const [currentPage, setCurrentPage] = useState(1);
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
     null
   );
@@ -143,7 +140,6 @@ export default function ApplicantsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const totalPages = Math.ceil(items.length / itemsPerPage);
-  
 
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
@@ -199,7 +195,6 @@ export default function ApplicantsPage() {
   }, []);
 
   const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
-  // const itemsPerPage = 10;
 
   const filteredApplicants =
     activeTab === "All"
@@ -210,7 +205,6 @@ export default function ApplicantsPage() {
             activeTab.replace(/\s+/g, "").toUpperCase()
         );
 
-  // const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = filteredApplicants.slice(startIndex, endIndex);
@@ -651,14 +645,11 @@ export default function ApplicantsPage() {
                   </table>
                 </div>
                 <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               </div>
-
-              
-             
             </div>
           </div>
         </div>
@@ -1028,125 +1019,150 @@ export default function ApplicantsPage() {
           />
 
           {/* Slide-over panel */}
-          <div className="fixed top-0 right-0 z-50 h-full w-[50vw] bg-[#fff] border-l border-gray-200 shadow-xl overflow-y-auto">
-            <div className="grid grid-cols-2 p-8 gap-6">
-              {/* Left Section */}
-              <div>
-                <div className="flex justify-between items-start mb-8">
-                  <div className="flex items-start gap-4">
-                    <img
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                      alt="Profile"
-                      className="w-[60px] h-[60px] rounded-full border"
-                    />
-
-                    <div className="mt-4">
-                      <div className="flex items-center ">
-                        <h2 className="text-[16px] font-semibold text-gray-900">
-                          {Applicantbyid?.candidateFirstName}{" "}
-                          {Applicantbyid?.candidateLastName}
-                        </h2>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <FileText className="w-4 h-4" />
-                          <span>CV.pdf</span>
-                        </div>
-                      </div>
-
-                      <p className="text-[10px] text-gray-500 mt-1">
-                        Applied for{" "}
-                        <span className="bg-[#FFF5E7] text-[#E1972F] font-medium px-2 py-0.5 rounded-md">
-                          {Applicantbyid?.positionApplied}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 mt-6">
-                    <div className="text-[14px] font-medium text-gray-800 tracking-wide">
-                      STATUS
-                    </div>
-                    <div className="text-sm font-medium text-gray-800 px-4 py-1 border border-gray-300 rounded-lg">
-                      {Applicantbyid?.applicationStatus}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border rounded-2xl p-6 text-sm text-gray-800 shadow-sm">
-                  <h3 className="text-lg font-bold mb-6 text-gray-900">
-                    Personal details
-                  </h3>
-
-                  <div className="flex justify-between items-center py-2 border-t border-gray-200">
-                    <div className="text-gray-600 font-medium">FULL NAME</div>
-                    <div className="font-medium text-[#010E30]">
+          <div className="fixed top-0 h-full w-[666px] right-0 z-50 bg-white  shadow-xl flex flex-col  dark:bg-[#343434]">
+            {/* Header (Fixed) */}
+            <div
+              className="flex justify-between items-center p-6 border-b dark: border-none bg-[#FCFCFD] dark:bg-[#343434] z-10"
+              style={{
+                width: "666px",
+                height: "114px",
+                position: "sticky",
+                top: 0,
+              }}
+            >
+              {/* Left: Profile Info */}
+              <div className="flex items-center gap-4">
+                <img
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  alt="Profile"
+                  className="w-[60px] h-[60px] rounded-full object-cover"
+                />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-[16px] font-bold text-[#0A0A14] leading-tight dark:text-[#fff]">
                       {Applicantbyid?.candidateFirstName}{" "}
                       {Applicantbyid?.candidateLastName}
+                    </h2>
+                    <div className="flex items-center gap-1 text-sm text-[#6B7280] dark:text-[#D6D6D6]">
+                      <FileText className="w-3 h-3" />
+                      <span className="text-[10px] font-medium">CV.pdf</span>
                     </div>
                   </div>
-
-                  <div className="flex justify-between items-center py-2 border-t border-gray-200">
-                    <div className="text-gray-600 font-medium">E-MAIL</div>
-                    <div className="flex items-center gap-2 font-medium text-[#010E30]">
-                      <Mail className="w-4 h-4" />
-                      {Applicantbyid?.candidateEmail}
-                    </div>
+                  <div className="mt-1 text-[10px] text-[#0A0A14] font-medium flex items-center gap-2 dark:text-[#D6D6D6]">
+                    <span>Applied for</span>
+                    <span className="text-[#D28F35] px-3 py-1 text-sm rounded-md font-medium text-[10px]">
+                      {Applicantbyid?.positionApplied}
+                    </span>
                   </div>
-
-                  <div className="flex justify-between items-center py-2 border-t border-gray-200">
-                    <div className="text-gray-600 font-medium">PHONE</div>
-                    <div className="flex items-center gap-2 font-medium text-[#010E30]">
-                      <Phone className="w-4 h-4" />
-                      {Applicantbyid?.candidatePhoneNumber}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center py-2 border-t border-gray-200">
-                    <div className="text-gray-600 font-medium">LINKEDIN</div>
-                    <div className="font-medium text-[#010E30]">
-                      linkedInjd/in/j.str
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center py-2 border-t border-b border-gray-200">
-                    <div className="text-gray-600 font-medium">APPLIED</div>
-                    <div className="font-medium text-[#010E30]">
-                      {Applicantbyid?.createdDate}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <h3 className="font-semibold text-gray-700 text-base border-b pb-1 mb-3">
-                    Professional Experience
-                  </h3>
-                  <ul className="text-sm text-gray-600 list-disc list-inside">
-                    <li>2 years teaching Arabic at XYZ School</li>
-                    <li>Fluent in Arabic and English communication</li>
-                  </ul>
-                </div>
-
-                <div className="mt-6">
-                  <h3 className="font-semibold text-gray-700 text-base border-b pb-1 mb-3">
-                    Documents
-                  </h3>
-                  <a
-                    href={resumeImages ?? ""}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600 hover:underline text-sm"
-                  >
-                    Resume
-                  </a>
                 </div>
               </div>
 
-              {/* Right Section */}
-              <div className="ml-auto h-full w-full max-w-5xl bg-white overflow-y-auto relative">
-                <div className="border rounded-lg p-4 flex-1 space-y-4">
-                  <h3 className="font-semibold text-gray-700 text-base border-b pb-1 mb-3">
-                    Language Proficiency
-                  </h3>
+              {/* Right: Status + Close */}
+              <div className="flex flex-col items-end gap-3">
+                {/* Close Button */}
+                <button
+                  onClick={handleviewclose}
+                  className="text-[#0A0A14] text-[18px] font-bold hover:text-black dark:text-[#fff]"
+                >
+                  <IoCloseOutline />
+                </button>
 
+                {/* Status */}
+                <div className="flex items-center gap-2">
+                  {/* STATUS label */}
+                  <span className="text-[12px] text-[#0A0A14] font-medium tracking-wide uppercase dark:text-[#fff]">
+                    STATUS
+                  </span>
+
+                  {/* STATUS value */}
+                  <span className="text-[12px] font-medium text-[#0A0A14] border border-[#E5E7EB] px-4 py-1.5 rounded-xl dark:border-[#5f5959] dark:text-[#B8B8B8]">
+                    {Applicantbyid?.applicationStatus ?? "New Application"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto scrollbar-none flex-grow px-8 py-4 space-y-6">
+              <div className="flex items-stretch gap-4 w-full">
+                {/* Left Column */}
+                <div className="flex flex-col w-[262px] gap-4 flex-shrink-0">
+                  {/* Personal Details */}
+                  <div className=" border border-[#E0E4E9] rounded-2xl p-4 text-sm text-gray-800 shadow-sm dark:border-[#5F5959]">
+                    <h3 className="text-[12px] font-semibold mb-6 text-[#010E30] dark:text-[#fff]">
+                      Personal details
+                    </h3>
+                    {[
+                      {
+                        label: "FULL NAME",
+                        value: `${Applicantbyid?.candidateFirstName} ${Applicantbyid?.candidateLastName}`,
+                      },
+                      {
+                        label: "E-MAIL",
+                        icon: <Mail className="w-4 h-4" />,
+                        value: Applicantbyid?.candidateEmail,
+                      },
+                      {
+                        label: "PHONE",
+                        icon: <Phone className="w-4 h-4" />,
+                        value: Applicantbyid?.candidatePhoneNumber,
+                      },
+                      { label: "LINKEDIN", value: "linkedInjd/in/j.str" },
+                      { label: "APPLIED", value: Applicantbyid?.createdDate },
+                    ].map(({ label, value, icon }) => (
+                      <div
+                        key={label}
+                        className="flex justify-between items-center py-2 border-t border-[#E0E4E9] dark:border-[#5F5959]"
+                      >
+                        <div className="uppercase text-[10px] text-gray-500 font-medium dark:text-[#D6D6D6]">
+                          {label}
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] font-medium text-[#010E30] dark:text-[#D6D6D6]">
+                          {icon}
+                          {value}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Experience */}
+                  <div className="border border-[#E0E4E9]  rounded-2xl p-4 text-sm text-gray-800 shadow-sm dark:border-[#5F5959]">
+                    <h3 className="text-[12px] font-semibold text-[#010E30] mb-3 dark:text-[#fff]">
+                      Professional Experience
+                    </h3>
+                    <div className="mb-4">
+                      <h4 className="text-[12px] text-[#010E30] font-semibold dark:text-[#fff]">
+                        Professor
+                      </h4>
+                      <div className="flex flex-wrap justify-between text-[10px] text-[#8A8383] mt-1 dark:text-[#D6D6D6]">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>Jan, 2023 - Present</span>
+                        </div>
+                        <span>United States</span>
+                      </div>
+                      <h5 className="text-[12px] text-[#010E30] mt-2 font-semibold uppercase dark:text-[#fff]">
+                        BS Institutions
+                      </h5>
+                      <ul className="list-disc pl-5 mt-1 text-[10px] text-[#525252] dark:text-[#D6D6D6]">
+                        <li>
+                          Developed React.js components for improved user
+                          engagement,
+                        </li>
+                        <li>
+                          Collaborated on RESTful APIs for seamless data
+                          exchange,
+                        </li>
+                        <li>
+                          Optimized performance through efficient algorithms.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="flex flex-col w-[300px] gap-1 flex-shrink-0">
                   {[
                     {
                       label: "Quran Reading",
@@ -1170,13 +1186,21 @@ export default function ApplicantsPage() {
                       setState: setEnglishSpeaking,
                     },
                   ].map(({ label, state, setState }) => (
-                    <div key={label}>
-                      <div className="text-sm text-gray-600">{label}</div>
-                      <div className="flex gap-4 mt-1">
+                    <div key={label} className="mt-3">
+                      {" "}
+                      {/* added mt-3 */}
+                      <div className="text-[12px] font-Medium text-[#1E2A41] dark:text-[#fff]">
+                        {label}
+                      </div>
+                      <div className="flex gap-3 mt-1 text-[10px] font-medium text-[#989292]">
                         {["Basic", "Medium", "Advanced"].map((level) => (
                           <label
                             key={level}
-                            className="flex items-center gap-2 text-sm text-gray-700"
+                            className={`flex items-center gap-2 rounded px-3 py-1 transition-all  dark:border border-[#E0E4EA] ${
+                              state === level
+                                ? "border border-[#D9DEE8]"
+                                : "border border-[#D9DEE8]"
+                            }`}
                           >
                             <input
                               type="radio"
@@ -1184,6 +1208,8 @@ export default function ApplicantsPage() {
                               value={level}
                               checked={state === level}
                               onChange={() => setState(level)}
+                              className="appearance-none w-[10px] h-[10px] rounded-full border border-[#333D58] checked:bg-[#1E2A41] checked:ring-1 checked:ring-offset-1 transition-all 
+                                       dark:border-[#A9A9A9] dark:checked:bg-[#E5E5E5] dark:checked:ring-[#E5E5E5] dark:ring-offset-[#333D58]"
                             />
                             {level}
                           </label>
@@ -1192,13 +1218,18 @@ export default function ApplicantsPage() {
                     </div>
                   ))}
 
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Preferences */}
+                  <div className="grid grid-cols-2 gap-4 mt-3">
+                    {/* Preferred Working Days */}
                     <div>
-                      <div className="text-sm text-gray-600">
+                      <label
+                        htmlFor="prferworking days"
+                        className="block text-[11px] font-medium  text-[#1E2A41] mb-1 dark:text-[#fff]"
+                      >
                         Preferred Working Days
-                      </div>
+                      </label>
                       <select
-                        className="border rounded px-2 py-1 w-full"
+                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292]"
                         value={workingDays}
                         onChange={(e) => setWorkingDays(e.target.value)}
                       >
@@ -1206,9 +1237,6 @@ export default function ApplicantsPage() {
                           "Monday-Saturday",
                           "Monday-Friday",
                           "Sunday-Thursday",
-                          "Sunday-Saturday",
-                          "Tuesday-Saturday",
-                          "Wednesday-Saturday",
                         ].map((day) => (
                           <option key={day} value={day}>
                             {day}
@@ -1217,35 +1245,47 @@ export default function ApplicantsPage() {
                       </select>
                     </div>
 
+                    {/* Preferred Working Hours */}
                     <div>
-                      <div className="text-sm text-gray-600">
+                      <label
+                        htmlFor="prferworking Hours"
+                        className="block text-[11px] font-semibold text-[#1E2A41] mb-1 dark:text-[#fff]"
+                      >
                         Preferred Working Hours
-                      </div>
+                      </label>
                       <input
                         type="text"
-                        className="border rounded px-2 py-1 w-full"
+                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292]"
                         value={Applicantbyid?.preferedWorkingHours}
                         disabled
                       />
                     </div>
 
+                    {/* Expected Salary per Hour */}
                     <div>
-                      <div className="text-sm text-gray-600">
+                      <label
+                        htmlFor="Expected Salary per Hour"
+                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff] "
+                      >
                         Expected Salary per Hour
-                      </div>
+                      </label>
                       <input
                         type="text"
-                        className="border rounded px-2 py-1 w-full"
+                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292]"
                         value={Applicantbyid?.expectedSalary}
                         disabled
                       />
                     </div>
 
+                    {/* Overall Rating */}
                     <div>
-                      <div className="text-sm text-gray-600">
+                      <label
+                        htmlFor="Overall Rating"
+                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff] "
+                      >
                         Overall Rating
-                      </div>
-                      <div className="flex">
+                      </label>
+                      <div className="flex space-x-1">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
@@ -1255,6 +1295,10 @@ export default function ApplicantsPage() {
                                 : "text-gray-300"
                             }`}
                             onClick={() => setRating(star)}
+                            type="button"
+                            aria-label={`Rate ${star} star${
+                              star > 1 ? "s" : ""
+                            }`}
                           >
                             ★
                           </button>
@@ -1263,44 +1307,93 @@ export default function ApplicantsPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <div className="text-sm text-gray-600">Comments</div>
+                  {/* Comments */}
+                  <div className="mt-3">
+                    {" "}
+                    {/* added mt-3 */}
+                    <div className="text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff] ">
+                      Comments
+                    </div>
                     <textarea
-                      className="w-full p-2 border rounded h-20 resize-none"
+                      className="w-full p-2 border rounded h-24 resize-none text-[10px] font-medium text-[#1E2A41]  dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292]"
                       placeholder="Add your comments here..."
                       value={comments}
                       onChange={(e) => setComments(e.target.value)}
-                    ></textarea>
+                    />
                   </div>
                 </div>
+              </div>
 
-                <div className="mt-6 flex flex-wrap justify-end gap-3 p-4">
-                  <button
-                    onClick={() => setApplicationStatus("REJECTED")}
-                    className="px-4 py-2 text-sm text-white bg-red-600 rounded hover:bg-red-700"
-                  >
-                    Rejected
-                  </button>
-                  <button
-                    onClick={() => setApplicationStatus("WAITING")}
-                    className="px-4 py-2 text-sm text-white bg-yellow-500 rounded hover:bg-yellow-600"
-                  >
-                    Waiting
-                  </button>
-                  <button
-                    onClick={() => setApplicationStatus("SHORTLISTED")}
-                    className="px-4 py-2 text-sm text-white bg-green-600 rounded hover:bg-green-700"
-                  >
-                    Shortlisted
-                  </button>
-                  <button
-                    onClick={() => handlesendupdate(Applicantbyid?._id ?? "")}
-                    className="px-4 py-2 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
-                  >
-                    Send for Approval
-                  </button>
+              {/* Skills */}
+              <div>
+                <h3 className="font-medium  text-[12px] border-b border-[#E0E4E9] dark:border-[#5F5959] pb-1 mb-3 text-[#1E2A41]  dark:text-[#fff] ">
+                  Skills
+                </h3>
+                <div className="flex flex-wrap gap-2 text-[10px]">
+                  {[
+                    "JavaScript",
+                    "Python",
+                    "HTML5",
+                    "CSS3",
+                    "React.js",
+                    "Node.js",
+                    "MongoDB",
+                    "Git",
+                    "JIRA",
+                    "Slack",
+                  ].map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-3 py-1 border rounded-full text-[#010E30E5] bg-gray-50 dark:bg-[#343434] dark:text-[#d5d5d5] border-[#E0E4E9] dark:border-[#5F5959] "
+                    >
+                      {skill}
+                    </span>
+                  ))}
                 </div>
               </div>
+
+              {/* Documents */}
+              <div>
+                <h3 className="font-medium text-[#010E30] text-[12px] border-b dark:border-b-[#5F5959] pb-1 mb-3 dark:text-[#fff]">
+                  Documents
+                </h3>
+                <a
+                  href={resumeImages ?? ""}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-[#5183CA] hover:underline text-[13px]"
+                >
+                  <ImAttachment /> Resume
+                </a>
+              </div>
+            </div>
+
+            {/* Footer (Fixed) */}
+            <div className="w-full border-t p-3 flex justify-end gap-3 bg-white z-10 dark:bg-[#343434] dark:border-t-[#5F5959]">
+              <button
+                onClick={() => setApplicationStatus("REJECTED")}
+                className="px-4 py-2 text-[12px] text-[#D34645] bg-[#FDECEC] rounded-lg dark:bg-[#543838]"
+              >
+                Rejected
+              </button>
+              <button
+                onClick={() => setApplicationStatus("WAITING")}
+                className="px-4 py-2 text-[12px] text-[#F0AD4E] bg-[#FDF6EC] rounded-lg dark:bg-[#5A4D3B]"
+              >
+                Waiting
+              </button>
+              <button
+                onClick={() => setApplicationStatus("SHORTLISTED")}
+                className="px-4 py-2 text-[12px] text-[#377E36] bg-[#ECFDF3] rounded-lg  dark:bg-[#377E3633]"
+              >
+                Shortlisted
+              </button>
+              <button
+                onClick={() => handlesendupdate(Applicantbyid?._id ?? "")}
+                className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
+              >
+                Send for Approval
+              </button>
             </div>
           </div>
         </>
