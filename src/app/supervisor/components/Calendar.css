@@ -1,0 +1,95 @@
+.custom-calendar {
+  width: 310px !important;
+  height: 314px !important;
+  background: #ffffff !important;
+  border-radius: 0.5rem; /* equivalent to Tailwind's rounded-lg */
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #010E30;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+  /* margin-bottom: 15px; */
+  margin-top: -92px;
+}
+
+/* Header navigation */
+.custom-calendar .react-calendar__navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0px;
+}
+
+.custom-calendar .react-calendar__navigation button {
+  background: #f0f1f4;
+  border-radius: 9999px;
+  min-width: 28px;
+  height: 28px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #010E30;
+  border: none;
+  cursor: pointer;
+}
+
+.custom-calendar .react-calendar__navigation__label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #010E30;
+  pointer-events: none;
+}
+
+/* Weekday row */
+.custom-calendar .react-calendar__month-view__weekdays {
+  text-align: center;
+  font-size: 10px;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.custom-calendar .react-calendar__month-view__weekdays__weekday {
+  padding: 3px 0;
+}
+
+/* Dates */
+.custom-calendar .react-calendar__tile {
+  font-size: 10px;
+  padding: 8px 0;
+  color: #010E30;
+  border-radius: 6px;
+    position: relative; /* added */
+
+}
+
+.custom-calendar .react-calendar__tile--now {
+  background: #9ec0ef !important;
+  color: white !important;
+}
+
+.custom-calendar .react-calendar__tile--active {
+  background: #5882BE !important;
+  color: white !important;
+}
+
+.custom-calendar .react-calendar__tile:enabled:hover {
+  background-color: #e4e9f2 !important;
+  color: #010E30 !important;
+}
+
+.custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
+  color: #ccc;
+}
+
+
+.custom-calendar .react-calendar__tile--active::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: 0px;
+  width: 8px;
+  height: 8px;
+  background-color: #3973C6;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
