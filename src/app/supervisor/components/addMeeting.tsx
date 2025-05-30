@@ -1,255 +1,303 @@
-'use client';
+"use client";
 
-import React, { FormEvent, useState } from 'react';
-import { Dialog } from '@headlessui/react';
-import { Plus } from 'lucide-react';
+import React, { FormEvent, useState } from "react";
+import { Dialog } from "@headlessui/react";
+import { Plus } from "lucide-react";
+import axios, { AxiosError }  from "axios";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
-
+import FailedPopup from "@/app/supervisor/components/failedPopup";
 type Props = {
-    readonly onClose : () =>void;
+  readonly onClose: () => void;
 };
 
-
-export default function AddMeeting({onClose}:Props) {
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSucces(true);
-  }
-const tabs = ['Quran', 'Arabic', 'Islamic', 'All'];
-
-const dummyTeachers = {
-  Quran: ['Quran Teacher 1', 'Quran Teacher 2'],
-  Arabic: ['Arabic Teacher 1', 'Arabic Teacher 2'],
-  Islamic: ['Islamic Teacher 1'],
-  All: ['Quran Teacher 1', 'Arabic Teacher 1', 'Islamic Teacher 1'],
-};
-const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<keyof typeof dummyTeachers>('Quran');
+export default function AddMeeting({ onClose }: Props) {
+  const [meetingTitle, setMeetingTitle] = useState("Weekly Sync");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [description, setDescription] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
+  const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"Quran" | "Arabic" | "Islamic" | "All">("Quran");
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
-   const [success,setSucces]=useState(false);
+
+  const dummyTeachers = {
+    Quran: ["Quran Teacher 1", "Quran Teacher 2"],
+    Arabic: ["Arabic Teacher 1", "Arabic Teacher 2"],
+    Islamic: ["Islamic Teacher 1"],
+    All: ["Quran Teacher 1", "Arabic Teacher 1", "Islamic Teacher 1"],
+  };
 
   const toggleTeacher = (name: string) => {
     setSelectedTeachers((prev) =>
-      prev.includes(name)
-        ? prev.filter((t) => t !== name)
-        : [...prev, name]
+      prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name]
     );
   };
-  const form = {
-    meetingName: 'Weekly Sync',
-  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!meetingTitle || !selectedDate || !startTime || !endTime || selectedTeachers.length === 0) {
+      alert("Please fill all required fields!");
+      return;
+    }
+
+    const formattedDate = new Date(selectedDate).toISOString();
+    const createdDate = new Date().toISOString();
+
+    const teachers = selectedTeachers.map((name, idx) => ({
+      teacherId: `teacher-${idx}`,
+      teacherName: name,
+      teacherEmail: `${name.toLowerCase().replace(/\s/g, "")}@example.com`,
+      _id: `teacher-${idx}`,
+    }));
+
+    const requestData = {
+      meetingId: "",
+      meetingName: meetingTitle,
+      selectedDate: formattedDate,
+      startTime,
+      endTime,
+      meetingStatus: "Scheduled",
+      supervisor: {
+        supervisorId: localStorage.getItem("SupervisorPortalId"),
+        supervisorName: localStorage.getItem("SupervisorPortalName"),
+        supervisorEmail: "arthi.blackstoneinfomatics@gmail.com",
+        supervisorRole: "SUPERVISOR",
+      },
+      teacher: teachers,
+      description,
+      status: "Active",
+      createdDate,
+      createdBy: localStorage.getItem("SupervisorPortalName"),
+    };
+
+    try {
+      const token = localStorage.getItem("SupervisorAuthToken");
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+        return;
+      }
+
+      const response = await axios.post(
+        "https://api.blackstoneinfomaticstech.com/addMeeting",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if ([200, 201, 400].includes(response.status)) {
+        setSuccess(true);
+        setTimeout(() => {
+          setMeetingTitle("");
+          setSelectedDate("");
+          setStartTime("");
+          setEndTime("");
+          setSelectedTeachers([]);
+          setDescription("");
+        }, 2000);
+      }
+    } catch (err) {
+          const error = err as AxiosError;
+          const status = error.response?.status;
+          if (Number(status === 400)) {
+            console.log("please >");
+            setFailedMessage("Please check the form inputs.");
+            setFailed(true);
+          } else if (status === 401) {
+            setFailedMessage("Please login again.");
+            setFailed(true);
+          } else if (status === 403) {
+            setFailedMessage("You don't have permission to perform this action.");
+            setFailed(true);
+          } else if (status === 500) {
+            setFailedMessage("Server error");
+            setFailed(true);
+          } else {
+            setFailed(true);
+            console.error(`Unexpected error: ${status}`);
+          }
+        }
+      };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-[#1D1D1D] rounded-lg shadow-xl p-5 w-full max-w-2xl mx-3 text-sm"
-        style={{ maxHeight: '90vh', overflowY: 'auto' }}
+        style={{ maxHeight: "90vh", overflowY: "auto" }}
       >
-        <h1 className="text-lg font-normal  mt-2 text-gray-800 mb-3 dark:text-[#FFFFFF]">
+        <h1 className="text-lg font-normal text-gray-800 mb-3 dark:text-white">
           Add Meeting
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Left Section */}
+          {/* Left */}
           <div>
-            {/* Meeting Name */}
             <div className="mb-3">
-              <label htmlFor='rshghvgyv' className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
-                Meeting Name
-              </label>
+              <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">Meeting Name</label>
               <input
-                name="meetingName"
-                value={form.meetingName}
+                value={meetingTitle}
+                onChange={(e) => setMeetingTitle(e.target.value)}
                 type="text"
                 className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
-
-            {/* Start Time */}
             <div className="mb-3">
-              <label htmlFor='rshghvgyv' className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
-                Start Time
-              </label>
+              <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">Start Time</label>
               <input
                 type="time"
-                name="startTime"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
                 className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
-
-            {/* Add Teacher */}
             <div className="mb-4">
-      {/* Label with + icon */}
-      <label
-        htmlFor="teacher-select"
-        className=" text-sm font-normal text-gray-600 mb-1 dark:text-white flex items-center justify-between"
-      >
-        Add Teacher
-      </label>
-      <div className="relative flex items-center border rounded px-2 py-1 dark:bg-[#343434] dark:border-[#5C5C5C]">
-         <div
-    id="teacher-select"
-    className="flex-1 appearance-none bg-transparent text-xs px-2 py-1.5 focus:outline-none dark:text-white"
-  >
-    Select Teacher
-  </div>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="text-[#576CBC] hover:text-blue-700 ml-2"
-        >
-          <Plus size={18} />
-        </button>
-      </div>
-
-      {/* Dropdown with selected teachers */}
-      
-
-      {/* Modal */}
-      <Dialog open={open} onClose={() => setOpen(false)} className="relative z-50">
-  <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-  <div className="fixed inset-0 flex items-center justify-center p-4">
-    <section className="bg-white dark:bg-[#1D1D1D] rounded-lg p-5 w-full max-w-md">
-      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-        Select Teachers
-      </h2>
-
-      {/* Tabs */}
-      <div className="flex gap-2 mb-4">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            className={`px-3 py-2 text-xs rounded ${
-              activeTab === tab
-                ? 'bg-[#576CBC] text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white'
-            }`}
-            onClick={() => setActiveTab(tab as 'Quran' | 'Arabic' | 'Islamic' | 'All')}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Teachers List */}
-      <div className="space-y-2 max-h-40 overflow-y-auto text-sm">
-        {dummyTeachers[activeTab].map((teacher) => (
-          <label key={teacher} className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={selectedTeachers.includes(teacher)}
-              onChange={() => toggleTeacher(teacher)}
-            />
-            <span className="dark:text-white">{teacher}</span>
-          </label>
-        ))}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-end mt-4 gap-2">
-        <button
-          onClick={() => setOpen(false)}
-          className="px-3 py-1 border border-[#576CBC] text-[#576CBC] rounded dark:text-[#576CBC] dark:border-gray-600"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() => setOpen(false)}
-          className="px-4 py-1 bg-[#576CBC] text-white rounded"
-        >
-          Done
-        </button>
-      </div>
-    </section>
-  </div>
-</Dialog>
-
-    </div>
-          </div>
-          {/* Right Section */}
-          <div>
-            {/* Meeting Date */}
-            <div className="mb-3">
-              <label htmlFor='rshghvgyv' className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
-                Meeting Date
+              <label htmlFor="uyvuhvyuc" className="text-sm text-gray-600 dark:text-white flex justify-between">
+                Add Teacher
               </label>
+              <div className="relative flex items-center border rounded px-2 py-1 dark:bg-[#343434] dark:border-[#5C5C5C]">
+                <div className="flex-1 text-xs px-2 py-1.5 dark:text-white">
+                  Select Teacher
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOpen(true)}
+                  className="text-[#576CBC] hover:text-blue-700 ml-2"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
+              <Dialog open={open} onClose={() => setOpen(false)} className="relative z-50">
+                <div className="fixed inset-0 bg-black/50" />
+                <div className="fixed inset-0 flex items-center justify-center p-4">
+                  <section className="bg-white dark:bg-[#1D1D1D] rounded-lg p-5 w-full max-w-md">
+                    <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+                      Select Teachers
+                    </h2>
+                    <div className="flex gap-2 mb-4">
+                      {Object.keys(dummyTeachers).map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setActiveTab(tab as any)}
+                          className={`px-3 py-2 text-xs rounded ${
+                            activeTab === tab
+                              ? "bg-[#576CBC] text-white"
+                              : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white"
+                          }`}
+                        >
+                          {tab}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="space-y-2 max-h-40 overflow-y-auto text-sm">
+                      {dummyTeachers[activeTab].map((teacher) => (
+                        <label key={teacher} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedTeachers.includes(teacher)}
+                            onChange={() => toggleTeacher(teacher)}
+                          />
+                          <span className="dark:text-white">{teacher}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="flex justify-end mt-4 gap-2">
+                      <button
+                        onClick={() => setOpen(false)}
+                        className="px-3 py-1 border text-[#576CBC] rounded"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => setOpen(false)}
+                        className="px-4 py-1 bg-[#576CBC] text-white rounded"
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </section>
+                </div>
+              </Dialog>
+            </div>
+          </div>
+
+          {/* Right */}
+          <div>
+            <div className="mb-3">
+              <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">Meeting Date</label>
               <input
                 type="date"
-                name="meetingDate"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
                 className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
-
-            {/* End Time */}
             <div className="mb-3">
-              <label htmlFor='rshghvgyv' className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
-                End Time
-              </label>
+              <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">End Time</label>
               <input
                 type="time"
-                name="endTime"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
                 className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
-
-            {/* Selected Teacher Dropdown */}
             <div className="mb-3">
-              <label htmlFor='rshghvgyv' className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
-                Selected Teacher
-              </label>
+              <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">Selected Teacher</label>
               <select
-             id="teacher-select"
-             className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                 >
-                  <option value="">Show</option>
-            {selectedTeachers.map((teacher) => (
-            <option key={teacher} value={teacher}>
-            {teacher}
-            </option>
-            ))}
-      </select>
+                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+              >
+                <option value="">Show</option>
+                {selectedTeachers.map((teacher) => (
+                  <option key={teacher} value={teacher}>
+                    {teacher}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
 
         {/* Description */}
         <div className="mb-4 mt-2">
-          <label htmlFor='rshghvgyv' className="block text-sm font-normal text-gray-600 mb-1 dark:text-[#FFFFFF]">
-            Description
-          </label>
+          <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">Description</label>
           <textarea
-            name="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             rows={3}
             className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
             placeholder="Write meeting details..."
           />
         </div>
 
-        {/* Buttons */}
-       <div className="border-t pt-4 mt-4 flex justify-end gap-2">
-      <button
-        type="button"
-        onClick={onClose}
-        className="px-3 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition "
-      >
-        Cancel
-      </button>
-      <button
-        type="submit"
-        className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700 transition"
-      >
-        Submit
-      </button>
-    </div>
+        {/* Actions */}
+        <div className="border-t pt-4 mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-3 py-1 border border-[#576CBC] text-[#576CBC] rounded hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700"
+          >
+            Submit
+          </button>
+        </div>
       </form>
-      {
-    success && (
-        <SuccessPopup 
-        onClose={()=>setSucces(false)}  
-        title = 'Meeting' />
-    )
-  }
+
+      {success && <SuccessPopup onClose={() => setSuccess(false)} title="Meeting" />}
+         {failed &&  (
+                <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+              )}
     </div>
   );
 }
