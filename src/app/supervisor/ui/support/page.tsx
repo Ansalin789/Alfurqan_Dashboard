@@ -2,14 +2,16 @@ import BaseLayout3 from "@/components/BaseLayout3";
 import React from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { MdOutlineArrowOutward } from "react-icons/md";
+import SupervisorHeader from "../../components/supervisorHeader";
 
 const Support = () => {
   return (
     <BaseLayout3>
+    <SupervisorHeader currentSection="Support"/>
       <div className="p-4 mx-auto">
         <div className="flex gap-x-5 w-auto">
           <div className="bg-[#7689BD] shadow-lg rounded-xl p-4 h-[616px] w-[340px]">
-            <h2 className="text-[20px] font-semibold text-[#fff] mb-6 p-6">
+            <h2 className="text-[20px] font-semibold text-[#fff] mb-4 p-4">
               Contact
             </h2>
             <div className="text-gray-800 space-y-4 justify-evenly px-6">
@@ -20,8 +22,9 @@ const Support = () => {
                     alt="location"
                     className="w-4 h-4"
                   />
-                  Visit Us:
+                  Visit Us :
                 </strong>
+                <div className="ml-6">
                 <span className="text-[13px] font-normal text-white">
                   Come say Hello at Our Office HQ
                 </span>
@@ -30,6 +33,8 @@ const Support = () => {
                   {" "}
                   128, City Road, London, EC1V 2NX, United Kingdom
                 </span>
+                </div>
+                
               </p>
               <p>
                 <strong className="text-white text-[16px] font-medium flex items-center gap-2">
@@ -38,8 +43,9 @@ const Support = () => {
                     alt="call"
                     className="w-4 h-4"
                   />
-                  Call Us:
+                  Call Us :
                 </strong>
+                <div className="ml-6">
                 <span className="text-[13px] font-normal text-white">
                   Monday – Sunday/ 24×7
                 </span>
@@ -49,6 +55,7 @@ const Support = () => {
                   <br />
                   USA +1 85 5442 3380
                 </span>
+                </div>
               </p>
               <p>
                 <strong className="text-white text-[16px] font-medium flex items-center gap-2">
@@ -57,8 +64,9 @@ const Support = () => {
                     alt="email"
                     className="w-4 h-4"
                   />
-                  Email to Us:
+                  Email to Us :
                 </strong>
+                <div className="ml-6">
                 <span className="text-[13px] font-normal text-white">
                   Our Friendly team is here to Help
                 </span>
@@ -66,6 +74,7 @@ const Support = () => {
                 <span className="text-white text-[13px] font-normal">
                   contact@alfurqan.academy
                 </span>
+                </div>
               </p>
             </div>
           </div>
@@ -76,7 +85,7 @@ const Support = () => {
             </h2>
             <div className="px-6">
               <details className="group mb-6 py-2 w-full border-b border-b-[#818795]">
-                <summary className="flex items-center justify-between text-[16px] font-medium text-[#fff] cursor-pointer">
+                <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
                   What if I encounter technical issues?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
@@ -88,7 +97,7 @@ const Support = () => {
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
-                <summary className="flex items-center justify-between text-[16px] font-medium text-[#fff] cursor-pointer">
+                <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
                   Can I use the Teacher Module to communicate with students?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
@@ -99,7 +108,7 @@ const Support = () => {
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
-                <summary className="flex items-center justify-between text-[16px] font-medium text-[#fff] cursor-pointer">
+                <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
                   Can I track my students' progress?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
@@ -110,7 +119,7 @@ const Support = () => {
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
-                <summary className="flex items-center justify-between text-[16px] font-medium text-[#fff] cursor-pointer">
+                <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
                   Does the platform support mobile access?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>
@@ -121,7 +130,7 @@ const Support = () => {
               </details>
 
               <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
-                <summary className="flex items-center justify-between text-[16px] font-medium text-[#fff] cursor-pointer">
+                <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
                   Can I provide personalized feedback to students?
                   <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
                 </summary>

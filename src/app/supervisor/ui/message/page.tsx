@@ -109,7 +109,10 @@ const Message = () => {
 
   // Filter users based on search query
   const filteredUsers = (
-    activeTab === "teachers" ? teachers : admin
+    activeTab === "teachers" ? teachers :
+    activeTab === "admin" ? admin :
+    activeTab === "all" ? [...teachers, ...admin] :
+    [] // Empty array for supervisor and academic-coach tabs
   ).filter(
     (user) =>
       user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -501,7 +504,7 @@ setMessages(prev => {
             </div>
 
             {/* User List */}
-            <div className="mt-2  flex-1">
+            <div className="mt-2 flex-1 overflow-y-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
               <AnimatePresence>
                 {filteredUsers.map((user) => (
                   <motion.button
