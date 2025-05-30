@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { CountryDropdown } from "react-country-region-selector";
 import {
   Star,
   MoreVertical,
   FileText,
-  Upload,
   Search,
   Mail,
   Phone,
@@ -20,6 +18,9 @@ import Pagination from "@/components/Pagination";
 
 import SupervisorHeader from "../../components/supervisorHeader";
 import { IoCloseOutline } from "react-icons/io5";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { FiCalendar } from "react-icons/fi";
 
 type Status = "Shortlisted" | "Rejected" | "Waiting";
 type Position = "Arabic Teacher" | "Quran Teacher";
@@ -133,8 +134,6 @@ export default function ApplicantsPage() {
     null
   );
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [showAddApplicant, setShowAddApplicant] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [Applicantbyid, setApplicantbyid] = useState<ApiResponse | null>(null);
   const [resumeImages, setResumeImages] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -144,22 +143,7 @@ export default function ApplicantsPage() {
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentItems = items.slice(indexOfFirst, indexOfLast);
-  const [addApplicantForm, setAddApplicantForm] =
-    useState<AddApplicantFormData>({
-      applicationDate: new Date().toISOString().split("T")[0],
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      gender: "",
-      country: "USA",
-      city: "",
-      position: "Arabic Teacher",
-      expectedSalary: "",
-      workingHours: "",
-      resume: null,
-      comment: "",
-    });
+
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [quranReading, setQuranReading] = useState("Medium");
   const [tajweed, setTajweed] = useState("Medium");
@@ -170,6 +154,27 @@ export default function ApplicantsPage() {
   const [rating, setRating] = useState(4);
   const [comments, setComments] = useState("");
   const [applicationStatus, setApplicationStatus] = useState("");
+  const [mode, setMode] = useState<"view" | "edit">("view");
+  const [skills, setSkills] = useState<string[]>([]);
+  const [newSkill, setNewSkill] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const dateInputRef = useRef<any>(null);
+
+  const handleAddSkill = () => {
+    const trimmed = newSkill.trim();
+    if (trimmed && !skills.includes(trimmed)) {
+      setSkills([...skills, trimmed]);
+      setNewSkill("");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddSkill();
+    }
+  };
 
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
@@ -276,7 +281,15 @@ export default function ApplicantsPage() {
   const handleViewDetails = (applicant: Applicant) => {
     setSelectedApplicant(applicant);
     setOpenMenuId(null);
+    setMode("view"); // set to view mode
   };
+
+  const handleEdit = (applicant: Applicant) => {
+    setSelectedApplicant(applicant);
+    setOpenMenuId(null);
+    setMode("edit"); // set to edit mode
+  };
+
   const handleviewclose = () => {
     setSelectedApplicant(null);
     setResumeImages(null);
@@ -290,88 +303,6 @@ export default function ApplicantsPage() {
     setRating(1);
     setComments("");
     setApplicationStatus("");
-  };
-
-  const handleAddApplicantSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("applicationDate", addApplicantForm.applicationDate);
-    formData.append("candidateFirstName", addApplicantForm.firstName); // Changed
-    formData.append("candidateLastName", addApplicantForm.lastName); // Changed
-    formData.append("candidateEmail", addApplicantForm.email); // Changed
-    formData.append("candidatePhoneNumber", addApplicantForm.phone); // Changed
-    formData.append("candidateCountry", addApplicantForm.country); // Changed
-    formData.append("candidateCity", addApplicantForm.city); // Changed
-    formData.append("positionApplied", addApplicantForm.position);
-    formData.append("gender", addApplicantForm.gender);
-    formData.append("currency", "$"); // Changed
-    formData.append("expectedSalary", addApplicantForm.expectedSalary); // Changed
-    formData.append("preferedWorkingHours", addApplicantForm.workingHours); // Changed
-    formData.append("comments", addApplicantForm.comment); // Changed
-    formData.append("applicationStatus", "NEWAPPLICATION");
-    formData.append("overallRating", "1");
-    formData.append("status", "Active");
-
-    if (addApplicantForm.resume) {
-      formData.append("uploadResume", addApplicantForm.resume);
-    }
-
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
-          : null;
-
-      if (!token) {
-        console.error("❌ SupervisorAuthToken not found");
-        return;
-      }
-      const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/recruit",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status === 201) {
-        alert("Applicant added successfully!");
-        setShowAddApplicant(false);
-        setAddApplicantForm({
-          applicationDate: new Date().toISOString().split("T")[0],
-          firstName: "",
-          lastName: "",
-          email: "",
-          phone: "",
-          country: "USA",
-          city: "",
-          gender: "",
-          position: "Arabic Teacher",
-          expectedSalary: "",
-          workingHours: "",
-          resume: null,
-          comment: "",
-        });
-      }
-    } catch (error) {
-      console.error("Error adding applicant:", error);
-      alert("Failed to add applicant");
-    }
-    setShowAddApplicant(false);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setAddApplicantForm({ ...addApplicantForm, resume: e.target.files[0] });
-    }
-  };
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
   };
 
   const handlesendupdate = async (id: string) => {
@@ -450,14 +381,6 @@ export default function ApplicantsPage() {
                       </button>
                     ))}
                   </div>
-                  <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-                    {/* <button
-                      onClick={() => setShowAddApplicant(true)}
-                      className="bg-[#012A4A] font-medium text-[12px] hover:bg-[#0d202f] text-white px-2 py-0 rounded-md transition-colors"
-                    >
-                      + Add Applicant
-                    </button> */}
-                  </div>
                 </div>
 
                 <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
@@ -471,41 +394,28 @@ export default function ApplicantsPage() {
                         className="bg-transparent outline-none text-[15px] w-52 py-3 "
                       />
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 dark:text-gray-400">
+
+                    <div
+                      className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setShowModal(true)}
+                    >
                       {/* <BsFilterLeft /> */}
                       <svg
-                        className="text-gray-400 dark:text-gray-400"
-                        width="25"
-                        height="24"
-                        viewBox="0 0 25 24"
+                        width="19"
+                        height="18"
+                        viewBox="0 0 19 18"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <mask
-                          id="mask0_3603_6313"
-                          maskUnits="userSpaceOnUse"
-                          x="0"
-                          y="0"
-                          width="25"
-                          height="24"
-                        >
-                          <rect
-                            x="0.335938"
-                            width="24"
-                            height="24"
-                            fill="#D9D9D9"
-                          />
-                        </mask>
-                        <g mask="url(#mask0_3603_6313)">
-                          <path
-                            d="M4.33594 19C4.0526 19 3.81527 18.904 3.62394 18.712C3.43194 18.5207 3.33594 18.2833 3.33594 18C3.33594 17.7167 3.43194 17.4793 3.62394 17.288C3.81527 17.096 4.0526 17 4.33594 17H8.33594C8.61927 17 8.85694 17.096 9.04894 17.288C9.24027 17.4793 9.33594 17.7167 9.33594 18C9.33594 18.2833 9.24027 18.5207 9.04894 18.712C8.85694 18.904 8.61927 19 8.33594 19H4.33594ZM4.33594 7C4.0526 7 3.81527 6.90433 3.62394 6.713C3.43194 6.521 3.33594 6.28333 3.33594 6C3.33594 5.71667 3.43194 5.479 3.62394 5.287C3.81527 5.09567 4.0526 5 4.33594 5H12.3359C12.6193 5 12.8569 5.09567 13.0489 5.287C13.2403 5.479 13.3359 5.71667 13.3359 6C13.3359 6.28333 13.2403 6.521 13.0489 6.713C12.8569 6.90433 12.6193 7 12.3359 7H4.33594ZM12.3359 21C12.0526 21 11.8153 20.904 11.6239 20.712C11.4319 20.5207 11.3359 20.2833 11.3359 20V16C11.3359 15.7167 11.4319 15.479 11.6239 15.287C11.8153 15.0957 12.0526 15 12.3359 15C12.6193 15 12.8569 15.0957 13.0489 15.287C13.2403 15.479 13.3359 15.7167 13.3359 16V17H20.3359C20.6193 17 20.8566 17.096 21.0479 17.288C21.2399 17.4793 21.3359 17.7167 21.3359 18C21.3359 18.2833 21.2399 18.5207 21.0479 18.712C20.8566 18.904 20.6193 19 20.3359 19H13.3359V20C13.3359 20.2833 13.2403 20.5207 13.0489 20.712C12.8569 20.904 12.6193 21 12.3359 21ZM8.33594 15C8.0526 15 7.81494 14.904 7.62294 14.712C7.4316 14.5207 7.33594 14.2833 7.33594 14V13H4.33594C4.0526 13 3.81527 12.904 3.62394 12.712C3.43194 12.5207 3.33594 12.2833 3.33594 12C3.33594 11.7167 3.43194 11.479 3.62394 11.287C3.81527 11.0957 4.0526 11 4.33594 11H7.33594V10C7.33594 9.71667 7.4316 9.479 7.62294 9.287C7.81494 9.09567 8.0526 9 8.33594 9C8.61927 9 8.85694 9.09567 9.04894 9.287C9.24027 9.479 9.33594 9.71667 9.33594 10V14C9.33594 14.2833 9.24027 14.5207 9.04894 14.712C8.85694 14.904 8.61927 15 8.33594 15ZM12.3359 13C12.0526 13 11.8153 12.904 11.6239 12.712C11.4319 12.5207 11.3359 12.2833 11.3359 12C11.3359 11.7167 11.4319 11.479 11.6239 11.287C11.8153 11.0957 12.0526 11 12.3359 11H20.3359C20.6193 11 20.8566 11.0957 21.0479 11.287C21.2399 11.479 21.3359 11.7167 21.3359 12C21.3359 12.2833 21.2399 12.5207 21.0479 12.712C20.8566 12.904 20.6193 13 20.3359 13H12.3359ZM16.3359 9C16.0526 9 15.8153 8.904 15.6239 8.712C15.4319 8.52067 15.3359 8.28333 15.3359 8V4C15.3359 3.71667 15.4319 3.479 15.6239 3.287C15.8153 3.09567 16.0526 3 16.3359 3C16.6193 3 16.8566 3.09567 17.0479 3.287C17.2399 3.479 17.3359 3.71667 17.3359 4V5H20.3359C20.6193 5 20.8566 5.09567 21.0479 5.287C21.2399 5.479 21.3359 5.71667 21.3359 6C21.3359 6.28333 21.2399 6.521 21.0479 6.713C20.8566 6.90433 20.6193 7 20.3359 7H17.3359V8C17.3359 8.28333 17.2399 8.52067 17.0479 8.712C16.8566 8.904 16.6193 9 16.3359 9Z"
-                            fill="#252525"
-                            fill-opacity="0.3"
-                          />
-                        </g>
+                        <path
+                          d="M1.33594 16C1.0526 16 0.815271 15.904 0.623938 15.712C0.431938 15.5207 0.335938 15.2833 0.335938 15C0.335938 14.7167 0.431938 14.4793 0.623938 14.288C0.815271 14.096 1.0526 14 1.33594 14H5.33594C5.61927 14 5.85694 14.096 6.04894 14.288C6.24027 14.4793 6.33594 14.7167 6.33594 15C6.33594 15.2833 6.24027 15.5207 6.04894 15.712C5.85694 15.904 5.61927 16 5.33594 16H1.33594ZM1.33594 4C1.0526 4 0.815271 3.90433 0.623938 3.713C0.431938 3.521 0.335938 3.28333 0.335938 3C0.335938 2.71667 0.431938 2.479 0.623938 2.287C0.815271 2.09567 1.0526 2 1.33594 2H9.33594C9.61927 2 9.85694 2.09567 10.0489 2.287C10.2403 2.479 10.3359 2.71667 10.3359 3C10.3359 3.28333 10.2403 3.521 10.0489 3.713C9.85694 3.90433 9.61927 4 9.33594 4H1.33594ZM9.33594 18C9.0526 18 8.81527 17.904 8.62394 17.712C8.43194 17.5207 8.33594 17.2833 8.33594 17V13C8.33594 12.7167 8.43194 12.479 8.62394 12.287C8.81527 12.0957 9.0526 12 9.33594 12C9.61927 12 9.85694 12.0957 10.0489 12.287C10.2403 12.479 10.3359 12.7167 10.3359 13V14H17.3359C17.6193 14 17.8566 14.096 18.0479 14.288C18.2399 14.4793 18.3359 14.7167 18.3359 15C18.3359 15.2833 18.2399 15.5207 18.0479 15.712C17.8566 15.904 17.6193 16 17.3359 16H10.3359V17C10.3359 17.2833 10.2403 17.5207 10.0489 17.712C9.85694 17.904 9.61927 18 9.33594 18ZM5.33594 12C5.0526 12 4.81494 11.904 4.62294 11.712C4.4316 11.5207 4.33594 11.2833 4.33594 11V10H1.33594C1.0526 10 0.815271 9.904 0.623938 9.712C0.431938 9.52067 0.335938 9.28333 0.335938 9C0.335938 8.71667 0.431938 8.479 0.623938 8.287C0.815271 8.09567 1.0526 8 1.33594 8H4.33594V7C4.33594 6.71667 4.4316 6.479 4.62294 6.287C4.81494 6.09567 5.0526 6 5.33594 6C5.61927 6 5.85694 6.09567 6.04894 6.287C6.24027 6.479 6.33594 6.71667 6.33594 7V11C6.33594 11.2833 6.24027 11.5207 6.04894 11.712C5.85694 11.904 5.61927 12 5.33594 12ZM9.33594 10C9.0526 10 8.81527 9.904 8.62394 9.712C8.43194 9.52067 8.33594 9.28333 8.33594 9C8.33594 8.71667 8.43194 8.479 8.62394 8.287C8.81527 8.09567 9.0526 8 9.33594 8H17.3359C17.6193 8 17.8566 8.09567 18.0479 8.287C18.2399 8.479 18.3359 8.71667 18.3359 9C18.3359 9.28333 18.2399 9.52067 18.0479 9.712C17.8566 9.904 17.6193 10 17.3359 10H9.33594ZM13.3359 6C13.0526 6 12.8153 5.904 12.6239 5.712C12.4319 5.52067 12.3359 5.28333 12.3359 5V1C12.3359 0.716667 12.4319 0.479 12.6239 0.287C12.8153 0.0956666 13.0526 0 13.3359 0C13.6193 0 13.8566 0.0956666 14.0479 0.287C14.2399 0.479 14.3359 0.716667 14.3359 1V2H17.3359C17.6193 2 17.8566 2.09567 18.0479 2.287C18.2399 2.479 18.3359 2.71667 18.3359 3C18.3359 3.28333 18.2399 3.521 18.0479 3.713C17.8566 3.90433 17.6193 4 17.3359 4H14.3359V5C14.3359 5.28333 14.2399 5.52067 14.0479 5.712C13.8566 5.904 13.6193 6 13.3359 6Z"
+                          fill="#DEDEDE"
+                          fill-opacity="0.7"
+                        />
                       </svg>
                       <span>Filter</span>
                     </div>
+
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
                         Showing {currentApplicants.length} Of 50
@@ -514,7 +424,10 @@ export default function ApplicantsPage() {
                   </div>
 
                   {/* Table */}
-                  <table className="table-auto w-full">
+                  <table
+                    className="table-auto w-full"
+                    style={{ width: "100%", tableLayout: "fixed" }}
+                  >
                     <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr className="font-medium">
                         <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
@@ -526,7 +439,10 @@ export default function ApplicantsPage() {
                         <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Contact
                         </th>
-                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        <th
+                          className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]"
+                          style={{ wordWrap: "break-word", width: "15%" }}
+                        >
                           Email id
                         </th>
                         <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
@@ -572,7 +488,10 @@ export default function ApplicantsPage() {
                             <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
                               {applicant.candidatePhoneNumber}
                             </td>
-                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                            <td
+                              className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]"
+                              style={{ wordWrap: "break-word" }}
+                            >
                               {applicant.candidateEmail}
                             </td>
                             <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
@@ -617,7 +536,10 @@ export default function ApplicantsPage() {
                                 </button>
                                 {openMenuId === applicant._id && (
                                   <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
-                                    <button className="block w-full px-4 py-2 text-left text-[12px] text-[#353232]">
+                                    <button
+                                      onClick={() => handleEdit(applicant)}
+                                      className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+                                    >
                                       Edit
                                     </button>
                                     <button
@@ -644,6 +566,9 @@ export default function ApplicantsPage() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Pagination */}
+
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -655,356 +580,93 @@ export default function ApplicantsPage() {
         </div>
       </div>
 
-      {showAddApplicant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-4 w-[500px]">
-            <h2 className="text-[16px] font-semibold text-gray-800 mb-4 text-center">
-              Add Applicant
-            </h2>
-            <form onSubmit={handleAddApplicantSubmit} className="space-y-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Application Date */}
-                <div>
-                  <label
-                    htmlFor="applicationDate"
-                    className="block text-gray-700 text-[12px] font-medium mb-2"
-                  >
-                    Application Date
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="date"
-                      value={addApplicantForm.applicationDate}
-                      onChange={(e) =>
-                        setAddApplicantForm({
-                          ...addApplicantForm,
-                          applicationDate: e.target.value,
-                        })
-                      }
-                      id="applicationDate"
-                      className="w-full px-4 py-2 text-[11px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="firstName"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    value={addApplicantForm.firstName}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        firstName: e.target.value,
-                      })
-                    }
-                    id="firstName"
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-              </div>
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center  ">
+          <div className="bg-white p-6 rounded-lg w-96 relative dark:bg-[#252525]">
+            {/* Close Icon */}
+            <button
+              className="absolute top-2 right-3 text-gray-400 text-xl"
+              onClick={() => setShowModal(false)}
+            >
+              &times;
+            </button>
 
-              {/* First Name & Last Name */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="lastName"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    value={addApplicantForm.lastName}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        lastName: e.target.value,
-                      })
-                    }
-                    id="lastName"
-                    className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="gender"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Gender
-                  </label>
-                  <select
-                    id="gender"
-                    value={addApplicantForm.gender}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        gender: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
-                  >
-                    <option value="" disabled>
-                      Select Gender
-                    </option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={addApplicantForm.email}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        email: e.target.value,
-                      })
-                    }
-                    id="email"
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="phoneNumber"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Phone Number
-                  </label>
-                  <input
-                    type="number"
-                    value={addApplicantForm.phone}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        phone: e.target.value,
-                      })
-                    }
-                    id="phoneNumber"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 text-[11px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-              </div>
+            <h2 className="text-lg font-semibold mb-4">Filter by</h2>
 
-              {/* Country & City */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="country"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Country
-                  </label>
-                  <CountryDropdown
-                    value={addApplicantForm.country}
-                    onChange={(val) => {
-                      setCountry(val);
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        country: val,
-                      });
-                    }}
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="city"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    City
-                  </label>
-                  <select
-                    id="city"
-                    value={addApplicantForm.city}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        city: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  >
-                    <option value="">Select a city</option>
-                    {cities?.map((cityName) => (
-                      <option key={cityName} value={cityName}>
-                        {cityName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Position Applied & Salary */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="position"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Position Applied
-                  </label>
-                  <select
-                    id="position"
-                    value={addApplicantForm.position}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        position: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  >
-                    <option value="Arabic Teacher">Arabic Teacher</option>
-                    <option value="English Teacher">Quran Teacher</option>
-                    <option value="Math Teacher">
-                      Islamic Studies Teacher
-                    </option>
-                  </select>
-                </div>
-                <div>
-                  <label
-                    htmlFor="salary"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Expected Salary per Hour
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={addApplicantForm.expectedSalary}
-                      onChange={(e) =>
-                        setAddApplicantForm({
-                          ...addApplicantForm,
-                          expectedSalary: e.target.value,
-                        })
-                      }
-                      id="salary"
-                      className="w-full px-4 py-2 text-[11px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                    <button className="absolute inset-y-0 right-0 px-3 text-[11px] text-[#1C3557] hover:underline focus:outline-none">
-                      Edit
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Preferred Working Hours & Resume */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="workingHours"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Preferred Working Hours
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={addApplicantForm.workingHours}
-                      onChange={(e) =>
-                        setAddApplicantForm({
-                          ...addApplicantForm,
-                          workingHours: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-2 rounded-lg border border-gray-300 text-[11px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="resume"
-                    className="text-gray-600 text-[12px] font-medium mb-2 flex items-center"
-                  >
-                    Upload Resume
-                  </label>
-                  <div className="relative">
-                    <input
-                      ref={fileInputRef}
-                      id="resume"
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      className="absolute opacity-0 w-full h-full cursor-pointer"
-                      onChange={handleFileChange}
-                    />
-                    <div className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-                      {addApplicantForm.resume
-                        ? addApplicantForm.resume.name
-                        : "No file selected"}
-                    </div>
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 text-[11px] bg-[#1C3557] text-white rounded-lg hover:bg-[#0e1a2c] flex items-center"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Upload className="h-4 w-4 mr-1" />
-                      Upload
-                    </button>
-                  </div>
-                  {addApplicantForm.resume && (
-                    <p className="mt-2 text-[11px] text-gray-500">
-                      Selected file: {addApplicantForm.resume.name}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Comment */}
-              <div>
-                <label
-                  htmlFor="comment"
-                  className="block text-gray-600 text-[12px] font-medium mb-2"
+            {/* Date Input */}
+            <div className="mb-4">
+              <label
+                htmlFor="date"
+                className="flex items-center gap-1 text-sm font-medium mb-1 dark:text-[#D6D6D6]"
+              >
+                Date
+              </label>
+              <div className="relative">
+                <DatePicker
+                  id="date"
+                  selected={selectedDate}
+                  onChange={(date) => setSelectedDate(date)}
+                  dateFormat="dd/MM/yyyy"
+                  className="w-full border rounded-md p-2  text-[12px] dark:bg-[#5C5C5C] dark:text-[#D6D6D6]"
+                  calendarClassName="custom-datepicker"
+                  ref={dateInputRef}
+                  placeholderText="DD/MM/YYYY"
+                />
+                {/* Icon inside input field */}
+                <div
+                  className="absolute inset-y-0 right-3 flex items-center text-[#666E83] cursor-pointer"
+                  onClick={() => dateInputRef.current?.setFocus()}
                 >
-                  Comment
-                </label>
-                <textarea
-                  id="comment"
-                  value={addApplicantForm.comment}
-                  onChange={(e) =>
-                    setAddApplicantForm({
-                      ...addApplicantForm,
-                      comment: e.target.value,
-                    })
-                  }
-                  rows={4}
-                  placeholder="Write your comment here..."
-                  className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                ></textarea>
+                  <FiCalendar size={16} />
+                </div>
               </div>
+            </div>
 
-              {/* Buttons */}
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddApplicant(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-[12px] hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  onClick={handleAddApplicantSubmit}
-                  className="px-4 py-2 bg-[#1C3557] text-white rounded-lg text-[12px] hover:bg-[#0e1a2c]"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
+            {/* Position Applied */}
+            <div className="mb-4">
+              <label
+                htmlFor="position"
+                className="block text-sm font-medium mb-1"
+              >
+                Position Applied
+              </label>
+              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#5C5C5C] dark:text-[#D6D6D6]">
+                <option>Islamic</option>
+                <option>Quran</option>
+                <option>Tajweed</option>
+              </select>
+            </div>
+
+            {/* Status */}
+            <div className="mb-6">
+              <label
+                htmlFor="status"
+                className="block text-sm font-medium mb-1"
+              >
+                Status
+              </label>
+              <select className="w-full border rounded-md p-2 text-[12px]  dark:bg-[#5C5C5C] dark:text-[#D6D6D6]">
+                <option>Shortlisted</option>
+                <option>Rejected</option>
+                <option>Waiting</option>
+                <option>Approved</option>
+                <option>New Application</option>
+              </select>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+              >
+                Cancel
+              </button>
+              <button className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium">
+                Submit
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1326,25 +988,28 @@ export default function ApplicantsPage() {
 
               {/* Skills */}
               <div>
-                <h3 className="font-medium  text-[12px] border-b border-[#E0E4E9] dark:border-[#5F5959] pb-1 mb-3 text-[#1E2A41]  dark:text-[#fff] ">
+                <h3 className="font-medium text-[12px] border-b border-[#E0E4E9] dark:border-[#5F5959] pb-1 mb-3 text-[#1E2A41] dark:text-[#fff]">
                   Skills
                 </h3>
+
+                {/* Input Field */}
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type and press Enter"
+                    className="w-1/2 px-3 py-1 text-[10px] border border-[#E0E4E9] dark:border-[#5F5959] text-[#1E2A41] dark:text-[#d5d5d5] dark:bg-[#343434] rounded-md "
+                  />
+                </div>
+
+                {/* Skill Chips */}
                 <div className="flex flex-wrap gap-2 text-[10px]">
-                  {[
-                    "JavaScript",
-                    "Python",
-                    "HTML5",
-                    "CSS3",
-                    "React.js",
-                    "Node.js",
-                    "MongoDB",
-                    "Git",
-                    "JIRA",
-                    "Slack",
-                  ].map((skill) => (
+                  {skills.map((skill, index) => (
                     <span
-                      key={skill}
-                      className="px-3 py-1 border rounded-full text-[#010E30E5] bg-gray-50 dark:bg-[#343434] dark:text-[#d5d5d5] border-[#E0E4E9] dark:border-[#5F5959] "
+                      key={index}
+                      className="px-3 py-1 border rounded-full text-[#010E30E5] bg-gray-50 dark:bg-[#343434] dark:text-[#d5d5d5] border-[#E0E4E9] dark:border-[#5F5959]"
                     >
                       {skill}
                     </span>
@@ -1372,25 +1037,37 @@ export default function ApplicantsPage() {
             <div className="w-full border-t p-3 flex justify-end gap-3 bg-white z-10 dark:bg-[#343434] dark:border-t-[#5F5959]">
               <button
                 onClick={() => setApplicationStatus("REJECTED")}
-                className="px-4 py-2 text-[12px] text-[#D34645] bg-[#FDECEC] rounded-lg dark:bg-[#543838]"
+                disabled={mode === "view"}
+                className={`px-4 py-2 text-[12px] text-[#D34645] bg-[#FDECEC] rounded-lg dark:bg-[#543838] ${
+                  mode === "view" ? "opacity-80 cursor-not-allowed" : ""
+                }`}
               >
                 Rejected
               </button>
               <button
                 onClick={() => setApplicationStatus("WAITING")}
-                className="px-4 py-2 text-[12px] text-[#F0AD4E] bg-[#FDF6EC] rounded-lg dark:bg-[#5A4D3B]"
+                disabled={mode === "view"}
+                className={`px-4 py-2 text-[12px] text-[#F0AD4E] bg-[#FDF6EC] rounded-lg dark:bg-[#5A4D3B] ${
+                  mode === "view" ? "opacity-80 cursor-not-allowed" : ""
+                }`}
               >
                 Waiting
               </button>
               <button
                 onClick={() => setApplicationStatus("SHORTLISTED")}
-                className="px-4 py-2 text-[12px] text-[#377E36] bg-[#ECFDF3] rounded-lg  dark:bg-[#377E3633]"
+                disabled={mode === "view"}
+                className={`px-4 py-2 text-[12px] text-[#377E36] bg-[#ECFDF3] rounded-lg  dark:bg-[#377E3633] ${
+                  mode === "view" ? "opacity-80 cursor-not-allowed" : ""
+                }`}
               >
                 Shortlisted
               </button>
               <button
                 onClick={() => handlesendupdate(Applicantbyid?._id ?? "")}
-                className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
+                disabled={mode === "view"}
+                className={`px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A] ${
+                  mode === "view" ? "opacity-80 cursor-not-allowed" : ""
+                }`}
               >
                 Send for Approval
               </button>

@@ -45,7 +45,7 @@ const Pagination: React.FC<PaginationProps> = ({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="w-9 h-9 flex items-center justify-center dark:bg-[#565665] dark:border dark:border-[#717171] dark:text-[#9a9a9a] text-[#999fac] rounded-md bg-[#f5f5f2] shadow hover:cursor-pointer disabled:opacity-50"
+        className="w-8 h-8 flex items-center justify-center dark:bg-[#565665] dark:border dark:border-[#717171] dark:text-[#9a9a9a] text-[#999fac] rounded-md bg-[#f5f5f2] shadow hover:cursor-pointer disabled:opacity-50"
       >
         <ChevronLeft size={16} />
       </button>
@@ -55,7 +55,7 @@ const Pagination: React.FC<PaginationProps> = ({
           <button
             key={index}
             onClick={() => onPageChange(page)}
-            className={`w-9 h-9 text-sm flex items-center justify-center rounded-md ${
+            className={`w-8 h-8 text-sm flex items-center justify-center rounded-md ${
               currentPage === page
                 ? "bg-[#F5F5F2] border border-[#203F78] text-[#203F78] dark:text-[#fff] dark:bg-[#939393] dark:border dark:border-[#717171]"
                 : "bg-[#f5f5f2] text-[#252525] text-opacity-[40%] dark:border dark:border-[#717171] dark:bg-[#565656] dark:text-[#9a9a9a]"
@@ -66,7 +66,7 @@ const Pagination: React.FC<PaginationProps> = ({
         ) : (
           <span
             key={index}
-            className="w-9 h-9 flex items-center justify-center text-[#999fac]"
+            className="w-8 h-8 flex items-center justify-center text-[#999fac]"
           >
             ...
           </span>
@@ -76,7 +76,7 @@ const Pagination: React.FC<PaginationProps> = ({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="w-9 h-9 flex items-center justify-center dark:bg-[#565665] dark:border dark:border-[#717171] dark:text-[#9a9a9a] text-[#999fac] rounded-md bg-[#f5f5f2] shadow  disabled:opacity-50"
+        className="w-8 h-8 flex items-center justify-center dark:bg-[#565665] dark:border dark:border-[#717171] dark:text-[#9a9a9a] text-[#999fac] rounded-md bg-[#f5f5f2] shadow  disabled:opacity-50"
       >
         <ChevronRight size={16} />
       </button>
