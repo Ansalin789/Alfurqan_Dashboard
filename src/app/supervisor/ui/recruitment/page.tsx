@@ -356,6 +356,22 @@ export default function ApplicantsPage() {
     setCities(fetchedCities);
   }, [country]);
 
+  function createBlobUrlFromData(uploadResume: {
+    type: string;
+    data: number[];
+  }): string | undefined {
+    if (!uploadResume?.data?.length) return undefined;
+
+    try {
+      const byteArray = new Uint8Array(uploadResume.data);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Failed to create Blob URL:", error);
+      return undefined;
+    }
+  }
+
   return (
     <BaseLayout3>
       <div className="">
@@ -498,11 +514,27 @@ export default function ApplicantsPage() {
                               {applicant.positionApplied}
                             </td>
                             <td className="px-3 py-2">
-                              <button className="text-[#38619A] hover:underline flex items-center gap-1">
-                                <ImAttachment className="w-4 h-4" />
-                                Resume
-                              </button>
+                              {applicant.uploadResume?.data?.length ? (
+                                <a
+                                  href={
+                                    createBlobUrlFromData(
+                                      applicant.uploadResume
+                                    ) || undefined
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[#38619A] hover:underline flex items-center gap-1"
+                                >
+                                  <ImAttachment className="w-4 h-4" />
+                                  Resume
+                                </a>
+                              ) : (
+                                <span className="text-gray-400 italic">
+                                  No Resume
+                                </span>
+                              )}
                             </td>
+
                             <td className="px-3 py-2">
                               <span
                                 className={`text-[10px] font-semibold px-3 py-1 rounded-full ${getStatusColor(
