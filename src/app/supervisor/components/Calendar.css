@@ -1,16 +1,51 @@
+/* Light mode styles */
 .custom-calendar {
   width: 310px !important;
   height: 314px !important;
   background: #ffffff !important;
-  border-radius: 0.5rem; /* equivalent to Tailwind's rounded-lg */
-  padding: 20px;
+  border-radius: 0.5rem;
+  padding: 5px;
   font-family: 'Segoe UI', sans-serif;
   color: #010E30;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
   box-sizing: border-box;
-  /* margin-bottom: 15px; */
   margin-top: -92px;
 }
+
+/* Dark mode styles using .dark selector from Tailwind */
+.dark .custom-calendar {
+  background: #343434 !important; /* Tailwind's gray-800 */
+  color: #f9fafb !important; /* Tailwind's gray-50 */
+  box-shadow: 0 3px 12px rgba(255, 255, 255, 0.08);
+}
+
+.dark .custom-calendar .react-calendar__tile {
+  color: #f9fafb !important;
+}
+
+.dark .custom-calendar .react-calendar__tile--now {
+  background: #4b5563 !important; /* Tailwind's gray-700 */
+  color: #f9fafb !important;
+}
+
+.dark .custom-calendar .react-calendar__tile--active {
+  background: #5882BE !important; /* Tailwind's blue-600 */
+  color: #fff !important;
+}
+
+.dark .custom-calendar .react-calendar__navigation button {
+  background: #374151 !important;
+  color: #f9fafb !important;
+}
+
+.dark .custom-calendar .react-calendar__navigation__label {
+  color: #d1d5db !important;
+}
+
+.dark .custom-calendar .react-calendar__month-view__weekdays {
+  color: #9ca3af !important;
+}
+
 
 /* Header navigation */
 .custom-calendar .react-calendar__navigation {
@@ -18,10 +53,11 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0px;
+  background-color: transparent !important;
+  box-shadow: none;
 }
 
 .custom-calendar .react-calendar__navigation button {
-  background: #f0f1f4;
   border-radius: 9999px;
   min-width: 28px;
   height: 28px;
@@ -92,4 +128,11 @@
   background-color: #3973C6;
   border-radius: 50%;
   border: 2px solid #fff;
+}
+.custom-calendar .react-calendar__navigation {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.custom-calendar .react-calendar__navigation__label {
+  background: transparent !important;
 }

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -8,20 +8,20 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-} from 'recharts';
-import { DateRange } from 'react-date-range';
-import { format, addDays } from 'date-fns';
-import 'react-date-range/dist/styles.css';
-import 'react-date-range/dist/theme/default.css';
+} from "recharts";
+import { DateRange } from "react-date-range";
+import { format, addDays } from "date-fns";
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
 
 const data = [
-  { date: '08 Nov', applied: 12, shortlisted: 6 },
-  { date: '09 Nov', applied: 10, shortlisted: 5 },
-  { date: '10 Nov', applied: 8, shortlisted: 4 },
-  { date: '11 Nov', applied: 7, shortlisted: 5 },
-  { date: '12 Nov', applied: 9, shortlisted: 5 },
-  { date: '13 Nov', applied: 8, shortlisted: 5 },
-  { date: '14 Nov', applied: 11, shortlisted: 6 },
+  { date: "08 Nov", applied: 12, shortlisted: 6 },
+  { date: "09 Nov", applied: 10, shortlisted: 5 },
+  { date: "10 Nov", applied: 8, shortlisted: 4 },
+  { date: "11 Nov", applied: 7, shortlisted: 5 },
+  { date: "12 Nov", applied: 9, shortlisted: 5 },
+  { date: "13 Nov", applied: 8, shortlisted: 5 },
+  { date: "14 Nov", applied: 11, shortlisted: 6 },
 ];
 
 const ApplicationChart = () => {
@@ -30,7 +30,7 @@ const ApplicationChart = () => {
     {
       startDate: null,
       endDate: null,
-      key: 'selection',
+      key: "selection",
     },
   ]);
 
@@ -44,49 +44,61 @@ const ApplicationChart = () => {
     }
   };
 
-  const formattedDate = dateRange[0].startDate && dateRange[0].endDate
-    ? `${format(dateRange[0].startDate, 'dd MMM')}–${format(dateRange[0].endDate, 'dd MMM')}`
-    : '';
+  const formattedDate =
+    dateRange[0].startDate && dateRange[0].endDate
+      ? `${format(dateRange[0].startDate, "dd MMM")}–${format(
+          dateRange[0].endDate,
+          "dd MMM"
+        )}`
+      : "";
 
   return (
     <div className="w-full relative">
-      <div className="bg-white p-4 rounded-xl shadow-md w-[550px] h-[270px]">
+      <div className="bg-white p-4 rounded-xl shadow-md w-[620px] h-[270px] dark:bg-[#343434]">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-[#010E30] text-[14px] font-semibold">Application</h3>
+          <h3 className="text-[#010E30] text-[14px] font-semibold dark:text-[#ffff]">
+            Application
+          </h3>
 
           <div className="flex items-center gap-4 relative">
             {/* Legend - Applied */}
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-sm bg-[#a6c1ff]" />
-              <span className="text-[10px] font-normal text-[#010E30]">Applied</span>
+              <span className="text-[10px] font-normal text-[#010E30] dark:text-white/80">
+                Applied
+              </span>
             </div>
 
             {/* Legend - Shortlisted */}
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-sm bg-[#d5e0ff]" />
-              <span className="text-[10px] font-normal text-[#010E30]">Shortlisted</span>
+              <span className="text-[10px] font-normal text-[#010E30] dark:text-white/80">
+                Shortlisted
+              </span>
             </div>
 
             {/* Date Picker Toggle */}
             <div
-              className="flex items-center gap-1 px-2 py-[4px] text-[11px] bg-[#F5F7FB] rounded-md border text-gray-600 cursor-pointer"
+              className="flex items-center gap-1 px-1 py-[2px] text-[11px] bg-[#F5F7FB] rounded-md border text-gray-600 cursor-pointer"
               onClick={() => setShowCalendar(!showCalendar)}
             >
               <svg
-                className="w-4 h-4 text-gray-500"
-                viewBox="0 0 20 20"
+                className="w-4 h-4 text-gray-500 dark:text-[#dddd],bg-[#dddd]"
+                viewBox="0 0 24 24"
                 fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M3 7H21M7 3V7M17 3V7M7 11H17M7 15H14M7 19H10"
+                  d="M8 2V5M16 2V5M3 10H21M5 6H19C20.1046 6 21 6.89543 21 8V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V8C3 6.89543 3.89543 6 5 6Z"
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-              <span>{formattedDate || 'Select Date'}</span>
+
+              <span>{formattedDate || "Select Date"}</span>
             </div>
 
             {/* Calendar Dropdown */}
@@ -97,7 +109,7 @@ const ApplicationChart = () => {
                   onChange={handleRangeChange}
                   moveRangeOnFirstSelection={false}
                   ranges={dateRange}
-                  rangeColors={['#0D356D']}
+                  rangeColors={["#0D356D"]}
                 />
               </div>
             )}
@@ -105,18 +117,45 @@ const ApplicationChart = () => {
         </div>
 
         {/* Chart */}
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={data} barSize={30} barGap={0}>
-            <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-            <Tooltip
-              cursor={{ fill: 'transparent' }}
-              contentStyle={{ fontSize: '12px', borderRadius: '8px' }}
-            />
-            <Bar dataKey="applied" stackId="a" fill="#a6c1ff" radius={[0, 0, 8, 8]} />
-            <Bar dataKey="shortlisted" stackId="a" fill="#d5e0ff" radius={[8, 8, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="text-black dark:text-white/80">
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={data} barSize={30} barGap={0}>
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fontSize: 10,
+                  fill: "currentColor", // uses text color from parent
+                }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10,
+                  fill: "currentColor", // uses text color from parent
+
+                 }}
+              />
+              <Tooltip
+                cursor={{ fill: "transparent" }}
+                contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
+              />
+              <Bar
+                dataKey="applied"
+                stackId="a"
+                fill="#a6c1ff"
+                radius={[0, 0, 8, 8]}
+              />
+              <Bar
+                dataKey="shortlisted"
+                stackId="a"
+                fill="#d5e0ff"
+                radius={[8, 8, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

@@ -38,6 +38,7 @@ interface Meeting {
 const Academic: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [value, setValue] = useState<Date>(new Date());
+  const [activeStartDate, setActiveStartDate] = useState<Date>(new Date());
   const [meetingDays, setMeetingDays] = useState<Date[]>([]);
   const [todayMeetings, setTodayMeetings] = useState<
     { time: string; title: string; type: string; color: string }[]
@@ -47,7 +48,9 @@ const Academic: React.FC = () => {
     const fetchMeetings = async () => {
       try {
         const token =
-          typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorAuthToken")
+            : null;
 
         if (!token) {
           console.error("❌ SupervisorAuthToken not found");
@@ -65,11 +68,20 @@ const Academic: React.FC = () => {
         );
 
         const allMeetings: Meeting[] = response.data.data.meetings;
-
         console.log("✅ Full Meetings Data:", allMeetings);
 
-        // Convert meeting dates to Date objects normalized to 00:00:00 for comparison
-        const allMeetingDates = allMeetings.map((m) => {
+        // Filter out past meetings
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+
+        const upcomingMeetings = allMeetings.filter((meeting) => {
+          const meetingDate = new Date(meeting.selectedDate);
+          meetingDate.setHours(0, 0, 0, 0);
+          return meetingDate.getTime() >= now.getTime();
+        });
+
+        // Convert meeting dates to Date objects normalized to 00:00:00
+        const allMeetingDates = upcomingMeetings.map((m) => {
           const d = new Date(m.selectedDate);
           d.setHours(0, 0, 0, 0);
           return d;
@@ -81,14 +93,14 @@ const Academic: React.FC = () => {
         today.setHours(0, 0, 0, 0);
 
         // Filter today's meetings
-        const todayMeetings = allMeetings
+        const todayMeetings = upcomingMeetings
           .filter((meeting) => {
             const meetingDate = new Date(meeting.selectedDate);
             meetingDate.setHours(0, 0, 0, 0);
             return meetingDate.getTime() === today.getTime();
           })
           .map((meeting) => {
-            let color = "bg-blue-100 text-blue-800"; // Default color
+            let color = "bg-blue-100 text-blue-800"; // Default
 
             if (meeting.meetingStatus === "Scheduled") {
               color = "bg-amber-100 text-amber-800";
@@ -113,37 +125,40 @@ const Academic: React.FC = () => {
     fetchMeetings();
   }, []);
 
-  // Check if date is in meetingDays
+  // Check if a date has meetings
   const isMeetingDate = (date: Date) => {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
 
-    const hasMeeting = meetingDays.some(
+    return meetingDays.some(
       (meetingDate) => meetingDate.getTime() === d.getTime()
     );
-
-    console.log(`Checking date: ${date.toDateString()}, hasMeeting: ${hasMeeting}`);
-
-    return hasMeeting;
   };
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="rounded-lg">
+    <div className="flex items-center justify-center dark:bg-[#343434]">
+      <div className="rounded-lg dark:bg-[#343434]">
         <Calendar
           onChange={(newValue) => setValue(newValue as Date)}
           value={value}
+          activeStartDate={activeStartDate}
+          onActiveStartDateChange={({ activeStartDate }) => {
+            setActiveStartDate(activeStartDate as Date);
+            setValue(activeStartDate as Date);
+          }}
           locale="en-GB"
-          calendarType="iso8601" // 👈 Ensures week starts on Monday
-          className="custom-calendar"
+          calendarType="iso8601"
+          showNeighboringMonth={false}
+          className="custom-calendar dark:bg-[#343434]"
           navigationLabel={({ date }) =>
-            `${date.toLocaleString("default", { month: "long" }).toUpperCase()}, ${date.getFullYear()}`
+            `${date.toLocaleString("default", {
+              month: "long",
+            }).toUpperCase()}, ${date.getFullYear()}`
           }
           nextLabel="›"
           prevLabel="‹"
           next2Label={null}
           prev2Label={null}
-          showNeighboringMonth={false}
           tileClassName={({ date, view }) => {
             if (view === "month" && isMeetingDate(date)) {
               return "react-calendar__tile--active";
@@ -151,9 +166,6 @@ const Academic: React.FC = () => {
             return undefined;
           }}
         />
-
-
-
       </div>
     </div>
   );

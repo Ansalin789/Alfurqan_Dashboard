@@ -1,6 +1,5 @@
 "use client";
 
-
 import React, { useEffect, useState } from "react";
 import {
   BarChart,
@@ -18,7 +17,8 @@ import BaseLayout3 from "../../../../components/BaseLayout3";
 import ApplicationChart from "../../components/applicantsbar";
 import moment from "moment";
 import axios from "axios";
-import Calendar from "../../../supervisor/components/Calender"
+import Calendar from "../../../supervisor/components/Calender";
+import SupervisorHeader from "../../components/supervisorHeader";
 interface Applicant {
   _id: string;
   candidateFirstName: string;
@@ -86,14 +86,34 @@ export default function Dashboard() {
     }[]
   >([]);
   const colorMap = [
-    { dot: "#3778AD", bg: "#F3FAFF", text: "#3778AD", icon: "/assets/images/S1.png" },
-    { dot: "#7772D7", bg: "#F3F6FF", text: "#7772D7", icon: "/assets/images/S2.png" },
-    { dot: "#DE7283", bg: "#FFF5F3", text: "#DE7283", icon: "/assets/images/S4.png" },
-    { dot: "#BF8C63", bg: "#FFF9F3", text: "#BF8C63", icon: "/assets/images/S3.png" },
+    {
+      dot: "#3778AD",
+      bg: "#F3FAFF",
+      text: "#3778AD",
+      icon: "/assets/images/S1.png",
+    },
+    {
+      dot: "#7772D7",
+      bg: "#F3F6FF",
+      text: "#7772D7",
+      icon: "/assets/images/S2.png",
+    },
+    {
+      dot: "#DE7283",
+      bg: "#FFF5F3",
+      text: "#DE7283",
+      icon: "/assets/images/S4.png",
+    },
+    {
+      dot: "#BF8C63",
+      bg: "#FFF9F3",
+      text: "#BF8C63",
+      icon: "/assets/images/S3.png",
+    },
   ];
 
   const ringThickness = 6; // thickness of each ring
-  const ringGap = 4;       // gap between rings
+  const ringGap = 4; // gap between rings
   const [mounted, setMounted] = useState(false);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
@@ -114,19 +134,18 @@ export default function Dashboard() {
     { name: string; color: string; count: number }[]
   >([]);
 
-
-
   useEffect(() => {
     setMounted(true);
     const token =
-      typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorAuthToken")
+        : null;
 
     if (!token) {
       console.error("❌ SupervisorAuthToken not found");
       return;
     }
     const fetchData = async () => {
-
       const applicants = await fetchApplicantsData(token ?? " ");
       console.log("Fetched Applicants:", applicants); // ✅ Debugging
       const filteredData = processApplicants(applicants);
@@ -134,11 +153,12 @@ export default function Dashboard() {
       setPieData(filteredData);
     };
 
-    const fetchApplicants = axios.get("https://api.blackstoneinfomaticstech.com/applicants",
+    const fetchApplicants = axios.get(
+      "https://api.blackstoneinfomaticstech.com/applicants",
       {
         headers: {
           "Content-Type": "application/json",
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -148,7 +168,7 @@ export default function Dashboard() {
       {
         headers: {
           "Content-Type": "application/json",
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -175,9 +195,7 @@ export default function Dashboard() {
           ([name, count], index) => ({
             name,
             count: count as number, // ✅ Explicitly cast count to number
-            color: ["#F4AAFF", "#FFC4A1", "#A6A9FF"][
-              index % 5
-            ],
+            color: ["#F4AAFF", "#FFC4A1", "#A6A9FF"][index % 5],
           })
         );
         fetchData();
@@ -252,18 +270,23 @@ export default function Dashboard() {
     const fetchMeetings = async () => {
       try {
         const token =
-          typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorAuthToken")
+            : null;
 
         if (!token) {
           console.error("❌ SupervisorAuthToken not found");
           return;
         }
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings",
+        const response = await axios.get(
+          "https://api.blackstoneinfomaticstech.com/allMeetings",
           {
-            headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${token}`, },
-
-
-          });
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const allMeetings: Meeting[] = response.data.data.meetings;
 
@@ -319,20 +342,24 @@ export default function Dashboard() {
   const fetchApplicantsData = async (auth: string) => {
     try {
       const token =
-        typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
 
       if (!token) {
         console.error("❌ SupervisorAuthToken not found");
         return;
       }
 
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/applicants", {
-        headers: {
-          "Content-Type": "application/json",
-          'Authorization': `Bearer ${token}`,
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/applicants",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
-
-      });
+      );
 
       console.log("API Response:", response.data);
 
@@ -397,8 +424,6 @@ export default function Dashboard() {
     { name: "Quran", value: 80, color: "#a855f7" },
   ];
 
-
-
   const totals = filteredPositions.reduce((sum, item) => sum + item.count, 0);
 
   const totalApplications = dashboardCounts.totalApplication || 0;
@@ -417,31 +442,48 @@ export default function Dashboard() {
   const remainingRejected = 100 - percentageRejected;
   console.log(remainingApplications);
   return (
-    <BaseLayout3 >
+    <BaseLayout3>
       <div className="flex flex-col h-screen w-full">
         {/* Header - Made more compact on small screens */}
+        <SupervisorHeader currentSection="Dashboard" />
 
-
-        <div className="flex flex-1 min-h-0">
+        <div className="flex flex-1">
           <main className="flex-1 p-2 sm:p-3">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <div className="bg-[#FFFFFF] p-4 rounded-lg shadow-lg w-[270px] h-[132px]">
-                <h3 className="text-[#010E30] font-medium text-[14px]  mb-2">
-                  Total <br /> Applications
-                </h3>
-                <div className="flex items-center">
-                  <div className="flex mt-0 gap-4">
-                    <span className="text-[28px] text-[#010E30] font-semibold">
-                      {dashboardCounts.totalApplication}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+              {[
+                {
+                  title: "Total Applications",
+                  value: dashboardCounts.totalApplication,
+                  bgColor: "#9AD7D633",
+                  ringColor: "#7DB5CB",
+                },
+                {
+                  title: "Shortlisted Candidates",
+                  value: dashboardCounts.shortlisted,
+                  bgColor: "#9AD7D633",
+                  ringColor: "#9AD7D6",
+                },
+                {
+                  title: "Rejected Candidates",
+                  value: dashboardCounts.rejected,
+                  bgColor: "#9AD7D633",
+                  ringColor: "#8B93D2",
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-[#FFFFFF] dark:bg-[#343434] p-4 rounded-lg shadow-lg w-full"
+                >
+                  <h3 className="text-[#010E30] dark:text-white text-[14px] font-medium mb-2">
+                    {item.title.split(" ")[0]} <br /> {item.title.split(" ")[1]}
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[28px] text-[#010E30] font-semibold dark:text-white">
+                      {item.value}
                     </span>
-                    {/* <span className="flex items-center mt-1 bg-green-100 text-green-600 text-[10px] font-semibold px-2 py-[2px] rounded-full w-fit">
-                    ↑ 12%
-                  </span> */}
-                  </div>
+                    <div className="relative w-[90px] h-[70px]">
 
-                  <div className="w-[90px] h-[90px] ml-[120px] -mt-10">
-                    <div className="relative w-[90px] h-[90px]">
-                      <PieChart width={90} height={90}>
+                      <PieChart width={90} height={90} style={{marginTop:"-20px"}}>
                         {/* Background ring */}
                         <Pie
                           data={[{ value: 100 }]}
@@ -451,8 +493,9 @@ export default function Dashboard() {
                           startAngle={90}
                           endAngle={-270}
                           isAnimationActive={false}
+                          stroke="none"
                         >
-                          <Cell fill="#E6EFF2" />
+                          <Cell fill={item.bgColor} />
                         </Pie>
 
                         {/* Foreground ring */}
@@ -465,153 +508,48 @@ export default function Dashboard() {
                           endAngle={-270}
                           cornerRadius={2}
                           isAnimationActive={false}
+                          stroke="none"
                         >
-                          <Cell fill="#7DB5CB" />
+                          <Cell fill={item.ringColor} />
                           <Cell fill="transparent" />
                         </Pie>
                       </PieChart>
-
-                      {/* Centered Percentage Text */}
-                      <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#333]">
-                        {percentageValue}%
-                      </div>
-                    </div>
-                  </div>
-
-
-                </div>
-              </div>
-
-              <div className="bg-[#FFFFFF] p-4 rounded-lg shadow-lg w-[270px] h-[132px]">
-                <h3 className="text-[#010E30] text-[14px] font-medium   mb-2">
-                  Shortlisted <br /> Candidates
-                </h3>
-                <div className="flex items-center">
-                  <div className="flex mt-0 gap-4">
-                    <span className="text-[28px] text-[#010E30] font-semibold">
-                      {dashboardCounts.shortlisted}
-                    </span>
-                    {/* <span className="text-red-500 text-xs flex items-center gap-1">
-                    <span className="text-[10px]">↓</span> 16%
-                  </span> */}
-                  </div>
-                  <div className="w-[90px] h-[90px] ml-[120px] -mt-10">
-                    <div className="relative w-[90px] h-[90px]">
-                      <PieChart width={90} height={90}>
-                        {/* Background ring */}
-                        <Pie
-                          data={[{ value: 100 }]}
-                          dataKey="value"
-                          innerRadius={30}
-                          outerRadius={38}
-                          startAngle={90}
-                          endAngle={-270}
-                          isAnimationActive={false}
-                        >
-                          <Cell fill="#9AD7D633" /> {/* 20% opacity */}
-                        </Pie>
-
-                        {/* Foreground ring */}
-                        <Pie
-                          data={[{ value: 76 }, { value: 24 }]}
-                          dataKey="value"
-                          innerRadius={28}
-                          outerRadius={42}
-                          startAngle={90}
-                          endAngle={-270}
-                          cornerRadius={2}
-                          isAnimationActive={false}
-                        >
-                          <Cell fill="#9AD7D6" />
-                          <Cell fill="transparent" />
-                        </Pie>
-                      </PieChart>
-
-                      {/* Centered Percentage Text */}
-                      <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#333]">
+                      <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#333] dark:text-white mb-4">
                         {percentageValue}%
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-[#FFFFFF] p-4 rounded-lg shadow-lg w-[270px] h-[132px]">
-                <h3 className="text-[#010E30] text-[14px] font-medium  mb-2">
-                  Rejected <br /> Candidates
-                </h3>
-                <div className="flex items-center">
-                  <div className="flex mt-0 gap-4">
-                    <span className="text-[28px] text-[#010E30] font-semibold">
-                      {dashboardCounts.rejected}
-                    </span>
-                    {/* <span className="flex items-center mt-1 bg-green-100 text-green-600 text-[10px] font-semibold px-2 py-[2px] rounded-full w-fit">
-                    ↑ 14%
-                  </span> */}
-                  </div>
-                  <div className="w-[90px] h-[90px] ml-[120px] -mt-10">
-                    <div className="relative w-[90px] h-[90px]">
-                      <PieChart width={90} height={90}>
-                        {/* Background ring */}
-                        <Pie
-                          data={[{ value: 100 }]}
-                          dataKey="value"
-                          innerRadius={30}
-                          outerRadius={38}
-                          startAngle={90}
-                          endAngle={-270}
-                          isAnimationActive={false}
-                        >
-                          <Cell fill="#0D356D33" />
-                        </Pie>
-
-                        {/* Foreground ring */}
-                        <Pie
-                          data={[{ value: 76 }, { value: 24 }]}
-                          dataKey="value"
-                          innerRadius={28}
-                          outerRadius={42}
-                          startAngle={90}
-                          endAngle={-270}
-                          cornerRadius={2}
-                          isAnimationActive={false}
-                        >
-                          <Cell fill="#8B93D2" />
-                          <Cell fill="transparent" />
-                        </Pie>
-                      </PieChart>
-
-                      {/* Centered Percentage Text */}
-                      <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#333]">
-                        {percentageValue}%
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-1 gap-[20px] mb-2 w-full">
               {/* Header */}
-              <div className="flex gap-2 mt-2">
-                {/* Application Chart Starts */}
+              <div className="flex flex-wrap gap-2 mt-2">
+              {/* Application Chart Starts */}
                 <div>
                   <ApplicationChart />
                 </div>
                 {/* Application Chart Ends */}
                 {/* Subject Pie Chart  Starts*/}
-                <div className="bg-[#FFFFFF] w-[310px] h-[270px] rounded-2xl shadow-md flex flex-col items-center px-3 py-2 gap-1">
-                  {/* Header */}
+                <div className="bg-[#FFFFFF] max-w-full sm:w-[300px] h-[270px] rounded-2xl shadow-md flex flex-col items-center px-3 py-2 gap-1 dark:bg-[#343434] sm:ml-2 ml-0 flex-shrink-0">
+                {/* Header */}
                   <div className="w-full flex justify-between items-center">
-                    <h3 className="text-[#010E30] text-[13px] font-semibold">Subject</h3>
+                    <h3 className="text-[#010E30] text-[13px] font-semibold dark:text-[#ffff]">
+                      Subject
+                    </h3>
                     <div className="flex gap-1">
                       <div className="flex items-center gap-[3px]">
                         <div className="w-[6px] h-[6px] bg-pink-400 rounded-sm"></div>
-                        <span className="text-[9px] text-[#010E30]">Female</span>
+                        <span className="text-[9px] text-[#010E30] dark:text-white/70">
+                          Female
+                        </span>
                       </div>
                       <div className="flex items-center gap-[3px]">
                         <div className="w-[6px] h-[6px] bg-blue-400 rounded-sm"></div>
-                        <span className="text-[9px] text-[#010E30]">Male</span>
+                        <span className="text-[9px] text-[#010E30] dark:text-white/70">
+                          Male
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -625,7 +563,9 @@ export default function Dashboard() {
                             const item = payload[0].payload;
                             return (
                               <div className="bg-white shadow rounded px-2 py-1 text-[9px] text-gray-700">
-                                <div className="font-semibold">{item.name}</div>
+                                <div className="font-semibold dark:text-[#FFFFFFB3]">
+                                  {item.name}
+                                </div>
                                 <div>F: {item.female}%</div>
                                 <div>M: {item.male}%</div>
                               </div>
@@ -653,22 +593,31 @@ export default function Dashboard() {
                   {/* Bottom Legend */}
                   <div className="grid grid-cols-3 gap-1 w-full mt-6">
                     {pieData.map((item) => (
-                      <div key={item.name} className="flex flex-col items-center text-center">
+                      <div
+                        key={item.name}
+                        className="flex flex-col items-center text-center"
+                      >
                         <div className="flex items-center gap-[1px]">
                           <div
                             className="w-[10px] h-[10px] rounded-[2px]"
                             style={{ backgroundColor: item.color }}
                           ></div>
-                          <span className="text-[9px] font-semibold text-[#010E30]">{item.name}</span>
+                          <span className="text-[9px] font-semibold text-[#010E30] dark:text-[#FFFF]">
+                            {item.name}
+                          </span>
                         </div>
                         <div className="flex gap-1 mt-[2px]">
                           <div className="flex flex-col items-center gap-[1px]">
                             <div className="w-[3px] h-[8px] bg-pink-400 rounded-[2px]"></div>
-                            <span className="text-[8px] font-medium">{item.female}%</span>
+                            <span className="text-[8px] font-medium">
+                              {item.female}%
+                            </span>
                           </div>
                           <div className="flex flex-col items-center gap-[1px]">
                             <div className="w-[3px] h-[8px] bg-blue-400 rounded-sm"></div>
-                            <span className="text-[8px] font-medium">{item.male}%</span>
+                            <span className="text-[8px] font-medium">
+                              {item.male}%
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -676,96 +625,98 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-
-
                 {/* Subject Pie Chart  Ends*/}
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg w-[835px] h-[410px] mt-4 overflow-hidden">
-              {/* Table */}
-              <div className="overflow-x-auto scrollbar-none h-full">
-                <table className="w-full text-xs border-collapse">
-                  {/* Table Head */}
-                  <thead className="sticky top-0 z-10 bg-[#4C6993] text-white text-[12px]">
-                    <tr className="bg-[#4C6993] text-[#FFFFFF] text-[12px]">
-                      {[
-                        "Name",
-                        "Contact",
-                        "Country",
-                        "Course",
-                        "Gender",
-                        "Date",
-                        "Time",
-                        "Resume",
-                        "Status",
-                      ].map((col) => (
-                        <th key={col} className="py-2 px-2 font-semibold text-center">
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-[935px] h-[410px] mt-4 overflow-hidden dark:bg-[#343434]">
+  {/* Table wrapper: horizontal scroll */}
+  <div className="overflow-x-auto scrollbar-none h-full">
+    {/* Vertical scroll with fixed height */}
+    <div className="overflow-y-auto h-[410px] scrollbar-none">
+      <table className="min-w-[935px] w-full text-xs border-collapse table-fixed">
+        {/* Table Head sticky */}
+        <thead className="sticky top-0 z-10 text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0] shadow-md">
+          <tr>
+            {[
+              "Name",
+              "Contact",
+              "Country",
+              "Course",
+              "Gender",
+              "Date",
+              "Time",
+              "Resume",
+              "Status",
+            ].map((col) => (
+              <th
+                key={col}
+                className="py-2 px-2 font-semibold text-center"
+              >
+                {col}
+              </th>
+            ))}
+          </tr>
+        </thead>
 
-                  {/* Scrollable Table Body */}
-                </table>
-                <div className="overflow-y-auto h-[370px] scrollbar-none">
-                  <table className="w-full text-xs border-collapse">
-                    <tbody>
-                      {applicants.map((applicant) => (
-                        <tr
-                          key={applicant._id}
-                          className="hover:bg-gray-100 text-[9px]"
-                        >
-                          <td className="py-2 px-2 text-center">
-                            {applicant.candidateFirstName}
-                          </td>
-                          <td className="py-2 px-2 text-center">
-                            {applicant.candidatePhoneNumber}
-                          </td>
-                          <td className="py-2 px-2 text-center">
-                            {applicant.candidateCountry}
-                          </td>
-                          <td className="py-2 px-2 text-center">
-                            {applicant.positionApplied}
-                          </td>
-                          <td className="py-2 px-2 text-center">
-                            {applicant.gender}
-                          </td>
-                          <td className="py-2 px-2 text-center">
-                            {formatDate(applicant.applicationDate)}
-                          </td>
-                          <td className="py-2 px-2 text-center">
-                            {applicant.preferedWorkingHours}
-                          </td>
-                          <td className="py-2 px-2 text-center">
-                            <button className="text-blue-600 flex items-center gap-1">
-                              📎 Resume
-                            </button>
-                          </td>
-                          <td className="py-2 px-2 text-center">
-                            <span className="px-2 py-1 text-gray-800 rounded-full">
-                              {applicant.applicationStatus}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+        {/* Table Body */}
+        <tbody>
+          {applicants.map((applicant) => (
+            <tr
+              key={applicant._id}
+              className="text-[9px] border-none outline-none hover:bg-gray-100 dark:hover:bg-[#444]"
+            >
+              <td className="py-2 px-2 text-center">
+                {applicant.candidateFirstName}
+              </td>
+              <td className="py-2 px-2 text-center">
+                {applicant.candidatePhoneNumber}
+              </td>
+              <td className="py-2 px-2 text-center">
+                {applicant.candidateCountry}
+              </td>
+              <td className="py-2 px-2 text-center">
+                {applicant.positionApplied}
+              </td>
+              <td className="py-2 px-2 text-center">
+                {applicant.gender}
+              </td>
+              <td className="py-2 px-2 text-center">
+                {formatDate(applicant.applicationDate)}
+              </td>
+              <td className="py-2 px-2 text-center">
+                {applicant.preferedWorkingHours}
+              </td>
+              <td className="py-2 px-2 text-center">
+                <button className="text-blue-600 flex items-center gap-1">
+                  📎 Resume
+                </button>
+              </td>
+              <td className="py-2 px-2 text-center">
+                <span className="text-gray-800 rounded-full dark:text-[#fff]">
+                  {applicant.applicationStatus}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
           </main>
 
-          <aside className="w-[310px] h-[314px] hidden lg:block space-y-4 mt-24">
+          <aside className="w-[310px] h-[314px] hidden lg:block space-y-4 mt-24 mr-2">
             {/* Calendar Section */}
             <div className=" p-2 rounded-lg  h-[230px]">
               <Calendar />
             </div>
             {/* Teachers Section */}
-            <div className="bg-white  h-[200px] rounded-xl shadow-lg p-3 mt-10">
-              <h3 className="text-[13px] font-semibold text-gray-800 mb-1">Teachers</h3>
+            <div className="bg-white  h-[200px] rounded-xl shadow-lg p-3 mt-10 dark:bg-[#343434]">
+              <h3 className="text-[16px] font-semibold text-gray-800 mb-1 dark:text-[#fff]">
+                Teachers
+              </h3>
 
               <div className="flex items-center justify-between">
                 {/* Circular Chart */}
@@ -783,16 +734,19 @@ export default function Dashboard() {
                       fill="#f0f0f0"
                     />
                     {filteredPositions.map((item, index) => (
-
-
                       <Pie
                         key={index}
-                        data={[{ value: item.count }, { value: total - item.count }]}
+                        data={[
+                          { value: item.count },
+                          { value: total - item.count },
+                        ]}
                         dataKey="value"
                         cx="50%"
                         cy="50%"
                         innerRadius={30 + index * (ringThickness + ringGap)}
-                        outerRadius={30 + index * (ringThickness + ringGap) + ringThickness}
+                        outerRadius={
+                          30 + index * (ringThickness + ringGap) + ringThickness
+                        }
                         startAngle={90}
                         endAngle={-270}
                         cornerRadius={5}
@@ -802,14 +756,17 @@ export default function Dashboard() {
                         <Cell fill={item.color} stroke="none" />
                         <Cell fill="transparent" stroke="none" />
                       </Pie>
-
                     ))}
                   </PieChart>
 
                   {/* Centered Total Teachers Count */}
                   <div className="absolute flex flex-col items-center justify-between">
-                    <span className="mt-3 ml-2 text-[26px] font-bold text-[#010E30]">{totals}</span>
-                    <p className="ml-8 text-[9px] text-[#010E30]">Number of Teachers</p>
+                    <span className="mt-3 ml-2 text-[26px] font-bold text-[#010E30] dark:text-[#fff]">
+                      {totals}
+                    </span>
+                    <p className="ml-8 text-[9px] text-[#010E30] dark:text-[#fff]">
+                      Number of Teachers
+                    </p>
                   </div>
                 </div>
 
@@ -818,18 +775,18 @@ export default function Dashboard() {
                   {filteredPositions.map((item) => (
                     <div
                       key={item.name}
-                      className="flex items-center justify-between w-32"
+                      className="flex items-center justify-between w-32 dark:text-[#fff]"
                     >
                       <div className="flex items-center gap-1">
                         <div
                           className="w-3 h-3 rounded-sm"
                           style={{ backgroundColor: item.color }}
                         ></div>
-                        <span className="text-[11px] text-[#010E30CC] font-semibold ">
+                        <span className="text-[11px] text-[#010E30CC] font-semibold dark:text-[#fff] ">
                           {item.name}
                         </span>
                       </div>
-                      <span className="text-[#010E30CC] text-[10px] font-medium">
+                      <span className="text-[#010E30CC] text-[10px] font-medium dark:text-[#fff]">
                         {item.count}
                       </span>
                     </div>
@@ -839,11 +796,13 @@ export default function Dashboard() {
             </div>
 
             {/* Schedule Section */}
-            <div className="bg-white p-4 rounded-lg h-[300px] mb-56">
+            <div className="bg-white p-4 rounded-lg h-[327px] mb-56 dark:bg-[#343434]">
               {/* Header */}
               <div className="flex justify-between items-center mb-3">
-                <h3 className="text-[13px] font-semibold text-gray-700">Schedule</h3>
-                <button className="px-2 py-1 bg-gray-100 rounded flex items-center gap-1 text-[10px]">
+                <h3 className="text-[16px] font-semibold text-gray-700 dark:text-[#ffff]">
+                  Schedule
+                </h3>
+                <button className="px-2 py-1 bg-gray-100 rounded flex items-center gap-1 text-[10px] dark:bg-[#565656]">
                   Today <span className="text-gray-500">▼</span>
                 </button>
               </div>
@@ -856,14 +815,17 @@ export default function Dashboard() {
                   const colors = colorMap[index % colorMap.length];
 
                   return (
-                    <div key={item.title + index} className="flex items-start gap-3 relative">
+                    <div
+                      key={item.title + index}
+                      className="flex items-start gap-3 relative"
+                    >
                       {/* Time */}
-                      <span className="text-[10px] text-gray-500 w-[50px] mt-[22px]">
+                      <span className="text-[10px] text-gray-500 w-[50px] mt-[22px] dark:text-[#ffff]">
                         {item.time}
                       </span>
 
                       {/* Dot */}
-                <div className="absolute left-[65px] top-0 bottom-0 w-px border-l-2 border-dotted border-gray-300 z-0"></div>
+                      <div className="absolute left-[65px] top-0 bottom-0 w-px border-l-2 border-dotted border-gray-300 z-0"></div>
 
                       <div
                         className="w-[8px] h-[8px] rounded-full mt-[25px] z-10"
@@ -873,7 +835,10 @@ export default function Dashboard() {
                       {/* Meeting Box */}
                       <div
                         className="flex items-center px-3 py-2 rounded-lg flex-1 text-[10px] font-medium gap-2 "
-                        style={{ backgroundColor: colors.bg, color: colors.text }}
+                        style={{
+                          backgroundColor: colors.bg,
+                          color: colors.text,
+                        }}
                       >
                         <img
                           src={colors.icon}
@@ -883,12 +848,10 @@ export default function Dashboard() {
                         {item.title}
                       </div>
                     </div>
-
                   );
                 })}
               </div>
             </div>
-
           </aside>
         </div>
       </div>
