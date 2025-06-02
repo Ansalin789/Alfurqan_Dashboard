@@ -1,14 +1,20 @@
 "use client";
 
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { Plus } from "lucide-react";
-import axios, { AxiosError }  from "axios";
+import axios, { AxiosError } from "axios";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
+
 type Props = {
   readonly onClose: () => void;
 };
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
 
 export default function AddMeeting({ onClose }: Props) {
   const [meetingTitle, setMeetingTitle] = useState("Weekly Sync");
@@ -20,26 +26,71 @@ export default function AddMeeting({ onClose }: Props) {
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"Quran" | "Arabic" | "Islamic" | "All">("Quran");
-  const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
+ const [activeTab, setActiveTab] = useState<Tab>("All");
+  const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
+  const [Teachers, setTeachers] = useState<Teacher[]>([]);
+  const tabs = ["All", "Quran", "Arabic", "Islamic"] as const; 
+  type Tab = typeof tabs[number];
 
-  const dummyTeachers = {
-    Quran: ["Quran Teacher 1", "Quran Teacher 2"],
-    Arabic: ["Arabic Teacher 1", "Arabic Teacher 2"],
-    Islamic: ["Islamic Teacher 1"],
-    All: ["Quran Teacher 1", "Arabic Teacher 1", "Islamic Teacher 1"],
-  };
+  useEffect(() => {
+    const FetachTeachers = async () => {
+      console.log('Active tabs',activeTab);
+      try {
+        const Id =
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorPortalId")
+            : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorAuthToken")
+            : null;
+        const url = `http://localhost:5001/teacher`;
 
-  const toggleTeacher = (name: string) => {
-    setSelectedTeachers((prev) =>
-      prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name]
-    );
+        const params: Record<string, string> = {
+          supervisorId: Id ?? "",
+        };
+
+        if (activeTab !== "All") {
+          params.teacherGroup = `${activeTab} Teacher`;
+          console.log('inserted', activeTab);
+        }
+
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params,
+        });
+        console.log(response.data);
+        console.log("Final Axios params:", params);
+        setTeachers(response.data.teachers ?? []);
+      } catch (error) {
+        console.log(error);
+        setTeachers([]);
+      }
+    };
+    FetachTeachers();
+  }, [activeTab]);
+
+  const toggleTeacher = (teacher: Teacher) => {
+    setSelectedTeachers((prev) => {
+      const exists = prev.some((t) => t.teacherId === teacher.teacherId);
+      return exists
+        ? prev.filter((t) => t.teacherId !== teacher.teacherId)
+        : [...prev, teacher];
+    });
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!meetingTitle || !selectedDate || !startTime || !endTime || selectedTeachers.length === 0) {
+    if (
+      !meetingTitle ||
+      !selectedDate ||
+      !startTime ||
+      !endTime ||
+      selectedTeachers.length === 0
+    ) {
       alert("Please fill all required fields!");
       return;
     }
@@ -47,11 +98,11 @@ export default function AddMeeting({ onClose }: Props) {
     const formattedDate = new Date(selectedDate).toISOString();
     const createdDate = new Date().toISOString();
 
-    const teachers = selectedTeachers.map((name, idx) => ({
-      teacherId: `teacher-${idx}`,
-      teacherName: name,
-      teacherEmail: `${name.toLowerCase().replace(/\s/g, "")}@example.com`,
-      _id: `teacher-${idx}`,
+    const teachers = selectedTeachers.map((teacher, idx) => ({
+      teacherId: teacher.teacherId,
+      teacherName: teacher.teacherName,
+      teacherEmail: teacher.teacherEmail,
+      _id: teacher.teacherId,
     }));
 
     const requestData = {
@@ -104,27 +155,27 @@ export default function AddMeeting({ onClose }: Props) {
         }, 2000);
       }
     } catch (err) {
-          const error = err as AxiosError;
-          const status = error.response?.status;
-          if (Number(status === 400)) {
-            console.log("please >");
-            setFailedMessage("Please check the form inputs.");
-            setFailed(true);
-          } else if (status === 401) {
-            setFailedMessage("Please login again.");
-            setFailed(true);
-          } else if (status === 403) {
-            setFailedMessage("You don't have permission to perform this action.");
-            setFailed(true);
-          } else if (status === 500) {
-            setFailedMessage("Server error");
-            setFailed(true);
-          } else {
-            setFailed(true);
-            console.error(`Unexpected error: ${status}`);
-          }
-        }
-      };
+      const error = err as AxiosError;
+      const status = error.response?.status;
+      if (Number(status === 400)) {
+        console.log("please >");
+        setFailedMessage("Please check the form inputs.");
+        setFailed(true);
+      } else if (status === 401) {
+        setFailedMessage("Please login again.");
+        setFailed(true);
+      } else if (status === 403) {
+        setFailedMessage("You don't have permission to perform this action.");
+        setFailed(true);
+      } else if (status === 500) {
+        setFailedMessage("Server error");
+        setFailed(true);
+      } else {
+        setFailed(true);
+        console.error(`Unexpected error: ${status}`);
+      }
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
@@ -141,7 +192,12 @@ export default function AddMeeting({ onClose }: Props) {
           {/* Left */}
           <div>
             <div className="mb-3">
-              <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">Meeting Name</label>
+              <label
+                htmlFor="uyvuhvyuc"
+                className="block text-sm text-gray-600 dark:text-white"
+              >
+                Meeting Name
+              </label>
               <input
                 value={meetingTitle}
                 onChange={(e) => setMeetingTitle(e.target.value)}
@@ -150,7 +206,12 @@ export default function AddMeeting({ onClose }: Props) {
               />
             </div>
             <div className="mb-3">
-              <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">Start Time</label>
+              <label
+                htmlFor="uyvuhvyuc"
+                className="block text-sm text-gray-600 dark:text-white"
+              >
+                Start Time
+              </label>
               <input
                 type="time"
                 value={startTime}
@@ -159,7 +220,10 @@ export default function AddMeeting({ onClose }: Props) {
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="uyvuhvyuc" className="text-sm text-gray-600 dark:text-white flex justify-between">
+              <label
+                htmlFor="uyvuhvyuc"
+                className="text-sm text-gray-600 dark:text-white flex justify-between"
+              >
                 Add Teacher
               </label>
               <div className="relative flex items-center border rounded px-2 py-1 dark:bg-[#343434] dark:border-[#5C5C5C]">
@@ -174,7 +238,11 @@ export default function AddMeeting({ onClose }: Props) {
                   <Plus size={18} />
                 </button>
               </div>
-              <Dialog open={open} onClose={() => setOpen(false)} className="relative z-50">
+              <Dialog
+                open={open}
+                onClose={() => setOpen(false)}
+                className="relative z-50"
+              >
                 <div className="fixed inset-0 bg-black/50" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
                   <section className="bg-white dark:bg-[#1D1D1D] rounded-lg p-5 w-full max-w-md">
@@ -182,10 +250,10 @@ export default function AddMeeting({ onClose }: Props) {
                       Select Teachers
                     </h2>
                     <div className="flex gap-2 mb-4">
-                      {Object.keys(dummyTeachers).map((tab) => (
+                      {tabs.map((tab) => (
                         <button
                           key={tab}
-                          onClick={() => setActiveTab(tab as any)}
+                          onClick={() => setActiveTab(tab)}
                           className={`px-3 py-2 text-xs rounded ${
                             activeTab === tab
                               ? "bg-[#576CBC] text-white"
@@ -197,14 +265,19 @@ export default function AddMeeting({ onClose }: Props) {
                       ))}
                     </div>
                     <div className="space-y-2 max-h-40 overflow-y-auto text-sm">
-                      {dummyTeachers[activeTab].map((teacher) => (
-                        <label key={teacher} className="flex items-center gap-2">
+                      {Teachers.map((teacher) => (
+                        <label
+                          key={teacher.teacherId}
+                          className="flex items-center gap-2"
+                        >
                           <input
                             type="checkbox"
                             checked={selectedTeachers.includes(teacher)}
                             onChange={() => toggleTeacher(teacher)}
                           />
-                          <span className="dark:text-white">{teacher}</span>
+                          <span className="dark:text-white">
+                            {teacher.teacherName}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -231,7 +304,12 @@ export default function AddMeeting({ onClose }: Props) {
           {/* Right */}
           <div>
             <div className="mb-3">
-              <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">Meeting Date</label>
+              <label
+                htmlFor="uyvuhvyuc"
+                className="block text-sm text-gray-600 dark:text-white"
+              >
+                Meeting Date
+              </label>
               <input
                 type="date"
                 value={selectedDate}
@@ -240,7 +318,12 @@ export default function AddMeeting({ onClose }: Props) {
               />
             </div>
             <div className="mb-3">
-              <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">End Time</label>
+              <label
+                htmlFor="uyvuhvyuc"
+                className="block text-sm text-gray-600 dark:text-white"
+              >
+                End Time
+              </label>
               <input
                 type="time"
                 value={endTime}
@@ -249,14 +332,17 @@ export default function AddMeeting({ onClose }: Props) {
               />
             </div>
             <div className="mb-3">
-              <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">Selected Teacher</label>
-              <select
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+              <label
+                htmlFor="uyvuhvyuc"
+                className="block text-sm text-gray-600 dark:text-white"
               >
+                Selected Teacher
+              </label>
+              <select className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
                 <option value="">Show</option>
-                {selectedTeachers.map((teacher) => (
-                  <option key={teacher} value={teacher}>
-                    {teacher}
+                {selectedTeachers.map((teacher: Teacher) => (
+                  <option key={teacher.teacherId} value={teacher.teacherName}>
+                    {teacher.teacherName}
                   </option>
                 ))}
               </select>
@@ -266,7 +352,12 @@ export default function AddMeeting({ onClose }: Props) {
 
         {/* Description */}
         <div className="mb-4 mt-2">
-          <label htmlFor="uyvuhvyuc" className="block text-sm text-gray-600 dark:text-white">Description</label>
+          <label
+            htmlFor="uyvuhvyuc"
+            className="block text-sm text-gray-600 dark:text-white"
+          >
+            Description
+          </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -294,10 +385,12 @@ export default function AddMeeting({ onClose }: Props) {
         </div>
       </form>
 
-      {success && <SuccessPopup onClose={() => setSuccess(false)} title="Meeting" />}
-         {failed &&  (
-                <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
-              )}
+      {success && (
+        <SuccessPopup onClose={() => setSuccess(false)} title="Meeting" />
+      )}
+      {failed && (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+      )}
     </div>
   );
 }

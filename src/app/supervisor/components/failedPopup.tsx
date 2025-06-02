@@ -33,10 +33,10 @@ const FailedPopup = ({ onClose, title }: Props) => {
         </div>
 
         <h2 className="text-xl font-semibold text-gray-900 mb-2 dark:text-white">
-          Failed
+          Failed!
         </h2>
         <p className="text-red-600 mb-6 text-sm dark:text-white">
-          {title} Failed!
+          {title}
         </p>
         <div className="w-32 h-1 bg-red-800 my-6  rounded-full mx-auto"></div>
         <button
