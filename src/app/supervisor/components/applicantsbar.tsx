@@ -14,7 +14,7 @@ import { format, addDays } from "date-fns";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 
-const data = [
+const applicationdata = [
   { date: "08 Nov", applied: 12, shortlisted: 6 },
   { date: "09 Nov", applied: 10, shortlisted: 5 },
   { date: "10 Nov", applied: 8, shortlisted: 4 },
@@ -54,14 +54,14 @@ const ApplicationChart = () => {
 
   return (
     <div className="w-full relative">
-      <div className="bg-white p-4 rounded-xl shadow-md w-[620px] h-[270px] dark:bg-[#343434]">
+      <div className="bg-white rounded-xl h-[270px] dark:bg-[#343434]">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-[#010E30] text-[14px] font-semibold dark:text-[#ffff]">
+          <h3 className="text-[#010E30] text-[14px] mt-0 ml-4 font-semibold dark:text-[#ffff]">
             Application
           </h3>
 
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-2 px-2 py-1 relative">
             {/* Legend - Applied */}
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded-sm bg-[#a6c1ff]" />
@@ -80,7 +80,7 @@ const ApplicationChart = () => {
 
             {/* Date Picker Toggle */}
             <div
-              className="flex items-center gap-1 px-1 py-[2px] text-[11px] bg-[#F5F7FB] rounded-md border text-gray-600 cursor-pointer"
+              className="flex items-center p-1 text-[11px] bg-[#efefef] rounded-md text-[#576cbc] cursor-pointer"
               onClick={() => setShowCalendar(!showCalendar)}
             >
               <svg
@@ -119,7 +119,7 @@ const ApplicationChart = () => {
         {/* Chart */}
         <div className="text-black dark:text-white/80">
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={data} barSize={30} barGap={0}>
+            <BarChart data={applicationdata} barSize={30} barGap={0}>
               <XAxis
                 dataKey="date"
                 axisLine={false}

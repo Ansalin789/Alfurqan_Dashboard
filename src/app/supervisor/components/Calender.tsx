@@ -136,8 +136,7 @@ const Academic: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center dark:bg-[#343434]">
-      <div className="rounded-lg dark:bg-[#343434]">
+    <div className="dark:bg-[#343434]">
         <Calendar
           onChange={(newValue) => setValue(newValue as Date)}
           value={value}
@@ -166,7 +165,6 @@ const Academic: React.FC = () => {
             return undefined;
           }}
         />
-      </div>
     </div>
   );
 };
