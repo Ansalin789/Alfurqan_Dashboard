@@ -1,127 +1,31 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import BaseLayout3 from '@/components/BaseLayout3';
 import { CalendarDays, Clock } from 'lucide-react';
 import SupervisorHeader from '../../components/supervisorHeader';
-import axios from 'axios';
-
-interface Event {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  description?: string;
-  meetingStatus: string;
-  supervisorName: string;
-  meetingId: string;
-  teacherName: string;
-}
-
-interface ApiResponse {
-  status: string;
-  message: string;
-  data: Event[];
-}
 
 const SchedulePage = () => {
   const [activeView, setActiveView] = useState<'monthly' | 'weekly' | 'daily'>('monthly');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [meetings, setMeetings] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const tabs = ['monthly', 'weekly', 'daily'] as const;
 
-  useEffect(() => {
-    fetchMeetings();
-  }, []);
+  const events = [
+    { date: 2, color: 'text-[#21BAFF] , border-[#21BAFF]' },
+    { date: 11, color: 'text-[#ce4b49] , border-[#ce4b49]' },
+    { date: 14, color: 'text-[#5362e4] , border-[#5362e4]' },
+    { date: 23, color: 'text-[#e49d2c] , border-[#e49d2c]' },
+    { date: 28, color: 'text-[#74c22a] , border-[#74c22a]' },
+  ];
 
-  const fetchMeetings = async () => {
-    try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
-      if (!token) {
-        console.error("❌ SupervisorAuthToken not found");
-        return;
-      }
-
-      console.log("Fetching meetings...");
-      const response = await axios.get<ApiResponse>(
-        "https://api.blackstoneinfomaticstech.com/allMeetings",
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          }
-        }
-      );
-
-      console.log("Full API Response:", response);
-      console.log("Response Data Type:", typeof response.data);
-      console.log("Response Data:", response.data);
-      console.log("Response Data Keys:", Object.keys(response.data));
-
-      // Check if response.data is an object with a data property
-      const meetingsData = response.data.data || response.data;
-      
-      console.log("Meetings Data:", meetingsData);
-      console.log("Meetings Data Type:", typeof meetingsData);
-      
-      // Ensure we have an array of meetings
-      if (!Array.isArray(meetingsData)) {
-        console.error("Meetings data is not an array:", meetingsData);
-        // If it's an object, try to convert it to an array
-        if (typeof meetingsData === 'object' && meetingsData !== null) {
-          const meetingsArray = Object.values(meetingsData);
-          console.log("Converted to array:", meetingsArray);
-          if (Array.isArray(meetingsArray)) {
-            const formattedMeetings = meetingsArray.map((meeting: any) => ({
-              ...meeting,
-              start: new Date(meeting.start),
-              end: new Date(meeting.end)
-            }));
-            console.log("Formatted Meetings:", formattedMeetings);
-            setMeetings(formattedMeetings);
-            setLoading(false);
-            return;
-          }
-        }
-        return;
-      }
-
-      // Convert string dates to Date objects
-      const formattedMeetings = meetingsData.map(meeting => ({
-        ...meeting,
-        start: new Date(meeting.start),
-        end: new Date(meeting.end)
-      }));
-
-      console.log("Formatted Meetings:", formattedMeetings);
-      setMeetings(formattedMeetings);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching meetings:", error);
-      setLoading(false);
-    }
-  };
-
-  const getMeetingsForDate = (date: number) => {
-    const dayMeetings = meetings.filter(meeting => {
-      const meetingDate = new Date(meeting.start);
-      const isMatch = meetingDate.getDate() === date &&
-             meetingDate.getMonth() === currentDate.getMonth() &&
-             meetingDate.getFullYear() === currentDate.getFullYear();
-      
-      if (isMatch) {
-        console.log(`Meeting found for date ${date}:`, meeting);
-      }
-      return isMatch;
-    });
-    return dayMeetings;
-  };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  const listItems = [
+    { title: 'Group discussion', color: 'text-[#21BAFF]' },
+    { title: 'Team standup', color: 'text-red-500' },
+    { title: 'One-on-one', color: 'text-indigo-500' },
+    { title: 'Planning call', color: 'text-amber-500' },
+    { title: 'Demo session', color: 'text-green-500' },
+  ];
 
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -184,12 +88,14 @@ const SchedulePage = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDayOfMonth = getFirstDayOfMonth(currentDate);
     
+    // Create array of all days in the month
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    
+    // Create array of empty cells for days before the first day of the month
     const emptyCells = Array.from({ length: firstDayOfMonth }, (_, i) => null);
+    
+    // Combine empty cells and days
     const totalDays = [...emptyCells, ...days];
-
-    console.log("Current Month:", currentDate.getMonth() + 1);
-    console.log("Total Meetings:", meetings.length);
 
     return (
       <>
@@ -224,7 +130,7 @@ const SchedulePage = () => {
               return <div key={i} className="min-h-[80px] bg-transparent" />;
             }
 
-            const dayMeetings = getMeetingsForDate(day);
+            const todayEvent = events.find(e => e.date === day);
             const isValidDay = day > 0 && day <= daysInMonth;
             
             return (
@@ -232,10 +138,10 @@ const SchedulePage = () => {
                 key={i}
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-center ${
                   isValidDay 
-                    ? dayMeetings.length > 0
-                      ? 'border border-[#21BAFF]'
+                    ? todayEvent 
+                      ? `${todayEvent.color} border ${todayEvent.color.replace('text', 'border')}`
                       : isToday(day)
-                        ? 'bg-[#576cbc] text-white'
+                        ? 'bg-[#27176518] text-white'
                         : 'bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500'
                     : 'bg-transparent'
                 }`}
@@ -243,13 +149,13 @@ const SchedulePage = () => {
                 {isValidDay && (
                   <>
                     <div className={`font-semibold ${isToday(day) ? 'text-white' : ''}`}>{day}</div>
-                    {dayMeetings.map((meeting, index) => (
-                      <div key={meeting.id} className="text-[10px] mt-1 text-[#21BAFF]">
-                        {meeting.title}
+                    {todayEvent && (
+                      <div className="text-[10px] mt-1">
+                        Group discussion
                         <br />
-                        {formatTime(meeting.start)} - {formatTime(meeting.end)}
+                        9:00 AM – 9:30 AM
                       </div>
-                    ))}
+                    )}
                   </>
                 )}
               </div>
@@ -260,21 +166,11 @@ const SchedulePage = () => {
     );
   };
 
-  // Update the listItems to use actual meetings
-  const listItems = meetings.map(meeting => ({
-    title: meeting.title,
-    color: 'text-[#21BAFF]',
-    startTime: formatTime(meeting.start),
-    endTime: formatTime(meeting.end),
-    date: meeting.start.toLocaleDateString(),
-    description: meeting.description || 'No description available'
-  }));
-
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection='Calendar'/>
+    <SupervisorHeader currentSection='Calendar'/>
       <div className="p-2">
-        <div className="mx-auto gap-4 flex flex-col md:flex-row overflow-hidden h-[630px]">
+        <div className=" mx-auto gap-4 flex flex-col md:flex-row overflow-hidden h-[630px]">
           {/* Left Section */}
           <div className="w-full md:w-2/3 p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
             {/* Tabs */}
@@ -305,18 +201,20 @@ const SchedulePage = () => {
               {listItems.map((item, index) => (
                 <div key={index} className="border-b dark:border-[#414141] pb-4">
                   <div className='flex justify-between'>
-                    <h4 className={`font-medium text-[12px] ${item.color}`}>{item.title}</h4>
-                    <div className="flex items-center text-gray-400 text-[10px] mt-1 gap-2">
-                      <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
-                        <Clock size={14} /> {item.startTime} – {item.endTime}
-                      </span>
-                      <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
-                        <CalendarDays size={14} /> {item.date}
-                      </span>
-                    </div>
+                  <h4 className={`font-medium text-[12px] ${item.color}`}>{item.title}</h4>
+                  <div className="flex items-center text-gray-400 text-[10px] mt-1 gap-2">
+                    <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
+                      <Clock size={14} /> 9:00 AM – 10:30 AM
+                    </span>
+                    <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
+                      <CalendarDays size={14} /> 06/05/2024
+                    </span>
                   </div>
+                  </div>
+                  
                   <p className="text-gray-500 dark:text-[#f9f9f9] text-[10px] mt-2">
-                    {item.description}
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce fermentum vehicula commodo. Quisque
+                    semper nibh et egestas.
                   </p>
                 </div>
               ))}

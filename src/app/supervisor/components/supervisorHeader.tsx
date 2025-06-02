@@ -9,9 +9,11 @@ import AddMeeting from "@/app/supervisor/components/addMeeting";
 import AddApplicants from "@/app/supervisor/components/addApplicants";
 import { getSocket } from "@/app/utils/socket";
 import axios from "axios";
+import { IoArrowBackCircleSharp } from "react-icons/io5";
 
 type Props = {
   readonly currentSection: string;
+  readonly showBackButton?: boolean;
 };
 type NotificationType = {
   _id: string;
@@ -23,7 +25,7 @@ type NotificationType = {
   isRead: boolean;
 };
 
-export default function SupervisorHeader({ currentSection }: Props) {
+export default function SupervisorHeader({ currentSection, showBackButton = false }: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
@@ -207,9 +209,17 @@ export default function SupervisorHeader({ currentSection }: Props) {
   return (
     <div>
       <div className="flex justify-between items-center py-2 pl-1 mb-1">
-        <h1 className="text-xl font-semibold text-[#000836] dark:text-white">
-          {currentSection}
-        </h1>
+        <div className="flex items-center gap-2">
+          {showBackButton && (
+            <IoArrowBackCircleSharp
+              className="text-[25px] text-[#012a4a] cursor-pointer dark:text-white"
+              onClick={() => router.back()}
+            />
+          )}
+          <h1 className="text-xl font-semibold text-[#000836] dark:text-white">
+            {currentSection}
+          </h1>
+        </div>
         <div className="flex items-center gap-3 flex-wrap">
           {renderButton()}
           <button
