@@ -1,215 +1,343 @@
 "use client";
 
+import React, { useState } from "react";
 import BaseLayout3 from "@/components/BaseLayout3";
-import React, { useState, useEffect } from "react";
-import { FaStar } from "react-icons/fa";
+import SupervisorHeader from "../../components/supervisorHeader";
+import { FaChevronDown, FaStar } from "react-icons/fa";
 import { HiOutlineFilter } from "react-icons/hi";
-import { FiSearch } from "react-icons/fi";
-import axios from "axios";
+import { FiCalendar, FiSearch } from "react-icons/fi";
+import { Search } from "lucide-react";
+import Pagination from "@/components/Pagination";
+import { ImAttachment } from "react-icons/im";
+import { MoreVertical } from "lucide-react";
+import { HiOutlineX } from "react-icons/hi";
+import { MdTune } from "react-icons/md";
 
-// Define the interface for API response
-interface SupervisorFeedback {
-  _id: string;
-  supervisor?: {
-    supervisorFirstName: string;
-    supervisorLastName: string;
-    supervisorEmail: string;
+// Dummy data
+const dummyApplicants = [
+  {
+    _id: "1",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "2",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "3",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "4",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "5",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "6",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "7",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "8",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "9",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "10",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "12",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "13",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+  {
+    _id: "14",
+    Review: "John Doe",
+
+    Feedback: "john.doe@example.com",
+    class: "Software Engineer",
+    Deatils: "Pending",
+    level: 3,
+  },
+];
+const items = Array.from({ length: 100 }, (_, i) => ({
+  id: i + 1,
+  name: `Item ${i + 1}`,
+}));
+const FeedbackDetails: React.FC = () => {
+  const [applicants, setApplicants] = useState(dummyApplicants);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(applicants.length / itemsPerPage);
+
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = applicants.slice(indexOfFirst, indexOfLast);
+
+  const [showFilter, setShowFilter] = useState(false);
+  const handleDetailsClick = (applicant: {
+    _id: string;
+    Review: string;
+    Feedback: string;
+    class: string;
+    Deatils: string;
+    level: number;
+  }) => {
+    console.log("Details clicked for:", applicant);
+    // You can open a modal, navigate to a page, or show more info here
   };
-  teacher?: {
-    teacherName: string;
-    teacherEmail: string;
+
+  // Placeholder functions for actions
+  const handleMenuClick = (id: string) => {
+    // Implement menu click logic
   };
-  course?: {
-    courseName: string;
+
+  const handleEdit = (applicant: any) => {
+    // Implement edit logic
   };
-  supervisorRating?: {
-    knowledgeofstudentsandcontent: number;
-    assessmentofstudents: number;
-    communicationandcollaboration: number;
-    professionalism: number;
+
+  const handleViewDetails = (applicant: any) => {
+    // Implement view details logic
   };
-  feedbackmessage?: string;
-  createdDate?: string;
-  startTime?: string;
-}
-
-// Define API Response Structure
-interface ApiResponse {
-  totalCount: number;
-  applicants: SupervisorFeedback[];
-}
-
-const FeedbackDetails = () => {
-  const [feedbackData, setFeedbackData] = useState<SupervisorFeedback[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
-  const [filterCriteria, setFilterCriteria] = useState<{ review: string; className: string }>({
-    review: "",
-    className: "",
-  });
-console.log(isPopupOpen);
-  const itemsPerPage = 5;
-
-  // Fetch API data
-  useEffect(() => {
-    const fetchFeedback = async () => {
-      setLoading(true);
-      try {
-        const supervisorId = localStorage.getItem("SupervisorPortalId");
-
-        if (!supervisorId) {
-          console.error("No Supervisor ID found in localStorage");
-          setFeedbackData([]);
-          setLoading(false);
-          return;
-        }
-      const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
-
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
-
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/supervisorfeedback", {
-          params: { supervisorId },
-          headers: { "Content-Type": "application/json",
-               'Authorization': `Bearer ${token}`,
-           },
-        });
-
-        if (Array.isArray(response.data.applicants)) {
-          setFeedbackData(response.data.applicants);
-        } else {
-          setFeedbackData([]);
-        }
-      } catch (error) {
-        console.error("Error fetching feedback:", error);
-        setFeedbackData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeedback();
-  }, []);
-
-  // Filter Data
-  const filteredData = feedbackData.filter((item) =>
-    (item.feedbackmessage?.toLowerCase() ?? "").includes(filterCriteria.review.toLowerCase()) ||
-    (item.course?.courseName?.toLowerCase() ?? "").includes(filterCriteria.className.toLowerCase())
-  );
-
-  const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
-  if (loading) return <p className="text-center">Loading feedback...</p>;
 
   return (
     <BaseLayout3>
-      <div className="p-8 mx-auto w-[1250px] pr-16">
-        <h2 className="text-2xl font-semibold text-gray-800 p-2 mb-8">Feedback</h2>
+      <SupervisorHeader currentSection="Feedback" />
+      <div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-3 md:space-y-0">
+          <div className="flex flex-wrap gap-2 mb-0">
+            {/* Add any additional controls here */}
+          </div>
+        </div>
 
-        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px] flex flex-col justify-between">
-          <div className="flex justify-between items-center p-2">
-            <div className="relative w-40 ml-2 mt-2">
-              <FiSearch className="absolute top-[6px] left-2 text-gray-500" />
+        <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+          {/* Header Search & Filter */}
+          <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434] h-10">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Search className="w-4 h-4 text-gray-400 dark:text-gray-400 mt-3 " />
               <input
                 type="text"
-                placeholder="Search here..."
-                className="border border-gray-300 rounded-lg pl-10 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 text-[12px]"
-                onChange={(e) => setFilterCriteria({ ...filterCriteria, review: e.target.value })}
+                placeholder="Search by keyword"
+                className="bg-transparent outline-none  w-52 py-3 mt-3 text-[14px]"
               />
             </div>
-            <button
-              className="bg-[#012A4A] text-[12px] px-3 py-1 rounded-lg flex items-center gap-2 text-white"
-              onClick={() => setIsPopupOpen(true)}
-            >
-              <HiOutlineFilter className="text-[12px]" /> Filters
-            </button>
-          </div>
 
-          {/* Feedback List */}
-          <div className="w-full">
-            <div className="grid grid-cols-[2fr_1fr_1fr_1fr] font-semibold text-gray-600 py-3 px-3 border-b">
-              <span className="text-left text-[13px] text-[#012a4a]">Review</span>
-              <span className="text-left text-[13px] text-[#012a4a]">Class</span>
-              <span className="text-left text-[13px] text-[#012a4a]">Rating</span>
-              <span className="text-left text-[13px] text-[#012a4a]">Details</span>
-            </div>
+            <div className="relative ">
+              {/* Filter Button: Tune + Filter Left, Arrow Right */}
+              <div
+                className="flex justify-between items-center w-96 bg-gray-50 dark:bg-[#343434] 
+  border-y-0 border-l border-r border-gray-200 dark:border-[#606060]
+  text-sm text-gray-500 py-[15.5px] mt-[12px] px-3 cursor-pointer -ml-60"
+                onClick={() => setShowFilter(!showFilter)}
+              >
+                <div className="flex items-center gap-1">
+                  <MdTune className="w-4 h-4" />
+                  <span className="text-sm">Filter</span>
+                </div>
+                <FaChevronDown className="w-3 h-3" />
+              </div>
 
-            {paginatedData.length > 0 ? (
-              paginatedData.map((item, index) => (
+              {/* Filter Popup */}
+              {showFilter && (
                 <div
-                  key={item._id}
-                  className={`grid grid-cols-[2fr_1fr_1fr_1fr] py-2 items-center ${
-                    index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                  }`}
+                  className="absolute top-14 left-0 bg-white  dark:bg-[#343434] rounded-lg shadow-lg w-80 p-6 z-50"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex items-center gap-3 pl-4">
-                    <img
-                      src="/assets/images/student-profile1.png"
-                      alt="Teacher Avatar"
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <div className="min-w-0">
-                      <p className="font-medium text-gray-800 truncate text-[13px]">
-                        {item.teacher?.teacherName ?? "Unknown Teacher"}
-                      </p>
-                      <p className="text-gray-500 text-[10px]">
-                        {item.createdDate ? new Date(item.createdDate).toLocaleString() : "No Date"}
-                      </p>
-                      <p className="text-gray-700 truncate text-[12px]">
-                        {item.feedbackmessage ?? "No feedback available"}
-                      </p>
-                    </div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-[#ffff]">
+                      Filter by
+                    </h3>
+                    <button onClick={() => setShowFilter(false)}>
+                      <HiOutlineX className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                    </button>
                   </div>
-
-                  <p className="text-gray-800 truncate text-[13px]">
-                    {item.course?.courseName ?? "No class info"}
-                  </p>
-
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-[13px]">4.5</p>
-                    <FaStar className="text-yellow-500" />
-                  </div>
-
-                  <div className="flex justify-left">
-                    <button className="px-3 py-1 text-[12px] font-semibold text-white bg-[#012A4A] rounded-md">
-                      Active
+                  <label className="block text-sm text-gray-700 mb-1 dark:text-[#ffff]">
+                    Class
+                  </label>{" "}
+                  <br />
+                  <select className="w-full border border-gray-300  dark:bg-[#343434] dark:text-[#ffff] rounded-md p-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option>Trail Class</option>
+                    <option>Other Class</option>
+                  </select>
+                  <hr className="my-4" />
+                  <div className="flex justify-between">
+                    <button
+                      className="px-4 py-2 rounded-md border border-indigo-300 text-indigo-600 hover:bg-indigo-50 text-sm"
+                      onClick={() => setShowFilter(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm">
+                      Submit
                     </button>
                   </div>
                 </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-center p-4">No matching feedback found.</p>
-            )}
-          </div>
+              )}
+            </div>
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between gap-4 mt-4 px-3">
-            <span className="text-[12px] text-gray-600">
-              Showing {(currentPage - 1) * itemsPerPage + 1}-
-              {Math.min(currentPage * itemsPerPage, filteredData.length)} from {filteredData.length} data
-            </span>
-
-            <div className="flex items-center">
-              <button className="px-2 py-1 text-gray-400" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
-                &lt;
-              </button>
-
-              {[...Array(totalPages)].map((_, i) => (
-                <button key={i + 1} className={`w-5 h-5 rounded-md text-[12px] ${currentPage === i + 1 ? "bg-[#012A4A] text-white" : "bg-gray-100 text-gray-700"}`} onClick={() => setCurrentPage(i + 1)}>
-                  {i + 1}
-                </button>
-              ))}
-
-              <button className="px-2 py-1 text-gray-400" disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)}>
-                &gt;
-              </button>
+            <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+              <span className="text-left -ml-60 mt-3 text-[14px]">
+                Showing {currentItems.length} Of {applicants.length}
+              </span>
             </div>
           </div>
+
+          {/* Table */}
+          <table
+            className="table-auto  w-full border-separate border-spacing-y-3 "
+            style={{ width: "100%", tableLayout: "fixed" }}
+          >
+            <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+              <tr className="font-medium">
+                <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                  Review
+                </th>
+                <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                  Feedback
+                </th>
+                <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                  Class
+                </th>
+
+                <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                  Level
+                </th>
+                <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                  Details
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentItems.map((applicant, index) => (
+                <tr
+                  key={applicant._id}
+                  className={`text-[12px]  ${
+                    index % 2 === 0
+                      ? "bg-[#fff] dark:bg-[#2C2C2C] "
+                      : "bg-[#F8F8F8] dark:bg-[#303030]"
+                  }`}
+                >
+                  <td className="px-3 py-2 text-[#17243E]  dark:text-[#FDFDFD]">
+                    {applicant.Review}
+                  </td>
+
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                    {applicant.Feedback}
+                  </td>
+
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                    {applicant.class}
+                  </td>
+
+                  <td className="px-3 py-2">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <FaStar
+                          key={`star-${star}`}
+                          className={`w-4 h-4 ${
+                            (Number(applicant?.level) || 0) >= star
+                              ? "text-[#FAAB3C]"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <button
+                      className="text-xs px-3 py-1 rounded-md bg-[#4C6993] text-white dark:bg-[#6087C0] hover:bg-[#3b5574] dark:hover:bg-[#4e72a0] transition-colors"
+                      onClick={() => handleDetailsClick(applicant)}
+                    >
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-4">
+        <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </BaseLayout3>

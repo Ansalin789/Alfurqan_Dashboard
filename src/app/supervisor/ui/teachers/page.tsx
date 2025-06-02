@@ -162,7 +162,7 @@ const ManageTeacher: React.FC = () => {
   };
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection="Teachers List" />
+      <SupervisorHeader currentSection="Teacher's List" />
       <div className="flex h-screen">
         {/* Main Content */}
         <div className="flex-1">
