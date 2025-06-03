@@ -19,6 +19,7 @@ import moment from "moment";
 import axios from "axios";
 import Calendar from "../../../supervisor/components/Calender";
 import SupervisorHeader from "../../components/supervisorHeader";
+import { getSocket } from "@/app/utils/socket";
 interface Applicant {
   _id: string;
   candidateFirstName: string;
@@ -133,12 +134,30 @@ export default function Dashboard() {
   const [filteredPositions, setFilteredPositions] = useState<
     { name: string; color: string; count: number }[]
   >([]);
+    useEffect(()=>{
+      const Id = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalId") : null;
+      if(!Id) return;
+     const socket = getSocket(Id);
+     const handleCount = (data : DashboardCounts) =>{
+       setDashboardCounts(data);
+       console.log(data);
+     };
+       socket.on("supervisordashboardcount",handleCount);
+       return ()=>{
+       socket.off("supervisordashboardcount",handleCount);
+       };
+    },[]);
 
   useEffect(() => {
     setMounted(true);
     const token =
       typeof window !== "undefined"
         ? localStorage.getItem("SupervisorAuthToken")
+        : null;
+
+        const id =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorPortalId")
         : null;
 
     if (!token) {
@@ -164,11 +183,14 @@ export default function Dashboard() {
     );
 
     const fetchDashboardCounts = axios.get(
-      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+      "http://localhost:5001/dashboard/supervisor/counts",
       {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+        },
+        params:{
+          supervisorId:id
         },
       }
     );
@@ -634,7 +656,7 @@ export default function Dashboard() {
             {/* Table wrapper: horizontal scroll */}
             <div className="overflow-x-auto scrollbar-none h-full">
               {/* Vertical scroll with fixed height */}
-              <div className="overflow-y-auto h-[410px] rounded-xl scrollbar-none">
+              <div className="overflow-y-auto h-[460px] rounded-xl scrollbar-none">
                 <table className="min-w-full text-xs border-collapse table-fixed px-4">
                   {/* Table Head sticky */}
                   <thead className="sticky top-0 px-2 z-10 text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d] shadow-md">
@@ -715,7 +737,7 @@ export default function Dashboard() {
         <div className="w-[310px] flex flex-col gap-4">
           {/* Calendar */}
           <div className="bg-white rounded-xl shadow p-0">
-            <div className="h-[300px] flex items-center justify-center text-gray-400">
+            <div className="h-[350px] flex items-center justify-center text-gray-400 dark:bg-[#343434]">
               <Calendar />
             </div>
           </div>
