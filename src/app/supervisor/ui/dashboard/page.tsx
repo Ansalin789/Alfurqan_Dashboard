@@ -19,7 +19,10 @@ import moment from "moment";
 import axios from "axios";
 import Calendar from "../../../supervisor/components/Calender";
 import SupervisorHeader from "../../components/supervisorHeader";
-import { getSocket } from "@/app/utils/socket";
+
+import { getSocket } from "@/app/utils/socket"
+import { ImAttachment } from "react-icons/im";
+
 interface Applicant {
   _id: string;
   candidateFirstName: string;
@@ -461,6 +464,21 @@ export default function Dashboard() {
   const remainingShortlisted = 100 - percentageShortlisted;
   const remainingRejected = 100 - percentageRejected;
   console.log(remainingApplications);
+  function createBlobUrlFromData(uploadResume: {
+    type: string;
+    data: number[];
+  }): string | undefined {
+    if (!uploadResume?.data?.length) return undefined;
+
+    try {
+      const byteArray = new Uint8Array(uploadResume.data);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Failed to create Blob URL:", error);
+      return undefined;
+    }
+  }
   return (
     <BaseLayout3>
       <SupervisorHeader currentSection="Dashboard" />
@@ -657,7 +675,7 @@ export default function Dashboard() {
               <div className="overflow-y-auto h-[460px] rounded-xl scrollbar-none">
                 <table className="min-w-full text-xs border-collapse table-fixed px-4">
                   {/* Table Head sticky */}
-                  <thead className="sticky top-0 px-2 z-10 text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d] shadow-md">
+                  <thead className="sticky top-0 px-2 z-10 text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d] shadow-md  border-[#4C6993] dark:border-[#6087C0]">
                     <tr>
                       {[
                         "Name",
@@ -672,7 +690,7 @@ export default function Dashboard() {
                       ].map((col) => (
                         <th
                           key={col}
-                          className="py-4 px-2 font-semibold text-left"
+                          className="py-4 px-2 font-semibold text-left  border-[#4C6993] dark:border-[#6087C0]"
                         >
                           {col}
                         </th>
@@ -713,9 +731,24 @@ export default function Dashboard() {
                           {applicant.preferedWorkingHours}
                         </td>
                         <td className="py-2 px-2 text-left">
-                          <button className="text-blue-600 flex items-center gap-1">
-                            📎 Resume
-                          </button>
+                          {applicant.uploadResume?.data?.length ? (
+                            <a
+                              href={
+                                createBlobUrlFromData(applicant.uploadResume) ||
+                                undefined
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#38619A] hover:underline flex items-center gap-1"
+                            >
+                              <ImAttachment className="w-3 h-3" />
+                              Resume
+                            </a>
+                          ) : (
+                            <span className="text-gray-400 italic">
+                              No Resume
+                            </span>
+                          )}
                         </td>
                         <td className="py-2 px-2 text-left">
                           <span className="text-gray-800 rounded-full dark:text-[#fff]">
