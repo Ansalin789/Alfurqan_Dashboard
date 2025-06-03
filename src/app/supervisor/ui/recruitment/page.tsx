@@ -21,6 +21,7 @@ import { IoCloseOutline } from "react-icons/io5";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FiCalendar } from "react-icons/fi";
+import { MdTune } from "react-icons/md";
 
 type Status = "Shortlisted" | "Rejected" | "Waiting";
 type Position = "Arabic Teacher" | "Quran Teacher";
@@ -244,7 +245,7 @@ export default function ApplicantsPage() {
           return;
         }
         const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomaticstech.com/applicants/${_id}`,
+          `http://localhost:5001/applicants/${_id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -305,10 +306,9 @@ export default function ApplicantsPage() {
     setApplicationStatus("");
   };
 
-  const handlesendupdate = async (id: string) => {
-    // Map the state to the data you want to send
+  const handlesendupdate = async (id: string, status: string) => {
     const updateData = {
-      applicationStatus: applicationStatus, // static value, you can update based on logic
+      applicationStatus: status,
       quranReading,
       tajweed,
       arabicSpeaking,
@@ -319,33 +319,37 @@ export default function ApplicantsPage() {
       comments,
       level: "1",
     };
-    console.log(updateData);
+  
     try {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("SupervisorAuthToken")
           : null;
-
+  
       if (!token) {
         console.error("❌ SupervisorAuthToken not found");
         return;
       }
+  
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
+        `http://localhost:5001/applicants/${id}`,
         updateData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // ✅ Keep this
+            // ✅ DO NOT manually add 'Content-Type' here
           },
         }
       );
-      console.log("Update successful:", response.data);
-    } catch (error) {
-      console.error("Error updating applicant:", error);
+  
+      console.log("✅ Update successful:", response.data);
+      handleviewclose();
+    } catch (error: any) {
+      console.error("❌ Update error:", error.response?.data || error.message);
     }
-    handleviewclose();
   };
+  
+  
 
   const [country, setCountry] = useState("USA");
   const [cities, setCities] = useState([]);
@@ -416,19 +420,7 @@ export default function ApplicantsPage() {
                       onClick={() => setShowModal(true)}
                     >
                       {/* <BsFilterLeft /> */}
-                      <svg
-                        width="19"
-                        height="18"
-                        viewBox="0 0 19 18"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M1.33594 16C1.0526 16 0.815271 15.904 0.623938 15.712C0.431938 15.5207 0.335938 15.2833 0.335938 15C0.335938 14.7167 0.431938 14.4793 0.623938 14.288C0.815271 14.096 1.0526 14 1.33594 14H5.33594C5.61927 14 5.85694 14.096 6.04894 14.288C6.24027 14.4793 6.33594 14.7167 6.33594 15C6.33594 15.2833 6.24027 15.5207 6.04894 15.712C5.85694 15.904 5.61927 16 5.33594 16H1.33594ZM1.33594 4C1.0526 4 0.815271 3.90433 0.623938 3.713C0.431938 3.521 0.335938 3.28333 0.335938 3C0.335938 2.71667 0.431938 2.479 0.623938 2.287C0.815271 2.09567 1.0526 2 1.33594 2H9.33594C9.61927 2 9.85694 2.09567 10.0489 2.287C10.2403 2.479 10.3359 2.71667 10.3359 3C10.3359 3.28333 10.2403 3.521 10.0489 3.713C9.85694 3.90433 9.61927 4 9.33594 4H1.33594ZM9.33594 18C9.0526 18 8.81527 17.904 8.62394 17.712C8.43194 17.5207 8.33594 17.2833 8.33594 17V13C8.33594 12.7167 8.43194 12.479 8.62394 12.287C8.81527 12.0957 9.0526 12 9.33594 12C9.61927 12 9.85694 12.0957 10.0489 12.287C10.2403 12.479 10.3359 12.7167 10.3359 13V14H17.3359C17.6193 14 17.8566 14.096 18.0479 14.288C18.2399 14.4793 18.3359 14.7167 18.3359 15C18.3359 15.2833 18.2399 15.5207 18.0479 15.712C17.8566 15.904 17.6193 16 17.3359 16H10.3359V17C10.3359 17.2833 10.2403 17.5207 10.0489 17.712C9.85694 17.904 9.61927 18 9.33594 18ZM5.33594 12C5.0526 12 4.81494 11.904 4.62294 11.712C4.4316 11.5207 4.33594 11.2833 4.33594 11V10H1.33594C1.0526 10 0.815271 9.904 0.623938 9.712C0.431938 9.52067 0.335938 9.28333 0.335938 9C0.335938 8.71667 0.431938 8.479 0.623938 8.287C0.815271 8.09567 1.0526 8 1.33594 8H4.33594V7C4.33594 6.71667 4.4316 6.479 4.62294 6.287C4.81494 6.09567 5.0526 6 5.33594 6C5.61927 6 5.85694 6.09567 6.04894 6.287C6.24027 6.479 6.33594 6.71667 6.33594 7V11C6.33594 11.2833 6.24027 11.5207 6.04894 11.712C5.85694 11.904 5.61927 12 5.33594 12ZM9.33594 10C9.0526 10 8.81527 9.904 8.62394 9.712C8.43194 9.52067 8.33594 9.28333 8.33594 9C8.33594 8.71667 8.43194 8.479 8.62394 8.287C8.81527 8.09567 9.0526 8 9.33594 8H17.3359C17.6193 8 17.8566 8.09567 18.0479 8.287C18.2399 8.479 18.3359 8.71667 18.3359 9C18.3359 9.28333 18.2399 9.52067 18.0479 9.712C17.8566 9.904 17.6193 10 17.3359 10H9.33594ZM13.3359 6C13.0526 6 12.8153 5.904 12.6239 5.712C12.4319 5.52067 12.3359 5.28333 12.3359 5V1C12.3359 0.716667 12.4319 0.479 12.6239 0.287C12.8153 0.0956666 13.0526 0 13.3359 0C13.6193 0 13.8566 0.0956666 14.0479 0.287C14.2399 0.479 14.3359 0.716667 14.3359 1V2H17.3359C17.6193 2 17.8566 2.09567 18.0479 2.287C18.2399 2.479 18.3359 2.71667 18.3359 3C18.3359 3.28333 18.2399 3.521 18.0479 3.713C17.8566 3.90433 17.6193 4 17.3359 4H14.3359V5C14.3359 5.28333 14.2399 5.52067 14.0479 5.712C13.8566 5.904 13.6193 6 13.3359 6Z"
-                          fill="#DEDEDE"
-                          fill-opacity="0.7"
-                        />
-                      </svg>
+                      <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
 
@@ -614,7 +606,7 @@ export default function ApplicantsPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center  ">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-96 relative dark:bg-[#252525]">
             {/* Close Icon */}
             <button
@@ -1068,7 +1060,10 @@ export default function ApplicantsPage() {
             {/* Footer (Fixed) */}
             <div className="w-full border-t p-3 flex justify-end gap-3 bg-white z-10 dark:bg-[#343434] dark:border-t-[#5F5959]">
               <button
-                onClick={() => setApplicationStatus("REJECTED")}
+                onClick={() =>
+                  
+                  handlesendupdate(Applicantbyid?._id ?? "", "REJECTED")
+                }
                 disabled={mode === "view"}
                 className={`px-4 py-2 text-[12px] text-[#D34645] bg-[#FDECEC] rounded-lg dark:bg-[#543838] ${
                   mode === "view" ? "opacity-80 cursor-not-allowed" : ""
@@ -1077,7 +1072,9 @@ export default function ApplicantsPage() {
                 Rejected
               </button>
               <button
-                onClick={() => setApplicationStatus("WAITING")}
+                onClick={() =>
+                  handlesendupdate(Applicantbyid?._id ?? "", "WAITING")
+                }
                 disabled={mode === "view"}
                 className={`px-4 py-2 text-[12px] text-[#F0AD4E] bg-[#FDF6EC] rounded-lg dark:bg-[#5A4D3B] ${
                   mode === "view" ? "opacity-80 cursor-not-allowed" : ""
@@ -1086,16 +1083,20 @@ export default function ApplicantsPage() {
                 Waiting
               </button>
               <button
-                onClick={() => setApplicationStatus("SHORTLISTED")}
+                onClick={() =>
+                  handlesendupdate(Applicantbyid?._id ?? "", "SHORTLISTED")
+                }
                 disabled={mode === "view"}
-                className={`px-4 py-2 text-[12px] text-[#377E36] bg-[#ECFDF3] rounded-lg  dark:bg-[#377E3633] ${
+                className={`px-4 py-2 text-[12px] text-[#377E36] bg-[#ECFDF3] rounded-lg dark:bg-[#377E3633] ${
                   mode === "view" ? "opacity-80 cursor-not-allowed" : ""
                 }`}
               >
                 Shortlisted
               </button>
               <button
-                onClick={() => handlesendupdate(Applicantbyid?._id ?? "")}
+                onClick={() =>
+                  handlesendupdate(Applicantbyid?._id ?? "", applicationStatus)
+                }
                 disabled={mode === "view"}
                 className={`px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A] ${
                   mode === "view" ? "opacity-80 cursor-not-allowed" : ""
