@@ -2,10 +2,11 @@
 .custom-calendar {
   /* width: 310px !important; */
   height: 300px !important;
-  padding: 5px;
-  font-family: 'Segoe UI', sans-serif;
+  padding: 0 5px;
+font-family: 'Poppins', 'Segoe UI', sans-serif;
   color: #010E30;
   box-sizing: border-box;
+  
 }
 
 /* Dark mode styles using .dark selector from Tailwind */
@@ -40,14 +41,16 @@
 .dark .custom-calendar .react-calendar__month-view__weekdays {
   color: #9ca3af !important;
 }
-
+.dark .custom-calendar .react-calendar__month-view__days__day--neighboringMonth {
+  color: #b2a8a8 !important;
+}
 
 /* Header navigation */
 .custom-calendar .react-calendar__navigation {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0px;
+  margin-bottom: 2px;
   background-color: transparent !important;
   box-shadow: none;
 }

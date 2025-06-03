@@ -634,7 +634,7 @@ export default function Dashboard() {
             {/* Table wrapper: horizontal scroll */}
             <div className="overflow-x-auto scrollbar-none h-full">
               {/* Vertical scroll with fixed height */}
-              <div className="overflow-y-auto h-[410px] rounded-xl scrollbar-none">
+              <div className="overflow-y-auto h-[460px] rounded-xl scrollbar-none">
                 <table className="min-w-full text-xs border-collapse table-fixed px-4">
                   {/* Table Head sticky */}
                   <thead className="sticky top-0 px-2 z-10 text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d] shadow-md">
@@ -715,7 +715,7 @@ export default function Dashboard() {
         <div className="w-[310px] flex flex-col gap-4">
           {/* Calendar */}
           <div className="bg-white rounded-xl shadow p-0">
-            <div className="h-[300px] flex items-center justify-center text-gray-400">
+            <div className="h-[350px] flex items-center justify-center text-gray-400 dark:bg-[#343434]">
               <Calendar />
             </div>
           </div>
