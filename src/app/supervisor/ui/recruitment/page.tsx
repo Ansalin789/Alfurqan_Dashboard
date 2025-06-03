@@ -159,15 +159,20 @@ export default function ApplicantsPage() {
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const dateInputRef = useRef<any>(null);
 
-
-    const [fromDate, setFromDate] = useState<Date | null>(null);
+  const [fromDate, setFromDate] = useState<Date | null>(null);
   const [toDate, setToDate] = useState<Date | null>(null);
 
   const fromWrapperRef = useRef<HTMLDivElement>(null);
   const toWrapperRef = useRef<HTMLDivElement>(null);
+  const [supervisorId, setSupervisorId] = React.useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const id = localStorage.getItem("SupervisorPortalId")?.trim() ?? null;
+      setSupervisorId(id);
+    }
+  }, []);
 
   function focusFromInput() {
     const input = fromWrapperRef.current?.querySelector("input");
@@ -202,10 +207,22 @@ export default function ApplicantsPage() {
         ? localStorage.getItem("SupervisorAuthToken")
         : null;
 
+    const supervisorId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorPortalId")
+        : null;
+
     if (!token) {
       console.error("❌ SupervisorAuthToken not found");
       return;
     }
+
+    if (!supervisorId) {
+      console.warn("⚠️ SupervisorId not found in localStorage");
+    } else {
+      console.log("✅ Supervisor ID from localStorage:", supervisorId);
+    }
+
     axios
       .get("https://api.blackstoneinfomaticstech.com/applicants", {
         headers: {
@@ -336,18 +353,18 @@ export default function ApplicantsPage() {
       comments,
       level: "1",
     };
-  
+
     try {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("SupervisorAuthToken")
           : null;
-  
+
       if (!token) {
         console.error("❌ SupervisorAuthToken not found");
         return;
       }
-  
+
       const response = await axios.put(
         `http://localhost:5001/applicants/${id}`,
         updateData,
@@ -358,15 +375,13 @@ export default function ApplicantsPage() {
           },
         }
       );
-  
+
       console.log("✅ Update successful:", response.data);
       handleviewclose();
     } catch (error: any) {
       console.error("❌ Update error:", error.response?.data || error.message);
     }
   };
-  
-  
 
   const [country, setCountry] = useState("USA");
   const [cities, setCities] = useState([]);
@@ -577,12 +592,20 @@ export default function ApplicantsPage() {
                                 </button>
                                 {openMenuId === applicant._id && (
                                   <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
-                                    <button
-                                      onClick={() => handleEdit(applicant)}
-                                      className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
-                                    >
-                                      Edit
-                                    </button>
+                                    {/* Show Edit only if supervisorId matches */}
+                                    {supervisorId &&
+                                      supervisorId ===
+                                        String(
+                                          applicant.supervisor?.supervisorId
+                                        ) && (
+                                        <button
+                                          onClick={() => handleEdit(applicant)}
+                                          className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+                                        >
+                                          Edit
+                                        </button>
+                                      )}
+
                                     <button
                                       onClick={() =>
                                         handleViewDetails(applicant)
@@ -593,7 +616,7 @@ export default function ApplicantsPage() {
                                     </button>
                                     <button
                                       onClick={() => setOpenMenuId(null)}
-                                      className="block w-full px-4 py-2 text-left text-[12px] text-red-600 hover:bg-gray-50"
+                                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-50"
                                     >
                                       Cancel
                                     </button>
@@ -635,7 +658,6 @@ export default function ApplicantsPage() {
 
             <h2 className="text-lg font-semibold mb-4">Filter by</h2>
 
-            {/* Date Input */}
             {/* Date Input */}
             <div className="mb-4">
               <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
@@ -686,7 +708,6 @@ export default function ApplicantsPage() {
               </div>
             </div>
 
-
             {/* Position Applied */}
             <div className="mb-4">
               <label
@@ -708,7 +729,7 @@ export default function ApplicantsPage() {
                 htmlFor="status"
                 className="block text-sm font-medium mb-1"
               >
-                Status
+                Application Status
               </label>
               <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
                 <option>Shortlisted</option>
@@ -769,10 +790,6 @@ export default function ApplicantsPage() {
                       {Applicantbyid?.candidateFirstName}{" "}
                       {Applicantbyid?.candidateLastName}
                     </h2>
-                    <div className="flex items-center gap-1 text-sm text-[#6B7280] dark:text-[#D6D6D6]">
-                      <FileText className="w-3 h-3" />
-                      <span className="text-[10px] font-medium">CV.pdf</span>
-                    </div>
                   </div>
                   <div className="mt-1 text-[10px] text-[#0A0A14] font-medium flex items-center gap-2 dark:text-[#D6D6D6]">
                     <span>Applied for</span>
@@ -852,39 +869,78 @@ export default function ApplicantsPage() {
                   </div>
 
                   {/* Experience */}
-                  <div className="border border-[#E0E4E9]  rounded-2xl p-4 text-sm text-gray-800 shadow-sm dark:border-[#5F5959]">
-                    <h3 className="text-[12px] font-semibold text-[#010E30] mb-3 dark:text-[#fff]">
-                      Professional Experience
-                    </h3>
-                    <div className="mb-4">
-                      <h4 className="text-[12px] text-[#010E30] font-semibold dark:text-[#fff]">
-                        Professor
-                      </h4>
-                      <div className="flex flex-wrap justify-between text-[10px] text-[#8A8383] mt-1 dark:text-[#D6D6D6]">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>Jan, 2023 - Present</span>
-                        </div>
-                        <span>United States</span>
-                      </div>
-                      <h5 className="text-[12px] text-[#010E30] mt-2 font-semibold uppercase dark:text-[#fff]">
-                        BS Institutions
-                      </h5>
-                      <ul className="list-disc pl-5 mt-1 text-[10px] text-[#525252] dark:text-[#D6D6D6]">
-                        <li>
-                          Developed React.js components for improved user
-                          engagement,
-                        </li>
-                        <li>
-                          Collaborated on RESTful APIs for seamless data
-                          exchange,
-                        </li>
-                        <li>
-                          Optimized performance through efficient algorithms.
-                        </li>
-                      </ul>
+                  {Applicantbyid?.professionalExperience && (
+                    <div className="h-[300px] overflow-y-auto overflow-x-hidden scrollbar-hide border border-[#E0E4E9] rounded-2xl p-4 text-sm text-gray-800 shadow-sm dark:border-[#5F5959]">
+                      <h3 className="text-[12px] font-semibold text-[#010E30] mb-3 dark:text-[#fff]">
+                        Professional Experience
+                      </h3>
+
+                      {(() => {
+                        const lines: string[] = String(
+                          Applicantbyid.professionalExperience
+                        ).split("\n");
+                        const experiences: {
+                          role: string;
+                          location: string;
+                          date: string;
+                          details: string[];
+                        }[] = [];
+
+                        let current: {
+                          role: string;
+                          location: string;
+                          date: string;
+                          details: string[];
+                        } | null = null;
+
+                        const headerRegex =
+                          /(.*?),\s*(.*?)(?:\s+([A-Za-z]{3}\s*[-–]?\s*\d{4})(?:\s*(?:to|-|–)\s*(Present|\d{4}))?)/i;
+
+                        for (const line of lines) {
+                          const trimmed: string = line.trim();
+                          if (!trimmed) continue;
+
+                          const match = trimmed.match(headerRegex);
+                          if (match) {
+                            if (current) experiences.push(current);
+
+                            const [, role, location, start, end] = match;
+                            current = {
+                              role: role.trim(),
+                              location: location.trim(),
+                              date: `${start}${end ? " - " + end : ""}`,
+                              details: [],
+                            };
+                          } else if (current) {
+                            current.details.push(trimmed.replace(/^•\s*/, ""));
+                          }
+                        }
+                        if (current) experiences.push(current);
+
+                        return experiences.map((exp, idx) => (
+                          <div key={idx} className="mb-4">
+                            <h4 className="text-[12px] text-[#010E30] font-semibold dark:text-[#fff]">
+                              {exp.role}
+                            </h4>
+                            <div className="flex flex-wrap justify-between text-[10px] text-[#8A8383] mt-1 dark:text-[#D6D6D6]">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                <span>{exp.date}</span>
+                              </div>
+                              <span>{exp.location}</span>
+                            </div>
+                            {exp.details.length > 0 && (
+                              <ul className="list-disc list-inside mt-2 text-[11px] text-[#4B5563] dark:text-[#E0E0E0]">
+                                {exp.details.map((detail, i) => (
+                                  <li key={i}>{detail}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ));
+                      })()}
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Right Column */}
@@ -1101,7 +1157,6 @@ export default function ApplicantsPage() {
             <div className="w-full border-t p-3 flex justify-end gap-3 bg-white z-10 dark:bg-[#343434] dark:border-t-[#5F5959]">
               <button
                 onClick={() =>
-                  
                   handlesendupdate(Applicantbyid?._id ?? "", "REJECTED")
                 }
                 disabled={mode === "view"}
@@ -1148,6 +1203,6 @@ export default function ApplicantsPage() {
           </div>
         </>
       )}
-   </BaseLayout3>
+    </BaseLayout3>
   );
 }
