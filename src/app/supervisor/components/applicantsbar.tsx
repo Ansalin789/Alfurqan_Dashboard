@@ -61,30 +61,30 @@ const ApplicationChart = () => {
             Application
           </h3>
 
-          <div className="flex items-center gap-2 px-2 py-1 relative">
+          <div className="flex items-center gap-2 px-2 py-2 relative">
             {/* Legend - Applied */}
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm bg-[#a6c1ff]" />
-              <span className="text-[10px] font-normal text-[#010E30] dark:text-white/80">
+              <div className="w-[10px] h-[10px] rounded-[2px] bg-[#a6c1ff]" />
+              <span className="text-[10px] font-light text-[#010E30] dark:text-white">
                 Applied
               </span>
             </div>
 
             {/* Legend - Shortlisted */}
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm bg-[#d5e0ff]" />
-              <span className="text-[10px] font-normal text-[#010E30] dark:text-white/80">
+              <div className="w-[10px] h-[10px] rounded-[2px] bg-[#d5e0ff]" />
+              <span className="text-[10px] font-light text-[#010E30] dark:text-white">
                 Shortlisted
               </span>
             </div>
 
             {/* Date Picker Toggle */}
             <div
-              className="flex items-center p-1 text-[11px] bg-[#efefef] rounded-md text-[#576cbc] cursor-pointer"
+              className="flex items-center p-1 gap-1 text-[10px] bg-[#efefef] dark:bg-[#565656] rounded-md text-[#ddd] cursor-pointer"
               onClick={() => setShowCalendar(!showCalendar)}
             >
               <svg
-                className="w-4 h-4 text-gray-500 dark:text-[#dddd],bg-[#dddd]"
+                className="w-3 h-3 -mt-[1px] text-[#576cbc] dark:text-[#ddd]"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"

@@ -1,22 +1,17 @@
 /* Light mode styles */
 .custom-calendar {
-  /* width: 310px !important;
-  height: 314px !important; */
-  /* background: #ffffff !important; */
-  /* border-radius: 0.5rem; */
-  /* padding: 5px; */
-  /* font-family: 'Segoe UI', sans-serif; */
-  /* color: #010E30; */
-  /* box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06); */
-  /* box-sizing: border-box; */
-  /* margin-top: -92px; */
+  /* width: 310px !important; */
+  height: 300px !important;
+  padding: 5px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #010E30;
+  box-sizing: border-box;
 }
 
 /* Dark mode styles using .dark selector from Tailwind */
 .dark .custom-calendar {
-  background: #343434 !important; /* Tailwind's gray-800 */
-  color: #f9fafb !important; /* Tailwind's gray-50 */
-  box-shadow: 0 3px 12px rgba(255, 255, 255, 0.08);
+  /* background: #343434 !important;  */
+  color: #f9fafb !important;
 }
 
 .dark .custom-calendar .react-calendar__tile {
