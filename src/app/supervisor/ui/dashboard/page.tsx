@@ -160,10 +160,10 @@ export default function Dashboard() {
         ? localStorage.getItem("SupervisorPortalId")
         : null;
 
-    if (!token) {
-      console.error("❌ SupervisorAuthToken not found");
-      return;
-    }
+    if (!token || !id) {
+    console.error("❌ SupervisorAuthToken or SupervisorPortalId not found");
+    return;
+  }
     const fetchData = async () => {
       const applicants = await fetchApplicantsData(token ?? " ");
       console.log("Fetched Applicants:", applicants); // ✅ Debugging
@@ -183,14 +183,12 @@ export default function Dashboard() {
     );
 
     const fetchDashboardCounts = axios.get(
-      "http://localhost:5001/dashboard/supervisor/counts",
+      'http://localhost:5001/dashboard/supervisor/counts',
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        params:{
-          supervisorId:id
+          "Authorization": `Bearer ${token}`,
+          "supervisor" : id,
         },
       }
     );
