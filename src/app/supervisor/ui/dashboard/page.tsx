@@ -19,6 +19,7 @@ import moment from "moment";
 import axios from "axios";
 import Calendar from "../../../supervisor/components/Calender";
 import SupervisorHeader from "../../components/supervisorHeader";
+import { getSocket } from "@/app/utils/socket";
 interface Applicant {
   _id: string;
   candidateFirstName: string;
@@ -133,12 +134,30 @@ export default function Dashboard() {
   const [filteredPositions, setFilteredPositions] = useState<
     { name: string; color: string; count: number }[]
   >([]);
+    useEffect(()=>{
+      const Id = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalId") : null;
+      if(!Id) return;
+     const socket = getSocket(Id);
+     const handleCount = (data : DashboardCounts) =>{
+       setDashboardCounts(data);
+       console.log(data);
+     };
+       socket.on("supervisordashboardcount",handleCount);
+       return ()=>{
+       socket.off("supervisordashboardcount",handleCount);
+       };
+    },[]);
 
   useEffect(() => {
     setMounted(true);
     const token =
       typeof window !== "undefined"
         ? localStorage.getItem("SupervisorAuthToken")
+        : null;
+
+        const id =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorPortalId")
         : null;
 
     if (!token) {
@@ -164,11 +183,14 @@ export default function Dashboard() {
     );
 
     const fetchDashboardCounts = axios.get(
-      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+      "http://localhost:5001/dashboard/supervisor/counts",
       {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+        },
+        params:{
+          supervisorId:id
         },
       }
     );
