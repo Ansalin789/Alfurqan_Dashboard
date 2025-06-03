@@ -1108,6 +1108,6 @@ export default function ApplicantsPage() {
           </div>
         </>
       )}
-    </BaseLayout3>
+   </BaseLayout3>
   );
 }
