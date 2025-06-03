@@ -162,6 +162,23 @@ export default function ApplicantsPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const dateInputRef = useRef<any>(null);
 
+
+    const [fromDate, setFromDate] = useState<Date | null>(null);
+  const [toDate, setToDate] = useState<Date | null>(null);
+
+  const fromWrapperRef = useRef<HTMLDivElement>(null);
+  const toWrapperRef = useRef<HTMLDivElement>(null);
+
+  function focusFromInput() {
+    const input = fromWrapperRef.current?.querySelector("input");
+    input?.focus();
+  }
+
+  function focusToInput() {
+    const input = toWrapperRef.current?.querySelector("input");
+    input?.focus();
+  }
+
   const handleAddSkill = () => {
     const trimmed = newSkill.trim();
     if (trimmed && !skills.includes(trimmed)) {
@@ -607,7 +624,7 @@ export default function ApplicantsPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-96 relative dark:bg-[#252525]">
+          <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
             {/* Close Icon */}
             <button
               className="absolute top-2 right-3 text-gray-400 text-xl"
@@ -619,33 +636,56 @@ export default function ApplicantsPage() {
             <h2 className="text-lg font-semibold mb-4">Filter by</h2>
 
             {/* Date Input */}
+            {/* Date Input */}
             <div className="mb-4">
-              <label
-                htmlFor="date"
-                className="flex items-center gap-1 text-sm font-medium mb-1 dark:text-[#D6D6D6]"
-              >
-                Date
+              <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                Date Range
               </label>
-              <div className="relative">
-                <DatePicker
-                  id="date"
-                  selected={selectedDate}
-                  onChange={(date) => setSelectedDate(date)}
-                  dateFormat="dd/MM/yyyy"
-                  className="w-full border rounded-md p-2  text-[12px] dark:bg-[#5C5C5C] dark:text-[#D6D6D6]"
-                  calendarClassName="custom-datepicker"
-                  ref={dateInputRef}
-                  placeholderText="DD/MM/YYYY"
-                />
-                {/* Icon inside input field */}
-                <div
-                  className="absolute inset-y-0 right-3 flex items-center text-[#666E83] cursor-pointer"
-                  onClick={() => dateInputRef.current?.setFocus()}
-                >
-                  <FiCalendar size={16} />
+
+              <div className="flex gap-4 flex-col sm:flex-row">
+                {/* From Date */}
+                <div className="relative w-full" ref={fromWrapperRef}>
+                  <DatePicker
+                    selected={fromDate}
+                    onChange={(date) => setFromDate(date)}
+                    selectsStart
+                    startDate={fromDate}
+                    endDate={toDate}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="From Date"
+                    className="w-full border rounded-md p-2 pr-8 text-[12px]  dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                  />
+                  <div
+                    className="absolute inset-y-0 ml-40 flex items-center text-[#666E83] dark:text-[#fff] cursor-pointer dark:opacity-[60%]"
+                    onClick={focusFromInput}
+                  >
+                    <FiCalendar size={16} />
+                  </div>
+                </div>
+
+                {/* To Date */}
+                <div className="relative w-full" ref={toWrapperRef}>
+                  <DatePicker
+                    selected={toDate}
+                    onChange={(date) => setToDate(date)}
+                    selectsEnd
+                    startDate={fromDate}
+                    endDate={toDate}
+                    minDate={fromDate || undefined}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="To Date"
+                    className="w-full border rounded-md p-2 pr-8 ml-[15px] dark:border-[#565656] text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6]"
+                  />
+                  <div
+                    className="absolute inset-y-0 ml-48 flex items-center text-[#666E83] dark:text-[#fff] dark:opacity-[60%] cursor-pointer"
+                    onClick={focusToInput}
+                  >
+                    <FiCalendar size={16} />
+                  </div>
                 </div>
               </div>
             </div>
+
 
             {/* Position Applied */}
             <div className="mb-4">
@@ -655,7 +695,7 @@ export default function ApplicantsPage() {
               >
                 Position Applied
               </label>
-              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#5C5C5C] dark:text-[#D6D6D6]">
+              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
                 <option>Islamic</option>
                 <option>Quran</option>
                 <option>Tajweed</option>
@@ -670,7 +710,7 @@ export default function ApplicantsPage() {
               >
                 Status
               </label>
-              <select className="w-full border rounded-md p-2 text-[12px]  dark:bg-[#5C5C5C] dark:text-[#D6D6D6]">
+              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
                 <option>Shortlisted</option>
                 <option>Rejected</option>
                 <option>Waiting</option>
