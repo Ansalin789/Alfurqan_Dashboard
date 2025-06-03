@@ -148,7 +148,7 @@ const FeedbackDetails: React.FC = () => {
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentItems = applicants.slice(indexOfFirst, indexOfLast);
 
-  const [showFilter, setShowFilter] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const handleDetailsClick = (applicant: {
     _id: string;
     Review: string;
@@ -186,33 +186,30 @@ const FeedbackDetails: React.FC = () => {
 
         <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
           {/* Header Search & Filter */}
-          <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434] h-10">
+          <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
             <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Search className="w-4 h-4 text-gray-400 dark:text-gray-400 mt-3 " />
+              <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by keyword"
-                className="bg-transparent outline-none  w-52 py-3 mt-3 text-[14px]"
+                className="bg-transparent outline-none text-[15px] w-52 py-3"
               />
             </div>
 
             <div className="relative ">
               {/* Filter Button: Tune + Filter Left, Arrow Right */}
               <div
-                className="flex justify-between items-center w-96 bg-gray-50 dark:bg-[#343434] 
-  border-y-0 border-l border-r border-gray-200 dark:border-[#606060]
-  text-sm text-gray-500 py-[15.5px] mt-[12px] px-3 cursor-pointer -ml-60"
-                onClick={() => setShowFilter(!showFilter)}
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                onClick={() => setShowModal(true)}
               >
                 <div className="flex items-center gap-1">
                   <MdTune className="w-4 h-4" />
                   <span className="text-sm">Filter</span>
                 </div>
-                <FaChevronDown className="w-3 h-3" />
               </div>
 
               {/* Filter Popup */}
-              {showFilter && (
+              {/* {showFilter && (
                 <div
                   className="absolute top-14 left-0 bg-white  dark:bg-[#343434] rounded-lg shadow-lg w-80 p-6 z-50"
                   onClick={(e) => e.stopPropagation()}
@@ -246,6 +243,45 @@ const FeedbackDetails: React.FC = () => {
                     </button>
                   </div>
                 </div>
+              )} */}
+
+              {showModal && (
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center"
+                  // onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-white p-6 rounded-lg w-96 relative dark:bg-[#252525]">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-[#ffff]">
+                      Filter by
+                    </h3>
+                    <button onClick={() => setShowModal(false)}>
+                      <HiOutlineX className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                    </button>
+                  </div>
+                  <label className="block text-sm text-gray-700 mb-1 dark:text-[#ffff]">
+                    Class
+                  </label>{" "}
+                  <br />
+                  <select className="w-full border border-gray-300  dark:bg-[#343434] dark:text-[#ffff] rounded-md p-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option>Trail Class</option>
+                    <option>Other Class</option>
+                  </select>
+                  <hr className="my-4" />
+                  <div className="flex justify-between">
+                    <button
+                      className="px-4 py-2 rounded-md border border-indigo-300 text-indigo-600 hover:bg-indigo-50 text-sm"
+                      onClick={() => setShowModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm">
+                      Submit
+                    </button>
+                  </div>
+                  </div>
+                  
+                </div>
               )}
             </div>
 
@@ -258,7 +294,7 @@ const FeedbackDetails: React.FC = () => {
 
           {/* Table */}
           <table
-            className="table-auto  w-full border-separate border-spacing-y-3 "
+            className="table-auto  w-full "
             style={{ width: "100%", tableLayout: "fixed" }}
           >
             <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
@@ -291,7 +327,7 @@ const FeedbackDetails: React.FC = () => {
                       : "bg-[#F8F8F8] dark:bg-[#303030]"
                   }`}
                 >
-                  <td className="px-3 py-2 text-[#17243E]  dark:text-[#FDFDFD]">
+                  <td className="px-3 py-4 text-[#17243E]  dark:text-[#FDFDFD]">
                     {applicant.Review}
                   </td>
 
@@ -333,7 +369,7 @@ const FeedbackDetails: React.FC = () => {
 
         {/* Pagination */}
         <div className="mt-4">
-        <Pagination
+          <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
