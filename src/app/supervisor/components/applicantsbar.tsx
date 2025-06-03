@@ -1,4 +1,5 @@
 "use client";
+import "./DateRange.css";
 
 import React, { useState } from "react";
 import {
@@ -46,10 +47,13 @@ const ApplicationChart = () => {
 
   const formattedDate =
     dateRange[0].startDate && dateRange[0].endDate
-      ? `${format(dateRange[0].startDate, "dd MMM")}–${format(
-          dateRange[0].endDate,
-          "dd MMM"
-        )}`
+      ? format(dateRange[0].startDate, "dd MMM") ===
+        format(dateRange[0].endDate, "dd MMM")
+        ? format(dateRange[0].startDate, "dd MMM")
+        : `${format(dateRange[0].startDate, "dd MMM")}–${format(
+            dateRange[0].endDate,
+            "dd MMM"
+          )}`
       : "";
 
   return (
@@ -98,18 +102,21 @@ const ApplicationChart = () => {
                 />
               </svg>
 
-              <span>{formattedDate || "Select Date"}</span>
+              <span className="text-[#576CBC] dark:text-[#DDDDDD]">
+                {formattedDate || "Select Date"}
+              </span>
             </div>
 
             {/* Calendar Dropdown */}
             {showCalendar && (
-              <div className="absolute right-0 top-[38px] z-50">
+              <div className="absolute right-0 top-[38px] z-50 scale-90 origin-top-right">
                 <DateRange
+                  className="custom-date-range"
                   editableDateInputs={true}
                   onChange={handleRangeChange}
                   moveRangeOnFirstSelection={false}
                   ranges={dateRange}
-                  rangeColors={["#0D356D"]}
+                  rangeColors={["transparent"]}
                 />
               </div>
             )}
@@ -132,10 +139,10 @@ const ApplicationChart = () => {
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 10,
+                tick={{
+                  fontSize: 10,
                   fill: "currentColor", // uses text color from parent
-
-                 }}
+                }}
               />
               <Tooltip
                 cursor={{ fill: "transparent" }}
