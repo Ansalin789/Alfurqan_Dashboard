@@ -7,6 +7,8 @@ import axios from "axios";
 import BaseLayout3 from "@/components/BaseLayout3";
 import Link from "next/link";
 import SupervisorHeader from "../../components/supervisorHeader";
+import SuccessPopup from "../../components/successPopup";
+import FailedPopup from "../../components/failedPopup";
 
 interface Student {
   studentId: string;
@@ -20,11 +22,15 @@ interface Teacher {
   teacherName: string;
   teacherEmail: string;
 }
-
+interface Course{
+  courseId:string;
+  courseName:string;
+}
 interface ClassData {
   _id: string;
   student: Student;
   teacher: Teacher;
+  course:Course;
   classDay: string[]; // Keep this as an array of strings
   package: string;
   preferedTeacher: string;
@@ -53,6 +59,10 @@ function LiveClass() {
   const [feedback, setFeedback] = useState("");
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [roomName, setRoomName] = useState("");
+    const [success, setSuccess] = useState(false);
+    const [failed, setFailed] = useState(false);
+    const [failedMessage, setFailedMessage] = useState("");
+    const [successMessage,setSuccessMessage] = useState("");
 
   useEffect(() => {
     // Ideally this should come from your backend or query params
@@ -87,6 +97,7 @@ function LiveClass() {
         if (response.data) {
           console.log("Setting classData:", response.data); // ✅ Log before setting state
           setClassData(response.data);
+          
         } else {
           console.log("Error: classSchedule is missing in API response");
         }
@@ -116,8 +127,8 @@ function LiveClass() {
       classDay: classData?.classDay[0],
       preferedTeacher: classData?.preferedTeacher,
       course: {
-        courseId: "course123",
-        courseName: "Math 101",
+        courseId:classData?.course.courseId,
+        courseName: classData?.course.courseName,
       },
       studentsRating: {
         knowledgeofstudentsandcontent: ratings[0],
@@ -143,7 +154,7 @@ function LiveClass() {
           : null;
 
       if (!token) {
-        console.error("❌ AdminAuthToken not found");
+        console.error("❌ SupervisorAuthToken not found");
         return;
       }
       const response = await axios.post(
@@ -159,11 +170,14 @@ function LiveClass() {
 
       if (response.status === 201 || response.status === 200) {
         setShowPopup(true);
+        setSuccess(true);
+
         setTimeout(() => setShowPopup(false), 3000);
       } else {
         console.log("Failed to submit feedback. Please try again.");
       }
-    } catch (error) {
+    } 
+    catch (error) {
       console.error("Error submitting feedback:", error);
       console.log("Error submitting feedback. Please try again.");
     }
@@ -219,50 +233,31 @@ function LiveClass() {
       <SupervisorHeader currentSection="Live Classes" />
       <div className="flex flex-col min-h-screen px-4 sm:px-6 md:px-8">
         {/* Centered Popup */}
-        <div
-          className={`
-      fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50
-      bg-[#1C3557] text-white px-6 py-3 rounded-xl shadow-lg
-      flex items-center gap-3 transition-opacity duration-300
-      ${showPopup ? "opacity-100" : "opacity-0 pointer-events-none"}
-    `}
-        >
-          <img
-            src="/assets/images/Check.png"
-            alt="find"
-            className="w-10 mt-1"
-          />
-          <span className="font-semibold text-sm sm:text-base">
-            Submitted Successfully
-          </span>
-        </div>
-
-        {/* Overlay */}
-        <div
-          className={`
-      fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity z-20 duration-300
-      ${showPopup ? "opacity-100" : "opacity-0 pointer-events-none"}
-    `}
-        />
+              {success && (
+        <SuccessPopup onClose={() => setSuccess(false)} title={successMessage} />
+      )}
+      {failed && (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+      )}
 
         {/* Page Content */}
-        <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl">
+        <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl mr-20">
           <div className="flex-1 overflow-auto">
             {/* Remove Header with Logout */}
             {showFeedback ? (
               <div className="flex flex-col xl:flex-row gap-6 items-start justify-center px-2 py-2 min-h-screen">
               {/* Class Details Card */}
-              <div className="bg-white dark:bg-[#3b3b3b] dark:text-[#fff] rounded-xl shadow w-full max-w-md h-[640px]">
+              <div className="bg-white dark:bg-[#3b3b3b] dark:text-[#fff] rounded-xl shadow w-full max-w-md h-[610px] mr-10 -ml-20">
                 <img
-                  src="/assets/images/tajweedmasterclass.png"
+                  src="/assets/images/arabics.jpg"
                   alt="Tajweed"
-                  className="w-full h-[150px] object-cover rounded-t-2xl"
+                  className="w-full h-[200px] object-cover rounded-t-2xl"
                 />
                 <div className="text-center py-4 border-b border-gray-200">
                   <h2 className="text-[18px] font-bold text-[#1E1E1E] uppercase dark:text-[#fff]">TAJWEED</h2>
                   <p className="text-[14px] text-gray-500 dark:text-[#fff]">Master Class</p>
                 </div>
-                <div className="px-6 py-4">
+                <div className="px-6 py-4  ">
                   <h3 className="text-[15px] font-semibold text-[#1E1E1E] mb-4 dark:text-[#fff]">Class details</h3>
                   <div className="space-y-2 text-[14px] text-gray-700 dark:text-[#fff]">
                     <div className="flex justify-between">
