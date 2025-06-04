@@ -13,6 +13,8 @@ import Pagination from "@/components/Pagination";
 import { AiOutlineMenuUnfold } from "react-icons/ai";
 import { IoPersonOutline } from "react-icons/io5";
 import { MdTune } from "react-icons/md";
+import SuccessPopup from "../../components/successPopup";
+import FailedPopup from "../../components/failedPopup";
 interface ApiResponse {
   candidateFirstName: string;
   candidateLastName: string;
@@ -51,6 +53,9 @@ const ScheduledClasses = () => {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [rescheduleReason, setRescheduleReason] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [isDatePickerOpens, setIsDatePickerOpens] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -259,22 +264,64 @@ const ScheduledClasses = () => {
   //   setShowMeetingDetailsModal(true); // assuming you have this state and modal
   // };
 
-  const handleRescheduleSubmit = () => {
-    if (rescheduleReason.trim()) {
-      setShowSuccess(true);
+  const handleRescheduleSubmit = async () => {
+    if (
+      !rescheduleReason.trim() ||
+      !rescheduleDate ||
+      !rescheduleTime ||
+      !selectedItemId
+    ) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token"); // or use context/auth provider
+      const response = await fetch(
+        `http://localhost:5001/meeting/${selectedItemId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            selectedDate: rescheduleDate,
+            startTime: rescheduleTime,
+            description: rescheduleReason,
+            meetingStatus: "Rescheduled",
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to update meeting");
+      }
+
+      // Update frontend UI
       setUpcomingClasses((prevClasses) =>
         prevClasses.map((item) =>
           item._id === selectedItemId
-            ? { ...item, status: "Rescheduled" as Meeting["meetingStatus"] }
+            ? {
+                ...item,
+                meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
+              }
             : item
         )
       );
+
+   setSuccess(true);
 
       setTimeout(() => {
         setShowSuccess(false);
         setIsRescheduleModalOpen(false);
         setRescheduleReason("");
       }, 2000);
+    } catch (error) {
+      console.error("Error during rescheduling:", error);
+      alert("Could not update meeting. Please try again.");
     }
   };
 
@@ -495,7 +542,6 @@ const ScheduledClasses = () => {
                             {item.startTime}
                           </td>
 
-
                           <td className="px-3 py-2 text-left">
                             {(() => {
                               let content;
@@ -701,70 +747,70 @@ const ScheduledClasses = () => {
             {/* Grid Fields */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-[12px] text-[#0D0E25] mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
                   Meeting ID
                 </label>
                 <input
                   value={selectedMeetingDetails.meetingId}
                   disabled
-                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 />
               </div>
               <div>
-                <label className="block text-[12px] text-[#0D0E25] mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
                   Meeting Name
                 </label>
                 <input
                   value={selectedMeetingDetails.meetingName}
                   disabled
-                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
+                  className="w-full px-3 py-2 text-[12px] border  border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 />
               </div>
               <div>
-                <label className="block text-[12px] text-[#0D0E25] mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
                   Course
                 </label>
                 <input
                   value="-"
                   disabled
-                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 />
               </div>
               <div>
-                <label className="block text-[12px] text-[#0D0E25] mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
                   Date
                 </label>
                 <input
                   value={selectedMeetingDetails.selectedDate}
                   disabled
-                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 />
               </div>
               <div>
-                <label className="block text-[12px] text-[#0D0E25] mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
                   Duration
                 </label>
                 <input
                   value={"60 Minutes"} // You can compute actual difference if needed
                   disabled
-                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 />
               </div>
               <div>
-                <label className="block text-[12px] text-[#0D0E25] mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
                   Meeting Time
                 </label>
                 <input
                   value={`${selectedMeetingDetails.startTime} - ${selectedMeetingDetails.endTime}`}
                   disabled
-                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 />
               </div>
             </div>
 
             {/* Attendance */}
-            <div className="mb-6 border rounded-lg">
-              <div className="flex justify-between items-center bg-[#576CBC] text-white px-4 py-2 rounded-t text-sm font-medium">
+            <div className="mb-6 rounded-xl overflow-hidden dark:bg-[#343434] text-white border ">
+              <div className="flex justify-between items-center bg-[#576CBC] text-white px-6 py-3 text-sm font-semibold">
                 <span>Name</span>
                 <span>Attendance</span>
               </div>
@@ -784,13 +830,13 @@ const ScheduledClasses = () => {
               </div>
             </div>
             <div className="mb-6">
-              <label className="block text-sm text-[#0D0E25] mb-1">
+              <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
                 Meeting Description
               </label>
               <textarea
                 value={selectedMeetingDetails.description ?? ""}
                 disabled
-                className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
+                className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
               />
             </div>
 
@@ -803,7 +849,7 @@ const ScheduledClasses = () => {
                 Cancel
               </button>
               <button
-                 onClick={() => setIsMeetingDetailsModalOpen(false)}
+                onClick={() => setIsMeetingDetailsModalOpen(false)}
                 className="px-6 py-2 rounded-md bg-[#576CBC] text-white font-semibold  transition"
               >
                 Submit
@@ -884,6 +930,13 @@ const ScheduledClasses = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {success && (
+        <SuccessPopup onClose={() => setSuccess(false)} title="ReSchedule" />
+      )}
+      {failed && (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
       )}
     </BaseLayout3>
   );
