@@ -343,13 +343,13 @@ export default function ApplicantsPage() {
   const handleViewDetails = (applicant: Applicant) => {
     setSelectedApplicant(applicant);
     setOpenMenuId(null);
-    setMode("view"); // ✅ This works well
+    setMode("view"); // Always set to view mode
   };
 
   const handleEdit = (applicant: Applicant) => {
     setSelectedApplicant(applicant);
     setOpenMenuId(null);
-    setMode("edit"); // set to edit mode
+    setMode("edit");
   };
 
   const handleviewclose = () => {
@@ -974,8 +974,6 @@ export default function ApplicantsPage() {
                     },
                   ].map(({ label, state, setState }) => (
                     <div key={label} className="mt-3">
-                      {" "}
-                      {/* added mt-3 */}
                       <div className="text-[12px] font-Medium text-[#1E2A41] dark:text-[#fff]">
                         {label}
                       </div>
@@ -983,7 +981,7 @@ export default function ApplicantsPage() {
                         {["Basic", "Medium", "Advanced"].map((level) => (
                           <label
                             key={level}
-                            className={`flex items-center gap-2 rounded px-3 py-1 transition-all  dark:border border-[#E0E4EA] ${
+                            className={`flex items-center gap-2 rounded px-3 py-1 transition-all dark:border border-[#E0E4EA] ${
                               state === level
                                 ? "border border-[#D9DEE8]"
                                 : "border border-[#D9DEE8]"
@@ -995,8 +993,9 @@ export default function ApplicantsPage() {
                               value={level}
                               checked={state === level}
                               onChange={() => setState(level)}
+                              disabled={mode === "view"}
                               className="appearance-none w-[10px] h-[10px] rounded-full border border-[#333D58] checked:bg-[#1E2A41] checked:ring-1 checked:ring-offset-1 transition-all 
-                                       dark:border-[#A9A9A9] dark:checked:bg-[#E5E5E5] dark:checked:ring-[#E5E5E5] dark:ring-offset-[#333D58]"
+                                       dark:border-[#A9A9A9] dark:checked:bg-[#E5E5E5] dark:checked:ring-[#E5E5E5] dark:ring-offset-[#333D58] disabled:opacity-50"
                             />
                             {level}
                           </label>
@@ -1011,14 +1010,15 @@ export default function ApplicantsPage() {
                     <div>
                       <label
                         htmlFor="prferworking days"
-                        className="block text-[11px] font-medium  text-[#1E2A41] mb-1 dark:text-[#fff]"
+                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]"
                       >
                         Preferred Working Days
                       </label>
                       <select
-                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292]"
+                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292] disabled:opacity-50"
                         value={workingDays}
                         onChange={(e) => setWorkingDays(e.target.value)}
+                        disabled={mode === "view"}
                       >
                         {[
                           "Monday-Saturday",
@@ -1052,7 +1052,7 @@ export default function ApplicantsPage() {
                     <div>
                       <label
                         htmlFor="Expected Salary per Hour"
-                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff] "
+                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]"
                       >
                         Expected Salary per Hour
                       </label>
@@ -1068,7 +1068,7 @@ export default function ApplicantsPage() {
                     <div>
                       <label
                         htmlFor="Overall Rating"
-                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff] "
+                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]"
                       >
                         Overall Rating
                       </label>
@@ -1077,15 +1077,12 @@ export default function ApplicantsPage() {
                           <button
                             key={star}
                             className={`text-xl cursor-pointer ${
-                              rating >= star
-                                ? "text-yellow-500"
-                                : "text-gray-300"
-                            }`}
-                            onClick={() => setRating(star)}
+                              rating >= star ? "text-yellow-500" : "text-gray-300"
+                            } ${mode === "view" ? "cursor-default" : ""}`}
+                            onClick={() => mode !== "view" && setRating(star)}
                             type="button"
-                            aria-label={`Rate ${star} star${
-                              star > 1 ? "s" : ""
-                            }`}
+                            disabled={mode === "view"}
+                            aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
                           >
                             ★
                           </button>
@@ -1096,16 +1093,15 @@ export default function ApplicantsPage() {
 
                   {/* Comments */}
                   <div className="mt-3">
-                    {" "}
-                    {/* added mt-3 */}
-                    <div className="text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff] ">
+                    <div className="text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]">
                       Comments
                     </div>
                     <textarea
-                      className="w-full p-2 border rounded h-24 resize-none text-[10px] font-medium text-[#1E2A41]  dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292]"
+                      className="w-full p-2 border rounded h-24 resize-none text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292] disabled:opacity-50"
                       placeholder="Add your comments here..."
                       value={comments}
                       onChange={(e) => setComments(e.target.value)}
+                      disabled={mode === "view"}
                     />
                   </div>
                 </div>
@@ -1148,50 +1144,50 @@ export default function ApplicantsPage() {
 
             {/* Footer (Fixed) */}
             <div className="w-full border-t p-3 flex justify-end gap-3 bg-white z-10 dark:bg-[#343434] dark:border-t-[#5F5959]">
-              <button
-                onClick={() =>
-                  handlesendupdate(Applicantbyid?._id ?? "", "REJECTED")
-                }
-                disabled={mode === "view"}
-                className={`px-4 py-2 text-[12px] text-[#D34645] bg-[#FDECEC] rounded-lg dark:bg-[#543838] ${
-                  mode === "view" ? "opacity-80 cursor-not-allowed" : ""
-                }`}
-              >
-                Rejected
-              </button>
-              <button
-                onClick={() =>
-                  handlesendupdate(Applicantbyid?._id ?? "", "WAITING")
-                }
-                disabled={mode === "view"}
-                className={`px-4 py-2 text-[12px] text-[#F0AD4E] bg-[#FDF6EC] rounded-lg dark:bg-[#5A4D3B] ${
-                  mode === "view" ? "opacity-80 cursor-not-allowed" : ""
-                }`}
-              >
-                Waiting
-              </button>
-              <button
-                onClick={() =>
-                  handlesendupdate(Applicantbyid?._id ?? "", "SHORTLISTED")
-                }
-                disabled={mode === "view"}
-                className={`px-4 py-2 text-[12px] text-[#377E36] bg-[#ECFDF3] rounded-lg dark:bg-[#377E3633] ${
-                  mode === "view" ? "opacity-80 cursor-not-allowed" : ""
-                }`}
-              >
-                Shortlisted
-              </button>
-              <button
-                onClick={() =>
-                  handlesendupdate(Applicantbyid?._id ?? "", applicationStatus)
-                }
-                disabled={mode === "view"}
-                className={`px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A] ${
-                  mode === "view" ? "opacity-80 cursor-not-allowed" : ""
-                }`}
-              >
-                Send for Approval
-              </button>
+              {mode === "edit" && (
+                <>
+                  <button
+                    onClick={() =>
+                      handlesendupdate(Applicantbyid?._id ?? "", "REJECTED")
+                    }
+                    className="px-4 py-2 text-[12px] text-[#D34645] bg-[#FDECEC] rounded-lg dark:bg-[#543838]"
+                  >
+                    Rejected
+                  </button>
+                  <button
+                    onClick={() =>
+                      handlesendupdate(Applicantbyid?._id ?? "", "WAITING")
+                    }
+                    className="px-4 py-2 text-[12px] text-[#F0AD4E] bg-[#FDF6EC] rounded-lg dark:bg-[#5A4D3B]"
+                  >
+                    Waiting
+                  </button>
+                  <button
+                    onClick={() =>
+                      handlesendupdate(Applicantbyid?._id ?? "", "SHORTLISTED")
+                    }
+                    className="px-4 py-2 text-[12px] text-[#377E36] bg-[#ECFDF3] rounded-lg dark:bg-[#377E3633]"
+                  >
+                    Shortlisted
+                  </button>
+                  <button
+                    onClick={() =>
+                      handlesendupdate(Applicantbyid?._id ?? "", applicationStatus)
+                    }
+                    className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
+                  >
+                    Send for Approval
+                  </button>
+                </>
+              )}
+              {mode === "view" && (
+                <button
+                  onClick={handleviewclose}
+                  className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
+                >
+                  Close
+                </button>
+              )}
             </div>
           </div>
         </>

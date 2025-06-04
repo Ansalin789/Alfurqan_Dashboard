@@ -11,7 +11,7 @@ interface Meeting {
   _id: string;
   meetingId: string;
   meetingName: string;
-  meetingStatus: "Scheduled" | "Reschedule" | "Completed";
+  // meetingStatus: "Scheduled" | "Reschedule" | "Completed";
   selectedDate: string;
   startTime: string;
   endTime: string;
@@ -32,7 +32,9 @@ interface Meeting {
 }
 
 const SchedulePage = () => {
-  const [activeView, setActiveView] = useState<'monthly' | 'weekly' | 'daily'>('monthly');
+  const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">(
+    "monthly"
+  );
   const [currentDate, setCurrentDate] = useState(new Date());
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [filteredMeetings, setFilteredMeetings] = useState<Meeting[]>([]);
@@ -43,51 +45,61 @@ const SchedulePage = () => {
 
   // Add meeting type colors
   const meetingTypeColors = {
-    'Group Meeting': {
-      text: 'text-[#21BAFF]',
-      border: 'border-[#21BAFF]',
-      bg: 'bg-[#21BAFF]/10'
+    "Group Meeting": {
+      text: "text-[#21BAFF]",
+      border: "border-[#21BAFF]",
+      bg: "bg-[#21BAFF]/10",
     },
-    'Teacher Meeting': {
-      text: 'text-[#ce4b49]',
-      border: 'border-[#ce4b49]',
-      bg: 'bg-[#ce4b49]/10'
+    "Teacher Meeting": {
+      text: "text-[#ce4b49]",
+      border: "border-[#ce4b49]",
+      bg: "bg-[#ce4b49]/10",
     },
-    'Weekly Meeting': {
-      text: 'text-[#5362e4]',
-      border: 'border-[#5362e4]',
-      bg: 'bg-[#5362e4]/10'
-    }
+    "Weekly Meeting": {
+      text: "text-[#5362e4]",
+      border: "border-[#5362e4]",
+      bg: "bg-[#5362e4]/10",
+    },
   };
 
   // Helper function to get meeting type color
   const getMeetingTypeColor = (meetingName: string) => {
     const lowerName = meetingName.toLowerCase();
-    if (lowerName.includes('group')) return meetingTypeColors['Group Meeting'];
-    if (lowerName.includes('teacher')) return meetingTypeColors['Teacher Meeting'];
-    if (lowerName.includes('weekly')) return meetingTypeColors['Weekly Meeting'];
-    return meetingTypeColors['Group Meeting']; // default color
+    if (lowerName.includes("group")) return meetingTypeColors["Group Meeting"];
+    if (lowerName.includes("teacher"))
+      return meetingTypeColors["Teacher Meeting"];
+    if (lowerName.includes("weekly"))
+      return meetingTypeColors["Weekly Meeting"];
+    return meetingTypeColors["Group Meeting"]; // default color
   };
 
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorAuthToken")
+            : null;
         if (!token) {
           console.error("❌ SupervisorAuthToken not found");
           return;
         }
 
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+        const response = await axios.get(
+          "https://api.blackstoneinfomaticstech.com/allMeetings",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         if (response.data?.data?.meetings) {
-          const sortedMeetings = response.data.data.meetings.sort((a: Meeting, b: Meeting) => 
-            new Date(a.selectedDate).getTime() - new Date(b.selectedDate).getTime()
+          const sortedMeetings = response.data.data.meetings.sort(
+            (a: Meeting, b: Meeting) =>
+              new Date(a.selectedDate).getTime() -
+              new Date(b.selectedDate).getTime()
           );
           setMeetings(sortedMeetings);
           setFilteredMeetings(sortedMeetings);
@@ -149,11 +161,13 @@ const SchedulePage = () => {
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
-    const dayMeetings = meetings.filter(meeting => {
+    const dayMeetings = meetings.filter((meeting) => {
       const meetingDate = new Date(meeting.selectedDate);
-      return meetingDate.getDate() === date.getDate() &&
-             meetingDate.getMonth() === date.getMonth() &&
-             meetingDate.getFullYear() === date.getFullYear();
+      return (
+        meetingDate.getDate() === date.getDate() &&
+        meetingDate.getMonth() === date.getMonth() &&
+        meetingDate.getFullYear() === date.getFullYear()
+      );
     });
     setFilteredMeetings(dayMeetings);
   };
@@ -164,98 +178,161 @@ const SchedulePage = () => {
   };
 
   const WeeklyView = () => {
-    if (!selectedMonth) {
-      // Show months view
-      const months = Array.from({ length: 12 }, (_, i) => {
-        const date = new Date();
-        date.setMonth(i);
-        return date;
-      });
+    const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
-      return (
-        <div className="space-y-4 h-[600px] overflow-y-scroll scrollbar-none">
-          {months.map((month, idx) => {
-            const monthMeetings = meetings.filter(meeting => {
-              const meetingDate = new Date(meeting.selectedDate);
-              return meetingDate.getMonth() === month.getMonth() &&
-                     meetingDate.getFullYear() === month.getFullYear();
-            });
+    // Get start and end of current week
+    const startOfWeek = moment().startOf("week").toDate();
+    const endOfWeek = moment().endOf("week").toDate();
+
+    // Filter meetings for current week
+    const weekMeetings = meetings.filter((meeting) => {
+      const meetingDate = new Date(meeting.selectedDate);
+      return meetingDate >= startOfWeek && meetingDate <= endOfWeek;
+    });
+
+    // Group meetings by day
+    const meetingsByDay = weekMeetings.reduce((acc, meeting) => {
+      const day = moment(meeting.selectedDate).format("dddd");
+      if (!acc[day]) {
+        acc[day] = [];
+      }
+      acc[day].push(meeting);
+      return acc;
+    }, {} as Record<string, Meeting[]>);
+
+    const handleDayClick = (day: string) => {
+      setSelectedDay(selectedDay === day ? null : day);
+    };
+
+    return (
+      <div className="space-y-4 h-[540px] overflow-y-scroll scrollbar-none">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[16px] font-semibold">
+            {moment(startOfWeek).format("MMM D")} -{" "}
+            {moment(endOfWeek).format("MMM D, YYYY")}
+          </h3>
+        </div>
+
+        <div className="space-y-2">
+          {[
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+          ].map((day) => {
+            const dayMeetings = meetingsByDay[day] || [];
+            const isSelected = selectedDay === day;
+            const date = moment(
+              weekMeetings.find(
+                (m) => moment(m.selectedDate).format("dddd") === day
+              )?.selectedDate
+            );
 
             return (
-              <div
-                key={idx}
-                onClick={() => setSelectedMonth(month)}
-                className="text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl dark:text-[#fff] p-4 min-h-[100px] cursor-pointer hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-              >
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="text-sm font-semibold">
-                    {month.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                  </h4>
-                  <span className="text-[10px] bg-[#576cbc] text-white px-2 py-1 rounded-full">
-                    {monthMeetings.length} Events
-                  </span>
+              <div key={day} className="flex flex-col">
+                <div
+                  onClick={() => handleDayClick(day)}
+                  className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${
+                    isSelected
+                      ? "dark:bg-[#414141] bg-[#f7f7f7] dark:text-white text-black"
+                      : dayMeetings.length > 0
+                      ? " dark:bg-[#414141] bg-[#f7f7f7] shadow-md hover:shadow-lg text-black"
+                      : "bg-[#f7f7f7] dark:bg-[#414141] text-black"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {/* <div
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          isSelected
+                            ? "dark:bg-[#555555] dark:text-white text-[#000] bg-[#eae9e9]"
+                            : "dark:bg-[#555555] dark:text-white text-[#000] bg-[#eae9e9]"
+                        }`}
+                      >
+                        <span className="text-sm font-semibold">
+                          {day.substring(0, 3)}
+                        </span>
+                      </div> */}
+                      <div>
+                        <div
+                          className={`text-base font-semibold ${
+                            isSelected
+                              ? "dark:text-white text-black"
+                              : "text-gray-800 dark:text-white"
+                          }`}
+                        >
+                          {day}
+                        </div>
+                        <div
+                          className={`text-[10px] ${
+                            isSelected
+                              ? "bg:text-white/80"
+                              : "text-gray-500 dark:text-gray-400"
+                          }`}
+                        >
+                          {date.format("MMMM D, YYYY")}
+                        </div>
+                      </div>
+                    </div>
+                    {dayMeetings.length > 0 && (
+                      <div
+                        className={`text-[10px] px-3 py-1 rounded-lg ${
+                          isSelected
+                            ? "dark:bg-[#555555] dark:text-white text-black  bg-[#eae9e9]"
+                            : "dark:bg-[#555555] dark:text-white text-black bg-[#eae9e9]"
+                        }`}
+                      >
+                        {dayMeetings.length}{" "}
+                        {dayMeetings.length === 1 ? "Meeting" : "Meetings"}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="grid grid-cols-7 gap-1 text-[9px] text-gray-400">
-                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-                    <div key={day}>{day}</div>
-                  ))}
-                </div>
+
+                {/* Meeting Details */}
+                {isSelected && dayMeetings.length > 0 && (
+                  <div className="w-full mt-2 space-y-2 pl-4">
+                    {dayMeetings.map((meeting, idx) => {
+                      const colors = getMeetingTypeColor(meeting.meetingName);
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-3 rounded-lg ${colors.bg} dark:bg-[#414141] bg-[#f7f7f7] relative`}
+                        >
+                          <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 h-8 rounded-lg dark:bg-[#555555] bg-[#f7f7f7]"></div>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div
+                                className={`text-sm font-semibold ${colors.text}`}
+                              >
+                                {meeting.meetingName}
+                              </div>
+                            </div>
+                            {/* <div className="text-[10px] bg-[#576cbc] text-white px-2 py-1 rounded-lg">
+                              {meeting.meetingStatus}
+                            </div> */}
+                            <div className="flex items-center gap-2 mt-1">
+                              <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
+                                <Clock size={12} />
+                                {meeting.startTime} - {meeting.endTime}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-[10px] text-gray-600 dark:text-gray-300 mt-1">
+                            {meeting.description}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
-      );
-    }
-
-    // Show events for selected month
-    const monthMeetings = meetings.filter(meeting => {
-      const meetingDate = new Date(meeting.selectedDate);
-      return meetingDate.getMonth() === selectedMonth.getMonth() &&
-             meetingDate.getFullYear() === selectedMonth.getFullYear();
-    });
-
-    return (
-      <div className="space-y-4 h-[600px] overflow-y-scroll scrollbar-none">
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => setSelectedMonth(null)}
-            className="text-[12px] text-[#576cbc] hover:text-[#576cbc]/80 flex items-center gap-1"
-          >
-            ← Back to Months
-          </button>
-          <h3 className="text-[16px] font-semibold">
-            {selectedMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
-          </h3>
-        </div>
-
-        {monthMeetings.map((meeting, idx) => {
-          const colors = getMeetingTypeColor(meeting.meetingName);
-          const meetingDate = new Date(meeting.selectedDate);
-          
-          return (
-            <div
-              key={idx}
-              className={`p-4 text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl dark:text-[#fff] ${colors.border} border`}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className={`text-sm font-semibold ${colors.text}`}>
-                    {meeting.meetingName}
-                  </div>
-                  <div className="text-[10px] text-gray-400 mt-1">
-                    {meeting.startTime} - {meeting.endTime}
-                  </div>
-                </div>
-                <div className="text-[10px] bg-[#576cbc] text-white px-2 py-1 rounded-full">
-                  {meetingDate.toLocaleString('default', { weekday: 'short', day: 'numeric' })}
-                </div>
-              </div>
-              <div className="text-[10px] text-gray-400 mt-2">
-                {meeting.description}
-              </div>
-            </div>
-          );
-        })}
       </div>
     );
   };
@@ -270,14 +347,18 @@ const SchedulePage = () => {
           return (
             <div
               key={idx}
-              className={`p-4 text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl dark:text-[#fff] ${colors.border} border`}
+              className={`p-4 text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl dark:text-[#fff]`}
             >
-              <div className={`text-sm font-semibold ${colors.text}`}>
-                {meeting.meetingName}
+              <div className="flex justify-between items-start">
+                <div className={`text-sm font-semibold ${colors.text}`}>
+                  {meeting.meetingName}
+                </div>
+                <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
+                  <Clock size={12} />
+                  {meeting.startTime} - {meeting.endTime}
+                </div>
               </div>
-              <div className="text-[10px] text-gray-400">
-                {meeting.startTime} - {meeting.endTime}
-              </div>
+
               <div className="text-[10px] text-gray-400 mt-1">
                 {meeting.description}
               </div>
@@ -291,7 +372,7 @@ const SchedulePage = () => {
   const MonthlyView = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDayOfMonth = getFirstDayOfMonth(currentDate);
-    
+
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     const emptyCells = Array.from({ length: firstDayOfMonth }, (_, i) => null);
     const totalDays = [...emptyCells, ...days];
@@ -299,14 +380,16 @@ const SchedulePage = () => {
     return (
       <>
         <div className="flex items-end justify-end mb-4 -mt-10 gap-2">
-          <button 
+          <button
             onClick={handlePrevMonth}
             className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
           >
             &lt;
           </button>
-          <h2 className="text-[16px] font-semibold">{formatMonthYear(currentDate)}</h2>
-          <button 
+          <h2 className="text-[16px] font-semibold">
+            {formatMonthYear(currentDate)}
+          </h2>
+          <button
             onClick={handleNextMonth}
             className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
           >
@@ -315,7 +398,7 @@ const SchedulePage = () => {
         </div>
 
         <div className="grid grid-cols-7 mt-12 gap-2 text-center text-sm font-medium text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl p-3 dark:text-[#fff]">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
             <div key={day}>{day}</div>
           ))}
         </div>
@@ -326,28 +409,41 @@ const SchedulePage = () => {
               return <div key={i} className="min-h-[80px] bg-transparent" />;
             }
 
-            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+            const date = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              day
+            );
             const dayMeetings = getMeetingsForDate(date);
             const hasMeetings = dayMeetings.length > 0;
-            const colors = hasMeetings ? getMeetingTypeColor(dayMeetings[0].meetingName) : null;
-            const isSelected = selectedDate && 
+            const colors = hasMeetings
+              ? getMeetingTypeColor(dayMeetings[0].meetingName)
+              : null;
+            const isSelected =
+              selectedDate &&
               date.getDate() === selectedDate.getDate() &&
               date.getMonth() === selectedDate.getMonth() &&
               date.getFullYear() === selectedDate.getFullYear();
-            
+
             return (
               <div
                 key={i}
                 onClick={() => handleDateClick(date)}
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
-                  hasMeetings 
+                  hasMeetings
                     ? `${colors?.border} ${colors?.text} ${colors?.bg} border text-[10px]`
                     : isToday(day)
-                      ? 'bg-[#27176518] text-white'
-                      : 'bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500'
-                } ${isSelected ? 'ring-2 ring-[#576cbc]' : ''}`}
+                    ? "bg-[#27176518] text-white"
+                    : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
+                } ${isSelected ? "ring-2 ring-[#576cbc]" : ""}`}
               >
-                <div className={`font-semibold ${isToday(day) ? 'text-black' : ''}`}>{day}</div>
+                <div
+                  className={`font-semibold ${
+                    isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
+                  }`}
+                >
+                  {day}
+                </div>
                 {hasMeetings && (
                   <div className="w-full overflow-hidden">
                     <div className="text-[9px] truncate px-1">
@@ -368,7 +464,7 @@ const SchedulePage = () => {
 
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection='Calendar'/>
+      <SupervisorHeader currentSection="Calendar" />
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col md:flex-row overflow-hidden h-[630px]">
           <div className="w-full md:w-2/3 p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
@@ -409,15 +505,24 @@ const SchedulePage = () => {
               {filteredMeetings.map((meeting, index) => {
                 const colors = getMeetingTypeColor(meeting.meetingName);
                 return (
-                  <div key={index} className="border-b dark:border-[#414141] pb-4">
-                    <div className='flex justify-between'>
-                      <h4 className={`font-medium w-40 text-[12px] ${colors.text}`}>{meeting.meetingName}</h4>
+                  <div
+                    key={index}
+                    className="border-b dark:border-[#414141] pb-4"
+                  >
+                    <div className="flex justify-between">
+                      <h4
+                        className={`font-medium w-40 text-[12px] ${colors.text}`}
+                      >
+                        {meeting.meetingName}
+                      </h4>
                       <div className="flex items-center text-gray-400 text-[9px] mt-1 gap-2">
                         <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
-                          <Clock size={10} /> {meeting.startTime} - {meeting.endTime}
+                          <Clock size={10} /> {meeting.startTime} -{" "}
+                          {meeting.endTime}
                         </span>
                         <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
-                          <CalendarDays size={10} /> {moment(meeting.selectedDate).format('DD/MM/YYYY')}
+                          <CalendarDays size={10} />{" "}
+                          {moment(meeting.selectedDate).format("DD/MM/YYYY")}
                         </span>
                       </div>
                     </div>

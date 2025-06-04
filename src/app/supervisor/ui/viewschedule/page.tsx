@@ -57,6 +57,10 @@ const ViewSchedule = () => {
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  const [activeTab, setActiveTab] = useState<string>("upcoming");
+  const [upcomingClasses, setUpcomingClasses] = useState<Schedule[]>([]);
+  const [scheduledClasses, setScheduledClasses] = useState<Schedule[]>([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -81,77 +85,86 @@ const ViewSchedule = () => {
 
         const now = new Date();
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize today to start of the day
+        today.setHours(0, 0, 0, 0);
 
-        const futureSchedules = response.data.students
-          .map((schedule) => {
-            const scheduleDate = new Date(schedule.startDate);
-            scheduleDate.setHours(0, 0, 0, 0); // Normalize schedule date
+        const allSchedules = response.data.students.map((schedule) => {
+          const scheduleDate = new Date(schedule.startDate);
+          scheduleDate.setHours(0, 0, 0, 0);
 
-            let isOngoing = false;
-            let isFuture = false;
-            let formattedTimes: string[] = [];
+          let isOngoing = false;
+          let isFuture = false;
+          let formattedTimes: string[] = [];
 
-            schedule.startTime.forEach((time, index) => {
-              if (!schedule.endTime[index]) return;
+          schedule.startTime.forEach((time, index) => {
+            if (!schedule.endTime[index]) return;
 
-              const [startHours, startMinutes] = time.split(":").map(Number);
+            const [startHours, startMinutes] = time.split(":").map(Number);
+            const [endHours, endMinutes] = schedule.endTime[index]
+              .split(":")
+              .map(Number);
+
+            const scheduleStart = new Date(schedule.startDate);
+            scheduleStart.setHours(startHours, startMinutes, 0, 0);
+
+            const scheduleEnd = new Date(schedule.startDate);
+            scheduleEnd.setHours(endHours, endMinutes, 0, 0);
+
+            if (now >= scheduleStart && now <= scheduleEnd) {
+              isOngoing = true;
+            }
+
+            if (scheduleStart > now) {
+              isFuture = true;
+            }
+
+            formattedTimes.push(`${time} - ${schedule.endTime[index]}`);
+          });
+
+          return {
+            ...schedule,
+            isOngoing,
+            isFuture,
+            scheduleDate,
+            formattedTimes,
+          };
+        });
+
+        // Filter upcoming classes (future dates or ongoing today)
+        const upcoming = allSchedules.filter((schedule) => {
+          if (schedule.scheduleDate.getTime() === today.getTime()) {
+            return schedule.startTime.some((time, index) => {
+              const [hours, minutes] = time.split(":").map(Number);
+              const scheduleStart = new Date(schedule.startDate);
+              scheduleStart.setHours(hours, minutes, 0, 0);
+
               const [endHours, endMinutes] = schedule.endTime[index]
                 .split(":")
                 .map(Number);
-
-              const scheduleStart = new Date(schedule.startDate);
-              scheduleStart.setHours(startHours, startMinutes, 0, 0);
-
               const scheduleEnd = new Date(schedule.startDate);
               scheduleEnd.setHours(endHours, endMinutes, 0, 0);
 
-              if (now >= scheduleStart && now <= scheduleEnd) {
-                isOngoing = true; // ✅ Mark as ongoing if current time is within the range
-              }
-
-              if (scheduleStart > now) {
-                isFuture = true; // ✅ Mark as future if it hasn't started yet
-              }
-
-              formattedTimes.push(`${time} - ${schedule.endTime[index]}`);
+              return now <= scheduleEnd;
             });
+          }
+          return schedule.scheduleDate > today;
+        });
 
-            return {
-              ...schedule,
-              isOngoing,
-              isFuture,
-              scheduleDate,
-              formattedTimes,
-            };
-          })
-          .filter((schedule): schedule is NonNullable<typeof schedule> => {
-            if (!schedule) return false;
-            // ✅ Keep today's schedules only if they are ongoing or in the future
-            if (schedule.scheduleDate.getTime() === today.getTime()) {
-              return schedule.startTime.some((time, index) => {
-                const [hours, minutes] = time.split(":").map(Number);
-                const scheduleStart = new Date(schedule.startDate);
-                scheduleStart.setHours(hours, minutes, 0, 0);
+        // Filter scheduled classes (today's classes that haven't started yet)
+        const scheduled = allSchedules.filter((schedule) => {
+          if (schedule.scheduleDate.getTime() === today.getTime()) {
+            return schedule.startTime.some((time) => {
+              const [hours, minutes] = time.split(":").map(Number);
+              const scheduleStart = new Date(schedule.startDate);
+              scheduleStart.setHours(hours, minutes, 0, 0);
+              return now < scheduleStart;
+            });
+          }
+          return false;
+        });
 
-                const [endHours, endMinutes] = schedule.endTime[index]
-                  .split(":")
-                  .map(Number);
-                const scheduleEnd = new Date(schedule.startDate);
-                scheduleEnd.setHours(endHours, endMinutes, 0, 0);
-
-                return now <= scheduleEnd; // ✅ Keep schedules that are ongoing or upcoming today
-              });
-            }
-            return schedule.scheduleDate > today;
-          })
-          .sort((a, b) => {
-            if (a.isOngoing && !b.isOngoing) return -1; // Show ongoing schedules first
-            if (!a.isOngoing && b.isOngoing) return 1;
-            return a.scheduleDate.getTime() - b.scheduleDate.getTime(); // Sort by date
-          });
-
-        setUniqueStudentSchedules(futureSchedules);
+        setUpcomingClasses(upcoming);
+        setScheduledClasses(scheduled);
+        setUniqueStudentSchedules(upcoming); // Default to upcoming classes
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -159,6 +172,16 @@ const ViewSchedule = () => {
 
     fetchData();
   }, []);
+
+  // Update displayed data when tab changes
+  useEffect(() => {
+    if (activeTab === "upcoming") {
+      setUniqueStudentSchedules(upcomingClasses);
+    } else if (activeTab === "scheduled") {
+      setUniqueStudentSchedules(scheduledClasses);
+    }
+  }, [activeTab, upcomingClasses, scheduledClasses]);
+
   const [showFilter, setShowFilter] = useState(false);
   const dataToShow = uniqueStudentSchedules;
   const [currentPage, setCurrentPage] = useState(1);
@@ -254,7 +277,36 @@ const ViewSchedule = () => {
   return (
     <BaseLayout3>
       <SupervisorHeader currentSection="Scheduled Classes" />
+      {/* Tabs */}
+      <div className="flex space-x-6 px-4 py-2 rounded-md">
+        <button
+          className={`relative text-[14px] transition font-medium ${
+            activeTab === "upcoming"
+              ? "text-[#576CBC] font-semibold"
+              : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+          }`}
+          onClick={() => setActiveTab("upcoming")}
+        >
+          Upcoming ({upcomingClasses.length})
+          {activeTab === "upcoming" && (
+            <span className="absolute left-0 ml-5 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC] dark:text-[#576CBC]" />
+          )}
+        </button>
 
+        <button
+          className={`relative text-[14px] transition font-medium ${
+            activeTab === "scheduled"
+              ? "text-[#576CBC] font-semibold"
+              : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+          }`}
+          onClick={() => setActiveTab("scheduled")}
+        >
+          Scheduled ({scheduledClasses.length})
+          {activeTab === "scheduled" && (
+            <span className="absolute left-0 ml-3 -bottom-1 w-[60px] h-[3px] rounded-full bg-[#576CBC]" />
+          )}
+        </button>
+      </div>
       <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
         <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434] h-10">
           <div className="flex items-center gap-2 text-sm text-gray-500">
