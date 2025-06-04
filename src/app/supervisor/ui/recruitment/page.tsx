@@ -22,6 +22,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FiCalendar } from "react-icons/fi";
 import { MdTune } from "react-icons/md";
+import SuccessPopup from "../../components/successPopup";
+import FailedPopup from "../../components/failedPopup";
 
 type Status = "Shortlisted" | "Rejected" | "Waiting";
 type Position = "Arabic Teacher" | "Quran Teacher";
@@ -136,6 +138,7 @@ export default function ApplicantsPage() {
   );
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [Applicantbyid, setApplicantbyid] = useState<ApiResponse | null>(null);
+  const [parsedSkills, setParsedSkills] = useState<string[]>([]);
   const [resumeImages, setResumeImages] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -144,7 +147,6 @@ export default function ApplicantsPage() {
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentItems = items.slice(indexOfFirst, indexOfLast);
-
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [quranReading, setQuranReading] = useState("Medium");
   const [tajweed, setTajweed] = useState("Medium");
@@ -159,13 +161,33 @@ export default function ApplicantsPage() {
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
   const [showModal, setShowModal] = useState(false);
-
   const [fromDate, setFromDate] = useState<Date | null>(null);
   const [toDate, setToDate] = useState<Date | null>(null);
-
   const fromWrapperRef = useRef<HTMLDivElement>(null);
   const toWrapperRef = useRef<HTMLDivElement>(null);
   const [supervisorId, setSupervisorId] = React.useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
+  const [successMessage,setSuccessMessage] = useState("");
+
+
+  const extractSkills = (rawText: string): string[] => {
+    // Only keep content before "Accomplishments" or "Certifications"
+    const relevantSection = rawText.split(/Accomplishments|Certifications/i)[0];
+
+    // Match all bullet point items (• React, etc.)
+    const matches = relevantSection.match(/•\s*[^•\n]+/g);
+
+    const skills = matches
+      ? matches
+          .map((skill) => skill.replace(/•\s*/, "").trim()) // remove bullet and whitespace
+          .flatMap((s) => s.split(",").map((sub) => sub.trim())) // split comma-separated items
+          .filter(Boolean) // remove empty strings
+      : [];
+
+    return skills;
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -289,6 +311,11 @@ export default function ApplicantsPage() {
         );
         console.log("Applicant data received:", response.data);
         setApplicantbyid(response.data);
+
+        // Parse and set skills
+        const skillsFromApi = response.data.skills || "";
+        const skillsArray = extractSkills(skillsFromApi);
+        setParsedSkills(skillsArray);
         if (response.data.uploadResume) {
           const base64String = response.data.uploadResume;
 
@@ -316,7 +343,7 @@ export default function ApplicantsPage() {
   const handleViewDetails = (applicant: Applicant) => {
     setSelectedApplicant(applicant);
     setOpenMenuId(null);
-    setMode("view"); // set to view mode
+    setMode("view"); // ✅ This works well
   };
 
   const handleEdit = (applicant: Applicant) => {
@@ -370,12 +397,13 @@ export default function ApplicantsPage() {
         updateData,
         {
           headers: {
-            Authorization: `Bearer ${token}`, // ✅ Keep this
-            // ✅ DO NOT manually add 'Content-Type' here
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ Explicitly set the content type
           },
         }
       );
-
+       setSuccess(true);
+       setSuccessMessage(status);
       console.log("✅ Update successful:", response.data);
       handleviewclose();
     } catch (error: any) {
@@ -644,6 +672,13 @@ export default function ApplicantsPage() {
         </div>
       </div>
 
+      {success && (
+        <SuccessPopup onClose={() => setSuccess(false)} title={successMessage} />
+      )}
+      {failed && (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+      )}
+
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
@@ -664,48 +699,18 @@ export default function ApplicantsPage() {
                 Date Range
               </label>
 
-              <div className="flex gap-4 flex-col sm:flex-row">
-                {/* From Date */}
-                <div className="relative w-full" ref={fromWrapperRef}>
-                  <DatePicker
-                    selected={fromDate}
-                    onChange={(date) => setFromDate(date)}
-                    selectsStart
-                    startDate={fromDate}
-                    endDate={toDate}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="From Date"
-                    className="w-full border rounded-md p-2 pr-8 text-[12px]  dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+              <div className="flex gap-2 mb-2">
+                  <input
+                    type="date"
+                    className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                    // value={exp.fromDate}
                   />
-                  <div
-                    className="absolute inset-y-0 ml-40 flex items-center text-[#666E83] dark:text-[#fff] cursor-pointer dark:opacity-[60%]"
-                    onClick={focusFromInput}
-                  >
-                    <FiCalendar size={16} />
-                  </div>
-                </div>
-
-                {/* To Date */}
-                <div className="relative w-full" ref={toWrapperRef}>
-                  <DatePicker
-                    selected={toDate}
-                    onChange={(date) => setToDate(date)}
-                    selectsEnd
-                    startDate={fromDate}
-                    endDate={toDate}
-                    minDate={fromDate || undefined}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="To Date"
-                    className="w-full border rounded-md p-2 pr-8 ml-[15px] dark:border-[#565656] text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6]"
+                  <input
+                    type="date"
+                    className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                    // value={exp.toDate}
                   />
-                  <div
-                    className="absolute inset-y-0 ml-48 flex items-center text-[#666E83] dark:text-[#fff] dark:opacity-[60%] cursor-pointer"
-                    onClick={focusToInput}
-                  >
-                    <FiCalendar size={16} />
-                  </div>
                 </div>
-              </div>
             </div>
 
             {/* Position Applied */}
@@ -1107,26 +1112,14 @@ export default function ApplicantsPage() {
               </div>
 
               {/* Skills */}
+
               <div>
                 <h3 className="font-medium text-[12px] border-b border-[#E0E4E9] dark:border-[#5F5959] pb-1 mb-3 text-[#1E2A41] dark:text-[#fff]">
                   Skills
                 </h3>
 
-                {/* Input Field */}
-                <div className="mb-3">
-                  <input
-                    type="text"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Type and press Enter"
-                    className="w-1/2 px-3 py-1 text-[10px] border border-[#E0E4E9] dark:border-[#5F5959] text-[#1E2A41] dark:text-[#d5d5d5] dark:bg-[#343434] rounded-md "
-                  />
-                </div>
-
-                {/* Skill Chips */}
                 <div className="flex flex-wrap gap-2 text-[10px]">
-                  {skills.map((skill, index) => (
+                  {parsedSkills.map((skill, index) => (
                     <span
                       key={index}
                       className="px-3 py-1 border rounded-full text-[#010E30E5] bg-gray-50 dark:bg-[#343434] dark:text-[#d5d5d5] border-[#E0E4E9] dark:border-[#5F5959]"
