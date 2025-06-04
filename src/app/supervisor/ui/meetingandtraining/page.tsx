@@ -283,7 +283,7 @@ const ScheduledClasses = () => {
   const getMeetingStatusClass = (status: string) => {
     switch (status) {
       case "Scheduled":
-        return "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36]";
+        return "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px]";
       case "Rescheduled":
         return "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white";
       default:
@@ -494,6 +494,8 @@ const ScheduledClasses = () => {
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left w-[80px] break-words whitespace-normal">
                             {item.startTime}
                           </td>
+
+
                           <td className="px-3 py-2 text-left">
                             {(() => {
                               let content;
@@ -508,7 +510,7 @@ const ScheduledClasses = () => {
                                 ) {
                                   content = (
                                     <button
-                                      className="text-[10px] font-semibold px-3 py-1 rounded-lg bg-[#576CBC] text-white border  "
+                                      className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border  "
                                       onClick={() =>
                                         router.push(
                                           `/supervisor/ui/liveclass?id=${item._id}`
@@ -686,139 +688,125 @@ const ScheduledClasses = () => {
         <div className="fixed inset-0 flex items-center justify-center z-50">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black bg-opacity-60"
+            className="absolute inset-0 bg-black bg-opacity-50"
             onClick={() => setIsMeetingDetailsModalOpen(false)}
           />
 
-          {/* Modal box */}
-          <div className="bg-white rounded-xl p-6 w-[720px] max-h-[90vh] overflow-y-auto shadow-lg relative z-50">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">
+          {/* Modal */}
+          <div className="relative z-50 bg-white rounded-lg p-6 w-[720px] max-h-[90vh] overflow-y-auto shadow-xl dark:bg-[#252525]">
+            <h2 className="text-md font-semibold text-[#0D0E25] mb-6 dark:text-[#fff]">
               Meeting Details
             </h2>
 
-            {/* Meeting Info Grid */}
+            {/* Grid Fields */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1">
                   Meeting ID
                 </label>
                 <input
-                  type="text"
                   value={selectedMeetingDetails.meetingId}
                   disabled
-                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1">
                   Meeting Name
                 </label>
                 <input
-                  type="text"
                   value={selectedMeetingDetails.meetingName}
                   disabled
-                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1">
                   Course
                 </label>
-                {/* You don't have course in your Meeting interface, so if you want to show it, you need to add it or remove this */}
                 <input
-                  type="text"
-                  value={selectedMeetingDetails.description || ""}
+                  value="-"
                   disabled
-                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Date</label>
+                <label className="block text-[12px] text-[#0D0E25] mb-1">
+                  Date
+                </label>
                 <input
-                  type="text"
                   value={selectedMeetingDetails.selectedDate}
                   disabled
-                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1">
                   Duration
                 </label>
                 <input
-                  type="text"
-                  value={
-                    // Calculate duration from startTime and endTime or just show as a string
-                    selectedMeetingDetails.startTime &&
-                    selectedMeetingDetails.endTime
-                      ? `${selectedMeetingDetails.startTime} - ${selectedMeetingDetails.endTime}`
-                      : ""
-                  }
+                  value={"60 Minutes"} // You can compute actual difference if needed
                   disabled
-                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block text-[12px] text-[#0D0E25] mb-1">
                   Meeting Time
                 </label>
-                {/* You can reuse duration here or omit */}
                 <input
-                  type="text"
-                  value={
-                    selectedMeetingDetails.startTime &&
-                    selectedMeetingDetails.endTime
-                      ? `${selectedMeetingDetails.startTime} - ${selectedMeetingDetails.endTime}`
-                      : ""
-                  }
+                  value={`${selectedMeetingDetails.startTime} - ${selectedMeetingDetails.endTime}`}
                   disabled
-                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
                 />
               </div>
             </div>
 
-            {/* Attendance Table */}
-            <div className="mt-2">
-              <div className="bg-indigo-500 text-white font-semibold rounded-t px-4 py-2 flex justify-between">
+            {/* Attendance */}
+            <div className="mb-6 border rounded-lg">
+              <div className="flex justify-between items-center bg-[#576CBC] text-white px-4 py-2 rounded-t text-sm font-medium">
                 <span>Name</span>
-                <span>Email</span>
+                <span>Attendance</span>
               </div>
-              <div className="border border-t-0 rounded-b divide-y max-h-48 overflow-y-auto">
-                {selectedMeetingDetails.teacher.map((teacher, idx) => (
+              <div className="divide-y max-h-40 overflow-y-auto text-sm">
+                {selectedMeetingDetails.teacher.map((teacher, index) => (
                   <div
-                    key={idx}
-                    className="flex justify-between px-4 py-2 items-center text-sm"
+                    key={index}
+                    className="flex justify-between items-center px-4 py-2"
                   >
-                    <span className="text-indigo-600">
+                    <span className="text-[#4F46E5]">
                       {teacher.teacherName}
                     </span>
-                    <span>{teacher.teacherEmail}</span>
+                    {/* Placeholder logic for attendance, since it's not in interface */}
+                    <span className="text-green-600 text-lg">✔</span>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Meeting Minutes (description) */}
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
+            <div className="mb-6">
+              <label className="block text-sm text-[#0D0E25] mb-1">
+                Meeting Description
               </label>
               <textarea
-                className="w-full p-3 border rounded resize-none bg-gray-100 text-sm"
-                rows={4}
+                value={selectedMeetingDetails.description ?? ""}
                 disabled
-                placeholder="No comments"
-                value={selectedMeetingDetails.description || ""}
+                className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg"
               />
             </div>
 
-            {/* Actions */}
-            <div className="mt-6 flex justify-end gap-3">
+            {/* Footer Buttons */}
+            <div className="flex justify-end gap-3 border-t pt-4 dark:border-[#5C5C5C]  ">
               <button
                 onClick={() => setIsMeetingDetailsModalOpen(false)}
-                className="px-5 py-2 text-sm rounded border border-indigo-600 text-indigo-600 hover:bg-indigo-50"
+                className="px-6 py-2 rounded-md border border-[#576CBC] font-semibold text-[#576CBC] transition"
               >
-                Close
+                Cancel
+              </button>
+              <button
+                 onClick={() => setIsMeetingDetailsModalOpen(false)}
+                className="px-6 py-2 rounded-md bg-[#576CBC] text-white font-semibold  transition"
+              >
+                Submit
               </button>
             </div>
           </div>
@@ -832,17 +820,17 @@ const ScheduledClasses = () => {
           <div className="absolute inset-0 bg-black bg-opacity-50" />
 
           {/* Modal container */}
-          <div className="bg-white rounded-lg p-6 w-[600px] relative z-50 shadow-xl">
-            <h2 className="text-[#0D0E25] text-lg font-bold mb-4">
+          <div className="bg-white rounded-lg p-6 w-[600px] relative z-50 shadow-xl dark:bg-[#252525]">
+            <h2 className="text-[#0D0E25] text-md font-semibold mb-4 dark:text-[#fff]">
               Reason for Re-Schedule
             </h2>
 
             {/* Description */}
-            <label className="block text-sm font-[12px] text-[#0D0E25] mb-1">
+            <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
               Add Description
             </label>
             <textarea
-              className="w-full h-32 p-3 mb-6 border border-[#D9D9D9] rounded-md text-[#0D0E25] placeholder-[#9CA3AF] resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-32 p-3 mb-6 border border-[#D9D9D9] rounded-md text-sm text-[#0D0E25] placeholder-[#9CA3AF] resize-none focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
               placeholder="Type here..."
               value={rescheduleReason}
               onChange={(e) => setRescheduleReason(e.target.value)}
@@ -851,7 +839,7 @@ const ScheduledClasses = () => {
             {/* Date and Time Row */}
             <div className="flex gap-4 mb-6">
               <div className="w-1/2">
-                <label className="block text-sm font-[12px] text-[#0D0E25] mb-1">
+                <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
                   Reschedule Date
                 </label>
                 <div className="relative">
@@ -859,28 +847,28 @@ const ScheduledClasses = () => {
                     type="date"
                     value={rescheduleDate}
                     onChange={(e) => setRescheduleDate(e.target.value)}
-                    className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none "
+                    className="w-full text-xs px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                   />
                 </div>
               </div>
 
               <div className="w-1/2">
-                <label className="block text-sm font-[12px] text-[#0D0E25] mb-1">
-                  Reschedule time
+                <label className="block text-xs font-medium text-[#0D0E25] mb-1 dark:text-white">
+                  Reschedule Time
                 </label>
                 <div className="relative">
                   <input
                     type="time"
                     value={rescheduleTime}
                     onChange={(e) => setRescheduleTime(e.target.value)}
-                    className="w-full text-sm  px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none "
+                    className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                   />
                 </div>
               </div>
             </div>
 
             {/* Buttons */}
-            <div className="flex justify-end gap-3 border-t pt-4">
+            <div className="flex justify-end gap-3 border-t pt-4 dark:border-[#5C5C5C]  ">
               <button
                 onClick={() => setIsRescheduleModalOpen(false)}
                 className="px-6 py-2 rounded-md border border-[#576CBC] font-semibold text-[#576CBC] transition"
