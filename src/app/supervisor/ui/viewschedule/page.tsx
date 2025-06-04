@@ -258,28 +258,23 @@ const ViewSchedule = () => {
       <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
         <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434] h-10">
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Search className="w-4 h-4 text-gray-400 dark:text-gray-400 mt-3 " />
+            <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
             <input
               type="text"
               placeholder="Search by keyword"
-              className="bg-transparent outline-none  w-52 py-3 mt-3 text-[14px]"
+              className="bg-transparent outline-none text-[15px] w-52 py-3 "
             />
           </div>
 
           <div className="relative ">
             <div
-              className="flex justify-between items-center w-96 bg-gray-50 dark:bg-[#343434] 
-  border-y-0 border-l border-r border-gray-200 dark:border-[#606060]
-  text-sm text-gray-500 py-[15.5px] mt-[12px] px-3 cursor-pointer -ml-60"
+              className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
               onClick={() => setShowFilter(!showFilter)}
             >
-              <div className="flex items-center gap-1">
-                <MdTune className="w-4 h-4" />
-                <span className="text-sm">Filter</span>
-              </div>
-              <FaChevronDown className="w-3 h-3" />
+              {/* <BsFilterLeft /> */}
+              <MdTune className="w-4 h-4" />
+              <span>Filter</span>
             </div>
-
             {/* Filter Popup */}
             {showFilter && (
               <div
@@ -296,7 +291,10 @@ const ViewSchedule = () => {
                 </div>
 
                 {/* Date */}
-                <label className="block text-sm text-gray-700 mb-1 dark:text-white">
+                <label
+                  htmlFor="date"
+                  className="block text-sm text-gray-700 mb-1 dark:text-white"
+                >
                   Date
                 </label>
                 <input
@@ -305,7 +303,10 @@ const ViewSchedule = () => {
                 />
 
                 {/* Course */}
-                <label className="block text-sm text-gray-700 mb-1 dark:text-white">
+                <label
+                  htmlFor="course"
+                  className="block text-sm text-gray-700 mb-1 dark:text-white"
+                >
                   Course
                 </label>
                 <input
@@ -315,7 +316,10 @@ const ViewSchedule = () => {
                 />
 
                 {/* Course Type */}
-                <label className="block text-sm text-gray-700 mb-1 dark:text-white">
+                <label
+                  htmlFor="course type"
+                  className="block text-sm text-gray-700 mb-1 dark:text-white"
+                >
                   Course Type
                 </label>
                 <select className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -324,7 +328,10 @@ const ViewSchedule = () => {
                 </select>
 
                 {/* Timing */}
-                <label className="block text-sm text-gray-700 mb-1 dark:text-white">
+                <label
+                  htmlFor="timimg"
+                  className="block text-sm text-gray-700 mb-1 dark:text-white"
+                >
                   Timing
                 </label>
                 <input
@@ -333,7 +340,10 @@ const ViewSchedule = () => {
                 />
 
                 {/* Status */}
-                <label className="block text-sm text-gray-700 mb-1 dark:text-white">
+                <label
+                  htmlFor="status"
+                  className="block text-sm text-gray-700 mb-1 dark:text-white"
+                >
                   Status
                 </label>
                 <select className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -360,7 +370,7 @@ const ViewSchedule = () => {
           </div>
 
           <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-            <span className="text-left -ml-60 mt-3 text-[14px]">
+            <span className="text-left -ml-60 ">
               Showing {currentItems.length} Of {uniqueStudentSchedules.length}
             </span>
           </div>
@@ -381,7 +391,7 @@ const ViewSchedule = () => {
                   ].map((header) => (
                     <th
                       key={header}
-                      className="  b whitespace-nowrap text-left px-3 py-3 font-medium border  border-[#fff]"
+                      className="  b whitespace-nowrap text-left px-3 py-3 font-medium border  border-[#4C6993] "
                     >
                       {header}
                     </th>
@@ -398,7 +408,6 @@ const ViewSchedule = () => {
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                   
                     <td className="px-3 py-2 text-[#3D8FDE] dark:text-[#3D8FDE]">
                       {item.teacher.teacherName}
                     </td>
@@ -455,23 +464,22 @@ const ViewSchedule = () => {
                     </td>
 
                     <td className="px-3 py-2">
-  {item.scheduleStatus === 'Scheduled' && (
-    <span className="bg-blue-100 text-[#343E59] text-[10px] font-medium px-3 py-1 rounded-sm">
-      Scheduled
-    </span>
-  )}
-  {item.scheduleStatus === 'Re-Scheduled' && (
-    <span className="bg-gray-200 text-[#343E59] text-[10px] font-medium px-2 py-1 rounded-sm">
-      Re-Scheduled
-    </span>
-  )}
-  {item.scheduleStatus === 'Completed' && (
-    <span className="bg-[#ECFDF3] text-[#377E36] text-[10px] px-2 py-1 font-medium  rounded-sm">
-      Completed
-    </span>
-  )}
-</td>
-
+                      {item.scheduleStatus === "Scheduled" && (
+                        <span className="bg-blue-100 text-[#343E59] text-[10px] font-medium px-3 py-1 rounded-sm">
+                          Scheduled
+                        </span>
+                      )}
+                      {item.scheduleStatus === "Re-Scheduled" && (
+                        <span className="bg-gray-200 text-[#343E59] text-[10px] font-medium px-2 py-1 rounded-sm">
+                          Re-Scheduled
+                        </span>
+                      )}
+                      {item.scheduleStatus === "Completed" && (
+                        <span className="bg-[#ECFDF3] text-[#377E36] text-[10px] px-2 py-1 font-medium  rounded-sm">
+                          Completed
+                        </span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
