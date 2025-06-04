@@ -1,21 +1,18 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { IoMdArrowDropdownCircle, IoMdClose } from "react-icons/io";
+import { IoMdClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
-import { FaCalendarAlt, FaPlus, FaUserCircle } from "react-icons/fa";
-import { MoreVertical, Search, User } from "lucide-react";
+import { FaUserCircle } from "react-icons/fa";
+import { CheckCircle, MoreVertical, Search, User, XCircle } from "lucide-react";
 import BaseLayout3 from "@/components/BaseLayout3";
-import { button } from "@nextui-org/react";
 import axios from "axios";
 import SupervisorHeader from "../../components/supervisorHeader";
 import Pagination from "@/components/Pagination";
 import { AiOutlineMenuUnfold } from "react-icons/ai";
 import { IoPersonOutline } from "react-icons/io5";
 import { MdTune } from "react-icons/md";
-import { FiCalendar } from "react-icons/fi";
 interface ApiResponse {
   candidateFirstName: string;
   candidateLastName: string;
@@ -27,7 +24,7 @@ interface Meeting {
   _id: string;
   meetingId: string;
   meetingName: string;
-  meetingStatus: "Scheduled" | "Reschedule" | "Completed";
+  meetingStatus: "Scheduled" | "Rescheduled" | "Completed";
   selectedDate: string;
   startTime: string;
   endTime: string;
@@ -50,49 +47,27 @@ interface Meeting {
 const ScheduledClasses = () => {
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedDates, setSelectedDates] = useState<Date | null>(null);
-
-  const [isSuccessMessageVisible, setIsSuccessMessageVisible] = useState(false);
-
-  const [meetingTitle, setMeetingTitle] = useState("");
-
-  const [description, setDescription] = useState("");
   const [activeTab, setActiveTab] = useState<string>("upcoming");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [rescheduleReason, setRescheduleReason] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isDatePickerOpens, setIsDatePickerOpens] = useState(false);
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("09:30");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [fromDate, setFromDate] = useState<Date | null>(null);
-  const [toDate, setToDate] = useState<Date | null>(null);
-
-  const fromWrapperRef = useRef<HTMLDivElement>(null);
-  const toWrapperRef = useRef<HTMLDivElement>(null);
-
-  function focusFromInput() {
-    const input = fromWrapperRef.current?.querySelector("input");
-    input?.focus();
-  }
-
-  function focusToInput() {
-    const input = toWrapperRef.current?.querySelector("input");
-    input?.focus();
-  }
 
   const [completedData, setCompletedData] = useState<Meeting[]>([]);
   const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [selectedColor, setSelectedColor] = useState<string>("purple");
   const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<
     string | null
   >(null);
+  const [selectedMeetingDetails, setSelectedMeetingDetails] =
+    useState<Meeting | null>(null);
+  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] =
+    useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState(""); // in 'YYYY-MM-DD' format
+  const [rescheduleTime, setRescheduleTime] = useState(""); // in 'HH:mm' 24h format
 
   const toggleTeacherDropdown = (id: string) => {
     setOpenTeacherDropdownId((prev) => (prev === id ? null : id));
@@ -112,17 +87,6 @@ const ScheduledClasses = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const colorOptions = [
-    { color: "purple", hex: "#A259FF" },
-    { color: "green", hex: "#4CAF50" },
-    { color: "orange", hex: "#FFA500" },
-    { color: "blue", hex: "#4285F4" },
-  ];
-
-  const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<
-    "all" | "Arabic Teacher" | "Quran Teacher"
-  >("all");
   const [teachers, setTeachers] = useState<
     {
       id: string;
@@ -223,7 +187,7 @@ const ScheduledClasses = () => {
             const meetingDate = new Date(meeting.selectedDate);
             return (
               (meeting.meetingStatus === "Scheduled" ||
-                meeting.meetingStatus === "Reschedule") &&
+                meeting.meetingStatus === "Rescheduled") &&
               meetingDate >= today
             );
           })
@@ -259,6 +223,7 @@ const ScheduledClasses = () => {
 
     fetchMeetings();
   }, []);
+
   interface Teacher {
     teacherId: string;
     teacherName: string;
@@ -268,23 +233,6 @@ const ScheduledClasses = () => {
   const [teachersByMeetingId, setTeachersByMeetingId] =
     useState<TeachersByMeetingId>({});
 
-  // Filter teachers based on the selected filter
-  const filteredTeachers =
-    selectedFilter === "all"
-      ? teachers
-      : teachers.filter((t) => {
-          const normalizedSubject = t.subject.trim(); // Normalize subject
-          return selectedFilter.includes(normalizedSubject); // Check if filter includes it
-        });
-
-  // Toggle teacher selection
-  const toggleSelections = (teacherName: string) => {
-    setSelectedTeachers((prev) =>
-      prev.includes(teacherName)
-        ? prev.filter((t) => t !== teacherName)
-        : [...prev, teacherName]
-    );
-  };
   useEffect(() => {
     console.log(selectedTeachers);
     console.log(teachers);
@@ -302,15 +250,14 @@ const ScheduledClasses = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = currentItems.slice(startIndex, endIndex);
 
-  const handlePageChange = (pageNumber: number) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
-  };
-
   const handleOptionsClick = (id: string) => {
     setSelectedItemId(selectedItemId === id ? null : id);
   };
+
+  //   const handleViewDetails = (item: any) => {
+  //   setSelectedItemId(item);
+  //   setShowMeetingDetailsModal(true); // assuming you have this state and modal
+  // };
 
   const handleRescheduleSubmit = () => {
     if (rescheduleReason.trim()) {
@@ -331,144 +278,54 @@ const ScheduledClasses = () => {
     }
   };
 
-  const handleDateSelect = (date: Date | null) => {
-    if (date) {
-      setSelectedDate(date);
-      setSelectedDates(date);
-      setIsDatePickerOpen(false);
-      setIsDatePickerOpens(false);
-      router.push("/teacher/ui/schedule/schedules");
-    }
-  };
-
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
-  const colorTitles: Record<string, string> = {
-    blue: "Interview",
-    green: "Group Meeting",
-    orange: "Teacher Meeting",
-    purple: "Weekly Meeting",
-  };
-
-  const nextPage = () => {
-    router.push("/supervisor/ui/meetingandtraining/schedule");
-  };
-
-  const handleScheduleMeeting1 = async () => {
-    if (
-      !meetingTitle ||
-      !selectedDates ||
-      !startTime ||
-      !endTime ||
-      selectedTeachers.length === 0
-    ) {
-      alert("Please fill all required fields!");
-      return;
-    }
-
-    const formattedDate = selectedDates.toISOString();
-    const createdDate = new Date().toISOString();
-
-    const requestData = {
-      meetingId: `weeklymeeting-${localStorage.getItem("SupervisorPortalId")}`,
-      meetingName: meetingTitle,
-      selectedDate: formattedDate,
-      startTime,
-      endTime,
-      meetingStatus: "Scheduled",
-      supervisor: {
-        supervisorId: localStorage.getItem("SupervisorPortalId"),
-        supervisorName: localStorage.getItem("SupervisorPortalName"),
-        supervisorEmail: "arthi.blackstoneinfomatics@gmail.com",
-        supervisorRole: "SUPERVISOR",
-      },
-      teacher: selectedTeachers.map((teacherName) => {
-        const teacherDetails = teachers.find((t) => t.name === teacherName);
-        return {
-          teacherId: teacherDetails?.id ?? "UNKNOWN_ID",
-          teacherName: teacherName,
-          teacherEmail: teacherDetails?.email ?? "no-email@example.com",
-          _id: teacherDetails?.id,
-        };
-      }),
-      description,
-      status: "Active",
-      createdDate,
-      createdBy: localStorage.getItem("SupervisorPortalName"),
-    };
-
-    console.log(requestData);
-
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
-          : null;
-
-      if (!token) {
-        console.error("❌ SupervisorAuthToken not found");
-        return;
-      }
-      const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/addMeeting",
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (
-        response.status === 200 ||
-        response.status === 201 ||
-        response.status === 400
-      ) {
-        setIsMeetingModalOpen(false);
-
-        setTimeout(() => {
-          setIsSuccessMessageVisible(true);
-          // Reset form fields after successful submission
-          setMeetingTitle("");
-          setSelectedDates(null);
-          setStartTime("");
-          setEndTime("");
-          setSelectedTeachers([]);
-          setDescription("");
-        }, 2000);
-      }
-    } catch (error) {
-      console.error("Error scheduling meeting:", error);
-      setIsMeetingModalOpen(false);
-
-      setTimeout(() => {
-        setIsSuccessMessageVisible(true);
-        setMeetingTitle("");
-        setSelectedDates(null);
-        setStartTime("");
-        setEndTime("");
-        setSelectedTeachers([]);
-        setDescription("");
-      }, 2000);
-    }
-    setIsSuccessMessageVisible(false);
-  };
   const getMeetingStatusClass = (status: string) => {
     switch (status) {
       case "Scheduled":
-        return "text-white bg-[#576CBC]";
-      case "Reschedule":
-        return "text-blue-600 border-blue-600 bg-blue-100";
+        return "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36]";
+      case "Rescheduled":
+        return "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white";
       default:
-        return "text-orange-600 border-orange-600 bg-orange-100";
+        return "text-[#377E36] bg-[#ECFDF3]";
     }
   };
 
-  const getMeetingStatusLabel = (status: string, startTime: string) => {
-    if (status === "Scheduled") return startTime;
-    if (status === "Reschedule") return "Rescheduled";
-    return "Started";
+  const handleViewDetails = (meetingId: string) => {
+    const meeting = completedData.find((m) => m._id === meetingId);
+    if (meeting) {
+      setSelectedMeetingDetails(meeting);
+      setIsMeetingDetailsModalOpen(true);
+    } else {
+      console.error("Meeting not found for ID:", meetingId);
+    }
   };
+
+  const isStartMeetingNow = (
+    selectedDate: string,
+    startTime: string,
+    endTime: string
+  ): boolean => {
+    const now = new Date();
+
+    // Parse date and combine with start and end times
+    const date = new Date(selectedDate);
+
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour, endMin] = endTime.split(":").map(Number);
+
+    const start = new Date(date);
+    start.setHours(startHour, startMin, 0, 0);
+
+    const end = new Date(date);
+    end.setHours(endHour, endMin, 0, 0);
+
+    return now >= start && now <= end;
+  };
+
+  function startMeeting(_id: string): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <BaseLayout3>
@@ -562,7 +419,7 @@ const ScheduledClasses = () => {
                           Timing
                         </th>
                         <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                          ScheduleTime
+                          Status
                         </th>
                         <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Action
@@ -638,56 +495,85 @@ const ScheduledClasses = () => {
                             {item.startTime}
                           </td>
                           <td className="px-3 py-2 text-left">
-                            {activeTab === "upcoming" ? (
-                              <span
-                                className={`text-[10px] font-semibold px-3 py-1 rounded-full ${getMeetingStatusClass(
-                                  item.meetingStatus
-                                )}`}
-                              >
-                                {getMeetingStatusLabel(
-                                  item.meetingStatus,
-                                  item.startTime
-                                )}
-                              </span>
-                            ) : (
-                              <button
-                                className={`text-[10px] font-semibold px-3 py-1 rounded-full ${
-                                  item.startTime === "Re-Schedule Requested"
-                                    ? "bg-[#79d67a36] text-[#2a642b] border border-[#2a642b]"
-                                    : "bg-[#1c355739] text-[#1C3557] border border-[#1C3557]"
-                                }`}
-                                onClick={() => {
-                                  if (
-                                    item.startTime === "Re-Schedule Requested"
-                                  ) {
-                                    setIsRescheduleModalOpen(true);
-                                    setSelectedItemId(item._id);
-                                  }
-                                }}
-                              >
-                                {item.startTime}
-                              </button>
-                            )}
+                            {(() => {
+                              let content;
+
+                              if (activeTab === "upcoming") {
+                                if (
+                                  isStartMeetingNow(
+                                    item.selectedDate,
+                                    item.startTime,
+                                    item.endTime
+                                  )
+                                ) {
+                                  content = (
+                                    <button
+                                      className="text-[10px] font-semibold px-3 py-1 rounded-lg bg-[#576CBC] text-white border  "
+                                      onClick={() =>
+                                        router.push(
+                                          `/supervisor/ui/liveclass?id=${item._id}`
+                                        )
+                                      }
+                                    >
+                                      Start Meeting
+                                    </button>
+                                  );
+                                } else {
+                                  content = (
+                                    <span
+                                      className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getMeetingStatusClass(
+                                        item.meetingStatus
+                                      )}`}
+                                    >
+                                      {item.meetingStatus}
+                                    </span>
+                                  );
+                                }
+                              } else {
+                                content = (
+                                  <span className="text-[10px] font-semibold px-3 py-1 rounded-lg bg-[#ECFDF3] text-[#377E36] dark:bg-[#2E3D2E] dark:text-[#377E36]">
+                                    {item.meetingStatus}
+                                  </span>
+                                );
+                              }
+
+                              return content;
+                            })()}
                           </td>
+
                           <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal">
                             <div className="relative">
                               <button
-                                onClick={() => handleOptionsClick(item._id)}
+                                onClick={() => {
+                                  if (item.meetingStatus === "Scheduled") {
+                                    setIsDetailsModalOpen(true);
+                                    setSelectedItemId((prev) =>
+                                      prev === item._id ? null : item._id
+                                    );
+                                  } else if (
+                                    item.meetingStatus === "Completed"
+                                  ) {
+                                    handleViewDetails(item._id); // ← your function to open details view
+                                  }
+                                }}
                                 className="p-2 rounded-md"
                               >
                                 <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
                               </button>
-                              {isDetailsModalOpen &&
+
+                              {item.meetingStatus === "Scheduled" &&
+                                isDetailsModalOpen &&
                                 selectedItemId === item._id && (
                                   <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
                                     <button
                                       onClick={() => {
                                         setIsRescheduleModalOpen(true);
                                         setSelectedItemId(item._id);
+                                        setIsDetailsModalOpen(false); // Close dropdown after clicking
                                       }}
                                       className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
                                     >
-                                      Request
+                                      Request Reschedule
                                     </button>
                                     <button
                                       onClick={() => setSelectedItemId(null)}
@@ -728,53 +614,22 @@ const ScheduledClasses = () => {
             <h2 className="text-lg font-semibold mb-4">Filter by</h2>
 
             {/* Date Input */}
-            {/* Date Input */}
             <div className="mb-4">
               <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
                 Date Range
               </label>
 
-              <div className="flex gap-4 flex-col sm:flex-row">
-                {/* From Date */}
-                <div className="relative w-full" ref={fromWrapperRef}>
-                  <DatePicker
-                    selected={fromDate}
-                    onChange={(date) => setFromDate(date)}
-                    selectsStart
-                    startDate={fromDate}
-                    endDate={toDate}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="From Date"
-                    className="w-full border rounded-md p-2 pr-8 text-[12px]  dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
-                  />
-                  <div
-                    className="absolute inset-y-0 ml-40 flex items-center text-[#666E83] dark:text-[#fff] cursor-pointer dark:opacity-[60%]"
-                    onClick={focusFromInput}
-                  >
-                    <FiCalendar size={16} />
-                  </div>
-                </div>
-
-                {/* To Date */}
-                <div className="relative w-full" ref={toWrapperRef}>
-                  <DatePicker
-                    selected={toDate}
-                    onChange={(date) => setToDate(date)}
-                    selectsEnd
-                    startDate={fromDate}
-                    endDate={toDate}
-                    minDate={fromDate || undefined}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="To Date"
-                    className="w-full border rounded-md p-2 pr-8 ml-[15px] dark:border-[#565656] text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6]"
-                  />
-                  <div
-                    className="absolute inset-y-0 ml-48 flex items-center text-[#666E83] dark:text-[#fff] dark:opacity-[60%] cursor-pointer"
-                    onClick={focusToInput}
-                  >
-                    <FiCalendar size={16} />
-                  </div>
-                </div>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="date"
+                  className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  // value={exp.fromDate}
+                />
+                <input
+                  type="date"
+                  className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  // value={exp.toDate}
+                />
               </div>
             </div>
 
@@ -825,273 +680,218 @@ const ScheduledClasses = () => {
           </div>
         </div>
       )}
-      {/* Reschedule Modal */}
-      {isRescheduleModalOpen && (
+
+      {/* MeetingDetails Modal */}
+      {isMeetingDetailsModalOpen && selectedMeetingDetails && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black bg-opacity-50" />
-          <div className="bg-gray-100 rounded-3xl p-6 w-96 relative z-50">
-            <h2 className="text-xl mb-4 text-gray-700">
-              Reason for Re-Schedule
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black bg-opacity-60"
+            onClick={() => setIsMeetingDetailsModalOpen(false)}
+          />
+
+          {/* Modal box */}
+          <div className="bg-white rounded-xl p-6 w-[720px] max-h-[90vh] overflow-y-auto shadow-lg relative z-50">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">
+              Meeting Details
             </h2>
-            {showSuccess ? (
-              <div className="bg-[#108422] text-white py-3 px-6 rounded-lg flex items-center justify-center space-x-2 mb-4 mx-auto max-w-[280px]">
-                <img src="/assets/images/success.png" alt="" />
-                <span>Request Has Been Sent to Admin</span>
-              </div>
-            ) : (
-              <>
-                <textarea
-                  className="w-full p-4 border rounded-2xl mb-4 h-32 resize-none bg-white"
-                  placeholder="Type here..."
-                  value={rescheduleReason}
-                  onChange={(e) => setRescheduleReason(e.target.value)}
+
+            {/* Meeting Info Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Meeting ID
+                </label>
+                <input
+                  type="text"
+                  value={selectedMeetingDetails.meetingId}
+                  disabled
+                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
                 />
-                <button
-                  onClick={handleRescheduleSubmit}
-                  className="w-32 bg-[#1B2B65] text-white py-2 rounded-full hover:bg-[#0f1839] mx-auto block"
-                >
-                  Submit
-                </button>
-              </>
-            )}
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Meeting Name
+                </label>
+                <input
+                  type="text"
+                  value={selectedMeetingDetails.meetingName}
+                  disabled
+                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Course
+                </label>
+                {/* You don't have course in your Meeting interface, so if you want to show it, you need to add it or remove this */}
+                <input
+                  type="text"
+                  value={selectedMeetingDetails.description || ""}
+                  disabled
+                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Date</label>
+                <input
+                  type="text"
+                  value={selectedMeetingDetails.selectedDate}
+                  disabled
+                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Duration
+                </label>
+                <input
+                  type="text"
+                  value={
+                    // Calculate duration from startTime and endTime or just show as a string
+                    selectedMeetingDetails.startTime &&
+                    selectedMeetingDetails.endTime
+                      ? `${selectedMeetingDetails.startTime} - ${selectedMeetingDetails.endTime}`
+                      : ""
+                  }
+                  disabled
+                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Meeting Time
+                </label>
+                {/* You can reuse duration here or omit */}
+                <input
+                  type="text"
+                  value={
+                    selectedMeetingDetails.startTime &&
+                    selectedMeetingDetails.endTime
+                      ? `${selectedMeetingDetails.startTime} - ${selectedMeetingDetails.endTime}`
+                      : ""
+                  }
+                  disabled
+                  className="w-full px-3 py-2 border rounded text-sm bg-gray-100"
+                />
+              </div>
+            </div>
+
+            {/* Attendance Table */}
+            <div className="mt-2">
+              <div className="bg-indigo-500 text-white font-semibold rounded-t px-4 py-2 flex justify-between">
+                <span>Name</span>
+                <span>Email</span>
+              </div>
+              <div className="border border-t-0 rounded-b divide-y max-h-48 overflow-y-auto">
+                {selectedMeetingDetails.teacher.map((teacher, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between px-4 py-2 items-center text-sm"
+                  >
+                    <span className="text-indigo-600">
+                      {teacher.teacherName}
+                    </span>
+                    <span>{teacher.teacherEmail}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Meeting Minutes (description) */}
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                className="w-full p-3 border rounded resize-none bg-gray-100 text-sm"
+                rows={4}
+                disabled
+                placeholder="No comments"
+                value={selectedMeetingDetails.description || ""}
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setIsMeetingDetailsModalOpen(false)}
+                className="px-5 py-2 text-sm rounded border border-indigo-600 text-indigo-600 hover:bg-indigo-50"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {isMeetingModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 ">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-[390px] relative">
-            {/* Header */}
-            <div className="flex justify-between items-center border-b pb-2">
-              <h2 className="text-xl font-semibold text-[#1C3557]">
-                Add Meeting
-              </h2>
-              <div className="flex space-x-2">
-                {colorOptions.map((option) => (
-                  <label
-                    key={option.color}
-                    className="flex items-center cursor-pointer"
-                    title={colorTitles[option.color] || option.color} // Shows title based on color
-                  >
-                    <input
-                      type="radio"
-                      name="meetingColor"
-                      value={option.color}
-                      checked={selectedColor === option.color}
-                      onChange={() => setSelectedColor(option.color)}
-                      className="hidden"
-                    />
-                    <span
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center`}
-                      style={{ borderColor: option.hex }}
-                    >
-                      {selectedColor === option.color && (
-                        <span
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: option.hex }}
-                        ></span>
-                      )}
-                    </span>
-                  </label>
-                ))}
-              </div>
+      {/* Reschedule Modal */}
+      {isRescheduleModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black bg-opacity-50" />
 
-              <button
-                onClick={() => setIsMeetingModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <IoMdClose size={20} />
-              </button>
-            </div>
-
-            {/* Meeting Title */}
-            <input
-              type="text"
-              className="w-full border rounded-xl p-2 mt-3 focus:outline-none focus:ring-2 focus:ring-[#1C3557]"
-              placeholder="Meeting Title"
-              value={meetingTitle}
-              onChange={(e) => setMeetingTitle(e.target.value)}
-            />
-
-            {/* Date Picker */}
-            <div className="flex items-center border rounded-xl p-2 mt-6">
-              <input
-                type="date"
-                className="w-full text-gray-600 focus:outline-none"
-                value={
-                  selectedDates ? selectedDates.toISOString().split("T")[0] : ""
-                }
-                onChange={(e) => setSelectedDates(new Date(e.target.value))}
-              />
-            </div>
-
-            {/* Time Pickers */}
-            <div className="flex items-center gap-2 mt-4">
-              <div>
-                <label
-                  htmlFor="sajibaiu"
-                  className="block text-gray-700 text-sm"
-                >
-                  Start Time
-                </label>
-                <input
-                  type="time"
-                  className="border rounded-lg p-2 w-full"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="sajibaiu"
-                  className="block text-gray-700 text-sm"
-                >
-                  End Time
-                </label>
-                <input
-                  type="time"
-                  className="border rounded-lg p-2 w-full"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Add Teachers Button */}
-
-            <button
-              className="flex items-center border text-[12px] rounded-xl p-2 cursor-pointer mt-4 pl-2"
-              onClick={() => setIsTeacherModalOpen(true)}
-            >
-              <User className="w-6 h-4 text-gray-600" /> Add Teacher
-            </button>
-
-            {/* Teacher Modal */}
-            {isTeacherModalOpen && (
-              <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-                <div className="bg-white rounded-lg shadow-lg p-4 w-[300px] relative">
-                  {/* Close Button */}
-                  <button
-                    onClick={() => setIsTeacherModalOpen(false)}
-                    className="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
-                  >
-                    <IoMdClose size={20} />
-                  </button>
-
-                  {/* Filter Buttons */}
-                  <div className="flex space-x-4 mb-4">
-                    <button
-                      className={`px-4 py-1 rounded-lg ${
-                        selectedFilter === "Quran Teacher"
-                          ? "bg-gray-500 text-white"
-                          : "border"
-                      }`}
-                      onClick={() => setSelectedFilter("Quran Teacher")}
-                    >
-                      Quran
-                    </button>
-                    <button
-                      className={`px-4 py-1 rounded-lg ${
-                        selectedFilter === "Arabic Teacher"
-                          ? "bg-gray-500 text-white"
-                          : "border"
-                      }`}
-                      onClick={() => setSelectedFilter("Arabic Teacher")}
-                    >
-                      Arabic
-                    </button>
-                    <button
-                      className={`px-4 py-1 rounded-lg ${
-                        selectedFilter === "all"
-                          ? "bg-gray-500 text-white"
-                          : "border"
-                      }`}
-                      onClick={() => setSelectedFilter("all")}
-                    >
-                      All
-                    </button>
-                  </div>
-
-                  {/* Teacher List */}
-                  <div className="border p-2 rounded-md max-h-[250px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
-                    {filteredTeachers.map((teacher, index) => (
-                      <div
-                        key={`${teacher.name}-${index}`}
-                        className="flex items-center justify-between p-2 border-b last:border-none"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <FaUserCircle className="text-[#1C3557]" size={20} />
-                          <span className="text-gray-700 text-sm">
-                            {teacher.name}
-                          </span>
-                        </div>
-                        <input
-                          type="checkbox"
-                          className="h-5 w-5 text-[#1C3557] border-gray-300 rounded focus:ring-[#1C3557]"
-                          checked={selectedTeachers.includes(teacher.name)}
-                          onChange={() => toggleSelections(teacher.name)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Done Button */}
-                  <button
-                    onClick={() => setIsTeacherModalOpen(false)}
-                    className="w-full mt-4 bg-[#1C3557] text-white py-2 rounded-lg hover:bg-[#15294a]"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            )}
-            {/* Selected Teachers */}
-            <div className="flex mt-2 space-x-2">
-              {selectedTeachers.map((teacher) => (
-                <span
-                  key={teacher}
-                  className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm"
-                >
-                  {teacher}
-                </span>
-              ))}
-              {/* <button className="text-[#1C3557] border border-[#1C3557] rounded-full p-1">
-                 <FaPlus size={12} />
-               </button> */}
-            </div>
+          {/* Modal container */}
+          <div className="bg-white rounded-lg p-6 w-[600px] relative z-50 shadow-xl">
+            <h2 className="text-[#0D0E25] text-lg font-bold mb-4">
+              Reason for Re-Schedule
+            </h2>
 
             {/* Description */}
+            <label className="block text-sm font-[12px] text-[#0D0E25] mb-1">
+              Add Description
+            </label>
             <textarea
-              className="w-full border rounded-xl p-2 mt-3 focus:outline-none focus:ring-2 focus:ring-[#1C3557]"
-              placeholder="Add Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-            {isSuccessMessageVisible && (
-              <div className="fixed  flex items-center bg-[#dde0dd] border border-[#cdcfcd] text-[#191919] px-6 py-3 rounded-lg shadow-lg">
-                {/* Green Check Icon */}
-                <div className="w-8 h-8 flex items-center justify-center bg-[#4CAF50] rounded-full">
-                  <span className="text-white text-xl">✔</span>
-                </div>
+              className="w-full h-32 p-3 mb-6 border border-[#D9D9D9] rounded-md text-[#0D0E25] placeholder-[#9CA3AF] resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Type here..."
+              value={rescheduleReason}
+              onChange={(e) => setRescheduleReason(e.target.value)}
+            />
 
-                {/* Success Message */}
-                <span className="ml-3 font-medium">Scheduled successfully</span>
+            {/* Date and Time Row */}
+            <div className="flex gap-4 mb-6">
+              <div className="w-1/2">
+                <label className="block text-sm font-[12px] text-[#0D0E25] mb-1">
+                  Reschedule Date
+                </label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={rescheduleDate}
+                    onChange={(e) => setRescheduleDate(e.target.value)}
+                    className="w-full text-sm px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none "
+                  />
+                </div>
               </div>
-            )}
+
+              <div className="w-1/2">
+                <label className="block text-sm font-[12px] text-[#0D0E25] mb-1">
+                  Reschedule time
+                </label>
+                <div className="relative">
+                  <input
+                    type="time"
+                    value={rescheduleTime}
+                    onChange={(e) => setRescheduleTime(e.target.value)}
+                    className="w-full text-sm  px-4 py-2 border border-[#D9D9D9] rounded-md text-[#0D0E25] focus:outline-none "
+                  />
+                </div>
+              </div>
+            </div>
 
             {/* Buttons */}
-            <div className="flex justify-between mt-4">
+            <div className="flex justify-end gap-3 border-t pt-4">
               <button
-                className="w-[45%] border border-gray-400 text-gray-700 py-2 rounded-md hover:bg-gray-100"
-                onClick={() => setIsMeetingModalOpen(false)}
+                onClick={() => setIsRescheduleModalOpen(false)}
+                className="px-6 py-2 rounded-md border border-[#576CBC] font-semibold text-[#576CBC] transition"
               >
                 Cancel
               </button>
               <button
-                className="w-[45%] bg-[#1C3557] text-white py-2 rounded-md hover:bg-[#15294a]"
-                onClick={handleScheduleMeeting1}
+                onClick={handleRescheduleSubmit}
+                className="px-6 py-2 rounded-md bg-[#576CBC] text-white font-semibold  transition"
               >
-                Schedule
+                Submit
               </button>
             </div>
           </div>
