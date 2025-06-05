@@ -44,7 +44,7 @@ export default function AddMeeting({ onClose }: Props) {
           typeof window !== "undefined"
             ? localStorage.getItem("SupervisorAuthToken")
             : null;
-        const url = `https://api.blackstoneinfomatics.tech/teacher`;
+        const url = `https://api.blackstoneinfomaticstech.com/teacher`;
 
         const params: Record<string, string> = {
           supervisorId: Id ?? "",

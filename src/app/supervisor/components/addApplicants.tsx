@@ -177,7 +177,7 @@ export default function AddApplicants({ onClose }: Props) {
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomatics.tech/recruit",
+        "https://api.blackstoneinfomaticstech.com/recruit",
         formData,
         {
           headers: {
