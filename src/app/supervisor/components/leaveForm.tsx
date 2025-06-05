@@ -60,7 +60,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
           : null;
 
       const response = await axios.post(
-        "https://api.blackstoneinfomatics.tech/leaverequest",
+        "https://api.blackstoneinfomaticstech.com/leaverequest",
         form,
         {
           headers: {

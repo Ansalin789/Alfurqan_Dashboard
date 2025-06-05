@@ -301,7 +301,7 @@ export default function ApplicantsPage() {
           return;
         }
         const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomatics.tech/applicants/${_id}`,
+          `https://api.blackstoneinfomaticstech.com/applicants/${_id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -393,7 +393,7 @@ export default function ApplicantsPage() {
       }
 
       const response = await axios.put(
-        `https://api.blackstoneinfomatics.tech/applicants/${id}`,
+        `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
         updateData,
         {
           headers: {

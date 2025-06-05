@@ -48,7 +48,7 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
           : null;
 
       const { data } = await axios.get(
-        `https://api.blackstoneinfomatics.tech/notification/getlist?receiverId=${userId}`,
+        `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
         {
           method: "GET",
           headers: {
