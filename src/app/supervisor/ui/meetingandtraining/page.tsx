@@ -451,10 +451,10 @@ const ScheduledClasses = () => {
                     <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr className="font-medium">
                         <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] w-[180px] break-words whitespace-normal">
-                          MeetingId
+                          Meeting ID
                         </th>
                         <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] w-[250px] break-words whitespace-normal">
-                          MeetingName
+                          Meeting Name
                         </th>
                         <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Attendees
