@@ -156,13 +156,10 @@ export default function ApplicantsPage() {
   const [workingDays, setWorkingDays] = useState("Monday-Saturday");
   const [rating, setRating] = useState(4);
   const [comments, setComments] = useState("");
-  const [applicationStatus, setApplicationStatus] = useState("");
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [fromDate, setFromDate] = useState<Date | null>(null);
-  const [toDate, setToDate] = useState<Date | null>(null);
   const fromWrapperRef = useRef<HTMLDivElement>(null);
   const toWrapperRef = useRef<HTMLDivElement>(null);
   const [supervisorId, setSupervisorId] = React.useState<string | null>(null);
@@ -170,6 +167,11 @@ export default function ApplicantsPage() {
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [positionApplied, setPositionApplied] = useState("");
+  const [applicationStatus, setApplicationStatus] = useState("");
 
   const extractSkills = (rawText: string): string[] => {
     // Only keep content before "Accomplishments" or "Certifications"
@@ -250,10 +252,71 @@ export default function ApplicantsPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        params:{params}
       })
       .then((response) => setApplicants(response.data.applicants))
       .catch((error) => console.error("Error fetching applicants:", error));
   }, []);
+ const handleFilter = async () => {
+   setShowModal(false);
+  console.log("button clicked");
+
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("SupervisorAuthToken")
+      : null;
+
+  const supervisorId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("SupervisorPortalId")
+      : null;
+
+  if (!token) {
+    console.error("❌ SupervisorAuthToken not found");
+    return;
+  }
+
+  if (!supervisorId) {
+    console.warn("⚠️ SupervisorId not found in localStorage");
+  } else {
+    console.log("✅ Supervisor ID from localStorage:", supervisorId);
+  }
+
+  // ✅ Build params object here
+  const params: any = {};
+  if (searchText) params.searchText = searchText;
+  if (fromDate && toDate) {
+    params["dateRange.from"] = fromDate;
+    params["dateRange.to"] = toDate;
+  }
+  if (positionApplied) params.positionApplied = positionApplied;
+  if (applicationStatus) params.applicationStatus = applicationStatus;
+
+  try {
+    const response = await axios.get(
+      "https://api.blackstoneinfomaticstech.com/applicants",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        params, // ✅ Pass the object directly
+      }
+    );
+    console.log(response.data.applicants)
+    setApplicants(response.data.applicants);
+  } catch (error) {
+    console.error("Error fetching applicants:", error);
+  }
+};
+
+
+  const params = new URLSearchParams();
+  if (searchText) params.append("searchText", searchText);
+  if (fromDate) params.append("dateRange.from", fromDate);
+  if (toDate) params.append("dateRange.to", toDate);
+  if (positionApplied) params.append("positionApplied", positionApplied);
+  if (applicationStatus) params.append("applicationStatus", applicationStatus);
 
   const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
 
@@ -471,6 +534,8 @@ export default function ApplicantsPage() {
                         type="text"
                         placeholder="Search by keyword"
                         className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
                       />
                     </div>
 
@@ -482,10 +547,112 @@ export default function ApplicantsPage() {
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
+                    {/* Modal */}
+                    {showModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+                        <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
+                          {/* Close Icon */}
+                          <button
+                            className="absolute top-2 right-3 text-gray-400 text-xl"
+                            onClick={() => setShowModal(false)}
+                          >
+                            &times;
+                          </button>
 
+                          <h2 className="text-lg font-semibold mb-4">
+                            Filter by
+                          </h2>
+
+                          {/* Date Input */}
+                          <div className="mb-4">
+                            <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                              Date Range
+                            </label>
+
+                            <div className="flex gap-2 mb-2">
+                              <input
+                                type="date"
+                                className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                                // value={exp.fromDate}
+                                value={fromDate}
+                                onChange={(e) => setFromDate(e.target.value)}
+                              />
+                              <input
+                                type="date"
+                                className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                                // value={exp.toDate}
+                                value={toDate}
+                                onChange={(e) => setToDate(e.target.value)}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Position Applied */}
+                          <div className="mb-4">
+                            <label
+                              htmlFor="position"
+                              className="block text-sm font-medium mb-1"
+                            >
+                              Position Applied
+                            </label>
+                            <select
+                              className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                              value={positionApplied}
+                              onChange={(e) =>
+                                setPositionApplied(e.target.value)
+                              }
+                            >
+                              <option>Islamic Teacher</option>
+                              <option>Quran Teacher</option>
+                              <option>Tajweed Teacher</option>
+                            </select>
+                          </div>
+
+                          {/* Status */}
+                          <div className="mb-6">
+                            <label
+                              htmlFor="status"
+                              className="block text-sm font-medium mb-1"
+                            >
+                              Application Status
+                            </label>
+                            <select
+                              className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                              value={applicationStatus}
+                              onChange={(e) =>
+                                setApplicationStatus(e.target.value)
+                              }
+                            >
+                              <option>Shortlisted</option>
+                              <option>Rejected</option>
+                              <option>Waiting</option>
+                              <option>Approved</option>
+                              <option>New Application</option>
+                            </select>
+                          </div>
+
+                          {/* Buttons */}
+                          <div className="flex justify-end gap-3">
+                            <button
+                              onClick={() => setShowModal(false)}
+                              className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                              onClick={handleFilter}
+                            >
+                              Submit
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentApplicants.length} Of {filteredApplicants.length}
+                        Showing {currentApplicants.length} Of{" "}
+                        {filteredApplicants.length}
                       </span>
                     </div>
                   </div>
@@ -679,88 +846,6 @@ export default function ApplicantsPage() {
       )}
       {failed && (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
-      )}
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
-            {/* Close Icon */}
-            <button
-              className="absolute top-2 right-3 text-gray-400 text-xl"
-              onClick={() => setShowModal(false)}
-            >
-              &times;
-            </button>
-
-            <h2 className="text-lg font-semibold mb-4">Filter by</h2>
-
-            {/* Date Input */}
-            <div className="mb-4">
-              <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                Date Range
-              </label>
-
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="date"
-                  className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  // value={exp.fromDate}
-                />
-                <input
-                  type="date"
-                  className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  // value={exp.toDate}
-                />
-              </div>
-            </div>
-
-            {/* Position Applied */}
-            <div className="mb-4">
-              <label
-                htmlFor="position"
-                className="block text-sm font-medium mb-1"
-              >
-                Position Applied
-              </label>
-              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
-                <option>Islamic</option>
-                <option>Quran</option>
-                <option>Tajweed</option>
-              </select>
-            </div>
-
-            {/* Status */}
-            <div className="mb-6">
-              <label
-                htmlFor="status"
-                className="block text-sm font-medium mb-1"
-              >
-                Application Status
-              </label>
-              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
-                <option>Shortlisted</option>
-                <option>Rejected</option>
-                <option>Waiting</option>
-                <option>Approved</option>
-                <option>New Application</option>
-              </select>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
-              >
-                Cancel
-              </button>
-              <button className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium">
-                Submit
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {selectedApplicant && (
