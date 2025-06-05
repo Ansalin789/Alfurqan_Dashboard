@@ -12,12 +12,12 @@ type Props = {
 };
 
 interface Experience {
-  role: string;
-  organization: string;
-  place: string;
+  jobRole: string;
+  organizationName: string;
+  jobLocation: string;
   fromDate: string;
   toDate: string;
-  description: string;
+  jobDescription: string;
 }
 
 interface AddApplicantFormData {
@@ -33,6 +33,7 @@ interface AddApplicantFormData {
   position: string;
   expectedSalary: string;
   workingHours: string;
+  professionalExperience:Experience[];
   skillList: string[];
   resume: File | null | undefined;
   comment: string;
@@ -58,18 +59,19 @@ export default function AddApplicants({ onClose }: Props) {
       expectedSalary: "",
       workingHours: "",
       skills: "",
+      professionalExperience:[],
       skillList: [],
       resume: null,
       comment: "",
     });
   const [experiences, setExperiences] = useState<Experience[]>([
     {
-      role: "",
-      organization: "",
-      place: "",
+      jobRole: "",
+      organizationName: "",
+      jobLocation: "",
       fromDate: "",
       toDate: "",
-      description: "",
+      jobDescription: "",
     },
   ]);
 
@@ -88,12 +90,12 @@ export default function AddApplicants({ onClose }: Props) {
     setExperiences((prev) => [
       ...prev,
       {
-        role: "",
-        organization: "",
-        place: "",
+        jobRole: "",
+        organizationName: "",
+        jobLocation: "",
         fromDate: "",
         toDate: "",
-        description: "",
+        jobDescription: "",
       },
     ]);
   };
@@ -104,7 +106,7 @@ export default function AddApplicants({ onClose }: Props) {
   // You might want to validate here or on submit
   const canAddNewForm = experiences.every(
     (exp) =>
-      exp.role && exp.organization && exp.place && exp.fromDate && exp.toDate
+      exp.jobRole && exp.organizationName && exp.jobLocation && exp.fromDate && exp.toDate
   );
 
   function handleChange(
@@ -151,6 +153,7 @@ export default function AddApplicants({ onClose }: Props) {
     formData.append("gender", addApplicantForm.gender);
     formData.append("skills", addApplicantForm.skillList.join(","));
     formData.append("currency", "$"); // Changed
+    formData.append("professionalExperience", JSON.stringify(experiences));
     formData.append("expectedSalary", addApplicantForm.expectedSalary); // Changed
     formData.append("preferedWorkingHours", addApplicantForm.workingHours); // Changed
     formData.append("comments", addApplicantForm.comment); // Changed
@@ -200,6 +203,7 @@ export default function AddApplicants({ onClose }: Props) {
           workingHours: "",
           skills: " ",
           skillList: [],
+          professionalExperience:[],
           resume: null,
           comment: "",
         });
@@ -546,7 +550,7 @@ export default function AddApplicants({ onClose }: Props) {
             {/* Render multiple experience input forms */}
             {experiences.map((exp, index) => (
               <div
-                key={exp.role}
+                key={exp.jobRole}
                 className="mb-4 p-3 border rounded  dark:border-[#5C5C5C] dark:text-white relative"
               >
                 <button
@@ -560,23 +564,23 @@ export default function AddApplicants({ onClose }: Props) {
                 <input
                   placeholder="Role"
                   className="w-full mb-2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  value={exp.role}
-                  onChange={(e) => handleChange1(index, "role", e.target.value)}
+                  value={exp.jobRole}
+                  onChange={(e) => handleChange1(index, "jobRole", e.target.value)}
                 />
                 <input
                   placeholder="Organization"
                   className="w-full mb-2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  value={exp.organization}
+                  value={exp.organizationName}
                   onChange={(e) =>
-                    handleChange1(index, "organization", e.target.value)
+                    handleChange1(index, "organizationName", e.target.value)
                   }
                 />
                 <input
                   placeholder="Place"
                   className="w-full mb-2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  value={exp.place}
+                  value={exp.jobLocation}
                   onChange={(e) =>
-                    handleChange1(index, "place", e.target.value)
+                    handleChange1(index, "jobLocation", e.target.value)
                   }
                 />
                 <div className="flex gap-2 mb-2">
@@ -601,9 +605,9 @@ export default function AddApplicants({ onClose }: Props) {
                   placeholder="Description"
                   rows={3}
                   className="w-full px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  value={exp.description}
+                  value={exp.jobDescription}
                   onChange={(e) =>
-                    handleChange1(index, "description", e.target.value)
+                    handleChange1(index, "jobDescription", e.target.value)
                   }
                 />
               </div>
