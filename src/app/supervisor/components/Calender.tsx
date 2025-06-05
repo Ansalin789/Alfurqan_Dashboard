@@ -4,7 +4,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "./Calendar.css";
 import axios from "axios";
-
+import { useRouter } from "next/navigation"; 
 interface Event {
   title: string;
   start: Date;
@@ -36,6 +36,8 @@ interface Meeting {
 }
 
 const Academic: React.FC = () => {
+    const router = useRouter(); 
+
   const [events, setEvents] = useState<Event[]>([]);
   const [value, setValue] = useState<Date>(new Date());
   const [activeStartDate, setActiveStartDate] = useState<Date>(new Date());
@@ -137,40 +139,45 @@ const Academic: React.FC = () => {
 
   return (
     <div className="dark:bg-[#343434] w-full rounded-xl">
-        <Calendar
-  onChange={(newValue) => setValue(newValue as Date)}
-  value={value}
-  activeStartDate={activeStartDate}
-  onActiveStartDateChange={({ activeStartDate }) => {
-    setActiveStartDate(activeStartDate as Date);
-    setValue(activeStartDate as Date);
-  }}
-  locale="en-GB"
-  calendarType="iso8601"
-  showNeighboringMonth={true} // Keep full calendar structure
-  className="custom-calendar dark:bg-[#343434]"
-  navigationLabel={({ date }) =>
-    `${date.toLocaleString("default", {
-      month: "long",
-    }).toUpperCase()}, ${date.getFullYear()}`
-  }
-  nextLabel="›"
-  prevLabel="‹"
-  next2Label={null}
-  prev2Label={null}
-  tileClassName={({ date, view }) => {
-    if (view === "month") {
-      const isSameMonth = date.getMonth() === activeStartDate.getMonth();
-      const isSameYear = date.getFullYear() === activeStartDate.getFullYear();
+      <Calendar
+        onChange={(newValue) => setValue(newValue as Date)}
+        value={value}
+        activeStartDate={activeStartDate}
+        onActiveStartDateChange={({ activeStartDate }) => {
+          setActiveStartDate(activeStartDate as Date);
+          setValue(activeStartDate as Date);
+        }}
+        onClickDay={() => {
+      router.push(`/supervisor/ui/calendar`);
+    }}
+        locale="en-GB"
+        calendarType="iso8601"
+        showNeighboringMonth={true} // Keep full calendar structure
+        className="custom-calendar dark:bg-[#343434]"
+        navigationLabel={({ date }) =>
+          `${date
+            .toLocaleString("default", {
+              month: "long",
+            })
+            .toUpperCase()}, ${date.getFullYear()}`
+        }
+        nextLabel="›"
+        prevLabel="‹"
+        next2Label={null}
+        prev2Label={null}
+        tileClassName={({ date, view }) => {
+          if (view === "month") {
+            const isSameMonth = date.getMonth() === activeStartDate.getMonth();
+            const isSameYear =
+              date.getFullYear() === activeStartDate.getFullYear();
 
-      if (isSameMonth && isSameYear && isMeetingDate(date)) {
-        return "react-calendar__tile--active";
-      }
-    }
-    return undefined;
-  }}
-/>
-
+            if (isSameMonth && isSameYear && isMeetingDate(date)) {
+              return "react-calendar__tile--active";
+            }
+          }
+          return undefined;
+        }}
+      />
     </div>
   );
 };

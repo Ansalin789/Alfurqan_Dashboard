@@ -186,7 +186,7 @@ export default function Dashboard() {
     );
 
     const fetchDashboardCounts = axios.get(
-      'http://localhost:5001/dashboard/supervisor/counts',
+      'https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts',
       {
         headers: {
           "Content-Type": "application/json",
@@ -628,6 +628,7 @@ export default function Dashboard() {
                       ))}
                     </Pie>
                   </PieChart>
+                  
                 </div>
 
                 {/* Bottom Legend */}
