@@ -439,7 +439,7 @@ const ScheduledClasses = () => {
 
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentApplicants.length} Of 50
+                        Showing {currentApplicants.length} Of {dataToShow.length}
                       </span>
                     </div>
                   </div>

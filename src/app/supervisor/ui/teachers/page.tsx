@@ -279,11 +279,11 @@ const ManageTeacher: React.FC = () => {
                   <div className="items-center">
                     <div className="h-[126px] rounded-md bg-[#e8e8e8] dark:bg-[#dadada] flex items-center justify-center">
                       <Image
-                        src={teacher.profileImage ?? "/assets/images/proff.jpg"}
+                        src={teacher.profileImage ?? "/assets/images/profilePicture.png"}
                         alt="Teacher"
-                        className="rounded-full"
-                        width={50}
-                        height={50}
+                        className="rounded-md"
+                        width={160}
+                        height={160}
                       />
                     </div>
                   </div>

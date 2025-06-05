@@ -143,7 +143,7 @@ const SchedulePage = () => {
     const today = new Date();
     return (
       day === today.getDate() &&
-      currentDate.getMonth() === today.getMonth() &&
+           currentDate.getMonth() === today.getMonth() && 
       currentDate.getFullYear() === today.getFullYear()
     );
   };
@@ -329,8 +329,8 @@ const SchedulePage = () => {
                     })}
                   </div>
                 )}
-              </div>
-            );
+    </div>
+  );
           })}
         </div>
       </div>
@@ -365,14 +365,14 @@ const SchedulePage = () => {
             </div>
           );
         })}
-      </div>
-    );
+    </div>
+  );
   };
 
   const MonthlyView = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDayOfMonth = getFirstDayOfMonth(currentDate);
-
+    
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     const emptyCells = Array.from({ length: firstDayOfMonth }, (_, i) => null);
     const totalDays = [...emptyCells, ...days];
@@ -380,7 +380,7 @@ const SchedulePage = () => {
     return (
       <>
         <div className="flex items-end justify-end mb-4 -mt-10 gap-2">
-          <button
+          <button 
             onClick={handlePrevMonth}
             className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
           >
@@ -389,7 +389,7 @@ const SchedulePage = () => {
           <h2 className="text-[16px] font-semibold">
             {formatMonthYear(currentDate)}
           </h2>
-          <button
+          <button 
             onClick={handleNextMonth}
             className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
           >
@@ -424,7 +424,7 @@ const SchedulePage = () => {
               date.getDate() === selectedDate.getDate() &&
               date.getMonth() === selectedDate.getMonth() &&
               date.getFullYear() === selectedDate.getFullYear();
-
+            
             return (
               <div
                 key={i}
@@ -432,7 +432,7 @@ const SchedulePage = () => {
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
                   hasMeetings
                     ? `${colors?.border} ${colors?.text} ${colors?.bg} border text-[10px]`
-                    : isToday(day)
+                      : isToday(day)
                     ? "bg-[#27176518] text-white"
                     : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
                 } ${isSelected ? "ring-2 ring-[#576cbc]" : ""}`}
@@ -452,7 +452,7 @@ const SchedulePage = () => {
                     <div className="text-[8px] truncate px-1">
                       {dayMeetings[0].startTime} - {dayMeetings[0].endTime}
                     </div>
-                  </div>
+                      </div>
                 )}
               </div>
             );
@@ -516,20 +516,20 @@ const SchedulePage = () => {
                         {meeting.meetingName}
                       </h4>
                       <div className="flex items-center text-gray-400 text-[9px] mt-1 gap-2">
-                        <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
+                    <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
                           <Clock size={10} /> {meeting.startTime} -{" "}
                           {meeting.endTime}
-                        </span>
-                        <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
+                    </span>
+                    <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
                           <CalendarDays size={10} />{" "}
                           {moment(meeting.selectedDate).format("DD/MM/YYYY")}
-                        </span>
-                      </div>
-                    </div>
+                    </span>
+                  </div>
+                  </div>
                     <p className="text-gray-500 dark:text-[#f9f9f9] text-[9px] mt-2">
                       {meeting.description}
-                    </p>
-                  </div>
+                  </p>
+                </div>
                 );
               })}
             </div>
