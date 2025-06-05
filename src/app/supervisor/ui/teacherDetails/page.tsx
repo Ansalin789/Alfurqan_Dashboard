@@ -88,7 +88,7 @@ const TeacherDetails = () => {
       }
 
       const response = await fetch(
-        `http://localhost:5001/classstudentsattendancecounts?teacherId=${teacherId}`,
+        `https://api.blackstoneinfomatics.tech/classstudentsattendancecounts?teacherId=${teacherId}`,
         {
           method: "GET",
           headers: {

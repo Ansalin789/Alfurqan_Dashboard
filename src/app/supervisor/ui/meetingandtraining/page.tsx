@@ -278,7 +278,7 @@ const ScheduledClasses = () => {
     try {
       const token = localStorage.getItem("token"); // or use context/auth provider
       const response = await fetch(
-        `http://localhost:5001/meeting/${selectedItemId}`,
+        `https://api.blackstoneinfomatics.tech/meeting/${selectedItemId}`,
         {
           method: "PUT",
           headers: {
