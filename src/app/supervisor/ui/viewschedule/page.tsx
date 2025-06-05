@@ -37,12 +37,16 @@ const ViewSchedule = () => {
     endDate: string;
     startTime: string[];
     endTime: string[];
-    scheduleStatus: string;
+    scheduleStatus: "Scheduled" | "Re-scheduled" | "Ongoing" | "Completed";
     status: string;
     createdBy: string;
     createdDate: string;
     lastUpdatedDate: string;
     __v: number;
+    scheduleDate?: Date;
+    isOngoing?: boolean;
+    isFuture?: boolean;
+    formattedTimes?: string[];
   }
 
   interface ApiResponse {
@@ -57,9 +61,9 @@ const ViewSchedule = () => {
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const [activeTab, setActiveTab] = useState<string>("upcoming");
+  const [activeTab, setActiveTab] = useState<string>("scheduled");
   const [upcomingClasses, setUpcomingClasses] = useState<Schedule[]>([]);
-  const [scheduledClasses, setScheduledClasses] = useState<Schedule[]>([]);
+  const [completedClasses, setCompletedClasses] = useState<Schedule[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,8 +124,21 @@ const ViewSchedule = () => {
             formattedTimes.push(`${time} - ${schedule.endTime[index]}`);
           });
 
+          // Update status based on conditions
+          let updatedStatus = schedule.scheduleStatus;
+          if (isOngoing) {
+            updatedStatus = "Ongoing";
+          } else if (schedule.scheduleStatus === "Re-scheduled") {
+            updatedStatus = "Re-scheduled";
+          } else if (schedule.scheduleStatus === "Completed") {
+            updatedStatus = "Completed";
+          } else if (isFuture || (schedule.scheduleDate && schedule.scheduleDate > today)) {
+            updatedStatus = "Scheduled";
+          }
+
           return {
             ...schedule,
+            scheduleStatus: updatedStatus,
             isOngoing,
             isFuture,
             scheduleDate,
@@ -129,42 +146,24 @@ const ViewSchedule = () => {
           };
         });
 
-        // Filter upcoming classes (future dates or ongoing today)
-        const upcoming = allSchedules.filter((schedule) => {
-          if (schedule.scheduleDate.getTime() === today.getTime()) {
-            return schedule.startTime.some((time, index) => {
-              const [hours, minutes] = time.split(":").map(Number);
-              const scheduleStart = new Date(schedule.startDate);
-              scheduleStart.setHours(hours, minutes, 0, 0);
-
-              const [endHours, endMinutes] = schedule.endTime[index]
-                .split(":")
-                .map(Number);
-              const scheduleEnd = new Date(schedule.startDate);
-              scheduleEnd.setHours(endHours, endMinutes, 0, 0);
-
-              return now <= scheduleEnd;
-            });
-          }
-          return schedule.scheduleDate > today;
-        });
-
-        // Filter scheduled classes (today's classes that haven't started yet)
+        // Filter scheduled classes (future dates or ongoing today)
         const scheduled = allSchedules.filter((schedule) => {
-          if (schedule.scheduleDate.getTime() === today.getTime()) {
-            return schedule.startTime.some((time) => {
-              const [hours, minutes] = time.split(":").map(Number);
-              const scheduleStart = new Date(schedule.startDate);
-              scheduleStart.setHours(hours, minutes, 0, 0);
-              return now < scheduleStart;
-            });
+          // If status is completed, don't show in scheduled
+          if (schedule.scheduleStatus === "Completed") {
+            return false;
           }
-          return false;
+
+          return ["Scheduled", "Re-scheduled", "Ongoing"].includes(schedule.scheduleStatus);
         });
 
-        setUpcomingClasses(upcoming);
-        setScheduledClasses(scheduled);
-        setUniqueStudentSchedules(upcoming); // Default to upcoming classes
+        // Filter completed classes
+        const completed = allSchedules.filter((schedule) => {
+          return schedule.scheduleStatus === "Completed";
+        });
+
+        setUpcomingClasses(scheduled);
+        setCompletedClasses(completed);
+        setUniqueStudentSchedules(scheduled); // Default to scheduled classes
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -175,12 +174,12 @@ const ViewSchedule = () => {
 
   // Update displayed data when tab changes
   useEffect(() => {
-    if (activeTab === "upcoming") {
+    if (activeTab === "scheduled") {
       setUniqueStudentSchedules(upcomingClasses);
-    } else if (activeTab === "scheduled") {
-      setUniqueStudentSchedules(scheduledClasses);
+    } else if (activeTab === "completed") {
+      setUniqueStudentSchedules(completedClasses);
     }
-  }, [activeTab, upcomingClasses, scheduledClasses]);
+  }, [activeTab, upcomingClasses, completedClasses]);
 
   const [showFilter, setShowFilter] = useState(false);
   const dataToShow = uniqueStudentSchedules;
@@ -274,25 +273,26 @@ const ViewSchedule = () => {
     return false;
   };
 
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "Scheduled":
+        return "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px]";
+      case "Re-scheduled":
+        return "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white";
+      case "Ongoing":
+        return "text-[#576CBC] bg-[#F3F6FF] dark:bg-[#2C3B6C] dark:text-[#576CBC]";
+      case "Completed":
+        return "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36]";
+      default:
+        return "text-[#377E36] bg-[#ECFDF3]";
+    }
+  };
+
   return (
     <BaseLayout3>
       <SupervisorHeader currentSection="Scheduled Classes" />
       {/* Tabs */}
       <div className="flex space-x-6 px-4 py-2 rounded-md">
-        <button
-          className={`relative text-[14px] transition font-medium ${
-            activeTab === "upcoming"
-              ? "text-[#576CBC] font-semibold"
-              : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-          }`}
-          onClick={() => setActiveTab("upcoming")}
-        >
-          Upcoming ({upcomingClasses.length})
-          {activeTab === "upcoming" && (
-            <span className="absolute left-0 ml-5 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC] dark:text-[#576CBC]" />
-          )}
-        </button>
-
         <button
           className={`relative text-[14px] transition font-medium ${
             activeTab === "scheduled"
@@ -301,8 +301,22 @@ const ViewSchedule = () => {
           }`}
           onClick={() => setActiveTab("scheduled")}
         >
-          Scheduled ({scheduledClasses.length})
+          Scheduled ({upcomingClasses.length})
           {activeTab === "scheduled" && (
+            <span className="absolute left-0 ml-5 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC] dark:text-[#576CBC]" />
+          )}
+        </button>
+
+        <button
+          className={`relative text-[14px] transition font-medium ${
+            activeTab === "completed"
+              ? "text-[#576CBC] font-semibold"
+              : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+          }`}
+          onClick={() => setActiveTab("completed")}
+        >
+          Completed ({completedClasses.length})
+          {activeTab === "completed" && (
             <span className="absolute left-0 ml-3 -bottom-1 w-[60px] h-[3px] rounded-full bg-[#576CBC]" />
           )}
         </button>
@@ -515,22 +529,10 @@ const ViewSchedule = () => {
                       })()}
                     </td>
 
-                    <td className="px-3 py-2">
-                      {item.scheduleStatus === "Scheduled" && (
-                        <span className="bg-blue-100 text-[#343E59] text-[10px] font-medium px-3 py-1 rounded-sm">
-                          Scheduled
-                        </span>
-                      )}
-                      {item.scheduleStatus === "Re-Scheduled" && (
-                        <span className="bg-gray-200 text-[#343E59] text-[10px] font-medium px-2 py-1 rounded-sm">
-                          Re-Scheduled
-                        </span>
-                      )}
-                      {item.scheduleStatus === "Completed" && (
-                        <span className="bg-[#ECFDF3] text-[#377E36] text-[10px] px-2 py-1 font-medium  rounded-sm">
-                          Completed
-                        </span>
-                      )}
+                    <td className="px-3 py-2 text-left">
+                      <span className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getStatusClass(item.scheduleStatus)}`}>
+                        {item.scheduleStatus}
+                      </span>
                     </td>
                   </tr>
                 ))}
