@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LogOut } from "lucide-react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import axios from "axios";
 import BaseLayout3 from "@/components/BaseLayout3";
-import Link from "next/link";
 import SupervisorHeader from "../../components/supervisorHeader";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
@@ -65,12 +63,6 @@ function LiveClass() {
     const [successMessage,setSuccessMessage] = useState("");
 
   useEffect(() => {
-    // Ideally this should come from your backend or query params
-    const room = "MyLiveClassRoom123"; // Replace with dynamic value
-    setRoomName(room);
-  }, []);
-
-  useEffect(() => {
     const classScheduleid = localStorage.getItem("showfeedbackid");
     const fetchClassData = async () => {
       try {
@@ -84,7 +76,7 @@ function LiveClass() {
           return;
         }
         const response = await axios.get<ClassData>(
-          `https://alfurqanacademy.tech/classShedule/${classScheduleid}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/${classScheduleid}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -97,7 +89,7 @@ function LiveClass() {
         if (response.data) {
           console.log("Setting classData:", response.data); // ✅ Log before setting state
           setClassData(response.data);
-          
+           setRoomName(response.data.classLink);
         } else {
           console.log("Error: classSchedule is missing in API response");
         }
@@ -158,7 +150,7 @@ function LiveClass() {
         return;
       }
       const response = await axios.post(
-        "https://alfurqanacademy.tech/supervisorfeedback",
+        "https://api.blackstoneinfomaticstech.com/supervisorfeedback",
         feedbackData,
         {
           headers: {
@@ -171,10 +163,11 @@ function LiveClass() {
       if (response.status === 201 || response.status === 200) {
         setShowPopup(true);
         setSuccess(true);
-
+        setSuccessMessage('Feedback');
         setTimeout(() => setShowPopup(false), 3000);
       } else {
         console.log("Failed to submit feedback. Please try again.");
+        setFailedMessage('Check Inputs');
       }
     } 
     catch (error) {
@@ -183,9 +176,6 @@ function LiveClass() {
     }
   };
 
-  const handleEndCall = () => {
-    setShowFeedback(true);
-  };
   const StarRating = ({
     value,
     onChange,
@@ -333,17 +323,17 @@ function LiveClass() {
             ) : (
               <div className="p-1 sm:p-2 relative">
                 <div className="bg-white dark:bg-[#343434] rounded-xl p-4">
-                  <h2 className="font-semibold text-black text-[18px] px-3 dark:text-[#fff]">Weekly Meeting</h2>
+                  <h2 className="font-semibold text-black text-[18px] px-3 dark:text-[#fff]">Live Class</h2>
                   {/* Student Info */}
                   <div className="mb-4 flex gap-2">
                     <h2 className="text-[14px] text-[#676666] dark:text-[#fff] opacity-60 border-r-2 border-r-[#676666] px-4">
-                      Student Name
+                     {classData?.teacher.teacherName}
                     </h2>
                     <h2 className="text-[14px] text-[#676666] border-r-2 border-r-[#676666] px-4 dark:text-[#fff] opacity-60">
-                      9:00 AM - 10:30 AM
+                      {classData?.startTime} - {classData?.endTime}
                     </h2>
                     <span className="text-[14px] text-[#676666] dark:text-[#fff] opacity-60">
-                      2022-04-16
+                      {classData?.startDate && new Date(classData.startDate).toLocaleDateString()}
                     </span>
                   </div>
 
@@ -354,26 +344,27 @@ function LiveClass() {
                         roomName={roomName}
                         domain="meet.blackstoneinfomaticstech.com"
                         configOverwrite={{
-                          startWithAudioMuted: false,
-                          startWithVideoMuted: false,
-                          toolbarButtons: [
-                            "microphone",
-                            "camera",
-                            "closedcaptions",
-                            "desktop",
-                            "fullscreen",
-                            "fodeviceselection",
-                            "hangup",
-                            "profile",
-                            "chat",
-                            "settings",
-                            "raisehand",
-                            "videoquality",
-                            "filmstrip",
-                            "shortcuts",
-                            "tileview",
-                          ],
-                        }}
+                        startWithAudioMuted: false,
+                        startWithVideoMuted: false,
+                        toolbarButtons: [
+                          "microphone",
+                          "camera",
+                          "closedcaptions",
+                          "desktop",
+                          "fullscreen",
+                          "fodeviceselection",
+                          "hangup",
+                          "profile",
+                          "chat",
+                          "settings",
+                          "raisehand",
+                          "videoquality",
+                          "filmstrip",
+                          "shortcuts",
+                          "tileview",
+                          "recording",
+                        ],
+                      }}
                         getIFrameRef={(iframeRef) => {
                           iframeRef.style.border = "0px";
                           iframeRef.style.height = "100%";

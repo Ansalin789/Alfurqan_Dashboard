@@ -559,7 +559,7 @@ const ScheduledClasses = () => {
                                       className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border  "
                                       onClick={() =>
                                         router.push(
-                                          `/supervisor/ui/liveclass?id=${item._id}`
+                                          `/supervisor/ui/meetingvideocall?id=${item._id}`
                                         )
                                       }
                                     >

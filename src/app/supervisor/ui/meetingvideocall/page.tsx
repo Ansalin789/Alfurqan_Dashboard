@@ -5,6 +5,7 @@ import { JitsiMeeting } from "@jitsi/react-sdk";
 import axios from "axios";
 import BaseLayout3 from "@/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
+import { useSearchParams } from 'next/navigation';
 interface Attendance {
   id: string | null;
   studentId: string;
@@ -54,13 +55,15 @@ export default function Page() {
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const attendanceRef = useRef(attendance);
+  const seacrh = useSearchParams();
+  const meetingId = seacrh.get('id');
 
   useEffect(() => {
     const fetchClassData = async () => {
       try {
         const token =
           typeof window !== "undefined"
-            ? localStorage.getItem("TeacherAuthToken")
+            ? localStorage.getItem("SupervisorAuthToken")
             : null;
         if (!token) {
           console.error("❌ TeacherAuthToken not found");
@@ -68,7 +71,7 @@ export default function Page() {
         }
 
         const response = await axios.get<Meeting>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher`,
+          `http://localhost:5001/allMeetings/${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -80,20 +83,20 @@ export default function Page() {
         if (response.data) {
           console.log("Setting classData to:", response.data);
           setClassData(response.data);
-          setRoomName("123344565");
-          setAttendance([
-            {
-              id: "",
-              studentId: "12345678",
-              name: "demo",
-              startTime: null,
-              endTime: null,
-              joined: false,
-              joinTime: "",
-              leaveTime: "",
-            },
-          ]);
-        } else {
+          setRoomName(response.data.meetingId);
+          const teacherAttendance = response.data.teacher.map((teacher: Teacher) => ({
+    id: null,
+    studentId: teacher.teacherId,
+    name: teacher.teacherName,
+    startTime: null,
+    endTime: null,
+    joined: false,
+    joinTime: "",
+    leaveTime: "",
+  }));
+
+  setAttendance(teacherAttendance);
+} else {
           console.log("No upcoming class found.");
           setClassData(null);
         }
@@ -118,18 +121,18 @@ export default function Page() {
             <div className="p-1 sm:p-2 relative">
               <div className="bg-white dark:bg-[#343434] rounded-xl p-4">
                 <h2 className="font-semibold text-black text-[18px] px-3 dark:text-[#fff]">
-                  Weekly Meeting
+                  {classData?.meetingName}
                 </h2>
                 {/* Student Info */}
                 <div className="mb-4 flex gap-2">
                   <h2 className="text-[14px] text-[#676666] dark:text-[#fff] opacity-60 border-r-2 border-r-[#676666] px-4">
-                    Student Name
+                    {classData?.meetingName}
                   </h2>
                   <h2 className="text-[14px] text-[#676666] border-r-2 border-r-[#676666] px-4 dark:text-[#fff] opacity-60">
-                    9:00 AM - 10:30 AM
+                    {classData?.startTime} - {classData?.endTime}
                   </h2>
                   <span className="text-[14px] text-[#676666] dark:text-[#fff] opacity-60">
-                    2022-04-16
+                    {classData?.selectedDate && new Date(classData.selectedDate).toLocaleDateString()}
                   </span>
                   <div className="ml-auto w-64">
                     <label
@@ -165,7 +168,7 @@ export default function Page() {
                 <div className="flex-1 min-w-0 w-full h-[50vh] md:h-[60vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
                   {roomName && (
                     <JitsiMeeting
-                      roomName="12345"
+                      roomName={roomName}
                       domain="meet.blackstoneinfomaticstech.com"
                       configOverwrite={{
                         startWithAudioMuted: false,
