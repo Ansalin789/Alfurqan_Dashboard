@@ -1,0 +1,31 @@
+// utils/socket.ts
+import { io, Socket } from 'socket.io-client';
+
+let socket: Socket | null = null;
+
+export const getSocket = (userId: string): Socket => {
+  if (!socket) {
+    socket = io('https://api.blackstoneinfomatics.tech', {
+      transports: ['websocket'],
+      withCredentials: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+
+    socket.on('connect', () => {
+      console.log('✅ Socket connected:', socket?.id);
+      socket?.emit('subscribe', userId);
+    });
+
+    socket.on('disconnect', () => {
+      console.warn('⚠️ Socket disconnected');
+    });
+
+    socket.on('connect_error', (err: any) => {
+      console.error('❌ Socket connection error:', err);
+    });
+  }
+
+  return socket;
+};

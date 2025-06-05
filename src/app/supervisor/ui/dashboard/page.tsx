@@ -1,11 +1,12 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
-import { Search, Bell, Sun, Moon, User } from "lucide-react";
 import {
   BarChart,
   Bar,
   PieChart,
   Pie,
+  Label,
   Cell,
   ResponsiveContainer,
   XAxis,
@@ -13,8 +14,14 @@ import {
   Tooltip,
 } from "recharts";
 import BaseLayout3 from "../../../../components/BaseLayout3";
+import ApplicationChart from "../../components/applicantsbar";
 import moment from "moment";
 import axios from "axios";
+import Calendar from "../../../supervisor/components/Calender";
+import SupervisorHeader from "../../components/supervisorHeader";
+
+import { getSocket } from "@/app/utils/socket"
+import { ImAttachment } from "react-icons/im";
 
 interface Applicant {
   _id: string;
@@ -82,6 +89,35 @@ export default function Dashboard() {
       color: string;
     }[]
   >([]);
+  const colorMap = [
+    {
+      dot: "#3778AD",
+      bg: "#F3FAFF",
+      text: "#3778AD",
+      icon: "/assets/images/S1.png",
+    },
+    {
+      dot: "#7772D7",
+      bg: "#F3F6FF",
+      text: "#7772D7",
+      icon: "/assets/images/S2.png",
+    },
+    {
+      dot: "#DE7283",
+      bg: "#FFF5F3",
+      text: "#DE7283",
+      icon: "/assets/images/S4.png",
+    },
+    {
+      dot: "#BF8C63",
+      bg: "#FFF9F3",
+      text: "#BF8C63",
+      icon: "/assets/images/S3.png",
+    },
+  ];
+
+  const ringThickness = 6; // thickness of each ring
+  const ringGap = 4; // gap between rings
   const [mounted, setMounted] = useState(false);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
@@ -101,18 +137,37 @@ export default function Dashboard() {
   const [filteredPositions, setFilteredPositions] = useState<
     { name: string; color: string; count: number }[]
   >([]);
+    useEffect(()=>{
+      const Id = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalId") : null;
+      if(!Id) return;
+     const socket = getSocket(Id);
+     const handleCount = (data : DashboardCounts) =>{
+       setDashboardCounts(data);
+       console.log(data);
+     };
+       socket.on("supervisordashboardcount",handleCount);
+       return ()=>{
+       socket.off("supervisordashboardcount",handleCount);
+       };
+    },[]);
 
   useEffect(() => {
     setMounted(true);
     const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorAuthToken")
+        : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
+        const id =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorPortalId")
+        : null;
+
+    if (!token || !id) {
+    console.error("❌ SupervisorAuthToken or SupervisorPortalId not found");
     return;
   }
     const fetchData = async () => {
-   
       const applicants = await fetchApplicantsData(token ?? " ");
       console.log("Fetched Applicants:", applicants); // ✅ Debugging
       const filteredData = processApplicants(applicants);
@@ -120,20 +175,24 @@ export default function Dashboard() {
       setPieData(filteredData);
     };
 
-    const fetchApplicants = axios.get("https://api.blackstoneinfomaticstech.com/applicants",
+    const fetchApplicants = axios.get(
+      "https://api.blackstoneinfomaticstech.com/applicants",
       {
-         headers: { "Content-Type": "application/json",
-               'Authorization': `Bearer ${token}`,
-           },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
 
     const fetchDashboardCounts = axios.get(
-      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+      'https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts',
       {
-         headers: { "Content-Type": "application/json",
-               'Authorization': `Bearer ${token}`,
-           },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "supervisor" : id,
+        },
       }
     );
 
@@ -159,9 +218,7 @@ export default function Dashboard() {
           ([name, count], index) => ({
             name,
             count: count as number, // ✅ Explicitly cast count to number
-            color: ["#fbbf24", "#3b82f6", "#a855f7", "#ef4444", "#10b981"][
-              index % 5
-            ],
+            color: ["#F4AAFF", "#FFC4A1", "#A6A9FF"][index % 5],
           })
         );
         fetchData();
@@ -236,18 +293,23 @@ export default function Dashboard() {
     const fetchMeetings = async () => {
       try {
         const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorAuthToken")
+            : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allMeetings", 
+        if (!token) {
+          console.error("❌ SupervisorAuthToken not found");
+          return;
+        }
+        const response = await axios.get(
+          "https://api.blackstoneinfomaticstech.com/allMeetings",
           {
-          headers: { "Content-Type": "application/json" , 'Authorization': `Bearer ${token}`,},
-              
-           
-        });
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const allMeetings: Meeting[] = response.data.data.meetings;
 
@@ -302,21 +364,25 @@ export default function Dashboard() {
   const currentYear = today.getFullYear();
   const fetchApplicantsData = async (auth: string) => {
     try {
-         const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
-    
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/applicants",{
-        headers:{
-          "Content-Type": "application/json" , 
-          'Authorization': `Bearer ${token}`,
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+        return;
+      }
+
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/applicants",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
-        
-      });
+      );
 
       console.log("API Response:", response.data);
 
@@ -366,7 +432,7 @@ export default function Dashboard() {
       value: data.value,
       female: data.female,
       male: data.male,
-      color: ["#1e40af", "#60a5fa", "#93c5fd", "#2563eb"][index % 4], // Assign different colors
+      color: ["#AFC0FF", "#9FD0FF", "#B9DDFF"][index % 4], // Assign different colors
     }));
   };
 
@@ -381,6 +447,8 @@ export default function Dashboard() {
     { name: "Quran", value: 80, color: "#a855f7" },
   ];
 
+  const totals = filteredPositions.reduce((sum, item) => sum + item.count, 0);
+
   const totalApplications = dashboardCounts.totalApplication || 0;
   const totalShortlisted = dashboardCounts.shortlisted || 0;
   const totalRejected = dashboardCounts.rejected || 0;
@@ -390,334 +458,242 @@ export default function Dashboard() {
   const percentageApplications = (totalApplications / total) * 100;
   const percentageShortlisted = (totalShortlisted / total) * 100;
   const percentageRejected = (totalRejected / total) * 100;
+  const percentageValue = 100;
 
   const remainingApplications = 100 - percentageApplications;
   const remainingShortlisted = 100 - percentageShortlisted;
   const remainingRejected = 100 - percentageRejected;
   console.log(remainingApplications);
+  function createBlobUrlFromData(uploadResume: {
+    type: string;
+    data: number[];
+  }): string | undefined {
+    if (!uploadResume?.data?.length) return undefined;
+
+    try {
+      const byteArray = new Uint8Array(uploadResume.data);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Failed to create Blob URL:", error);
+      return undefined;
+    }
+  }
   return (
-    <BaseLayout3 >
-      <div className="flex flex-col h-screen w-full">
-        {/* Header - Made more compact on small screens */}
-        <header className=" flex flex-col sm:flex-row justify-between items-center text-sm">
-          <div className="flex items-center w-full sm:w-auto">
-            <div className="">
-              <h2 className="font-semibold text-[20px] pt-[39px] pb-[23px] pl-[16px]">Dashboard</h2>
-            </div>
-          </div>
-        </header>
-
-        <div className="flex flex-1 min-h-0">
-          <main className="flex-1 p-2 sm:p-3">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg w-[270px] h-[132px]">
-                <h3 className="text-gray-800 text-[14px] font-medium mb-2">
-                  Total Applications
+    <BaseLayout3>
+      <SupervisorHeader currentSection="Dashboard" />
+      <div className="flex flex-row gap-4 p-0 min-h-screen">
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col gap-4">
+          {/* Top Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                title: "Total Applications",
+                value: dashboardCounts.totalApplication,
+                bgColor: "#9AD7D633",
+                ringColor: "#7DB5CB",
+              },
+              {
+                title: "Shortlisted Candidates",
+                value: dashboardCounts.shortlisted,
+                bgColor: "#9AD7D633",
+                ringColor: "#9AD7D6",
+              },
+              {
+                title: "Rejected Candidates",
+                value: dashboardCounts.rejected,
+                bgColor: "#9AD7D633",
+                ringColor: "#8B93D2",
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="bg-[#FFFFFF] dark:bg-[#343434] p-4 rounded-lg shadow-lg w-full"
+              >
+                <h3 className="text-[#010E30] dark:text-white text-[14px] font-medium mb-2">
+                  {item.title.split(" ")[0]} <br /> {item.title.split(" ")[1]}
                 </h3>
-                <div className="flex justify-between items-center">
-                  <div className="flex mt-6 gap-4 ml-4">
-                    <span className="text-lg font-bold">
-                      {dashboardCounts.totalApplication}
-                    </span>
-                    <span className="text-green-500 text-xs flex items-center gap-1">
-                      <span className="text-[10px]">↑</span> 12%
-                    </span>
-                  </div>
-
-                  <div className="w-10 h-10">
-                    <PieChart width={40} height={40}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[28px] text-[#010E30] font-semibold dark:text-white">
+                    {item.value}
+                  </span>
+                  <div className="relative w-[90px] h-[70px]">
+                    <PieChart
+                      width={90}
+                      height={90}
+                      style={{ marginTop: "-20px" }}
+                    >
+                      {/* Background ring */}
                       <Pie
-                        data={[
-                          {
-                            name: "Applications",
-                            value: percentageApplications,
-                            fill: "#8b5cf6",
-                          }, // Purple
-                          {
-                            name: "Remaining",
-                            value: remainingApplications,
-                            fill: "#f59e0b",
-                          }, // Orange
-                        ]}
-                        innerRadius={15}
-                        outerRadius={20}
+                        data={[{ value: 100 }]}
+                        dataKey="value"
+                        innerRadius={30}
+                        outerRadius={38}
                         startAngle={90}
                         endAngle={-270}
-                        dataKey="value"
-                      />
-                    </PieChart>
-                  </div>
-                </div>
-              </div>
+                        isAnimationActive={false}
+                        stroke="none"
+                      >
+                        <Cell fill={item.bgColor} />
+                      </Pie>
 
-              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg w-[270px] h-[132px]">
-                <h3 className="text-gray-800 text-[13px] font-semibold mb-2">
-                  Shortlisted Candidates
-                </h3>
-                <div className="flex justify-between items-center">
-                  <div className="flex mt-6 gap-4 ml-4">
-                    <span className="text-lg font-bold">
-                      {dashboardCounts.shortlisted}
-                    </span>
-                    <span className="text-red-500 text-xs flex items-center gap-1">
-                      <span className="text-[10px]">↓</span> 16%
-                    </span>
-                  </div>
-                  <div className="w-10 h-10">
-                    <PieChart width={40} height={40}>
+                      {/* Foreground ring */}
                       <Pie
-                        data={[
-                          {
-                            name: "Shortlisted",
-                            value: percentageShortlisted,
-                            fill: "#34d399",
-                          }, // Green
-                          {
-                            name: "Remaining",
-                            value: remainingShortlisted,
-                            fill: "#f59e0b",
-                          }, // Orange
-                        ]}
-                        innerRadius={15}
-                        outerRadius={20}
+                        data={[{ value: 76 }, { value: 24 }]}
+                        dataKey="value"
+                        innerRadius={28}
+                        outerRadius={42}
                         startAngle={90}
                         endAngle={-270}
-                        dataKey="value"
-                      />
-                    </PieChart>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#FFFFFF] p-2 rounded-lg shadow-lg w-[270px] h-[132px]">
-                <h3 className="text-gray-800 text-[13px] font-semibold mb-2">
-                  Rejected Candidates
-                </h3>
-                <div className="flex justify-between items-center">
-                  <div className="flex mt-6 gap-4 ml-4">
-                    <span className="text-lg font-bold ">
-                      {dashboardCounts.rejected}
-                    </span>
-                    <span className="text-green-500 text-xs flex items-center gap-1">
-                      <span className="text-[10px]">↑</span> 14%
-                    </span>
-                  </div>
-                  <div className="w-10 h-10">
-                    <PieChart width={40} height={40}>
-                      <Pie
-                        data={[
-                          {
-                            name: "Rejected",
-                            value: percentageRejected,
-                            fill: "#f87171",
-                          }, // Red
-                          {
-                            name: "Remaining",
-                            value: remainingRejected,
-                            fill: "#f59e0b",
-                          }, // Orange
-                        ]}
-                        innerRadius={15}
-                        outerRadius={20}
-                        startAngle={90}
-                        endAngle={-270}
-                        dataKey="value"
-                      />
-                    </PieChart>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-2 gap-[20px] mb-2 w-full">
-              <div className="bg-white  p-3 rounded-xl h-[calc(390px-2rem)] shadow-lg w-[557px]">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
-                  <h3 className="text-gray-800 text-[13px] font-semibold sm:text-sm">
-                    Applications
-                  </h3>
-                  <div className="flex items-center gap-3 mt-2 sm:mt-0">
-                    {/* Legend */}
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-blue-100 rounded"></div>
-                      <span className="text-[12px] text-gray-600">Applied</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-blue-900 rounded"></div>
-                      <span className="text-[12px] text-gray-600">
-                        Shortlisted
-                      </span>
-                    </div>
-                    {/* Calendar Button */}
-                    <div className="flex items-center gap-1 px-2 py-1 text-[10px] bg-gray-100 rounded-md">
-                      <svg
-                        className="w-4 h-4 text-gray-500"
-                        viewBox="0 0 20 20"
-                        fill="none"
+                        cornerRadius={2}
+                        isAnimationActive={false}
+                        stroke="none"
                       >
-                        <path
-                          d="M3 7H21M7 3V7M17 3V7M7 11H17M7 15H14M7 19H10"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <button
-                        className="flex items-center gap-1 px-2 py-1 text-[11px] bg-gray-100 rounded-md"
-                        onClick={() =>
-                          handleWeekChange(
-                            moment().startOf("week").toDate(), // Start of the current week
-                            moment().endOf("week").toDate() // End of the current week
-                          )
-                        }
-                      >
-                        {selectedWeek} {/* Display the selected week */}
-                      </button>
-                      {/* You can add more buttons for other weeks */}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bar Chart */}
-                <div className="h-36 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={barData} barCategoryGap="25%">
-                      <XAxis
-                        dataKey="name"
-                        tick={{ fontSize: 10, fill: "#64748b" }}
-                      />
-                      <YAxis tick={{ fontSize: 10, fill: "#64748b" }} />
-                      <Tooltip />
-                      <Bar
-                        dataKey="Shortlisted"
-                        stackId="a"
-                        fill="#1e40af"
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar
-                        dataKey="Applied"
-                        stackId="a"
-                        fill="#e0e7ff"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              <div className=" bg-[#D0E0EC] p-3 rounded-xl h-[calc(390px-2rem)] shadow-lg w-[270px] ml-[70px]">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-gray-800 text-[13px] font-semibold sm:text-sm">
-                    Teachers By Subject
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-pink-400 rounded"></div>
-                      <span className="text-xs text-gray-600">Female</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-blue-400 rounded"></div>
-                      <span className="text-xs text-gray-600">Male</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex">
-                  {/* Pie Chart */}
-                  <div className="w-1/2 flex justify-center">
-                    <PieChart width={150} height={150}>
-                      <Pie
-                        data={pieData}
-                        cx={75}
-                        cy={75}
-                        innerRadius={40}
-                        outerRadius={60}
-                        dataKey="value"
-                      >
-                        {pieData.map((entry) => (
-                          <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                        ))}
+                        <Cell fill={item.ringColor} />
+                        <Cell fill="transparent" />
                       </Pie>
                     </PieChart>
+                    <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#333] dark:text-white mb-4">
+                      {percentageValue}%
+                    </div>
                   </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
-                  {/* Legend */}
-                  <div className="w-1/2 flex flex-col justify-center gap-3 ">
-                    {pieData.map((item) => (
-                      <div
-                        key={item.name}
-                        className="flex items-center justify-between"
-                      >
-                        <div className="flex  gap-1">
-                          <div
-                            className="w-2 h-2 rounded"
-                            style={{ backgroundColor: item.color }}
-                          ></div>
-                          <span className="text-xs text-gray-600">
-                            {item.name}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 mr-9">
-                          <span className="text-xs text-pink-400">
+          {/* Charts Row */}
+          <div className="flex gap-4">
+            <div className="w-[67%] rounded-xl h-[270px] flex flex-col">
+              <div className="flex-1 flex items-center justify-center">
+                <ApplicationChart />
+              </div>
+            </div>
+            <div className="w-[33%] bg-white rounded-xl dark:bg-[#343434] h-[270px] flex flex-col">
+              <div className="bg-[#FFFFFF] dark:bg-[#343434] rounded-xl shadow p-4 h-[270px]">
+                {/* Header */}
+                <div className="w-full flex justify-between items-center">
+                  <h3 className="text-[#010E30] text-[13px] font-semibold dark:text-[#ffff]">
+                    Subject
+                  </h3>
+                  <div className="flex gap-1">
+                    <div className="flex items-center gap-[3px]">
+                      <div className="w-[6px] h-[6px] bg-pink-400 rounded-sm"></div>
+                      <span className="text-[9px] text-[#010E30] dark:text-white/70">
+                        Female
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-[3px]">
+                      <div className="w-[6px] h-[6px] bg-blue-400 rounded-sm"></div>
+                      <span className="text-[9px] text-[#010E30] dark:text-white/70">
+                        Male
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pie Chart */}
+                <div className="flex justify-center items-center mt-1">
+                  <PieChart width={150} height={150}>
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const item = payload[0].payload;
+                          return (
+                            <div className="bg-white shadow rounded px-2 py-1 text-[9px] text-gray-700">
+                              <div className="font-semibold dark:text-[#FFFFFFB3]">
+                                {item.name}
+                              </div>
+                              <div>F: {item.female}%</div>
+                              <div>M: {item.male}%</div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={28}
+                      outerRadius={70}
+                      dataKey="value"
+                      labelLine={false}
+                      stroke="none"
+                    >
+                      {pieData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                  
+                </div>
+
+                {/* Bottom Legend */}
+                <div className="grid grid-cols-3 gap-1 w-full mt-6">
+                  {pieData.map((item) => (
+                    <div
+                      key={item.name}
+                      className="flex flex-col items-center text-center"
+                    >
+                      <div className="flex items-center gap-[1px]">
+                        <div
+                          className="w-[10px] h-[10px] rounded-[2px]"
+                          style={{ backgroundColor: item.color }}
+                        ></div>
+                        <span className="text-[9px] font-semibold text-[#010E30] dark:text-[#FFFF]">
+                          {item.name}
+                        </span>
+                      </div>
+                      <div className="flex gap-1 mt-[2px]">
+                        <div className="flex flex-col items-center gap-[1px]">
+                          <div className="w-[3px] h-[8px] bg-pink-400 rounded-[2px]"></div>
+                          <span className="text-[8px] font-medium">
                             {item.female}%
                           </span>
-                          <span className="text-xs text-blue-400">
+                        </div>
+                        <div className="flex flex-col items-center gap-[1px]">
+                          <div className="w-[3px] h-[8px] bg-blue-400 rounded-sm"></div>
+                          <span className="text-[8px] font-medium">
                             {item.male}%
                           </span>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="bg-white p-3 rounded-lg h-[calc(390px-2rem)] shadow-lg w-[842px]">
-              {/* Header */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-[15px] font-semibold">
-                    New Applicants List
-                  </h3>
-                  <span className="text-gray-500 font-medium text-sm">
-                    ({applicants.length})
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-600">Sort By:</span>
-                    <button className="px-2 py-1 bg-gray-200 rounded text-xs flex items-center gap-1">
-                      Name <span className="text-gray-500">▼</span>
-                    </button>
-                  </div>
-                  <button className="text-xs text-blue-600">See All</button>
-                </div>
-              </div>
-
-              {/* Table */}
-              <div className="overflow-x-auto scrollbar-none rounded-xl h-[calc(40vh-2rem)] gap-5">
-                <table className="w-full text-xs border-collapse">
-                  {/* Table Head */}
-                  <thead>
-                    <tr className="bg-[#CAC7C7] text-gray-800">
+          {/* Applications Table */}
+          <div className="bg-white rounded-xl shadow dark:bg-[#343434]">
+            {/* Table wrapper: horizontal scroll */}
+            <div className="overflow-x-auto scrollbar-none h-full">
+              {/* Vertical scroll with fixed height */}
+              <div className="overflow-y-auto h-[460px] rounded-xl scrollbar-none">
+                <table className="min-w-full text-xs border-collapse table-fixed px-4">
+                  {/* Table Head sticky */}
+                  <thead className="sticky top-0 px-2 z-10 text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d] shadow-md  border-[#4C6993] dark:border-[#6087C0]">
+                    <tr>
                       {[
                         "Name",
                         "Contact",
                         "Country",
                         "Course",
+                        "Gender",
                         "Date",
-                        "Hours",
+                        "Time",
                         "Resume",
                         "Status",
                       ].map((col) => (
                         <th
                           key={col}
-                          className="py-2 px-2 font-semibold text-center"
+                          className="py-4 px-2 font-semibold text-left  border-[#4C6993] dark:border-[#6087C0]"
                         >
-                          {col}{" "}
-                          <span className="text-gray-900 text-[7px]">▲▼</span>
+                          {col}
                         </th>
                       ))}
                     </tr>
@@ -725,36 +701,58 @@ export default function Dashboard() {
 
                   {/* Table Body */}
                   <tbody>
-                    {applicants.map((applicant) => (
+                    {applicants.map((applicant, index: number) => (
                       <tr
                         key={applicant._id}
-                        className="hover:bg-gray-100 text-[9px]"
+                        className={`text-[10px] px-2 py-4 border-none outline-none ${
+                          index % 2 === 0
+                            ? "bg-[#fff] dark:bg-[#2c2c2c]"
+                            : "bg-[#F8F8F8] dark:bg-[#303030]"
+                        }`}
                       >
-                        <td className="py-2 px-2 text-center">
+                        <td className="py-4 px-2 text-left">
                           {applicant.candidateFirstName}
                         </td>
-                        <td className="py-2 px-2 text-center">
-                          {applicant.candidateEmail}
-                        </td>
-                        <td className="py-2 px-2 text-center">
+                        <td className="py-2 px-2 text-left">
                           {applicant.candidatePhoneNumber}
                         </td>
-                        <td className="py-2 px-2 text-center">
+                        <td className="py-2 px-2 text-left">
+                          {applicant.candidateCountry}
+                        </td>
+                        <td className="py-2 px-2 text-left">
                           {applicant.positionApplied}
                         </td>
-                        <td className="py-2 px-2 text-center">
+                        <td className="py-2 px-2 text-left">
+                          {applicant.gender}
+                        </td>
+                        <td className="py-2 px-2 text-left">
                           {formatDate(applicant.applicationDate)}
                         </td>
-                        <td className="py-2 px-2 text-center">
+                        <td className="py-2 px-2 text-left">
                           {applicant.preferedWorkingHours}
                         </td>
-                        <td className="py-2 px-2 text-center">
-                          <button className="text-blue-600  flex items-center gap-1">
-                            📎 Resume
-                          </button>
+                        <td className="py-2 px-2 text-left">
+                          {applicant.uploadResume?.data?.length ? (
+                            <a
+                              href={
+                                createBlobUrlFromData(applicant.uploadResume) ||
+                                undefined
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#38619A] hover:underline flex items-center gap-1"
+                            >
+                              <ImAttachment className="w-3 h-3" />
+                              Resume
+                            </a>
+                          ) : (
+                            <span className="text-gray-400 italic">
+                              No Resume
+                            </span>
+                          )}
                         </td>
-                        <td className="py-2 px-2 text-center">
-                          <span className="px-2 py-1 text-gray-800 rounded-full">
+                        <td className="py-2 px-2 text-left">
+                          <span className="text-gray-800 rounded-full dark:text-[#fff]">
                             {applicant.applicationStatus}
                           </span>
                         </td>
@@ -764,132 +762,156 @@ export default function Dashboard() {
                 </table>
               </div>
             </div>
-          </main>
+          </div>
+        </div>
 
-          <aside className="w-[310px] h-[314px] hidden lg:block space-y-[16px] mt-1">
-            {/* Calendar Section */}
-            <div className="bg-[#fff] p-2 rounded-lg shadow">
-              {/* Calendar Header */}
-              {/* Calendar Section */}
-              <div className="bg-[#fff] p-2 rounded-lg">
-                {/* Calendar Header */}
-                <div className="relative flex flex-col items-center pb-2">
-                  <div className="w-full h-5 bg-gray-300 rounded-t-md"></div>
-                  <h3 className="text-sm font-semibold text-gray-700 mt-1">
-                    {`${currentMonth}, ${currentYear}`}
-                  </h3>
-                </div>
-
-                {/* Days of the Week */}
-                <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mt-2">
-                  {["M", "T", "W", "T", "F", "S", "S"].map((day) => (
-                    <div key={day}>{day}</div>
-                  ))}
-                </div>
-
-                {/* Calendar Dates */}
-                <div className="grid grid-cols-7 gap-1 text-center mt-1">
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => (
-                    <button
-                      key={date}
-                      className={`p-2 text-xs rounded-md ${
-                        meetingDays.includes(date)
-                          ? "bg-blue-900 text-white font-semibold"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      {date}
-                    </button>
-                  ))}
-                </div>
-              </div>
+        {/* Sidebar */}
+        <div className="w-[310px] flex flex-col gap-4">
+          {/* Calendar */}
+          <div className="bg-white rounded-xl shadow p-0">
+            <div className="h-[350px] flex items-center justify-center text-gray-400 dark:bg-[#343434]">
+              <Calendar />
             </div>
+          </div>
+          {/* Teachers */}
+          <div className="bg-white rounded-xl shadow p-4 dark:bg-[#343434] h-[200px]">
+            <h3 className="text-[16px] font-semibold text-gray-800 mb-1 dark:text-[#fff]">
+              Teachers
+            </h3>
 
-            {/* Teachers Section */}
-            <div className="bg-white p-2 h-[216px] rounded-xl shadow-lg">
-              <h3 className="text-[13px] font-semibold text-gray-800 mb-1">
-                Teachers
-              </h3>
-
-              <div className="flex items-center justify-between">
-                {/* Circular Chart */}
-                <div className="relative w-[90px] h-[90px] flex items-center justify-center mb-5">
-                  <PieChart width={90} height={90}>
+            <div className="flex items-center justify-between">
+              {/* Circular Chart */}
+              <div className="relative w-[90px] h-[90px] flex items-center justify-center mb-5 ml-7">
+                <PieChart width={120} height={120}>
+                  <Pie
+                    data={[{ value: 100 }]}
+                    dataKey="value"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={38}
+                    startAngle={90}
+                    endAngle={-270}
+                    fill="#f0f0f0"
+                  />
+                  {filteredPositions.map((item, index) => (
                     <Pie
-                      data={data}
-                      cx={45}
-                      cy={45}
-                      innerRadius={25}
-                      outerRadius={35}
+                      key={index}
+                      data={[
+                        { value: item.count },
+                        { value: total - item.count },
+                      ]}
+                      dataKey="value"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={30 + index * (ringThickness + ringGap)}
+                      outerRadius={
+                        30 + index * (ringThickness + ringGap) + ringThickness
+                      }
                       startAngle={90}
                       endAngle={-270}
-                      dataKey="value"
+                      cornerRadius={5}
+                      stroke="none"
+                      isAnimationActive={false}
                     >
-                      {data.map((entry) => (
-                        <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                      ))}
+                      <Cell fill={item.color} stroke="none" />
+                      <Cell fill="transparent" stroke="none" />
                     </Pie>
-                  </PieChart>
+                  ))}
+                </PieChart>
 
-                  {/* Centered Total Teachers Count */}
-                  <div className="absolute flex flex-col items-center justify-center">
-                    <span className="mt-3 ml-2 text-xs font-bold text-gray-900 "></span>
-                    <p className="ml-3 text-[8px] text-gray-500">Teachers</p>
-                  </div>
+                {/* Centered Total Teachers Count */}
+                <div className="absolute flex flex-col items-center justify-between">
+                  <span className="mt-3 ml-2 text-[26px] font-bold text-[#010E30] dark:text-[#fff]">
+                    {totals}
+                  </span>
+                  <p className="ml-8 text-[9px] text-[#010E30] dark:text-[#fff]">
+                    Number of Teachers
+                  </p>
                 </div>
+              </div>
 
-                {/* Teacher Stats */}
-                <div className="space-y-2">
-                  {filteredPositions.map((item) => (
-                    <div
-                      key={item.name}
-                      className="flex items-center justify-between w-32 bg-gray-100 p-1 rounded-lg"
-                    >
-                      <div className="flex items-center gap-1">
-                        <div
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: item.color }}
-                        ></div>
-                        <span className="text-[10px] font-semibold text-gray-800">
-                          {item.name}
-                        </span>
-                      </div>
-                      <span className="text-gray-600 text-[10px] font-medium">
-                        {item.count}
+              {/* Teacher Stats */}
+              <div className="space-y-3 mr-1 ">
+                {filteredPositions.map((item) => (
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between w-32 dark:text-[#fff]"
+                  >
+                    <div className="flex items-center gap-1">
+                      <div
+                        className="w-3 h-3 rounded-sm"
+                        style={{ backgroundColor: item.color }}
+                      ></div>
+                      <span className="text-[11px] text-[#010E30CC] font-semibold dark:text-[#fff] ">
+                        {item.name}
                       </span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Schedule Section */}
-            <div className="bg-white p-2 rounded-lg h-[389px]">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-[13px] font-semibold text-gray-700">
-                  Schedule
-                </h3>
-                <button className="px-2 py-1 bg-gray-100 rounded flex items-center gap-1 text-[10px]">
-                  Today <span className="text-gray-500">▼</span>
-                </button>
-              </div>
-
-              <div className="space-y-3 overflow-y-scroll h-[15vh] scrollbar-none">
-                {todayMeetings.map((item) => (
-                  <div key={item.title} className="flex items-start gap-2">
-                    <span className="text-[10px] text-gray-500 w-8">
-                      {item.time}
+                    <span className="text-[#010E30CC] text-[10px] font-medium dark:text-[#fff]">
+                      {item.count}
                     </span>
-                    <div
-                      className={`flex items-center px-3 py-2 rounded-lg flex-1 ${item.color} text-[10px] font-medium`}
-                    >
-                      <span className="mr-2 text-[10px]">📅</span> {item.title}
-                    </div>
                   </div>
                 ))}
               </div>
             </div>
-          </aside>
+          </div>
+          {/* Schedule */}
+          <div className="bg-white rounded-xl shadow p-4 dark:bg-[#343434] h-[332px]">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-[16px] font-semibold text-gray-700 dark:text-[#ffff]">
+                Schedule
+              </h3>
+              <button className="px-2 py-1 bg-[#efefef] rounded flex items-center gap-1 text-[10px] dark:bg-[#747474]">
+                Today <span className="text-[#747474]">▼</span>
+              </button>
+            </div>
+
+            {/* Timeline */}
+            <div className="relative pl-4 space-y-4 h-[260px] overflow-y-auto scrollbar-none">
+              {/* Vertical dotted line */}
+
+              {todayMeetings.map((item, index) => {
+                const colors = colorMap[index % colorMap.length];
+
+                return (
+                  <div
+                    key={item.title + index}
+                    className="flex items-start gap-3 relative"
+                  >
+                    {/* Time */}
+                    <span className="text-[10px] text-gray-500 w-[50px] mt-[22px] dark:text-[#ffff]">
+                      {item.time}
+                    </span>
+
+                    {/* Dot */}
+                    <div className="absolute left-[65px] top-0 bottom-0 border-l-2 border-dotted border-gray-300 z-0"></div>
+
+                    <div
+                      className="w-[8px] h-[8px] rounded-full mt-[25px] z-10"
+                      style={{ backgroundColor: colors.dot }}
+                    ></div>
+
+                    {/* Meeting Box */}
+                    <div
+                      className="flex items-center px-3 py-2 rounded-lg flex-1 text-[10px] font-medium gap-2 "
+                      style={{
+                        backgroundColor: colors.bg,
+                        color: colors.text,
+                      }}
+                    >
+                      <img
+                        src={colors.icon}
+                        alt="icon"
+                        className="w-4 h-4 object-contain"
+                      />
+                      {item.title}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </BaseLayout3>

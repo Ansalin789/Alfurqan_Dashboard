@@ -1,47 +1,42 @@
-
 'use client';
 
-import { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 
-interface ThemeContextType {
+interface ThemeContextProps {
   darkMode: boolean;
   toggleDarkMode: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
-interface ThemeProviderProps {
-  readonly children: ReactNode; // Marked as readonly
-}
-
-export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('darkMode') === 'true';
-    }
-    return false;
-  });
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('darkMode', String(darkMode));
+    const saved = localStorage.getItem('darkMode');
+    if (saved === 'true') setDarkMode(true);
+  }, []);
+
+  useEffect(() => {
+    if (darkMode) document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
   }, [darkMode]);
 
   const toggleDarkMode = () => {
-    setDarkMode((prev) => !prev);
+    setDarkMode((prev) => {
+      const newMode = !prev;
+      localStorage.setItem('darkMode', String(newMode));
+      return newMode;
+    });
   };
 
-  const value = useMemo(
-    () => ({ darkMode, toggleDarkMode }),
-    [darkMode]
-  );
+  const value = useMemo(() => ({ darkMode, toggleDarkMode }), [darkMode]);
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
-}
+};
 
-export function useTheme() {
+export const useTheme = () => {
   const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
+  if (!context) throw new Error('useTheme must be used within a ThemeProvider');
   return context;
-}
+};

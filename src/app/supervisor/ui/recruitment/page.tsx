@@ -1,11 +1,30 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { CountryDropdown } from "react-country-region-selector";
-import { Star, MoreHorizontal, FileText, X, Upload } from "lucide-react";
+import {
+  Star,
+  MoreVertical,
+  FileText,
+  Search,
+  Mail,
+  Phone,
+  Calendar,
+} from "lucide-react";
+import { ImAttachment } from "react-icons/im";
 import BaseLayout3 from "@/components/BaseLayout3";
 import axios from "axios";
 import { pdfjs } from "react-pdf";
+import Pagination from "@/components/Pagination";
+
+import SupervisorHeader from "../../components/supervisorHeader";
+import { IoCloseOutline } from "react-icons/io5";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { FiCalendar } from "react-icons/fi";
+import { MdTune } from "react-icons/md";
+import SuccessPopup from "../../components/successPopup";
+import FailedPopup from "../../components/failedPopup";
+
 type Status = "Shortlisted" | "Rejected" | "Waiting";
 type Position = "Arabic Teacher" | "Quran Teacher";
 interface Applicant {
@@ -81,6 +100,11 @@ interface RadioOptionProps {
   onChange: () => void;
 }
 
+const items = Array.from({ length: 100 }, (_, i) => ({
+  id: i + 1,
+  name: `Item ${i + 1}`,
+}));
+
 const RadioOption: React.FC<RadioOptionProps> = ({
   label,
   checked,
@@ -109,31 +133,20 @@ const SkillBadge: React.FC<SkillBadgeProps> = ({ name }) => (
 
 export default function ApplicantsPage() {
   const [activeTab, setActiveTab] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
     null
   );
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [showAddApplicant, setShowAddApplicant] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [Applicantbyid, setApplicantbyid] = useState<ApiResponse | null>(null);
+  const [parsedSkills, setParsedSkills] = useState<string[]>([]);
   const [resumeImages, setResumeImages] = useState<string | null>(null);
-  const [addApplicantForm, setAddApplicantForm] =
-    useState<AddApplicantFormData>({
-      applicationDate: new Date().toISOString().split("T")[0],
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      gender: "",
-      country: "USA",
-      city: "",
-      position: "Arabic Teacher",
-      expectedSalary: "",
-      workingHours: "",
-      resume: null,
-      comment: "",
-    });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = items.slice(indexOfFirst, indexOfLast);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [quranReading, setQuranReading] = useState("Medium");
   const [tajweed, setTajweed] = useState("Medium");
@@ -144,41 +157,116 @@ export default function ApplicantsPage() {
   const [rating, setRating] = useState(4);
   const [comments, setComments] = useState("");
   const [applicationStatus, setApplicationStatus] = useState("");
+  const [mode, setMode] = useState<"view" | "edit">("view");
+  const [skills, setSkills] = useState<string[]>([]);
+  const [newSkill, setNewSkill] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [fromDate, setFromDate] = useState<Date | null>(null);
+  const [toDate, setToDate] = useState<Date | null>(null);
+  const fromWrapperRef = useRef<HTMLDivElement>(null);
+  const toWrapperRef = useRef<HTMLDivElement>(null);
+  const [supervisorId, setSupervisorId] = React.useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
+  const [successMessage,setSuccessMessage] = useState("");
+
+
+  const extractSkills = (rawText: string): string[] => {
+    // Only keep content before "Accomplishments" or "Certifications"
+    const relevantSection = rawText.split(/Accomplishments|Certifications/i)[0];
+
+    // Match all bullet point items (• React, etc.)
+    const matches = relevantSection.match(/•\s*[^•\n]+/g);
+
+    const skills = matches
+      ? matches
+          .map((skill) => skill.replace(/•\s*/, "").trim()) // remove bullet and whitespace
+          .flatMap((s) => s.split(",").map((sub) => sub.trim())) // split comma-separated items
+          .filter(Boolean) // remove empty strings
+      : [];
+
+    return skills;
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const id = localStorage.getItem("SupervisorPortalId")?.trim() ?? null;
+      setSupervisorId(id);
+    }
+  }, []);
+
+  function focusFromInput() {
+    const input = fromWrapperRef.current?.querySelector("input");
+    input?.focus();
+  }
+
+  function focusToInput() {
+    const input = toWrapperRef.current?.querySelector("input");
+    input?.focus();
+  }
+
+  const handleAddSkill = () => {
+    const trimmed = newSkill.trim();
+    if (trimmed && !skills.includes(trimmed)) {
+      setSkills([...skills, trimmed]);
+      setNewSkill("");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddSkill();
+    }
+  };
 
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
   useEffect(() => {
-     const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorAuthToken")
+        : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
+    const supervisorId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorPortalId")
+        : null;
+
+    if (!token) {
+      console.error("❌ SupervisorAuthToken not found");
+      return;
+    }
+
+    if (!supervisorId) {
+      console.warn("⚠️ SupervisorId not found in localStorage");
+    } else {
+      console.log("✅ Supervisor ID from localStorage:", supervisorId);
+    }
+
     axios
-      .get("https://api.blackstoneinfomaticstech.com/applicants",
-        {
-          headers:{
-            "Authorization":`Bearer ${token}`, 
-            "Content-Type":"application/json"        
-           }
-        }
-      )
+      .get("https://api.blackstoneinfomaticstech.com/applicants", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
       .then((response) => setApplicants(response.data.applicants))
       .catch((error) => console.error("Error fetching applicants:", error));
   }, []);
 
-  const tabs = ["All", "NEWAPPLICATION", "SHORTLISTED", "REJECTED", "WAITING"];
-  const itemsPerPage = 10;
+  const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
 
   const filteredApplicants =
     activeTab === "All"
       ? applicants
       : applicants.filter(
-        (applicant) => applicant.applicationStatus === activeTab
-      );
+          (applicant) =>
+            applicant.applicationStatus.replace(/\s+/g, "").toUpperCase() ===
+            activeTab.replace(/\s+/g, "").toUpperCase()
+        );
 
-  const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = filteredApplicants.slice(startIndex, endIndex);
@@ -186,15 +274,15 @@ export default function ApplicantsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "NEWAPPLICATION":
-        return "bg-blue-500 text-white px-2 text-[10px]";
+        return "bg-[#F9E7FF] text-[#BE36D5] dark:bg-[#4C3151] dark:text-[#BE36D5] rounded-md px-2 text-[10px]";
       case "SHORTLISTED":
-        return "bg-orange-500 text-white px-3 text-[10px]";
+        return "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] rounded-md px-6 text-[10px]";
       case "REJECTED":
-        return "bg-red-500 text-white px-2 text-[10px]";
+        return "bg-[#FDECEC] dark:bg-[#503434] dark:text-[#D34645] text-[#D34645] rounded-md px-8 text-[10px]";
       case "WAITING":
-        return "bg-yellow-500 text-white px-2 text-[10px]";
+        return "bg-[#FDF6EC] dark:bg-[#534634] dark:text-[#F0AD4E] text-[#F0AD4E] rounded-md px-8 text-[10px]";
       case "APPROVED":
-        return "bg-green-500 text-white px-7 text-[10px]";
+        return "bg-[#EEEEFF] text-[#38619A] dark:bg-[#2F3642] dark:text-[#225BAA] rounded-md px-8 text-[10px]";
     }
   };
 
@@ -202,27 +290,32 @@ export default function ApplicantsPage() {
     setOpenMenuId(openMenuId === _id ? null : _id);
 
     if (openMenuId !== _id) {
-      
       try {
-          const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorAuthToken")
+            : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
+        if (!token) {
+          console.error("❌ SupervisorAuthToken not found");
+          return;
+        }
         const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomaticstech.com/applicants/${_id}`,
+          `https://api.blackstoneinfomatics.tech/applicants/${_id}`,
           {
             headers: {
-             
               "Content-Type": "application/json",
-              "Authorization":`Bearer ${token}`
+              Authorization: `Bearer ${token}`,
             },
           }
         );
         console.log("Applicant data received:", response.data);
         setApplicantbyid(response.data);
+
+        // Parse and set skills
+        const skillsFromApi = response.data.skills || "";
+        const skillsArray = extractSkills(skillsFromApi);
+        setParsedSkills(skillsArray);
         if (response.data.uploadResume) {
           const base64String = response.data.uploadResume;
 
@@ -250,7 +343,15 @@ export default function ApplicantsPage() {
   const handleViewDetails = (applicant: Applicant) => {
     setSelectedApplicant(applicant);
     setOpenMenuId(null);
+    setMode("view"); // Always set to view mode
   };
+
+  const handleEdit = (applicant: Applicant) => {
+    setSelectedApplicant(applicant);
+    setOpenMenuId(null);
+    setMode("edit");
+  };
+
   const handleviewclose = () => {
     setSelectedApplicant(null);
     setResumeImages(null);
@@ -266,89 +367,9 @@ export default function ApplicantsPage() {
     setApplicationStatus("");
   };
 
-  const handleAddApplicantSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("applicationDate", addApplicantForm.applicationDate);
-    formData.append("candidateFirstName", addApplicantForm.firstName); // Changed
-    formData.append("candidateLastName", addApplicantForm.lastName); // Changed
-    formData.append("candidateEmail", addApplicantForm.email); // Changed
-    formData.append("candidatePhoneNumber", addApplicantForm.phone); // Changed
-    formData.append("candidateCountry", addApplicantForm.country); // Changed
-    formData.append("candidateCity", addApplicantForm.city); // Changed
-    formData.append("positionApplied", addApplicantForm.position);
-    formData.append("gender", addApplicantForm.gender);
-    formData.append("currency", "$"); // Changed
-    formData.append("expectedSalary", addApplicantForm.expectedSalary); // Changed
-    formData.append("preferedWorkingHours", addApplicantForm.workingHours); // Changed
-    formData.append("comments", addApplicantForm.comment); // Changed
-    formData.append("applicationStatus", "NEWAPPLICATION");
-    formData.append("overallRating", "1");
-    formData.append("status", "Active");
-
-    if (addApplicantForm.resume) {
-      formData.append("uploadResume", addApplicantForm.resume);
-    }
-
-    try {
-        const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
-
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
-      const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/recruit",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" ,
-            "Authorization":`Bearer ${token}`
-          },
-        }
-      );
-
-      if (response.status === 201) {
-        alert("Applicant added successfully!");
-        setShowAddApplicant(false);
-        setAddApplicantForm({
-          applicationDate: new Date().toISOString().split("T")[0],
-          firstName: "",
-          lastName: "",
-          email: "",
-          phone: "",
-          country: "USA",
-          city: "",
-          gender: "",
-          position: "Arabic Teacher",
-          expectedSalary: "",
-          workingHours: "",
-          resume: null,
-          comment: "",
-        });
-      }
-    } catch (error) {
-      console.error("Error adding applicant:", error);
-      alert("Failed to add applicant");
-    }
-    setShowAddApplicant(false);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setAddApplicantForm({ ...addApplicantForm, resume: e.target.files[0] });
-    }
-  };
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
-
-  const handlesendupdate = async (id: string) => {
-    // Map the state to the data you want to send
+  const handlesendupdate = async (id: string, status: string) => {
     const updateData = {
-      applicationStatus: applicationStatus, // static value, you can update based on logic
+      applicationStatus: status,
       quranReading,
       tajweed,
       arabicSpeaking,
@@ -359,29 +380,35 @@ export default function ApplicantsPage() {
       comments,
       level: "1",
     };
-    console.log(updateData);
-    try {
-        const token =
-    typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  } 
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+        return;
+      }
+
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
+        `https://api.blackstoneinfomatics.tech/applicants/${id}`,
         updateData,
-        {headers:{
-          "Authorization":`Bearer ${token}`,
-          "Content-Type":"application/json",
-        }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ Explicitly set the content type
+          },
         }
       );
-      console.log("Update successful:", response.data);
-    } catch (error) {
-      console.error("Error updating applicant:", error);
+       setSuccess(true);
+       setSuccessMessage(status);
+      console.log("✅ Update successful:", response.data);
+      handleviewclose();
+    } catch (error: any) {
+      console.error("❌ Update error:", error.response?.data || error.message);
     }
-    handleviewclose();
   };
 
   const [country, setCountry] = useState("USA");
@@ -393,18 +420,29 @@ export default function ApplicantsPage() {
     setCities(fetchedCities);
   }, [country]);
 
+  function createBlobUrlFromData(uploadResume: {
+    type: string;
+    data: number[];
+  }): string | undefined {
+    if (!uploadResume?.data?.length) return undefined;
+
+    try {
+      const byteArray = new Uint8Array(uploadResume.data);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Failed to create Blob URL:", error);
+      return undefined;
+    }
+  }
+
   return (
     <BaseLayout3>
-      <div className="min-h-screen mx-auto w-[1280px]">
-        <div className="md:p-4 mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-            <h1 className="text-xl md:text-2xl font-semibold text-slate-800">
-              Applicants
-            </h1>
-          </div>
-
-          <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[600px]  flex flex-col justify-between">
-            <div className="p-4 justify-between flex flex-col">
+      <div className="">
+        <SupervisorHeader currentSection="Applicants" />
+        <div className="md:p-0 mx-auto">
+          <div className="h-full w-full  flex flex-col justify-between">
+            <div className="p-0 justify-between flex flex-col">
               <div>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
                   <div className="flex flex-wrap gap-2 mb-0">
@@ -412,727 +450,552 @@ export default function ApplicantsPage() {
                       <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-3 py-1 md:px-3 md:py-1 rounded-md text-[13px] font-semibold ${activeTab === tab
-                          ? "text-[#fff] bg-[#012A4A] mt-2"
-                          : "text-[#05445E] py-4 hover:bg-slate-100 mt-4"
-                          }`}
+                        className={`px-3 py-1 md:px-3 md:py-1 text-[16px] font-medium
+                           ${
+                             activeTab === tab
+                               ? "text-[#576CBC] border-b-2 border-b-[#576CBC] mt-[2px] dark:text-[#576CBC]"
+                               : "text-[#010E30] mt-0 dark:text-[white]"
+                           }`}
                       >
                         {tab}
                       </button>
                     ))}
                   </div>
-                  <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-slate-600 whitespace-nowrap">
-                        Sort by:
-                      </span>
-                      <select className="px-2 py-1 border rounded-md text-slate-600 bg-white text-[11px]">
-                        <option>Designation</option>
-                        <option>Date</option>
-                        <option>Status</option>
-                      </select>
-                    </div>
-                    <button
-                      onClick={() => setShowAddApplicant(true)}
-                      className="bg-[#012A4A] font-medium text-[12px] hover:bg-[#0d202f] text-white px-2 py-0 rounded-md transition-colors"
-                    >
-                      + Add Applicant
-                    </button>
-                  </div>
                 </div>
 
-                <div className="overflow-x-auto ">
-                  <table className="table-auto w-full min-h-auto ">
-                    <thead className="text-[12px] font-bold">
-                      <tr className="bg-[#F4F5F7] py-2 rounded-2xl mb-2">
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
-                          Application Date
-                        </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
+                <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+                  {/* Header Search & Filter */}
+                  <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search by keyword"
+                        className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                      />
+                    </div>
+
+                    <div
+                      className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setShowModal(true)}
+                    >
+                      {/* <BsFilterLeft /> */}
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left -ml-60 ">
+                        Showing {currentApplicants.length} Of 50
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Table */}
+                  <table
+                    className="table-auto w-full"
+                    style={{ width: "100%", tableLayout: "fixed" }}
+                  >
+                    <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                      <tr className="font-medium">
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Applicant Name
                         </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                          Application Date
+                        </th>
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Contact
                         </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
-                          E-Mail
+                        <th
+                          className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]"
+                          style={{ wordWrap: "break-word", width: "15%" }}
+                        >
+                          Email id
                         </th>
-                        <th className="text-center px-4 py-2  font-semibold text-[#343942]">
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Position Applied
                         </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Resume
                         </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Status
                         </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]">
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Level
                         </th>
-                        <th className="text-center px-2 py-2  font-semibold text-[#343942]"></th>
+                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                          Action
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {currentApplicants.map((applicant, index) => (
-                        <tr
-                          key={applicant._id}
-                          className={`text-[11px] font-medium mt-2 ${index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                      {currentApplicants.map(
+                        (applicant: any, index: number) => (
+                          <tr
+                            key={applicant._id}
+                            className={`text-[12px] ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C] "
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
-                        >
-                          <td className="px-4 py-1 text-center text-[#17243E]">
-                            {formatDate(applicant.applicationDate)}
-                          </td>
-                          <td className="px-4 py-1 text-center">
-                            <div className="flex items-center gap-3">
-                              <div className="h-4 w-4 rounded-full bg-purple-100 flex items-center justify-center">
-                                <span className="text-purple-600 font-medium">
-                                  {applicant.candidateFirstName.charAt(0)}
-                                </span>
-                              </div>
-                              <span className=" font-medium text-slate-800">
-                                {applicant.candidateFirstName}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-1 text-center text-[#17243E]">
-                            {applicant.candidatePhoneNumber}
-                          </td>
-                          <td className="px-4 py-1 text-center text-[#17243E]">
-                            {applicant.candidateEmail}
-                          </td>
-                          <td className="px-4 py-1 text-center text-[9px">
-                            {applicant.positionApplied}fghdhdfgh
-                          </td>
-                          <td className="px-4 py-1 text-center">
-                            <button className="text-[#17243E] hover:text-[#38619A] flex items-center">
-                              <FileText className="w-4 h-4 mr-2" />
-                              Resume
-                            </button>
-                          </td>
-                          <td className="px-4 py-1 text-center text-[12px]">
-                            <span
-                              className={`px-3 py-1 rounded-full ${getStatusColor(
-                                applicant.applicationStatus
-                              )}`}
+                          >
+                            <td className="px-3 py-2 text-[#3D8FDE] font-medium">
+                              {applicant.candidateFirstName}
+                            </td>
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                              {new Date(applicant.applicationDate)
+                                .toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                })
+                                .replace(",", ",")}
+                            </td>
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                              {applicant.candidatePhoneNumber}
+                            </td>
+                            <td
+                              className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]"
+                              style={{ wordWrap: "break-word" }}
                             >
-                              {applicant.applicationStatus}
-                            </span>
-                          </td>
-                          <td className="px-4 py-1 text-center">
-                            <div className="flex gap-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={`star-${star}`} // Using a stable key instead of index
-                                  className={`w-4 h-4 ${(Number(applicant?.level) || 0) >= star
-                                    ? "text-[#FAAB3C] fill-[#68b806]"
-                                    : "text-[#F8D8AB] fill-[#f7f6f5]"
-                                    }`}
-                                />
-                              ))}
-                            </div>
-                          </td>
-                          <td className="px-4 py-1 text-center">
-                            <div className="relative">
-                              <button
-                                onClick={() => handleMenuClick(applicant._id)}
-                                className="hover:bg-gray-100 p-2 rounded-md"
-                              >
-                                <MoreHorizontal className="w-4 h-4 text-slate-600" />
-                              </button>
-                              {openMenuId === applicant._id && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
-                                  <button
-                                    //   onClick={() => handleEditDetails(applicant)}
-                                    className="block w-full px-4 py-2 text-left text-[12px] text-[#353232]"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={() => handleViewDetails(applicant)}
-                                    className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
-                                  >
-                                    View Details
-                                  </button>
-                                  <button
-                                    onClick={() => setOpenMenuId(null)}
-                                    className="block w-full px-4 py-2 text-left text-[12px] text-red-600 hover:bg-gray-50"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
+                              {applicant.candidateEmail}
+                            </td>
+                            <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                              {applicant.positionApplied}
+                            </td>
+                            <td className="px-3 py-2">
+                              {applicant.uploadResume?.data?.length ? (
+                                <a
+                                  href={
+                                    createBlobUrlFromData(
+                                      applicant.uploadResume
+                                    ) || undefined
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[#38619A] hover:underline flex items-center gap-1"
+                                >
+                                  <ImAttachment className="w-4 h-4" />
+                                  Resume
+                                </a>
+                              ) : (
+                                <span className="text-gray-400 italic">
+                                  No Resume
+                                </span>
                               )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+
+                            <td className="px-3 py-2">
+                              <span
+                                className={`text-[10px] font-semibold px-3 py-1 rounded-full ${getStatusColor(
+                                  applicant.applicationStatus
+                                )}`}
+                              >
+                                {applicant.applicationStatus}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2">
+                              <div className="flex gap-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={`star-${star}`}
+                                    className={`w-4 h-4 ${
+                                      (Number(applicant?.level) || 0) >= star
+                                        ? "text-[#FAAB3C]"
+                                        : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </td>
+                            <td className="px-3 py-2">
+                              <div className="relative">
+                                <button
+                                  onClick={() => handleMenuClick(applicant._id)}
+                                  className="p-2 rounded-md"
+                                >
+                                  <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
+                                </button>
+                                {openMenuId === applicant._id && (
+                                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
+                                    {/* Show Edit only if supervisorId matches */}
+                                    {supervisorId &&
+                                      supervisorId ===
+                                        String(
+                                          applicant.supervisor?.supervisorId
+                                        ) && (
+                                        <button
+                                          onClick={() => handleEdit(applicant)}
+                                          className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+                                        >
+                                          Edit
+                                        </button>
+                                      )}
+
+                                    <button
+                                      onClick={() =>
+                                        handleViewDetails(applicant)
+                                      }
+                                      className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+                                    >
+                                      View Details
+                                    </button>
+                                    <button
+                                      onClick={() => setOpenMenuId(null)}
+                                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-50"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      )}
                     </tbody>
                   </table>
                 </div>
-              </div>
-              <div>
-                <div className="flex flex-col md:flex-row items-center justify-between px-4 py-4 border-t space-y-4 md:space-y-0">
-                  <div className="text-[10px] text-gray-600">
-                    Showing {startIndex + 1} -{" "}
-                    {Math.min(endIndex, filteredApplicants.length)} of{" "}
-                    {filteredApplicants.length} entries
-                  </div>
-                  <div className="flex space-x-2 text-[10px]">
-                    {/* Previous Button */}
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      className={`px-2 py-1 rounded ${currentPage === 1
-                        ? "bg-gray-100 text-gray-400"
-                        : "bg-gray-200 hover:bg-gray-300"
-                        }`}
-                    >
-                      &lt;
-                    </button>
 
-                    {/* Pagination Numbers */}
-                    {totalPages > 5 ? (
-                      <>
-                        {/* First Page */}
-                        <button
-                          onClick={() => setCurrentPage(1)}
-                          className={`px-2 py-1 rounded ${currentPage === 1
-                            ? "bg-[#1B2B65] text-white"
-                            : "bg-gray-200 hover:bg-gray-300"
-                            }`}
-                        >
-                          1
-                        </button>
+                {/* Pagination */}
 
-                        {/* Left Ellipsis */}
-                        {currentPage > 3 && (
-                          <span className="px-2 py-1">...</span>
-                        )}
-
-                        {/* Pages Around Current */}
-                        {Array.from(
-                          { length: 3 },
-                          (_, i) => currentPage - 1 + i
-                        )
-                          .filter((page) => page > 1 && page < totalPages)
-                          .map((page) => (
-                            <button
-                              key={page}
-                              onClick={() => setCurrentPage(page)}
-                              className={`px-2 py-1 rounded ${currentPage === page
-                                ? "bg-[#1B2B65] text-white"
-                                : "bg-gray-200 hover:bg-gray-300"
-                                }`}
-                            >
-                              {page}
-                            </button>
-                          ))}
-
-                        {/* Right Ellipsis */}
-                        {currentPage < totalPages - 2 && (
-                          <span className="px-2 py-1">...</span>
-                        )}
-
-                        {/* Last Page */}
-                        <button
-                          onClick={() => setCurrentPage(totalPages)}
-                          className={`px-2 py-1 rounded ${currentPage === totalPages
-                            ? "bg-[#1B2B65] text-white"
-                            : "bg-gray-200 hover:bg-gray-300"
-                            }`}
-                        >
-                          {totalPages}
-                        </button>
-                      </>
-                    ) : (
-                      // Display all pages when totalPages <= 5
-                      [...Array(totalPages)].map((_, index) => (
-                        <button
-                          key={index + 1}
-                          onClick={() => setCurrentPage(index + 1)}
-                          className={`px-2 py-1 rounded ${currentPage === index + 1
-                            ? "bg-[#1B2B65] text-white"
-                            : "bg-gray-200 hover:bg-gray-300"
-                            }`}
-                        >
-                          {index + 1}
-                        </button>
-                      ))
-                    )}
-
-                    {/* Next Button */}
-                    <button
-                      onClick={() =>
-                        setCurrentPage((p) => Math.min(totalPages, p + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                      className={`px-2 py-1 rounded ${currentPage === totalPages
-                        ? "bg-gray-100 text-gray-400"
-                        : "bg-gray-200 hover:bg-gray-300"
-                        }`}
-                    >
-                      &gt;
-                    </button>
-                  </div>
-                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
-      {showAddApplicant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-4 w-[500px]">
-            <h2 className="text-[16px] font-semibold text-gray-800 mb-4 text-center">
-              Add Applicant
-            </h2>
-            <form onSubmit={handleAddApplicantSubmit} className="space-y-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Application Date */}
-                <div>
-                  <label
-                    htmlFor="applicationDate"
-                    className="block text-gray-700 text-[12px] font-medium mb-2"
-                  >
-                    Application Date
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="date"
-                      value={addApplicantForm.applicationDate}
-                      onChange={(e) =>
-                        setAddApplicantForm({
-                          ...addApplicantForm,
-                          applicationDate: e.target.value,
-                        })
-                      }
-                      id="applicationDate"
-                      className="w-full px-4 py-2 text-[11px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="firstName"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    First Name
-                  </label>
+
+      {success && (
+        <SuccessPopup onClose={() => setSuccess(false)} title={successMessage} />
+      )}
+      {failed && (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+      )}
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
+            {/* Close Icon */}
+            <button
+              className="absolute top-2 right-3 text-gray-400 text-xl"
+              onClick={() => setShowModal(false)}
+            >
+              &times;
+            </button>
+
+            <h2 className="text-lg font-semibold mb-4">Filter by</h2>
+
+            {/* Date Input */}
+            <div className="mb-4">
+              <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                Date Range
+              </label>
+
+              <div className="flex gap-2 mb-2">
                   <input
-                    type="text"
-                    value={addApplicantForm.firstName}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        firstName: e.target.value,
-                      })
-                    }
-                    id="firstName"
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    type="date"
+                    className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                    // value={exp.fromDate}
                   />
-                </div>
-              </div>
-
-              {/* First Name & Last Name */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="lastName"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Last Name
-                  </label>
                   <input
-                    type="text"
-                    value={addApplicantForm.lastName}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        lastName: e.target.value,
-                      })
-                    }
-                    id="lastName"
-                    className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    type="date"
+                    className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                    // value={exp.toDate}
                   />
                 </div>
-                <div>
-                  <label
-                    htmlFor="gender"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Gender
-                  </label>
-                  <select
-                    id="gender"
-                    value={addApplicantForm.gender}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        gender: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
-                  >
-                    <option value="" disabled>Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
+            </div>
 
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={addApplicantForm.email}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        email: e.target.value,
-                      })
-                    }
-                    id="email"
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="phoneNumber"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Phone Number
-                  </label>
-                  <input
-                    type="number"
-                    value={addApplicantForm.phone}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        phone: e.target.value,
-                      })
-                    }
-                    id="phoneNumber"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 text-[11px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-              </div>
+            {/* Position Applied */}
+            <div className="mb-4">
+              <label
+                htmlFor="position"
+                className="block text-sm font-medium mb-1"
+              >
+                Position Applied
+              </label>
+              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
+                <option>Islamic</option>
+                <option>Quran</option>
+                <option>Tajweed</option>
+              </select>
+            </div>
 
-              {/* Country & City */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="country"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Country
-                  </label>
-                  <CountryDropdown
-                    value={addApplicantForm.country}
-                    onChange={(val) => {
-                      setCountry(val);
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        country: val,
-                      });
-                    }}
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="city"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    City
-                  </label>
-                  <select
-                    id="city"
-                    value={addApplicantForm.city}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        city: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  >
-                    <option value="">Select a city</option>
-                    {cities?.map((cityName) => (
-                      <option key={cityName} value={cityName}>
-                        {cityName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+            {/* Status */}
+            <div className="mb-6">
+              <label
+                htmlFor="status"
+                className="block text-sm font-medium mb-1"
+              >
+                Application Status
+              </label>
+              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
+                <option>Shortlisted</option>
+                <option>Rejected</option>
+                <option>Waiting</option>
+                <option>Approved</option>
+                <option>New Application</option>
+              </select>
+            </div>
 
-              {/* Position Applied & Salary */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="position"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Position Applied
-                  </label>
-                  <select
-                    id="position"
-                    value={addApplicantForm.position}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        position: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  >
-                    <option value="Arabic Teacher">Arabic Teacher</option>
-                    <option value="English Teacher">Quran Teacher</option>
-                    <option value="Math Teacher">
-                      Islamic Studies Teacher
-                    </option>
-                  </select>
-                </div>
-                <div>
-                  <label
-                    htmlFor="salary"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Expected Salary per Hour
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={addApplicantForm.expectedSalary}
-                      onChange={(e) =>
-                        setAddApplicantForm({
-                          ...addApplicantForm,
-                          expectedSalary: e.target.value,
-                        })
-                      }
-                      id="salary"
-                      className="w-full px-4 py-2 text-[11px] rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                    <button className="absolute inset-y-0 right-0 px-3 text-[11px] text-[#1C3557] hover:underline focus:outline-none">
-                      Edit
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Preferred Working Hours & Resume */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="workingHours"
-                    className="block text-gray-600 text-[12px] font-medium mb-2"
-                  >
-                    Preferred Working Hours
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={addApplicantForm.workingHours}
-                      onChange={(e) =>
-                        setAddApplicantForm({
-                          ...addApplicantForm,
-                          workingHours: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-2 rounded-lg border border-gray-300 text-[11px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="resume"
-                    className="text-gray-600 text-[12px] font-medium mb-2 flex items-center"
-                  >
-                    Upload Resume
-                  </label>
-                  <div className="relative">
-                    <input
-                      ref={fileInputRef}
-                      id="resume"
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      className="absolute opacity-0 w-full h-full cursor-pointer"
-                      onChange={handleFileChange}
-                    />
-                    <div className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-                      {addApplicantForm.resume
-                        ? addApplicantForm.resume.name
-                        : "No file selected"}
-                    </div>
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 text-[11px] bg-[#1C3557] text-white rounded-lg hover:bg-[#0e1a2c] flex items-center"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Upload className="h-4 w-4 mr-1" />
-                      Upload
-                    </button>
-                  </div>
-                  {addApplicantForm.resume && (
-                    <p className="mt-2 text-[11px] text-gray-500">
-                      Selected file: {addApplicantForm.resume.name}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Comment */}
-              <div>
-                <label
-                  htmlFor="comment"
-                  className="block text-gray-600 text-[12px] font-medium mb-2"
-                >
-                  Comment
-                </label>
-                <textarea
-                  id="comment"
-                  value={addApplicantForm.comment}
-                  onChange={(e) =>
-                    setAddApplicantForm({
-                      ...addApplicantForm,
-                      comment: e.target.value,
-                    })
-                  }
-                  rows={4}
-                  placeholder="Write your comment here..."
-                  className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                ></textarea>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddApplicant(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-[12px] hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  onClick={handleAddApplicantSubmit}
-                  className="px-4 py-2 bg-[#1C3557] text-white rounded-lg text-[12px] hover:bg-[#0e1a2c]"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
+            {/* Buttons */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+              >
+                Cancel
+              </button>
+              <button className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium">
+                Submit
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Application Details Popup */}
       {selectedApplicant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex max-h-[90vh] items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl relative  overflow-hidden">
-            <button
-              onClick={handleviewclose}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 z-50"
+        <>
+          {/* Dimmed background that closes the panel on click */}
+          <button
+            className="fixed inset-0 bg-black bg-opacity-60 z-40"
+            onClick={handleviewclose}
+            aria-label="Close panel"
+          />
+
+          {/* Slide-over panel */}
+          <div className="fixed top-0 h-full w-[666px] right-0 z-50 bg-white  shadow-xl flex flex-col  dark:bg-[#343434]">
+            {/* Header (Fixed) */}
+            <div
+              className="flex justify-between items-center p-6 border-b dark: border-none bg-[#FCFCFD] dark:bg-[#343434] z-10"
+              style={{
+                width: "666px",
+                height: "114px",
+                position: "sticky",
+                top: 0,
+              }}
             >
-              <X className="w-6 h-6" />
-            </button>
-
-            <div className="flex h-full">
-              {/* Left Side - Resume */}
-              <div className="w-1/2 border-r relative bg-gray-50">
-                <div className="relative min-h-full">
-                  <iframe
-                    src={resumeImages ?? ""}
-                    title="Resume PDF"
-                    width="100%"
-                    height="800px"
-                  />
-
-                  {/* Page Navigation Overlay */}
-                  <div className="none" />
-                </div>
-              </div>
-
-              {/* Right Side - Questions and Details */}
-              <div className="w-1/2 flex flex-col h-full ">
-                {/* Header Section */}
-                <div className="flex items-start p-4 border-b">
-                  <img
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    alt="Profile"
-                    className="w-16 h-16 rounded-full mr-3"
-                  />
-                  <div>
-                    <h2 className="text-xl font-semibold">
+              {/* Left: Profile Info */}
+              <div className="flex items-center gap-4">
+                <img
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  alt="Profile"
+                  className="w-[60px] h-[60px] rounded-full object-cover"
+                />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-[16px] font-bold text-[#0A0A14] leading-tight dark:text-[#fff]">
                       {Applicantbyid?.candidateFirstName}{" "}
                       {Applicantbyid?.candidateLastName}
                     </h2>
-                    <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-medium">
-                        {Applicantbyid?.positionApplied}
-                      </span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <FileText className="w-4 h-4 mr-1" /> CV.pdf
-                    </div>
                   </div>
-                  <div className="ml-auto mt-8">
-                    <div className="text-sm font-medium">
-                      {Applicantbyid?.applicationStatus}
-                    </div>
+                  <div className="mt-1 text-[10px] text-[#0A0A14] font-medium flex items-center gap-2 dark:text-[#D6D6D6]">
+                    <span>Applied for</span>
+                    <span className="text-[#D28F35] px-3 py-1 text-sm rounded-md font-medium text-[10px]">
+                      {Applicantbyid?.positionApplied}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                {/* Questions Section - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
-                  <h3 className="text-lg font-semibold mb-2">
-                    Language Proficiency
-                  </h3>
+              {/* Right: Status + Close */}
+              <div className="flex flex-col items-end gap-3">
+                {/* Close Button */}
+                <button
+                  onClick={handleviewclose}
+                  className="text-[#0A0A14] text-[18px] font-bold hover:text-black dark:text-[#fff]"
+                >
+                  <IoCloseOutline />
+                </button>
 
-                  {/* Reusable Language Proficiency Section */}
+                {/* Status */}
+                <div className="flex items-center gap-2">
+                  {/* STATUS label */}
+                  <span className="text-[12px] text-[#0A0A14] font-medium tracking-wide uppercase dark:text-[#fff]">
+                    STATUS
+                  </span>
+
+                  {/* STATUS value */}
+                  <span className="text-[12px] font-medium text-[#0A0A14] border border-[#E5E7EB] px-4 py-1.5 rounded-xl dark:border-[#5f5959] dark:text-[#B8B8B8]">
+                    {Applicantbyid?.applicationStatus ?? "New Application"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto scrollbar-none flex-grow px-8 py-4 space-y-6">
+              <div className="flex items-stretch gap-4 w-full">
+                {/* Left Column */}
+                <div className="flex flex-col w-[262px] gap-4 flex-shrink-0">
+                  {/* Personal Details */}
+                  <div className=" border border-[#E0E4E9] rounded-2xl p-4 text-sm text-gray-800 shadow-sm dark:border-[#5F5959]">
+                    <h3 className="text-[12px] font-semibold mb-6 text-[#010E30] dark:text-[#fff]">
+                      Personal details
+                    </h3>
+                    {[
+                      {
+                        label: "FULL NAME",
+                        value: `${Applicantbyid?.candidateFirstName} ${Applicantbyid?.candidateLastName}`,
+                      },
+                      {
+                        label: "E-MAIL",
+                        icon: <Mail className="w-4 h-4" />,
+                        value: Applicantbyid?.candidateEmail,
+                      },
+                      {
+                        label: "PHONE",
+                        icon: <Phone className="w-4 h-4" />,
+                        value: Applicantbyid?.candidatePhoneNumber,
+                      },
+                      { label: "LINKEDIN", value: "linkedInjd/in/j.str" },
+                      { label: "APPLIED", value: Applicantbyid?.createdDate },
+                    ].map(({ label, value, icon }) => (
+                      <div
+                        key={label}
+                        className="flex justify-between items-center py-2 border-t border-[#E0E4E9] dark:border-[#5F5959]"
+                      >
+                        <div className="uppercase text-[10px] text-gray-500 font-medium dark:text-[#D6D6D6]">
+                          {label}
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] font-medium text-[#010E30] dark:text-[#D6D6D6]">
+                          {icon}
+                          {value}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Experience */}
+                  {Applicantbyid?.professionalExperience && (
+                    <div className="h-[300px] overflow-y-auto overflow-x-hidden scrollbar-hide border border-[#E0E4E9] rounded-2xl p-4 text-sm text-gray-800 shadow-sm dark:border-[#5F5959]">
+                      <h3 className="text-[12px] font-semibold text-[#010E30] mb-3 dark:text-[#fff]">
+                        Professional Experience
+                      </h3>
+
+                      {(() => {
+                        const lines: string[] = String(
+                          Applicantbyid.professionalExperience
+                        ).split("\n");
+                        const experiences: {
+                          role: string;
+                          location: string;
+                          date: string;
+                          details: string[];
+                        }[] = [];
+
+                        let current: {
+                          role: string;
+                          location: string;
+                          date: string;
+                          details: string[];
+                        } | null = null;
+
+                        const headerRegex =
+                          /(.*?),\s*(.*?)(?:\s+([A-Za-z]{3}\s*[-–]?\s*\d{4})(?:\s*(?:to|-|–)\s*(Present|\d{4}))?)/i;
+
+                        for (const line of lines) {
+                          const trimmed: string = line.trim();
+                          if (!trimmed) continue;
+
+                          const match = trimmed.match(headerRegex);
+                          if (match) {
+                            if (current) experiences.push(current);
+
+                            const [, role, location, start, end] = match;
+                            current = {
+                              role: role.trim(),
+                              location: location.trim(),
+                              date: `${start}${end ? " - " + end : ""}`,
+                              details: [],
+                            };
+                          } else if (current) {
+                            current.details.push(trimmed.replace(/^•\s*/, ""));
+                          }
+                        }
+                        if (current) experiences.push(current);
+
+                        return experiences.map((exp, idx) => (
+                          <div key={idx} className="mb-4">
+                            <h4 className="text-[12px] text-[#010E30] font-semibold dark:text-[#fff]">
+                              {exp.role}
+                            </h4>
+                            <div className="flex flex-wrap justify-between text-[10px] text-[#8A8383] mt-1 dark:text-[#D6D6D6]">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                <span>{exp.date}</span>
+                              </div>
+                              <span>{exp.location}</span>
+                            </div>
+                            {exp.details.length > 0 && (
+                              <ul className="list-disc list-inside mt-2 text-[11px] text-[#4B5563] dark:text-[#E0E0E0]">
+                                {exp.details.map((detail, i) => (
+                                  <li key={i}>{detail}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Column */}
+                <div className="flex flex-col w-[300px] gap-1 flex-shrink-0">
                   {[
                     {
-                      field: "Quran Reading",
+                      label: "Quran Reading",
                       state: quranReading,
                       setState: setQuranReading,
                     },
-                    { field: "Tajweed", state: tajweed, setState: setTajweed },
+                    { label: "Tajweed", state: tajweed, setState: setTajweed },
                     {
-                      field: "Arabic Speaking",
+                      label: "Arabic Speaking",
                       state: arabicSpeaking,
                       setState: setArabicSpeaking,
                     },
                     {
-                      field: "Arabic Writing",
+                      label: "Arabic Writing",
                       state: arabicWriting,
                       setState: setArabicWriting,
                     },
                     {
-                      field: "English Speaking",
+                      label: "English Speaking",
                       state: englishSpeaking,
                       setState: setEnglishSpeaking,
                     },
-                  ].map(({ field, state, setState }) => (
-                    <div key={field}>
-                      <p className="text-sm text-indigo-600 mb-1">{field}</p>
-                      <div className="flex gap-2">
+                  ].map(({ label, state, setState }) => (
+                    <div key={label} className="mt-3">
+                      <div className="text-[12px] font-Medium text-[#1E2A41] dark:text-[#fff]">
+                        {label}
+                      </div>
+                      <div className="flex gap-3 mt-1 text-[10px] font-medium text-[#989292]">
                         {["Basic", "Medium", "Advanced"].map((level) => (
                           <label
                             key={level}
-                            className="flex items-center gap-2"
+                            className={`flex items-center gap-2 rounded px-3 py-1 transition-all dark:border border-[#E0E4EA] ${
+                              state === level
+                                ? "border border-[#D9DEE8]"
+                                : "border border-[#D9DEE8]"
+                            }`}
                           >
                             <input
                               type="radio"
-                              name={field}
+                              name={label}
                               value={level}
                               checked={state === level}
                               onChange={() => setState(level)}
+                              disabled={mode === "view"}
+                              className="appearance-none w-[10px] h-[10px] rounded-full border border-[#333D58] checked:bg-[#1E2A41] checked:ring-1 checked:ring-offset-1 transition-all 
+                                       dark:border-[#A9A9A9] dark:checked:bg-[#E5E5E5] dark:checked:ring-[#E5E5E5] dark:ring-offset-[#333D58] disabled:opacity-50"
                             />
                             {level}
                           </label>
@@ -1141,52 +1004,61 @@ export default function ApplicantsPage() {
                     </div>
                   ))}
 
-                  {/* Preferred Working Days */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Preferences */}
+                  <div className="grid grid-cols-2 gap-4 mt-3">
                     {/* Preferred Working Days */}
                     <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
+                      <label
+                        htmlFor="prferworking days"
+                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]"
+                      >
                         Preferred Working Days
-                      </h3>
+                      </label>
                       <select
-                        className="border rounded px-2 py-1 w-full"
+                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292] disabled:opacity-50"
                         value={workingDays}
                         onChange={(e) => setWorkingDays(e.target.value)}
+                        disabled={mode === "view"}
                       >
-                        <option value="Monday-Saturday">Monday-Saturday</option>
-                        <option value="Monday-Friday">Monday-Friday</option>
-                        <option value="Sunday-Thursday">Sunday-Thursday</option>
-                        <option value="Sunday-Saturday">Sunday-Saturday</option>
-                        <option value="Tuesday-Saturday">
-                          Tuesday-Saturday
-                        </option>
-                        <option value="Wednesday-Saturday">
-                          Wednesday-Saturday
-                        </option>
+                        {[
+                          "Monday-Saturday",
+                          "Monday-Friday",
+                          "Sunday-Thursday",
+                        ].map((day) => (
+                          <option key={day} value={day}>
+                            {day}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
                     {/* Preferred Working Hours */}
                     <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
+                      <label
+                        htmlFor="prferworking Hours"
+                        className="block text-[11px] font-semibold text-[#1E2A41] mb-1 dark:text-[#fff]"
+                      >
                         Preferred Working Hours
-                      </h3>
+                      </label>
                       <input
                         type="text"
-                        className="border rounded px-2 py-1 w-full"
+                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292]"
                         value={Applicantbyid?.preferedWorkingHours}
                         disabled
                       />
                     </div>
 
-                    {/* Expected Salary */}
+                    {/* Expected Salary per Hour */}
                     <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
+                      <label
+                        htmlFor="Expected Salary per Hour"
+                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]"
+                      >
                         Expected Salary per Hour
-                      </h3>
+                      </label>
                       <input
                         type="text"
-                        className="border rounded px-2 py-1 w-full"
+                        className="border rounded px-2 py-1 w-full text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292]"
                         value={Applicantbyid?.expectedSalary}
                         disabled
                       />
@@ -1194,18 +1066,23 @@ export default function ApplicantsPage() {
 
                     {/* Overall Rating */}
                     <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
+                      <label
+                        htmlFor="Overall Rating"
+                        className="block text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]"
+                      >
                         Overall Rating
-                      </h3>
-                      <div className="flex">
+                      </label>
+                      <div className="flex space-x-1">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
-                            className={`text-xl cursor-pointer ${rating >= star
-                              ? "text-yellow-500"
-                              : "text-gray-300"
-                              }`}
-                            onClick={() => setRating(star)}
+                            className={`text-xl cursor-pointer ${
+                              rating >= star ? "text-yellow-500" : "text-gray-300"
+                            } ${mode === "view" ? "cursor-default" : ""}`}
+                            onClick={() => mode !== "view" && setRating(star)}
+                            type="button"
+                            disabled={mode === "view"}
+                            aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
                           >
                             ★
                           </button>
@@ -1215,56 +1092,105 @@ export default function ApplicantsPage() {
                   </div>
 
                   {/* Comments */}
-                  <div>
-                    <h3 className="text-sm text-indigo-600 mb-1">Comments</h3>
+                  <div className="mt-3">
+                    <div className="text-[11px] font-medium text-[#1E2A41] mb-1 dark:text-[#fff]">
+                      Comments
+                    </div>
                     <textarea
-                      className="w-full p-2 border rounded h-15 resize-none"
+                      className="w-full p-2 border rounded h-24 resize-none text-[10px] font-medium text-[#1E2A41] dark:bg-[#343434] dark:border-[#5f5959] dark:text-[#989292] disabled:opacity-50"
                       placeholder="Add your comments here..."
                       value={comments}
                       onChange={(e) => setComments(e.target.value)}
-                    ></textarea>
+                      disabled={mode === "view"}
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="p-3 border-t bg-white flex justify-end gap-2">
+              {/* Skills */}
+
+              <div>
+                <h3 className="font-medium text-[12px] border-b border-[#E0E4E9] dark:border-[#5F5959] pb-1 mb-3 text-[#1E2A41] dark:text-[#fff]">
+                  Skills
+                </h3>
+
+                <div className="flex flex-wrap gap-2 text-[10px]">
+                  {parsedSkills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 border rounded-full text-[#010E30E5] bg-gray-50 dark:bg-[#343434] dark:text-[#d5d5d5] border-[#E0E4E9] dark:border-[#5F5959]"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Documents */}
+              <div>
+                <h3 className="font-medium text-[#010E30] text-[12px] border-b dark:border-b-[#5F5959] pb-1 mb-3 dark:text-[#fff]">
+                  Documents
+                </h3>
+                <a
+                  href={resumeImages ?? ""}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-[#5183CA] hover:underline text-[13px]"
+                >
+                  <ImAttachment /> Resume
+                </a>
+              </div>
+            </div>
+
+            {/* Footer (Fixed) */}
+            <div className="w-full border-t p-3 flex justify-end gap-3 bg-white z-10 dark:bg-[#343434] dark:border-t-[#5F5959]">
+              {mode === "edit" && (
+                <>
                   <button
-                    onClick={() => {
-                      setApplicationStatus("REJECTED");
-                    }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors"
+                    onClick={() =>
+                      handlesendupdate(Applicantbyid?._id ?? "", "REJECTED")
+                    }
+                    className="px-4 py-2 text-[12px] text-[#D34645] bg-[#FDECEC] rounded-lg dark:bg-[#543838]"
                   >
-                    Reject
+                    Rejected
                   </button>
                   <button
-                    onClick={() => {
-                      setApplicationStatus("WAITING");
-                    }}
-                    className="px-3 py-1.5 text-sm font-semibold text-white bg-yellow-500 hover:bg-yellow-600 rounded transition-colors"
+                    onClick={() =>
+                      handlesendupdate(Applicantbyid?._id ?? "", "WAITING")
+                    }
+                    className="px-4 py-2 text-[12px] text-[#F0AD4E] bg-[#FDF6EC] rounded-lg dark:bg-[#5A4D3B]"
                   >
                     Waiting
                   </button>
                   <button
-                    onClick={() => {
-                      setApplicationStatus("SHORTLISTED");
-                    }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded transition-colors"
+                    onClick={() =>
+                      handlesendupdate(Applicantbyid?._id ?? "", "SHORTLISTED")
+                    }
+                    className="px-4 py-2 text-[12px] text-[#377E36] bg-[#ECFDF3] rounded-lg dark:bg-[#377E3633]"
                   >
-                    Shortlist
+                    Shortlisted
                   </button>
                   <button
-                    onClick={() => {
-                      handlesendupdate(Applicantbyid?._id ?? "");
-                    }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+                    onClick={() =>
+                      handlesendupdate(Applicantbyid?._id ?? "", applicationStatus)
+                    }
+                    className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
                   >
-                    Send
+                    Send for Approval
                   </button>
-                </div>
-              </div>
+                </>
+              )}
+              {mode === "view" && (
+                <button
+                  onClick={handleviewclose}
+                  className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
+                >
+                  Close
+                </button>
+              )}
             </div>
           </div>
-        </div>
+        </>
       )}
     </BaseLayout3>
   );
