@@ -278,7 +278,7 @@ const ScheduledClasses = () => {
     try {
       const token = localStorage.getItem("token"); // or use context/auth provider
       const response = await fetch(
-        `https://api.blackstoneinfomatics.tech/meeting/${selectedItemId}`,
+        `https://api.blackstoneinfomaticstech.com/meeting/${selectedItemId}`,
         {
           method: "PUT",
           headers: {
@@ -439,7 +439,7 @@ const ScheduledClasses = () => {
 
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentApplicants.length} Of 50
+                        Showing {currentApplicants.length} Of {dataToShow.length}
                       </span>
                     </div>
                   </div>
@@ -451,10 +451,10 @@ const ScheduledClasses = () => {
                     <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr className="font-medium">
                         <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] w-[180px] break-words whitespace-normal">
-                          MeetingId
+                          Meeting ID
                         </th>
                         <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] w-[250px] break-words whitespace-normal">
-                          MeetingName
+                          Meeting Name
                         </th>
                         <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Attendees
@@ -559,7 +559,7 @@ const ScheduledClasses = () => {
                                       className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border  "
                                       onClick={() =>
                                         router.push(
-                                          `/supervisor/ui/liveclass?id=${item._id}`
+                                          `/supervisor/ui/meetingvideocall?id=${item._id}`
                                         )
                                       }
                                     >

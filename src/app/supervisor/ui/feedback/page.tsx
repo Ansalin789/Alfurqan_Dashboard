@@ -140,7 +140,7 @@ const FeedbackDetails: React.FC = () => {
           return;
         }
 
-        const res = await fetch("https://api.blackstoneinfomatics.tech/allfeedback", {
+        const res = await fetch("https://api.blackstoneinfomaticstech.com/allfeedback", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

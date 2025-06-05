@@ -169,8 +169,7 @@ export default function ApplicantsPage() {
   const [success, setSuccess] = useState(false);
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
-  const [successMessage,setSuccessMessage] = useState("");
-
+  const [successMessage, setSuccessMessage] = useState("");
 
   const extractSkills = (rawText: string): string[] => {
     // Only keep content before "Accomplishments" or "Certifications"
@@ -301,7 +300,7 @@ export default function ApplicantsPage() {
           return;
         }
         const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomatics.tech/applicants/${_id}`,
+          `https://api.blackstoneinfomaticstech.com/applicants/${_id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -393,7 +392,7 @@ export default function ApplicantsPage() {
       }
 
       const response = await axios.put(
-        `https://api.blackstoneinfomatics.tech/applicants/${id}`,
+        `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
         updateData,
         {
           headers: {
@@ -402,8 +401,8 @@ export default function ApplicantsPage() {
           },
         }
       );
-       setSuccess(true);
-       setSuccessMessage(status);
+      setSuccess(true);
+      setSuccessMessage(status);
       console.log("✅ Update successful:", response.data);
       handleviewclose();
     } catch (error: any) {
@@ -486,7 +485,7 @@ export default function ApplicantsPage() {
 
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentApplicants.length} Of 50
+                        Showing {currentApplicants.length} Of {filteredApplicants.length}
                       </span>
                     </div>
                   </div>
@@ -673,7 +672,10 @@ export default function ApplicantsPage() {
       </div>
 
       {success && (
-        <SuccessPopup onClose={() => setSuccess(false)} title={successMessage} />
+        <SuccessPopup
+          onClose={() => setSuccess(false)}
+          title={successMessage}
+        />
       )}
       {failed && (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
@@ -700,17 +702,17 @@ export default function ApplicantsPage() {
               </label>
 
               <div className="flex gap-2 mb-2">
-                  <input
-                    type="date"
-                    className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                    // value={exp.fromDate}
-                  />
-                  <input
-                    type="date"
-                    className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                    // value={exp.toDate}
-                  />
-                </div>
+                <input
+                  type="date"
+                  className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  // value={exp.fromDate}
+                />
+                <input
+                  type="date"
+                  className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                  // value={exp.toDate}
+                />
+              </div>
             </div>
 
             {/* Position Applied */}
@@ -1077,12 +1079,16 @@ export default function ApplicantsPage() {
                           <button
                             key={star}
                             className={`text-xl cursor-pointer ${
-                              rating >= star ? "text-yellow-500" : "text-gray-300"
+                              rating >= star
+                                ? "text-yellow-500"
+                                : "text-gray-300"
                             } ${mode === "view" ? "cursor-default" : ""}`}
                             onClick={() => mode !== "view" && setRating(star)}
                             type="button"
                             disabled={mode === "view"}
-                            aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                            aria-label={`Rate ${star} star${
+                              star > 1 ? "s" : ""
+                            }`}
                           >
                             ★
                           </button>
@@ -1172,7 +1178,10 @@ export default function ApplicantsPage() {
                   </button>
                   <button
                     onClick={() =>
-                      handlesendupdate(Applicantbyid?._id ?? "", applicationStatus)
+                      handlesendupdate(
+                        Applicantbyid?._id ?? "",
+                        applicationStatus
+                      )
                     }
                     className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
                   >
