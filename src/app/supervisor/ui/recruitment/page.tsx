@@ -485,7 +485,7 @@ export default function ApplicantsPage() {
       }
 
       const response = await axios.put(
-        `http://localhost:5001/applicants/${id}`,
+        `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
         updateData,
         {
           headers: {

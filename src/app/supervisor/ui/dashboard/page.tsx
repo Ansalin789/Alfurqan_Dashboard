@@ -199,7 +199,7 @@ export default function Dashboard() {
     };
 
     const fetchApplicants = axios.get(
-      "http://localhost:5001/applicants",
+      "https://api.blackstoneinfomaticstech.com/applicants",
       {
         headers: {
           "Content-Type": "application/json",
