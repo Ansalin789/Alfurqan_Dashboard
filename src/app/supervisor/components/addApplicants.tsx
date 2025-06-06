@@ -158,7 +158,6 @@ export default function AddApplicants({ onClose }: Props) {
     formData.append("preferedWorkingHours", addApplicantForm.workingHours); // Changed
     formData.append("comments", addApplicantForm.comment); // Changed
     formData.append("applicationStatus", "NEWAPPLICATION");
-    formData.append("experience", JSON.stringify(experiences));
     formData.append("overallRating", "1");
     formData.append("status", "Active");
 
@@ -375,9 +374,9 @@ export default function AddApplicants({ onClose }: Props) {
                 className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               >
                 <option value="">Select Position</option>
-                <option value="Quran">Quran Teacher</option>
-                <option value="Arabic">Arabic Teacher</option>
-                <option value="Islamic">Islamic Teacher</option>
+                <option value="Quran Teacher">Quran Teacher</option>
+                <option value="Arabic Teacher">Arabic Teacher</option>
+                <option value="Islamic Teacher">Islamic Teacher</option>
               </select>
             </div>
           </div>

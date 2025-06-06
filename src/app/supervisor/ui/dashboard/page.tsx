@@ -139,15 +139,30 @@ export default function Dashboard() {
   >([]);
     useEffect(()=>{
       const Id = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalId") : null;
+      console.log("dashobarcgc id" ,Id);
       if(!Id) return;
      const socket = getSocket(Id);
      const handleCount = (data : DashboardCounts) =>{
        setDashboardCounts(data);
        console.log(data);
      };
+      const handleList = (data : {event :  string , data : Applicant} )=>{
+       if (data.event === 'create') {
+  setApplicants(prev => [data.data, ...prev]);
+  console.log("create" ,data.data._id);
+} else if (data.event === 'update') {
+  setApplicants(prev =>
+    prev.map(app => app._id === data.data._id ? data.data : app)
+  );
+  console.log("create",data.data._id);
+}
+      }
+
        socket.on("supervisordashboardcount",handleCount);
+       socket.on("recruitmentlist",handleList);
        return ()=>{
        socket.off("supervisordashboardcount",handleCount);
+       socket.on("recruitmentlist",handleList);
        };
     },[]);
 
@@ -176,7 +191,7 @@ export default function Dashboard() {
     };
 
     const fetchApplicants = axios.get(
-      "https://api.blackstoneinfomaticstech.com/applicants",
+      "http://localhost:5001/applicants",
       {
         headers: {
           "Content-Type": "application/json",
