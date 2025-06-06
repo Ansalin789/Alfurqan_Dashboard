@@ -24,6 +24,7 @@ import { FiCalendar } from "react-icons/fi";
 import { MdTune } from "react-icons/md";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
+import { getSocket } from "@/app/utils/socket";
 
 type Status = "Shortlisted" | "Rejected" | "Waiting";
 type Position = "Arabic Teacher" | "Quran Teacher";
@@ -309,7 +310,36 @@ export default function ApplicantsPage() {
     console.error("Error fetching applicants:", error);
   }
 };
+ useEffect(()=>{
+      const Id = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalId") : null;
+      console.log("dashobarcgc id" ,Id);
+      if(!Id) return;
+     const socket = getSocket(Id);
+      const handleList = (data: { event: string; data: Applicant }) => {
+  console.log("📩 Received WebSocket Data:", data);
 
+  if (data.event === "create") {
+    console.log("➡️ Action: create", data.data._id);
+    setApplicants(prev => [data.data, ...prev]);
+  } else if (data.event === "update") {
+    console.log("➡️ Action: update", data.data._id);
+    setApplicants(prev =>
+      prev.map(app =>
+        app._id.toString() === data.data._id.toString()
+          ? { ...data.data, __updatedAt: Date.now() }
+          : app
+      )
+    );
+  } else {
+    console.warn("⚠️ Unknown event type:", data.event);
+  }
+};
+
+       socket.on("recruitmentlist",handleList);
+       return ()=>{
+       socket.on("recruitmentlist",handleList);
+       };
+    },[]);
 
   const params = new URLSearchParams();
   if (searchText) params.append("searchText", searchText);
@@ -455,7 +485,7 @@ export default function ApplicantsPage() {
       }
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/applicants/${id}`,
+        `http://localhost:5001/applicants/${id}`,
         updateData,
         {
           headers: {
