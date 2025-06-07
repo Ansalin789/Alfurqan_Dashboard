@@ -64,15 +64,15 @@ const ScheduledClasses = () => {
   const [completedData, setCompletedData] = useState<Meeting[]>([]);
   const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<
-    string | null
-  >(null);
+  const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<string | null>(null);
+
   const [selectedMeetingDetails, setSelectedMeetingDetails] =
     useState<Meeting | null>(null);
   const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] =
     useState(false);
   const [rescheduleDate, setRescheduleDate] = useState(""); // in 'YYYY-MM-DD' format
   const [rescheduleTime, setRescheduleTime] = useState(""); // in 'HH:mm' 24h format
+
 
   const toggleTeacherDropdown = (id: string) => {
     setOpenTeacherDropdownId((prev) => (prev === id ? null : id));
@@ -312,7 +312,7 @@ const ScheduledClasses = () => {
         )
       );
 
-   setSuccess(true);
+      setSuccess(true);
 
       setTimeout(() => {
         setShowSuccess(false);
@@ -439,7 +439,8 @@ const ScheduledClasses = () => {
 
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentApplicants.length} Of {dataToShow.length}
+                        Showing {currentApplicants.length} Of{" "}
+                        {dataToShow.length}
                       </span>
                     </div>
                   </div>
@@ -489,44 +490,44 @@ const ScheduledClasses = () => {
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left w-[250px] break-words whitespace-normal">
                             {item.meetingName}
                           </td>
-                          <td className="relative px-3 py-2 text-left text-[#17243E] dark:text-[#FDFDFD]">
-                            {item.teacher.length > 1 ? (
-                              <>
-                                <button
-                                  onClick={() =>
-                                    toggleTeacherDropdown(item.meetingId)
-                                  }
-                                  className="flex items-center gap-2 font-medium hover:text-[#274872]"
-                                >
-                                  <AiOutlineMenuUnfold />
-                                  View List
-                                </button>
+                          <td className="px-3 py-2 text-left text-[#17243E] dark:text-[#FDFDFD]">
+                            <div className="relative">
+                              {" "}
+                              {/* Ensure dropdown is scoped */}
+                              {item.teacher.length > 1 ? (
+                                <>
+                                  <button
+                                   onClick={() => toggleTeacherDropdown(item._id)}
 
-                                {openTeacherDropdownId === item.meetingId && (
-                                  <div
-                                    ref={dropdownRef}
-                                    className="absolute z-10 mt-2 w-48 bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 rounded shadow-lg p-2"
+                                    className="flex items-center gap-2 font-medium hover:text-[#274872]"
                                   >
-                                    {item.teacher.map((t, idx) => (
-                                      <div
-                                        key={idx}
-                                        className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
-                                      >
-                                        <span className="flex items-center gap-2">
-                                          <IoPersonOutline />
-                                          {t.teacherName}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <span className="flex items-center gap-2 font-medium">
-                                <IoPersonOutline />
-                                {item.teacher[0]?.teacherName}
-                              </span>
-                            )}
+                                    <AiOutlineMenuUnfold />
+                                    View List
+                                  </button>
+
+                                  {openTeacherDropdownId === item._id && (
+                                    <div className="absolute z-10 mt-2 w-48 bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 rounded shadow-lg p-2">
+                                      {item.teacher.map((t, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
+                                        >
+                                          <span className="flex items-center gap-2">
+                                            <IoPersonOutline />
+                                            {t.teacherName}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="flex items-center gap-2 font-medium">
+                                  <IoPersonOutline />
+                                  {item.teacher[0]?.teacherName}
+                                </span>
+                              )}
+                            </div>
                           </td>
 
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
