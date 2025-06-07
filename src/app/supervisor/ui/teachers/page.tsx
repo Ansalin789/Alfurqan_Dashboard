@@ -4,24 +4,54 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { FaStar } from "react-icons/fa";
 import { Search } from "lucide-react";
-import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useRouter } from "next/navigation";
-import Modal from "react-modal";
 import BaseLayout3 from "@/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
 import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
+import { getSocket } from "@/app/utils/socket";
 
-interface Teacher {
+ interface IProfessionalExperience {
+  jobRole: string;
+  organizationName: string;
+  jobLocation: string;
+  fromDate: string | null;
+  toDate: string | null;
+  jobDescription: string;
   _id: string;
-  userId: string;
-  userName: string;
-  email: string;
-  profileImage?: string | null;
-  level: string;
-  course: string;
-  rating: number;
 }
+
+ interface ICandidateApplication {
+  _id: string;
+  candidateFirstName: string;
+  candidateLastName: string;
+  supervisor: {
+    supervisorId: string;
+    supervisorName: string;
+    supervisorEmail: string;
+    supervisorRole: string;
+  };
+  gender: string;
+  applicationDate: string; // ISO date string
+  candidateEmail: string;
+  candidatePhoneNumber: number;
+  candidateCountry: string;
+  candidateCity: string;
+  positionApplied: string;
+  currency: string;
+  expectedSalary: number;
+  preferedWorkingHours: string;
+  comments: string;
+  applicationStatus: string;
+  overallRating: number;
+  professionalExperience: IProfessionalExperience[];
+  skills: string;
+  status: string;
+  createdDate: string; // ISO date string
+  createdBy: string;
+  __v: number;
+}
+
 
 const items = Array.from({ length: 100 }, (_, i) => ({
   id: i + 1,
@@ -30,9 +60,7 @@ const items = Array.from({ length: 100 }, (_, i) => ({
 
 const ManageTeacher: React.FC = () => {
   const router = useRouter();
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [menuVisible, setMenuVisible] = useState<boolean[]>([]);
-  
+  const [teachers, setTeachers] = useState<ICandidateApplication[]>([]);  
   // Active filters (applied)
   const [filterName, setFilterName] = useState("");
   const [filterLevel, setFilterLevel] = useState("");
@@ -51,15 +79,15 @@ const ManageTeacher: React.FC = () => {
   const filteredTeachers = teachers.filter((teacher) => {
     // Search query filtering
     const searchLower = searchQuery.toLowerCase();
-    const nameMatch = teacher.userName?.toLowerCase().includes(searchLower) || false;
-    const levelMatch = teacher.level?.toLowerCase().includes(searchLower) || false;
-    const courseMatch = teacher.course?.toLowerCase().includes(searchLower) || false;
-    const searchMatch = nameMatch || levelMatch || courseMatch;
+    const nameMatch = teacher.candidateFirstName?.toLowerCase().includes(searchLower) ?? false;
+    const levelMatch = teacher.overallRating?.toString().includes(searchLower) ?? false;
+    const courseMatch = teacher.positionApplied?.toLowerCase().includes(searchLower) ?? false;
+    const searchMatch = nameMatch ?? levelMatch ?? courseMatch;
 
     // Filter criteria
-    const filterNameMatch = teacher.userName.toLowerCase().includes(filterName.toLowerCase());
-    const filterLevelMatch = !filterLevel || teacher.level === filterLevel;
-    const filterCourseMatch = !filterCourse || teacher.course.toLowerCase() === filterCourse.toLowerCase();
+    const filterNameMatch = teacher.candidateFirstName?.toLowerCase().includes(filterName.toLowerCase());
+    const filterLevelMatch = !filterLevel || teacher.overallRating?.toString() === filterLevel;
+    const filterCourseMatch = !filterCourse || teacher.positionApplied?.toLowerCase() === filterCourse.toLowerCase();
 
     // Combine both search and filter results
     return searchMatch && filterNameMatch && filterLevelMatch && filterCourseMatch;
@@ -96,18 +124,18 @@ const ManageTeacher: React.FC = () => {
   };
 
   const [Filter, setFilter] = useState(false);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newTeacher, setNewTeacher] = useState({
-    userName: "",
-    email: "",
-    password: "",
-    role: ["TEACHER"],
-    status: "Active",
-    createdBy: "SYSTEM",
-    profileImage: null,
-    lastUpdatedBy: "SYSTEM",
-  });
+  useEffect(()=>{
+    const userId = typeof window != 'undefined' ? localStorage.getItem('SupervisorPortalId') : null;
+     const socket = getSocket(userId ?? '');
+     const handleList = ({ data }: { data: ICandidateApplication }) =>{
+       console.log("📩 Received WebSocket Data:", data);
+       setTeachers(pre => [...pre, data]);
+     };
+     socket.on('supervisorteacherlist',handleList);
+    return () =>{
+      socket.off('supervisorteacherlist',handleList);
+    }
+  },[]);
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
@@ -121,7 +149,7 @@ const ManageTeacher: React.FC = () => {
           return;
         }
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/users?role=TEACHER`,
+          `https://api.blackstoneinfomaticstech.com/applicants`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -133,22 +161,24 @@ const ManageTeacher: React.FC = () => {
 
         console.log("Fetched data:", data);
 
-        // Access `users` array in the response
-        if (data && Array.isArray(data.users)) {
-          setTeachers(data.users);
-        } else {
-          console.error("Unexpected API response structure:", data);
-        }
+       if (data && Array.isArray(data.applicants)) {
+  const approvedApplicants = data.applicants.filter(
+    (applicant : ICandidateApplication) => applicant.applicationStatus === "APPROVED"
+  );
+  setTeachers(approvedApplicants);
+} else {
+  console.error("Unexpected API response structure:", data);
+}
+
       } catch (error) {
         console.error("Error fetching teachers:", error);
       }
     };
 
+
     fetchTeachers();
   }, []);
-  useEffect(() => {
-    setMenuVisible(Array(teachers.length).fill(false));
-  }, [teachers]);
+ 
 
   const handleViewTeacherSchedule = (teacherId: string) => {
     if (!teacherId) {
@@ -157,59 +187,10 @@ const ManageTeacher: React.FC = () => {
     }
     localStorage.setItem("supervisormanageTeacherId", teacherId);
     console.log("Teacher ID:", teacherId); // Debugging
-    router.push("/supervisor/ui/teacherDetails");
+    router.push(`/supervisor/ui/teacherDetails?teacherId=${teacherId}`);
   };
 
-  const toggleMenu = (index: number) => {
-    setMenuVisible((prev) => {
-      const newMenuVisible = [...prev];
-      newMenuVisible[index] = !newMenuVisible[index];
-      return newMenuVisible;
-    });
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewTeacher((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSave = async () => {
-    console.log("New Teacher Data:", newTeacher);
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
-          : null;
-
-      if (!token) {
-        console.error("❌ SupervisorAuthToken not found");
-        return;
-      }
-      const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/users`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(newTeacher),
-        }
-      );
-      const responseData = await response.json();
-      console.log("Response:", response.status, responseData);
-    } catch {
-      console.error("Error saving new teacher:");
-    }
-    closeModal();
-  };
+ 
   return (
     <BaseLayout3>
       <SupervisorHeader currentSection="Teacher's List" />
@@ -232,14 +213,14 @@ const ManageTeacher: React.FC = () => {
 
               <div className="relative ">
                 {/* Filter Button: Tune + Filter Left, Arrow Right */}
-                <div
+                <button
                   className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
                   onClick={handleOpenFilter}
                 >
                   {/* <BsFilterLeft /> */}
                   <MdTune className="w-4 h-4" />
                   <span>Filter</span>
-                </div>
+                </button>
 
                 {/* Filter Popup */}
                 {Filter && (
@@ -318,7 +299,7 @@ const ManageTeacher: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-6 gap-4 gap-x-7 p-3 px-4 bg-[#f5f5f5] dark:bg-[#3b3b3b]">
-              {currentApplicants.map((teacher: Teacher) => (
+              {currentApplicants.map((teacher: ICandidateApplication) => (
                 <div
                   key={teacher._id}
                   className="bg-white dark:bg-[#343434] h-[260px] shadow-md rounded-lg p-4"
@@ -326,7 +307,7 @@ const ManageTeacher: React.FC = () => {
                   <div className="items-center">
                     <div className="h-[126px] rounded-md bg-[#e8e8e8] dark:bg-[#dadada] flex items-center justify-center">
                       <Image
-                        src={teacher.profileImage ?? "/assets/images/profilePicture.png"}
+                        src={"/assets/images/profilePicture.png"}
                         alt="Teacher"
                         className="rounded-md"
                         width={160}
@@ -336,13 +317,13 @@ const ManageTeacher: React.FC = () => {
                   </div>
                   <div className="mt-2 text-center">
                     <h3 className="text-[12px] font-semibold text-[#010e30] dark:text-[#fff] mb-1">
-                      {teacher.userName}
+                      {teacher.candidateFirstName} {teacher.candidateLastName}
                     </h3>
                     <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                      Level: {teacher.level}
+                      Level: {teacher.overallRating}
                     </p>
                     <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                      {teacher.course} Course
+                      {teacher.positionApplied} 
                     </p>
                     <div className="flex justify-center">
                       <FaStar className="text-[#faab3c] text-[10px]" />
@@ -371,70 +352,7 @@ const ManageTeacher: React.FC = () => {
         </div>
       </div>
 
-      <Modal
-        isOpen={isModalOpen}
-        onRequestClose={closeModal}
-        contentLabel="Add New Teacher"
-        className="modal"
-        overlayClassName="modal-overlay"
-      >
-        <div className="p-3">
-          <h2 className="text-[20px] font-semibold text-[#223857] mb-4">
-            Add New Teacher
-          </h2>
-          <div className="mb-4">
-            <label htmlFor="username" className="block text-[#223857] mb-2">
-              Username
-            </label>
-            <input
-              type="text"
-              name="userName"
-              value={newTeacher.userName}
-              onChange={handleInputChange}
-              className="border rounded-lg p-2 w-full"
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-[#223857] mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={newTeacher.email}
-              onChange={handleInputChange}
-              className="border rounded-lg p-2 w-full"
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="password" className="block text-[#223857] mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={newTeacher.password}
-              onChange={handleInputChange}
-              className="border rounded-lg p-2 w-full"
-            />
-          </div>
-          <div className="flex justify-end">
-            <button
-              onClick={closeModal}
-              className="bg-gray-200 text-[#223857] px-4 py-2 rounded-lg mr-2"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="bg-[#223857] text-white px-4 py-2 rounded-lg"
-            >
-              Save
-            </button>
-          </div>
-        </div>
-              
-      </Modal>
+    
     </BaseLayout3>
   );
 };

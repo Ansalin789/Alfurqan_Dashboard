@@ -234,7 +234,7 @@ const ViewSchedule = () => {
     if (course) params.course = course; // course name
 
     try {
-      const response = await axios.get("http://localhost:5001/classShedule", {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -285,13 +285,7 @@ console.log("currentItems", currentItems);
   };
 
   const handleLiveClassRedirect = (id: string) => {
-    router.push(`/supervisor/ui/meetingvideocall?id=${id}`);
-  };
-
-  const handleFeedbackRedirect = (id: string) => {
-    router.push("/supervisor/ui/liveclass");
-    localStorage.setItem("showfeedbackid", id);
-    localStorage.setItem("showfeedbackdirect", JSON.stringify(true));
+    router.push(`/supervisor/ui/liveclass?id=${id}`);
   };
 
   useEffect(() => {
