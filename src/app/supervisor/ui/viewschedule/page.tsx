@@ -24,6 +24,10 @@ const ViewSchedule = () => {
     teacherName: string;
     teacherEmail: string;
   }
+  interface course{
+    courseId: string;
+    courseName: string;
+  }
 
   interface Schedule {
     student: Student;
@@ -31,6 +35,7 @@ const ViewSchedule = () => {
     _id: string;
     classDay: string[];
     package: string;
+    course: course;
     preferedTeacher: string;
     totalHourse: number;
     startDate: string;
@@ -58,8 +63,25 @@ const ViewSchedule = () => {
   >([]);
   const [selectedMenu, setSelectedMenu] = useState<number | null>(null);
 
+  // Date Range
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  // Course
+  const [course, setCourse] = useState("");
+
+  // Course Type (maps to sessionClassType)
+  const [sessionClassType, setSessionClassType] = useState("");
+
+  // Timing (maps to startTime)
+  const [startTime, setStartTime] = useState("");
+
+  // Status (maps to scheduleStatus)
+  const [scheduleStatus, setScheduleStatus] = useState("");
+
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const [activeTab, setActiveTab] = useState<string>("scheduled");
   const [upcomingClasses, setUpcomingClasses] = useState<Schedule[]>([]);
@@ -132,6 +154,7 @@ const ViewSchedule = () => {
             updatedStatus = "Re-scheduled";
           } else if (schedule.scheduleStatus === "Completed") {
             updatedStatus = "Completed";
+
           } else if (isToday(schedule.startDate)) {
             if (isStartMeetingNow(schedule.startDate, schedule.startTime[0], schedule.endTime[0])) {
               updatedStatus = "Ready to Start";
@@ -139,6 +162,12 @@ const ViewSchedule = () => {
               updatedStatus = "Scheduled";
             }
           } else if (isFuture || (schedule.scheduleDate && schedule.scheduleDate > today)) {
+
+          } else if (
+            isFuture ||
+            (schedule.scheduleDate && schedule.scheduleDate > today)
+          ) {
+
             updatedStatus = "Scheduled";
           }
 
@@ -159,7 +188,9 @@ const ViewSchedule = () => {
             return false;
           }
 
-          return ["Scheduled", "Re-scheduled", "Ongoing"].includes(schedule.scheduleStatus);
+          return ["Scheduled", "Re-scheduled", "Ongoing"].includes(
+            schedule.scheduleStatus
+          );
         });
 
         // Filter completed classes
@@ -178,10 +209,60 @@ const ViewSchedule = () => {
     fetchData();
   }, []);
 
+  const handleFilter = async () => {
+    setShowModal(false);
+    console.log("✅ Filter button clicked");
+
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorAuthToken")
+        : null;
+
+    if (!token) {
+      console.error("❌ SupervisorAuthToken not found");
+      return;
+    }
+
+    // Build query params with correct keys
+    const params: any = {};
+    // if (searchText) params.searchText = searchText;
+    if (sessionClassType) params.sessionClassType = sessionClassType; // course type
+    if (startTime) params.startTime = startTime; // timing
+    if (fromDate) params["dateRange.from"] = fromDate;
+    if (toDate) params["dateRange.to"] = toDate;
+    if (scheduleStatus) params.scheduleStatus = scheduleStatus; // status
+    if (course) params.course = course; // course name
+
+    try {
+      const response = await axios.get("http://localhost:5001/classShedule", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        params,
+      });
+      console.log("🔍 Params being sent:", params);
+      const meetings: Schedule[] = response.data.students || [];
+
+      setUpcomingClasses(
+        meetings.filter((m: Schedule) => m.scheduleStatus !== "Completed")
+      );
+      setCompletedClasses(
+        meetings.filter((m: Schedule) => m.scheduleStatus === "Completed")
+      );
+      console.log("✅ Filtered data:", response.data);
+
+     setUniqueStudentSchedules(Array.isArray(response.data.students) ? response.data.students : []);
+    } catch (error) {
+      console.error("❌ Error fetching filtered data:", error);
+    }
+  };
+
   // Update displayed data when tab changes
   useEffect(() => {
     if (activeTab === "scheduled") {
       setUniqueStudentSchedules(upcomingClasses);
+       console.log("✅ Filtered upcoming classes", upcomingClasses);
     } else if (activeTab === "completed") {
       setUniqueStudentSchedules(completedClasses);
     }
@@ -194,9 +275,11 @@ const ViewSchedule = () => {
   const itemsPerPage = 10;
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentItems = uniqueStudentSchedules.slice(indexOfFirst, indexOfLast);
+  console.log("uniqueStudentSchedules", uniqueStudentSchedules);
+  const currentItems =
+    uniqueStudentSchedules?.slice(indexOfFirst, indexOfLast) ?? [];
   const totalPages = Math.ceil(uniqueStudentSchedules.length / itemsPerPage);
-
+console.log("currentItems", currentItems);
   const toggleMenu = (index: number) => {
     setSelectedMenu(selectedMenu === index ? null : index);
   };
@@ -364,14 +447,14 @@ const ViewSchedule = () => {
           <div className="relative ">
             <div
               className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-              onClick={() => setShowFilter(!showFilter)}
+              onClick={() => setShowModal(true)}
             >
               {/* <BsFilterLeft /> */}
               <MdTune className="w-4 h-4" />
               <span>Filter</span>
             </div>
             {/* Filter Popup */}
-            {showFilter && (
+            {showModal && (
               <div
                 className="absolute top-14 left-0 bg-white dark:bg-[#343434] rounded-lg shadow-lg w-80 p-6 z-50"
                 onClick={(e) => e.stopPropagation()}
@@ -380,83 +463,132 @@ const ViewSchedule = () => {
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
                     Filter by
                   </h3>
-                  <button onClick={() => setShowFilter(false)}>
+                  <button onClick={() => setShowModal(false)}>
                     <HiOutlineX className="w-4 h-4 text-gray-500 hover:text-gray-700" />
                   </button>
                 </div>
 
                 {/* Date */}
-                <label
-                  htmlFor="date"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Date
-                </label>
-                <input
-                  type="date"
-                  className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="mb-4">
+                  <label
+                    htmlFor="fromDate"
+                    className="text-sm font-medium mb-1 dark:text-[#D6D6D6]"
+                  >
+                    Date Range
+                  </label>
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="date"
+                      id="fromDate"
+                      className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                      value={fromDate}
+                      onChange={(e) => setFromDate(e.target.value)}
+                    />
+                    <input
+                      type="date"
+                      id="toDate"
+                      className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                      value={toDate}
+                      onChange={(e) => setToDate(e.target.value)}
+                    />
+                  </div>
+                </div>
 
                 {/* Course */}
-                <label
-                  htmlFor="course"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Course
-                </label>
-                <input
-                  type="text"
-                  placeholder="Course name"
-                  className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="mb-4">
+                  <label
+                    htmlFor="course"
+                    className="block text-sm font-medium mb-1 dark:text-white"
+                  >
+                    Course
+                  </label>
+                  <select
+                    id="course"
+                    className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                    value={course}
+                    onChange={(e) => setCourse(e.target.value)}
+                  >
+                    <option value="">Select any one</option>
+                    <option value="Islamic Studies">Islamic Studies</option>
+                    <option value="Quran">Quran</option>
+                    <option value="Arabic">Arabic</option>
+                  </select>
+                </div>
 
                 {/* Course Type */}
-                <label
-                  htmlFor="course type"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Course Type
-                </label>
-                <select className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <option>Online</option>
-                  <option>Offline</option>
-                </select>
+                <div className="mb-4">
+                  <label
+                    htmlFor="courseType"
+                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                  >
+                    Course Type
+                  </label>
+                  <select
+                    id="courseType"
+                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={sessionClassType}
+                    onChange={(e) => setSessionClassType(e.target.value)}
+                  >
+                    <option value="">Select any one</option>
+
+                    <option>Regular Class</option>
+                    <option>Group Class</option>
+                    <option>Trail Class</option>
+                  </select>
+                </div>
 
                 {/* Timing */}
-                <label
-                  htmlFor="timimg"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Timing
-                </label>
-                <input
-                  type="time"
-                  className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="mb-4">
+                  <label
+                    htmlFor="timing"
+                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                  >
+                    Timing
+                  </label>
+                  <input
+                    type="time"
+                    id="timing"
+                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                  />
+                </div>
 
                 {/* Status */}
-                <label
-                  htmlFor="status"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Status
-                </label>
-                <select className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <option>Scheduled</option>
-                  <option>Completed</option>
-                  <option>Cancelled</option>
-                </select>
+                <div className="mb-4">
+                  <label
+                    htmlFor="status"
+                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                  >
+                    Status
+                  </label>
+                  <select
+                    id="status"
+                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={scheduleStatus}
+                    onChange={(e) => setScheduleStatus(e.target.value)}
+                  >
+                    {" "}
+                    <option value="">Select any one</option>
+                    <option>Scheduled</option>
+                    <option>Completed</option>
+                    <option>Re-Scheduled</option>
+                  </select>
+                </div>
 
                 <hr className="my-4" />
 
                 <div className="flex justify-between">
                   <button
                     className="px-4 py-2 rounded-md border border-indigo-300 text-indigo-600 hover:bg-indigo-50 text-sm"
-                    onClick={() => setShowFilter(false)}
+                    onClick={() => setShowModal(false)}
                   >
                     Cancel
                   </button>
-                  <button className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm">
+                  <button
+                    className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
+                    onClick={handleFilter}
+                  >
                     Submit
                   </button>
                 </div>
@@ -509,11 +641,11 @@ const ViewSchedule = () => {
                     <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {item._id}
                     </td>
+
                     <td className="px-6 py-3 text-left">Quran</td>
                     <td className="px-6 py-3 text-left">MasterClass</td>
                     <td className="px-6 py-3 text-left">
-                      {new Date(item.startDate).toDateString()}
-                    </td>
+                      {new Date(item.startDate).toDateString()} </td>
                     <td className="px-6 py-3 text-left">
                       {(() => {
                         let content;
@@ -580,7 +712,11 @@ const ViewSchedule = () => {
                     </td>
 
                     <td className="px-3 py-2 text-left">
-                      <span className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getStatusClass(item.scheduleStatus)}`}>
+                      <span
+                        className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getStatusClass(
+                          item.scheduleStatus
+                        )}`}
+                      >
                         {item.scheduleStatus}
                       </span>
                     </td>
