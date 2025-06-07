@@ -170,7 +170,7 @@ export default function Dashboard() {
        socket.on("recruitmentlist",handleList);
        return ()=>{
        socket.off("supervisordashboardcount",handleCount);
-       socket.on("recruitmentlist",handleList);
+       socket.off("recruitmentlist",handleList);
        };
     },[]);
 

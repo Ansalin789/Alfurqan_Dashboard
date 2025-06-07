@@ -253,7 +253,6 @@ export default function ApplicantsPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        params:{params}
       })
       .then((response) => setApplicants(response.data.applicants))
       .catch((error) => console.error("Error fetching applicants:", error));
@@ -315,9 +314,9 @@ export default function ApplicantsPage() {
       console.log("dashobarcgc id" ,Id);
       if(!Id) return;
      const socket = getSocket(Id);
+     console.log("socket",socket);
       const handleList = (data: { event: string; data: Applicant }) => {
   console.log("📩 Received WebSocket Data:", data);
-
   if (data.event === "create") {
     console.log("➡️ Action: create", data.data._id);
     setApplicants(prev => [data.data, ...prev]);
@@ -334,10 +333,9 @@ export default function ApplicantsPage() {
     console.warn("⚠️ Unknown event type:", data.event);
   }
 };
-
        socket.on("recruitmentlist",handleList);
        return ()=>{
-       socket.on("recruitmentlist",handleList);
+       socket.off("recruitmentlist",handleList);
        };
     },[]);
 

@@ -121,22 +121,29 @@ export default function AddApplicants({ onClose }: Props) {
     const allCountries = Country.getAllCountries();
     setCountries(allCountries);
   }, []);
-  useEffect(() => {
-    if (addApplicantForm.country) {
-      const selectedCountry = countries.find(
-        (c) => c.name === addApplicantForm.country
+ useEffect(() => {
+  if (addApplicantForm.country) {
+    const selectedCountry = countries.find(
+      (c) => c.name === addApplicantForm.country
+    );
+    if (selectedCountry) {
+      const allStates = State.getStatesOfCountry(selectedCountry.isoCode);
+      const allCities = allStates.flatMap((state) =>
+        City.getCitiesOfState(selectedCountry.isoCode, state.isoCode)
       );
-      if (selectedCountry) {
-        const allStates = State.getStatesOfCountry(selectedCountry.isoCode);
-        const allCities = allStates.flatMap((state) =>
-          City.getCitiesOfState(selectedCountry.isoCode, state.isoCode)
-        );
-        setCities(allCities);
-      } else {
-        setCities([]);
-      }
+
+      // 🔥 Deduplicate by city name
+      const uniqueCities = Array.from(
+        new Map(allCities.map(city => [city.name, city])).values()
+      );
+
+      setCities(uniqueCities);
+    } else {
+      setCities([]);
     }
-  }, [addApplicantForm.country, countries]);
+  }
+}, [addApplicantForm.country, countries]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
