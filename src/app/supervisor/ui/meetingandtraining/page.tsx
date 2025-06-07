@@ -15,6 +15,7 @@ import { IoPersonOutline } from "react-icons/io5";
 import { MdTune } from "react-icons/md";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
+import { setTime } from "react-datepicker/dist/date_utils";
 interface ApiResponse {
   candidateFirstName: string;
   candidateLastName: string;
@@ -65,14 +66,15 @@ const ScheduledClasses = () => {
   const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<string | null>(null);
-
-  const [selectedMeetingDetails, setSelectedMeetingDetails] =
-    useState<Meeting | null>(null);
-  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] =
-    useState(false);
+  const [selectedMeetingDetails, setSelectedMeetingDetails] =  useState<Meeting | null>(null);
+  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState(""); // in 'YYYY-MM-DD' format
   const [rescheduleTime, setRescheduleTime] = useState(""); // in 'HH:mm' 24h format
-
+  const [searchText, setSearchText] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [timing, setTiming] = useState("");
+  const [status, setStatus] = useState("");
 
   const toggleTeacherDropdown = (id: string) => {
     setOpenTeacherDropdownId((prev) => (prev === id ? null : id));
@@ -243,7 +245,8 @@ const ScheduledClasses = () => {
     console.log(teachers);
   }, [teachers]);
 
-  const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
+  const dataToShow = activeTab === "upcoming" ? (upcomingClasses || []) : (completedData || []);
+
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -255,14 +258,6 @@ const ScheduledClasses = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = currentItems.slice(startIndex, endIndex);
 
-  const handleOptionsClick = (id: string) => {
-    setSelectedItemId(selectedItemId === id ? null : id);
-  };
-
-  //   const handleViewDetails = (item: any) => {
-  //   setSelectedItemId(item);
-  //   setShowMeetingDetailsModal(true); // assuming you have this state and modal
-  // };
 
   const handleRescheduleSubmit = async () => {
     if (
@@ -370,9 +365,48 @@ const ScheduledClasses = () => {
     return now >= start && now <= end;
   };
 
-  function startMeeting(_id: string): void {
-    throw new Error("Function not implemented.");
+const handleFilter = async () => {
+  setShowModal(false);
+
+  const token = localStorage.getItem("SupervisorAuthToken");
+
+  const params: any = {};
+  if (fromDate) params["dateRange.from"] = fromDate;
+  if (toDate) params["dateRange.to"] = toDate;
+  if (timing) params["startTime"] = timing;
+  if (status) params["meetingStatus"] = status;
+
+  console.log("📤 Sending filter params:", params);
+
+  try {
+    const response = await axios.get(
+      "http://localhost:5001/allMeetings", // Use your backend URL here
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        params,
+      }
+    );
+
+    console.log("✅ Response:", response.data);
+
+    // You can split meetings into upcoming/completed based on your logic
+  const meetings: Meeting[] = response.data.meetings || [];
+
+setUpcomingClasses(meetings.filter((m: Meeting) => m.meetingStatus !== "Completed"));
+setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"));
+
+  } catch (error) {
+    console.error("❌ Error fetching filtered meetings:", error);
   }
+};
+
+
+
+
+
 
   return (
     <BaseLayout3>
@@ -425,6 +459,8 @@ const ScheduledClasses = () => {
                         type="text"
                         placeholder="Search by keyword"
                         className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                       value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
                       />
                     </div>
 
@@ -497,8 +533,9 @@ const ScheduledClasses = () => {
                               {item.teacher.length > 1 ? (
                                 <>
                                   <button
-                                   onClick={() => toggleTeacherDropdown(item._id)}
-
+                                    onClick={() =>
+                                      toggleTeacherDropdown(item._id)
+                                    }
                                     className="flex items-center gap-2 font-medium hover:text-[#274872]"
                                   >
                                     <AiOutlineMenuUnfold />
@@ -650,7 +687,7 @@ const ScheduledClasses = () => {
         </div>
       </div>
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
           <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
             {/* Close Icon */}
             <button
@@ -672,29 +709,33 @@ const ScheduledClasses = () => {
                 <input
                   type="date"
                   className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  // value={exp.fromDate}
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
                 />
                 <input
                   type="date"
                   className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  // value={exp.toDate}
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
                 />
               </div>
             </div>
 
             {/* Position Applied */}
             <div className="mb-4">
-              <label
-                htmlFor="position"
-                className="block text-sm font-medium mb-1"
-              >
-                Timing
-              </label>
-              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
-                <option>time 1</option>
-                <option>time 1</option>
-                <option>time 1</option>
-              </select>
+                    {/* Timing */}
+                <label
+                  htmlFor="timimg"
+                  className="block text-sm text-gray-700 mb-1 dark:text-white"
+                >
+                  Timing
+                </label>
+                <input
+                 value={timing}
+                 onChange={(e) => setTiming(e.target.value)}
+                  type="time"
+                  className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
             </div>
 
             {/* Status */}
@@ -705,13 +746,17 @@ const ScheduledClasses = () => {
               >
                 Status
               </label>
-              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
-                <option>Shortlisted</option>
-                <option>Rejected</option>
-                <option>Waiting</option>
-                <option>Approved</option>
-                <option>New Application</option>
-              </select>
+             <select
+  value={status}
+  onChange={(e) => setStatus(e.target.value)}
+  className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+>
+  <option value="">Select status</option>
+  <option value="Scheduled">Scheduled</option>
+  <option value="Rescheduled">Rescheduled</option>
+  <option value="Completed">Completed</option>
+</select>
+
             </div>
 
             {/* Buttons */}
@@ -722,7 +767,8 @@ const ScheduledClasses = () => {
               >
                 Cancel
               </button>
-              <button className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium">
+              <button className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+               onClick={handleFilter}>
                 Submit
               </button>
             </div>
