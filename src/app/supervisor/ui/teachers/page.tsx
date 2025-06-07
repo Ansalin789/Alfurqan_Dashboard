@@ -19,7 +19,7 @@ interface Teacher {
   email: string;
   profileImage?: string | null;
   level: string;
-  subject: string;
+  course: string;
   rating: number;
 }
 
@@ -32,18 +32,61 @@ const ManageTeacher: React.FC = () => {
   const router = useRouter();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [menuVisible, setMenuVisible] = useState<boolean[]>([]);
+  
+  // Active filters (applied)
+  const [filterName, setFilterName] = useState("");
+  const [filterLevel, setFilterLevel] = useState("");
+  const [filterCourse, setFilterCourse] = useState("");
+  
+  // Temporary filters (for input)
+  const [tempFilterName, setTempFilterName] = useState("");
+  const [tempFilterLevel, setTempFilterLevel] = useState("");
+  const [tempFilterCourse, setTempFilterCourse] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
-  const totalPages = Math.ceil(items.length / itemsPerPage);
 
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentItems = items.slice(indexOfFirst, indexOfLast);
+  // Filter teachers based on criteria
+  const filteredTeachers = teachers.filter((teacher) => {
+    const nameMatch = teacher.userName.toLowerCase().includes(filterName.toLowerCase());
+    const levelMatch = !filterLevel || teacher.level === filterLevel;
+    const courseMatch = !filterCourse || teacher.course.toLowerCase() === filterCourse.toLowerCase();
+    return nameMatch && levelMatch && courseMatch;
+  });
+
+  const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  // Calculate pagination
   const endIndex = startIndex + itemsPerPage;
-  const currentApplicants = teachers.slice(startIndex, endIndex);
+  const currentApplicants = filteredTeachers.slice(startIndex, endIndex);
+
+  // Reset filters
+  const handleResetFilters = () => {
+    setFilterName("");
+    setFilterLevel("");
+    setFilterCourse("");
+    setTempFilterName("");
+    setTempFilterLevel("");
+    setTempFilterCourse("");
+    setFilter(false);
+  };
+
+  // Apply filters
+  const handleApplyFilters = () => {
+    setFilterName(tempFilterName);
+    setFilterLevel(tempFilterLevel);
+    setFilterCourse(tempFilterCourse);
+    setCurrentPage(1); // Reset to first page when applying filters
+    setFilter(false);
+  };
+
+  // Initialize temp filters when opening filter modal
+  const handleOpenFilter = () => {
+    setTempFilterName(filterName);
+    setTempFilterLevel(filterLevel);
+    setTempFilterCourse(filterCourse);
+    setFilter(true);
+  };
+
   const [Filter, setFilter] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -181,7 +224,7 @@ const ManageTeacher: React.FC = () => {
                 {/* Filter Button: Tune + Filter Left, Arrow Right */}
                 <div
                   className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                  onClick={() => setFilter(true)}
+                  onClick={handleOpenFilter}
                 >
                   {/* <BsFilterLeft /> */}
                   <MdTune className="w-4 h-4" />
@@ -213,6 +256,8 @@ const ManageTeacher: React.FC = () => {
                         <div>
                           <input
                             type="text"
+                            value={tempFilterName}
+                            onChange={(e) => setTempFilterName(e.target.value)}
                             className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                           />
                         </div>
@@ -225,12 +270,17 @@ const ManageTeacher: React.FC = () => {
                         >
                           Level
                         </label>
-                        <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
-                          <option>1</option>
-                          <option>2</option>
-                          <option>3</option>
-                          <option>4</option>
-                          <option>5</option>
+                        <select 
+                          value={tempFilterLevel}
+                          onChange={(e) => setTempFilterLevel(e.target.value)}
+                          className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                        >
+                          <option value="">All Levels</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                          <option value="5">5</option>
                         </select>
                       </div>
                       <div className="mb-4">
@@ -238,24 +288,32 @@ const ManageTeacher: React.FC = () => {
                           htmlFor="position"
                           className="block text-sm font-medium mb-1"
                         >
-                          Subject
+                          Course
                         </label>
-                        <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
-                          <option>Quran</option>
-                          <option>Arabic</option>
-                          <option>Islamic</option>
+                        <select 
+                          value={tempFilterCourse}
+                          onChange={(e) => setTempFilterCourse(e.target.value)}
+                          className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                        >
+                          <option value="">All Courses</option>
+                          <option value="Quran">Quran</option>
+                          <option value="Arabic">Arabic</option>
+                          <option value="Islamic">Islamic</option>
                         </select>
                       </div>
                       {/* Buttons */}
                       <div className="flex justify-end gap-3">
                         <button
-                          onClick={() => setFilter(false)}
+                          onClick={handleResetFilters}
                           className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
                         >
-                          Cancel
+                          Reset
                         </button>
-                        <button className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium">
-                          Submit
+                        <button 
+                          onClick={handleApplyFilters}
+                          className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                        >
+                          Apply
                         </button>
                       </div>
                     </div>
@@ -271,7 +329,7 @@ const ManageTeacher: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-6 gap-4 gap-x-7 p-3 px-4 shadow-md rounded-b-lg bg-[#f5f5f5] dark:bg-[#3b3b3b]">
-              {currentApplicants.map((teacher, index) => (
+              {currentApplicants.map((teacher: Teacher) => (
                 <div
                   key={teacher._id}
                   className="bg-white dark:bg-[#343434] h-[260px] shadow-md rounded-lg p-4"
@@ -295,10 +353,8 @@ const ManageTeacher: React.FC = () => {
                       Level: {teacher.level}
                     </p>
                     <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                      {teacher.subject} Subject
+                      {teacher.course} Course
                     </p>
-                    {/* Star Rating */}
-                    {/* {teacher.rating} */}
                     <div className="flex justify-center">
                       <FaStar className="text-[#faab3c] text-[10px]" />
                       <FaStar className="text-[#faab3c] text-[10px] mx-1" />
@@ -316,12 +372,13 @@ const ManageTeacher: React.FC = () => {
                 </div>
               ))}
             </div>
+            
+            </div>
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
             />
-          </div>
         </div>
       </div>
 

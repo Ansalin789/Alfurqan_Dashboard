@@ -37,7 +37,7 @@ const ViewSchedule = () => {
     endDate: string;
     startTime: string[];
     endTime: string[];
-    scheduleStatus: "Scheduled" | "Re-scheduled" | "Ongoing" | "Completed";
+    scheduleStatus: "Scheduled" | "Re-scheduled" | "Ongoing" | "Completed" | "Ready to Start";
     status: string;
     createdBy: string;
     createdDate: string;
@@ -132,6 +132,12 @@ const ViewSchedule = () => {
             updatedStatus = "Re-scheduled";
           } else if (schedule.scheduleStatus === "Completed") {
             updatedStatus = "Completed";
+          } else if (isToday(schedule.startDate)) {
+            if (isStartMeetingNow(schedule.startDate, schedule.startTime[0], schedule.endTime[0])) {
+              updatedStatus = "Ready to Start";
+            } else {
+              updatedStatus = "Scheduled";
+            }
           } else if (isFuture || (schedule.scheduleDate && schedule.scheduleDate > today)) {
             updatedStatus = "Scheduled";
           }
@@ -196,9 +202,7 @@ const ViewSchedule = () => {
   };
 
   const handleLiveClassRedirect = (id: string) => {
-    router.push("/supervisor/ui/liveclass");
-    localStorage.setItem("showfeedbackid", id);
-    localStorage.setItem("showfeedbackdirect", JSON.stringify(false));
+    router.push(`/supervisor/ui/meetingvideocall?id=${id}`);
   };
 
   const handleFeedbackRedirect = (id: string) => {
@@ -283,9 +287,34 @@ const ViewSchedule = () => {
         return "text-[#576CBC] bg-[#F3F6FF] dark:bg-[#2C3B6C] dark:text-[#576CBC]";
       case "Completed":
         return "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36]";
+      case "Ready to Start":
+        return "text-[#576CBC] bg-[#F3F6FF] dark:bg-[#2C3B6C] dark:text-[#576CBC]";
       default:
         return "text-[#377E36] bg-[#ECFDF3]";
     }
+  };
+
+
+  const isStartMeetingNow = (
+    selectedDate: string,
+    startTime: string,
+    endTime: string
+  ): boolean => {
+    const now = new Date();
+
+    // Parse date and combine with start and end times
+    const date = new Date(selectedDate);
+
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour, endMin] = endTime.split(":").map(Number);
+
+    const start = new Date(date);
+    start.setHours(startHour, startMin, 0, 0);
+
+    const end = new Date(date);
+    end.setHours(endHour, endMin, 0, 0);
+
+    return now >= start && now <= end;
   };
 
   return (
@@ -457,7 +486,7 @@ const ViewSchedule = () => {
                   ].map((header) => (
                     <th
                       key={header}
-                      className="  b whitespace-nowrap text-left px-3 py-3 font-medium border  border-[#4C6993] "
+                      className="whitespace-nowrap text-left px-6 py-3 font-medium border  border-[#4C6993] "
                     >
                       {header}
                     </th>
@@ -474,18 +503,18 @@ const ViewSchedule = () => {
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    <td className="px-3 py-2 text-[#3D8FDE] dark:text-[#3D8FDE]">
+                    <td className="px-6 py-2 text-[#3D8FDE] dark:text-[#3D8FDE] text-left">
                       {item.teacher.teacherName}
                     </td>
-                    <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                    <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {item._id}
                     </td>
-                    <td className="px-6 py-3 text-center">Quran</td>
-                    <td className="px-6 py-3 text-center">MasterClass</td>
-                    <td className="px-6 py-3 text-center">
+                    <td className="px-6 py-3 text-left">Quran</td>
+                    <td className="px-6 py-3 text-left">MasterClass</td>
+                    <td className="px-6 py-3 text-left">
                       {new Date(item.startDate).toDateString()}
                     </td>
-                    <td className="px-6 py-3 text-center">
+                    <td className="px-6 py-3 text-left">
                       {(() => {
                         let content;
                         console.log(
@@ -511,12 +540,33 @@ const ViewSchedule = () => {
                             </button>
                           );
                         } else if (isToday(item.startDate)) {
-                          content = (
-                            <span className="py-1 px-2 text-black rounded-lg bg-yellow-500 dark:text-[#ffff]">
-                              Scheduled at{" "}
-                              {formatTime(getEarliestTime(item.startTime))}
-                            </span>
-                          );
+                          if (
+                            isStartMeetingNow(
+                              item.startDate,
+                              item.startTime[0],
+                              item.endTime[0]
+                            )
+                          ) {
+                            content = (
+                              <button
+                                // onClick={() => handleLiveClassRedirect(item._id)}
+                                className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border cursor-pointer hover:opacity-80"
+                                onClick={() =>
+                                  router.push(
+                                    `/supervisor/ui/meetingvideocall?id=${item._id}`
+                                  )
+                                }>
+                                Start Meeting
+                              </button>
+                            );
+                          } else {
+                            content = (
+                              <span className="py-1 px-2 text-black rounded-lg bg-yellow-500 dark:text-[#ffff]">
+                                Scheduled at{" "}
+                                {formatTime(getEarliestTime(item.startTime))}
+                              </span>
+                            );
+                          }
                         } else {
                           content = (
                             <span className="py-1 px-2 text-black rounded-lg dark:text-[#ffff] ">
