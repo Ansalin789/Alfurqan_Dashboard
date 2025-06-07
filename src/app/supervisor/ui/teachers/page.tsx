@@ -40,7 +40,6 @@ const ManageTeacher: React.FC = () => {
   
   // Temporary filters (for input)
   const [tempFilterName, setTempFilterName] = useState("");
-  const [tempFilterLevel, setTempFilterLevel] = useState("");
   const [tempFilterCourse, setTempFilterCourse] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,6 +57,8 @@ const ManageTeacher: React.FC = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = filteredTeachers.slice(startIndex, endIndex);
+  const [searchQuery, setSearchQuery] = useState("");
+
 
   // Reset filters
   const handleResetFilters = () => {
@@ -65,7 +66,6 @@ const ManageTeacher: React.FC = () => {
     setFilterLevel("");
     setFilterCourse("");
     setTempFilterName("");
-    setTempFilterLevel("");
     setTempFilterCourse("");
     setFilter(false);
   };
@@ -73,7 +73,6 @@ const ManageTeacher: React.FC = () => {
   // Apply filters
   const handleApplyFilters = () => {
     setFilterName(tempFilterName);
-    setFilterLevel(tempFilterLevel);
     setFilterCourse(tempFilterCourse);
     setCurrentPage(1); // Reset to first page when applying filters
     setFilter(false);
@@ -82,7 +81,6 @@ const ManageTeacher: React.FC = () => {
   // Initialize temp filters when opening filter modal
   const handleOpenFilter = () => {
     setTempFilterName(filterName);
-    setTempFilterLevel(filterLevel);
     setTempFilterCourse(filterCourse);
     setFilter(true);
   };
@@ -209,7 +207,7 @@ const ManageTeacher: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1">
           {/* Cards */}
-          <div className="w-full h-[600px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
+          <div className="w-full h-[605px] shadow bg-[#FAFAFB] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
             <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434] h-10">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
@@ -223,7 +221,7 @@ const ManageTeacher: React.FC = () => {
               <div className="relative ">
                 {/* Filter Button: Tune + Filter Left, Arrow Right */}
                 <div
-                  className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                  className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
                   onClick={handleOpenFilter}
                 >
                   {/* <BsFilterLeft /> */}
@@ -262,27 +260,6 @@ const ManageTeacher: React.FC = () => {
                           />
                         </div>
                       </div>
-
-                      <div className="mb-4">
-                        <label
-                          htmlFor="position"
-                          className="block text-sm font-medium mb-1"
-                        >
-                          Level
-                        </label>
-                        <select 
-                          value={tempFilterLevel}
-                          onChange={(e) => setTempFilterLevel(e.target.value)}
-                          className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
-                        >
-                          <option value="">All Levels</option>
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                          <option value="4">4</option>
-                          <option value="5">5</option>
-                        </select>
-                      </div>
                       <div className="mb-4">
                         <label
                           htmlFor="position"
@@ -313,7 +290,7 @@ const ManageTeacher: React.FC = () => {
                           onClick={handleApplyFilters}
                           className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
                         >
-                          Apply
+                          Submit
                         </button>
                       </div>
                     </div>
@@ -328,7 +305,7 @@ const ManageTeacher: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-6 gap-4 gap-x-7 p-3 px-4 shadow-md rounded-b-lg bg-[#f5f5f5] dark:bg-[#3b3b3b]">
+            <div className="grid grid-cols-6 gap-4 gap-x-7 p-3 px-4 bg-[#f5f5f5] dark:bg-[#3b3b3b]">
               {currentApplicants.map((teacher: Teacher) => (
                 <div
                   key={teacher._id}
