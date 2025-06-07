@@ -45,20 +45,30 @@ const ManageTeacher: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  // Filter teachers based on criteria
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter teachers based on both search query and filters
   const filteredTeachers = teachers.filter((teacher) => {
-    const nameMatch = teacher.userName.toLowerCase().includes(filterName.toLowerCase());
-    const levelMatch = !filterLevel || teacher.level === filterLevel;
-    const courseMatch = !filterCourse || teacher.course.toLowerCase() === filterCourse.toLowerCase();
-    return nameMatch && levelMatch && courseMatch;
+    // Search query filtering
+    const searchLower = searchQuery.toLowerCase();
+    const nameMatch = teacher.userName?.toLowerCase().includes(searchLower) || false;
+    const levelMatch = teacher.level?.toLowerCase().includes(searchLower) || false;
+    const courseMatch = teacher.course?.toLowerCase().includes(searchLower) || false;
+    const searchMatch = nameMatch || levelMatch || courseMatch;
+
+    // Filter criteria
+    const filterNameMatch = teacher.userName.toLowerCase().includes(filterName.toLowerCase());
+    const filterLevelMatch = !filterLevel || teacher.level === filterLevel;
+    const filterCourseMatch = !filterCourse || teacher.course.toLowerCase() === filterCourse.toLowerCase();
+
+    // Combine both search and filter results
+    return searchMatch && filterNameMatch && filterLevelMatch && filterCourseMatch;
   });
 
   const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = filteredTeachers.slice(startIndex, endIndex);
-  const [searchQuery, setSearchQuery] = useState("");
-
 
   // Reset filters
   const handleResetFilters = () => {
@@ -213,8 +223,10 @@ const ManageTeacher: React.FC = () => {
                 <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search by keyword"
-                  className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                  placeholder="Search"
+                  className="bg-transparent outline-none text-[15px] w-52 py-3"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
 
@@ -300,7 +312,7 @@ const ManageTeacher: React.FC = () => {
 
               <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                 <span className="text-left -ml-60 ">
-                  Showing {currentApplicants.length} Of {teachers.length}
+                  Showing {currentApplicants.length} Of {filteredTeachers.length}
                 </span>
               </div>
             </div>
