@@ -266,9 +266,9 @@ const ManageTeacher: React.FC = () => {
                           className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                         >
                           <option value="">All Courses</option>
-                          <option value="Quran">Quran</option>
-                          <option value="Arabic">Arabic</option>
-                          <option value="Islamic">Islamic</option>
+                          <option value="Quran Teacher">Quran Teacher</option>
+                          <option value="Arabic Teacher">Arabic Teacher</option>
+                          <option value="Islamic Teacher">Islamic Teacher</option>
                         </select>
                       </div>
                       {/* Buttons */}

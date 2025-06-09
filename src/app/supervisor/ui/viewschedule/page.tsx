@@ -35,7 +35,11 @@ const ViewSchedule = () => {
     _id: string;
     classDay: string[];
     package: string;
-    course: course;
+    course: {
+      courseId: string;
+      courseName: string;
+    };
+    subject: string;
     preferedTeacher: string;
     totalHourse: number;
     startDate: string;
@@ -361,7 +365,7 @@ console.log("currentItems", currentItems);
       case "Re-scheduled":
         return "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white";
       case "Ongoing":
-        return "text-[#576CBC] bg-[#F3F6FF] dark:bg-[#2C3B6C] dark:text-[#576CBC]";
+        return "text-[#576CBC] bg-[#F3F6FF] dark:bg-[#2C3B6C] dark:text-[#576CBC] px-[22px]";
       case "Completed":
         return "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36]";
       case "Ready to Start":
@@ -398,7 +402,7 @@ console.log("currentItems", currentItems);
     <BaseLayout3>
       <SupervisorHeader currentSection="Scheduled Classes" />
       {/* Tabs */}
-      <div className="flex space-x-6 px-4 py-2 rounded-md">
+      <div className="flex space-x-6 px-4 py-1 mb-3 rounded-md">
         <button
           className={`relative text-[14px] transition font-medium ${
             activeTab === "scheduled"
@@ -428,7 +432,7 @@ console.log("currentItems", currentItems);
         </button>
       </div>
       <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
-        <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434] h-10">
+        <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
             <input
@@ -437,10 +441,8 @@ console.log("currentItems", currentItems);
               className="bg-transparent outline-none text-[15px] w-52 py-3 "
             />
           </div>
-
-          <div className="relative ">
             <div
-              className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+              className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
               onClick={() => setShowModal(true)}
             >
               {/* <BsFilterLeft /> */}
@@ -588,7 +590,6 @@ console.log("currentItems", currentItems);
                 </div>
               </div>
             )}
-          </div>
 
           <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
             <span className="text-left -ml-60 ">
@@ -596,11 +597,10 @@ console.log("currentItems", currentItems);
             </span>
           </div>
         </div>
-        <div className="bg-white rounded-lg   flex flex-col justify-between dark:bg-[#343434]">
-          <div className="overflow-x-auto">
-            <table className="table-auto  w-full border-separate border-spacing-y-3">
-              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0] border border-[#4C6993]">
-                <tr>
+            <table className="table-auto w-full"
+                    style={{ width: "100%", tableLayout: "fixed" }}>
+              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                <tr className="font-medium">
                   {[
                     "Name",
                     "Id",
@@ -612,7 +612,7 @@ console.log("currentItems", currentItems);
                   ].map((header) => (
                     <th
                       key={header}
-                      className="whitespace-nowrap text-left px-6 py-3 font-medium border  border-[#4C6993] "
+                      className="text-left px-6 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]"
                     >
                       {header}
                     </th>
@@ -636,11 +636,11 @@ console.log("currentItems", currentItems);
                       {item._id}
                     </td>
 
-                    <td className="px-6 py-3 text-left">Quran</td>
+                    <td className="px-8 py-3 text-left">{item.course?.courseName || 'N/A'}</td>
                     <td className="px-6 py-3 text-left">MasterClass</td>
-                    <td className="px-6 py-3 text-left">
+                    <td className="px-3 py-3 text-left">
                       {new Date(item.startDate).toDateString()} </td>
-                    <td className="px-6 py-3 text-left">
+                    <td className="px-3 py-3 text-left">
                       {(() => {
                         let content;
                         console.log(
@@ -718,16 +718,12 @@ console.log("currentItems", currentItems);
                 ))}
               </tbody>
             </table>
-          </div>
-
-          <div></div>
-        </div>
-        <Pagination
+      </div>
+      <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
         />
-      </div>
     </BaseLayout3>
   );
 };

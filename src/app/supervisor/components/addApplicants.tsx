@@ -239,8 +239,29 @@ export default function AddApplicants({ onClose }: Props) {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setAddApplicantForm({ ...addApplicantForm, resume: e.target.files[0] });
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      // Check file type
+      const allowedTypes = ['.pdf', '.doc', '.docx'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      
+      if (!allowedTypes.includes(fileExtension)) {
+        setFailedMessage("Please upload only PDF, DOC, or DOCX files");
+        setFailed(true);
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setFailedMessage("File size should be less than 5MB");
+        setFailed(true);
+        return;
+      }
+
+      setAddApplicantForm(prev => ({
+        ...prev,
+        resume: file
+      }));
     }
   };
   const handleSkillChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -491,12 +512,11 @@ export default function AddApplicants({ onClose }: Props) {
                   htmlFor="resumeUpload"
                   className="cursor-pointer mb-2 inline-flex items-center px-3 py-1.5 bg-[#576CBC] text-white text-xs rounded hover:bg-blue-700 transition "
                 >
-                  <Paperclip size={14} />
-                  {"  "}
+                  <Paperclip size={14} className="mr-1" />
                   Upload Resume
                 </label>
                 <span className="text-xs text-gray-500 dark:text-gray-300">
-                  {addApplicantForm.resume?.name ?? "No file chosen"}
+                  {addApplicantForm.resume ? addApplicantForm.resume.name : "No file chosen"}
                 </span>
                 <input
                   id="resumeUpload"

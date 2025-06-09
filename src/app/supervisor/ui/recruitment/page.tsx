@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Star,
   MoreVertical,
@@ -132,6 +132,150 @@ const SkillBadge: React.FC<SkillBadgeProps> = ({ name }) => (
   </span>
 );
 
+// Create a Map to store blob URLs
+const blobUrlCache = new Map<string, string>();
+
+// Function to store resume data in sessionStorage
+const storeResumeData = (applicantId: string, resumeData: any) => {
+  try {
+    sessionStorage.setItem(`resume_data_${applicantId}`, JSON.stringify(resumeData));
+  } catch (error) {
+    console.error('Error storing resume data:', error);
+  }
+};
+
+// Function to get resume data from sessionStorage
+const getStoredResumeData = (applicantId: string): any => {
+  try {
+    const data = sessionStorage.getItem(`resume_data_${applicantId}`);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    console.error('Error getting stored resume data:', error);
+    return null;
+  }
+};
+
+const createBlobUrlFromData = (resumeData: any, applicantId: string) => {
+  if (!resumeData?.data) return null;
+  
+  try {
+    const byteArray = new Uint8Array(resumeData.data);
+    const blob = new Blob([byteArray], { type: resumeData.type || 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
+    blobUrlCache.set(applicantId, blobUrl);
+    return blobUrl;
+  } catch (error) {
+    console.error('Error creating blob URL:', error);
+    return null;
+  }
+};
+
+// Cleanup function to revoke all blob URLs
+function cleanupBlobUrls(): void {
+  blobUrlCache.forEach((url) => {
+    try {
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error revoking blob URL:', error);
+    }
+  });
+  blobUrlCache.clear();
+}
+
+const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const createBlobUrl = (resumeData: any) => {
+    if (!resumeData) {
+      console.error('No resume data provided');
+      return null;
+    }
+
+    try {
+      // Convert base64 to binary
+      const binaryString = atob(resumeData);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error('Error creating blob URL:', error);
+      return null;
+    }
+  };
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const resumeData = applicant.uploadResume;
+      if (!resumeData) {
+        setError('Resume not available');
+        return;
+      }
+
+      // Create new blob URL on each click
+      const newBlobUrl = createBlobUrl(resumeData);
+      if (!newBlobUrl) {
+        setError('Failed to load resume');
+        return;
+      }
+
+      // Clean up old blob URL if it exists
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+
+      setBlobUrl(newBlobUrl);
+      
+      // Open in new tab
+      window.open(newBlobUrl, '_blank');
+    } catch (error) {
+      console.error('Error handling resume click:', error);
+      setError('Failed to open resume');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  }, [blobUrl]);
+
+  return (
+    <div className="flex flex-col">
+      <button
+        onClick={handleClick}
+        disabled={isLoading}
+        className="text-[#38619A] hover:underline flex items-center gap-1 disabled:opacity-50"
+      >
+        <ImAttachment className="w-4 h-4" />
+        {isLoading ? 'Loading...' : 'Resume'}
+      </button>
+      {error && (
+        <span className="text-red-500 text-xs mt-1">{error}</span>
+      )}
+    </div>
+  );
+};
+
+// Add cleanup on page unload
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', cleanupBlobUrls);
+}
+
 export default function ApplicantsPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
@@ -253,6 +397,7 @@ export default function ApplicantsPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        params:{params}
       })
       .then((response) => setApplicants(response.data.applicants))
       .catch((error) => console.error("Error fetching applicants:", error));
@@ -314,9 +459,9 @@ export default function ApplicantsPage() {
       console.log("dashobarcgc id" ,Id);
       if(!Id) return;
      const socket = getSocket(Id);
-     console.log("socket",socket);
       const handleList = (data: { event: string; data: Applicant }) => {
   console.log("📩 Received WebSocket Data:", data);
+
   if (data.event === "create") {
     console.log("➡️ Action: create", data.data._id);
     setApplicants(prev => [data.data, ...prev]);
@@ -333,9 +478,10 @@ export default function ApplicantsPage() {
     console.warn("⚠️ Unknown event type:", data.event);
   }
 };
+
        socket.on("recruitmentlist",handleList);
        return ()=>{
-       socket.off("recruitmentlist",handleList);
+       socket.on("recruitmentlist",handleList);
        };
     },[]);
 
@@ -492,8 +638,8 @@ export default function ApplicantsPage() {
           },
         }
       );
-      setSuccess(true);
-      setSuccessMessage(status);
+       setSuccess(true);
+       setSuccessMessage(status);
       console.log("✅ Update successful:", response.data);
       handleviewclose();
     } catch (error: any) {
@@ -509,22 +655,6 @@ export default function ApplicantsPage() {
     const fetchedCities = countriesCities.getCities(country);
     setCities(fetchedCities);
   }, [country]);
-
-  function createBlobUrlFromData(uploadResume: {
-    type: string;
-    data: number[];
-  }): string | undefined {
-    if (!uploadResume?.data?.length) return undefined;
-
-    try {
-      const byteArray = new Uint8Array(uploadResume.data);
-      const blob = new Blob([byteArray], { type: "application/pdf" });
-      return URL.createObjectURL(blob);
-    } catch (error) {
-      console.error("Failed to create Blob URL:", error);
-      return undefined;
-    }
-  }
 
   return (
     <BaseLayout3>
@@ -632,7 +762,7 @@ export default function ApplicantsPage() {
                             >
                               <option>Islamic Teacher</option>
                               <option>Quran Teacher</option>
-                              <option>Tajweed Teacher</option>
+                              <option>Arabic Teacher</option>
                             </select>
                           </div>
 
@@ -679,8 +809,7 @@ export default function ApplicantsPage() {
                     )}
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentApplicants.length} Of{" "}
-                        {filteredApplicants.length}
+                        Showing {currentApplicants.length} of {applicants.length}
                       </span>
                     </div>
                   </div>
@@ -760,25 +889,7 @@ export default function ApplicantsPage() {
                               {applicant.positionApplied}
                             </td>
                             <td className="px-3 py-2">
-                              {applicant.uploadResume?.data?.length ? (
-                                <a
-                                  href={
-                                    createBlobUrlFromData(
-                                      applicant.uploadResume
-                                    ) || undefined
-                                  }
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-[#38619A] hover:underline flex items-center gap-1"
-                                >
-                                  <ImAttachment className="w-4 h-4" />
-                                  Resume
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 italic">
-                                  No Resume
-                                </span>
-                              )}
+                              <ResumeLink applicant={applicant} />
                             </td>
 
                             <td className="px-3 py-2">
@@ -1265,41 +1376,41 @@ export default function ApplicantsPage() {
             <div className="w-full border-t p-3 flex justify-end gap-3 bg-white z-10 dark:bg-[#343434] dark:border-t-[#5F5959]">
               {mode === "edit" && (
                 <>
-                  <button
-                    onClick={() =>
-                      handlesendupdate(Applicantbyid?._id ?? "", "REJECTED")
-                    }
+              <button
+                onClick={() =>
+                  handlesendupdate(Applicantbyid?._id ?? "", "REJECTED")
+                }
                     className="px-4 py-2 text-[12px] text-[#D34645] bg-[#FDECEC] rounded-lg dark:bg-[#543838]"
-                  >
-                    Rejected
-                  </button>
-                  <button
-                    onClick={() =>
-                      handlesendupdate(Applicantbyid?._id ?? "", "WAITING")
-                    }
+              >
+                Rejected
+              </button>
+              <button
+                onClick={() =>
+                  handlesendupdate(Applicantbyid?._id ?? "", "WAITING")
+                }
                     className="px-4 py-2 text-[12px] text-[#F0AD4E] bg-[#FDF6EC] rounded-lg dark:bg-[#5A4D3B]"
-                  >
-                    Waiting
-                  </button>
-                  <button
-                    onClick={() =>
-                      handlesendupdate(Applicantbyid?._id ?? "", "SHORTLISTED")
-                    }
+              >
+                Waiting
+              </button>
+              <button
+                onClick={() =>
+                  handlesendupdate(Applicantbyid?._id ?? "", "SHORTLISTED")
+                }
                     className="px-4 py-2 text-[12px] text-[#377E36] bg-[#ECFDF3] rounded-lg dark:bg-[#377E3633]"
-                  >
-                    Shortlisted
-                  </button>
-                  <button
-                    onClick={() =>
+              >
+                Shortlisted
+              </button>
+              <button
+                onClick={() =>
                       handlesendupdate(
                         Applicantbyid?._id ?? "",
                         applicationStatus
                       )
-                    }
+                }
                     className="px-4 py-2 text-[12px] text-[#4E91F0] bg-[#ECF3FD] rounded-lg dark:bg-[#39475A]"
-                  >
-                    Send for Approval
-                  </button>
+              >
+                Send for Approval
+              </button>
                 </>
               )}
               {mode === "view" && (
@@ -1317,3 +1428,4 @@ export default function ApplicantsPage() {
     </BaseLayout3>
   );
 }
+
