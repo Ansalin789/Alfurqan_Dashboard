@@ -31,19 +31,25 @@ const GenderPieChart: React.FC = () => {
   useEffect(() => {
     const fetchGenderData = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorAuthToken")
+            : null;
 
         if (!token) {
           console.error("❌ SupervisorAuthToken not found");
           return;
         }
 
-        const response = await fetch("http://localhost:5001/teacherfemalemale", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          "https://api.blackstoneinfomaticstech.com/teacherfemalemale",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           console.error("Failed to fetch data:", response.statusText);
@@ -93,16 +99,20 @@ const GenderPieChart: React.FC = () => {
         <div className="flex gap-1">
           <div className="flex items-center gap-[3px]">
             <div className="w-[6px] h-[6px] bg-pink-400 rounded-sm"></div>
-            <span className="text-[9px] text-[#010E30] dark:text-white/70">Female</span>
+            <span className="text-[9px] text-[#010E30] dark:text-white/70">
+              Female
+            </span>
           </div>
           <div className="flex items-center gap-[3px]">
             <div className="w-[6px] h-[6px] bg-blue-400 rounded-sm"></div>
-            <span className="text-[9px] text-[#010E30] dark:text-white/70">Male</span>
+            <span className="text-[9px] text-[#010E30] dark:text-white/70">
+              Male
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-center items-center mt-1">
+      <div className="flex justify-center items-center mt-1 dark:text-[#242424]">
         <PieChart width={150} height={150}>
           <Pie
             data={genderData}
@@ -126,9 +136,9 @@ const GenderPieChart: React.FC = () => {
                   y={y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-[8px] font-medium fill-[#010E30] dark:fill-white"
+                  className="text-[12px] font-medium fill-[#010E30]"
                 >
-                  {`${data.totalCount}`}
+                  {`${data.totalCount}`}%
                 </text>
               );
             }}
@@ -137,13 +147,30 @@ const GenderPieChart: React.FC = () => {
               <Cell key={item.name} fill={item.color} />
             ))}
           </Pie>
-          <Tooltip />
+          <text
+            x="50%"
+            y="50%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="text-[14px] font-semibold fill-[#010E30] dark:fill-white dark:text-white/80"
+          >
+            100%
+          </text>
+          <Tooltip
+            wrapperStyle={{
+              fontSize: "10px",
+              padding: "4px 6px",
+            }}
+          />
         </PieChart>
       </div>
 
       <div className="grid grid-cols-3 gap-1 w-full mt-6">
         {genderData.map((item) => (
-          <div key={item.name} className="flex flex-col items-center text-center">
+          <div
+            key={item.name}
+            className="flex flex-col items-center text-center"
+          >
             <div className="flex items-center gap-[1px]">
               <div
                 className="w-[10px] h-[10px] rounded-[2px]"

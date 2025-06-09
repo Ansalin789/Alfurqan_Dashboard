@@ -29,7 +29,7 @@ const ApplicationChart = () => {
   const fetchData = async (fromDate: string, toDate: string) => {
     try {
       const res = await fetch(
-        `http://localhost:5001/aaplication?fromDate=${fromDate}&toDate=${toDate}`
+        `https://api.blackstoneinfomaticstech.com?fromDate=${fromDate}&toDate=${toDate}`
       );
       const data = await res.json();
       
