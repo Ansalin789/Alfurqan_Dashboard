@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { IoMdClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
-import { FaUserCircle } from "react-icons/fa";
+import { FaEye, FaUserCircle } from "react-icons/fa";
 import { CheckCircle, MoreVertical, Search, User, XCircle } from "lucide-react";
 import BaseLayout3 from "@/components/BaseLayout3";
 import axios from "axios";
@@ -32,6 +32,7 @@ interface Meeting {
   startTime: string;
   endTime: string;
   description: string;
+  meetingminutes: string;
   createdDate: string;
   createdBy: string;
   supervisor: {
@@ -44,6 +45,7 @@ interface Meeting {
     teacherId: string;
     teacherName: string;
     teacherEmail: string;
+    attendee?: string;
   }[];
 }
 
@@ -65,9 +67,13 @@ const ScheduledClasses = () => {
   const [completedData, setCompletedData] = useState<Meeting[]>([]);
   const [upcomingClasses, setUpcomingClasses] = useState<Meeting[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<string | null>(null);
-  const [selectedMeetingDetails, setSelectedMeetingDetails] =  useState<Meeting | null>(null);
-  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
+  const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<
+    string | null
+  >(null);
+  const [selectedMeetingDetails, setSelectedMeetingDetails] =
+    useState<Meeting | null>(null);
+  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] =
+    useState(false);
   const [rescheduleDate, setRescheduleDate] = useState(""); // in 'YYYY-MM-DD' format
   const [rescheduleTime, setRescheduleTime] = useState(""); // in 'HH:mm' 24h format
   const [searchText, setSearchText] = useState("");
@@ -105,10 +111,11 @@ const ScheduledClasses = () => {
   console.log(isDatePickerOpens);
 
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
+
   useEffect(() => {
     const token =
       typeof window !== "undefined"
-        ? localStorage.getItem("AdminAuthToken")
+        ? localStorage.getItem("SupervisorAuthToken")
         : null;
 
     if (!token) {
@@ -240,13 +247,8 @@ const ScheduledClasses = () => {
   const [teachersByMeetingId, setTeachersByMeetingId] =
     useState<TeachersByMeetingId>({});
 
-  useEffect(() => {
-    console.log(selectedTeachers);
-    console.log(teachers);
-  }, [teachers]);
-
-  const dataToShow = activeTab === "upcoming" ? (upcomingClasses || []) : (completedData || []);
-
+  const dataToShow =
+    activeTab === "upcoming" ? upcomingClasses || [] : completedData || [];
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -257,7 +259,6 @@ const ScheduledClasses = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = currentItems.slice(startIndex, endIndex);
-
 
   const handleRescheduleSubmit = async () => {
     if (
@@ -365,48 +366,46 @@ const ScheduledClasses = () => {
     return now >= start && now <= end;
   };
 
-const handleFilter = async () => {
-  setShowModal(false);
+  const handleFilter = async () => {
+    setShowModal(false);
 
-  const token = localStorage.getItem("SupervisorAuthToken");
+    const token = localStorage.getItem("SupervisorAuthToken");
 
-  const params: any = {};
-  if (fromDate) params["dateRange.from"] = fromDate;
-  if (toDate) params["dateRange.to"] = toDate;
-  if (timing) params["startTime"] = timing;
-  if (status) params["meetingStatus"] = status;
+    const params: any = {};
+    if (fromDate) params["dateRange.from"] = fromDate;
+    if (toDate) params["dateRange.to"] = toDate;
+    if (timing) params["startTime"] = timing;
+    if (status) params["meetingStatus"] = status;
 
-  console.log("📤 Sending filter params:", params);
+    console.log("📤 Sending filter params:", params);
 
-  try {
-    const response = await axios.get(
-      "http://localhost:5001/allMeetings", // Use your backend URL here
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        params,
-      }
-    );
+    try {
+      const response = await axios.get(
+        "http://api.blackstoneinfomaticstech.com/allMeetings", // Use your backend URL here
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          params,
+        }
+      );
 
-    console.log("✅ Response:", response.data);
+      console.log("✅ Response:", response.data);
 
-    // You can split meetings into upcoming/completed based on your logic
-  const meetings: Meeting[] = response.data.meetings || [];
+      // You can split meetings into upcoming/completed based on your logic
+      const meetings: Meeting[] = response.data.meetings || [];
 
-setUpcomingClasses(meetings.filter((m: Meeting) => m.meetingStatus !== "Completed"));
-setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"));
-
-  } catch (error) {
-    console.error("❌ Error fetching filtered meetings:", error);
-  }
-};
-
-
-
-
-
+      setUpcomingClasses(
+        meetings.filter((m: Meeting) => m.meetingStatus !== "Completed")
+      );
+      setCompletedData(
+        meetings.filter((m: Meeting) => m.meetingStatus === "Completed")
+      );
+    } catch (error) {
+      console.error("❌ Error fetching filtered meetings:", error);
+    }
+  };
 
   return (
     <BaseLayout3>
@@ -459,7 +458,7 @@ setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"
                         type="text"
                         placeholder="Search by keyword"
                         className="bg-transparent outline-none text-[15px] w-52 py-3 "
-                       value={searchText}
+                        value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
                       />
                     </div>
@@ -627,50 +626,55 @@ setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"
                             })()}
                           </td>
 
-                          <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal">
-                            <div className="relative">
-                              <button
-                                onClick={() => {
-                                  if (item.meetingStatus === "Scheduled") {
-                                    setIsDetailsModalOpen(true);
-                                    setSelectedItemId((prev) =>
-                                      prev === item._id ? null : item._id
-                                    );
-                                  } else if (
-                                    item.meetingStatus === "Completed"
-                                  ) {
-                                    handleViewDetails(item._id); // ← your function to open details view
-                                  }
-                                }}
-                                className="p-2 rounded-md"
-                              >
-                                <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
-                              </button>
 
-                              {item.meetingStatus === "Scheduled" &&
-                                isDetailsModalOpen &&
-                                selectedItemId === item._id && (
-                                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
-                                    <button
-                                      onClick={() => {
-                                        setIsRescheduleModalOpen(true);
-                                        setSelectedItemId(item._id);
-                                        setIsDetailsModalOpen(false); // Close dropdown after clicking
-                                      }}
-                                      className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
-                                    >
-                                      Request Reschedule
-                                    </button>
-                                    <button
-                                      onClick={() => setSelectedItemId(null)}
-                                      className="block w-full px-4 py-2 text-left text-[12px] text-red-600 hover:bg-gray-50"
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                )}
-                            </div>
-                          </td>
+
+<td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal">
+  <div className="relative">
+    <button
+      onClick={() => {
+        if (item.meetingStatus === "Scheduled") {
+          setIsDetailsModalOpen(true);
+          setSelectedItemId((prev) =>
+            prev === item._id ? null : item._id
+          );
+        } else if (item.meetingStatus === "Completed") {
+          handleViewDetails(item._id); // ← your function to open details view
+        }
+      }}
+      className="p-2 rounded-md"
+    >
+      {item.meetingStatus === "Scheduled" ? (
+        <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
+      ) : (
+        <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
+      )}
+    </button>
+
+    {item.meetingStatus === "Scheduled" &&
+      isDetailsModalOpen &&
+      selectedItemId === item._id && (
+        <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
+          <button
+            onClick={() => {
+              setIsRescheduleModalOpen(true);
+              setSelectedItemId(item._id);
+              setIsDetailsModalOpen(false); // Close dropdown after clicking
+            }}
+            className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+          >
+            Request Reschedule
+          </button>
+          <button
+            onClick={() => setSelectedItemId(null)}
+            className="block w-full px-4 py-2 text-left text-[12px] text-red-600 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+  </div>
+</td>
+
                         </tr>
                       ))}
                     </tbody>
@@ -723,19 +727,19 @@ setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"
 
             {/* Position Applied */}
             <div className="mb-4">
-                    {/* Timing */}
-                <label
-                  htmlFor="timimg"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Timing
-                </label>
-                <input
-                 value={timing}
-                 onChange={(e) => setTiming(e.target.value)}
-                  type="time"
-                  className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+              {/* Timing */}
+              <label
+                htmlFor="timimg"
+                className="block text-sm text-gray-700 mb-1 dark:text-white"
+              >
+                Timing
+              </label>
+              <input
+                value={timing}
+                onChange={(e) => setTiming(e.target.value)}
+                type="time"
+                className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
 
             {/* Status */}
@@ -746,17 +750,16 @@ setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"
               >
                 Status
               </label>
-             <select
-  value={status}
-  onChange={(e) => setStatus(e.target.value)}
-  className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
->
-  <option value="">Select status</option>
-  <option value="Scheduled">Scheduled</option>
-  <option value="Rescheduled">Rescheduled</option>
-  <option value="Completed">Completed</option>
-</select>
-
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+              >
+                <option value="">Select status</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Rescheduled">Rescheduled</option>
+                <option value="Completed">Completed</option>
+              </select>
             </div>
 
             {/* Buttons */}
@@ -767,8 +770,10 @@ setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"
               >
                 Cancel
               </button>
-              <button className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
-               onClick={handleFilter}>
+              <button
+                className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                onClick={handleFilter}
+              >
                 Submit
               </button>
             </div>
@@ -787,6 +792,13 @@ setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"
 
           {/* Modal */}
           <div className="relative z-50 bg-white rounded-lg p-6 w-[720px] max-h-[90vh] overflow-y-auto shadow-xl dark:bg-[#252525]">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsMeetingDetailsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-500  text-lg font-bold"
+            >
+              <IoMdClose />
+            </button>
             <h2 className="text-md font-semibold text-[#0D0E25] mb-6 dark:text-[#fff]">
               Meeting Details
             </h2>
@@ -811,16 +823,6 @@ setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"
                   value={selectedMeetingDetails.meetingName}
                   disabled
                   className="w-full px-3 py-2 text-[12px] border  border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                />
-              </div>
-              <div>
-                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
-                  Course
-                </label>
-                <input
-                  value="-"
-                  disabled
-                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 />
               </div>
               <div>
@@ -870,8 +872,15 @@ setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"
                     <span className="text-[#4F46E5]">
                       {teacher.teacherName}
                     </span>
-                    {/* Placeholder logic for attendance, since it's not in interface */}
-                    <span className="text-green-600 text-lg">✔</span>
+                    <span
+                      className={`text-lg ${
+                        teacher.attendee === "present"
+                          ? "text-green-600"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {teacher.attendee === "present" ? "✔" : "✘"}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -881,26 +890,10 @@ setCompletedData(meetings.filter((m: Meeting) => m.meetingStatus === "Completed"
                 Meeting Description
               </label>
               <textarea
-                value={selectedMeetingDetails.description ?? ""}
+                value={selectedMeetingDetails.meetingminutes}
                 disabled
                 className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
               />
-            </div>
-
-            {/* Footer Buttons */}
-            <div className="flex justify-end gap-3 border-t pt-4 dark:border-[#5C5C5C]  ">
-              <button
-                onClick={() => setIsMeetingDetailsModalOpen(false)}
-                className="px-6 py-2 rounded-md border border-[#576CBC] font-semibold text-[#576CBC] transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setIsMeetingDetailsModalOpen(false)}
-                className="px-6 py-2 rounded-md bg-[#576CBC] text-white font-semibold  transition"
-              >
-                Submit
-              </button>
             </div>
           </div>
         </div>

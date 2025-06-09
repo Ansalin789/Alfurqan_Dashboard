@@ -24,10 +24,12 @@ interface Supervisor {
   supervisorRole: string;
 }
 
+
 interface Teacher {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
+  attendee: string;
   _id: string;
 }
 
@@ -36,16 +38,17 @@ interface Meeting {
   meetingName: string;
   meetingId: string;
   supervisor: Supervisor;
-  selectedDate: string; // ISO date string
-  startTime: string; // e.g. "13:30"
-  endTime: string; // e.g. "18:30"
+  selectedDate: string;
+  startTime: string;
+  endTime: string;
   teacher: Teacher[];
   description: string;
   meetingStatus: string;
+  meetingMinutes: string;
   status: string;
-  createdDate: string; // ISO date string
+  createdDate: string;
   createdBy: string;
-  updatedDate: string; // ISO date string
+  updatedDate: string;
   __v: number;
 }
 
@@ -58,7 +61,9 @@ export default function Page() {
   const seacrh = useSearchParams();
   const meetingId = seacrh.get("id");
   const [meetingUpdate, setMeetingUpdate] = useState(false);
-  const [MeetingMinutes, setMeetingMinutes] = useState(false);
+  const [meeting, setMeeting] = useState<Meeting | null>(null);
+const [meetingMinutes, setMeetingMinutes] = useState<string>("");
+const [token, setToken] = useState<string>("");
 
   useEffect(() => {
     const fetchClassData = async () => {
@@ -114,6 +119,60 @@ export default function Page() {
   useEffect(() => {
     attendanceRef.current = attendance;
   }, [attendance]);
+
+  // Function to handle API update
+const handleMeetingMinutesUpdate = async () => {
+   console.log("📌 Submit clicked");
+  
+
+  const payload = {
+  meetingminutes: meetingMinutes,
+
+  teacher: classData?.teacher.map((teacher) => {
+    const matchingAttendance = attendance.find(
+      (a) => a.studentId === teacher.teacherId
+    );
+
+    return {
+      teacherId: teacher.teacherId,
+      teacherName: teacher.teacherName,
+      teacherEmail: teacher.teacherEmail,
+      attendee: matchingAttendance
+        ? matchingAttendance.joined
+          ? "present"
+          : "absent"
+        : "absent", 
+      _id: teacher._id,
+    };
+  }),
+};
+
+
+  try {
+    const response = await fetch(`http://localhost:5001/meetingminutes/${meetingId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    console.log("pay",payload);
+
+    if (!response.ok) {
+      throw new Error("Failed to update meeting minutes");
+    }
+
+    const result = await response.json();
+    console.log("✅ Meeting Minutes Updated:", result);
+
+    setMeetingUpdate(false); // close modal
+  } catch (error) {
+    console.error("❌ Error updating meeting minutes:", error);
+  }
+};
+
+
 
   return (
     <BaseLayout3>
@@ -331,76 +390,77 @@ export default function Page() {
       </div>
 
       {/* Meeting minutes popup  */}
-     {meetingUpdate && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl p-6 w-full max-w-3xl shadow-lg space-y-5">
-      {/* Header */}
-      <h2 className="text-lg font-semibold text-gray-800">
-        Update Meeting Minutes
-      </h2>
+      {meetingUpdate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-3xl shadow-lg space-y-5">
+            {/* Header */}
+            <h2 className="text-lg font-semibold text-gray-800">
+              Update Meeting Minutes
+            </h2>
 
-      {/* Content */}
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Attendees List */}
-        <div className="md:w-1/2 border border-gray-200 rounded-lg p-4 h-72 overflow-y-auto">
-          <h3 className="text-base font-medium text-gray-700 mb-2">
-            Attendees:
-          </h3>
-          <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
-            {attendance.map((a) => (
-              <li key={a.studentId}>
-                <span className="font-medium">{a.name}</span> –{" "}
-                {a.joined ? (
-                  a.leaveTime ? (
-                    <span className="text-gray-600">🚪 Left at {a.leaveTime}</span>
-                  ) : (
-                    <span className="text-green-600">✅ Joined at {a.joinTime}</span>
-                  )
-                ) : (
-                  <span className="text-red-500 font-semibold text-sm">❌ Not Joined</span>
-                )}
-              </li>
-            ))}
-          </ul>
+            {/* Content */}
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Attendees List */}
+              <div className="md:w-1/2 border border-gray-200 rounded-lg p-4 h-72 overflow-y-auto">
+                <h3 className="text-base font-medium text-gray-700 mb-2">
+                  Attendees:
+                </h3>
+                <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
+                  {attendance.map((a) => (
+                    <li key={a.studentId}>
+                      <span className="font-medium">{a.name}</span> –{" "}
+                      {a.joined ? (
+                        a.leaveTime ? (
+                          <span className="text-gray-600">
+                            🚪 Left at {a.leaveTime}
+                          </span>
+                        ) : (
+                          <span className="text-green-600">
+                            ✅ Joined at {a.joinTime}
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-red-500 font-semibold text-sm">
+                          ❌ Not Joined
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Meeting Minutes Textarea */}
+              <div className="md:w-1/2 border border-gray-200 rounded-lg p-4 h-72 flex flex-col">
+                <label className="text-base font-medium text-gray-700 mb-2">
+                  Meeting Minutes
+                </label>
+                <textarea
+                  value={meetingMinutes}
+                  onChange={(e) => setMeetingMinutes(e.target.value)}
+                  className="flex-grow rounded p-2 text-sm resize-none focus:outline-none "
+                  placeholder="Enter your notes here..."
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setMeetingUpdate(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMeetingMinutesUpdate}
+                className="px-4 py-2 bg-[#576CBC] text-white rounded hover:bg-[#43569e] text-sm font-medium"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
         </div>
-
-        {/* Meeting Minutes Textarea */}
-        <div className="md:w-1/2 border border-gray-200 rounded-lg p-4 h-72 flex flex-col">
-          <label className="text-base font-medium text-gray-700 mb-2">
-            Meeting Minutes
-          </label>
-          <textarea
-            // value={meetingMinutes}
-            // onChange={(e) => setMeetingMinutes(e.target.value)}
-            className="flex-grow rounded p-2 text-sm resize-none focus:outline-none "
-            placeholder="Enter your notes here..."
-          />
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-3 pt-2">
-        <button
-          onClick={() => setMeetingUpdate(false)}
-          className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() => {
-            console.log("Attendance:", attendance);
-            // Add logic to submit meetingMinutes here
-            setMeetingUpdate(false);
-          }}
-          className="px-4 py-2 bg-[#576CBC] text-white rounded hover:bg-[#43569e] text-sm font-medium"
-        >
-          Submit
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+      )}
     </BaseLayout3>
   );
 }
