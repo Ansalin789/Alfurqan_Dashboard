@@ -1029,7 +1029,7 @@ export default function ApplicantsPage() {
               {/* Left: Profile Info */}
               <div className="flex items-center gap-4">
                 <img
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  src="/assets/images/proff.jpg"
                   alt="Profile"
                   className="w-[60px] h-[60px] rounded-full object-cover"
                 />
@@ -1121,17 +1121,17 @@ export default function ApplicantsPage() {
                   {Applicantbyid &&
                     Applicantbyid.professionalExperience &&
                     Applicantbyid.professionalExperience.length > 0 && (
-                      <div className="h-[300px] overflow-y-auto border rounded-2xl p-4 text-sm text-gray-800 shadow-sm">
-                        <h3 className="text-[12px] font-semibold text-[#010E30] mb-3">
+                      <div className="h-[300px] overflow-y-auto border dark:border-[#5e5959] rounded-2xl p-4 text-sm text-gray-800 shadow-sm">
+                        <h3 className="text-[12px] font-semibold text-[#010E30] dark:text-white mb-3">
                           Professional Experience
                         </h3>
                         {Applicantbyid.professionalExperience.map(
                           (exp, idx) => (
                             <div key={idx} className="mb-4">
-                              <h4 className="text-[12px] text-[#010E30] font-semibold">
+                              <h4 className="text-[12px] text-[#010E30] dark:text-white font-semibold">
                                 {exp.jobRole}
                               </h4>
-                              <div className="flex justify-between text-[10px] text-[#8A8383] mt-1">
+                              <div className="flex justify-between text-[10px] text-[#8f8f8f] mt-1">
                                 <div className="flex items-center gap-1">
                                   <Calendar className="w-4 h-4" />
                                   <span>
@@ -1145,7 +1145,7 @@ export default function ApplicantsPage() {
                                 <span>{exp.jobLocation}</span>
                               </div>
                               {exp.jobDescription && (
-                                <p className="mt-2 text-[11px] text-[#4B5563]">
+                                <p className="mt-2 text-[11px] text-[#4B5563] dark:text-[#dbdbdb]">
                                   {exp.jobDescription}
                                 </p>
                               )}
@@ -1346,14 +1346,19 @@ export default function ApplicantsPage() {
                 <h3 className="font-medium text-[#010E30] text-[12px] border-b dark:border-b-[#5F5959] pb-1 mb-3 dark:text-[#fff]">
                   Documents
                 </h3>
-                <a
-                  href={resumeImages ?? ""}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[#5183CA] hover:underline text-[13px]"
-                >
-                  <ImAttachment /> Resume
-                </a>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (resumeImages) {
+                        window.open(resumeImages, '_blank');
+                      }
+                    }}
+                    className="text-[#38619A] hover:underline text-[12px] flex items-center gap-1"
+                  >
+                    <ImAttachment className="w-4 h-4" />
+                    View Resume
+                  </button>
+                </div>
               </div>
             </div>
 
