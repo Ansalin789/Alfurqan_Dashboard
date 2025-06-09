@@ -51,6 +51,10 @@ interface DashboardCounts {
   totalApplication: number;
   shortlisted: number;
   rejected: number;
+  waiting: number;
+  shortlistedPercentage: number;
+  rejectedPercentage: number;
+  waitingPercentage: number;
 }
 interface Meeting {
   _id: string;
@@ -134,9 +138,13 @@ export default function Dashboard() {
     endDate: moment().endOf("week").toDate(), // End of the current week (Saturday)
   });
   const [dashboardCounts, setDashboardCounts] = useState<DashboardCounts>({
-    totalApplication: 0,
+    totalApplication: 2,
     shortlisted: 0,
     rejected: 0,
+    waiting: 1,
+    shortlistedPercentage: 0,
+    rejectedPercentage: 0,
+    waitingPercentage: 50
   });
   const [filteredPositions, setFilteredPositions] = useState<
     { name: string; color: string; count: number }[]
@@ -486,8 +494,14 @@ export default function Dashboard() {
   const totalApplications = dashboardCounts.totalApplication || 0;
   const totalShortlisted = dashboardCounts.shortlisted || 0;
   const totalRejected = dashboardCounts.rejected || 0;
+  const totalWaiting = dashboardCounts.waiting || 0;
 
-  const total = totalApplications + totalShortlisted + totalRejected + 100; // Adjusted to account for total applications, shortlisted, and rejected
+  // Use the percentages directly from dashboardCounts
+  const shortlistedPercentage = dashboardCounts.shortlistedPercentage;
+  const rejectedPercentage = dashboardCounts.rejectedPercentage;
+  const waitingPercentage = dashboardCounts.waitingPercentage;
+
+  const total = totalApplications + totalShortlisted + totalRejected + totalWaiting;
 
   const percentageApplications = (totalApplications / total) * 100;
   const percentageShortlisted = (totalShortlisted / total) * 100;
@@ -545,18 +559,30 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                 value: dashboardCounts.totalApplication,
                 ringColor: "#7DB5CB",
                 bgColor: "#CDD5E2",
+                percentage: 100,
+                pieData: [{ value: 100 }]
               },
               {
                 title: "Shortlisted Candidates",
                 value: dashboardCounts.shortlisted,
                 ringColor: "#9AD7D6",
                 bgColor: "#CDD5E2",
+                percentage: dashboardCounts.shortlistedPercentage.toFixed(0),
+                pieData: [
+                  { value: dashboardCounts.shortlistedPercentage },
+                  { value: 100 - dashboardCounts.shortlistedPercentage }
+                ]
               },
               {
                 title: "Rejected Candidates",
                 value: dashboardCounts.rejected,
                 ringColor: "#8B93D2",
                 bgColor: "#CDD5E2",
+                percentage: dashboardCounts.rejectedPercentage.toFixed(0),
+                pieData: [
+                  { value: dashboardCounts.rejectedPercentage },
+                  { value: 100 - dashboardCounts.rejectedPercentage }
+                ]
               },
             ].map((item, idx) => {
               const bgClass =
@@ -597,7 +623,7 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                           <Cell fill={item.bgColor} />
                         </Pie>
                         <Pie
-                          data={[{ value: 76 }, { value: 24 }]}
+                          data={item.pieData}
                           dataKey="value"
                           innerRadius={28}
                           outerRadius={42}
@@ -612,7 +638,7 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                         </Pie>
                       </PieChart>
                       <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#333] dark:text-white mb-4">
-                        {percentageValue}%
+                        {item.percentage}%
                       </div>
                     </div>
                   </div>
