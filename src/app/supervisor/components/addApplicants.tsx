@@ -159,7 +159,9 @@ export default function AddApplicants({ onClose }: Props) {
     formData.append("positionApplied", addApplicantForm.position);
     formData.append("gender", addApplicantForm.gender);
     formData.append("skills", addApplicantForm.skillList.join(","));
-    formData.append("currency", "$"); // Changed
+    formData.append("currency", "$");
+    formData.append("duration", "0");
+    formData.append("meetingminutes", "");
     formData.append("professionalExperience", JSON.stringify(experiences));
     formData.append("expectedSalary", addApplicantForm.expectedSalary); // Changed
     formData.append("preferedWorkingHours", addApplicantForm.workingHours); // Changed

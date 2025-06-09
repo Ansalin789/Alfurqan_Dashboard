@@ -6,7 +6,6 @@ import axios from "axios";
 import BaseLayout3 from "@/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
 import { useSearchParams } from "next/navigation";
-import { duration } from "moment";
 interface Attendance {
   id: string | null;
   studentId: string;
@@ -55,6 +54,7 @@ interface Meeting {
 
 export default function Page() {
   const [startTime, setStartTime] = useState<string | null>(null);
+  const [endTime,setEndTime] =useState<string | null>(null);
   const [classData, setClassData] = useState<Meeting | null>(null);
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
@@ -77,7 +77,7 @@ export default function Page() {
         }
 
         const response = await axios.get<Meeting>(
-          `https://api.blackstoneinfomaticstech.com/allMeetings/${meetingId}`,
+          `http://localhost:5001/allMeetings/${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -122,25 +122,32 @@ export default function Page() {
   // Function to handle API update
   const handleMeetingMinutesUpdate = async () => {
     console.log("📌 Submit clicked");
+let duration = "";
+if (startTime && endTime) {
+  duration = calculateDuration(startTime, endTime);
+} else {
+  console.warn("Missing start or end time for duration calculation");
+}
+
 
     const payload = {
       meetingminutes: meetingMinutes,
-      duration:"0",
-
+      duration:duration,
+      meetingStatus:"Completed",
       teacher: classData?.teacher.map((teacher) => {
         const matchingAttendance = attendance.find(
           (a) => a.studentId === teacher.teacherId
         );
+        let attendee = "absent";
+if (matchingAttendance) {
+  attendee = matchingAttendance.joined ? "present" : "absent";
+}
 
         return {
           teacherId: teacher.teacherId,
           teacherName: teacher.teacherName,
           teacherEmail: teacher.teacherEmail,
-          attendee: matchingAttendance
-            ? matchingAttendance.joined
-              ? "present"
-              : "absent"
-            : "absent",
+          attendee: attendee,
           _id: teacher._id,
         };
       }),
@@ -181,6 +188,23 @@ export default function Page() {
       console.error("❌ Error updating meeting minutes:", error);
     }
   };
+  const calculateDuration = (startTime: string, endTime: string): string => {
+  const today = new Date().toDateString(); // use today's date to construct full datetime
+
+  const start = new Date(`${today} ${startTime}`);
+  const end = new Date(`${today} ${endTime}`);
+
+  const diffMs = end.getTime() - start.getTime(); // difference in milliseconds
+
+  if (diffMs < 0) return "Invalid";
+
+  const diffMins = Math.floor(diffMs / 60000); // convert to minutes
+  const hours = Math.floor(diffMins / 60);
+  const minutes = diffMins % 60;
+
+  return `${hours}h ${minutes}m`;
+};
+
 
   return (
     <BaseLayout3>
@@ -287,7 +311,6 @@ export default function Page() {
                           endCallTime?: string;
                         };
 
-                        const participantList: ParticipantLog[] = [];
 
                         // ✅ Handle Participant Joined
                         externalApi.addListener(
@@ -363,7 +386,7 @@ export default function Page() {
                         );
 
                         // 🎥 Host/teacher Joined Call
-                        externalApi.addEventListener(
+                        externalApi.addListener(
                           "videoConferenceJoined",
                           () => {
                             const startCallTime = new Date().toLocaleTimeString(
@@ -380,7 +403,17 @@ export default function Page() {
                           }
                         );
                         externalApi.addListener("videoConferenceLeft", () => {
+                          const startCallTime = new Date().toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              }
+                            );
+                            setEndTime(startCallTime);
                           setMeetingUpdate(true);
+                          
                         });
                       }}
                       getIFrameRef={(iframeRef) => {
@@ -413,33 +446,37 @@ export default function Page() {
                 <h3 className="text-base font-medium text-gray-700 mb-2">
                   Attendees:
                 </h3>
-                <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
-                  {attendance.map((a) => (
-                    <li key={a.studentId}>
-                      <span className="font-medium">{a.name}</span> –{" "}
-                      {a.joined ? (
-                        a.leaveTime ? (
-                          <span className="text-gray-600">
-                            🚪 Left at {a.leaveTime}
-                          </span>
-                        ) : (
-                          <span className="text-green-600">
-                            ✅ Joined at {a.joinTime}
-                          </span>
-                        )
-                      ) : (
-                        <span className="text-red-500 font-semibold text-sm">
-                          ❌ Not Joined
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+               <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
+  {attendance.map((a) => {
+    let status: JSX.Element;
+
+    if (a.joined) {
+      if (a.leaveTime) {
+        status = <span className="text-gray-600">🚪 Left at {a.leaveTime}</span>;
+      } else {
+        status = <span className="text-green-600">✅ Joined at {a.joinTime}</span>;
+      }
+    } else {
+      status = (
+        <span className="text-red-500 font-semibold text-sm">
+          ❌ Not Joined
+        </span>
+      );
+    }
+
+    return (
+      <li key={a.studentId}>
+        <span className="font-medium">{a.name}</span> – {status}
+      </li>
+    );
+  })}
+</ul>
+
               </div>
 
               {/* Meeting Minutes Textarea */}
               <div className="md:w-1/2 border border-gray-200 rounded-lg p-4 h-72 flex flex-col">
-                <label className="text-base font-medium text-gray-700 mb-2">
+                <label htmlFor="htmldaad" className="text-base font-medium text-gray-700 mb-2">
                   Meeting Minutes
                 </label>
                 <textarea

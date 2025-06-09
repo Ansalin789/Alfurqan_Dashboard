@@ -16,6 +16,7 @@ import { MdTune } from "react-icons/md";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
 import { setTime } from "react-datepicker/dist/date_utils";
+import { getSocket } from "@/app/utils/socket";
 interface ApiResponse {
   candidateFirstName: string;
   candidateLastName: string;
@@ -31,6 +32,7 @@ interface Meeting {
   selectedDate: string;
   startTime: string;
   endTime: string;
+  duration:string;
   description: string;
   meetingminutes: string;
   createdDate: string;
@@ -150,6 +152,18 @@ const ScheduledClasses = () => {
       })
       .catch((error) => console.error("Error fetching teachers:", error));
   }, []);
+  useEffect(()=>{
+    const id = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalID") : null;
+    const socket= getSocket(id ?? '');
+    const handleList = (data : {data : Meeting})=>{
+        console.log("📩 Received WebSocket Data:", data);
+       setUpcomingClasses(pre => [...pre, data.data]);
+    };
+    socket.on('addmeeting',handleList);
+return ()=>{
+   socket.off('addmeeting',handleList);
+}
+  },[]);
 
   useEffect(() => {
     const fetchMeetings = async () => {
@@ -677,7 +691,7 @@ const ScheduledClasses = () => {
       }}
       className="p-2 rounded-md"
     >
-      {item.meetingStatus === "Scheduled" ? (
+      {item.meetingStatus === "Scheduled" || item.meetingStatus === "Rescheduled" ? (
         <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
       ) : (
         <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
@@ -819,10 +833,10 @@ const ScheduledClasses = () => {
       {isMeetingDetailsModalOpen && selectedMeetingDetails && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           {/* Backdrop */}
-          <div
+          <button
             className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setIsMeetingDetailsModalOpen(false)}
-          />
+            onClick={() => setIsMeetingDetailsModalOpen(false)}>
+          </button>
 
           {/* Modal */}
           <div className="relative z-50 bg-white rounded-lg p-6 w-[720px] max-h-[90vh] overflow-y-auto shadow-xl dark:bg-[#252525]">
@@ -874,7 +888,7 @@ const ScheduledClasses = () => {
                   Duration
                 </label>
                 <input
-                  value={"60 Minutes"} // You can compute actual difference if needed
+                  value={selectedMeetingDetails.duration} // You can compute actual difference if needed
                   disabled
                   className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 />

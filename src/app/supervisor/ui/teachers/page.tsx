@@ -149,7 +149,7 @@ const ManageTeacher: React.FC = () => {
           return;
         }
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/applicants`,
+          `http://localhost:5001/applicants`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -165,6 +165,7 @@ const ManageTeacher: React.FC = () => {
   const approvedApplicants = data.applicants.filter(
     (applicant : ICandidateApplication) => applicant.applicationStatus === "APPROVED"
   );
+  console.log(approvedApplicants);
   setTeachers(approvedApplicants);
 } else {
   console.error("Unexpected API response structure:", data);
@@ -299,7 +300,7 @@ const ManageTeacher: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-6 gap-4 gap-x-7 p-3 px-4 bg-[#f5f5f5] dark:bg-[#3b3b3b]">
-              {currentApplicants.map((teacher: ICandidateApplication) => (
+              {teachers.map((teacher: ICandidateApplication) => (
                 <div
                   key={teacher._id}
                   className="bg-white dark:bg-[#343434] h-[260px] shadow-md rounded-lg p-4"
