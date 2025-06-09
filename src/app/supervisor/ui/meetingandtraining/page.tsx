@@ -247,8 +247,42 @@ const ScheduledClasses = () => {
   const [teachersByMeetingId, setTeachersByMeetingId] =
     useState<TeachersByMeetingId>({});
 
-  const dataToShow =
-    activeTab === "upcoming" ? upcomingClasses || [] : completedData || [];
+  const filterMeetingsBySearch = (meetings: Meeting[]) => {
+    if (!searchText.trim()) return meetings;
+
+    const searchLower = searchText.toLowerCase();
+    return meetings.filter((meeting) => {
+      // Search in meeting name
+      const nameMatch = meeting.meetingName.toLowerCase().includes(searchLower);
+      
+      // Search in attendees (teacher names)
+      const attendeeMatch = meeting.teacher.some(teacher => 
+        teacher.teacherName.toLowerCase().includes(searchLower)
+      );
+      
+      // Search in date
+      const dateMatch = new Date(meeting.selectedDate)
+        .toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        })
+        .toLowerCase()
+        .includes(searchLower);
+      
+      // Search in timing
+      const timingMatch = meeting.startTime.toLowerCase().includes(searchLower);
+      
+      // Search in status
+      const statusMatch = meeting.meetingStatus.toLowerCase().includes(searchLower);
+
+      return nameMatch || attendeeMatch || dateMatch || timingMatch || statusMatch;
+    });
+  };
+
+  const dataToShow = filterMeetingsBySearch(
+    activeTab === "upcoming" ? upcomingClasses || [] : completedData || []
+  );
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -381,7 +415,7 @@ const ScheduledClasses = () => {
 
     try {
       const response = await axios.get(
-        "http://api.blackstoneinfomaticstech.com/allMeetings", // Use your backend URL here
+        "https://api.blackstoneinfomaticstech.com/allMeetings", // Use your backend URL here
         {
           headers: {
             Authorization: `Bearer ${token}`,
