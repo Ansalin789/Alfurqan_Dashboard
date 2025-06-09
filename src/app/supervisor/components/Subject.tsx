@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
@@ -25,44 +26,19 @@ interface PieChartData {
 const COLORS = ["#AFC0FF", "#9FD0FF", "#B9DDFF"]; // Customize as needed
 
 const GenderPieChart: React.FC = () => {
-  const [genderData, setGenderData] = useState<PieChartData[]>([
-    {
-      name: "Quran",
-      male: 1,
-      female: 1,
-      totalCount: 0,
-      value: 100,
-      color: COLORS[0]
-    },
-    {
-      name: "Arabic",
-      male: 1,
-      female: 1,
-      totalCount: 0,
-      value: 100,
-      color: COLORS[1]
-    },
-    {
-      name: "Islamic",
-      male: 2,
-      female: 0,
-      totalCount: 0,
-      value: 100,
-      color: COLORS[2]
-    }
-  ]);
+  const [genderData, setGenderData] = useState<PieChartData[]>([]);
 
   useEffect(() => {
     const fetchGenderData = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6IkFydGhpIiwic3ViIjoiNjdhNDY3YmNjMzQ2YWFhZWE0MDJmNzYwIiwiaWF0IjoxNzQ5MzgzOTAyLCJleHAiOjE3NDk0NzAzMDJ9.JpHYF3A4Y9PVDj29JkZUzauAc9ly8iQfOojvrFoMbKk") : null;
-        
+        const token = typeof window !== "undefined" ? localStorage.getItem("SupervisorAuthToken") : null;
+
         if (!token) {
           console.error("❌ SupervisorAuthToken not found");
           return;
         }
 
-        const response = await fetch("http://localhost:5001/teacherfemalemale/teacherfemalemale", {
+        const response = await fetch("http://localhost:5001/teacherfemalemale", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -75,7 +51,7 @@ const GenderPieChart: React.FC = () => {
         }
 
         const data: ApiResponse = await response.json();
-        console.log("Raw API Response:", data); // Debug log
+        console.log("Fetched API Response:", data);
 
         if (!data.genderBreakdownBySubject) {
           console.error("Invalid data structure:", data);
@@ -85,35 +61,23 @@ const GenderPieChart: React.FC = () => {
         const transformed: PieChartData[] = data.genderBreakdownBySubject.map(
           (item: GenderDataItem, index: number) => {
             const total = item.male + item.female;
-            // Calculate percentages based on the actual numbers
             const malePercent = total > 0 ? (item.male / total) * 100 : 0;
             const femalePercent = total > 0 ? (item.female / total) * 100 : 0;
-            const totalPercent = 100; // Each segment should total 100%
-            
-            console.log(`Processing ${item.subject}:`, {
-              male: item.male,
-              female: item.female,
-              malePercent,
-              femalePercent,
-              totalPercent,
-              total
-            });
 
             return {
-              name: item.subject.replace(" Teacher", ""),
+              name: item.subject.replace(" Teacher", ""), // Ex: Quran Teacher => Quran
               male: malePercent,
               female: femalePercent,
               totalCount: total,
-              value: totalPercent,
+              value: total, // Pie size will depend on total count of that subject
               color: COLORS[index % COLORS.length],
             };
           }
         );
 
-        console.log("Final transformed data:", transformed);
         setGenderData(transformed);
       } catch (error) {
-        console.error("Failed to fetch data:", error);
+        console.error("Error fetching gender data:", error);
       }
     };
 
@@ -122,7 +86,6 @@ const GenderPieChart: React.FC = () => {
 
   return (
     <div className="bg-[#FFFFFF] dark:bg-[#343434] rounded-xl shadow-lg p-4 h-[270px]">
-      {/* Header */}
       <div className="w-full flex justify-between items-center">
         <h3 className="text-[#010E30] text-[13px] font-semibold dark:text-[#ffff]">
           Subject
@@ -130,20 +93,15 @@ const GenderPieChart: React.FC = () => {
         <div className="flex gap-1">
           <div className="flex items-center gap-[3px]">
             <div className="w-[6px] h-[6px] bg-pink-400 rounded-sm"></div>
-            <span className="text-[9px] text-[#010E30] dark:text-white/70">
-              Female
-            </span>
+            <span className="text-[9px] text-[#010E30] dark:text-white/70">Female</span>
           </div>
           <div className="flex items-center gap-[3px]">
             <div className="w-[6px] h-[6px] bg-blue-400 rounded-sm"></div>
-            <span className="text-[9px] text-[#010E30] dark:text-white/70">
-              Male
-            </span>
+            <span className="text-[9px] text-[#010E30] dark:text-white/70">Male</span>
           </div>
         </div>
       </div>
 
-      {/* Pie Chart */}
       <div className="flex justify-center items-center mt-1">
         <PieChart width={150} height={150}>
           <Pie
@@ -156,51 +114,36 @@ const GenderPieChart: React.FC = () => {
             labelLine={false}
             stroke="none"
             label={({ cx, cy, midAngle, innerRadius, outerRadius, index }) => {
-                const RADIAN = Math.PI / 180;
-                const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                const y = cy + radius * Math.sin(-midAngle * RADIAN);
-              
-                const data = genderData[index];
-                const totalPercentage = Math.round(data.male + data.female); // should be 100%
-              
-                return (
-                  <text
-                    x={x}
-                    y={y}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    className="text-[8px] font-medium fill-[#010E30] dark:fill-white"
-                  >
-                    {`${totalPercentage}%`}
-                  </text>
-                );
-              }}
-              
+              const RADIAN = Math.PI / 180;
+              const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+              const x = cx + radius * Math.cos(-midAngle * RADIAN);
+              const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+              const data = genderData[index];
+              return (
+                <text
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="text-[8px] font-medium fill-[#010E30] dark:fill-white"
+                >
+                  {`${data.totalCount}`}
+                </text>
+              );
+            }}
           >
-            {genderData.map((item: PieChartData) => (
+            {genderData.map((item) => (
               <Cell key={item.name} fill={item.color} />
             ))}
           </Pie>
-          <text
-            x="50%"
-            y="50%"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="text-[10px] font-medium fill-[#010E30] dark:fill-white"
-          >
-            {`\n${Math.round(genderData.reduce((sum, item) => sum + (item.male + item.female), 0) / genderData.length)}%`}
-          </text>
+          <Tooltip />
         </PieChart>
       </div>
 
-      {/* Bottom Legend */}
       <div className="grid grid-cols-3 gap-1 w-full mt-6">
-        {genderData.map((item: PieChartData) => (
-          <div
-            key={item.name}
-            className="flex flex-col items-center text-center"
-          >
+        {genderData.map((item) => (
+          <div key={item.name} className="flex flex-col items-center text-center">
             <div className="flex items-center gap-[1px]">
               <div
                 className="w-[10px] h-[10px] rounded-[2px]"
