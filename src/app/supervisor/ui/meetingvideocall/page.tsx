@@ -54,7 +54,7 @@ interface Meeting {
 
 export default function Page() {
   const [startTime, setStartTime] = useState<string | null>(null);
-  const [endTime,setEndTime] =useState<string | null>(null);
+  const [endTime, setEndTime] = useState<string | null>(null);
   const [classData, setClassData] = useState<Meeting | null>(null);
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
@@ -122,26 +122,25 @@ export default function Page() {
   // Function to handle API update
   const handleMeetingMinutesUpdate = async () => {
     console.log("📌 Submit clicked");
-let duration = "";
-if (startTime && endTime) {
-  duration = calculateDuration(startTime, endTime);
-} else {
-  console.warn("Missing start or end time for duration calculation");
-}
-
+    let duration = "";
+    if (startTime && endTime) {
+      duration = calculateDuration(startTime, endTime);
+    } else {
+      console.warn("Missing start or end time for duration calculation");
+    }
 
     const payload = {
       meetingminutes: meetingMinutes,
-      duration:duration,
-      meetingStatus:"Completed",
+      duration: duration,
+      meetingStatus: "Completed",
       teacher: classData?.teacher.map((teacher) => {
         const matchingAttendance = attendance.find(
           (a) => a.studentId === teacher.teacherId
         );
         let attendee = "absent";
-if (matchingAttendance) {
-  attendee = matchingAttendance.joined ? "present" : "absent";
-}
+        if (matchingAttendance) {
+          attendee = matchingAttendance.joined ? "present" : "absent";
+        }
 
         return {
           teacherId: teacher.teacherId,
@@ -153,16 +152,16 @@ if (matchingAttendance) {
       }),
     };
 
-       try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
-            : null;
-        if (!token) {
-          console.error("❌ TeacherAuthToken not found");
-          return;
-        }
-        
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
+      if (!token) {
+        console.error("❌ TeacherAuthToken not found");
+        return;
+      }
+
       const response = await fetch(
         `http://localhost:5001/meetingminutes/${meetingId}`,
         {
@@ -189,22 +188,21 @@ if (matchingAttendance) {
     }
   };
   const calculateDuration = (startTime: string, endTime: string): string => {
-  const today = new Date().toDateString(); // use today's date to construct full datetime
+    const today = new Date().toDateString(); // use today's date to construct full datetime
 
-  const start = new Date(`${today} ${startTime}`);
-  const end = new Date(`${today} ${endTime}`);
+    const start = new Date(`${today} ${startTime}`);
+    const end = new Date(`${today} ${endTime}`);
 
-  const diffMs = end.getTime() - start.getTime(); // difference in milliseconds
+    const diffMs = end.getTime() - start.getTime(); // difference in milliseconds
 
-  if (diffMs < 0) return "Invalid";
+    if (diffMs < 0) return "Invalid";
 
-  const diffMins = Math.floor(diffMs / 60000); // convert to minutes
-  const hours = Math.floor(diffMins / 60);
-  const minutes = diffMins % 60;
+    const diffMins = Math.floor(diffMs / 60000); // convert to minutes
+    const hours = Math.floor(diffMins / 60);
+    const minutes = diffMins % 60;
 
-  return `${hours}h ${minutes}m`;
-};
-
+    return `${hours}h ${minutes}m`;
+  };
 
   return (
     <BaseLayout3>
@@ -243,13 +241,13 @@ if (matchingAttendance) {
                     <div className="ml-auto w-64">
                       <label
                         htmlFor="attendance-select"
-                        className="block text-sm font-semibold mb-1 dark:text-white"
+                        className="block text-sm font-semibold mb-1 dark:text-white "
                       >
                         Attendance
                       </label>
                       <select
                         id="attendance-select"
-                        className="w-full border border-gray-300 p-2 rounded focus:outline-none text-[10px] "
+                        className="w-full border p-2 rounded focus:outline-none text-[10px] dark:bg-[#252525] "
                       >
                         {attendance.map((s) => {
                           let statusLabel = "❌ Not Joined";
@@ -310,7 +308,6 @@ if (matchingAttendance) {
                           startCallTime: string;
                           endCallTime?: string;
                         };
-
 
                         // ✅ Handle Participant Joined
                         externalApi.addListener(
@@ -386,34 +383,30 @@ if (matchingAttendance) {
                         );
 
                         // 🎥 Host/teacher Joined Call
-                        externalApi.addListener(
-                          "videoConferenceJoined",
-                          () => {
-                            const startCallTime = new Date().toLocaleTimeString(
-                              [],
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              }
-                            );
+                        externalApi.addListener("videoConferenceJoined", () => {
+                          const startCallTime = new Date().toLocaleTimeString(
+                            [],
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            }
+                          );
 
-                            console.log("Call started at", startCallTime);
-                            setStartTime(startCallTime);
-                          }
-                        );
+                          console.log("Call started at", startCallTime);
+                          setStartTime(startCallTime);
+                        });
                         externalApi.addListener("videoConferenceLeft", () => {
                           const startCallTime = new Date().toLocaleTimeString(
-                              [],
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              }
-                            );
-                            setEndTime(startCallTime);
+                            [],
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            }
+                          );
+                          setEndTime(startCallTime);
                           setMeetingUpdate(true);
-                          
                         });
                       }}
                       getIFrameRef={(iframeRef) => {
@@ -432,57 +425,67 @@ if (matchingAttendance) {
 
       {/* Meeting minutes popup  */}
       {meetingUpdate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-3xl shadow-lg space-y-5">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ">
+          <div className="bg-white rounded-xl p-6 w-full max-w-3xl shadow-lg space-y-5 dark:bg-[#252525]">
             {/* Header */}
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-[#fff]">
               Update Meeting Minutes
             </h2>
 
             {/* Content */}
             <div className="flex flex-col md:flex-row gap-6">
               {/* Attendees List */}
-              <div className="md:w-1/2 border border-gray-200 rounded-lg p-4 h-72 overflow-y-auto">
-                <h3 className="text-base font-medium text-gray-700 mb-2">
+              <div className="md:w-1/2 border border-[#343434] rounded-lg p-4 h-72 overflow-y-auto">
+                <h3 className="text-base font-medium text-gray-700 mb-2 dark:text-[#fff]">
                   Attendees:
                 </h3>
-               <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
-  {attendance.map((a) => {
-    let status: JSX.Element;
+                <ul className="list-disc list-inside text-sm text-gray-800 space-y-1 dark:text-[#fff]">
+                  {attendance.map((a) => {
+                    let status: JSX.Element;
 
-    if (a.joined) {
-      if (a.leaveTime) {
-        status = <span className="text-gray-600">🚪 Left at {a.leaveTime}</span>;
-      } else {
-        status = <span className="text-green-600">✅ Joined at {a.joinTime}</span>;
-      }
-    } else {
-      status = (
-        <span className="text-red-500 font-semibold text-sm">
-          ❌ Not Joined
-        </span>
-      );
-    }
+                    if (a.joined) {
+                      if (a.leaveTime) {
+                        status = (
+                          <span className="text-gray-600">
+                            🚪 Left at {a.leaveTime}
+                          </span>
+                        );
+                      } else {
+                        status = (
+                          <span className="text-green-600">
+                            ✅ Joined at {a.joinTime}
+                          </span>
+                        );
+                      }
+                    } else {
+                      status = (
+                        <span className="text-red-500 font-semibold text-sm">
+                          ❌ Not Joined
+                        </span>
+                      );
+                    }
 
-    return (
-      <li key={a.studentId}>
-        <span className="font-medium">{a.name}</span> – {status}
-      </li>
-    );
-  })}
-</ul>
-
+                    return (
+                      <li key={a.studentId}>
+                        <span className="font-medium">{a.name}</span> – {status}
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
 
               {/* Meeting Minutes Textarea */}
-              <div className="md:w-1/2 border border-gray-200 rounded-lg p-4 h-72 flex flex-col">
-                <label htmlFor="htmldaad" className="text-base font-medium text-gray-700 mb-2">
+              <div className="md:w-1/2 border border-[#343434] rounded-lg p-4 h-72 flex flex-col">
+                <label
+                  htmlFor="htmldaad"
+                  className="text-base font-medium text-gray-700 mb-2 dark:text-[#fff]"
+                >
                   Meeting Minutes
                 </label>
                 <textarea
                   value={meetingMinutes}
                   onChange={(e) => setMeetingMinutes(e.target.value)}
-                  className="flex-grow rounded p-2 text-sm resize-none focus:outline-none "
+                  className="flex-grow rounded p-2 text-sm resize-none focus:outline-none dark:bg-[#252525] "
                   placeholder="Enter your notes here..."
                 />
               </div>

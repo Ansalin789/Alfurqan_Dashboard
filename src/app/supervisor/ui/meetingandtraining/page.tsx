@@ -583,14 +583,14 @@ return ()=>{
                                     onClick={() =>
                                       toggleTeacherDropdown(item._id)
                                     }
-                                    className="flex items-center gap-2 font-medium hover:text-[#274872]"
+                                    className="flex items-center gap-2 font-medium hover:text-[#5c5c5c] dark:hover:text-[#5c5c5c]"
                                   >
                                     <AiOutlineMenuUnfold />
                                     View List
                                   </button>
 
                                   {openTeacherDropdownId === item._id && (
-                                    <div className="absolute z-10 mt-2 w-48 bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 rounded shadow-lg p-2">
+                                    <div className="absolute z-10 mt-2 w-48 bg-white  rounded shadow-lg p-2 dark:bg-[#343434]">
                                       {item.teacher.map((t, idx) => (
                                         <div
                                           key={idx}
