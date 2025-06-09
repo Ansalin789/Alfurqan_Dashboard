@@ -121,6 +121,7 @@ export default function Dashboard() {
 
   const ringThickness = 6; // thickness of each ring
   const ringGap = 4; // gap between rings
+  const [applicantsWithUrls, setApplicantsWithUrls] = useState([]);
   const [mounted, setMounted] = useState(false);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
@@ -228,6 +229,10 @@ export default function Dashboard() {
     Promise.all([fetchApplicants, fetchDashboardCounts])
       .then(([applicantsResponse, dashboardResponse]) => {
         const applicants = applicantsResponse.data.applicants;
+        console.log("📦 Applicants from API:", applicants);
+        applicants.forEach((app: { uploadResume: any }, idx: any) =>
+          console.log(`🔍 Applicant[${idx}] Resume:`, app.uploadResume)
+        );
 
         // ✅ Filter and count applicants by position
         const positionCounts = applicants.reduce(
@@ -402,7 +407,6 @@ export default function Dashboard() {
         console.error("❌ SupervisorAuthToken not found");
         return;
       }
-
       const response = await axios.get(
         "https://api.blackstoneinfomaticstech.com/applicants",
         {
@@ -493,21 +497,39 @@ export default function Dashboard() {
   const remainingShortlisted = 100 - percentageShortlisted;
   const remainingRejected = 100 - percentageRejected;
   console.log(remainingApplications);
-  function createBlobUrlFromData(uploadResume: {
-    type: string;
-    data: number[];
-  }): string | undefined {
-    if (!uploadResume?.data?.length) return undefined;
 
-    try {
-      const byteArray = new Uint8Array(uploadResume.data);
-      const blob = new Blob([byteArray], { type: "application/pdf" });
-      return URL.createObjectURL(blob);
-    } catch (error) {
-      console.error("Failed to create Blob URL:", error);
-      return undefined;
-    }
+function base64ToBlob(base64: string, contentType = 'application/pdf'): Blob {
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
   }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: contentType });
+}
+
+function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[] }): string | undefined {
+  if (!uploadResume) return undefined;
+
+  if (typeof uploadResume === 'string') {
+    // Assume base64 string, strip possible data URI prefix
+    const base64Data = uploadResume.includes('base64,')
+      ? uploadResume.split('base64,')[1]
+      : uploadResume;
+    const blob = base64ToBlob(base64Data);
+    return URL.createObjectURL(blob);
+  } else if (uploadResume.data && uploadResume.type) {
+    // Object with type and data array
+    const byteArray = new Uint8Array(uploadResume.data);
+    const blob = new Blob([byteArray], { type: uploadResume.type });
+    return URL.createObjectURL(blob);
+  }
+
+  return undefined;
+}
+
+
+
   return (
     <BaseLayout3>
       <SupervisorHeader currentSection="Dashboard" />
@@ -522,7 +544,6 @@ export default function Dashboard() {
                 value: dashboardCounts.totalApplication,
                 ringColor: "#7DB5CB",
                 bgColor: "#CDD5E2",
-                
               },
               {
                 title: "Shortlisted Candidates",
@@ -616,10 +637,10 @@ export default function Dashboard() {
             {/* Table wrapper: horizontal scroll */}
             <div className="overflow-x-auto scrollbar-none h-full">
               {/* Vertical scroll with fixed height */}
-              <div className="overflow-y-auto h-[460px] rounded-xl scrollbar-none">
+              <div className="overflow-y-auto h-[440px] rounded-xl scrollbar-none">
                 <table className="min-w-full text-xs border-collapse table-fixed px-4">
                   {/* Table Head sticky */}
-                  <thead className="sticky top-0 px-2 z-10 text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d]">
+                  <thead className=" text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d]">
                     <tr>
                       {[
                         "Name",
@@ -634,7 +655,7 @@ export default function Dashboard() {
                       ].map((col) => (
                         <th
                           key={col}
-                          className="py-4 px-2 font-semibold text-left border border-[#4C6993] dark:border-[#6087C0]"
+                          className="py-4 px-2 font-semibold text-left border border-[#466993] dark:border-[#466993]"
                         >
                           {col}
                         </th>
@@ -644,63 +665,66 @@ export default function Dashboard() {
 
                   {/* Table Body */}
                   <tbody>
-                    {applicants.map((applicant, index: number) => (
-                      <tr
-                        key={applicant._id}
-                        className={`text-[10px] px-2 py-4 border-none outline-none ${
-                          index % 2 === 0
-                            ? "bg-[#fff] dark:bg-[#2c2c2c]"
-                            : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
-                      >
-                        <td className="py-4 px-2 text-left">
-                          {applicant.candidateFirstName}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.candidatePhoneNumber}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.candidateCountry}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.positionApplied}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.gender}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {formatDate(applicant.applicationDate)}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.preferedWorkingHours}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.uploadResume?.data?.length ? (
-                            <a
-                              href={
-                                createBlobUrlFromData(applicant.uploadResume) ||
-                                undefined
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#38619A] hover:underline flex items-center gap-1"
-                            >
-                              <ImAttachment className="w-3 h-3" />
-                              Resume
-                            </a>
-                          ) : (
-                            <span className="text-gray-400 italic">
-                              No Resume
+                    {applicants.map((applicant, index) => {
+                       console.log("Applicant uploadResume:", applicant.uploadResume);
+  const resumeUrl = getResumeBlobUrl(applicant.uploadResume);
+  console.log("Resume URL:", resumeUrl);
+
+                      return (
+                        <tr
+                          key={applicant._id}
+                          className={`text-[10px] px-2 py-4 border-none outline-none ${
+                            index % 2 === 0
+                              ? "bg-[#fff] dark:bg-[#2c2c2c]"
+                              : "bg-[#F8F8F8] dark:bg-[#303030]"
+                          }`}
+                        >
+                          <td className="py-4 px-2 text-left">
+                            {applicant.candidateFirstName}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {applicant.candidatePhoneNumber}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {applicant.candidateCountry}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {applicant.positionApplied}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {applicant.gender}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {formatDate(applicant.applicationDate)}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {applicant.preferedWorkingHours}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {resumeUrl ? (
+                              <a
+                                href={resumeUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#38619A] hover:underline flex items-center gap-1"
+                              >
+                                <ImAttachment className="w-3 h-3" />
+                                Resume
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 italic">
+                                No Resume
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            <span className="text-gray-800 rounded-full dark:text-[#fff]">
+                              {applicant.applicationStatus}
                             </span>
-                          )}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          <span className="text-gray-800 rounded-full dark:text-[#fff]">
-                            {applicant.applicationStatus}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
