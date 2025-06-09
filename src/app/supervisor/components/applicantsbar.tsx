@@ -28,23 +28,46 @@ const ApplicationChart = () => {
 
   const fetchData = async (fromDate: string, toDate: string) => {
     try {
+     const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+        return;
+      }
+
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com?fromDate=${fromDate}&toDate=${toDate}`
+        `https://api.blackstoneinfomaticstech.com/application?fromDate=${fromDate}&toDate=${toDate}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
-      
+      console.log(data)
       // Get last 7 days of data
       const last7Days = data.slice(-7);
       
       // Transform to expected format
       const transformed = last7Days.map((item: any) => ({
         date: format(new Date(item.date), "dd MMM"),
-        applied: item.totalApplied,
-        shortlisted: item.shortlisted,
+        applied: item.totalApplied || 0,
+        shortlisted: item.shortlisted || 0,
       }));
       setApplicationData(transformed);
     } catch (error) {
-      console.error("Failed to fetch application data", error);
+      console.error("Failed to fetch application data:", error);
+      // Set empty data on error
+      setApplicationData([]);
     }
   };
 
