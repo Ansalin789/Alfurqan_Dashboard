@@ -271,6 +271,36 @@ if (typeof window !== "undefined") {
   window.addEventListener("beforeunload", cleanupBlobUrls);
 }
 
+function base64ToBlob(base64: string, contentType = 'application/pdf'): Blob {
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: contentType });
+}
+
+function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[] }): string | undefined {
+  if (!uploadResume) return undefined;
+
+  if (typeof uploadResume === 'string') {
+    // Assume base64 string, strip possible data URI prefix
+    const base64Data = uploadResume.includes('base64,')
+      ? uploadResume.split('base64,')[1]
+      : uploadResume;
+    const blob = base64ToBlob(base64Data);
+    return URL.createObjectURL(blob);
+  } else if (uploadResume.data && uploadResume.type) {
+    // Object with type and data array
+    const byteArray = new Uint8Array(uploadResume.data);
+    const blob = new Blob([byteArray], { type: uploadResume.type });
+    return URL.createObjectURL(blob);
+  }
+
+  return undefined;
+}
+
 export default function ApplicantsPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
@@ -569,23 +599,13 @@ export default function ApplicantsPage() {
         const skillsFromApi = response.data.skills || "";
         const skillsArray = extractSkills(skillsFromApi);
         setParsedSkills(skillsArray);
-        if (response.data.uploadResume) {
-          const base64String = response.data.uploadResume;
 
-          // Check if base64String is an object
-          if (typeof base64String === "string") {
-            // If it's a string, construct the PDF URL
-            const pdfUrl = `data:application/pdf;base64,${base64String}`;
-            setResumeImages(pdfUrl);
-          } else if (base64String?.data) {
-            // If base64String is an object, access its 'data' property
-            const pdfUrl = `data:application/pdf;base64,${base64String.data}`;
-            setResumeImages(pdfUrl);
-          } else {
-            console.error("Base64 string is empty or invalid.");
-          }
-        } else {
-          console.error("uploadResume is not available.");
+        // Handle resume using getResumeBlobUrl
+        if (response.data.uploadResume) {
+          console.log("Applicant uploadResume:", response.data.uploadResume);
+          const resumeUrl = getResumeBlobUrl(response.data.uploadResume);
+          console.log("Resume URL:", resumeUrl);
+          setResumeImages(resumeUrl || null);
         }
       } catch (error) {
         console.error("Error fetching applicant data:", error);
@@ -1347,17 +1367,17 @@ export default function ApplicantsPage() {
                   Documents
                 </h3>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      if (resumeImages) {
+                  {resumeImages && (
+                    <button
+                      onClick={() => {
                         window.open(resumeImages, '_blank');
-                      }
-                    }}
-                    className="text-[#38619A] hover:underline text-[12px] flex items-center gap-1"
-                  >
-                    <ImAttachment className="w-4 h-4" />
-                    View Resume
-                  </button>
+                      }}
+                      className="text-[#38619A] hover:underline text-[12px] flex items-center gap-1"
+                    >
+                      <ImAttachment className="w-3 h-3" />
+                      View Resume
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
