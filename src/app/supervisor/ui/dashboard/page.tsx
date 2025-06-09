@@ -144,7 +144,7 @@ export default function Dashboard() {
     waiting: 1,
     shortlistedPercentage: 0,
     rejectedPercentage: 0,
-    waitingPercentage: 50
+    waitingPercentage: 50,
   });
   const [filteredPositions, setFilteredPositions] = useState<
     { name: string; color: string; count: number }[]
@@ -207,9 +207,9 @@ export default function Dashboard() {
     }
     const fetchData = async () => {
       const applicants = await fetchApplicantsData(token ?? " ");
-      // console.log("Fetched Applicants:", applicants); 
+      // console.log("Fetched Applicants:", applicants);
       const filteredData = processApplicants(applicants);
-      // console.log("Filtered Pie Data:", filteredData); 
+      // console.log("Filtered Pie Data:", filteredData);
       setPieData(filteredData);
     };
 
@@ -501,7 +501,8 @@ export default function Dashboard() {
   const rejectedPercentage = dashboardCounts.rejectedPercentage;
   const waitingPercentage = dashboardCounts.waitingPercentage;
 
-  const total = totalApplications + totalShortlisted + totalRejected + totalWaiting;
+  const total =
+    totalApplications + totalShortlisted + totalRejected + totalWaiting;
 
   const percentageApplications = (totalApplications / total) * 100;
   const percentageShortlisted = (totalShortlisted / total) * 100;
@@ -513,37 +514,37 @@ export default function Dashboard() {
   const remainingRejected = 100 - percentageRejected;
   console.log(remainingApplications);
 
-function base64ToBlob(base64: string, contentType = 'application/pdf'): Blob {
-  const byteCharacters = atob(base64);
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  return new Blob([byteArray], { type: contentType });
-}
-
-function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[] }): string | undefined {
-  if (!uploadResume) return undefined;
-
-  if (typeof uploadResume === 'string') {
-    // Assume base64 string, strip possible data URI prefix
-    const base64Data = uploadResume.includes('base64,')
-      ? uploadResume.split('base64,')[1]
-      : uploadResume;
-    const blob = base64ToBlob(base64Data);
-    return URL.createObjectURL(blob);
-  } else if (uploadResume.data && uploadResume.type) {
-    // Object with type and data array
-    const byteArray = new Uint8Array(uploadResume.data);
-    const blob = new Blob([byteArray], { type: uploadResume.type });
-    return URL.createObjectURL(blob);
+  function base64ToBlob(base64: string, contentType = "application/pdf"): Blob {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: contentType });
   }
 
-  return undefined;
-}
+  function getResumeBlobUrl(
+    uploadResume?: string | { type: string; data: number[] }
+  ): string | undefined {
+    if (!uploadResume) return undefined;
 
+    if (typeof uploadResume === "string") {
+      // Assume base64 string, strip possible data URI prefix
+      const base64Data = uploadResume.includes("base64,")
+        ? uploadResume.split("base64,")[1]
+        : uploadResume;
+      const blob = base64ToBlob(base64Data);
+      return URL.createObjectURL(blob);
+    } else if (uploadResume.data && uploadResume.type) {
+      // Object with type and data array
+      const byteArray = new Uint8Array(uploadResume.data);
+      const blob = new Blob([byteArray], { type: uploadResume.type });
+      return URL.createObjectURL(blob);
+    }
 
+    return undefined;
+  }
 
   return (
     <BaseLayout3>
@@ -560,7 +561,7 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                 ringColor: "#7DB5CB",
                 bgColor: "#CDD5E2",
                 percentage: 100,
-                pieData: [{ value: 100 }]
+                pieData: [{ value: 100 }],
               },
               {
                 title: "Shortlisted Candidates",
@@ -570,8 +571,8 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                 percentage: dashboardCounts.shortlistedPercentage.toFixed(0),
                 pieData: [
                   { value: dashboardCounts.shortlistedPercentage },
-                  { value: 100 - dashboardCounts.shortlistedPercentage }
-                ]
+                  { value: 100 - dashboardCounts.shortlistedPercentage },
+                ],
               },
               {
                 title: "Rejected Candidates",
@@ -581,8 +582,8 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                 percentage: dashboardCounts.rejectedPercentage.toFixed(0),
                 pieData: [
                   { value: dashboardCounts.rejectedPercentage },
-                  { value: 100 - dashboardCounts.rejectedPercentage }
-                ]
+                  { value: 100 - dashboardCounts.rejectedPercentage },
+                ],
               },
             ].map((item, idx) => {
               const bgClass =
@@ -693,7 +694,9 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                   {/* Table Body */}
                   <tbody>
                     {applicants.map((applicant, index) => {
-  const resumeUrl = getResumeBlobUrl(applicant.uploadResume);
+                      const resumeUrl = getResumeBlobUrl(
+                        applicant.uploadResume
+                      );
 
                       return (
                         <tr
@@ -776,9 +779,9 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
               Teachers
             </h3>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-3">
               {/* Circular Chart */}
-              <div className="relative w-[90px] h-[90px] flex items-center justify-center mb-5 ml-7">
+              <div className="relative w-[120px] h-[120px] flex items-center justify-center mb-5 -ml-0">
                 <PieChart width={120} height={120}>
                   <Pie
                     data={[{ value: 100 }]}
@@ -817,19 +820,19 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                   ))}
                 </PieChart>
 
-                {/* Centered Total Teachers Count */}
-                <div className="absolute flex flex-col items-center justify-between">
-                  <span className="mt-3 ml-2 text-[26px] font-bold text-[#010E30] dark:text-[#fff]">
+                {/* Center Total Teachers Text */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                  <span className="text-[16px] font-bold text-[#010E30] dark:text-[#fff]">
                     {totals}
                   </span>
-                  <p className="ml-8 text-[9px] text-[#010E30] dark:text-[#fff]">
+                  <p className="text-[8px] text-[#010E30] dark:text-[#fff] text-center">
                     Number of Teachers
                   </p>
                 </div>
               </div>
 
               {/* Teacher Stats */}
-              <div className="space-y-3 mr-1 ">
+              <div className="space-y-3 mr-1">
                 {filteredPositions.map((item) => (
                   <div
                     key={item.name}
@@ -840,7 +843,7 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                         className="w-3 h-3 rounded-sm"
                         style={{ backgroundColor: item.color }}
                       ></div>
-                      <span className="text-[11px] text-[#010E30CC] font-semibold dark:text-[#fff] ">
+                      <span className="text-[11px] text-[#010E30CC] font-semibold dark:text-[#fff]">
                         {item.name}
                       </span>
                     </div>
@@ -852,6 +855,7 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
               </div>
             </div>
           </div>
+
           {/* Schedule */}
           <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[332px]">
             {/* Header */}
