@@ -6,6 +6,7 @@ import axios from "axios";
 import BaseLayout3 from "@/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
 import { useSearchParams } from "next/navigation";
+import { duration } from "moment";
 interface Attendance {
   id: string | null;
   studentId: string;
@@ -23,7 +24,6 @@ interface Supervisor {
   supervisorEmail: string;
   supervisorRole: string;
 }
-
 
 interface Teacher {
   teacherId: string;
@@ -43,6 +43,7 @@ interface Meeting {
   endTime: string;
   teacher: Teacher[];
   description: string;
+  duration: string;
   meetingStatus: string;
   meetingMinutes: string;
   status: string;
@@ -61,9 +62,7 @@ export default function Page() {
   const seacrh = useSearchParams();
   const meetingId = seacrh.get("id");
   const [meetingUpdate, setMeetingUpdate] = useState(false);
-  const [meeting, setMeeting] = useState<Meeting | null>(null);
-const [meetingMinutes, setMeetingMinutes] = useState<string>("");
-const [token, setToken] = useState<string>("");
+  const [meetingMinutes, setMeetingMinutes] = useState<string>("");
 
   useEffect(() => {
     const fetchClassData = async () => {
@@ -121,58 +120,67 @@ const [token, setToken] = useState<string>("");
   }, [attendance]);
 
   // Function to handle API update
-const handleMeetingMinutesUpdate = async () => {
-   console.log("📌 Submit clicked");
-  
+  const handleMeetingMinutesUpdate = async () => {
+    console.log("📌 Submit clicked");
 
-  const payload = {
-  meetingminutes: meetingMinutes,
+    const payload = {
+      meetingminutes: meetingMinutes,
+      duration:"0",
 
-  teacher: classData?.teacher.map((teacher) => {
-    const matchingAttendance = attendance.find(
-      (a) => a.studentId === teacher.teacherId
-    );
+      teacher: classData?.teacher.map((teacher) => {
+        const matchingAttendance = attendance.find(
+          (a) => a.studentId === teacher.teacherId
+        );
 
-    return {
-      teacherId: teacher.teacherId,
-      teacherName: teacher.teacherName,
-      teacherEmail: teacher.teacherEmail,
-      attendee: matchingAttendance
-        ? matchingAttendance.joined
-          ? "present"
-          : "absent"
-        : "absent", 
-      _id: teacher._id,
+        return {
+          teacherId: teacher.teacherId,
+          teacherName: teacher.teacherName,
+          teacherEmail: teacher.teacherEmail,
+          attendee: matchingAttendance
+            ? matchingAttendance.joined
+              ? "present"
+              : "absent"
+            : "absent",
+          _id: teacher._id,
+        };
+      }),
     };
-  }),
-};
 
+       try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("SupervisorAuthToken")
+            : null;
+        if (!token) {
+          console.error("❌ TeacherAuthToken not found");
+          return;
+        }
+        
+      const response = await fetch(
+        `http://localhost:5001/meetingminutes/${meetingId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      console.log("pay", payload);
 
-  try {
-    const response = await fetch(`http://localhost:5001/meetingminutes/${meetingId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-    console.log("pay",payload);
+      if (!response.ok) {
+        throw new Error("Failed to update meeting minutes");
+      }
 
-    if (!response.ok) {
-      throw new Error("Failed to update meeting minutes");
+      const result = await response.json();
+      console.log("✅ Meeting Minutes Updated:", result);
+
+      setMeetingUpdate(false); // close modal
+    } catch (error) {
+      console.error("❌ Error updating meeting minutes:", error);
     }
-
-    const result = await response.json();
-    console.log("✅ Meeting Minutes Updated:", result);
-
-    setMeetingUpdate(false); // close modal
-  } catch (error) {
-    console.error("❌ Error updating meeting minutes:", error);
-  }
-};
-
-
+  };
 
   return (
     <BaseLayout3>
