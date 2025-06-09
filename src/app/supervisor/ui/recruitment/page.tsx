@@ -962,7 +962,7 @@ export default function ApplicantsPage() {
                                   <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
                                 </button>
                                 {openMenuId === applicant._id && (
-                                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
+                                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10 dark:bg-[#252525] dark:text-[#fff]">
                                     {/* Show Edit only if supervisorId matches */}
                                     {supervisorId &&
                                       supervisorId ===
@@ -971,7 +971,7 @@ export default function ApplicantsPage() {
                                         ) && (
                                         <button
                                           onClick={() => handleEdit(applicant)}
-                                          className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+                                          className="block w-full px-4 py-2 text-left text-[12px] text-slate-600 dark:text-[#fff]"
                                         >
                                           Edit
                                         </button>
@@ -981,18 +981,19 @@ export default function ApplicantsPage() {
                                       onClick={() =>
                                         handleViewDetails(applicant)
                                       }
-                                      className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+                                      className="block w-full px-4 py-2 text-left text-[12px] text-slate-600 dark:text-[#fff]"
                                     >
                                       View Details
                                     </button>
                                     <button
                                       onClick={() => setOpenMenuId(null)}
-                                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-50"
+                                      className="block w-full px-4 py-2 text-left text-red-600 "
                                     >
                                       Cancel
                                     </button>
                                   </div>
                                 )}
+                             
                               </div>
                             </td>
                           </tr>

@@ -51,6 +51,10 @@ interface DashboardCounts {
   totalApplication: number;
   shortlisted: number;
   rejected: number;
+  waiting: number;
+  shortlistedPercentage: number;
+  rejectedPercentage: number;
+  waitingPercentage: number;
 }
 interface Meeting {
   _id: string;
@@ -134,9 +138,13 @@ export default function Dashboard() {
     endDate: moment().endOf("week").toDate(), // End of the current week (Saturday)
   });
   const [dashboardCounts, setDashboardCounts] = useState<DashboardCounts>({
-    totalApplication: 0,
+    totalApplication: 2,
     shortlisted: 0,
     rejected: 0,
+    waiting: 1,
+    shortlistedPercentage: 0,
+    rejectedPercentage: 0,
+    waitingPercentage: 50
   });
   const [filteredPositions, setFilteredPositions] = useState<
     { name: string; color: string; count: number }[]
@@ -199,9 +207,9 @@ export default function Dashboard() {
     }
     const fetchData = async () => {
       const applicants = await fetchApplicantsData(token ?? " ");
-      console.log("Fetched Applicants:", applicants); // ✅ Debugging
+      // console.log("Fetched Applicants:", applicants); 
       const filteredData = processApplicants(applicants);
-      console.log("Filtered Pie Data:", filteredData); // ✅ Debugging
+      // console.log("Filtered Pie Data:", filteredData); 
       setPieData(filteredData);
     };
 
@@ -229,9 +237,10 @@ export default function Dashboard() {
     Promise.all([fetchApplicants, fetchDashboardCounts])
       .then(([applicantsResponse, dashboardResponse]) => {
         const applicants = applicantsResponse.data.applicants;
-        console.log("📦 Applicants from API:", applicants);
+        // console.log("📦 Applicants from API:", applicants);
         applicants.forEach((app: { uploadResume: any }, idx: any) =>
-          console.log(`🔍 Applicant[${idx}] Resume:`, app.uploadResume)
+          // console.log(`🔍 Applicant[${idx}] Resume:`, app.uploadResume)
+          console.log(`🔍 Applicant[${idx}] Resume:`)
         );
 
         // ✅ Filter and count applicants by position
@@ -347,7 +356,7 @@ export default function Dashboard() {
 
         const allMeetings: Meeting[] = response.data.data.meetings;
 
-        console.log("✅ Full Meetings Data:", allMeetings);
+        // console.log("✅ Full Meetings Data:", allMeetings);
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -417,24 +426,24 @@ export default function Dashboard() {
         }
       );
 
-      console.log("API Response:", response.data);
+      // console.log("API Response:", response.data);
 
       // Check if response.data has an 'applicants' property that is an array
       if (response.data && Array.isArray(response.data.applicants)) {
         return response.data.applicants;
       } else {
-        console.error("Unexpected API response format:", response.data);
+        // console.error("Unexpected API response format:", response.data);
         return []; // Return an empty array to prevent errors
       }
     } catch (error) {
-      console.error("Error fetching applicants:", error);
+      // console.error("Error fetching applicants:", error);
       return []; // Return empty array on error
     }
   };
 
   const processApplicants = (applicants: any[]) => {
     if (!Array.isArray(applicants)) {
-      console.error("Unexpected data format:", applicants);
+      // console.error("Unexpected data format:", applicants);
       return []; // Prevent crash
     }
 
@@ -485,8 +494,14 @@ export default function Dashboard() {
   const totalApplications = dashboardCounts.totalApplication || 0;
   const totalShortlisted = dashboardCounts.shortlisted || 0;
   const totalRejected = dashboardCounts.rejected || 0;
+  const totalWaiting = dashboardCounts.waiting || 0;
 
-  const total = totalApplications + totalShortlisted + totalRejected + 100; // Adjusted to account for total applications, shortlisted, and rejected
+  // Use the percentages directly from dashboardCounts
+  const shortlistedPercentage = dashboardCounts.shortlistedPercentage;
+  const rejectedPercentage = dashboardCounts.rejectedPercentage;
+  const waitingPercentage = dashboardCounts.waitingPercentage;
+
+  const total = totalApplications + totalShortlisted + totalRejected + totalWaiting;
 
   const percentageApplications = (totalApplications / total) * 100;
   const percentageShortlisted = (totalShortlisted / total) * 100;
@@ -544,18 +559,30 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                 value: dashboardCounts.totalApplication,
                 ringColor: "#7DB5CB",
                 bgColor: "#CDD5E2",
+                percentage: 100,
+                pieData: [{ value: 100 }]
               },
               {
                 title: "Shortlisted Candidates",
                 value: dashboardCounts.shortlisted,
                 ringColor: "#9AD7D6",
                 bgColor: "#CDD5E2",
+                percentage: dashboardCounts.shortlistedPercentage.toFixed(0),
+                pieData: [
+                  { value: dashboardCounts.shortlistedPercentage },
+                  { value: 100 - dashboardCounts.shortlistedPercentage }
+                ]
               },
               {
                 title: "Rejected Candidates",
                 value: dashboardCounts.rejected,
                 ringColor: "#8B93D2",
                 bgColor: "#CDD5E2",
+                percentage: dashboardCounts.rejectedPercentage.toFixed(0),
+                pieData: [
+                  { value: dashboardCounts.rejectedPercentage },
+                  { value: 100 - dashboardCounts.rejectedPercentage }
+                ]
               },
             ].map((item, idx) => {
               const bgClass =
@@ -596,7 +623,7 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                           <Cell fill={item.bgColor} />
                         </Pie>
                         <Pie
-                          data={[{ value: 76 }, { value: 24 }]}
+                          data={item.pieData}
                           dataKey="value"
                           innerRadius={28}
                           outerRadius={42}
@@ -611,7 +638,7 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                         </Pie>
                       </PieChart>
                       <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#333] dark:text-white mb-4">
-                        {percentageValue}%
+                        {item.percentage}%
                       </div>
                     </div>
                   </div>
@@ -666,9 +693,7 @@ function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[]
                   {/* Table Body */}
                   <tbody>
                     {applicants.map((applicant, index) => {
-                       console.log("Applicant uploadResume:", applicant.uploadResume);
   const resumeUrl = getResumeBlobUrl(applicant.uploadResume);
-  console.log("Resume URL:", resumeUrl);
 
                       return (
                         <tr

@@ -165,92 +165,89 @@ return ()=>{
 }
   },[]);
 
-  useEffect(() => {
-    const fetchMeetings = async () => {
-      try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
-            : null;
+useEffect(() => {
+  const fetchMeetings = async () => {
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
 
-        if (!token) {
-          console.error("❌ SupervisorAuthToken not found");
-          return;
-        }
-        const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/allMeetings",
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        console.log("Full API Response:", response.data);
-
-        if (
-          !response.data?.data?.meetings ||
-          !Array.isArray(response.data.data.meetings)
-        ) {
-          console.error(
-            "🚨 Meetings array missing or not an array:",
-            response.data
-          );
-          return;
-        }
-
-        const allMeetings: Meeting[] = response.data.data.meetings;
-
-        console.log("✅ Extracted Meetings:", allMeetings);
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize for comparison
-
-        // ✅ Use `meetingStatus` instead of `status`
-        const upcomingMeetings = allMeetings
-          .filter((meeting) => {
-            if (!meeting.selectedDate || !meeting.meetingStatus) return false;
-
-            const meetingDate = new Date(meeting.selectedDate);
-            return (
-              (meeting.meetingStatus === "Scheduled" ||
-                meeting.meetingStatus === "Rescheduled") &&
-              meetingDate >= today
-            );
-          })
-          .sort(
-            (a, b) =>
-              new Date(a.selectedDate).getTime() -
-              new Date(b.selectedDate).getTime()
-          );
-
-        const completedMeetings = allMeetings.filter(
-          (meeting) => meeting.meetingStatus === "Completed"
-        );
-
-        // ✅ Extract & Group Teachers by Meeting ID
-        const teachersMap: Record<string, any[]> = {};
-        allMeetings.forEach((meeting) => {
-          if (meeting.teacher && Array.isArray(meeting.teacher)) {
-            teachersMap[meeting.meetingId] = meeting.teacher;
-          }
-        });
-
-        setUpcomingClasses(upcomingMeetings);
-        setCompletedData(completedMeetings);
-        setTeachersByMeetingId(teachersMap);
-
-        console.log("✅ Teachers Mapped by Meeting ID:", teachersMap);
-        console.log("✅ Upcoming Meetings Set to State:", upcomingMeetings);
-        console.log("✅ Completed Meetings Set to State:", completedMeetings);
-      } catch (error) {
-        console.error("🚨 Error fetching meetings:", error);
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+        return;
       }
-    };
 
-    fetchMeetings();
-  }, []);
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/allMeetings",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("🌐 Full API Response:", response.data);
+
+      if (
+        !response.data?.meetings ||
+        !Array.isArray(response.data.meetings)
+      ) {
+        console.error("🚨 Meetings array missing or not an array:", response.data);
+        return;
+      }
+
+      const allMeetings: Meeting[] = response.data.meetings;
+
+      console.log("✅ Extracted Meetings:", allMeetings);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalize for comparison
+
+      const upcomingMeetings = allMeetings
+        .filter((meeting) => {
+          if (!meeting.selectedDate || !meeting.meetingStatus) return false;
+
+          const meetingDate = new Date(meeting.selectedDate);
+          return (
+            (meeting.meetingStatus === "Scheduled" ||
+              meeting.meetingStatus === "Rescheduled") &&
+            meetingDate >= today
+          );
+        })
+        .sort(
+          (a, b) =>
+            new Date(a.selectedDate).getTime() -
+            new Date(b.selectedDate).getTime()
+        );
+
+      const completedMeetings = allMeetings.filter(
+        (meeting) => meeting.meetingStatus === "Completed"
+      );
+
+      const teachersMap: Record<string, any[]> = {};
+      allMeetings.forEach((meeting) => {
+        if (meeting.teacher && Array.isArray(meeting.teacher)) {
+          teachersMap[meeting.meetingId] = meeting.teacher;
+        }
+      });
+
+      setUpcomingClasses(upcomingMeetings);
+      setCompletedData(completedMeetings);
+      setTeachersByMeetingId(teachersMap);
+
+      console.log("✅ Teachers Mapped by Meeting ID:", teachersMap);
+      console.log("✅ Upcoming Meetings Set to State:", upcomingMeetings);
+      console.log("✅ Completed Meetings Set to State:", completedMeetings);
+    } catch (error) {
+      console.error("🚨 Error fetching meetings:", error);
+    }
+  };
+
+  fetchMeetings();
+}, []);
+
 
   interface Teacher {
     teacherId: string;
