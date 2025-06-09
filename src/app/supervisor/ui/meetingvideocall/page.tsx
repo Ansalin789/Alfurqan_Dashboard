@@ -77,7 +77,7 @@ export default function Page() {
         }
 
         const response = await axios.get<Meeting>(
-          `http://localhost:5001/allMeetings/${meetingId}`,
+          `https://api.blackstoneinfomaticstech.com/allMeetings/${meetingId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -163,7 +163,7 @@ export default function Page() {
       }
 
       const response = await fetch(
-        `http://localhost:5001/meetingminutes/${meetingId}`,
+        `https://api.blackstoneinfomaticstech.com/meetingminutes/${meetingId}`,
         {
           method: "PUT",
           headers: {
