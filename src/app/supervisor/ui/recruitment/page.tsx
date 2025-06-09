@@ -494,14 +494,39 @@ export default function ApplicantsPage() {
 
   const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
 
-  const filteredApplicants =
+  const filterApplicants = (applicants: Applicant[], searchQuery: string) => {
+    if (!searchQuery.trim()) return applicants;
+
+    const query = searchQuery.toLowerCase().trim();
+    
+    return applicants.filter((applicant) => {
+      const searchableFields = [
+        applicant.candidateFirstName,
+        applicant.candidateLastName,
+        applicant.applicationDate,
+        applicant.candidatePhoneNumber?.toString(),
+        applicant.candidateEmail,
+        applicant.positionApplied,
+        applicant.applicationStatus,
+        applicant.level?.toString()
+      ];
+
+      return searchableFields.some(field => 
+        field && field.toString().toLowerCase().includes(query)
+      );
+    });
+  };
+
+  const filteredApplicants = filterApplicants(
     activeTab === "All"
       ? applicants
       : applicants.filter(
           (applicant) =>
             applicant.applicationStatus.replace(/\s+/g, "").toUpperCase() ===
             activeTab.replace(/\s+/g, "").toUpperCase()
-        );
+        ),
+    searchText
+  );
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -690,8 +715,8 @@ export default function ApplicantsPage() {
                       <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                       <input
                         type="text"
-                        placeholder="Search by keyword"
-                        className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[15px] w-52 py-3"
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
                       />
@@ -785,7 +810,7 @@ export default function ApplicantsPage() {
                               <option>Rejected</option>
                               <option>Waiting</option>
                               <option>Approved</option>
-                              <option>New Application</option>
+                              <option>NewApplication</option>
                             </select>
                           </div>
 
