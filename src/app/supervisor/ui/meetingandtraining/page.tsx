@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { IoMdClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
-import { FaUserCircle } from "react-icons/fa";
+import { FaEye, FaUserCircle } from "react-icons/fa";
 import { CheckCircle, MoreVertical, Search, User, XCircle } from "lucide-react";
 import BaseLayout3 from "@/components/BaseLayout3";
 import axios from "axios";
@@ -15,6 +15,8 @@ import { IoPersonOutline } from "react-icons/io5";
 import { MdTune } from "react-icons/md";
 import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
+import { setTime } from "react-datepicker/dist/date_utils";
+import { getSocket } from "@/app/utils/socket";
 interface ApiResponse {
   candidateFirstName: string;
   candidateLastName: string;
@@ -30,7 +32,9 @@ interface Meeting {
   selectedDate: string;
   startTime: string;
   endTime: string;
+  duration:string;
   description: string;
+  meetingminutes: string;
   createdDate: string;
   createdBy: string;
   supervisor: {
@@ -43,6 +47,7 @@ interface Meeting {
     teacherId: string;
     teacherName: string;
     teacherEmail: string;
+    attendee?: string;
   }[];
 }
 
@@ -73,6 +78,11 @@ const ScheduledClasses = () => {
     useState(false);
   const [rescheduleDate, setRescheduleDate] = useState(""); // in 'YYYY-MM-DD' format
   const [rescheduleTime, setRescheduleTime] = useState(""); // in 'HH:mm' 24h format
+  const [searchText, setSearchText] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [timing, setTiming] = useState("");
+  const [status, setStatus] = useState("");
 
   const toggleTeacherDropdown = (id: string) => {
     setOpenTeacherDropdownId((prev) => (prev === id ? null : id));
@@ -103,10 +113,11 @@ const ScheduledClasses = () => {
   console.log(isDatePickerOpens);
 
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
+
   useEffect(() => {
     const token =
       typeof window !== "undefined"
-        ? localStorage.getItem("AdminAuthToken")
+        ? localStorage.getItem("SupervisorAuthToken")
         : null;
 
     if (!token) {
@@ -141,6 +152,18 @@ const ScheduledClasses = () => {
       })
       .catch((error) => console.error("Error fetching teachers:", error));
   }, []);
+  useEffect(()=>{
+    const id = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalID") : null;
+    const socket= getSocket(id ?? '');
+    const handleList = (data : {data : Meeting})=>{
+        console.log("📩 Received WebSocket Data:", data);
+       setUpcomingClasses(pre => [...pre, data.data]);
+    };
+    socket.on('addmeeting',handleList);
+return ()=>{
+   socket.off('addmeeting',handleList);
+}
+  },[]);
 
   useEffect(() => {
     const fetchMeetings = async () => {
@@ -238,12 +261,42 @@ const ScheduledClasses = () => {
   const [teachersByMeetingId, setTeachersByMeetingId] =
     useState<TeachersByMeetingId>({});
 
-  useEffect(() => {
-    console.log(selectedTeachers);
-    console.log(teachers);
-  }, [teachers]);
+  const filterMeetingsBySearch = (meetings: Meeting[]) => {
+    if (!searchText.trim()) return meetings;
 
-  const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
+    const searchLower = searchText.toLowerCase();
+    return meetings.filter((meeting) => {
+      // Search in meeting name
+      const nameMatch = meeting.meetingName.toLowerCase().includes(searchLower);
+      
+      // Search in attendees (teacher names)
+      const attendeeMatch = meeting.teacher.some(teacher => 
+        teacher.teacherName.toLowerCase().includes(searchLower)
+      );
+      
+      // Search in date
+      const dateMatch = new Date(meeting.selectedDate)
+        .toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        })
+        .toLowerCase()
+        .includes(searchLower);
+      
+      // Search in timing
+      const timingMatch = meeting.startTime.toLowerCase().includes(searchLower);
+      
+      // Search in status
+      const statusMatch = meeting.meetingStatus.toLowerCase().includes(searchLower);
+
+      return nameMatch || attendeeMatch || dateMatch || timingMatch || statusMatch;
+    });
+  };
+
+  const dataToShow = filterMeetingsBySearch(
+    activeTab === "upcoming" ? upcomingClasses || [] : completedData || []
+  );
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -254,15 +307,6 @@ const ScheduledClasses = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = currentItems.slice(startIndex, endIndex);
-
-  const handleOptionsClick = (id: string) => {
-    setSelectedItemId(selectedItemId === id ? null : id);
-  };
-
-  //   const handleViewDetails = (item: any) => {
-  //   setSelectedItemId(item);
-  //   setShowMeetingDetailsModal(true); // assuming you have this state and modal
-  // };
 
   const handleRescheduleSubmit = async () => {
     if (
@@ -312,7 +356,7 @@ const ScheduledClasses = () => {
         )
       );
 
-   setSuccess(true);
+      setSuccess(true);
 
       setTimeout(() => {
         setShowSuccess(false);
@@ -370,9 +414,46 @@ const ScheduledClasses = () => {
     return now >= start && now <= end;
   };
 
-  function startMeeting(_id: string): void {
-    throw new Error("Function not implemented.");
-  }
+  const handleFilter = async () => {
+    setShowModal(false);
+
+    const token = localStorage.getItem("SupervisorAuthToken");
+
+    const params: any = {};
+    if (fromDate) params["dateRange.from"] = fromDate;
+    if (toDate) params["dateRange.to"] = toDate;
+    if (timing) params["startTime"] = timing;
+    if (status) params["meetingStatus"] = status;
+
+    console.log("📤 Sending filter params:", params);
+
+    try {
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/allMeetings", // Use your backend URL here
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          params,
+        }
+      );
+
+      console.log("✅ Response:", response.data);
+
+      // You can split meetings into upcoming/completed based on your logic
+      const meetings: Meeting[] = response.data.meetings || [];
+
+      setUpcomingClasses(
+        meetings.filter((m: Meeting) => m.meetingStatus !== "Completed")
+      );
+      setCompletedData(
+        meetings.filter((m: Meeting) => m.meetingStatus === "Completed")
+      );
+    } catch (error) {
+      console.error("❌ Error fetching filtered meetings:", error);
+    }
+  };
 
   return (
     <BaseLayout3>
@@ -425,6 +506,8 @@ const ScheduledClasses = () => {
                         type="text"
                         placeholder="Search by keyword"
                         className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
                       />
                     </div>
 
@@ -439,7 +522,8 @@ const ScheduledClasses = () => {
 
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentApplicants.length} Of {dataToShow.length}
+                        Showing {currentApplicants.length} Of{" "}
+                        {dataToShow.length}
                       </span>
                     </div>
                   </div>
@@ -489,44 +573,45 @@ const ScheduledClasses = () => {
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left w-[250px] break-words whitespace-normal">
                             {item.meetingName}
                           </td>
-                          <td className="relative px-3 py-2 text-left text-[#17243E] dark:text-[#FDFDFD]">
-                            {item.teacher.length > 1 ? (
-                              <>
-                                <button
-                                  onClick={() =>
-                                    toggleTeacherDropdown(item.meetingId)
-                                  }
-                                  className="flex items-center gap-2 font-medium hover:text-[#274872]"
-                                >
-                                  <AiOutlineMenuUnfold />
-                                  View List
-                                </button>
-
-                                {openTeacherDropdownId === item.meetingId && (
-                                  <div
-                                    ref={dropdownRef}
-                                    className="absolute z-10 mt-2 w-48 bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 rounded shadow-lg p-2"
+                          <td className="px-3 py-2 text-left text-[#17243E] dark:text-[#FDFDFD]">
+                            <div className="relative">
+                              {" "}
+                              {/* Ensure dropdown is scoped */}
+                              {item.teacher.length > 1 ? (
+                                <>
+                                  <button
+                                    onClick={() =>
+                                      toggleTeacherDropdown(item._id)
+                                    }
+                                    className="flex items-center gap-2 font-medium hover:text-[#5c5c5c] dark:hover:text-[#5c5c5c]"
                                   >
-                                    {item.teacher.map((t, idx) => (
-                                      <div
-                                        key={idx}
-                                        className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
-                                      >
-                                        <span className="flex items-center gap-2">
-                                          <IoPersonOutline />
-                                          {t.teacherName}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <span className="flex items-center gap-2 font-medium">
-                                <IoPersonOutline />
-                                {item.teacher[0]?.teacherName}
-                              </span>
-                            )}
+                                    <AiOutlineMenuUnfold />
+                                    View List
+                                  </button>
+
+                                  {openTeacherDropdownId === item._id && (
+                                    <div className="absolute z-10 mt-2 w-48 bg-white  rounded shadow-lg p-2 dark:bg-[#343434]">
+                                      {item.teacher.map((t, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
+                                        >
+                                          <span className="flex items-center gap-2">
+                                            <IoPersonOutline />
+                                            {t.teacherName}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="flex items-center gap-2 font-medium">
+                                  <IoPersonOutline />
+                                  {item.teacher[0]?.teacherName}
+                                </span>
+                              )}
+                            </div>
                           </td>
 
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
@@ -589,50 +674,55 @@ const ScheduledClasses = () => {
                             })()}
                           </td>
 
-                          <td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal">
-                            <div className="relative">
-                              <button
-                                onClick={() => {
-                                  if (item.meetingStatus === "Scheduled") {
-                                    setIsDetailsModalOpen(true);
-                                    setSelectedItemId((prev) =>
-                                      prev === item._id ? null : item._id
-                                    );
-                                  } else if (
-                                    item.meetingStatus === "Completed"
-                                  ) {
-                                    handleViewDetails(item._id); // ← your function to open details view
-                                  }
-                                }}
-                                className="p-2 rounded-md"
-                              >
-                                <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
-                              </button>
 
-                              {item.meetingStatus === "Scheduled" &&
-                                isDetailsModalOpen &&
-                                selectedItemId === item._id && (
-                                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
-                                    <button
-                                      onClick={() => {
-                                        setIsRescheduleModalOpen(true);
-                                        setSelectedItemId(item._id);
-                                        setIsDetailsModalOpen(false); // Close dropdown after clicking
-                                      }}
-                                      className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
-                                    >
-                                      Request Reschedule
-                                    </button>
-                                    <button
-                                      onClick={() => setSelectedItemId(null)}
-                                      className="block w-full px-4 py-2 text-left text-[12px] text-red-600 hover:bg-gray-50"
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                )}
-                            </div>
-                          </td>
+
+<td className="px-3 py-2 text-left w-[80px] break-words whitespace-normal">
+  <div className="relative">
+    <button
+      onClick={() => {
+        if (item.meetingStatus === "Scheduled") {
+          setIsDetailsModalOpen(true);
+          setSelectedItemId((prev) =>
+            prev === item._id ? null : item._id
+          );
+        } else if (item.meetingStatus === "Completed") {
+          handleViewDetails(item._id); // ← your function to open details view
+        }
+      }}
+      className="p-2 rounded-md"
+    >
+      {item.meetingStatus === "Scheduled" || item.meetingStatus === "Rescheduled" ? (
+        <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
+      ) : (
+        <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
+      )}
+    </button>
+
+    {item.meetingStatus === "Scheduled" &&
+      isDetailsModalOpen &&
+      selectedItemId === item._id && (
+        <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
+          <button
+            onClick={() => {
+              setIsRescheduleModalOpen(true);
+              setSelectedItemId(item._id);
+              setIsDetailsModalOpen(false); // Close dropdown after clicking
+            }}
+            className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+          >
+            Request Reschedule
+          </button>
+          <button
+            onClick={() => setSelectedItemId(null)}
+            className="block w-full px-4 py-2 text-left text-[12px] text-red-600 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+  </div>
+</td>
+
                         </tr>
                       ))}
                     </tbody>
@@ -649,7 +739,7 @@ const ScheduledClasses = () => {
         </div>
       </div>
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
           <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
             {/* Close Icon */}
             <button
@@ -671,29 +761,33 @@ const ScheduledClasses = () => {
                 <input
                   type="date"
                   className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  // value={exp.fromDate}
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
                 />
                 <input
                   type="date"
                   className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  // value={exp.toDate}
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
                 />
               </div>
             </div>
 
             {/* Position Applied */}
             <div className="mb-4">
+              {/* Timing */}
               <label
-                htmlFor="position"
-                className="block text-sm font-medium mb-1"
+                htmlFor="timimg"
+                className="block text-sm text-gray-700 mb-1 dark:text-white"
               >
                 Timing
               </label>
-              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
-                <option>time 1</option>
-                <option>time 1</option>
-                <option>time 1</option>
-              </select>
+              <input
+                value={timing}
+                onChange={(e) => setTiming(e.target.value)}
+                type="time"
+                className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
 
             {/* Status */}
@@ -704,12 +798,15 @@ const ScheduledClasses = () => {
               >
                 Status
               </label>
-              <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
-                <option>Shortlisted</option>
-                <option>Rejected</option>
-                <option>Waiting</option>
-                <option>Approved</option>
-                <option>New Application</option>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+              >
+                <option value="">Select status</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Rescheduled">Rescheduled</option>
+                <option value="Completed">Completed</option>
               </select>
             </div>
 
@@ -721,7 +818,10 @@ const ScheduledClasses = () => {
               >
                 Cancel
               </button>
-              <button className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium">
+              <button
+                className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                onClick={handleFilter}
+              >
                 Submit
               </button>
             </div>
@@ -733,13 +833,20 @@ const ScheduledClasses = () => {
       {isMeetingDetailsModalOpen && selectedMeetingDetails && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           {/* Backdrop */}
-          <div
+          <button
             className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setIsMeetingDetailsModalOpen(false)}
-          />
+            onClick={() => setIsMeetingDetailsModalOpen(false)}>
+          </button>
 
           {/* Modal */}
           <div className="relative z-50 bg-white rounded-lg p-6 w-[720px] max-h-[90vh] overflow-y-auto shadow-xl dark:bg-[#252525]">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsMeetingDetailsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-500  text-lg font-bold"
+            >
+              <IoMdClose />
+            </button>
             <h2 className="text-md font-semibold text-[#0D0E25] mb-6 dark:text-[#fff]">
               Meeting Details
             </h2>
@@ -768,16 +875,6 @@ const ScheduledClasses = () => {
               </div>
               <div>
                 <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
-                  Course
-                </label>
-                <input
-                  value="-"
-                  disabled
-                  className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
-                />
-              </div>
-              <div>
-                <label className="block text-[12px] text-[#0D0E25] mb-1 dark:text-[#fff]">
                   Date
                 </label>
                 <input
@@ -791,7 +888,7 @@ const ScheduledClasses = () => {
                   Duration
                 </label>
                 <input
-                  value={"60 Minutes"} // You can compute actual difference if needed
+                  value={selectedMeetingDetails.duration} // You can compute actual difference if needed
                   disabled
                   className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 />
@@ -823,8 +920,15 @@ const ScheduledClasses = () => {
                     <span className="text-[#4F46E5]">
                       {teacher.teacherName}
                     </span>
-                    {/* Placeholder logic for attendance, since it's not in interface */}
-                    <span className="text-green-600 text-lg">✔</span>
+                    <span
+                      className={`text-lg ${
+                        teacher.attendee === "present"
+                          ? "text-green-600"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {teacher.attendee === "present" ? "✔" : "✘"}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -834,26 +938,10 @@ const ScheduledClasses = () => {
                 Meeting Description
               </label>
               <textarea
-                value={selectedMeetingDetails.description ?? ""}
+                value={selectedMeetingDetails.meetingminutes}
                 disabled
                 className="w-full px-3 py-2 text-[12px] border border-[#D4D4D4] rounded-lg dark:text-[#D6D6D6] dark:border-[#5C5C5C] dark:bg-[#343434]"
               />
-            </div>
-
-            {/* Footer Buttons */}
-            <div className="flex justify-end gap-3 border-t pt-4 dark:border-[#5C5C5C]  ">
-              <button
-                onClick={() => setIsMeetingDetailsModalOpen(false)}
-                className="px-6 py-2 rounded-md border border-[#576CBC] font-semibold text-[#576CBC] transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setIsMeetingDetailsModalOpen(false)}
-                className="px-6 py-2 rounded-md bg-[#576CBC] text-white font-semibold  transition"
-              >
-                Submit
-              </button>
             </div>
           </div>
         </div>

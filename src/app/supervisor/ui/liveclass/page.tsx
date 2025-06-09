@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import axios from "axios";
+import { useSearchParams } from "next/navigation";
 import BaseLayout3 from "@/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
 import SuccessPopup from "../../components/successPopup";
@@ -52,6 +53,8 @@ interface ApiResponse {
 
 function LiveClass() {
   const [showFeedback, setShowFeedback] = useState(false);
+  const search = useSearchParams();
+  const classScheduleid = search.get('id');
   const [showPopup, setShowPopup] = useState(false);
   const [ratings, setRatings] = useState([0, 0, 0, 0]);
   const [feedback, setFeedback] = useState("");
@@ -63,7 +66,6 @@ function LiveClass() {
     const [successMessage,setSuccessMessage] = useState("");
 
   useEffect(() => {
-    const classScheduleid = localStorage.getItem("showfeedbackid");
     const fetchClassData = async () => {
       try {
         const token =
@@ -75,6 +77,7 @@ function LiveClass() {
           console.error("❌ SupervisorAuthToken not found");
           return;
         }
+        console.log(classScheduleid);
         const response = await axios.get<ClassData>(
           `https://api.blackstoneinfomaticstech.com/classShedule/${classScheduleid}`,
           {

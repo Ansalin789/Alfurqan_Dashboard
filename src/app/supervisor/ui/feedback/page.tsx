@@ -89,23 +89,36 @@ const FeedbackDetails: React.FC = () => {
   const [selectedApplicant, setSelectedApplicant] =
     useState<FlattenedFeedbackItem | null>(null);
   const [Filter, setFilter] = useState(false);
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(applicants.length / itemsPerPage);
+    // Active filters (applied)
+    const [filterReview, setFilterReview] = useState("");
+    const [filterTeacher, setFilterTeacher] = useState("");
+    const [filterFeedback, setFilterFeedback] = useState("");
+    const [filterClass, setFilterClass] = useState("");
+    const [filterLevel, setFilterLevel] = useState("");
+    
+    // Temporary filters (for input)
+    const [tempFilterReview, setTempFilterReview] = useState("");
+    const [tempFilterTeacher, setTempFilterTeacher] = useState("");
 
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter applications based on search query
+  const filteredApplications = applicants.filter((applicant) => {
+    const searchLower = searchQuery.toLowerCase();
+    const reviewMatch = applicant.Review?.toLowerCase().includes(searchLower) || false;
+    const teacherMatch = applicant.Teacher?.toLowerCase().includes(searchLower) || false;
+    const classMatch = applicant.class?.toLowerCase().includes(searchLower) || false;
+    const feedbackMatch = applicant.Feedback?.toLowerCase().includes(searchLower) || false;
+
+    return reviewMatch || teacherMatch || classMatch || feedbackMatch;
+  });
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentItems = applicants.slice(indexOfFirst, indexOfLast);
+  const currentItems = filteredApplications.slice(indexOfFirst, indexOfLast);
 
-  const [showModal, setShowModal] = useState(false);
-
-  const handleDetailsClick = (applicant: FlattenedFeedbackItem) => {
-    setSelectedApplicant(applicant);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
   // Declare this outside your component or hook
   function calculateLevel(item: RawFeedbackItem): number {
     if (item.studentsRating) {
@@ -126,6 +139,17 @@ const FeedbackDetails: React.FC = () => {
     }
     return 0;
   }
+
+  const [showModal, setShowModal] = useState(false);
+
+  const handleDetailsClick = (applicant: FlattenedFeedbackItem) => {
+    setSelectedApplicant(applicant);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
 
   useEffect(() => {
     const fetchFeedback = async () => {
@@ -153,14 +177,19 @@ const FeedbackDetails: React.FC = () => {
         }
 
         const rawData = await res.json();
+        console.log("API Response:", rawData); // Debug log
 
-        const feedbackArray: RawFeedbackItem[] = rawData.data.feedbackRecords;
+        // Check if rawData exists and has feedbackRecords
+        if (!rawData || !rawData.feedbackRecords) {
+          console.error("Invalid API response structure:", rawData);
+          return;
+        }
 
-        if (!Array.isArray(feedbackArray)) {
-          console.error(
-            "Expected feedbackRecords array but got:",
-            feedbackArray
-          );
+        const feedbackArray: RawFeedbackItem[] = rawData.feedbackRecords;
+
+        if (feedbackArray.length === 0) {
+          console.log("No feedback records found");
+          setApplicants([]);
           return;
         }
 
@@ -168,12 +197,12 @@ const FeedbackDetails: React.FC = () => {
           (item) => ({
             _id: item._id,
             Review:
-              item.student.studentFirstName +
+              item.student?.studentFirstName +
               " " +
-              (item.student.studentLastName || ""),
-            Teacher: item.teacher.teacherName,
-            class: item.course.courseName,
-            Feedback: item.feedbackmessage,
+              (item.student?.studentLastName || ""),
+            Teacher: item.teacher?.teacherName || "Unknown",
+            class: item.course?.courseName || "Unknown",
+            Feedback: item.feedbackmessage || "",
             level: calculateLevel(item),
           })
         );
@@ -181,6 +210,7 @@ const FeedbackDetails: React.FC = () => {
         setApplicants(formattedData);
       } catch (err) {
         console.error("Error fetching feedback:", err);
+        setApplicants([]); // Set empty array on error
       }
     };
 
@@ -204,8 +234,10 @@ const FeedbackDetails: React.FC = () => {
               <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by keyword"
-                className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                placeholder="Search"
+                className="bg-transparent outline-none text-[15px] w-52 py-3"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
 
@@ -268,7 +300,7 @@ const FeedbackDetails: React.FC = () => {
 
             <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
               <span className="text-left -ml-60 ">
-                Showing {currentItems.length} Of {applicants.length}
+                Showing {currentItems.length} Of {filteredApplications.length}
               </span>
             </div>
           </div>
@@ -282,10 +314,10 @@ const FeedbackDetails: React.FC = () => {
               <tr className="font-medium">
                 {[
                   "Review",
-                  "Teacher",
+                  "Teacher Name",
                   "Feedback",
                   "Class",
-                  "Level",
+                  "Rating",
                   "Details",
                 ].map((header) => (
                   <th
