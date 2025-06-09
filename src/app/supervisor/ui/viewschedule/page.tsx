@@ -452,9 +452,10 @@ console.log("currentItems", currentItems);
             {/* Filter Popup */}
             {showModal && (
               <div
-                className="absolute top-14 left-0 bg-white dark:bg-[#343434] rounded-lg shadow-lg w-80 p-6 z-50"
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center"
               >
+
+                <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
                     Filter by
@@ -521,7 +522,7 @@ console.log("currentItems", currentItems);
                   </label>
                   <select
                     id="courseType"
-                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={sessionClassType}
                     onChange={(e) => setSessionClassType(e.target.value)}
                   >
@@ -544,7 +545,7 @@ console.log("currentItems", currentItems);
                   <input
                     type="time"
                     id="timing"
-                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
                   />
@@ -560,7 +561,7 @@ console.log("currentItems", currentItems);
                   </label>
                   <select
                     id="status"
-                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={scheduleStatus}
                     onChange={(e) => setScheduleStatus(e.target.value)}
                   >
@@ -576,18 +577,19 @@ console.log("currentItems", currentItems);
 
                 <div className="flex justify-between">
                   <button
-                    className="px-4 py-2 rounded-md border border-indigo-300 text-indigo-600 hover:bg-indigo-50 text-sm"
+                    className="px-4 py-2 rounded-md border border-[#576cbc] text-indigo-600 text-sm"
                     onClick={() => setShowModal(false)}
                   >
                     Cancel
                   </button>
                   <button
-                    className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
+                    className="px-4 py-2 rounded-md bg-[#576cbc] text-white hover:bg-indigo-700 text-sm"
                     onClick={handleFilter}
                   >
                     Submit
                   </button>
                 </div>
+              </div>
               </div>
             )}
 
