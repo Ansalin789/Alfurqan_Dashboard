@@ -78,7 +78,7 @@ const Message = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
   let userId: string | null = null;
-
+  const userName = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalId") : null;
   if (typeof window !== "undefined") {
     userId = localStorage.getItem('SupervisorPortalId');
   }
@@ -415,7 +415,7 @@ setMessages(prev => {
               <div>
                 <div className="flex">
                 <h3 className="text-[18px] font-medium text-[#010E30] dark:text-[#fff]">
-                  David{" "}
+                  {userName}
                   
                 </h3>
                 <button className="ml-[4px] text-gray-500">
