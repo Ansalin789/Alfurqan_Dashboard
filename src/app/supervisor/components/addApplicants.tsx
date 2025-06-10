@@ -344,21 +344,6 @@ export default function AddApplicants({ onClose }: Props) {
                 htmlFor="inonoin"
                 className="block mb-1 text-black dark:text-white"
               >
-                Last Name
-              </label>
-              <input
-                name="lastName"
-                value={addApplicantForm.lastName}
-                onChange={handleChange}
-                type="text"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="inonoin"
-                className="block mb-1 text-black dark:text-white"
-              >
                 Email
               </label>
               <input
@@ -369,6 +354,7 @@ export default function AddApplicants({ onClose }: Props) {
                 className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
+
             <div>
               <label
                 htmlFor="vhvihvuih"
@@ -390,6 +376,9 @@ export default function AddApplicants({ onClose }: Props) {
                 ))}
               </select>
             </div>
+            
+            
+            
             <div>
               <label
                 htmlFor="position"
@@ -409,6 +398,21 @@ export default function AddApplicants({ onClose }: Props) {
                 <option value="Islamic Teacher">Islamic Teacher</option>
               </select>
             </div>
+            <div>
+              <label
+                htmlFor="inonoin"
+                className="block mb-1 text-black dark:text-white"
+              >
+                Preferred Working Hours
+              </label>
+              <input
+                name="workingHours"
+                value={addApplicantForm.workingHours}
+                onChange={handleChange}
+                type="text"
+                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+              />
+            </div>
           </div>
 
           {/* Right Column */}
@@ -424,10 +428,45 @@ export default function AddApplicants({ onClose }: Props) {
                 name="phone"
                 value={addApplicantForm.phone}
                 onChange={handleChange}
+                type="number"
+                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="inonoin"
+                className="block mb-1 text-black dark:text-white"
+              >
+                Last Name
+              </label>
+              <input
+                name="lastName"
+                value={addApplicantForm.lastName}
+                onChange={handleChange}
                 type="text"
                 className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
+            
+            <div>
+              <label
+                htmlFor="gender"
+                className="block mb-1 text-black dark:text-white"
+              >
+                Gender
+              </label>
+              <select
+                name="gender"
+                value={addApplicantForm.gender}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+
             <div>
               <label
                 htmlFor="ibivi"
@@ -451,24 +490,6 @@ export default function AddApplicants({ onClose }: Props) {
             </div>
             <div>
               <label
-                htmlFor="gender"
-                className="block mb-1 text-black dark:text-white"
-              >
-                Gender
-              </label>
-              <select
-                name="gender"
-                value={addApplicantForm.gender}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
-            </div>
-            <div>
-              <label
                 htmlFor="inonoin"
                 className="block mb-1 text-black dark:text-white"
               >
@@ -487,21 +508,7 @@ export default function AddApplicants({ onClose }: Props) {
                 />
               </div>
             </div>
-            <div>
-              <label
-                htmlFor="inonoin"
-                className="block mb-1 text-black dark:text-white"
-              >
-                Preferred Working Hours
-              </label>
-              <input
-                name="workingHours"
-                value={addApplicantForm.workingHours}
-                onChange={handleChange}
-                type="text"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div>
+            
             <div>
               <label
                 htmlFor="jbjb"
