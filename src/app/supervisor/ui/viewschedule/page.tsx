@@ -400,7 +400,7 @@ console.log("currentItems", currentItems);
 
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection="Scheduled Classes" />
+      <SupervisorHeader currentSection="Scheduled Classes" showBackButton={true} showBackPath="/supervisor/ui/teachers" />
       {/* Tabs */}
       <div className="flex space-x-6 px-4 py-1 mb-3 rounded-md">
         <button
@@ -631,15 +631,15 @@ console.log("currentItems", currentItems);
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    <td className="px-6 py-2 text-[#3D8FDE] dark:text-[#3D8FDE] text-left">
+                    <td className="px-6 py-4 text-[#3D8FDE] dark:text-[#3D8FDE] text-left">
                       {item.teacher.teacherName}
                     </td>
-                    <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {item._id}
                     </td>
 
                     <td className="px-8 py-3 text-left">{item.course?.courseName || 'N/A'}</td>
-                    <td className="px-6 py-3 text-left">MasterClass</td>
+                    <td className="px-6 py-3 text-left">RegularClass</td>
                     <td className="px-3 py-3 text-left">
                       {new Date(item.startDate).toDateString()} </td>
                     <td className="px-3 py-3 text-left">
@@ -690,7 +690,6 @@ console.log("currentItems", currentItems);
                           } else {
                             content = (
                               <span className="py-1 px-2 text-black rounded-lg bg-yellow-500 dark:text-[#ffff]">
-                                Scheduled at{" "}
                                 {formatTime(getEarliestTime(item.startTime))}
                               </span>
                             );
@@ -698,7 +697,6 @@ console.log("currentItems", currentItems);
                         } else {
                           content = (
                             <span className="py-1 px-2 text-black rounded-lg dark:text-[#ffff] ">
-                              Scheduled at{" "}
                               {formatTime(getEarliestTime(item.startTime))}
                             </span>
                           );
@@ -707,9 +705,9 @@ console.log("currentItems", currentItems);
                       })()}
                     </td>
 
-                    <td className="px-3 py-2 text-left">
+                    <td className="px-3 py-3 text-left">
                       <span
-                        className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getStatusClass(
+                        className={`text-[10px] font-semibold px-3 py-2 rounded-lg ${getStatusClass(
                           item.scheduleStatus
                         )}`}
                       >

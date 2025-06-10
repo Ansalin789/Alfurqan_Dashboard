@@ -877,10 +877,10 @@ export default function ApplicantsPage() {
                         <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Position Applied
                         </th>
-                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Resume
                         </th>
-                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        <th className="text-left px-6 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Status
                         </th>
                         <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
@@ -902,7 +902,7 @@ export default function ApplicantsPage() {
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
-                            <td className="px-3 py-2 text-[#3D8FDE] font-medium">
+                            <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left">
                               {applicant.candidateFirstName}
                             </td>
                             <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
@@ -930,7 +930,7 @@ export default function ApplicantsPage() {
                               <ResumeLink applicant={applicant} />
                             </td>
 
-                            <td className="px-3 py-2">
+                            <td className=" py-2">
                               <span
                                 className={`text-[10px] font-semibold px-3 py-1 rounded-full ${getStatusColor(
                                   applicant.applicationStatus
