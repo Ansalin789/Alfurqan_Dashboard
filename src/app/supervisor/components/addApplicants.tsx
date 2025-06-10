@@ -578,7 +578,7 @@ export default function AddApplicants({ onClose }: Props) {
             {/* Render multiple experience input forms */}
             {experiences.map((exp, index) => (
               <div
-                key={exp.jobRole}
+                key={index}
                 className="mb-4 p-3 border rounded  dark:border-[#5C5C5C] dark:text-white relative"
               >
                 <button

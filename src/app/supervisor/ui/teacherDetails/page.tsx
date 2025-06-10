@@ -149,6 +149,7 @@ const TeacherDetails = () => {
       <SupervisorHeader
         currentSection="Teacher Details"
         showBackButton={true}
+        showBackPath="/supervisor/ui/teachers"
       />
       <div className="p-2 mx-auto">
         {/* Main Container */}

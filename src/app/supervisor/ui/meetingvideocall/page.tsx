@@ -206,7 +206,7 @@ export default function Page() {
 
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection="Weekly Meeting" />
+      <SupervisorHeader currentSection="Weekly Meeting" showBackButton={true} showBackPath="/supervisor/ui/meetingandtraining" />
       <div className="flex flex-col min-h-screen px-4 sm:px-6 md:px-8">
         {/* Page Content */}
         <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl">

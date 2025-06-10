@@ -14,6 +14,7 @@ import { IoArrowBackCircleSharp } from "react-icons/io5";
 type Props = {
   readonly currentSection: string;
   readonly showBackButton?: boolean;
+  readonly showBackPath?:string;
 };
 type NotificationType = {
   _id: string;
@@ -25,7 +26,7 @@ type NotificationType = {
   isRead: boolean;
 };
 
-export default function SupervisorHeader({ currentSection, showBackButton = false }: Props) {
+export default function SupervisorHeader({ currentSection, showBackButton = false, showBackPath = '' }: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
@@ -146,16 +147,25 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
       }
     }
   }, [userId]);
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "STUDENT_NOTIFICATION":
-        return "🎓";
-      case "SYSTEM_ALERT":
-        return "⚠️";
-      default:
-        return "🔔";
-    }
-  };
+ const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case "STUDENT_NOTIFICATION":
+      return "🎓";
+    case "TEACHER_ADDED":
+      return "👩‍🏫"; 
+    case "SYSTEM_ALERT":
+      return "⚠️";
+    case "MEETING_REMINDER":
+      return "📅";
+    case "MESSAGE":
+      return "💬";
+    case "ASSIGNMENT_ALERT":
+      return "📝";
+    default:
+      return "🔔";
+  }
+};
+
 
   const renderButton = () => {
     if (currentSection.startsWith("Dashboard")) {
@@ -219,7 +229,7 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
           {showBackButton && (
             <IoArrowBackCircleSharp
               className="text-[25px] text-[#012a4a] cursor-pointer dark:text-white"
-              onClick={() => router.back()}
+              onClick={() => router.push(showBackPath)}
             />
           )}
           <h1 className="text-xl font-semibold text-[#000836] dark:text-white">

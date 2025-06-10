@@ -78,7 +78,7 @@ const Message = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
   let userId: string | null = null;
-  const userName = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalId") : null;
+  const userName = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalName") : null;
   if (typeof window !== "undefined") {
     userId = localStorage.getItem('SupervisorPortalId');
   }

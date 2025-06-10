@@ -1,7 +1,7 @@
 "use client";
 
 import BaseLayout3 from "@/components/BaseLayout3";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { HiOutlineDotsHorizontal, HiOutlineX } from "react-icons/hi";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -90,6 +90,27 @@ const ViewSchedule = () => {
   const [activeTab, setActiveTab] = useState<string>("scheduled");
   const [upcomingClasses, setUpcomingClasses] = useState<Schedule[]>([]);
   const [completedClasses, setCompletedClasses] = useState<Schedule[]>([]);
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Remove the filterData function and replace with useMemo
+  const filteredData = useMemo(() => {
+    if (!searchQuery) return uniqueStudentSchedules;
+    
+    const query = searchQuery.toLowerCase();
+    return uniqueStudentSchedules.filter((item) => {
+      const timeStr = item.formattedTimes?.[0] || '';
+      
+      return (
+        item.teacher.teacherName.toLowerCase().includes(query) ||
+        (item.course?.courseName || '').toLowerCase().includes(query) ||
+        'Regular Class'.toLowerCase().includes(query) ||
+        new Date(item.startDate).toDateString().toLowerCase().includes(query) ||
+        timeStr.toLowerCase().includes(query) ||
+        item.scheduleStatus.toLowerCase().includes(query)
+      );
+    });
+  }, [searchQuery, uniqueStudentSchedules]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -280,9 +301,8 @@ const ViewSchedule = () => {
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   console.log("uniqueStudentSchedules", uniqueStudentSchedules);
-  const currentItems =
-    uniqueStudentSchedules?.slice(indexOfFirst, indexOfLast) ?? [];
-  const totalPages = Math.ceil(uniqueStudentSchedules.length / itemsPerPage);
+  const currentItems = filteredData?.slice(indexOfFirst, indexOfLast) ?? [];
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 console.log("currentItems", currentItems);
   const toggleMenu = (index: number) => {
     setSelectedMenu(selectedMenu === index ? null : index);
@@ -382,25 +402,19 @@ console.log("currentItems", currentItems);
     endTime: string
   ): boolean => {
     const now = new Date();
-
-    // Parse date and combine with start and end times
     const date = new Date(selectedDate);
-
     const [startHour, startMin] = startTime.split(":").map(Number);
     const [endHour, endMin] = endTime.split(":").map(Number);
-
     const start = new Date(date);
     start.setHours(startHour, startMin, 0, 0);
-
     const end = new Date(date);
     end.setHours(endHour, endMin, 0, 0);
-
     return now >= start && now <= end;
   };
 
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection="Scheduled Classes" />
+      <SupervisorHeader currentSection="Scheduled Classes" showBackButton={true} showBackPath="/supervisor/ui/teachers" />
       {/* Tabs */}
       <div className="flex space-x-6 px-4 py-1 mb-3 rounded-md">
         <button
@@ -438,7 +452,9 @@ console.log("currentItems", currentItems);
             <input
               type="text"
               placeholder="Search by keyword"
-              className="bg-transparent outline-none text-[15px] w-52 py-3 "
+              className="bg-transparent outline-none text-[15px] w-52 py-3"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
             <div
@@ -594,8 +610,8 @@ console.log("currentItems", currentItems);
             )}
 
           <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-            <span className="text-left -ml-60 ">
-              Showing {currentItems.length} Of {uniqueStudentSchedules.length}
+            <span className="text-left -ml-60">
+              Showing {currentItems.length} Of {filteredData.length}
             </span>
           </div>
         </div>
@@ -631,15 +647,15 @@ console.log("currentItems", currentItems);
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    <td className="px-6 py-2 text-[#3D8FDE] dark:text-[#3D8FDE] text-left">
+                    <td className="px-6 py-4 text-[#3D8FDE] dark:text-[#3D8FDE] text-left">
                       {item.teacher.teacherName}
                     </td>
-                    <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {item._id}
                     </td>
 
                     <td className="px-8 py-3 text-left">{item.course?.courseName || 'N/A'}</td>
-                    <td className="px-6 py-3 text-left">MasterClass</td>
+                    <td className="px-6 py-3 text-left">Regular Class</td>
                     <td className="px-3 py-3 text-left">
                       {new Date(item.startDate).toDateString()} </td>
                     <td className="px-3 py-3 text-left">
@@ -690,7 +706,6 @@ console.log("currentItems", currentItems);
                           } else {
                             content = (
                               <span className="py-1 px-2 text-black rounded-lg bg-yellow-500 dark:text-[#ffff]">
-                                Scheduled at{" "}
                                 {formatTime(getEarliestTime(item.startTime))}
                               </span>
                             );
@@ -698,7 +713,6 @@ console.log("currentItems", currentItems);
                         } else {
                           content = (
                             <span className="py-1 px-2 text-black rounded-lg dark:text-[#ffff] ">
-                              Scheduled at{" "}
                               {formatTime(getEarliestTime(item.startTime))}
                             </span>
                           );
@@ -707,9 +721,9 @@ console.log("currentItems", currentItems);
                       })()}
                     </td>
 
-                    <td className="px-3 py-2 text-left">
+                    <td className="px-3 py-3 text-left">
                       <span
-                        className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getStatusClass(
+                        className={`text-[10px] font-semibold px-3 py-2 rounded-lg ${getStatusClass(
                           item.scheduleStatus
                         )}`}
                       >

@@ -94,15 +94,14 @@ const SchedulePage = () => {
             },
           }
         );
-
-        if (response.data?.data?.meetings) {
-          const sortedMeetings = response.data.data.meetings.sort(
+       console.log("response",response);
+        if (response.data?.meetings) {
+          const sortedMeetings = response.data.meetings.sort(
             (a: Meeting, b: Meeting) =>
               new Date(a.selectedDate).getTime() -
               new Date(b.selectedDate).getTime()
           );
           setMeetings(sortedMeetings);
-          setFilteredMeetings(sortedMeetings);
         }
       } catch (error) {
         console.error("Error fetching meetings:", error);
@@ -233,7 +232,7 @@ const SchedulePage = () => {
 
             return (
               <div key={day} className="flex flex-col">
-                <div
+                <button
                   onClick={() => handleDayClick(day)}
                   className={`w-full p-4 rounded-xl cursor-pointer transition-all duration-200 ${
                     isSelected
@@ -290,7 +289,7 @@ const SchedulePage = () => {
                       </div>
                     )}
                   </div>
-                </div>
+                </button>
 
                 {/* Meeting Details */}
                 {isSelected && dayMeetings.length > 0 && (
@@ -426,7 +425,7 @@ const SchedulePage = () => {
               date.getFullYear() === selectedDate.getFullYear();
             
             return (
-              <div
+              <button
                 key={i}
                 onClick={() => handleDateClick(date)}
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer ${
@@ -454,7 +453,7 @@ const SchedulePage = () => {
                     </div>
                       </div>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>
@@ -464,7 +463,7 @@ const SchedulePage = () => {
 
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection="Calendar" />
+      <SupervisorHeader currentSection="Calendar" showBackButton={true} showBackPath="/supervisor/ui/dashboard" />
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col md:flex-row overflow-hidden h-[630px]">
           <div className="w-full md:w-2/3 p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
@@ -502,36 +501,40 @@ const SchedulePage = () => {
               )}
             </div>
             <div className="space-y-6 overflow-y-scroll scrollbar-none h-[600px]">
-              {filteredMeetings.map((meeting, index) => {
-                const colors = getMeetingTypeColor(meeting.meetingName);
-                return (
-                  <div
-                    key={index}
-                    className="border-b dark:border-[#414141] pb-4"
-                  >
-                    <div className="flex justify-between">
-                      <h4
-                        className={`font-medium w-40 text-[12px] ${colors.text}`}
-                      >
-                        {meeting.meetingName}
-                      </h4>
-                      <div className="flex items-center text-gray-400 text-[9px] mt-1 gap-2">
-                    <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
-                          <Clock size={10} /> {meeting.startTime} -{" "}
-                          {meeting.endTime}
-                    </span>
-                    <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
-                          <CalendarDays size={10} />{" "}
-                          {moment(meeting.selectedDate).format("DD/MM/YYYY")}
-                    </span>
-                  </div>
-                  </div>
-                    <p className="text-gray-500 dark:text-[#f9f9f9] text-[9px] mt-2">
-                      {meeting.description}
-                  </p>
-                </div>
-                );
-              })}
+              {filteredMeetings.length > 0 ? (
+  filteredMeetings.map((meeting) => {
+    const colors = getMeetingTypeColor(meeting.meetingName);
+    return (
+      <div
+        key={meeting.meetingId}
+        className="border-b dark:border-[#414141] pb-4"
+      >
+        <div className="flex justify-between">
+          <h4 className={`font-medium w-40 text-[12px] ${colors.text}`}>
+            {meeting.meetingName}
+          </h4>
+          <div className="flex items-center text-gray-400 text-[9px] mt-1 gap-2">
+            <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
+              <Clock size={10} /> {meeting.startTime} - {meeting.endTime}
+            </span>
+            <span className="flex items-center gap-1 dark:text-[#f4f4f4]">
+              <CalendarDays size={10} />{" "}
+              {moment(meeting.selectedDate).format("DD/MM/YYYY")}
+            </span>
+          </div>
+        </div>
+        <p className="text-gray-500 dark:text-[#f9f9f9] text-[9px] mt-2">
+          {meeting.description}
+        </p>
+      </div>
+    );
+  })
+) : (
+  <p className="text-sm text-gray-500 dark:text-gray-300 text-center py-4">
+    📅 Click a date to view meetings!
+  </p>
+)}
+
             </div>
           </div>
         </div>
