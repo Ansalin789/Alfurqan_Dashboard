@@ -1,8 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { IoArrowBackCircleSharp } from "react-icons/io5";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { FaRegEdit } from "react-icons/fa";
 import { VscGraphLeft } from "react-icons/vsc";
 import { IoMdAttach } from "react-icons/io";
@@ -11,17 +10,46 @@ import BaseLayout3 from "@/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
 
 const TeacherDetails = () => {
-  const router = useRouter();
-  interface Teacher {
-    _id: string;
-    userId: string;
-    userName: string;
-    email: string;
-    profileImage?: string | null;
-    level: string;
-    subject: string;
-    rating: number;
-  }
+  interface IProfessionalExperience {
+  jobRole: string;
+  organizationName: string;
+  jobLocation: string;
+  fromDate: string | null;
+  toDate: string | null;
+  jobDescription: string;
+  _id: string;
+}
+
+ interface ICandidateApplication {
+  _id: string;
+  candidateFirstName: string;
+  candidateLastName: string;
+  supervisor: {
+    supervisorId: string;
+    supervisorName: string;
+    supervisorEmail: string;
+    supervisorRole: string;
+  };
+  gender: string;
+  applicationDate: string; // ISO date string
+  candidateEmail: string;
+  candidatePhoneNumber: number;
+  candidateCountry: string;
+  candidateCity: string;
+  positionApplied: string;
+  currency: string;
+  expectedSalary: number;
+  preferedWorkingHours: string;
+  comments: string;
+  applicationStatus: string;
+  overallRating: number;
+  professionalExperience: IProfessionalExperience[];
+  skills: string;
+  status: string;
+  createdDate: string; // ISO date string
+  createdBy: string;
+  __v: number;
+}
   interface Student {
     studentId: string;
     studentFirstname: string;
@@ -37,9 +65,9 @@ const TeacherDetails = () => {
     students: Student[];
   }
   const [stats, setStats] = useState<StatsResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [teachers, setTeachers] = useState<Teacher>();
+  const [teachers, setTeachers] = useState<ICandidateApplication>();
+  const search = useSearchParams();
+  const teacherId = search.get("teacherId");
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
@@ -53,9 +81,7 @@ const TeacherDetails = () => {
           return;
         }
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/users/${localStorage.getItem(
-            "supervisormanageTeacherId"
-          )}`,
+          `https://api.blackstoneinfomaticstech.com/applicants/${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -77,11 +103,6 @@ const TeacherDetails = () => {
         typeof window !== "undefined"
           ? localStorage.getItem("SupervisorAuthToken")
           : null;
-          
-      const teacherId =
-          typeof window !== "undefined"
-            ? localStorage.getItem("supervisormanageTeacherId")
-            : null;
       if (!token) {
         console.error("❌ SupervisorAuthToken not found");
         return;
@@ -103,10 +124,8 @@ const TeacherDetails = () => {
       console.log("Fetched stats:", data);
       setStats(data);
     } catch (err: any) {
-      setError(err.message || "Unknown error");
-    } finally {
-      setLoading(false);
-    }
+      console.log(err.message ?? "Unknown error");
+    } 
   };
     fetchStats();
     fetchTeachers();
@@ -130,6 +149,7 @@ const TeacherDetails = () => {
       <SupervisorHeader
         currentSection="Teacher Details"
         showBackButton={true}
+        showBackPath="/supervisor/ui/teachers"
       />
       <div className="p-2 mx-auto">
         {/* Main Container */}
@@ -146,7 +166,7 @@ const TeacherDetails = () => {
               <div className="absolute left-1/2 -bottom-16 transform -translate-x-1/2">
                 <Image
                   className="rounded-full border-2 border-white"
-                  src={teachers?.profileImage ?? "/assets/images/proff.jpg"}
+                  src={"/assets/images/proff.jpg"}
                   width={155}
                   height={155}
                   alt="Profile"
@@ -156,7 +176,7 @@ const TeacherDetails = () => {
             {/* Name and role */}
             <div className="pt-20 pb-2 text-center">
               <h2 className="text-xl font-semibold text-[#22223b] dark:text-[#fff]">
-                {teachers?.userName ?? "Will Jonto"}
+                {teachers?.candidateFirstName ?? "Will Jonto"}
               </h2>
               <p className="text-[#4b5563] dark:text-[#a1a1a1] text-sm">
                 Teacher
@@ -175,15 +195,15 @@ const TeacherDetails = () => {
                     Full Name
                   </span>
                   <span className="text-gray-500 text-[12px] dark:text-[#a1a1a1]">
-                    {teachers?.userName}
+                    {teachers?.candidateFirstName} {teachers?.candidateLastName}
                   </span>
                 </li>
                 <li className="flex justify-between">
                   <span className="font-normal text-gray-600 dark:text-[#fff] opacity-[90%]">
-                    Time Zone
+                   Email
                   </span>
                   <span className="text-gray-500 text-[12px] dark:text-[#a1a1a1]">
-                    USA( time)
+                    {teachers?.candidateEmail}
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -191,7 +211,7 @@ const TeacherDetails = () => {
                     Country
                   </span>
                   <span className="text-gray-500 text-[12px] dark:text-[#a1a1a1]">
-                    USA
+                   {teachers?.candidateCountry}
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -199,7 +219,7 @@ const TeacherDetails = () => {
                     Level
                   </span>
                   <span className="text-gray-500 text-[12px] dark:text-[#a1a1a1]">
-                    {teachers?.level}
+                    {teachers?.overallRating}
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -207,7 +227,7 @@ const TeacherDetails = () => {
                     Date Of Joining
                   </span>
                   <span className="text-gray-500 text-[12px] dark:text-[#a1a1a1]">
-                    06/10/2023
+                    {teachers?.applicationDate && new Date(teachers.applicationDate).toLocaleDateString()}
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -215,7 +235,7 @@ const TeacherDetails = () => {
                     Course Handling
                   </span>
                   <span className="text-gray-500 text-[12px] dark:text-[#a1a1a1]">
-                    {teachers?.subject}
+                    {teachers?.positionApplied}
                   </span>
                 </li>
                 <li className="flex justify-between">

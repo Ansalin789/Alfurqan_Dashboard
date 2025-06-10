@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import axios from "axios";
+import { useSearchParams } from "next/navigation";
 import BaseLayout3 from "@/components/BaseLayout3";
 import SupervisorHeader from "../../components/supervisorHeader";
 import SuccessPopup from "../../components/successPopup";
@@ -52,7 +53,8 @@ interface ApiResponse {
 
 function LiveClass() {
   const [showFeedback, setShowFeedback] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
+  const search = useSearchParams();
+  const classScheduleid = search.get('id');
   const [ratings, setRatings] = useState([0, 0, 0, 0]);
   const [feedback, setFeedback] = useState("");
   const [classData, setClassData] = useState<ClassData | null>(null);
@@ -63,7 +65,6 @@ function LiveClass() {
     const [successMessage,setSuccessMessage] = useState("");
 
   useEffect(() => {
-    const classScheduleid = localStorage.getItem("showfeedbackid");
     const fetchClassData = async () => {
       try {
         const token =
@@ -75,6 +76,7 @@ function LiveClass() {
           console.error("❌ SupervisorAuthToken not found");
           return;
         }
+        console.log(classScheduleid);
         const response = await axios.get<ClassData>(
           `https://api.blackstoneinfomaticstech.com/classShedule/${classScheduleid}`,
           {
@@ -161,10 +163,9 @@ function LiveClass() {
       );
 
       if (response.status === 201 || response.status === 200) {
-        setShowPopup(true);
         setSuccess(true);
         setSuccessMessage('Feedback');
-        setTimeout(() => setShowPopup(false), 3000);
+        setTimeout(() => setShowFeedback(false), 3000);
       } else {
         console.log("Failed to submit feedback. Please try again.");
         setFailedMessage('Check Inputs');
@@ -199,17 +200,6 @@ function LiveClass() {
       </div>
     );
   };
-  useEffect(() => {
-    let timeoutId: number | undefined;
-    if (showPopup) {
-      timeoutId = window.setTimeout(() => {
-        setShowPopup(false);
-      }, 3000);
-    }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [showPopup]);
 
   const categories = [
     "knowledge of students and content",
@@ -220,7 +210,7 @@ function LiveClass() {
 
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection="Live Classes" />
+      <SupervisorHeader currentSection="Live Classes" showBackButton={true} showBackPath="/supervisor/ui/viewschedule" />
       <div className="flex flex-col min-h-screen px-4 sm:px-6 md:px-8">
         {/* Centered Popup */}
               {success && (

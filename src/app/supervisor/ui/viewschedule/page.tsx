@@ -1,7 +1,7 @@
 "use client";
 
 import BaseLayout3 from "@/components/BaseLayout3";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { HiOutlineDotsHorizontal, HiOutlineX } from "react-icons/hi";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -24,6 +24,10 @@ const ViewSchedule = () => {
     teacherName: string;
     teacherEmail: string;
   }
+  interface course{
+    courseId: string;
+    courseName: string;
+  }
 
   interface Schedule {
     student: Student;
@@ -31,13 +35,18 @@ const ViewSchedule = () => {
     _id: string;
     classDay: string[];
     package: string;
+    course: {
+      courseId: string;
+      courseName: string;
+    };
+    subject: string;
     preferedTeacher: string;
     totalHourse: number;
     startDate: string;
     endDate: string;
     startTime: string[];
     endTime: string[];
-    scheduleStatus: "Scheduled" | "Re-scheduled" | "Ongoing" | "Completed";
+    scheduleStatus: "Scheduled" | "Re-scheduled" | "Ongoing" | "Completed" | "Ready to Start";
     status: string;
     createdBy: string;
     createdDate: string;
@@ -58,12 +67,50 @@ const ViewSchedule = () => {
   >([]);
   const [selectedMenu, setSelectedMenu] = useState<number | null>(null);
 
+  // Date Range
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  // Course
+  const [course, setCourse] = useState("");
+
+  // Course Type (maps to sessionClassType)
+  const [sessionClassType, setSessionClassType] = useState("");
+
+  // Timing (maps to startTime)
+  const [startTime, setStartTime] = useState("");
+
+  // Status (maps to scheduleStatus)
+  const [scheduleStatus, setScheduleStatus] = useState("");
+
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const [activeTab, setActiveTab] = useState<string>("scheduled");
   const [upcomingClasses, setUpcomingClasses] = useState<Schedule[]>([]);
   const [completedClasses, setCompletedClasses] = useState<Schedule[]>([]);
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Remove the filterData function and replace with useMemo
+  const filteredData = useMemo(() => {
+    if (!searchQuery) return uniqueStudentSchedules;
+    
+    const query = searchQuery.toLowerCase();
+    return uniqueStudentSchedules.filter((item) => {
+      const timeStr = item.formattedTimes?.[0] || '';
+      
+      return (
+        item.teacher.teacherName.toLowerCase().includes(query) ||
+        (item.course?.courseName || '').toLowerCase().includes(query) ||
+        'Regular Class'.toLowerCase().includes(query) ||
+        new Date(item.startDate).toDateString().toLowerCase().includes(query) ||
+        timeStr.toLowerCase().includes(query) ||
+        item.scheduleStatus.toLowerCase().includes(query)
+      );
+    });
+  }, [searchQuery, uniqueStudentSchedules]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -132,7 +179,20 @@ const ViewSchedule = () => {
             updatedStatus = "Re-scheduled";
           } else if (schedule.scheduleStatus === "Completed") {
             updatedStatus = "Completed";
+
+          } else if (isToday(schedule.startDate)) {
+            if (isStartMeetingNow(schedule.startDate, schedule.startTime[0], schedule.endTime[0])) {
+              updatedStatus = "Ready to Start";
+            } else {
+              updatedStatus = "Scheduled";
+            }
           } else if (isFuture || (schedule.scheduleDate && schedule.scheduleDate > today)) {
+
+          } else if (
+            isFuture ||
+            (schedule.scheduleDate && schedule.scheduleDate > today)
+          ) {
+
             updatedStatus = "Scheduled";
           }
 
@@ -153,7 +213,9 @@ const ViewSchedule = () => {
             return false;
           }
 
-          return ["Scheduled", "Re-scheduled", "Ongoing"].includes(schedule.scheduleStatus);
+          return ["Scheduled", "Re-scheduled", "Ongoing"].includes(
+            schedule.scheduleStatus
+          );
         });
 
         // Filter completed classes
@@ -172,10 +234,60 @@ const ViewSchedule = () => {
     fetchData();
   }, []);
 
+  const handleFilter = async () => {
+    setShowModal(false);
+    console.log("✅ Filter button clicked");
+
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorAuthToken")
+        : null;
+
+    if (!token) {
+      console.error("❌ SupervisorAuthToken not found");
+      return;
+    }
+
+    // Build query params with correct keys
+    const params: any = {};
+    // if (searchText) params.searchText = searchText;
+    if (sessionClassType) params.sessionClassType = sessionClassType; // course type
+    if (startTime) params.startTime = startTime; // timing
+    if (fromDate) params["dateRange.from"] = fromDate;
+    if (toDate) params["dateRange.to"] = toDate;
+    if (scheduleStatus) params.scheduleStatus = scheduleStatus; // status
+    if (course) params.course = course; // course name
+
+    try {
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        params,
+      });
+      console.log("🔍 Params being sent:", params);
+      const meetings: Schedule[] = response.data.students || [];
+
+      setUpcomingClasses(
+        meetings.filter((m: Schedule) => m.scheduleStatus !== "Completed")
+      );
+      setCompletedClasses(
+        meetings.filter((m: Schedule) => m.scheduleStatus === "Completed")
+      );
+      console.log("✅ Filtered data:", response.data);
+
+     setUniqueStudentSchedules(Array.isArray(response.data.students) ? response.data.students : []);
+    } catch (error) {
+      console.error("❌ Error fetching filtered data:", error);
+    }
+  };
+
   // Update displayed data when tab changes
   useEffect(() => {
     if (activeTab === "scheduled") {
       setUniqueStudentSchedules(upcomingClasses);
+       console.log("✅ Filtered upcoming classes", upcomingClasses);
     } else if (activeTab === "completed") {
       setUniqueStudentSchedules(completedClasses);
     }
@@ -188,23 +300,16 @@ const ViewSchedule = () => {
   const itemsPerPage = 10;
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentItems = uniqueStudentSchedules.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(uniqueStudentSchedules.length / itemsPerPage);
-
+  console.log("uniqueStudentSchedules", uniqueStudentSchedules);
+  const currentItems = filteredData?.slice(indexOfFirst, indexOfLast) ?? [];
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+console.log("currentItems", currentItems);
   const toggleMenu = (index: number) => {
     setSelectedMenu(selectedMenu === index ? null : index);
   };
 
   const handleLiveClassRedirect = (id: string) => {
-    router.push("/supervisor/ui/liveclass");
-    localStorage.setItem("showfeedbackid", id);
-    localStorage.setItem("showfeedbackdirect", JSON.stringify(false));
-  };
-
-  const handleFeedbackRedirect = (id: string) => {
-    router.push("/supervisor/ui/liveclass");
-    localStorage.setItem("showfeedbackid", id);
-    localStorage.setItem("showfeedbackdirect", JSON.stringify(true));
+    router.push(`/supervisor/ui/liveclass?id=${id}`);
   };
 
   useEffect(() => {
@@ -280,19 +385,38 @@ const ViewSchedule = () => {
       case "Re-scheduled":
         return "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white";
       case "Ongoing":
-        return "text-[#576CBC] bg-[#F3F6FF] dark:bg-[#2C3B6C] dark:text-[#576CBC]";
+        return "text-[#576CBC] bg-[#F3F6FF] dark:bg-[#2C3B6C] dark:text-[#576CBC] px-[22px]";
       case "Completed":
         return "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36]";
+      case "Ready to Start":
+        return "text-[#576CBC] bg-[#F3F6FF] dark:bg-[#2C3B6C] dark:text-[#576CBC]";
       default:
         return "text-[#377E36] bg-[#ECFDF3]";
     }
   };
 
+
+  const isStartMeetingNow = (
+    selectedDate: string,
+    startTime: string,
+    endTime: string
+  ): boolean => {
+    const now = new Date();
+    const date = new Date(selectedDate);
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour, endMin] = endTime.split(":").map(Number);
+    const start = new Date(date);
+    start.setHours(startHour, startMin, 0, 0);
+    const end = new Date(date);
+    end.setHours(endHour, endMin, 0, 0);
+    return now >= start && now <= end;
+  };
+
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection="Scheduled Classes" />
+      <SupervisorHeader currentSection="Scheduled Classes" showBackButton={true} showBackPath="/supervisor/ui/teachers" />
       {/* Tabs */}
-      <div className="flex space-x-6 px-4 py-2 rounded-md">
+      <div className="flex space-x-6 px-4 py-1 mb-3 rounded-md">
         <button
           className={`relative text-[14px] transition font-medium ${
             activeTab === "scheduled"
@@ -322,130 +446,179 @@ const ViewSchedule = () => {
         </button>
       </div>
       <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
-        <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434] h-10">
+        <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
             <input
               type="text"
               placeholder="Search by keyword"
-              className="bg-transparent outline-none text-[15px] w-52 py-3 "
+              className="bg-transparent outline-none text-[15px] w-52 py-3"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-
-          <div className="relative ">
             <div
-              className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-              onClick={() => setShowFilter(!showFilter)}
+              className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+              onClick={() => setShowModal(true)}
             >
               {/* <BsFilterLeft /> */}
               <MdTune className="w-4 h-4" />
               <span>Filter</span>
             </div>
             {/* Filter Popup */}
-            {showFilter && (
+            {showModal && (
               <div
-                className="absolute top-14 left-0 bg-white dark:bg-[#343434] rounded-lg shadow-lg w-80 p-6 z-50"
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center"
               >
+
+                <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
                     Filter by
                   </h3>
-                  <button onClick={() => setShowFilter(false)}>
+                  <button onClick={() => setShowModal(false)}>
                     <HiOutlineX className="w-4 h-4 text-gray-500 hover:text-gray-700" />
                   </button>
                 </div>
 
                 {/* Date */}
-                <label
-                  htmlFor="date"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Date
-                </label>
-                <input
-                  type="date"
-                  className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="mb-4">
+                  <label
+                    htmlFor="fromDate"
+                    className="text-sm font-medium mb-1 dark:text-[#D6D6D6]"
+                  >
+                    Date Range
+                  </label>
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="date"
+                      id="fromDate"
+                      className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                      value={fromDate}
+                      onChange={(e) => setFromDate(e.target.value)}
+                    />
+                    <input
+                      type="date"
+                      id="toDate"
+                      className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                      value={toDate}
+                      onChange={(e) => setToDate(e.target.value)}
+                    />
+                  </div>
+                </div>
 
                 {/* Course */}
-                <label
-                  htmlFor="course"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Course
-                </label>
-                <input
-                  type="text"
-                  placeholder="Course name"
-                  className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="mb-4">
+                  <label
+                    htmlFor="course"
+                    className="block text-sm font-medium mb-1 dark:text-white"
+                  >
+                    Course
+                  </label>
+                  <select
+                    id="course"
+                    className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                    value={course}
+                    onChange={(e) => setCourse(e.target.value)}
+                  >
+                    <option value="">Select any one</option>
+                    <option value="Islamic Studies">Islamic Studies</option>
+                    <option value="Quran">Quran</option>
+                    <option value="Arabic">Arabic</option>
+                  </select>
+                </div>
 
                 {/* Course Type */}
-                <label
-                  htmlFor="course type"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Course Type
-                </label>
-                <select className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <option>Online</option>
-                  <option>Offline</option>
-                </select>
+                <div className="mb-4">
+                  <label
+                    htmlFor="courseType"
+                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                  >
+                    Course Type
+                  </label>
+                  <select
+                    id="courseType"
+                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={sessionClassType}
+                    onChange={(e) => setSessionClassType(e.target.value)}
+                  >
+                    <option value="">Select any one</option>
+
+                    <option>Regular Class</option>
+                    <option>Group Class</option>
+                    <option>Trail Class</option>
+                  </select>
+                </div>
 
                 {/* Timing */}
-                <label
-                  htmlFor="timimg"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Timing
-                </label>
-                <input
-                  type="time"
-                  className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div className="mb-4">
+                  <label
+                    htmlFor="timing"
+                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                  >
+                    Timing
+                  </label>
+                  <input
+                    type="time"
+                    id="timing"
+                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                  />
+                </div>
 
                 {/* Status */}
-                <label
-                  htmlFor="status"
-                  className="block text-sm text-gray-700 mb-1 dark:text-white"
-                >
-                  Status
-                </label>
-                <select className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <option>Scheduled</option>
-                  <option>Completed</option>
-                  <option>Cancelled</option>
-                </select>
+                <div className="mb-4">
+                  <label
+                    htmlFor="status"
+                    className="block text-sm text-gray-700 mb-1 dark:text-white"
+                  >
+                    Status
+                  </label>
+                  <select
+                    id="status"
+                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656] rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={scheduleStatus}
+                    onChange={(e) => setScheduleStatus(e.target.value)}
+                  >
+                    {" "}
+                    <option value="">Select any one</option>
+                    <option>Scheduled</option>
+                    <option>Completed</option>
+                    <option>Re-Scheduled</option>
+                  </select>
+                </div>
 
                 <hr className="my-4" />
 
                 <div className="flex justify-between">
                   <button
-                    className="px-4 py-2 rounded-md border border-indigo-300 text-indigo-600 hover:bg-indigo-50 text-sm"
-                    onClick={() => setShowFilter(false)}
+                    className="px-4 py-2 rounded-md border border-[#576cbc] text-indigo-600 text-sm"
+                    onClick={() => setShowModal(false)}
                   >
                     Cancel
                   </button>
-                  <button className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm">
+                  <button
+                    className="px-4 py-2 rounded-md bg-[#576cbc] text-white hover:bg-indigo-700 text-sm"
+                    onClick={handleFilter}
+                  >
                     Submit
                   </button>
                 </div>
               </div>
+              </div>
             )}
-          </div>
 
           <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-            <span className="text-left -ml-60 ">
-              Showing {currentItems.length} Of {uniqueStudentSchedules.length}
+            <span className="text-left -ml-60">
+              Showing {currentItems.length} Of {filteredData.length}
             </span>
           </div>
         </div>
-        <div className="bg-white rounded-lg   flex flex-col justify-between dark:bg-[#343434]">
-          <div className="overflow-x-auto">
-            <table className="table-auto  w-full border-separate border-spacing-y-3">
-              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0] border border-[#4C6993]">
-                <tr>
+            <table className="table-auto w-full"
+                    style={{ width: "100%", tableLayout: "fixed" }}>
+              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                <tr className="font-medium">
                   {[
                     "Name",
                     "Id",
@@ -457,7 +630,7 @@ const ViewSchedule = () => {
                   ].map((header) => (
                     <th
                       key={header}
-                      className="  b whitespace-nowrap text-left px-3 py-3 font-medium border  border-[#4C6993] "
+                      className="text-left px-6 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]"
                     >
                       {header}
                     </th>
@@ -474,18 +647,18 @@ const ViewSchedule = () => {
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    <td className="px-3 py-2 text-[#3D8FDE] dark:text-[#3D8FDE]">
+                    <td className="px-6 py-4 text-[#3D8FDE] dark:text-[#3D8FDE] text-left">
                       {item.teacher.teacherName}
                     </td>
-                    <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {item._id}
                     </td>
-                    <td className="px-6 py-3 text-center">Quran</td>
-                    <td className="px-6 py-3 text-center">MasterClass</td>
-                    <td className="px-6 py-3 text-center">
-                      {new Date(item.startDate).toDateString()}
-                    </td>
-                    <td className="px-6 py-3 text-center">
+
+                    <td className="px-8 py-3 text-left">{item.course?.courseName || 'N/A'}</td>
+                    <td className="px-6 py-3 text-left">Regular Class</td>
+                    <td className="px-3 py-3 text-left">
+                      {new Date(item.startDate).toDateString()} </td>
+                    <td className="px-3 py-3 text-left">
                       {(() => {
                         let content;
                         console.log(
@@ -511,16 +684,35 @@ const ViewSchedule = () => {
                             </button>
                           );
                         } else if (isToday(item.startDate)) {
-                          content = (
-                            <span className="py-1 px-2 text-black rounded-lg bg-yellow-500 dark:text-[#ffff]">
-                              Scheduled at{" "}
-                              {formatTime(getEarliestTime(item.startTime))}
-                            </span>
-                          );
+                          if (
+                            isStartMeetingNow(
+                              item.startDate,
+                              item.startTime[0],
+                              item.endTime[0]
+                            )
+                          ) {
+                            content = (
+                              <button
+                                // onClick={() => handleLiveClassRedirect(item._id)}
+                                className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border cursor-pointer hover:opacity-80"
+                                onClick={() =>
+                                  router.push(
+                                    `/supervisor/ui/meetingvideocall?id=${item._id}`
+                                  )
+                                }>
+                                Start Meeting
+                              </button>
+                            );
+                          } else {
+                            content = (
+                              <span className="py-1 px-2 text-black rounded-lg bg-yellow-500 dark:text-[#ffff]">
+                                {formatTime(getEarliestTime(item.startTime))}
+                              </span>
+                            );
+                          }
                         } else {
                           content = (
                             <span className="py-1 px-2 text-black rounded-lg dark:text-[#ffff] ">
-                              Scheduled at{" "}
                               {formatTime(getEarliestTime(item.startTime))}
                             </span>
                           );
@@ -529,8 +721,12 @@ const ViewSchedule = () => {
                       })()}
                     </td>
 
-                    <td className="px-3 py-2 text-left">
-                      <span className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getStatusClass(item.scheduleStatus)}`}>
+                    <td className="px-3 py-3 text-left">
+                      <span
+                        className={`text-[10px] font-semibold px-3 py-2 rounded-lg ${getStatusClass(
+                          item.scheduleStatus
+                        )}`}
+                      >
                         {item.scheduleStatus}
                       </span>
                     </td>
@@ -538,16 +734,12 @@ const ViewSchedule = () => {
                 ))}
               </tbody>
             </table>
-          </div>
-
-          <div></div>
-        </div>
-        <Pagination
+      </div>
+      <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
         />
-      </div>
     </BaseLayout3>
   );
 };

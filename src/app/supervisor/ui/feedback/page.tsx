@@ -7,8 +7,8 @@ import { FaStar } from "react-icons/fa";
 
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
-import { HiOutlineX } from "react-icons/hi";
 import { MdTune } from "react-icons/md";
+import axios from "axios";
 interface FlattenedFeedbackItem {
   _id: string;
   Review: string;
@@ -86,26 +86,91 @@ const FeedbackDetails: React.FC = () => {
     }>
   >([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedApplicant, setSelectedApplicant] =
-    useState<FlattenedFeedbackItem | null>(null);
-  const [Filter, setFilter] = useState(false);
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(applicants.length / itemsPerPage);
+  const [selectedApplicant, setSelectedApplicant] =  useState<FlattenedFeedbackItem | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false); // Popup visibility
+  const [selectedCourse, setSelectedCourse] = useState(""); // Final selected course for API
+  const [tempCourse, setTempCourse] = useState(""); // Temp selection inside popup
+  const [feedbackData, setFeedbackData] = useState([]);
 
+  // Mapping for query parameter
+  const courseQueryMap: Record<string, string> = {
+    "Quran Studies": "Quran Studies",
+    "Islamic Studies": "Islamic Studies",
+    "Arabic Studies": "Arabic Studies",
+  };
+
+  useEffect(() => {
+    if (!selectedCourse) return;
+
+    const fetchFeedback = async () => {
+      try {
+        const courseQuery = courseQueryMap[selectedCourse];
+        const response = await axios.get(
+          `http://localhost:5001/allfeedback?course=${courseQuery}`
+        );
+        console.log(response.data);
+        const rawData = await response.data;
+        console.log("API Response:", rawData); // Debug log
+
+        // Check if rawData exists and has feedbackRecords
+        if (!rawData || !rawData.feedbackRecords) {
+          console.error("Invalid API response structure:", rawData);
+          return;
+        }
+
+        const feedbackArray: RawFeedbackItem[] = rawData.feedbackRecords;
+
+        if (feedbackArray.length === 0) {
+          console.log("No feedback records found");
+          setApplicants([]);
+          return;
+        }
+
+        const formattedData: FlattenedFeedbackItem[] = feedbackArray.map(
+          (item) => ({
+            _id: item._id,
+            Review:
+              item.student?.studentFirstName +
+              " " +
+              (item.student?.studentLastName || ""),
+            Teacher: item.teacher?.teacherName || "Unknown",
+            class: item.course?.courseName || "Unknown",
+            Feedback: item.feedbackmessage || "",
+            level: calculateLevel(item),
+          })
+        );
+
+        setApplicants(formattedData);
+      } catch (error) {
+        console.error("Error fetching feedback:", error);
+      }
+    };
+
+    fetchFeedback();
+  }, [selectedCourse]);
+
+  // Filter applications based on search query
+  const filteredApplications = applicants.filter((applicant) => {
+    const searchLower = searchQuery.toLowerCase();
+    const reviewMatch =
+      applicant.Review?.toLowerCase().includes(searchLower) || false;
+    const teacherMatch =
+      applicant.Teacher?.toLowerCase().includes(searchLower) || false;
+    const classMatch =
+      applicant.class?.toLowerCase().includes(searchLower) || false;
+    const feedbackMatch =
+      applicant.Feedback?.toLowerCase().includes(searchLower) || false;
+
+    return reviewMatch || teacherMatch || classMatch || feedbackMatch;
+  });
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentItems = applicants.slice(indexOfFirst, indexOfLast);
+  const currentItems = filteredApplications.slice(indexOfFirst, indexOfLast);
 
-  const [showModal, setShowModal] = useState(false);
-
-  const handleDetailsClick = (applicant: FlattenedFeedbackItem) => {
-    setSelectedApplicant(applicant);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
   // Declare this outside your component or hook
   function calculateLevel(item: RawFeedbackItem): number {
     if (item.studentsRating) {
@@ -127,6 +192,17 @@ const FeedbackDetails: React.FC = () => {
     return 0;
   }
 
+  const [showModal, setShowModal] = useState(false);
+
+  const handleDetailsClick = (applicant: FlattenedFeedbackItem) => {
+    setSelectedApplicant(applicant);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
@@ -140,12 +216,15 @@ const FeedbackDetails: React.FC = () => {
           return;
         }
 
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/allfeedback", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await fetch(
+          "https://api.blackstoneinfomaticstech.com/allfeedback",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!res.ok) {
           console.error("Fetch error:", res.statusText);
@@ -153,14 +232,19 @@ const FeedbackDetails: React.FC = () => {
         }
 
         const rawData = await res.json();
+        console.log("API Response:", rawData); // Debug log
 
-        const feedbackArray: RawFeedbackItem[] = rawData.data.feedbackRecords;
+        // Check if rawData exists and has feedbackRecords
+        if (!rawData || !rawData.feedbackRecords) {
+          console.error("Invalid API response structure:", rawData);
+          return;
+        }
 
-        if (!Array.isArray(feedbackArray)) {
-          console.error(
-            "Expected feedbackRecords array but got:",
-            feedbackArray
-          );
+        const feedbackArray: RawFeedbackItem[] = rawData.feedbackRecords;
+
+        if (feedbackArray.length === 0) {
+          console.log("No feedback records found");
+          setApplicants([]);
           return;
         }
 
@@ -168,12 +252,12 @@ const FeedbackDetails: React.FC = () => {
           (item) => ({
             _id: item._id,
             Review:
-              item.student.studentFirstName +
+              item.student?.studentFirstName +
               " " +
-              (item.student.studentLastName || ""),
-            Teacher: item.teacher.teacherName,
-            class: item.course.courseName,
-            Feedback: item.feedbackmessage,
+              (item.student?.studentLastName || ""),
+            Teacher: item.teacher?.teacherName || "Unknown",
+            class: item.course?.courseName || "Unknown",
+            Feedback: item.feedbackmessage || "",
             level: calculateLevel(item),
           })
         );
@@ -181,6 +265,7 @@ const FeedbackDetails: React.FC = () => {
         setApplicants(formattedData);
       } catch (err) {
         console.error("Error fetching feedback:", err);
+        setApplicants([]); // Set empty array on error
       }
     };
 
@@ -189,7 +274,11 @@ const FeedbackDetails: React.FC = () => {
 
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection="Feedback" />
+      <SupervisorHeader
+        currentSection="Feedback"
+        showBackButton={true}
+        showBackPath="/supervisor/ui/teachers"
+      />
       <div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-3 md:space-y-0">
           <div className="flex flex-wrap gap-2 mb-0">
@@ -204,8 +293,10 @@ const FeedbackDetails: React.FC = () => {
               <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by keyword"
-                className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                placeholder="Search"
+                className="bg-transparent outline-none text-[15px] w-52 py-3"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
 
@@ -213,7 +304,7 @@ const FeedbackDetails: React.FC = () => {
               {/* Filter Button: Tune + Filter Left, Arrow Right */}
               <div
                 className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                onClick={() => setFilter(true)}
+                onClick={() => setFilterOpen(true)}
               >
                 {/* <BsFilterLeft /> */}
                 <MdTune className="w-4 h-4" />
@@ -221,43 +312,51 @@ const FeedbackDetails: React.FC = () => {
               </div>
 
               {/* Filter Popup */}
-              {Filter && (
+              {filterOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
                   <div className="bg-white p-6 rounded-lg w-[350px] relative dark:bg-[#252525]">
                     {/* Close Icon */}
                     <button
                       className="absolute top-2 right-3 text-gray-400 text-xl"
-                      onClick={() => setFilter(false)}
+                      onClick={() => setFilterOpen(false)}
                     >
                       &times;
                     </button>
 
                     <h2 className="text-lg font-semibold mb-4">Filter by</h2>
 
-                    {/* Position Applied */}
+                    {/* Dropdown */}
                     <div className="mb-4">
-                      <label
-                        htmlFor="position"
-                        className="block text-sm font-medium mb-1"
-                      >
-                        Class
+                      <label className="block text-sm font-medium mb-1">
+                        Course
                       </label>
-                      <select className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]">
-                        <option>Trail Class</option>
-                        <option>Regular Class</option>
-                        <option>Group Class</option>
+                      <select
+                        className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                        value={tempCourse}
+                        onChange={(e) => setTempCourse(e.target.value)}
+                      >
+                        <option value="">-- Select Class --</option>
+                        <option>Quran Studies</option>
+                        <option>Islamic Studies</option>
+                        <option>Arabic Studies</option>
                       </select>
                     </div>
 
                     {/* Buttons */}
                     <div className="flex justify-end gap-3">
                       <button
-                        onClick={() => setFilter(false)}
+                        onClick={() => setFilterOpen(false)}
                         className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
                       >
                         Cancel
                       </button>
-                      <button className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium">
+                      <button
+                        onClick={() => {
+                          setSelectedCourse(tempCourse); // Triggers API fetch
+                          setFilterOpen(false); // Closes popup
+                        }}
+                        className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                      >
                         Submit
                       </button>
                     </div>
@@ -268,7 +367,7 @@ const FeedbackDetails: React.FC = () => {
 
             <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
               <span className="text-left -ml-60 ">
-                Showing {currentItems.length} Of {applicants.length}
+                Showing {currentItems.length} Of {filteredApplications.length}
               </span>
             </div>
           </div>
@@ -282,10 +381,10 @@ const FeedbackDetails: React.FC = () => {
               <tr className="font-medium">
                 {[
                   "Review",
-                  "Teacher",
+                  "Teacher Name",
                   "Feedback",
                   "Class",
-                  "Level",
+                  "Rating",
                   "Details",
                 ].map((header) => (
                   <th

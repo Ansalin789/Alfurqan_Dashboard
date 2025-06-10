@@ -14,6 +14,7 @@ import { IoArrowBackCircleSharp } from "react-icons/io5";
 type Props = {
   readonly currentSection: string;
   readonly showBackButton?: boolean;
+  readonly showBackPath?:string;
 };
 type NotificationType = {
   _id: string;
@@ -25,7 +26,7 @@ type NotificationType = {
   isRead: boolean;
 };
 
-export default function SupervisorHeader({ currentSection, showBackButton = false }: Props) {
+export default function SupervisorHeader({ currentSection, showBackButton = false, showBackPath = '' }: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
@@ -38,15 +39,21 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
   const [activeTab, setActiveTab] = useState<"Seen" | "Unseen">("Unseen");
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
-  const userId = "6805da8c06542aa33858b889";
   // Fetch old notifications
+   const userId =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorPortalId")
+          : null;
   const fetchNotifications = async (token: string) => {
     try {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("SupervisorAuthToken")
           : null;
-
+       const userId =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorPortalId")
+          : null;
       const { data } = await axios.get(
         `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
         {
@@ -111,7 +118,7 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
 
   // Real-time notifications with Socket.IO
   useEffect(() => {
-    const socket = getSocket(userId);
+    const socket = getSocket(userId ?? '');
 
     const handleNotification = (newNotification: NotificationType) => {
       console.log("Received new notification:", newNotification);
@@ -140,16 +147,25 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
       }
     }
   }, [userId]);
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "STUDENT_NOTIFICATION":
-        return "🎓";
-      case "SYSTEM_ALERT":
-        return "⚠️";
-      default:
-        return "🔔";
-    }
-  };
+ const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case "STUDENT_NOTIFICATION":
+      return "🎓";
+    case "TEACHER_ADDED":
+      return "👩‍🏫"; 
+    case "SYSTEM_ALERT":
+      return "⚠️";
+    case "MEETING_REMINDER":
+      return "📅";
+    case "MESSAGE":
+      return "💬";
+    case "ASSIGNMENT_ALERT":
+      return "📝";
+    default:
+      return "🔔";
+  }
+};
+
 
   const renderButton = () => {
     if (currentSection.startsWith("Dashboard")) {
@@ -213,7 +229,7 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
           {showBackButton && (
             <IoArrowBackCircleSharp
               className="text-[25px] text-[#012a4a] cursor-pointer dark:text-white"
-              onClick={() => router.back()}
+              onClick={() => router.push(showBackPath)}
             />
           )}
           <h1 className="text-xl font-semibold text-[#000836] dark:text-white">

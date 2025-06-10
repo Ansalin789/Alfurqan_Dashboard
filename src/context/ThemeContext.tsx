@@ -18,8 +18,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (darkMode) document.body.classList.add('dark');
-    else document.body.classList.remove('dark');
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, [darkMode]);
 
   const toggleDarkMode = () => {

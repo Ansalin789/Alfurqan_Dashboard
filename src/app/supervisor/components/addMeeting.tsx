@@ -14,6 +14,8 @@ interface Teacher {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
+  attendee: string;
+
 }
 
 export default function AddMeeting({ onClose }: Props) {
@@ -103,6 +105,8 @@ export default function AddMeeting({ onClose }: Props) {
       teacherName: teacher.teacherName,
       teacherEmail: teacher.teacherEmail,
       _id: teacher.teacherId,
+          attendee:"absent",
+
     }));
 
     const requestData = {
@@ -119,6 +123,7 @@ export default function AddMeeting({ onClose }: Props) {
         supervisorRole: "SUPERVISOR",
       },
       teacher: teachers,
+      meetingminutes:" ",
       description,
       status: "Active",
       createdDate,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Star,
   MoreVertical,
@@ -26,8 +26,6 @@ import SuccessPopup from "../../components/successPopup";
 import FailedPopup from "../../components/failedPopup";
 import { getSocket } from "@/app/utils/socket";
 
-type Status = "Shortlisted" | "Rejected" | "Waiting";
-type Position = "Arabic Teacher" | "Quran Teacher";
 interface Applicant {
   _id: string;
   candidateFirstName: string;
@@ -49,15 +47,25 @@ interface Applicant {
   createdBy: string;
   level: string;
 }
+interface ProfessionalExperience {
+  jobRole: string;
+  organizationName: string;
+  jobLocation: string;
+  fromDate: string; // ISO date string
+  toDate: string; // ISO date string
+  jobDescription: string;
+  _id: string;
+}
+
 interface UploadResume {
   type: string;
-  data: number[]; // Byte array
+  data: number[];
 }
 
 interface ApiResponse {
   candidateFirstName: string;
   candidateLastName: string;
-  applicationDate: string; // ISO date string
+  applicationDate: string;
   candidateEmail: string;
   candidatePhoneNumber: number;
   candidateCountry: string;
@@ -70,29 +78,13 @@ interface ApiResponse {
   uploadResume: UploadResume;
   comments: string;
   applicationStatus: string;
-  professionalExperience: string;
+  professionalExperience: ProfessionalExperience[]; // <-- Corrected type
   skills: string;
   status: string;
-  createdDate: string; // ISO date string
+  createdDate: string;
   createdBy: string;
   _id: string;
   __v: number;
-}
-
-interface AddApplicantFormData {
-  applicationDate: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  country: string;
-  gender: string;
-  city: string;
-  position: string;
-  expectedSalary: string;
-  workingHours: string;
-  resume: File | null | undefined;
-  comment: string;
 }
 
 interface RadioOptionProps {
@@ -132,14 +124,192 @@ const SkillBadge: React.FC<SkillBadgeProps> = ({ name }) => (
   </span>
 );
 
+// Create a Map to store blob URLs
+const blobUrlCache = new Map<string, string>();
+
+// Function to store resume data in sessionStorage
+const storeResumeData = (applicantId: string, resumeData: any) => {
+  try {
+    sessionStorage.setItem(
+      `resume_data_${applicantId}`,
+      JSON.stringify(resumeData)
+    );
+  } catch (error) {
+    console.error("Error storing resume data:", error);
+  }
+};
+
+// Function to get resume data from sessionStorage
+const getStoredResumeData = (applicantId: string): any => {
+  try {
+    const data = sessionStorage.getItem(`resume_data_${applicantId}`);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    console.error("Error getting stored resume data:", error);
+    return null;
+  }
+};
+
+const createBlobUrlFromData = (resumeData: any, applicantId: string) => {
+  if (!resumeData?.data) return null;
+
+  try {
+    const byteArray = new Uint8Array(resumeData.data);
+    const blob = new Blob([byteArray], {
+      type: resumeData.type || "application/pdf",
+    });
+    const blobUrl = URL.createObjectURL(blob);
+    blobUrlCache.set(applicantId, blobUrl);
+    return blobUrl;
+  } catch (error) {
+    console.error("Error creating blob URL:", error);
+    return null;
+  }
+};
+
+// Cleanup function to revoke all blob URLs
+function cleanupBlobUrls(): void {
+  blobUrlCache.forEach((url) => {
+    try {
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error revoking blob URL:", error);
+    }
+  });
+  blobUrlCache.clear();
+}
+
+const ResumeLink: React.FC<{ applicant: any }> = ({ applicant }) => {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const createBlobUrl = (resumeData: any) => {
+    if (!resumeData) {
+      console.error("No resume data provided");
+      return null;
+    }
+
+    try {
+      // Convert base64 to binary
+      const binaryString = atob(resumeData);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error creating blob URL:", error);
+      return null;
+    }
+  };
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const resumeData = applicant.uploadResume;
+      if (!resumeData) {
+        setError("Resume not available");
+        return;
+      }
+
+      // Create new blob URL on each click
+      const newBlobUrl = createBlobUrl(resumeData);
+      if (!newBlobUrl) {
+        setError("Failed to load resume");
+        return;
+      }
+
+      // Clean up old blob URL if it exists
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+
+      setBlobUrl(newBlobUrl);
+
+      // Open in new tab
+      window.open(newBlobUrl, "_blank");
+    } catch (error) {
+      console.error("Error handling resume click:", error);
+      setError("Failed to open resume");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  }, [blobUrl]);
+
+  return (
+    <div className="flex flex-col">
+      <button
+        onClick={handleClick}
+        disabled={isLoading}
+        className="text-[#38619A] hover:underline flex items-center gap-1 disabled:opacity-50"
+      >
+        <ImAttachment className="w-4 h-4" />
+        {isLoading ? "Loading..." : "Resume"}
+      </button>
+      {error && <span className="text-red-500 text-xs mt-1">{error}</span>}
+    </div>
+  );
+};
+
+// Add cleanup on page unload
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", cleanupBlobUrls);
+}
+
+function base64ToBlob(base64: string, contentType = 'application/pdf'): Blob {
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: contentType });
+}
+
+function getResumeBlobUrl(uploadResume?: string | { type: string; data: number[] }): string | undefined {
+  if (!uploadResume) return undefined;
+
+  if (typeof uploadResume === 'string') {
+    // Assume base64 string, strip possible data URI prefix
+    const base64Data = uploadResume.includes('base64,')
+      ? uploadResume.split('base64,')[1]
+      : uploadResume;
+    const blob = base64ToBlob(base64Data);
+    return URL.createObjectURL(blob);
+  } else if (uploadResume.data && uploadResume.type) {
+    // Object with type and data array
+    const byteArray = new Uint8Array(uploadResume.data);
+    const blob = new Blob([byteArray], { type: uploadResume.type });
+    return URL.createObjectURL(blob);
+  }
+
+  return undefined;
+}
+
 export default function ApplicantsPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
     null
   );
+  const [parsedSkills, setParsedSkills] = useState<string[]>([]);
+
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [Applicantbyid, setApplicantbyid] = useState<ApiResponse | null>(null);
-  const [parsedSkills, setParsedSkills] = useState<string[]>([]);
   const [resumeImages, setResumeImages] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -216,13 +386,6 @@ export default function ApplicantsPage() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddSkill();
-    }
-  };
-
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
   useEffect(() => {
@@ -253,93 +416,96 @@ export default function ApplicantsPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        params:{params}
+        params: { params },
       })
       .then((response) => setApplicants(response.data.applicants))
       .catch((error) => console.error("Error fetching applicants:", error));
   }, []);
- const handleFilter = async () => {
-   setShowModal(false);
-  console.log("button clicked");
+  const handleFilter = async () => {
+    setShowModal(false);
+    console.log("button clicked");
 
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("SupervisorAuthToken")
-      : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorAuthToken")
+        : null;
 
-  const supervisorId =
-    typeof window !== "undefined"
-      ? localStorage.getItem("SupervisorPortalId")
-      : null;
+    const supervisorId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorPortalId")
+        : null;
 
-  if (!token) {
-    console.error("❌ SupervisorAuthToken not found");
-    return;
-  }
+    if (!token) {
+      console.error("❌ SupervisorAuthToken not found");
+      return;
+    }
 
-  if (!supervisorId) {
-    console.warn("⚠️ SupervisorId not found in localStorage");
-  } else {
-    console.log("✅ Supervisor ID from localStorage:", supervisorId);
-  }
+    if (!supervisorId) {
+      console.warn("⚠️ SupervisorId not found in localStorage");
+    } else {
+      console.log("✅ Supervisor ID from localStorage:", supervisorId);
+    }
 
-  // ✅ Build params object here
-  const params: any = {};
-  if (searchText) params.searchText = searchText;
-  if (fromDate && toDate) {
-    params["dateRange.from"] = fromDate;
-    params["dateRange.to"] = toDate;
-  }
-  if (positionApplied) params.positionApplied = positionApplied;
-  if (applicationStatus) params.applicationStatus = applicationStatus;
+    // ✅ Build params object here
+    const params: any = {};
+    if (searchText) params.searchText = searchText;
+    if (fromDate && toDate) {
+      params["dateRange.from"] = fromDate;
+      params["dateRange.to"] = toDate;
+    }
+    if (positionApplied) params.positionApplied = positionApplied;
+    if (applicationStatus) params.applicationStatus = applicationStatus;
 
-  try {
-    const response = await axios.get(
-      "https://api.blackstoneinfomaticstech.com/applicants",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        params, // ✅ Pass the object directly
+    try {
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/applicants",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          params, // ✅ Pass the object directly
+        }
+      );
+      console.log(response.data.applicants);
+      setApplicants(response.data.applicants);
+    } catch (error) {
+      console.error("Error fetching applicants:", error);
+    }
+  };
+  useEffect(() => {
+    const Id =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorPortalId")
+        : null;
+    console.log("dashobarcgc id", Id);
+    if (!Id) return;
+    const socket = getSocket(Id);
+    const handleList = (data: { event: string; data: Applicant }) => {
+      console.log("📩 Received WebSocket Data:", data);
+
+      if (data.event === "create") {
+        console.log("➡️ Action: create", data.data._id);
+        setApplicants((prev) => [data.data, ...prev]);
+      } else if (data.event === "update") {
+        console.log("➡️ Action: update", data.data._id);
+        setApplicants((prev) =>
+          prev.map((app) =>
+            app._id.toString() === data.data._id.toString()
+              ? { ...data.data, __updatedAt: Date.now() }
+              : app
+          )
+        );
+      } else {
+        console.warn("⚠️ Unknown event type:", data.event);
       }
-    );
-    console.log(response.data.applicants)
-    setApplicants(response.data.applicants);
-  } catch (error) {
-    console.error("Error fetching applicants:", error);
-  }
-};
- useEffect(()=>{
-      const Id = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalId") : null;
-      console.log("dashobarcgc id" ,Id);
-      if(!Id) return;
-     const socket = getSocket(Id);
-      const handleList = (data: { event: string; data: Applicant }) => {
-  console.log("📩 Received WebSocket Data:", data);
+    };
 
-  if (data.event === "create") {
-    console.log("➡️ Action: create", data.data._id);
-    setApplicants(prev => [data.data, ...prev]);
-  } else if (data.event === "update") {
-    console.log("➡️ Action: update", data.data._id);
-    setApplicants(prev =>
-      prev.map(app =>
-        app._id.toString() === data.data._id.toString()
-          ? { ...data.data, __updatedAt: Date.now() }
-          : app
-      )
-    );
-  } else {
-    console.warn("⚠️ Unknown event type:", data.event);
-  }
-};
-
-       socket.on("recruitmentlist",handleList);
-       return ()=>{
-       socket.on("recruitmentlist",handleList);
-       };
-    },[]);
+    socket.on("recruitmentlist", handleList);
+    return () => {
+      socket.on("recruitmentlist", handleList);
+    };
+  }, []);
 
   const params = new URLSearchParams();
   if (searchText) params.append("searchText", searchText);
@@ -350,14 +516,39 @@ export default function ApplicantsPage() {
 
   const tabs = ["All", "New Application", "Shortlisted", "Rejected", "Waiting"];
 
-  const filteredApplicants =
+  const filterApplicants = (applicants: Applicant[], searchQuery: string) => {
+    if (!searchQuery.trim()) return applicants;
+
+    const query = searchQuery.toLowerCase().trim();
+
+    return applicants.filter((applicant) => {
+      const searchableFields = [
+        applicant.candidateFirstName,
+        applicant.candidateLastName,
+        applicant.applicationDate,
+        applicant.candidatePhoneNumber?.toString(),
+        applicant.candidateEmail,
+        applicant.positionApplied,
+        applicant.applicationStatus,
+        applicant.level?.toString(),
+      ];
+
+      return searchableFields.some(
+        (field) => field && field.toString().toLowerCase().includes(query)
+      );
+    });
+  };
+
+  const filteredApplicants = filterApplicants(
     activeTab === "All"
       ? applicants
       : applicants.filter(
           (applicant) =>
             applicant.applicationStatus.replace(/\s+/g, "").toUpperCase() ===
             activeTab.replace(/\s+/g, "").toUpperCase()
-        );
+        ),
+    searchText
+  );
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -408,23 +599,13 @@ export default function ApplicantsPage() {
         const skillsFromApi = response.data.skills || "";
         const skillsArray = extractSkills(skillsFromApi);
         setParsedSkills(skillsArray);
-        if (response.data.uploadResume) {
-          const base64String = response.data.uploadResume;
 
-          // Check if base64String is an object
-          if (typeof base64String === "string") {
-            // If it's a string, construct the PDF URL
-            const pdfUrl = `data:application/pdf;base64,${base64String}`;
-            setResumeImages(pdfUrl);
-          } else if (base64String?.data) {
-            // If base64String is an object, access its 'data' property
-            const pdfUrl = `data:application/pdf;base64,${base64String.data}`;
-            setResumeImages(pdfUrl);
-          } else {
-            console.error("Base64 string is empty or invalid.");
-          }
-        } else {
-          console.error("uploadResume is not available.");
+        // Handle resume using getResumeBlobUrl
+        if (response.data.uploadResume) {
+          console.log("Applicant uploadResume:", response.data.uploadResume);
+          const resumeUrl = getResumeBlobUrl(response.data.uploadResume);
+          console.log("Resume URL:", resumeUrl);
+          setResumeImages(resumeUrl || null);
         }
       } catch (error) {
         console.error("Error fetching applicant data:", error);
@@ -512,22 +693,6 @@ export default function ApplicantsPage() {
     setCities(fetchedCities);
   }, [country]);
 
-  function createBlobUrlFromData(uploadResume: {
-    type: string;
-    data: number[];
-  }): string | undefined {
-    if (!uploadResume?.data?.length) return undefined;
-
-    try {
-      const byteArray = new Uint8Array(uploadResume.data);
-      const blob = new Blob([byteArray], { type: "application/pdf" });
-      return URL.createObjectURL(blob);
-    } catch (error) {
-      console.error("Failed to create Blob URL:", error);
-      return undefined;
-    }
-  }
-
   return (
     <BaseLayout3>
       <div className="">
@@ -562,8 +727,8 @@ export default function ApplicantsPage() {
                       <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                       <input
                         type="text"
-                        placeholder="Search by keyword"
-                        className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[15px] w-52 py-3"
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
                       />
@@ -634,7 +799,7 @@ export default function ApplicantsPage() {
                             >
                               <option>Islamic Teacher</option>
                               <option>Quran Teacher</option>
-                              <option>Tajweed Teacher</option>
+                              <option>Arabic Teacher</option>
                             </select>
                           </div>
 
@@ -657,7 +822,7 @@ export default function ApplicantsPage() {
                               <option>Rejected</option>
                               <option>Waiting</option>
                               <option>Approved</option>
-                              <option>New Application</option>
+                              <option>NewApplication</option>
                             </select>
                           </div>
 
@@ -681,8 +846,8 @@ export default function ApplicantsPage() {
                     )}
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentApplicants.length} Of{" "}
-                        {filteredApplicants.length}
+                        Showing {currentApplicants.length} of{" "}
+                        {applicants.length}
                       </span>
                     </div>
                   </div>
@@ -712,10 +877,10 @@ export default function ApplicantsPage() {
                         <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Position Applied
                         </th>
-                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Resume
                         </th>
-                        <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        <th className="text-left px-6 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                           Status
                         </th>
                         <th className="text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
@@ -737,7 +902,7 @@ export default function ApplicantsPage() {
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
-                            <td className="px-3 py-2 text-[#3D8FDE] font-medium">
+                            <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left">
                               {applicant.candidateFirstName}
                             </td>
                             <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
@@ -762,28 +927,10 @@ export default function ApplicantsPage() {
                               {applicant.positionApplied}
                             </td>
                             <td className="px-3 py-2">
-                              {applicant.uploadResume?.data?.length ? (
-                                <a
-                                  href={
-                                    createBlobUrlFromData(
-                                      applicant.uploadResume
-                                    ) || undefined
-                                  }
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-[#38619A] hover:underline flex items-center gap-1"
-                                >
-                                  <ImAttachment className="w-4 h-4" />
-                                  Resume
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 italic">
-                                  No Resume
-                                </span>
-                              )}
+                              <ResumeLink applicant={applicant} />
                             </td>
 
-                            <td className="px-3 py-2">
+                            <td className=" py-2">
                               <span
                                 className={`text-[10px] font-semibold px-3 py-1 rounded-full ${getStatusColor(
                                   applicant.applicationStatus
@@ -815,7 +962,7 @@ export default function ApplicantsPage() {
                                   <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
                                 </button>
                                 {openMenuId === applicant._id && (
-                                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
+                                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10 dark:bg-[#252525] dark:text-[#fff]">
                                     {/* Show Edit only if supervisorId matches */}
                                     {supervisorId &&
                                       supervisorId ===
@@ -824,7 +971,7 @@ export default function ApplicantsPage() {
                                         ) && (
                                         <button
                                           onClick={() => handleEdit(applicant)}
-                                          className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+                                          className="block w-full px-4 py-2 text-left text-[12px] text-slate-600 dark:text-[#fff]"
                                         >
                                           Edit
                                         </button>
@@ -834,18 +981,19 @@ export default function ApplicantsPage() {
                                       onClick={() =>
                                         handleViewDetails(applicant)
                                       }
-                                      className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
+                                      className="block w-full px-4 py-2 text-left text-[12px] text-slate-600 dark:text-[#fff]"
                                     >
                                       View Details
                                     </button>
                                     <button
                                       onClick={() => setOpenMenuId(null)}
-                                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-50"
+                                      className="block w-full px-4 py-2 text-left text-red-600 "
                                     >
                                       Cancel
                                     </button>
                                   </div>
                                 )}
+                             
                               </div>
                             </td>
                           </tr>
@@ -902,7 +1050,7 @@ export default function ApplicantsPage() {
               {/* Left: Profile Info */}
               <div className="flex items-center gap-4">
                 <img
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  src="/assets/images/proff.jpg"
                   alt="Profile"
                   className="w-[60px] h-[60px] rounded-full object-cover"
                 />
@@ -991,78 +1139,42 @@ export default function ApplicantsPage() {
                   </div>
 
                   {/* Experience */}
-                  {Applicantbyid?.professionalExperience && (
-                    <div className="h-[300px] overflow-y-auto overflow-x-hidden scrollbar-hide border border-[#E0E4E9] rounded-2xl p-4 text-sm text-gray-800 shadow-sm dark:border-[#5F5959]">
-                      <h3 className="text-[12px] font-semibold text-[#010E30] mb-3 dark:text-[#fff]">
-                        Professional Experience
-                      </h3>
-
-                      {(() => {
-                        const lines: string[] = String(
-                          Applicantbyid.professionalExperience
-                        ).split("\n");
-                        const experiences: {
-                          role: string;
-                          location: string;
-                          date: string;
-                          details: string[];
-                        }[] = [];
-
-                        let current: {
-                          role: string;
-                          location: string;
-                          date: string;
-                          details: string[];
-                        } | null = null;
-
-                        const headerRegex =
-                          /(.*?),\s*(.*?)(?:\s+([A-Za-z]{3}\s*[-–]?\s*\d{4})(?:\s*(?:to|-|–)\s*(Present|\d{4}))?)/i;
-
-                        for (const line of lines) {
-                          const trimmed: string = line.trim();
-                          if (!trimmed) continue;
-
-                          const match = trimmed.match(headerRegex);
-                          if (match) {
-                            if (current) experiences.push(current);
-
-                            const [, role, location, start, end] = match;
-                            current = {
-                              role: role.trim(),
-                              location: location.trim(),
-                              date: `${start}${end ? " - " + end : ""}`,
-                              details: [],
-                            };
-                          } else if (current) {
-                            current.details.push(trimmed.replace(/^•\s*/, ""));
-                          }
-                        }
-                        if (current) experiences.push(current);
-
-                        return experiences.map((exp, idx) => (
-                          <div key={idx} className="mb-4">
-                            <h4 className="text-[12px] text-[#010E30] font-semibold dark:text-[#fff]">
-                              {exp.role}
-                            </h4>
-                            <div className="flex flex-wrap justify-between text-[10px] text-[#8A8383] mt-1 dark:text-[#D6D6D6]">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>{exp.date}</span>
+                  {Applicantbyid &&
+                    Applicantbyid.professionalExperience &&
+                    Applicantbyid.professionalExperience.length > 0 && (
+                      <div className="h-[300px] overflow-y-auto border dark:border-[#5e5959] rounded-2xl p-4 text-sm text-gray-800 shadow-sm">
+                        <h3 className="text-[12px] font-semibold text-[#010E30] dark:text-white mb-3">
+                          Professional Experience
+                        </h3>
+                        {Applicantbyid.professionalExperience.map(
+                          (exp, idx) => (
+                            <div key={idx} className="mb-4">
+                              <h4 className="text-[12px] text-[#010E30] dark:text-white font-semibold">
+                                {exp.jobRole}
+                              </h4>
+                              <div className="flex justify-between text-[10px] text-[#8f8f8f] mt-1">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>
+                                    {new Date(
+                                      exp.fromDate
+                                    ).toLocaleDateString()}{" "}
+                                    -{" "}
+                                    {new Date(exp.toDate).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <span>{exp.jobLocation}</span>
                               </div>
-                              <span>{exp.location}</span>
+                              {exp.jobDescription && (
+                                <p className="mt-2 text-[11px] text-[#4B5563] dark:text-[#dbdbdb]">
+                                  {exp.jobDescription}
+                                </p>
+                              )}
                             </div>
-                            {exp.details.length > 0 && (
-                              <ul className="list-disc list-inside mt-2 text-[11px] text-[#4B5563] dark:text-[#E0E0E0]">
-                                {exp.details.map((detail, i) => (
-                                  <li key={i}>{detail}</li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        ));
-                      })()}
-                    </div>
-                  )}
+                          )
+                        )}
+                      </div>
+                    )}
                 </div>
 
                 {/* Right Column */}
@@ -1228,15 +1340,18 @@ export default function ApplicantsPage() {
                 </div>
               </div>
 
-              {/* Skills */}
-
               <div>
                 <h3 className="font-medium text-[12px] border-b border-[#E0E4E9] dark:border-[#5F5959] pb-1 mb-3 text-[#1E2A41] dark:text-[#fff]">
                   Skills
                 </h3>
 
                 <div className="flex flex-wrap gap-2 text-[10px]">
-                  {parsedSkills.map((skill, index) => (
+                  {(Applicantbyid?.skills
+                    ? Applicantbyid.skills
+                        .split(",")
+                        .map((skill) => skill.trim())
+                    : []
+                  ).map((skill, index) => (
                     <span
                       key={index}
                       className="px-3 py-1 border rounded-full text-[#010E30E5] bg-gray-50 dark:bg-[#343434] dark:text-[#d5d5d5] border-[#E0E4E9] dark:border-[#5F5959]"
@@ -1252,14 +1367,19 @@ export default function ApplicantsPage() {
                 <h3 className="font-medium text-[#010E30] text-[12px] border-b dark:border-b-[#5F5959] pb-1 mb-3 dark:text-[#fff]">
                   Documents
                 </h3>
-                <a
-                  href={resumeImages ?? ""}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[#5183CA] hover:underline text-[13px]"
-                >
-                  <ImAttachment /> Resume
-                </a>
+                <div className="flex items-center gap-2">
+                  {resumeImages && (
+                    <button
+                      onClick={() => {
+                        window.open(resumeImages, '_blank');
+                      }}
+                      className="text-[#38619A] hover:underline text-[12px] flex items-center gap-1"
+                    >
+                      <ImAttachment className="w-3 h-3" />
+                      View Resume
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 

@@ -1,7 +1,7 @@
 "use client";
 import "./DateRange.css";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -11,39 +11,96 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { DateRange } from "react-date-range";
-import { format, addDays } from "date-fns";
+import { format } from "date-fns";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
-
-const applicationdata = [
-  { date: "08 Nov", applied: 12, shortlisted: 6 },
-  { date: "09 Nov", applied: 10, shortlisted: 5 },
-  { date: "10 Nov", applied: 8, shortlisted: 4 },
-  { date: "11 Nov", applied: 7, shortlisted: 5 },
-  { date: "12 Nov", applied: 9, shortlisted: 5 },
-  { date: "13 Nov", applied: 8, shortlisted: 5 },
-  { date: "14 Nov", applied: 11, shortlisted: 6 },
-];
 
 const ApplicationChart = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [dateRange, setDateRange] = useState<any[]>([
     {
-      startDate: null,
-      endDate: null,
+      startDate: new Date(new Date().setDate(new Date().getDate() - 6)), // 6 days ago
+      endDate: new Date(), // today
       key: "selection",
     },
   ]);
+  const [applicationData, setApplicationData] = useState([]);
+
+  const fetchData = async (fromDate: string, toDate: string) => {
+    try {
+     const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("SupervisorAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ SupervisorAuthToken not found");
+        return;
+      }
+
+      const res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/application?fromDate=${fromDate}&toDate=${toDate}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log(data)
+      // Get last 7 days of data
+      const last7Days = data.slice(-7);
+      
+      // Transform to expected format
+      const transformed = last7Days.map((item: any) => ({
+        date: format(new Date(item.date), "dd MMM"),
+        applied: item.totalApplied || 0,
+        shortlisted: item.shortlisted || 0,
+      }));
+      setApplicationData(transformed);
+    } catch (error) {
+      console.error("Failed to fetch application data:", error);
+      // Set empty data on error
+      setApplicationData([]);
+    }
+  };
 
   const handleRangeChange = (ranges: any) => {
     const start = ranges.selection.startDate;
     const end = ranges.selection.endDate;
 
     if (start && end) {
+      // Ensure the range is not more than 7 days
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays > 7) {
+        // If more than 7 days, adjust the end date to be 7 days from start
+        const newEnd = new Date(start);
+        newEnd.setDate(newEnd.getDate() + 6);
+        ranges.selection.endDate = newEnd;
+      }
+
       setDateRange([ranges.selection]);
       setShowCalendar(false);
+      fetchData(format(ranges.selection.startDate, "yyyy-MM-dd"), format(ranges.selection.endDate, "yyyy-MM-dd"));
     }
   };
+
+  useEffect(() => {
+    // Initial load
+    const start = dateRange[0].startDate;
+    const end = dateRange[0].endDate;
+    if (start && end) {
+      fetchData(format(start, "yyyy-MM-dd"), format(end, "yyyy-MM-dd"));
+    }
+  }, []);
 
   const formattedDate =
     dateRange[0].startDate && dateRange[0].endDate
@@ -58,7 +115,7 @@ const ApplicationChart = () => {
 
   return (
     <div className="w-full relative">
-      <div className="bg-white rounded-xl h-[270px] dark:bg-[#343434]">
+      <div className="bg-white rounded-xl h-[270px] dark:bg-[#343434] shadow-lg">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-[#010E30] text-[14px] mt-0 ml-4 font-semibold dark:text-[#ffff]">
@@ -66,7 +123,6 @@ const ApplicationChart = () => {
           </h3>
 
           <div className="flex items-center gap-2 px-2 py-2 relative">
-            {/* Legend - Applied */}
             <div className="flex items-center gap-1">
               <div className="w-[10px] h-[10px] rounded-[2px] bg-[#a6c1ff]" />
               <span className="text-[10px] font-light text-[#010E30] dark:text-white">
@@ -74,7 +130,6 @@ const ApplicationChart = () => {
               </span>
             </div>
 
-            {/* Legend - Shortlisted */}
             <div className="flex items-center gap-1">
               <div className="w-[10px] h-[10px] rounded-[2px] bg-[#d5e0ff]" />
               <span className="text-[10px] font-light text-[#010E30] dark:text-white">
@@ -82,7 +137,6 @@ const ApplicationChart = () => {
               </span>
             </div>
 
-            {/* Date Picker Toggle */}
             <div
               className="flex items-center p-1 gap-1 text-[10px] bg-[#efefef] dark:bg-[#565656] rounded-md text-[#ddd] cursor-pointer"
               onClick={() => setShowCalendar(!showCalendar)}
@@ -101,15 +155,13 @@ const ApplicationChart = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-
               <span className="text-[#576CBC] dark:text-[#DDDDDD]">
                 {formattedDate || "Select Date"}
               </span>
             </div>
 
-            {/* Calendar Dropdown */}
             {showCalendar && (
-              <div className="absolute right-0 top-[38px] z-50 scale-90 origin-top-right">
+              <div className="absolute right-0 top-[30px] z-50 scale-90 origin-top-right">
                 <DateRange
                   className="custom-date-range"
                   editableDateInputs={true}
@@ -125,40 +177,39 @@ const ApplicationChart = () => {
 
         {/* Chart */}
         <div className="text-black dark:text-white/80">
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={applicationdata} barSize={30} barGap={0}>
+          <ResponsiveContainer width="100%" height={210}>
+            <BarChart
+              data={applicationData}
+              margin={{ top: 0, right: 10, left: 0, bottom: 5 }}
+              barCategoryGap="25%" // Decrease this to make bars thicker
+            >
               <XAxis
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{
-                  fontSize: 10,
-                  fill: "currentColor", // uses text color from parent
-                }}
+                tick={{ fontSize: 10, fill: "currentColor" }}
+                padding={{ left: 4, right: 20 }}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{
-                  fontSize: 10,
-                  fill: "currentColor", // uses text color from parent
-                }}
+                tick={{ fontSize: 8, fill: "currentColor" }}
               />
               <Tooltip
                 cursor={{ fill: "transparent" }}
-                contentStyle={{ fontSize: "12px", borderRadius: "8px" }}
+                contentStyle={{ fontSize: "10px", borderRadius: "8px" }}
               />
               <Bar
                 dataKey="applied"
                 stackId="a"
                 fill="#a6c1ff"
-                radius={[0, 0, 8, 8]}
+                radius={[0, 0, 12, 12]}
               />
               <Bar
                 dataKey="shortlisted"
                 stackId="a"
                 fill="#d5e0ff"
-                radius={[8, 8, 0, 0]}
+                radius={[12, 12, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>

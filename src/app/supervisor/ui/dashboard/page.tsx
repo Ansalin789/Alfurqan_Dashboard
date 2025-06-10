@@ -20,8 +20,10 @@ import axios from "axios";
 import Calendar from "../../../supervisor/components/Calender";
 import SupervisorHeader from "../../components/supervisorHeader";
 
-import { getSocket } from "@/app/utils/socket"
+import { getSocket } from "@/app/utils/socket";
 import { ImAttachment } from "react-icons/im";
+import Subject from "../../components/Subject";
+import { useTheme } from "@/context/ThemeContext";
 
 interface Applicant {
   _id: string;
@@ -49,6 +51,10 @@ interface DashboardCounts {
   totalApplication: number;
   shortlisted: number;
   rejected: number;
+  waiting: number;
+  shortlistedPercentage: number;
+  rejectedPercentage: number;
+  waitingPercentage: number;
 }
 interface Meeting {
   _id: string;
@@ -80,6 +86,7 @@ const formatDate = (dateString: string) => {
 };
 
 export default function Dashboard() {
+  const { darkMode } = useTheme();
   const [pieData, setPieData] = useState<
     {
       name: string;
@@ -118,6 +125,7 @@ export default function Dashboard() {
 
   const ringThickness = 6; // thickness of each ring
   const ringGap = 4; // gap between rings
+  const [applicantsWithUrls, setApplicantsWithUrls] = useState([]);
   const [mounted, setMounted] = useState(false);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [barData, setBarData] = useState<any[]>([]);
@@ -130,49 +138,56 @@ export default function Dashboard() {
     endDate: moment().endOf("week").toDate(), // End of the current week (Saturday)
   });
   const [dashboardCounts, setDashboardCounts] = useState<DashboardCounts>({
-    totalApplication: 0,
+    totalApplication: 2,
     shortlisted: 0,
     rejected: 0,
+    waiting: 1,
+    shortlistedPercentage: 0,
+    rejectedPercentage: 0,
+    waitingPercentage: 50,
   });
   const [filteredPositions, setFilteredPositions] = useState<
     { name: string; color: string; count: number }[]
   >([]);
-    useEffect(()=>{
-      const Id = typeof window !== "undefined" ? localStorage.getItem("SupervisorPortalId") : null;
-      console.log("dashobarcgc id" ,Id);
-      if(!Id) return;
-     const socket = getSocket(Id);
-     const handleCount = (data : DashboardCounts) =>{
-       setDashboardCounts(data);
-       console.log(data);
-     };
-       const handleList = (data: { event: string; data: Applicant }) => {
-  console.log("📩 Received WebSocket Data:", data);
+  useEffect(() => {
+    const Id =
+      typeof window !== "undefined"
+        ? localStorage.getItem("SupervisorPortalId")
+        : null;
+    console.log("dashobarcgc id", Id);
+    if (!Id) return;
+    const socket = getSocket(Id);
+    const handleCount = (data: DashboardCounts) => {
+      setDashboardCounts(data);
+      console.log(data);
+    };
+    const handleList = (data: { event: string; data: Applicant }) => {
+      console.log("📩 Received WebSocket Data:", data);
 
-  if (data.event === "create") {
-    console.log("➡️ Action: create", data.data._id);
-    setApplicants(prev => [data.data, ...prev]);
-  } else if (data.event === "update") {
-    console.log("➡️ Action: update", data.data._id);
-    setApplicants(prev =>
-      prev.map(app =>
-        app._id.toString() === data.data._id.toString()
-          ? { ...data.data, __updatedAt: Date.now() }
-          : app
-      )
-    );
-  } else {
-    console.warn("⚠️ Unknown event type:", data.event);
-  }
-};
+      if (data.event === "create") {
+        console.log("➡️ Action: create", data.data._id);
+        setApplicants((prev) => [data.data, ...prev]);
+      } else if (data.event === "update") {
+        console.log("➡️ Action: update", data.data._id);
+        setApplicants((prev) =>
+          prev.map((app) =>
+            app._id.toString() === data.data._id.toString()
+              ? { ...data.data, __updatedAt: Date.now() }
+              : app
+          )
+        );
+      } else {
+        console.warn("⚠️ Unknown event type:", data.event);
+      }
+    };
 
-       socket.on("supervisordashboardcount",handleCount);
-       socket.on("recruitmentlist",handleList);
-       return ()=>{
-       socket.off("supervisordashboardcount",handleCount);
-       socket.on("recruitmentlist",handleList);
-       };
-    },[]);
+    socket.on("supervisordashboardcount", handleCount);
+    socket.on("recruitmentlist", handleList);
+    return () => {
+      socket.off("supervisordashboardcount", handleCount);
+      socket.off("recruitmentlist", handleList);
+    };
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -181,20 +196,20 @@ export default function Dashboard() {
         ? localStorage.getItem("SupervisorAuthToken")
         : null;
 
-        const id =
+    const id =
       typeof window !== "undefined"
         ? localStorage.getItem("SupervisorPortalId")
         : null;
 
     if (!token || !id) {
-    console.error("❌ SupervisorAuthToken or SupervisorPortalId not found");
-    return;
-  }
+      console.error("❌ SupervisorAuthToken or SupervisorPortalId not found");
+      return;
+    }
     const fetchData = async () => {
       const applicants = await fetchApplicantsData(token ?? " ");
-      console.log("Fetched Applicants:", applicants); // ✅ Debugging
+      // console.log("Fetched Applicants:", applicants);
       const filteredData = processApplicants(applicants);
-      console.log("Filtered Pie Data:", filteredData); // ✅ Debugging
+      // console.log("Filtered Pie Data:", filteredData);
       setPieData(filteredData);
     };
 
@@ -209,12 +224,12 @@ export default function Dashboard() {
     );
 
     const fetchDashboardCounts = axios.get(
-      'https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts',
+      "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-          "supervisor" : id,
+          Authorization: `Bearer ${token}`,
+          supervisor: id,
         },
       }
     );
@@ -222,6 +237,11 @@ export default function Dashboard() {
     Promise.all([fetchApplicants, fetchDashboardCounts])
       .then(([applicantsResponse, dashboardResponse]) => {
         const applicants = applicantsResponse.data.applicants;
+        // console.log("📦 Applicants from API:", applicants);
+        applicants.forEach((app: { uploadResume: any }, idx: any) =>
+          // console.log(`🔍 Applicant[${idx}] Resume:`, app.uploadResume)
+          console.log(`🔍 Applicant[${idx}] Resume:`)
+        );
 
         // ✅ Filter and count applicants by position
         const positionCounts = applicants.reduce(
@@ -336,7 +356,7 @@ export default function Dashboard() {
 
         const allMeetings: Meeting[] = response.data.data.meetings;
 
-        console.log("✅ Full Meetings Data:", allMeetings);
+        // console.log("✅ Full Meetings Data:", allMeetings);
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -396,7 +416,6 @@ export default function Dashboard() {
         console.error("❌ SupervisorAuthToken not found");
         return;
       }
-
       const response = await axios.get(
         "https://api.blackstoneinfomaticstech.com/applicants",
         {
@@ -407,24 +426,24 @@ export default function Dashboard() {
         }
       );
 
-      console.log("API Response:", response.data);
+      // console.log("API Response:", response.data);
 
       // Check if response.data has an 'applicants' property that is an array
       if (response.data && Array.isArray(response.data.applicants)) {
         return response.data.applicants;
       } else {
-        console.error("Unexpected API response format:", response.data);
+        // console.error("Unexpected API response format:", response.data);
         return []; // Return an empty array to prevent errors
       }
     } catch (error) {
-      console.error("Error fetching applicants:", error);
+      // console.error("Error fetching applicants:", error);
       return []; // Return empty array on error
     }
   };
 
   const processApplicants = (applicants: any[]) => {
     if (!Array.isArray(applicants)) {
-      console.error("Unexpected data format:", applicants);
+      // console.error("Unexpected data format:", applicants);
       return []; // Prevent crash
     }
 
@@ -475,8 +494,15 @@ export default function Dashboard() {
   const totalApplications = dashboardCounts.totalApplication || 0;
   const totalShortlisted = dashboardCounts.shortlisted || 0;
   const totalRejected = dashboardCounts.rejected || 0;
+  const totalWaiting = dashboardCounts.waiting || 0;
 
-  const total = totalApplications + totalShortlisted + totalRejected + 100; // Adjusted to account for total applications, shortlisted, and rejected
+  // Use the percentages directly from dashboardCounts
+  const shortlistedPercentage = dashboardCounts.shortlistedPercentage;
+  const rejectedPercentage = dashboardCounts.rejectedPercentage;
+  const waitingPercentage = dashboardCounts.waitingPercentage;
+
+  const total =
+    totalApplications + totalShortlisted + totalRejected + totalWaiting;
 
   const percentageApplications = (totalApplications / total) * 100;
   const percentageShortlisted = (totalShortlisted / total) * 100;
@@ -487,21 +513,39 @@ export default function Dashboard() {
   const remainingShortlisted = 100 - percentageShortlisted;
   const remainingRejected = 100 - percentageRejected;
   console.log(remainingApplications);
-  function createBlobUrlFromData(uploadResume: {
-    type: string;
-    data: number[];
-  }): string | undefined {
-    if (!uploadResume?.data?.length) return undefined;
 
-    try {
-      const byteArray = new Uint8Array(uploadResume.data);
-      const blob = new Blob([byteArray], { type: "application/pdf" });
-      return URL.createObjectURL(blob);
-    } catch (error) {
-      console.error("Failed to create Blob URL:", error);
-      return undefined;
+  function base64ToBlob(base64: string, contentType = "application/pdf"): Blob {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: contentType });
   }
+
+  function getResumeBlobUrl(
+    uploadResume?: string | { type: string; data: number[] }
+  ): string | undefined {
+    if (!uploadResume) return undefined;
+
+    if (typeof uploadResume === "string") {
+      // Assume base64 string, strip possible data URI prefix
+      const base64Data = uploadResume.includes("base64,")
+        ? uploadResume.split("base64,")[1]
+        : uploadResume;
+      const blob = base64ToBlob(base64Data);
+      return URL.createObjectURL(blob);
+    } else if (uploadResume.data && uploadResume.type) {
+      // Object with type and data array
+      const byteArray = new Uint8Array(uploadResume.data);
+      const blob = new Blob([byteArray], { type: uploadResume.type });
+      return URL.createObjectURL(blob);
+    }
+
+    return undefined;
+  }
+
   return (
     <BaseLayout3>
       <SupervisorHeader currentSection="Dashboard" />
@@ -514,76 +558,94 @@ export default function Dashboard() {
               {
                 title: "Total Applications",
                 value: dashboardCounts.totalApplication,
-                bgColor: "#9AD7D633",
                 ringColor: "#7DB5CB",
+                bgColor: "#CDD5E2",
+                percentage: 100,
+                pieData: [{ value: 100 }],
               },
               {
                 title: "Shortlisted Candidates",
                 value: dashboardCounts.shortlisted,
-                bgColor: "#9AD7D633",
                 ringColor: "#9AD7D6",
+                bgColor: "#CDD5E2",
+                percentage: dashboardCounts.shortlistedPercentage.toFixed(0),
+                pieData: [
+                  { value: dashboardCounts.shortlistedPercentage },
+                  { value: 100 - dashboardCounts.shortlistedPercentage },
+                ],
               },
               {
                 title: "Rejected Candidates",
                 value: dashboardCounts.rejected,
-                bgColor: "#9AD7D633",
                 ringColor: "#8B93D2",
+                bgColor: "#CDD5E2",
+                percentage: dashboardCounts.rejectedPercentage.toFixed(0),
+                pieData: [
+                  { value: dashboardCounts.rejectedPercentage },
+                  { value: 100 - dashboardCounts.rejectedPercentage },
+                ],
               },
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className="bg-[#FFFFFF] dark:bg-[#343434] p-4 rounded-lg shadow-lg w-full"
-              >
-                <h3 className="text-[#010E30] dark:text-white text-[14px] font-medium mb-2">
-                  {item.title.split(" ")[0]} <br /> {item.title.split(" ")[1]}
-                </h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-[28px] text-[#010E30] font-semibold dark:text-white">
-                    {item.value}
-                  </span>
-                  <div className="relative w-[90px] h-[70px]">
-                    <PieChart
-                      width={90}
-                      height={90}
-                      style={{ marginTop: "-20px" }}
-                    >
-                      {/* Background ring */}
-                      <Pie
-                        data={[{ value: 100 }]}
-                        dataKey="value"
-                        innerRadius={30}
-                        outerRadius={38}
-                        startAngle={90}
-                        endAngle={-270}
-                        isAnimationActive={false}
-                        stroke="none"
-                      >
-                        <Cell fill={item.bgColor} />
-                      </Pie>
+            ].map((item, idx) => {
+              const bgClass =
+                idx === 0
+                  ? "bg-gradient-to-b from-white to-[#F6FCFF] dark:from-[#343434] dark:to-[#2A2A2A]"
+                  : idx === 1
+                  ? "bg-gradient-to-b from-white to-[#F6FFFF] dark:from-[#343434] dark:to-[#2A2A2A]"
+                  : "bg-gradient-to-b from-white to-[#F8F6FF] dark:from-[#343434] dark:to-[#2A2A2A]";
 
-                      {/* Foreground ring */}
-                      <Pie
-                        data={[{ value: 76 }, { value: 24 }]}
-                        dataKey="value"
-                        innerRadius={28}
-                        outerRadius={42}
-                        startAngle={90}
-                        endAngle={-270}
-                        cornerRadius={2}
-                        isAnimationActive={false}
-                        stroke="none"
+              return (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-xl shadow-lg w-full ${bgClass}`}
+                >
+                  <h3 className="text-[#010E30] dark:text-white text-[14px] font-medium mb-2">
+                    {item.title.split(" ")[0]} <br /> {item.title.split(" ")[1]}
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[28px] text-[#010E30] font-semibold dark:text-white">
+                      {item.value}
+                    </span>
+                    <div className="relative w-[90px] h-[70px]">
+                      <PieChart
+                        width={90}
+                        height={90}
+                        style={{ marginTop: "-20px" }}
                       >
-                        <Cell fill={item.ringColor} />
-                        <Cell fill="transparent" />
-                      </Pie>
-                    </PieChart>
-                    <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#333] dark:text-white mb-4">
-                      {percentageValue}%
+                        <Pie
+                          data={[{ value: 100 }]}
+                          dataKey="value"
+                          innerRadius={30}
+                          outerRadius={38}
+                          startAngle={90}
+                          endAngle={-270}
+                          isAnimationActive={false}
+                          stroke="none"
+                        >
+                          <Cell fill={item.bgColor} />
+                        </Pie>
+                        <Pie
+                          data={item.pieData}
+                          dataKey="value"
+                          innerRadius={28}
+                          outerRadius={42}
+                          startAngle={90}
+                          endAngle={-270}
+                          cornerRadius={2}
+                          isAnimationActive={false}
+                          stroke="none"
+                        >
+                          <Cell fill={item.ringColor} />
+                          <Cell fill="transparent" />
+                        </Pie>
+                      </PieChart>
+                      <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#333] dark:text-white mb-4">
+                        {item.percentage}%
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Charts Row */}
@@ -594,112 +656,19 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="w-[33%] bg-white rounded-xl dark:bg-[#343434] h-[270px] flex flex-col">
-              <div className="bg-[#FFFFFF] dark:bg-[#343434] rounded-xl shadow p-4 h-[270px]">
-                {/* Header */}
-                <div className="w-full flex justify-between items-center">
-                  <h3 className="text-[#010E30] text-[13px] font-semibold dark:text-[#ffff]">
-                    Subject
-                  </h3>
-                  <div className="flex gap-1">
-                    <div className="flex items-center gap-[3px]">
-                      <div className="w-[6px] h-[6px] bg-pink-400 rounded-sm"></div>
-                      <span className="text-[9px] text-[#010E30] dark:text-white/70">
-                        Female
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-[3px]">
-                      <div className="w-[6px] h-[6px] bg-blue-400 rounded-sm"></div>
-                      <span className="text-[9px] text-[#010E30] dark:text-white/70">
-                        Male
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pie Chart */}
-                <div className="flex justify-center items-center mt-1">
-                  <PieChart width={150} height={150}>
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          const item = payload[0].payload;
-                          return (
-                            <div className="bg-white shadow rounded px-2 py-1 text-[9px] text-gray-700">
-                              <div className="font-semibold dark:text-[#FFFFFFB3]">
-                                {item.name}
-                              </div>
-                              <div>F: {item.female}%</div>
-                              <div>M: {item.male}%</div>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={28}
-                      outerRadius={70}
-                      dataKey="value"
-                      labelLine={false}
-                      stroke="none"
-                    >
-                      {pieData.map((entry) => (
-                        <Cell key={entry.name} fill={entry.color} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                  
-                </div>
-
-                {/* Bottom Legend */}
-                <div className="grid grid-cols-3 gap-1 w-full mt-6">
-                  {pieData.map((item) => (
-                    <div
-                      key={item.name}
-                      className="flex flex-col items-center text-center"
-                    >
-                      <div className="flex items-center gap-[1px]">
-                        <div
-                          className="w-[10px] h-[10px] rounded-[2px]"
-                          style={{ backgroundColor: item.color }}
-                        ></div>
-                        <span className="text-[9px] font-semibold text-[#010E30] dark:text-[#FFFF]">
-                          {item.name}
-                        </span>
-                      </div>
-                      <div className="flex gap-1 mt-[2px]">
-                        <div className="flex flex-col items-center gap-[1px]">
-                          <div className="w-[3px] h-[8px] bg-pink-400 rounded-[2px]"></div>
-                          <span className="text-[8px] font-medium">
-                            {item.female}%
-                          </span>
-                        </div>
-                        <div className="flex flex-col items-center gap-[1px]">
-                          <div className="w-[3px] h-[8px] bg-blue-400 rounded-sm"></div>
-                          <span className="text-[8px] font-medium">
-                            {item.male}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <Subject />
             </div>
           </div>
 
           {/* Applications Table */}
-          <div className="bg-white rounded-xl shadow dark:bg-[#343434]">
+          <div className="bg-white rounded-xl shadow-lg dark:bg-[#343434]">
             {/* Table wrapper: horizontal scroll */}
             <div className="overflow-x-auto scrollbar-none h-full">
               {/* Vertical scroll with fixed height */}
-              <div className="overflow-y-auto h-[460px] rounded-xl scrollbar-none">
+              <div className="overflow-y-auto h-[440px] rounded-xl scrollbar-none">
                 <table className="min-w-full text-xs border-collapse table-fixed px-4">
                   {/* Table Head sticky */}
-                  <thead className="sticky top-0 px-2 z-10 text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d] shadow-md  border-[#4C6993] dark:border-[#6087C0]">
+                  <thead className=" text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d]">
                     <tr>
                       {[
                         "Name",
@@ -714,7 +683,7 @@ export default function Dashboard() {
                       ].map((col) => (
                         <th
                           key={col}
-                          className="py-4 px-2 font-semibold text-left  border-[#4C6993] dark:border-[#6087C0]"
+                          className="py-4 px-2 font-semibold text-left border border-[#466993] dark:border-[#466993]"
                         >
                           {col}
                         </th>
@@ -724,66 +693,74 @@ export default function Dashboard() {
 
                   {/* Table Body */}
                   <tbody>
-                    {applicants.map((applicant, index: number) => (
-                      <tr
-                        key={applicant._id}
-                        className={`text-[10px] px-2 py-4 border-none outline-none ${
-                          index % 2 === 0
-                            ? "bg-[#fff] dark:bg-[#2c2c2c]"
-                            : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
-                      >
-                        <td className="py-4 px-2 text-left">
-                          {applicant.candidateFirstName}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.candidatePhoneNumber}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.candidateCountry}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.positionApplied}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.gender}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {formatDate(applicant.applicationDate)}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.preferedWorkingHours}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          {applicant.uploadResume?.data?.length ? (
-                            <a
-                              href={
-                                createBlobUrlFromData(applicant.uploadResume) ||
-                                undefined
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#38619A] hover:underline flex items-center gap-1"
-                            >
-                              <ImAttachment className="w-3 h-3" />
-                              Resume
-                            </a>
-                          ) : (
-                            <span className="text-gray-400 italic">
-                              No Resume
+                    {applicants.map((applicant, index) => {
+                      const resumeUrl = getResumeBlobUrl(
+                        applicant.uploadResume
+                      );
+
+                      return (
+                        <tr
+                          key={applicant._id}
+                          className={`text-[10px] px-2 py-4 border-none outline-none ${
+                            index % 2 === 0
+                              ? "bg-[#fff] dark:bg-[#2c2c2c]"
+                              : "bg-[#F8F8F8] dark:bg-[#303030]"
+                          }`}
+                        >
+                          <td className="py-4 px-2 text-left">
+                            {applicant.candidateFirstName}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {applicant.candidatePhoneNumber}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {applicant.candidateCountry}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {applicant.positionApplied}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {applicant.gender}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {formatDate(applicant.applicationDate)}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {applicant.preferedWorkingHours}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            {resumeUrl ? (
+                              <a
+                                href={resumeUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#38619A] hover:underline flex items-center gap-1"
+                              >
+                                <ImAttachment className="w-3 h-3" />
+                                Resume
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 italic">
+                                No Resume
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 px-2 text-left">
+                            <span className="text-gray-800 rounded-full dark:text-[#fff]">
+                              {applicant.applicationStatus}
                             </span>
-                          )}
-                        </td>
-                        <td className="py-2 px-2 text-left">
-                          <span className="text-gray-800 rounded-full dark:text-[#fff]">
-                            {applicant.applicationStatus}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
+            </div>
+            <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+              <span className="text-left -ml-60 ">
+                Showing {applicants.length} of {totalApplications}
+              </span>
             </div>
           </div>
         </div>
@@ -791,20 +768,20 @@ export default function Dashboard() {
         {/* Sidebar */}
         <div className="w-[310px] flex flex-col gap-4">
           {/* Calendar */}
-          <div className="bg-white rounded-xl shadow p-0">
-            <div className="h-[350px] flex items-center justify-center text-gray-400 dark:bg-[#343434]">
+          <div className="rounded-xl shadow-lg">
+            <div className="h-[350px] bg-white rounded-xl flex items-center justify-center text-gray-400 dark:bg-[#343434]">
               <Calendar />
             </div>
           </div>
           {/* Teachers */}
-          <div className="bg-white rounded-xl shadow p-4 dark:bg-[#343434] h-[200px]">
+          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[200px]">
             <h3 className="text-[16px] font-semibold text-gray-800 mb-1 dark:text-[#fff]">
               Teachers
             </h3>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-3">
               {/* Circular Chart */}
-              <div className="relative w-[90px] h-[90px] flex items-center justify-center mb-5 ml-7">
+              <div className="relative w-[120px] h-[120px] flex items-center justify-center mb-5 -ml-0">
                 <PieChart width={120} height={120}>
                   <Pie
                     data={[{ value: 100 }]}
@@ -843,19 +820,19 @@ export default function Dashboard() {
                   ))}
                 </PieChart>
 
-                {/* Centered Total Teachers Count */}
-                <div className="absolute flex flex-col items-center justify-between">
-                  <span className="mt-3 ml-2 text-[26px] font-bold text-[#010E30] dark:text-[#fff]">
+                {/* Center Total Teachers Text */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                  <span className="text-[16px] font-bold text-[#010E30] dark:text-[#fff]">
                     {totals}
                   </span>
-                  <p className="ml-8 text-[9px] text-[#010E30] dark:text-[#fff]">
+                  <p className="text-[8px] text-[#010E30] dark:text-[#fff] text-center">
                     Number of Teachers
                   </p>
                 </div>
               </div>
 
               {/* Teacher Stats */}
-              <div className="space-y-3 mr-1 ">
+              <div className="space-y-3 mr-1">
                 {filteredPositions.map((item) => (
                   <div
                     key={item.name}
@@ -866,7 +843,7 @@ export default function Dashboard() {
                         className="w-3 h-3 rounded-sm"
                         style={{ backgroundColor: item.color }}
                       ></div>
-                      <span className="text-[11px] text-[#010E30CC] font-semibold dark:text-[#fff] ">
+                      <span className="text-[11px] text-[#010E30CC] font-semibold dark:text-[#fff]">
                         {item.name}
                       </span>
                     </div>
@@ -878,8 +855,9 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
           {/* Schedule */}
-          <div className="bg-white rounded-xl shadow p-4 dark:bg-[#343434] h-[332px]">
+          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[332px]">
             {/* Header */}
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-[16px] font-semibold text-gray-700 dark:text-[#ffff]">
