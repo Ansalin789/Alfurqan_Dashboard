@@ -142,12 +142,12 @@ const Support = () => {
               </details>
             </div>
 
-            <div className="flex gap-3 mt-32 text-[#fff] text-center justify-end p-2">
-              <button className="bg-[#FAFAFA] text-[#1B242C] p-2 rounded-lg flex items-center gap-2">
-                Connect Us
-                <MdOutlineArrowOutward className="w-4 h-4" />
-              </button>
-            </div>
+            <div className="sticky bottom-0 bg-[#5E6578] py-3 pr-4 flex justify-end">
+         <button className="bg-[#FAFAFA] text-[#1B242C] px-4 py-2 rounded-lg flex items-center gap-2 shadow-md">
+           Connect Us
+           <MdOutlineArrowOutward className="w-4 h-4" />
+         </button>
+          </div>
           </div>
         </div>
       </div>
