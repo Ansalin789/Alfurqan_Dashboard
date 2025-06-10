@@ -7,7 +7,6 @@ import { FaStar } from "react-icons/fa";
 
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
-import { HiOutlineX } from "react-icons/hi";
 import { MdTune } from "react-icons/md";
 interface FlattenedFeedbackItem {
   _id: string;
@@ -89,17 +88,6 @@ const FeedbackDetails: React.FC = () => {
   const [selectedApplicant, setSelectedApplicant] =
     useState<FlattenedFeedbackItem | null>(null);
   const [Filter, setFilter] = useState(false);
-    // Active filters (applied)
-    const [filterReview, setFilterReview] = useState("");
-    const [filterTeacher, setFilterTeacher] = useState("");
-    const [filterFeedback, setFilterFeedback] = useState("");
-    const [filterClass, setFilterClass] = useState("");
-    const [filterLevel, setFilterLevel] = useState("");
-    
-    // Temporary filters (for input)
-    const [tempFilterReview, setTempFilterReview] = useState("");
-    const [tempFilterTeacher, setTempFilterTeacher] = useState("");
-
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter applications based on search query
@@ -219,7 +207,7 @@ const FeedbackDetails: React.FC = () => {
 
   return (
     <BaseLayout3>
-      <SupervisorHeader currentSection="Feedback" />
+      <SupervisorHeader currentSection="Feedback" showBackButton = {true} showBackPath="/supervisor/ui/teachers" />
       <div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-3 md:space-y-0">
           <div className="flex flex-wrap gap-2 mb-0">
