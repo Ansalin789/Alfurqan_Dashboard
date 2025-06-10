@@ -68,6 +68,7 @@ const ManageTeacher: React.FC = () => {
   
   // Temporary filters (for input)
   const [tempFilterName, setTempFilterName] = useState("");
+  const [tempFilterLevel, setTempFilterLevel] = useState("");
   const [tempFilterCourse, setTempFilterCourse] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,15 +80,19 @@ const ManageTeacher: React.FC = () => {
   const filteredTeachers = teachers.filter((teacher) => {
     // Search query filtering
     const searchLower = searchQuery.toLowerCase();
-    const nameMatch = teacher.candidateFirstName?.toLowerCase().includes(searchLower) ?? false;
-    const levelMatch = teacher.overallRating?.toString().includes(searchLower) ?? false;
-    const courseMatch = teacher.positionApplied?.toLowerCase().includes(searchLower) ?? false;
-    const searchMatch = nameMatch ?? levelMatch ?? courseMatch;
+    const fullName = `${teacher.candidateFirstName} ${teacher.candidateLastName}`.toLowerCase();
+    const nameMatch = fullName.includes(searchLower);
+    const levelMatch = teacher.overallRating?.toString().includes(searchLower);
+    const courseMatch = teacher.positionApplied?.toLowerCase().includes(searchLower);
+    const searchMatch = nameMatch || levelMatch || courseMatch;
 
     // Filter criteria
-    const filterNameMatch = teacher.candidateFirstName?.toLowerCase().includes(filterName.toLowerCase());
-    const filterLevelMatch = !filterLevel || teacher.overallRating?.toString() === filterLevel;
-    const filterCourseMatch = !filterCourse || teacher.positionApplied?.toLowerCase() === filterCourse.toLowerCase();
+    const filterNameMatch = !filterName || 
+      fullName.includes(filterName.toLowerCase());
+    const filterLevelMatch = !filterLevel || 
+      teacher.overallRating?.toString() === filterLevel;
+    const filterCourseMatch = !filterCourse || 
+      teacher.positionApplied?.toLowerCase() === filterCourse.toLowerCase();
 
     // Combine both search and filter results
     return searchMatch && filterNameMatch && filterLevelMatch && filterCourseMatch;
@@ -104,6 +109,7 @@ const ManageTeacher: React.FC = () => {
     setFilterLevel("");
     setFilterCourse("");
     setTempFilterName("");
+    setTempFilterLevel("");
     setTempFilterCourse("");
     setFilter(false);
   };
@@ -111,6 +117,7 @@ const ManageTeacher: React.FC = () => {
   // Apply filters
   const handleApplyFilters = () => {
     setFilterName(tempFilterName);
+    setFilterLevel(tempFilterLevel);
     setFilterCourse(tempFilterCourse);
     setCurrentPage(1); // Reset to first page when applying filters
     setFilter(false);
@@ -119,6 +126,7 @@ const ManageTeacher: React.FC = () => {
   // Initialize temp filters when opening filter modal
   const handleOpenFilter = () => {
     setTempFilterName(filterName);
+    setTempFilterLevel(filterLevel);
     setTempFilterCourse(filterCourse);
     setFilter(true);
   };
@@ -250,9 +258,30 @@ const ManageTeacher: React.FC = () => {
                             type="text"
                             value={tempFilterName}
                             onChange={(e) => setTempFilterName(e.target.value)}
+                            placeholder="Search by teacher name"
                             className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                           />
                         </div>
+                      </div>
+                      <div className="mb-4">
+                        <label
+                          htmlFor="level"
+                          className="block text-sm font-medium mb-1"
+                        >
+                          Level
+                        </label>
+                        <select 
+                          value={tempFilterLevel}
+                          onChange={(e) => setTempFilterLevel(e.target.value)}
+                          className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                        >
+                          <option value="">All Levels</option>
+                          <option value="1">Level 1</option>
+                          <option value="2">Level 2</option>
+                          <option value="3">Level 3</option>
+                          <option value="4">Level 4</option>
+                          <option value="5">Level 5</option>
+                        </select>
                       </div>
                       <div className="mb-4">
                         <label
@@ -300,7 +329,7 @@ const ManageTeacher: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-6 gap-4 gap-x-7 p-3 px-4 bg-[#f5f5f5] dark:bg-[#3b3b3b]">
-              {teachers.map((teacher: ICandidateApplication) => (
+              {currentApplicants.map((teacher: ICandidateApplication) => (
                 <div
                   key={teacher._id}
                   className="bg-white dark:bg-[#343434] h-[260px] shadow-md rounded-lg p-4"
