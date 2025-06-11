@@ -67,7 +67,7 @@ const SignIn: React.FC = () => {
       console.log(accessToken);
       console.log(authToken);
       if (role?.includes("ACADEMICCOACH")) {
-        router.push("/Academic");
+        router.push("/Academic-coach/ui/dashboard");
         alert("Login successful as AcademicCoach");
       }
     } catch (error: any) {
@@ -140,7 +140,7 @@ const SignIn: React.FC = () => {
         localStorage.setItem("AcademicCoachPortalName", result.data.username);
         const authToken = localStorage.getItem("AcademicCoachAuthToken");
         console.log(authToken);
-        router.push("/Academic"); // Redirect to dashboard
+        router.push("/Academic-coach/ui/dashboard"); // Redirect to dashboard
       } else {
         setLoginError("Access denied: Not an Admin");
         console.log(result?.message); // Log the error message for debugging
