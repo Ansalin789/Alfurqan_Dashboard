@@ -101,7 +101,7 @@ function Sidebar3() {
   );
 }
 
-export default function BaseLayout3({ children }: Props) {
+export default function BaseLayout1({ children }: Props) {
   const [scale, setScale] = useState(1);
   useEffect(() => {
     const dpi = window.devicePixelRatio;
