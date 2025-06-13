@@ -38,12 +38,10 @@ const initialData: Omit<DataItem, "value">[] = [
     title: "Trial Assigned",
     color: "bg-[#fff]",
     icon: (
-      <div className="bg-[#e3f4ff] dark:bg-[#3e4e50] px-1 rounded-full">
-        <FaGraduationCap size={25} color="#49aad0" />
-        <FaHandHolding
-          size={25}
-          color="#49aad0"
-          className="-mt-[18px] -ml-[0px]"
+      <div className="bg-[#e3f4ff] dark:bg-[#3e4e50] rounded-full">
+        <img
+          src="/assets/images/acgr.svg"
+          className="w-10 h-10 object-contain"
         />
       </div>
     ),
@@ -52,44 +50,59 @@ const initialData: Omit<DataItem, "value">[] = [
   {
     title: "Evaluation Completed",
     color: "bg-[#fff]",
-    icon: (<div className="bg-[#e1ffde] dark:bg-[#3f503e] px-0 rounded-full relative">
-    <GiSuitcase size={35} color="#64af74" />
-    <LuCircleCheck  size={10} color="#fff" className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"/>
-  </div>),
+    icon: (
+      <div className="bg-[#e1ffde] dark:bg-[#3f503e] rounded-full relative">
+        <img
+          src="/assets/images/accom.svg" 
+          alt="Evaluation Completed"
+          className="w-10 h-10 object-contain"
+        />
+      </div>
+    ),
     iconBg: "bg-[#e1ffde] dark:bg-[#3f503e]",
   },
   {
     title: "Evaluation Pending",
     color: "bg-[#fff]",
-    icon: <FaClock size={30} color="#ca5a5a" />,
+    icon: (
+      <img
+        src="/assets/images/acpend.svg"
+        alt="Evaluation Pending"
+        className="w-10 h-10 object-contain"
+      />
+    ),
     iconBg: "bg-[#ffdfde] dark:bg-[#503e3e]",
   },
   {
     title: "Total Pendings",
     color: "bg-[#fff]",
     icon: (
-      <div className="bg-[#fff1de] dark:bg-[#504d3e] px-0 rounded-full relative">
-        <GiSuitcase size={35} color="#e8b253" />
-        <TbClockHour9  size={10} color="#fff" className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"/>
+      <div className="bg-[#fff1de] dark:bg-[#504d3e] rounded-full relative">
+        <img
+          src="/assets/images/acepend.svg" // replace with your actual image path
+          alt="Total Pending"
+          className="w-10 h-10 object-contain"
+        />
       </div>
     ),
     iconBg: "bg-[#fff1de] dark:bg-[#504d3e]",
   },
 ];
 
+
 // Card component
 const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
   <div
     className={`p-4 py-4 shadow-lg items-start rounded-xl w-full ${color} relative dark:bg-[#343434] dark:text-[#fff]`}
   >
-    <div className={`absolute top-8 right-6 ${iconBg} p-2 rounded-[100%]`}>
+    <div className={`absolute top-8 right-6 ${iconBg} p-1 rounded-[100%]`}>
       {React.isValidElement(icon) ? (
         icon
       ) : (
         <Image
           src={icon as string}
           alt={`${title} icon`}
-          className="w-6 h-6 opacity-60"
+          className="w-8 h-8 opacity-60"
         />
       )}
     </div>

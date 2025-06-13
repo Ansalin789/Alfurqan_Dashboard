@@ -18,20 +18,20 @@ export default function Countries() {
   ];
 
   return (
-    <div className="col-span-12 bg-[#3e68a1] p-8 py-4 rounded-[20px] shadow-lg">
-      <h3 className="text-[13px] font-medium text-white mb-2">Countries</h3>
+    <div className="col-span-12 rounded-xl p-2 text-[#000] dark:text-[#fff]">
+      <h3 className="text-[16px] font-semibold text-[#000] dark:text-[#fff] mb-2 px-3 py-2">Countries</h3>
       <table className="min-w-full divide-y divide-gray-200 overflow-y-scroll scrollbar-hide">
         <tbody className="divide-y divide-gray-200">
           {countriesData.map((country) => (
             <tr
               key={country.name}
-              className="flex justify-between items-center"
+              className="justify-between items-center flex border-b-[1px] dark:border-[#585858] px-3"
             >
-              <td className="flex items-center text-white gap-3 py-2 text-[12px]">
+              <td className="flex items-center text-[#000] dark:text-[#fff] gap-2 py-1 text-[12px]">
                 <span className="w-6">{country.icon}</span>
-                <span className="text-[10px]">{country.name}</span>
+                <span className="py-1 text-[11px] text-center font-normal flex text-[#010e30] opacity-90 dark:text-[#fff]">{country.name}</span>
               </td>
-              <td className="text-white py-1 text-[10px]">{country.count}</td>
+              <td className="py-2 text-[13px] whitespace-nowrap text-center text-[#010e30] dark:text-[#fff] font-medium">{country.count}</td>
             </tr>
           ))}
         </tbody>

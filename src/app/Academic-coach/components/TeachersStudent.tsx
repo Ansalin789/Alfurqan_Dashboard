@@ -50,34 +50,39 @@ export default function Academic() {
   return (
     <Link
       href="/Academic/manageStudents"
-      className="block col-span-12 bg-[#3e68a1] p-4 py-3 rounded-[20px] shadow-xl"
     >
-      <div className="col-span-12">
-        <h3 className="text-[13px] font-medium text-white mb-1">
-          Teachers - Students
+      <div className="col-span-12 p-2 text-[#000] dark:text-[#fff]">
+        <h3 className="text-[16px] font-semibold text-[#000] dark:text-[#fff] mb-1 px-3 py-2 justify-between flex items-center">
+         <div>Teachers</div>
+         <div>Students</div>
         </h3>
-        <div className="max-h-40 overflow-y-scroll scrollbar-none ml-6">
+        <div className="overflow-y-scroll scrollbar-none">
           <table className="min-w-full">
-            <thead>
+            {/* <thead>
               <tr>
-                <th className="px-4 py-2 text-start text-[12px] font-normal text-white underline underline-offset-2">
+                <th className="px-4 py-2 text-start text-[12px] font-normal text-[#000] dark:text-[#fff] underline underline-offset-2">
                   Teachers
                 </th>
-                <th className="px-4 py-2 text-center text-[12px] font-normal text-white underline underline-offset-2">
+                <th className="px-4 py-2 text-center text-[12px] font-normal text-[#000] dark:text-[#fff] underline underline-offset-2">
                   Students
                 </th>
               </tr>
-            </thead>
+            </thead> */}
             <tbody className="mb-1">
               {teachersData.map((teacher) => (
                 <tr key={teacher._id ?? teacher.teacherEmail}>
-                  <td className="px-4 py-1 text-[11px] text-center flex text-white ">
-                    <FaUserCircle className="text-[#ffffff] mr-2 mt-1" />
+                  <div className="justify-between items-center flex border-b-[1px]  dark:border-[#585858] px-3 py-1">
+
+                  
+                  <td className=" py-1 text-[11px] text-center font-normal flex text-[#010e30] opacity-90 dark:text-[#fff]">
+                    {/* <FaUserCircle className="text-[#000] mr-2 mt-1" /> */}
+                    <img src="/assets/images/teacheravt.svg" alt="" className="mr-1 -mt-[3px]"/>
                     {teacher.teacherName}
                   </td>
-                  <td className="px-4 py-1 text-[11px] whitespace-nowrap text-center text-white">
+                  <td className=" py-1 text-[13px] whitespace-nowrap text-center text-[#010e30] dark:text-[#fff] font-medium">
                     {teacher.studentCount}
                   </td>
+                  </div>
                 </tr>
               ))}
             </tbody>
