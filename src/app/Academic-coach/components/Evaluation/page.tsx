@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
-import {
-  FaEllipsisV,
-} from "react-icons/fa";
+import { FaEllipsisV } from "react-icons/fa";
 import BaseLayout1 from "@/components/BaseLayout1";
 import Popup from "../Popup";
 import { useRouter } from "next/navigation";
@@ -13,7 +11,54 @@ import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
 
+interface Student {
+  learningInterest: string; // Replace with the exact type if known
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentPhone: number;
+  studentCountry: string;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+  studentStatus: string;
+}
 
+interface EvaluationItem {
+  paymentLink: string;
+  _id: string;
+  student: Student;
+  trialClassStatus: string;
+  assignedTeacher: string;
+  paymentStatus: string;
+}
+
+interface ApiResponse {
+  evaluation: EvaluationItem[];
+}
+
+// Define the transformed user structure
+interface TransformedUser {
+  _id: string;
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  number: string;
+  country: string;
+  course: string; // Assuming this corresponds to `learningInterest`
+  preferredTeacher: string;
+  time: string;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+  paymentStatus: string;
+  assignedTeacher: string;
+  paymentLink: string;
+  studentStatus: string; // Optional if not always present
+}
 // Define the return type of the getAllUsers function
 interface User {
   studentId: string;
@@ -31,7 +76,6 @@ interface User {
   city?: string;
   students?: number;
   comment?: string;
-  studentStatus?: string; // Added studentStatus field
 }
 
 interface GetAllUsersResponse {
@@ -39,6 +83,82 @@ interface GetAllUsersResponse {
   data: User[];
   message?: string; // Make message optional
 }
+
+const getAllUser = async (): Promise<{
+  success: boolean;
+  data: TransformedUser[];
+  message: string;
+}> => {
+  try {
+    const academicId = localStorage.getItem("AcademicCoachPortalId");
+    console.log("academicId>>", academicId);
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachAuthToken")
+        : null;
+
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+    }
+    const response = await axios.get(
+      `https://api.blackstoneinfomaticstech.com/evaluationlist`,
+      {
+        params: { academicCoachId: academicId },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // Add debug log for raw API response
+    console.log("Raw API Response:", response.data.evaluation);
+
+    // Transform API data to match TransformedUser interface
+    const transformedData: TransformedUser[] = response.data.evaluation.map(
+      (item: any) => {
+        // Debug log for each item's studentStatus
+        console.log("Item studentStatus before transform:", item.studentStatus);
+        return {
+          _id: item._id,
+          studentId: item.student.studentId,
+          studentFirstName: item.student.studentFirstName,
+          studentLastName: item.student.studentLastName,
+          number: item.student.studentPhone
+            ? item.student.studentPhone.toString()
+            : "",
+          country: item.student.studentCountry,
+          course: item.student.learningInterest,
+          preferredTeacher: item.student.preferredTeacher,
+          time: item.student.preferredFromTime,
+          classStatus: item.student.classStatus,
+          status: item.student.status,
+          trialClassStatus: item.trialClassStatus,
+          paymentStatus: item.paymentStatus,
+          assignedTeacher: item.assignedTeacher,
+          paymentLink: item.paymentLink,
+          studentStatus: item.studentStatus,
+        };
+      }
+    );
+
+    // Debug log for transformed data
+    console.log("Transformed Data:", transformedData);
+
+    return {
+      success: true,
+      data: transformedData,
+      message: "Users fetched successfully",
+    };
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return {
+      success: false,
+      data: [],
+      message: error instanceof Error ? error.message : "Failed to fetch users",
+    };
+  }
+};
 
 // Update the getAllUsers function to fetch from your API
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
@@ -63,11 +183,17 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         },
       }
     );
-    console.log("response>>>", response);
+    console.log("Raw API Response:", JSON.stringify(response.data, null, 2));
+    console.log(
+      "First student data:",
+      JSON.stringify(response.data.students[0], null, 2)
+    );
+    console.log("First student status:", response.data.students[0]?.status);
+    console.log(
+      "First student studentStatus:",
+      response.data.students[0]?.studentStatus
+    );
 
-    // const rawData = JSON.stringify(response.data);
-    // console.log('Raw API Response:', rawData); // Debug log
-    // Check if rawData.students exists and is an array
     if (!response.data.students || !Array.isArray(response.data.students)) {
       throw new Error("Invalid data structure received from API");
     }
@@ -87,19 +213,30 @@ const getAllUsers = async (): Promise<GetAllUsersResponse> => {
         preferredFromTime: string;
         preferredToTime: string;
         evaluationStatus?: string;
-      }) => ({
-        studentId: item._id,
-        fname: item.firstName,
-        lname: item.lastName,
-        email: item.email,
-        number: item.phoneNumber.toString(),
-        country: item.country,
-        course: item.learningInterest,
-        preferredTeacher: item.preferredTeacher,
-        date: new Date(item.startDate).toLocaleDateString(),
-        time: item.preferredFromTime,
-        evaluationStatus: item.evaluationStatus,
-      })
+        status?: string;
+      }) => {
+        console.log("Processing item - Original data:", {
+          status: item.status,
+          allFields: Object.keys(item),
+        });
+        const transformed = {
+          studentId: item._id,
+          fname: item.firstName,
+          lname: item.lastName,
+          email: item.email,
+          number: item.phoneNumber.toString(),
+          country: item.country,
+          course: item.learningInterest,
+          preferredTeacher: item.preferredTeacher,
+          date: new Date(item.startDate).toLocaleDateString(),
+          time: item.preferredFromTime,
+          evaluationStatus: item.evaluationStatus,
+        };
+        console.log("Transformed item - Final data:", {
+          allFields: Object.keys(transformed),
+        });
+        return transformed;
+      }
     );
 
     return {
@@ -189,115 +326,160 @@ const FilterModal = ({
       className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  p-8 rounded-lg  w-[500px]"
       overlayClassName="fixed inset-0 bg-black bg-opacity-50"
     >
-   <div className="fixed inset-0  bg-opacity-40 flex justify-center items-center">
-  <div className="bg-white p-6 rounded-lg w-[320px] relative dark:bg-[#252525]">
-    <div className="flex justify-between items-center mb-6">
-      <h2 className="text-sm font-semibold text-gray-800 dark:text-white">Filter by</h2>
-      <button
-        onClick={onClose}
-        className="text-gray-400 text-xl absolute top-4 right-4"
-      >
-        ×
-      </button>
-    </div>
+      <div className="fixed inset-0  bg-opacity-40 flex justify-center items-center">
+        <div className="bg-white p-6 rounded-lg w-[320px] relative dark:bg-[#252525]">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
+              Filter by
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 text-xl absolute top-4 right-4"
+            >
+              ×
+            </button>
+          </div>
 
-    <div className="space-y-4">
-      {/* Country */}
-      <div>
-        <label htmlFor="country" className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Country</label>
-        <select
-          className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-          value={filters.country}
-          onChange={(e) => setFilters({ ...filters, country: e.target.value })}
-        >
-          <option value="">Select Country</option>
-          {uniqueCountries.map((country) => (
-            <option key={country} value={country}>{country}</option>
-          ))}
-        </select>
+          <div className="space-y-4">
+            {/* Country */}
+            <div>
+              <label
+                htmlFor="country"
+                className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]"
+              >
+                Country
+              </label>
+              <select
+                className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                value={filters.country}
+                onChange={(e) =>
+                  setFilters({ ...filters, country: e.target.value })
+                }
+              >
+                <option value="">Select Country</option>
+                {uniqueCountries.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Course */}
+            <div>
+              <label
+                htmlFor="course"
+                className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]"
+              >
+                Course
+              </label>
+              <select
+                className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                value={filters.course}
+                onChange={(e) =>
+                  setFilters({ ...filters, course: e.target.value })
+                }
+              >
+                <option value="">Select Courses</option>
+                {uniqueCourses.map((course) => (
+                  <option key={course} value={course}>
+                    {course}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Teacher */}
+            <div>
+              <label
+                htmlFor="teachers"
+                className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]"
+              >
+                Teachers
+              </label>
+              <select
+                className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                value={filters.teacher}
+                onChange={(e) =>
+                  setFilters({ ...filters, teacher: e.target.value })
+                }
+              >
+                <option value="">Select Teachers</option>
+                {uniqueTeachers.map((teacher) => (
+                  <option key={teacher} value={teacher}>
+                    {teacher}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Status */}
+            <div>
+              <label
+                htmlFor="status"
+                className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]"
+              >
+                Status
+              </label>
+              <select
+                className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                value={filters.evaluationStatus}
+                onChange={(e) =>
+                  setFilters({ ...filters, evaluationStatus: e.target.value })
+                }
+              >
+                <option value="">Select Status</option>
+                <option value="PENDING">Pending</option>
+                <option value="COMPLETED">Completed</option>
+              </select>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-between items-center pt-4 ">
+              <button
+                onClick={handleReset}
+                className="w-[45%] py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium hover:bg-blue-50"
+              >
+                Reset
+              </button>
+              <button
+                onClick={handleApply}
+                className="w-[50%] py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
+              >
+                Show{" "}
+                {
+                  users.filter((user) => {
+                    return (
+                      (!filters.country || user.country === filters.country) &&
+                      (!filters.course || user.course === filters.course) &&
+                      (!filters.teacher ||
+                        user.preferredTeacher === filters.teacher) &&
+                      (!filters.status ||
+                        user.evaluationStatus === filters.status) &&
+                      (!filters.trailId ||
+                        user.studentId.includes(filters.trailId)) &&
+                      (!filters.studentName ||
+                        `${user.fname} ${user.lname}`
+                          .toLowerCase()
+                          .includes(filters.studentName.toLowerCase())) &&
+                      (!filters.email ||
+                        user.email
+                          .toLowerCase()
+                          .includes(filters.email.toLowerCase())) &&
+                      (!filters.mobile ||
+                        user.number.includes(filters.mobile)) &&
+                      (!filters.time || user.time.includes(filters.time)) &&
+                      (!filters.evaluationStatus ||
+                        user.evaluationStatus === filters.evaluationStatus)
+                    );
+                  }).length
+                }{" "}
+                results
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* Course */}
-      <div>
-        <label htmlFor="course" className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Course</label>
-        <select
-          className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-          value={filters.course}
-          onChange={(e) => setFilters({ ...filters, course: e.target.value })}
-        >
-          <option value="">Select Courses</option>
-          {uniqueCourses.map((course) => (
-            <option key={course} value={course}>{course}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Teacher */}
-      <div>
-        <label htmlFor="teachers" className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Teachers</label>
-        <select
-          className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-          value={filters.teacher}
-          onChange={(e) => setFilters({ ...filters, teacher: e.target.value })}
-        >
-          <option value="">Select Teachers</option>
-          {uniqueTeachers.map((teacher) => (
-            <option key={teacher} value={teacher}>{teacher}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Status */}
-      <div>
-        <label htmlFor="status" className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">Status</label>
-        <select
-          className="w-full px-3 py-2 border rounded text-sm text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-          value={filters.evaluationStatus}
-          onChange={(e) =>
-            setFilters({ ...filters, evaluationStatus: e.target.value })
-          }
-        >
-          <option value="">Select Status</option>
-          <option value="PENDING">Pending</option>
-          <option value="COMPLETED">Completed</option>
-        </select>
-      </div>
-
-      {/* Buttons */}
-      <div className="flex justify-between items-center pt-4 ">
-        <button
-          onClick={handleReset}
-          className="w-[45%] py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium hover:bg-blue-50"
-        >
-          Reset
-        </button>
-        <button
-          onClick={handleApply}
-          className="w-[50%] py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
-        >
-          Show {
-            users.filter((user) => {
-              return (
-                (!filters.country || user.country === filters.country) &&
-                (!filters.course || user.course === filters.course) &&
-                (!filters.teacher || user.preferredTeacher === filters.teacher) &&
-                (!filters.status || user.evaluationStatus === filters.status) &&
-                (!filters.trailId || user.studentId.includes(filters.trailId)) &&
-                (!filters.studentName ||
-                  `${user.fname} ${user.lname}`.toLowerCase().includes(filters.studentName.toLowerCase())) &&
-                (!filters.email || user.email.toLowerCase().includes(filters.email.toLowerCase())) &&
-                (!filters.mobile || user.number.includes(filters.mobile)) &&
-                (!filters.time || user.time.includes(filters.time)) &&
-                (!filters.evaluationStatus || user.evaluationStatus === filters.evaluationStatus)
-              );
-            }).length
-          } results
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
     </Modal>
   );
 };
@@ -314,8 +496,21 @@ const TrailManagement = () => {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-const [activeTab, setActiveTab] = useState<"evaluation" | "trial">("evaluation");  
+  const [activeTab, setActiveTab] = useState<"evaluation" | "trial">(
+    "evaluation"
+  );
   console.log(setItemsPerPage);
+  const [evaluationUsers, setEvaluationUsers] = useState<TransformedUser[]>([]);
+
+  useEffect(() => {
+    const fetchEvaluationUsers = async () => {
+      const result = await getAllUser();
+      if (result.success) {
+        setEvaluationUsers(result.data);
+      }
+    };
+    fetchEvaluationUsers();
+  }, []);
 
   const router = useRouter();
   const handleSyncClick = () => {
@@ -348,6 +543,17 @@ const [activeTab, setActiveTab] = useState<"evaluation" | "trial">("evaluation")
   useEffect(() => {
     Modal.setAppElement("body");
   }, []);
+
+  const mergedUsers = users.map((user) => {
+    const evalUser = evaluationUsers.find(
+      (evalUser) => evalUser.studentId === user.studentId
+    );
+    return {
+      ...user,
+      studentStatus: evalUser?.studentStatus ?? "NOT JOINED",
+      // You can merge other fields from evalUser if needed
+    };
+  });
 
   const openModal = (user: User | null = null) => {
     setIsEditMode(!!user);
@@ -517,21 +723,21 @@ const [activeTab, setActiveTab] = useState<"evaluation" | "trial">("evaluation")
                     <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr>
                         {[
-                          { label: "Student ID" },
-                          { label: "Student Name" },
-                          { label: "Email" },
-                          { label: "Mobile" },
-                          { label: "Country" },
-                          { label: "Course" },
-                          { label: "Preferred Teacher" },
-                          { label: "Time" },
-                          { label: "Evaluation Status" },
-                          { label: "Student Status" },
-                          { label: "Action" },
+                          { label: "Student ID", width: "w-[10%]" },
+                          { label: "Student Name", width: "w-[12%]" },
+                          { label: "Email", width: "w-[12%]" },
+                          { label: "Mobile", width: "w-[10%]" },
+                          { label: "Country", width: "w-[8%]" },
+                          { label: "Course", width: "w-[10%]" },
+                          { label: "Preferred Teacher", width: "w-[10%]" },
+                          { label: "Time", width: "w-[8%]" },
+                          { label: "Evaluation Status", width: "w-[8%]" },
+                          { label: "Student Status", width: "w-[10%]" },
+                          { label: "Action", width: "w-[6%]" },
                         ].map((header, index) => (
                           <th
                             key={header.label}
-                            className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words"
+                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
                           >
                             {header.label}
                           </th>
@@ -550,32 +756,32 @@ const [activeTab, setActiveTab] = useState<"evaluation" | "trial">("evaluation")
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.studentId}
                             </td>
-                            <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words">
+                            <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%]">
                               {item.fname} {item.lname}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words ">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[15%]">
                               {item.email}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] whitespace-nowrap w-[10%]">
                               {item.number}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[8%]">
                               {item.country}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[10%]">
                               {item.course}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[10%]">
                               {item.preferredTeacher}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[8%]">
                               {item.time}
                             </td>
                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
-                                <span
+                              <span
                                 className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
                                   item.evaluationStatus === "COMPLETED"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
@@ -591,31 +797,44 @@ const [activeTab, setActiveTab] = useState<"evaluation" | "trial">("evaluation")
                                   : "PENDING"}
                               </span>
                             </td>
-                           <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
-                              <span
-                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
-                                  item.studentStatus === "JOINED"
-                                    ? "bg-[#ECFDF3] text-[#377E36] px-3 dark:bg-[#377E3633]"
-                                    : item.status === "WAITING"
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
+                              {(() => {
+                                // Find the evaluation user for this student
+                                const evalUser = evaluationUsers.find(
+                                  (eu) => eu.studentId === item.studentId
+                                );
+                                const status =
+                                  evalUser?.studentStatus?.toUpperCase() ||
+                                  "NOT JOINED";
+
+                                const statusClass =
+                                  status === "JOINED"
+                                    ? "bg-[#ECFDF3] text-[#377E36] px-6 dark:bg-[#377E3633]"
+                                    : status === "WAITING"
                                     ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                    : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]" // For "Not Joined" or any other unexpected value
-                                }`}
-                              >
-                                {item.studentStatus ?? "NOT JOINED"}
-                              </span>
+                                    : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]";
+
+                                return (
+                                  <span
+                                    className={`px-1 text-[10px] text-center py-[3px] rounded-md ${statusClass}`}
+                                  >
+                                    {status}
+                                  </span>
+                                );
+                              })()}
                             </td>
-                           
-                             <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
-                                                          <button
+
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
+                              <button
                                 onClick={() => handleEditClick(item)}
-                                                            className="hover:cursor-pointer text-center p-2"
-                                                          >
-                                                            <FaEllipsisV
-                                                              size={14}
-                                                              className="text-[#5F6368] dark:text-white"
-                                                            />
-                                                          </button>
-                                                        </td>
+                                className="hover:cursor-pointer text-center p-2"
+                              >
+                                <FaEllipsisV
+                                  size={14}
+                                  className="text-[#5F6368] dark:text-white"
+                                />
+                              </button>
+                            </td>
                           </tr>
                         ))
                       ) : (
@@ -629,19 +848,17 @@ const [activeTab, setActiveTab] = useState<"evaluation" | "trial">("evaluation")
                   </table>
                 </div>
               </div>
-
-              
             </div>
           </div>
         </div>
         {/* Pagination */}
-
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-               
-              />
+        <div className="mt-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       </div>
       <Modal
         isOpen={modalIsOpen}
@@ -685,7 +902,6 @@ const [activeTab, setActiveTab] = useState<"evaluation" | "trial">("evaluation")
         onApplyFilters={handleApplyFilters}
         users={users}
       />
-      
     </div>
   );
 };

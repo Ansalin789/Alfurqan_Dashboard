@@ -90,40 +90,39 @@ const getAllUsers = async (): Promise<{
       }
     );
 
-    // Check for response.ok to handle HTTP errors
-    if (!response.data) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // Ensure rawData has the expected structure
-    if (!response.data.evaluation || !Array.isArray(response.data.evaluation)) {
-      throw new Error("Invalid data structure received from API");
-    }
+    // Add debug log for raw API response
+    console.log("Raw API Response:", response.data.evaluation);
 
     // Transform API data to match TransformedUser interface
     const transformedData: TransformedUser[] = response.data.evaluation.map(
-      (item: any) => ({
-        _id: item._id,
-        studentId: item.student.studentId,
-        studentFirstName: item.student.studentFirstName,
-        studentLastName: item.student.studentLastName,
-        number: item.student.studentPhone
-          ? item.student.studentPhone.toString()
-          : "",
-        country: item.student.studentCountry,
-        course: item.student.learningInterest,
-        preferredTeacher: item.student.preferredTeacher,
-        time: item.student.preferredFromTime,
-        classStatus: item.student.classStatus,
-        status: item.student.status,
-        trialClassStatus: item.trialClassStatus,
-        paymentStatus: item.paymentStatus,
-        assignedTeacher: item.assignedTeacher,
-        paymentLink: item.paymentLink,
-      })
+      (item: any) => {
+        // Debug log for each item's studentStatus
+        console.log("Item studentStatus before transform:", item.studentStatus);
+        return {
+          _id: item._id,
+          studentId: item.student.studentId,
+          studentFirstName: item.student.studentFirstName,
+          studentLastName: item.student.studentLastName,
+          number: item.student.studentPhone
+            ? item.student.studentPhone.toString()
+            : "",
+          country: item.student.studentCountry,
+          course: item.student.learningInterest,
+          preferredTeacher: item.student.preferredTeacher,
+          time: item.student.preferredFromTime,
+          classStatus: item.student.classStatus,
+          status: item.student.status,
+          trialClassStatus: item.trialClassStatus,
+          paymentStatus: item.paymentStatus,
+          assignedTeacher: item.assignedTeacher,
+          paymentLink: item.paymentLink,
+          studentStatus: item.studentStatus,
+        };
+      }
     );
 
-    console.log(">>>>transformedData", transformedData);
+    // Debug log for transformed data
+    console.log("Transformed Data:", transformedData);
 
     return {
       success: true,
@@ -1025,7 +1024,7 @@ const TrailSection = () => {
         <div className="md:p-0 mx-auto mb-10">
           <div className="h-full w-full  flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
-              <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+              <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
                 <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
@@ -1057,42 +1056,27 @@ const TrailSection = () => {
                   <table className="w-full table-fixed">
                     <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                       <tr>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Trail ID
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Student Name
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Mobile
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Country
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Course
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Preferred Teacher
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Assigned Teacher
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Time
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Trail Status
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Student Status
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Payment Status
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words">
-                          Action
-                        </th>
+                        {[
+                          { label: "Trail ID", width: "w-[10%]" },
+                          { label: "Student Name", width: "w-[12%]" },
+                          { label: "Mobile", width: "w-[10%]" },
+                          { label: "Country", width: "w-[8%]" },
+                          { label: "Course", width: "w-[10%]" },
+                          { label: "Preferred Teacher", width: "w-[10%]" },
+                          { label: "Assigned Teacher", width: "w-[10%]" },
+                          { label: "Time", width: "w-[8%]" },
+                          { label: "Trail Status", width: "w-[10%]" },
+                          { label: "Student Status", width: "w-[10%]" },
+                          { label: "Payment Status", width: "w-[10%]" },
+                          { label: "Action", width: "w-[7%]" },
+                        ].map((header, index) => (
+                          <th
+                            key={header.label}
+                            className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
+                          >
+                            {header.label}
+                          </th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody>
@@ -1106,45 +1090,33 @@ const TrailSection = () => {
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item._id}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[15%]">
                               {item.studentFirstName} {item.studentLastName}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.number}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
                               {item.country}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.course}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.preferredTeacher}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[10%]">
                               {item.assignedTeacher}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
                               {item.time}
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
-                              {/* <span
-                                className={`px-1 text-[7px] text-center py-[3px] rounded-md ${
-                                  item.classStatus === "COMPLETED"
-                                    ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                    : "bg-green-100 text-green-800 border border-green-900 px-2"
-                                }`}
-                              >
-                                {item.classStatus === "COMPLETED"
-                                  ? "PENDING"
-                                  : "COMPLETED"}
-                              </span>
-<br /> <br/> */}
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words w-[8%]">
                               <span
-                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                                className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                                   item.trialClassStatus === "COMPLETED"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-2 dark:bg-[#377E3633]"
                                     : item.trialClassStatus === "INPROGRESS"
@@ -1160,25 +1132,34 @@ const TrailSection = () => {
                               </span>
                             </td>
 
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
-                              <span
-                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
-                                  item.studentStatus === "JOINED"
-                                    ? "bg-[#ECFDF3] text-[#377E36] px-3 dark:bg-[#377E3633]"
-                                    : (
-                                        item.studentStatus || ""
-                                      ).toUpperCase() === "WAITING"
-                                    ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                    : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]" // For "NOT JOINED" or any other unexpected value
-                                }`}
-                              >
-                                {item.studentStatus || "NOT JOINED"}
-                              </span>
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] w-[8%]">
+                              {(() => {
+                                // Debug log for table display
+                                console.log("Table display studentStatus:", {
+                                  original: item.studentStatus,
+                                  upperCase: item.studentStatus?.toUpperCase(),
+                                  isJoined: item.studentStatus?.toUpperCase() === "JOINED",
+                                  isWaiting: item.studentStatus?.toUpperCase() === "WAITING"
+                                });
+                                return (
+                                  <span
+                                    className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                                      item.studentStatus?.toUpperCase() === "JOINED"
+                                        ? "bg-[#ECFDF3] text-[#377E36] px-6 dark:bg-[#377E3633]"
+                                        : item.studentStatus?.toUpperCase() === "WAITING"
+                                        ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
+                                        : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]"
+                                    }`}
+                                  >
+                                    {item.studentStatus?.toUpperCase() || "NOT JOINED"}
+                                  </span>
+                                );
+                              })()}
                             </td>
 
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] break-words">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD]  w-[8%] break-words">
                               <span
-                                className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                                className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                                   item.paymentStatus === "PAID"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-5 dark:bg-[#377E3633]"
                                     : item.paymentStatus === "FAILED"
@@ -1189,7 +1170,7 @@ const TrailSection = () => {
                                 {item.paymentStatus ?? "PAID"}
                               </span>
                             </td>
-                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px]">
+                            <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[5%]">
                               <button
                                 onClick={() => handleClick(item._id.toString())}
                                 className="hover:cursor-pointer text-center p-2"
@@ -1215,11 +1196,13 @@ const TrailSection = () => {
               </div>
             </div>
           </div>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />{" "}
+          <div className="mt-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
       </div>
       <Modal
@@ -1494,7 +1477,7 @@ const TrailSection = () => {
                   Student Status
                 </label>
                 <div className="w-full p-2 border border-gray-300 rounded text-[10px] mt-2 dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
-                  {studentStatus || "NOT JOINED"}
+                  {studentStatus?.toUpperCase() || "NOT JOINED"}
                 </div>
               </div>
 
