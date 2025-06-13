@@ -18,37 +18,37 @@ interface Props {
 const SidebarItems = [
   {
     name: 'Dashboard',
-    href: '/academic-coach/ui/dashboard',
+    href: '/Academic-coach/ui/dashboard',
     icon: RiDashboardFill,
   },
   {
     name: 'Trail Management',
-    href: '/academic-coach/ui/trail',
+    href: '/Academic-coach/ui/trailmanagement',
     icon: Users, 
   },
   {
     name: 'Manage Students',
-    href: '/academic-coach/ui/students',
+    href: '/Academic-coach/ui/managestudents',
     icon: PiStudent,
   },
   {
     name: 'Manage Teachers',
-    href: '/academic-coach/ui/teachers',
+    href: '/Academic-coach/ui/teachers',
     icon: FaBookOpenReader,
   },
   {
     name: 'Schedule',
-    href: '/academic-coach/ui/schedule',
+    href: '/Academic-coach/ui/schedule',
     icon: MdOutlineCalendarToday,
   },
   {
     name: 'Messages',
-    href: '/academic-coach/ui/messages',
+    href: '/Academic-coach/ui/messages',
     icon: LuMessagesSquare,
   },
   {
     name: 'Support',
-    href: '/academic-coach/ui/support',
+    href: '/Academic-coach/ui/support',
     icon: CircleHelp,
   }
 ];
