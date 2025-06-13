@@ -201,9 +201,23 @@ const ManageStudentView = () => {
   //Student data gettingby ID
   useEffect(() => {
     const fetchData = async () => {
+         const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AcademicCoachAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ Academicoach not found");
+        return;
+      }
       const alstudentsId = localStorage.getItem("studentManageID");
       const res = await fetch(
-        `http://localhost:5001/alstudents/${alstudentsId}`
+        `http://localhost:5001/alstudents/${alstudentsId}`,
+          {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       const json = await res.json();
       setData(json);
@@ -216,6 +230,15 @@ const ManageStudentView = () => {
 
   useEffect(() => {
     const fetchClassSchedule = async () => {
+         const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AcademicCoachAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
       if (!studentId) {
         console.warn("No studentId found in query params");
         return;
@@ -225,7 +248,12 @@ const ManageStudentView = () => {
 
       try {
         const res = await fetch(
-          `http://localhost:5001/classShedule/students?studentId=${studentId}`
+          `http://localhost:5001/classShedule/students?studentId=${studentId}`,
+          {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
         );
 
         if (!res.ok) {
@@ -480,7 +508,7 @@ const ManageStudentView = () => {
                       className={`font-semibold px-3 py-1 rounded-md text-[10px] ${
                         item.scheduleStatus === "Scheduled"
                           ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
-                          : "bg-green-100 text-green-800"
+                          : "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
                       }`}
                     >
                       {item.scheduleStatus}
@@ -503,7 +531,7 @@ const ManageStudentView = () => {
                         className={`w-4 h-4 ${
                           item.scheduleStatus === "Scheduled"
                             ? "text-slate-600 dark:text-[#FDFDFD]"
-                            : "text-gray-400 dark:text-gray-600 opacity-50"
+                            : "text-gray-500 dark:text-gray-200 opacity-50"
                         }`}
                       />
                     </button>

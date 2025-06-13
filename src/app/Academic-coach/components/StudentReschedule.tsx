@@ -5,6 +5,7 @@ import { CalendarDays, Clock } from "lucide-react";
 import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import moment from "moment";
 import { useSearchParams } from "next/navigation";
+import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 
 // Event interface for calendar events
 interface Event {
@@ -119,6 +120,9 @@ const SchedulePage = () => {
   const [scheduledClasses, setScheduledClasses] = useState<ClassData[]>([]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [availableTeachers, setAvailableTeachers] = useState<Teacher[]>([]);
+const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [rescheduleReason, setRescheduleReason] = useState("");
 
   const searchParams = useSearchParams();
   const studentId =
@@ -159,28 +163,63 @@ const SchedulePage = () => {
     fetchClassSchedule();
   }, [studentId]);
 
- const handleDateClick = async (date: Date) => {
-  setSelectedDate(date);
+  const handleDateClick = async (date: Date) => {
+    setSelectedDate(date);
 
-  try {
-    const formattedDate = moment(date).format("YYYY-MM-DD");
+    try {
+      const formattedDate = moment(date).format("YYYY-MM-DD");
+     const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AcademicCoachAuthToken")
+          : null;
 
-    const response = await fetch(
-      `http://localhost:5001/shiftschedule?role=TEACHER&startdate=${formattedDate}`
-    );
-    const data: TeacherShiftResponse = await response.json();
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+      const response = await fetch(
+        
+        `http://localhost:5001/shiftschedule?role=TEACHER&startdate=${formattedDate}`,
+         {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+        
+      );
+      const data: TeacherShiftResponse = await response.json();
 
-    const filteredTeachers = data.users.filter((teacher) =>
-      moment(teacher.enddate).isSameOrAfter(moment(date), "day")
-    );
+      const filteredTeachers = data.users.filter((teacher) =>
+        moment(teacher.enddate).isSameOrAfter(moment(date), "day")
+      );
 
-    setAvailableTeachers(filteredTeachers);
-  } catch (error) {
-    console.error("Error fetching teachers:", error);
-    setAvailableTeachers([]);
-  }
+      setAvailableTeachers(filteredTeachers);
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+      setAvailableTeachers([]);
+    }
+  };
+
+  //Reshcdule
+const handleArrowClick = (teacher: Teacher) => {
+  setSelectedTeacher(teacher);
+  setIsRescheduleOpen(true);
 };
 
+  const handleSubmitReschedule = () => {
+    if (!rescheduleReason.trim()) {
+      alert("Please enter a reason for rescheduling.");
+      return;
+    }
+
+    console.log("Reschedule submitted for:", selectedTeacher);
+    console.log("Reason:", rescheduleReason);
+
+    // Perform API call here if needed
+    setIsRescheduleOpen(false);
+    setRescheduleReason("");
+    setSelectedTeacher(null);
+  };
 
   const handlePrevMonth = () => {
     setCurrentDate(moment(currentDate).subtract(1, "month").toDate());
@@ -462,7 +501,6 @@ const SchedulePage = () => {
   return (
     <div>
       <SupervisorHeader currentSection={"Calender"} />
-
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col md:flex-row overflow-hidden h-[630px]">
           {/* Left: Calendar View */}
@@ -514,49 +552,105 @@ const SchedulePage = () => {
           </div>
 
           {/* Right: Available Teachers */}
-          <div className="w-full md:w-1/3 bg-white dark:bg-[#2b2b2b] rounded-xl p-6 shadow-md">
-            <h3 className="text-[18px] font-semibold text-[#012A4A] dark:text-white mb-4">
-              Available Teachers{" "}
-              {selectedDate &&
-                `on ${moment(selectedDate).format("MMM DD, YYYY")}`}
-            </h3>
+               <div className="w-full md:w-1/3 bg-white dark:bg-[#343434] rounded-xl p-6 shadow-md">
+        <h3 className="text-[16px] font-medium text-[#111111] dark:text-white mb-4">
+          Available Teachers
+        </h3>
 
-            <div className="space-y-4 max-h-[600px] overflow-y-auto">
-              {availableTeachers.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-300">
-                  No teachers available.
-                </p>
-              ) : (
-                availableTeachers.map((teacher) => (
-                  <div
-                    key={teacher._id}
-                    className="flex items-center justify-between bg-gray-50 dark:bg-[#383838] px-4 py-3 rounded-lg"
-                  >
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.name}`}
-                        alt={teacher.name}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-gray-800 dark:text-white">
-                          {teacher.name}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-300">
-                          Email: {teacher.email}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-300 text-right">
-                      {teacher.fromtime} <br />– {teacher.totime}
-                    </div>
+        <div className="divide-y divide-gray-200 dark:divide-gray-600 max-h-[600px] overflow-y-auto">
+          {availableTeachers.length === 0 ? (
+            <p className="text-sm text-gray-500 dark:text-gray-300 py-4">
+              No teachers available.
+            </p>
+          ) : (
+            availableTeachers.map((teacher) => (
+              <div
+                key={teacher._id}
+                className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
+              >
+                {/* Left Side */}
+                <div className="flex items-center gap-4">
+                  <img
+                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.name}`}
+                    alt={teacher.name}
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-gray-800 dark:text-white">
+                      {teacher.name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-300">
+                      Level : {teacher.level || "N/A"}
+                    </p>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
+                </div>
+
+                {/* Right Side */}
+                <div className="flex items-center gap-2">
+                  <div className="text-sm text-gray-700 dark:text-gray-300 text-right">
+                    {teacher.fromtime} - {teacher.totime}
+                  </div>
+                  <button
+                    onClick={() => handleArrowClick(teacher)}
+                    className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
+                  >
+                    <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
+                  </button>
+                </div>
+
+
+              </div>
+            ))
+          )}
         </div>
       </div>
+
+        </div>
+      </div>
+
+
+      {/*reschdule*/}
+     {isRescheduleOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-[90%] max-w-md shadow-lg dark:bg-[#343434]">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4 dark:text-[#fff]">
+        Reschedule
+      </h2>
+
+      <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-[#fff]">
+        Reason for Reschedule
+      </label>
+      <textarea
+        rows={4}
+        placeholder="Enter reason..."
+        value={rescheduleReason}
+        onChange={(e) => setRescheduleReason(e.target.value)}
+        className="w-full border border-gray-300 dark:border-[#5c5c5c] rounded-md p-2 focus:outline-none dark:bg-[#5c5c5c]"
+      />
+
+      <div className="border-t mt-6 pt-4 flex justify-end gap-3 dark:border-[#5c5c5c]">
+        <button
+          onClick={() => {
+            setIsRescheduleOpen(false);
+            setRescheduleReason("");
+            setSelectedTeacher(null);
+          }}
+          className="px-4 py-2 rounded-md border border-[#576CBC] text-[#576CBC]"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmitReschedule}
+          className="px-4 py-2 rounded-md bg-[#576CBC] text-white hover:bg-[#576CBC]"
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
     </div>
   );
 };
