@@ -1022,9 +1022,9 @@ const TrailSection = () => {
     <div>
       <div className="">
         <div className="md:p-0 mx-auto mb-10">
-          <div className="h-full w-full  flex flex-col justify-between">
+          <div className="h-full w-full flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
-              <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+              <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] min-h-[calc(100vh-200px)]">
                 <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
