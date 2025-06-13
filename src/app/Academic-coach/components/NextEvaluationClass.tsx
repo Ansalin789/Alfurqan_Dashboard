@@ -135,17 +135,17 @@ const NextEvaluationClass = () => {
     ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) *
     100;
 
-  if (loading) {
-    return <div className="text-center text-gray-600">Loading...</div>;
-  }
+  // if (loading) {
+  //   return <div className="text-center text-gray-600">Loading...</div>;
+  // }
 
   if (error) {
     return <div className="text-center text-red-500">Error: {error}</div>;
   }
 
   return (
-    <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] rounded-[20px] shadow flex items-center justify-between text-white">
-      <div className="items-center p-1 px-8">
+    <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white">
+      <div className="items-center p-2 px-8">
         <h3 className="text-[13px] font-medium pt-3">
           Your Next Evaluation Class
         </h3>

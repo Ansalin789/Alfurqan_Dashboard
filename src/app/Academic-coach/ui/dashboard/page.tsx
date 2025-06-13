@@ -44,7 +44,7 @@ export default function Dashboard() {
         {/* Applications Table */}
         <div className="bg-white rounded-xl shadow-lg dark:bg-[#343434]">
           <div className="overflow-x-auto scrollbar-none h-full">
-            <div className="overflow-y-auto h-[428px] rounded-xl scrollbar-none">
+            <div className="overflow-y-auto h-[393px] rounded-xl scrollbar-none">
               {/* <table className="min-w-full text-xs border-collapse table-fixed px-4">
                 <thead className=" text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d]">
                   <tr>

@@ -1,16 +1,19 @@
-'use client';
+"use client";
 
 import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import {
-  FaUserGraduate,
   FaCheckCircle,
   FaClock,
-  FaHourglassHalf,
   FaGraduationCap,
-  FaHandHolding ,
+  FaHandHolding,
 } from "react-icons/fa";
+import { GiSuitcase } from "react-icons/gi";
+import { useSearchParams } from "next/navigation";
+import { TbClockHour9  } from "react-icons/tb";
+import { LuCircleCheck } from "react-icons/lu";
+
 
 
 // Define the type for the data items
@@ -22,23 +25,26 @@ type DataItem = {
   iconBg: string;
 };
 
-// Define the type for the API response
 type ApiResponse = {
-  classtype: number;
-  status: number;
+  trialAssigned: number;
+  evaluationCompleted: number;
+  evaluationPending: number;
   totalPending: number;
-  totalActive: number;
 };
 
-// Initial data configuration
+// Initial card data (without values)
 const initialData: Omit<DataItem, "value">[] = [
   {
-    title: "Trail Assigned",
+    title: "Trial Assigned",
     color: "bg-[#fff]",
     icon: (
-      <div className="bg-[#e3f4ff] dark:bg-[#3e4e50] p-0 rounded-full">
-        <FaGraduationCap size={20} color="#49aad0" />
-        <FaHandHolding size={20} color="#49aad0" className="-mt-[14px] -ml-[3px]"/>
+      <div className="bg-[#e3f4ff] dark:bg-[#3e4e50] px-1 rounded-full">
+        <FaGraduationCap size={25} color="#49aad0" />
+        <FaHandHolding
+          size={25}
+          color="#49aad0"
+          className="-mt-[18px] -ml-[0px]"
+        />
       </div>
     ),
     iconBg: "bg-[#e3f4ff] dark:bg-[#3e4e50]",
@@ -46,33 +52,39 @@ const initialData: Omit<DataItem, "value">[] = [
   {
     title: "Evaluation Completed",
     color: "bg-[#fff]",
-    icon: <FaCheckCircle size={20} color="#F2A0FF" />,
+    icon: (<div className="bg-[#e1ffde] dark:bg-[#3f503e] px-0 rounded-full relative">
+    <GiSuitcase size={35} color="#64af74" />
+    <LuCircleCheck  size={10} color="#fff" className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"/>
+  </div>),
     iconBg: "bg-[#e1ffde] dark:bg-[#3f503e]",
   },
   {
     title: "Evaluation Pending",
     color: "bg-[#fff]",
-    icon: <FaClock size={40} color="#ca5a5a" />,
+    icon: <FaClock size={30} color="#ca5a5a" />,
     iconBg: "bg-[#ffdfde] dark:bg-[#503e3e]",
   },
   {
     title: "Total Pendings",
     color: "bg-[#fff]",
-    icon: <FaClock  size={20} color="#0BF4C8" />,
+    icon: (
+      <div className="bg-[#fff1de] dark:bg-[#504d3e] px-0 rounded-full relative">
+        <GiSuitcase size={35} color="#e8b253" />
+        <TbClockHour9  size={10} color="#fff" className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"/>
+      </div>
+    ),
     iconBg: "bg-[#fff1de] dark:bg-[#504d3e]",
   },
 ];
 
-// Card Component
+// Card component
 const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
   <div
-    className={`p-4 py-5 shadow-lg items-start rounded-xl w-full ${color} relative dark:bg-[#343434] dark:text-[#fff]`}
+    className={`p-4 py-4 shadow-lg items-start rounded-xl w-full ${color} relative dark:bg-[#343434] dark:text-[#fff]`}
   >
-    <div
-      className={`absolute top-8 right-6 ${iconBg} p-4 rounded-[100%]`}
-    >
+    <div className={`absolute top-8 right-6 ${iconBg} p-2 rounded-[100%]`}>
       {React.isValidElement(icon) ? (
-        <div className="flex items-center justify-center">{icon}</div>
+        icon
       ) : (
         <Image
           src={icon as string}
@@ -82,112 +94,76 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
       )}
     </div>
     <div className="flex flex-col justify-between h-full">
-      <div>
-        <span className="text-[14px] font-medium text-black dark:text-[#fff]">
-          {title.split(' ').map((word, index) => (
-            <React.Fragment key={index}>
-              {word}
-              {index < title.split(' ').length - 1 && <br />}
-            </React.Fragment>
-          ))}
-        </span>
-      </div>
-      <div>
-        <span className="text-[28px] font-semibold text-black dark:text-[#fff]">{value ?? 0}</span>
-      </div>
+      <span className="text-[14px] font-medium text-black dark:text-white">
+        {title.split(" ").map((word, index) => (
+          <React.Fragment key={index}>
+            {word}
+            {index < title.split(" ").length - 1 && <br />}
+          </React.Fragment>
+        ))}
+      </span>
+      <span className="text-[28px] font-semibold text-black dark:text-white">
+        {value ?? 0}
+      </span>
     </div>
   </div>
 );
 
-// Fetch data from the API
-const fetchDashboardData = async (
-  authToken: string | null
-): Promise<ApiResponse> => {
-    const token =
-    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
-
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-  }
-  const response = await axios.get(
-    `https://api.blackstoneinfomaticstech.com/dashboard/widgets`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-    }
-  );
-
-  if (response.status !== 200) {
-    throw new Error(`HTTP Error: ${response.status}`);
-  }
-
-  return response.data;
-};
-
-// Map API response to dashboard data
-const mapApiResponseToData = (apiResponse: ApiResponse): DataItem[] => {
-  return initialData.map((item) => {
-    let value = 0;
-    switch (item.title) {
-      case "Trail Assigned":
-        value = apiResponse.classtype || 0;
-        break;
-      case "Evaluation Done":
-        value = apiResponse.status || 0;
-        break;
-      case "Evaluation Pending":
-        value = apiResponse.totalPending || 0;
-        break;
-      case "Total Pendings":
-        value = apiResponse.totalActive || 0;
-        break;
-    }
-    return { ...item, value };
-  });
-};
-
-// Dashboard Component
+// Main Dashboard Component
 const Dashboard = () => {
   const [data, setData] = useState<DataItem[]>(
     initialData.map((item) => ({ ...item, value: 0 }))
   );
-  // const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const academicCoachId = searchParams.get("academicCoachId");
 
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const fetchData = async () => {
+      if (!academicCoachId) {
+        console.warn("⚠️ Missing academicCoachId in URL query params.");
+        return;
+      }
+
       try {
-        // setIsLoading(true);
-        setError(null);
+        const response = await axios.get(
+          `http://localhost:5001/dashboard/widgets?academicCoachId=${academicCoachId}`
+        );
+        const apiData: ApiResponse = response.data;
 
-        const authToken = localStorage.getItem("authToken");
-        const apiResponse = await fetchDashboardData(authToken);
+        const mappedData: DataItem[] = initialData.map((item) => {
+          let value = 0;
+          switch (item.title) {
+            case "Trial Assigned":
+              value = apiData.trialAssigned ?? 0;
+              break;
+            case "Evaluation Completed":
+              value = apiData.evaluationCompleted ?? 0;
+              break;
+            case "Evaluation Pending":
+              value = apiData.evaluationPending ?? 0;
+              break;
+            case "Total Pendings":
+              value = apiData.totalPending ?? 0;
+              break;
+          }
+          return { ...item, value };
+        });
 
-        const updatedData = mapApiResponseToData(apiResponse);
-        setData(updatedData);
+        setData(mappedData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        // setIsLoading(false);
+        setError("❌ Failed to fetch dashboard data.");
+        console.error(err);
       }
     };
 
-    loadDashboardData();
-  }, []);
+    fetchData();
+  }, [academicCoachId]);
 
-  // if (isLoading) {
-  //   return <div>Loading...</div>; // Replace with a loading spinner if needed
-  // }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  if (error) return <div className="text-red-600">{error}</div>;
 
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {data.map((item) => (
         <Card key={item.title} {...item} />
       ))}
