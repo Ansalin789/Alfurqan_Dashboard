@@ -3,12 +3,12 @@
   justify-content: center;
   align-items: center;
   padding: 20px;
-  background-color: #f4f4f4; /* Light background */
+  background-color: #f4f4f4; 
   min-height: 100vh;
 }
 
 .calendarWrapper {
-  background-color: #e2e8f0; /* Light grayish-blue */
+  background-color: #e2e8f0;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);

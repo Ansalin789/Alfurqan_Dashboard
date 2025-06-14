@@ -10,6 +10,7 @@ import TeachersStudents from "../../components/TeachersStudent";
 import Countries from "../../components/Countries";
 import Teacherscard from "../../components/Teachercard";
 import Calender from "../../components/Calender";
+import UpcomingClasses from "../../components/UpcommingClasses";
 
 type StudentData = {
   id: number;
@@ -174,13 +175,13 @@ export default function Dashboard() {
         <div className="w-[310px] flex flex-col gap-4">
           {/* Calendar */}
           <div className="rounded-xl shadow-lg">
-            <div className="h-[350px] bg-white rounded-xl flex items-center justify-center text-gray-400 dark:bg-[#343434]">
+            <div className="h-[380px] bg-white rounded-xl flex items-center justify-center text-gray-400 dark:bg-[#343434]">
               <Calender />
             </div>
           </div>
 
           {/* Schedule */}
-          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[560px]">
+          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[535px]">
             {/* Header */}
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-[16px] font-semibold text-gray-700 dark:text-[#ffff]">
@@ -192,8 +193,8 @@ export default function Dashboard() {
             </div>
 
             {/* Timeline */}
-            <div className="relative pl-4 space-y-4 h-[260px] overflow-y-auto scrollbar-none">
-              {/* Vertical dotted line */}
+            <div className="relative pl-4 space-y-4 h-full overflow-y-auto scrollbar-none">
+              <UpcomingClasses />
 
               {/* {todayMeetings.map((item, index) => {
               const colors = colorMap[index % colorMap.length];

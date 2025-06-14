@@ -55,6 +55,16 @@ const Academic: React.FC = () => {
   }, []);
 
   const isMeetingDate = (date: Date) => {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    // Only show events for current month and future months
+    if (date.getFullYear() < currentYear || 
+        (date.getFullYear() === currentYear && date.getMonth() < currentMonth)) {
+      return false;
+    }
+
     return events.some((event) => {
       const eventStart = new Date(event.start);
       return (
@@ -76,21 +86,19 @@ const Academic: React.FC = () => {
                 .toUpperCase()}, ${date.getFullYear()}`
             }
             onClickDay={() => {
-          router.push(`/Academic-coach/meetingSchedule`);
-        }}
-        locale="en-GB"
-        calendarType="iso8601"
-        className="custom-calendar dark:bg-[#343434]"
-            
+              router.push(`/Academic-coach/meetingSchedule`);
+            }}
+            locale="en-GB"
+            calendarType="iso8601"
+            className="custom-calendar dark:bg-[#343434]"
             nextLabel="›"
             prevLabel="‹"
             next2Label={null}
             prev2Label={null}
-            showNeighboringMonth={false}
+            showNeighboringMonth={true}
             tileClassName={({ date, view }) =>
               view === "month" && isMeetingDate(date) ? "event-day" : undefined
             }
-            
           />
         </div>
   );

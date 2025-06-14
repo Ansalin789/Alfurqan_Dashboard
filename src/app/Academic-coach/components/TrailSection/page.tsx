@@ -1075,7 +1075,7 @@ const TrailSection = () => {
                             className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
                           >
                             {header.label}
-                          </th>
+                        </th>
                         ))}
                       </tr>
                     </thead>
@@ -1197,10 +1197,10 @@ const TrailSection = () => {
             </div>
           </div>
           <div className="mt-4">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
             />
           </div>
         </div>

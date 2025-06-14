@@ -39,9 +39,12 @@ const initialData: Omit<DataItem, "value">[] = [
     color: "bg-[#fff]",
     icon: (
       <div className="bg-[#e3f4ff] dark:bg-[#3e4e50] rounded-full">
-        <img
+        <Image
           src="/assets/images/acgr.svg"
-          className="w-10 h-10 object-contain"
+          alt="Trial Assigned"
+          width={40}
+          height={40}
+          className="object-contain"
         />
       </div>
     ),
@@ -52,10 +55,12 @@ const initialData: Omit<DataItem, "value">[] = [
     color: "bg-[#fff]",
     icon: (
       <div className="bg-[#e1ffde] dark:bg-[#3f503e] rounded-full relative">
-        <img
+        <Image
           src="/assets/images/accom.svg" 
           alt="Evaluation Completed"
-          className="w-10 h-10 object-contain"
+          width={40}
+          height={40}
+          className="object-contain"
         />
       </div>
     ),
@@ -65,11 +70,15 @@ const initialData: Omit<DataItem, "value">[] = [
     title: "Evaluation Pending",
     color: "bg-[#fff]",
     icon: (
-      <img
-        src="/assets/images/acpend.svg"
-        alt="Evaluation Pending"
-        className="w-10 h-10 object-contain"
-      />
+      <div className="bg-[#ffdfde] dark:bg-[#503e3e] rounded-full">
+        <Image
+          src="/assets/images/acpend.svg"
+          alt="Evaluation Pending"
+          width={40}
+          height={40}
+          className="object-contain"
+        />
+      </div>
     ),
     iconBg: "bg-[#ffdfde] dark:bg-[#503e3e]",
   },
@@ -78,10 +87,12 @@ const initialData: Omit<DataItem, "value">[] = [
     color: "bg-[#fff]",
     icon: (
       <div className="bg-[#fff1de] dark:bg-[#504d3e] rounded-full relative">
-        <img
-          src="/assets/images/acepend.svg" // replace with your actual image path
+        <Image
+          src="/assets/images/acepend.svg"
           alt="Total Pending"
-          className="w-10 h-10 object-contain"
+          width={40}
+          height={40}
+          className="object-contain"
         />
       </div>
     ),
@@ -116,7 +127,7 @@ const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
         ))}
       </span>
       <span className="text-[28px] font-semibold text-black dark:text-white">
-        {value ?? 0}
+        {value}
       </span>
     </div>
   </div>
@@ -143,6 +154,7 @@ const Dashboard = () => {
           `http://localhost:5001/dashboard/widgets?academicCoachId=${academicCoachId}`
         );
         const apiData: ApiResponse = response.data;
+        console.log('API Response:', apiData);
 
         const mappedData: DataItem[] = initialData.map((item) => {
           let value = 0;
@@ -165,6 +177,7 @@ const Dashboard = () => {
 
         setData(mappedData);
       } catch (err) {
+        console.error('Error fetching data:', err);
         setError("❌ Failed to fetch dashboard data.");
         console.error(err);
       }
