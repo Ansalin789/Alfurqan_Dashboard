@@ -15,6 +15,7 @@ type Props = {
   readonly currentSection: string;
   readonly showBackButton?: boolean;
   readonly showBackPath?:string;
+  readonly students?:string[];
 };
 type NotificationType = {
   _id: string;
@@ -26,7 +27,7 @@ type NotificationType = {
   isRead: boolean;
 };
 
-export default function AcademicHeader({ currentSection, showBackButton = false, showBackPath = '' }: Props) {
+export default function AcademicHeader({ currentSection, showBackButton = false, showBackPath = '', students=[] }: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
@@ -163,7 +164,7 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
       return (
         <button
           onClick={() => setShowLeaveForm(true)}
-          className="bg-[#576CBC] hover:bg-[#6C78F5] text-white text-sm px-4 py-2 rounded-lg"
+          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
         >
           Request for Leave
         </button>
@@ -173,7 +174,7 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
       return (
         <button
           onClick={() => setAddApplicant(true)}
-          className="bg-[#5a65d1] hover:bg-[#6C78F5] text-white text-sm px-4 py-2 rounded-lg"
+          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
         >
           Add New Student
         </button>
@@ -185,7 +186,7 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
       return (
         <button
           onClick={() => setAddMeetings(true)}
-          className="bg-[#5a65d1] hover:bg-[#6C78F5] text-white text-sm px-4 py-2 rounded-lg"
+          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
         >
           Add Meeting
         </button>
@@ -195,7 +196,7 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
       return (
        <button
           onClick={() => setAssignGroupClass(true)}
-          className="bg-[#5a65d1] hover:bg-[#6C78F5] text-white text-sm px-4 py-2 rounded-lg"
+          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
         >
           Assign Group Class
         </button>
@@ -233,7 +234,7 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
             <Bell className="w-5 h-5 text-gray-800 dark:text-white" />
 
             {notificationCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-[#6C78F5] text-white text-[10px] font-normal w-5 h-5 flex items-center justify-center rounded-full animate-bounce shadow-md">
+              <span className="absolute -top-1.5 -right-1.5 bg-[#576CBC] text-white text-[10px] font-normal w-5 h-5 flex items-center justify-center rounded-full animate-bounce shadow-md">
                 {notificationCount}
               </span>
             )}
@@ -261,7 +262,7 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
       {showAddApplicant && (
         <StudentForm onClose={() => setAddApplicant(false)} />
       )}
-      {showAssignGroupClass && <AddGroupAssignClass onClose={()=> setAssignGroupClass(false)} />}
+      {showAssignGroupClass && <AddGroupAssignClass onClose={()=> setAssignGroupClass(false)} students={[]} />}
       {showNotification && (
         <div
           ref={notificationRef}

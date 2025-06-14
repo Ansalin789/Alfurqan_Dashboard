@@ -7,7 +7,6 @@ import axios, { AxiosError } from "axios";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 
-
 type Props = {
   readonly onClose: () => void;
 };
@@ -16,7 +15,7 @@ export interface StudentData {
   username: string;
   password: string;
   role: string;
-  status:  string;
+  status: string;
   createdBy: string;
   createdDate: string; // ISO date string
   updatedDate: string; // ISO date string
@@ -34,7 +33,6 @@ export interface StudentData {
   __v?: number;
 }
 
-
 export default function AddMeeting({ onClose }: Props) {
   const [meetingTitle, setMeetingTitle] = useState("Weekly Meeting");
   const [startTime, setStartTime] = useState("");
@@ -45,15 +43,15 @@ export default function AddMeeting({ onClose }: Props) {
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
   const [open, setOpen] = useState(false);
- const [activeTab, setActiveTab] = useState<Tab>("All");
+  const [activeTab, setActiveTab] = useState<Tab>("All");
   const [selectedTeachers, setSelectedTeachers] = useState<StudentData[]>([]);
   const [Teachers, setTeachers] = useState<StudentData[]>([]);
-  const tabs = ["All", "Quran", "Arabic", "Islamic"] as const; 
-  type Tab = typeof tabs[number];
+  const tabs = ["All", "Quran", "Arabic", "Islamic"] as const;
+  type Tab = (typeof tabs)[number];
 
   useEffect(() => {
     const FetachTeachers = async () => {
-      console.log('Active tabs',activeTab);
+      console.log("Active tabs", activeTab);
       try {
         const Id =
           typeof window !== "undefined"
@@ -73,11 +71,11 @@ export default function AddMeeting({ onClose }: Props) {
         //   params.teacherGroup = `${activeTab} Studies`;
         //   console.log('inserted', activeTab);
         // }
-        
+
         const response = await axios.get(url, {
           headers: {
             Authorization: `Bearer ${token}`,
-          }
+          },
         });
         console.log(response.data);
         setTeachers(response.data.students ?? []);
@@ -120,7 +118,6 @@ export default function AddMeeting({ onClose }: Props) {
       studentName: teacher.username,
       studentEmail: teacher.student.studentEmail,
       _id: teacher._id,
-
     }));
 
     const requestData = {
@@ -279,32 +276,33 @@ export default function AddMeeting({ onClose }: Props) {
                       ))}
                     </div>
                     <div className="space-y-2 max-h-40 overflow-y-auto text-sm">
-                    {Teachers.filter((teacher) => {
-  if (activeTab === "All") return true;
-  return teacher.student.course === activeTab;
-})
-.reduce((unique: typeof Teachers, teacher) => {
-  const exists = unique.find(
-    (t) => t.student.studentId === teacher.student.studentId
-  );
-  if (!exists) unique.push(teacher);
-  return unique;
-}, [])
-.map((teacher) => (
-  <label
-    key={teacher.student.studentId}
-    className="flex items-center gap-2"
-  >
-    <input
-      type="checkbox"
-      checked={selectedTeachers.includes(teacher)}
-      onChange={() => toggleTeacher(teacher)}
-    />
-    <span className="dark:text-white">{teacher.username}</span>
-  </label>
-))}
-
-
+                      {Teachers.filter((teacher) => {
+                        if (activeTab === "All") return true;
+                        return teacher.student.course === activeTab;
+                      })
+                        .reduce((unique: typeof Teachers, teacher) => {
+                          const exists = unique.find(
+                            (t) =>
+                              t.student.studentId === teacher.student.studentId
+                          );
+                          if (!exists) unique.push(teacher);
+                          return unique;
+                        }, [])
+                        .map((teacher) => (
+                          <label
+                            key={teacher.student.studentId}
+                            className="flex items-center gap-2"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedTeachers.includes(teacher)}
+                              onChange={() => toggleTeacher(teacher)}
+                            />
+                            <span className="dark:text-white">
+                              {teacher.username}
+                            </span>
+                          </label>
+                        ))}
                     </div>
                     <div className="flex justify-end mt-4 gap-2">
                       <button
@@ -381,13 +379,13 @@ export default function AddMeeting({ onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1 border border-[#576CBC] text-[#576CBC] rounded hover:bg-gray-100"
+            className="px-3 py-1 border border-[#576CBC] text-[#576CBC] hover:border-[#4459A9] rounded hover:bg-[#E6E9F5] dark:hover:bg-[#333]"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700"
+            className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-[#4459A9]"
           >
             Submit
           </button>

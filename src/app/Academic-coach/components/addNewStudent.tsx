@@ -932,18 +932,17 @@ const submitData = {
           </div>
         </div>
 
-        <div className="border-t pt-4 mt-4 flex justify-end gap-2">
+          <div className="border-t pt-4 mt-4 flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition "
+            className="px-3 py-1 border border-[#576CBC] text-[#576CBC] hover:border-[#4459A9] rounded hover:bg-[#E6E9F5] dark:hover:bg-[#333]"
           >
             Cancel
           </button>
           <button
             type="submit"
-            onClick={handleSubmit}
-            className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700 transition"
+            className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-[#4459A9]"
           >
             Submit
           </button>
