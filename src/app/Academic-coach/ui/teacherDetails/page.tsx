@@ -1,16 +1,148 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { FaRegEdit } from "react-icons/fa";
 import { VscGraphLeft } from "react-icons/vsc";
-import { IoMdAttach } from "react-icons/io";
 
 import BaseLayout1 from "@/components/BaseLayout1";
 import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
-import ViewTeachersList from "../../components/viewteacherlist/page";
-import { Search } from "lucide-react";
+import { MoreVertical, Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
+import { Pagination } from "@nextui-org/react";
+import router from "next/router";
+interface StudentDetails {
+  studentDetails: {
+    _id: string;
+    username: string;
+    password: string;
+    role: string;
+    status: string;
+    createdDate: string;
+    createdBy: string;
+    updatedDate: string;
+    __v: number;
+    student: {
+      studentId: string;
+      studentEmail: string;
+      studentPhone: number;
+      course: string;
+      package: string;
+      city: string;
+      country: string;
+      gender: string;
+    };
+  };
+  studentEvaluationDetails: {
+    _id: string;
+    academicCoachId: string;
+    teacher: {
+      teacherName: string;
+    };
+    student: {
+      studentId: string;
+      studentFirstName: string;
+      studentLastName: string;
+      studentEmail: string;
+      studentGender: string;
+      studentPhone: number;
+      studentCity: string;
+      studentCountry: string;
+      studentCountryCode: string;
+      learningInterest: string;
+      numberOfStudents: number;
+      preferredTeacher: string;
+      preferredFromTime: string;
+      preferredToTime: string;
+      timeZone: string;
+      referralSource: string;
+      preferredDate: string;
+      evaluationStatus: string;
+      status: string;
+      createdDate: string;
+      createdBy: string;
+    };
+    classDay: string[];
+    startTime: string[];
+    endTime: string[];
+    isLanguageLevel: boolean;
+    languageLevel: string;
+    isReadingLevel: boolean;
+    readingLevel: string;
+    isGrammarLevel: boolean;
+    grammarLevel: string;
+    hours: number;
+    subscription: {
+      subscriptionId: string;
+      subscriptionName: string;
+      subscriptionPricePerHr: number;
+      subscriptionDays: number;
+      subscriptionStartDate: string;
+      subscriptionEndDate: string;
+    };
+    planTotalPrice: number;
+    classStartDate: string;
+    classEndDate: string;
+    classStartTime: string;
+    classEndTime: string;
+    accomplishmentTime: string;
+    studentRate: number;
+    gardianName: string;
+    gardianEmail: string;
+    gardianPhone: string;
+    gardianCity: string;
+    gardianCountry: string;
+    gardianTimeZone: string;
+    gardianLanguage: string;
+    assignedTeacher: string;
+    assignedTeacherId: string;
+    assignedTeacherEmail: string;
+    studentStatus: string;
+    classStatus: string;
+    comments: string;
+    trialClassStatus: string;
+    invoiceStatus: string;
+    paymentLink: string;
+    paymentStatus: string;
+    status: string;
+    createdDate: string;
+    createdBy: string;
+    updatedDate: string;
+    updatedBy: string;
+    expectedFinishingDate: number;
+    __v: number;
+    teacherStatus: string;
+  };
+}
 
+interface ClassSchedule {
+  _id: string;
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    gender: string;
+  };
+  teacher: {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  };
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  status: string;
+  classLink: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  amount: string;
+  currency: string;
+  classDay: string[];
+  package: string;
+}
 const TeacherDetails = () => {
   interface IProfessionalExperience {
     jobRole: string;
@@ -71,22 +203,52 @@ const TeacherDetails = () => {
   const [activeTab, setActiveTab] = useState<"scheduled" | "completed">(
     "scheduled"
   );
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const dropdownRef = useRef<HTMLTableCellElement | null>(null);
+
   const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
   const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
   const [paginatedData, setPaginatedData] = useState<ClassSchedule[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const search = useSearchParams();
+  const toggleDropdown = (index: number) => {
+    setActiveDropdown(activeDropdown === index ? null : index);
+  };
+
+  const studentList = [
+    { name: "Abdullah Sulaiman", subject: "Arabic" },
+    { name: "Iman Gabell", subject: "Islamic Studies" },
+    { name: "Gia Rose", subject: "Quran" },
+    { name: "Samantha Neil", subject: "Arabic" },
+  ];
+
+  const handleReschedule = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    console.log("Navigating to reschedule page");
+    router.push("/Academic-coach/ui/teacherreschedule");
+
+    setTimeout(() => {
+      setActiveDropdown(null);
+    }, 100);
+  };
+
+  // Calculate total pages based on active tab
+  const totalPages =
+    activeTab === "scheduled"
+      ? Math.ceil(scheduledClasses.length / itemsPerPage)
+      : Math.ceil(completedClasses.length / itemsPerPage);
   const teacherId = search.get("teacherId");
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
         const token =
           typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
+            ? localStorage.getItem("AcademicCoachAuthToken")
             : null;
 
         if (!token) {
-          console.error("❌ SupervisorAuthToken not found");
+          console.error("❌ AcademicCoachAuthToken not found");
           return;
         }
         const response = await fetch(
@@ -110,10 +272,10 @@ const TeacherDetails = () => {
       try {
         const token =
           typeof window !== "undefined"
-            ? localStorage.getItem("SupervisorAuthToken")
+            ? localStorage.getItem("AcademicCoachAuthToken")
             : null;
         if (!token) {
-          console.error("❌ SupervisorAuthToken not found");
+          console.error("❌ AcademicCoachAuthToken not found");
           return;
         }
 
@@ -139,6 +301,57 @@ const TeacherDetails = () => {
     fetchStats();
     fetchTeachers();
   }, []);
+  useEffect(() => {
+    const fetchClassSchedule = async () => {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AcademicCoachAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+      if (!teacherId) {
+        console.warn("No studentId found in query params");
+        return;
+      }
+
+      console.log("Fetching class schedule for studentId:", teacherId);
+
+      try {
+        const res = await fetch(
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          console.error("Server responded with status:", res.status);
+          return;
+        }
+
+        const data = await res.json();
+        console.log("Fetched data from API:", data);
+
+        const allSchedules: ClassSchedule[] = data.classSchedule;
+
+        setScheduledClasses(
+          allSchedules.filter((c) => c.scheduleStatus === "Scheduled")
+        );
+        setCompletedClasses(
+          allSchedules.filter((c) => c.scheduleStatus === "Completed")
+        );
+      } catch (err) {
+        console.error("Failed to fetch class schedule", err);
+      }
+    };
+
+    fetchClassSchedule();
+  }, [teacherId]);
 
   // Format working hours like "32h 40m"
   const formatWorkingHours = (hours: number | string) => {
@@ -156,100 +369,133 @@ const TeacherDetails = () => {
         showBackButton={true}
         showBackPath="/supervisor/ui/teachers"
       />
-        <div className="p-2 mx-auto">
-            {/* Main Container */}
-            <div className="flex gap-x-5 w-auto">
-            {/* Left Profile Card */}
-            <div className="bg-[#5e6578] text-white rounded-xl flex items-center p-6 w-[630px] h-[246px]">
-                {/* Profile Section */}
-                <div className="flex flex-col items-center w-1/3">
-                <Image
-                    src="/assets/images/proff.jpg"
-                    width={100}
-                    height={100}
-                    alt="Profile"
-                    className="rounded-full border-4 border-white mb-4"
-                />
-                <h2 className="text-lg font-semibold">
-                    {teachers?.candidateFirstName ?? "Will Jonto"}
-                </h2>
-                <p className="text-sm text-gray-200">
-                    {teachers?.candidateEmail ?? "willjonto@gmail.com"}
-                </p>
+      <div className="p-2 mx-auto">
+        {/* Main Container */}
+        <div className="flex gap-x-5 w-auto">
+          {/* Left Profile Card */}
+          <div className="rounded-xl flex items-center p-6 w-[630px] h-[247px] border bg-[#5e6578] text-white ">
+            {/* Profile Section */}
+            <div className="flex flex-col items-center w-1/3">
+              <Image
+                src="/assets/images/proff.jpg"
+                width={100}
+                height={100}
+                alt="Profile"
+                className="rounded-full border-4 border-white mb-4"
+              />
+              <h2 className="text-lg font-semibold text-[#ffff]">
+                {teachers?.candidateFirstName ?? "Will Jonto"}
+              </h2>
+              <p className="text-sm text-[#C9C9C9]">
+                {teachers?.candidateEmail ?? "willjonto@gmail.com"}
+              </p>
+            </div>
+
+            {/* Divider */}
+            <div className="w-px bg-gray-300 h-[150px] mx-6" />
+
+            {/* Personal Info */}
+            <div className="w-2/3">
+              <h3 className="text-[16px] font-semibold mb-4 text-[#ffff]">
+                Personal Info
+              </h3>
+              <ul className="text-sm space-y-2 text-[#ffff]">
+                <li className="flex justify-between ">
+                  <span>Contact</span>
+                  <span className="text-[#DADADA]/80 text-left">{teachers?.candidatePhoneNumber}</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Country</span>
+                  <span className="text-[#DADADA]/80">{teachers?.candidateCountry}</span>
+                </li>
+                   <li className="flex justify-between">
+                  <span>Role</span>
+                  <span className="text-[#DADADA]/80">{teachers?.positionApplied}</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Level</span>
+                  <span className="text-[#DADADA]/80">
+                    {teachers?.overallRating}
+                  </span>
+                </li>
+               
+             
+              </ul>
+            </div>
+          </div>
+
+          {/* Right Section */}
+          <div className="rounded-xl w-[610px] h-[220px] flex justify-between p-3 border dark:bg-[#252525] -mt-3 ">
+            {/* Left Side - Performance and Attendance */}
+            <div className="grid grid-cols-1 gap-3 w-[45%] h-[247px]">
+              {[
+                {
+                  title: "Performance",
+                  value: stats?.totalStudents?.toString() ?? "72%",
+                  sub: "60% increase than Last Month",
+                },
+                {
+                  title: "Total Attendance",
+                  value: stats?.totalAttendance?.toString() ?? "97%",
+                  sub: "90% Progressive than Last Month",
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className="p-4 rounded-xl flex flex-col justify-between h-full border text-[#010E30] bg-[#7689BD]"
+                >
+                  <h4 className="text-[16px] font-semibold text-[#ffff]">
+                    {item.title}
+                  </h4>
+                  <p className="text-[14px] font-semibold mt-2 flex gap-1 items-center text-[#ffff]">
+                    {item.value}{" "}
+                    <VscGraphLeft className="rotate-180 text-[#ffff]" />
+                  </p>
+                  <p className="text-[12px] text-[#ffff]">{item.sub}</p>
                 </div>
+              ))}
+            </div>
 
-                {/* Divider */}
-                <div className="w-px bg-gray-400 h-[150px] mx-6" />
+            {/* Right Side - Students List */}
+            {/* Right Side - Students List */}
+            <div className="bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 w-[50%] h-[247px] flex flex-col justify-between scrollbar-none">
+              <div className="flex justify-between items-center">
+                <h4 className="text-[14px] font-semibold text-[#010E30] dark:text-white">
+                  Students List
+                </h4>
+                <span className="bg-[#7689bd] text-white text-[12px] px-2 py-[2px] rounded-full">
+                  {studentList.length}
+                </span>
+              </div>
 
-                {/* Personal Info */}
-                <div className="w-2/3">
-                <h3 className="text-[16px] font-semibold mb-4">Personal Info</h3>
-                <ul className="text-sm space-y-2">
-                    <li className="flex justify-between">
-                    <span>Contact</span>
-                    <span className="text-gray-300">(📞) 2345 6789 3245</span>
-                    </li>
-                    <li className="flex justify-between">
-                    <span>Level</span>
-                    <span className="text-gray-300">
-                        {teachers?.overallRating ?? "2"}
+              {/* Scrollable Students */}
+              <div className="mt-2 space-y-3 overflow-y-auto h-[150px]">
+                {" "}
+                {/* Fixed height with scroll */}
+                {studentList.map((student, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-[24px] h-[24px] rounded-full bg-pink-400 flex items-center justify-center text-white text-[12px]">
+                        {student.name.charAt(0)}
+                      </div>
+                      <span className="text-[12px] font-medium text-[#000000] dark:text-white">
+                        {student.name}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-[#203F78] dark:text-[#9fd0ff]">
+                      {student.subject}
                     </span>
-                    </li>
-                    <li className="flex justify-between">
-                    <span>Package</span>
-                    <span className="text-gray-300">Standard</span>
-                    </li>
-                    {/* <li className="flex justify-between">
-            <span>Mother Tongue</span>
-            <span className="text-gray-300">{teachers?.motherTongue ?? "Arabic"}</span>
-        </li> */}
-                </ul>
-                </div>
+                  </div>
+                ))}
+              </div>
             </div>
+          </div>
+        </div>
 
-            {/* Right Section */}
-           {/* Right Section */}
-<div className="rounded-xl w-[610px] h-[246px] flex flex-col justify-between">
-  <div className="grid grid-cols-2 gap-3 h-full">
-    {[
-      {
-        title: "Performance",
-        value: stats?.totalStudents?.toString() ?? "-",
-        sub: "60% increase than Last Month",
-      },
-      {
-        title: "Package",
-        value: stats?.totalClasses?.toString() ?? "-",
-        sub: "80% increase than Last Month",
-      },
-      {
-        title: "Total Attendance",
-        value: stats?.totalAttendance?.toString() ?? "-",
-        sub: "90% Progressive than Last Month",
-      },
-      {
-        title: "Total Reward Points",
-        value: formatWorkingHours(stats?.totalWorkingHours ?? "-"),
-        sub: "95% Progressive than Last Month",
-      },
-    ].map((item) => (
-      <div
-        key={item.title}
-        className="bg-[#7689bd] text-white p-4 rounded-2xl shadow-md flex flex-col justify-between"
-      >
-        <h4 className="text-[16px] font-semibold">{item.title}</h4>
-        <p className="text-[14px] font-semibold mt-2 flex gap-1 items-center">
-          {item.value} <VscGraphLeft className="rotate-180" />
-        </p>
-        <p className="text-[12px]">{item.sub}</p>
-      </div>
-    ))}
-  </div>
-</div>
-
-            </div>
- 
-            <div className="flex space-x-6  px-4 py-2 rounded-md">
+        <div className="flex space-x-6  px-4 py-2 rounded-md">
           <button
             className={`relative text-[14px] transition font-medium ${
               activeTab === "scheduled"
@@ -439,12 +685,11 @@ const TeacherDetails = () => {
         </div>
 
         <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          page={currentPage}
+          total={totalPages}
+          onChange={setCurrentPage}
         />
-
-        </div>
+      </div>
     </BaseLayout1>
   );
 };
