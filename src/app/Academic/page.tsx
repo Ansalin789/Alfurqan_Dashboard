@@ -8,8 +8,6 @@ import TotalList from "../Academic-coach/components/TotalList";
 import NextEvaluationClass from "../Academic-coach/components/NextEvaluationClass";
 import TeachersStudent from "../Academic-coach/components/TeachersStudent";
 import Countries from "@/app/Academic-coach/components/Countries";
-import Teachers from "@/app/Academic-coach/components/Teachers";
-import Calender from "@/components/Academic/Calender";
 import UpcomingClasses from "@/components/Academic/UpcommingClasses";
 import Dashboardevaluation from "@/app/Academic-coach/components/Dashboardevaluation";
 import { Search, Sun, Bell } from "lucide-react";
@@ -71,7 +69,7 @@ export default function Academic() {
                   <Countries />
                 </div>
                 <div className="col-span-3 grid grid-cols-1 p-0">
-                  <Teachers />
+              
                 </div>
                 <div className="col-span-12 grid grid-cols-1 p-0">
                   <Dashboardevaluation />
@@ -81,7 +79,7 @@ export default function Academic() {
 
             <div className="lg:w-[250px] lg:mt-2 rounded-[20px] pr-14">
               <div className="pr-0 mb-0 rounded-[20px]">
-                <Calender />
+         
               </div>
               <div className="pr-0 rounded-lg w-64 mt-11 -ml-12">
                 <UpcomingClasses />
