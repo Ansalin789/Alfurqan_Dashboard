@@ -198,6 +198,13 @@ const TeacherDetails = () => {
     overallPerformance: number;
     students: Student[];
   }
+  interface StudentInfo {
+    fullName: string;
+    learningInterest: string;
+  }
+
+  const [studentInfoList, setStudentInfoList] = useState<StudentInfo[]>([]);
+
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [teachers, setTeachers] = useState<ICandidateApplication>();
   const [activeTab, setActiveTab] = useState<"scheduled" | "completed">(
@@ -215,13 +222,6 @@ const TeacherDetails = () => {
   const toggleDropdown = (index: number) => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
-
-  const studentList = [
-    { name: "Abdullah Sulaiman", subject: "Arabic" },
-    { name: "Iman Gabell", subject: "Islamic Studies" },
-    { name: "Gia Rose", subject: "Quran" },
-    { name: "Samantha Neil", subject: "Arabic" },
-  ];
 
   const handleReschedule = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -301,6 +301,7 @@ const TeacherDetails = () => {
     fetchStats();
     fetchTeachers();
   }, []);
+
   useEffect(() => {
     const fetchClassSchedule = async () => {
       const token =
@@ -333,8 +334,26 @@ const TeacherDetails = () => {
           console.error("Server responded with status:", res.status);
           return;
         }
-
         const data = await res.json();
+        const classSchedule = data.classSchedule || [];
+
+        const studentSet = new Set<string>();
+        const studentInfoArray: StudentInfo[] = [];
+
+        classSchedule.forEach((item: any) => {
+          if (item.student) {
+            const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`;
+            const learningInterest = item.student.learningInterest || "";
+
+            if (!studentSet.has(fullName)) {
+              studentSet.add(fullName);
+              studentInfoArray.push({ fullName, learningInterest });
+            }
+          }
+        });
+
+        setStudentInfoList(studentInfoArray);
+
         console.log("Fetched data from API:", data);
 
         const allSchedules: ClassSchedule[] = data.classSchedule;
@@ -402,15 +421,21 @@ const TeacherDetails = () => {
               <ul className="text-sm space-y-2 text-[#ffff]">
                 <li className="flex justify-between ">
                   <span>Contact</span>
-                  <span className="text-[#DADADA]/80 text-left">{teachers?.candidatePhoneNumber}</span>
+                  <span className="text-[#DADADA]/80 text-left">
+                    {teachers?.candidatePhoneNumber}
+                  </span>
                 </li>
                 <li className="flex justify-between">
                   <span>Country</span>
-                  <span className="text-[#DADADA]/80">{teachers?.candidateCountry}</span>
+                  <span className="text-[#DADADA]/80">
+                    {teachers?.candidateCountry}
+                  </span>
                 </li>
-                   <li className="flex justify-between">
+                <li className="flex justify-between">
                   <span>Role</span>
-                  <span className="text-[#DADADA]/80">{teachers?.positionApplied}</span>
+                  <span className="text-[#DADADA]/80">
+                    {teachers?.positionApplied}
+                  </span>
                 </li>
                 <li className="flex justify-between">
                   <span>Level</span>
@@ -418,8 +443,6 @@ const TeacherDetails = () => {
                     {teachers?.overallRating}
                   </span>
                 </li>
-               
-             
               </ul>
             </div>
           </div>
@@ -459,38 +482,40 @@ const TeacherDetails = () => {
             {/* Right Side - Students List */}
             {/* Right Side - Students List */}
             <div className="bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 w-[50%] h-[247px] flex flex-col justify-between scrollbar-none">
-              <div className="flex justify-between items-center">
-                <h4 className="text-[14px] font-semibold text-[#010E30] dark:text-white">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-[14px] font-semibold text-[#111827] dark:text-white">
                   Students List
-                </h4>
-                <span className="bg-[#7689bd] text-white text-[12px] px-2 py-[2px] rounded-full">
-                  {studentList.length}
+                </h2>
+                <span className="bg-[#576CBC] text-white text-[12px] font-semibold rounded-md px-2 py-1">
+                  {studentInfoList.length}
                 </span>
               </div>
 
-              {/* Scrollable Students */}
-              <div className="mt-2 space-y-3 overflow-y-auto h-[150px]">
-                {" "}
-                {/* Fixed height with scroll */}
-                {studentList.map((student, index) => (
-                  <div
+              {/* Students List */}
+              <ul className="space-y-3 overflow-y-auto max-h-[180px]">
+                {studentInfoList.map((student, index) => (
+                  <li
                     key={index}
-                    className="flex justify-between items-center"
+                    className="flex items-center justify-between border-b pb-2 border-gray-200 dark:border-gray-700"
                   >
-                    <div className="flex items-center gap-2">
-                      <div className="w-[24px] h-[24px] rounded-full bg-pink-400 flex items-center justify-center text-white text-[12px]">
-                        {student.name.charAt(0)}
+                    <div className="flex items-center space-x-3 gap-2">
+                      <div className="w-8 h-8 rounded-full bg-pink-200 flex items-center justify-center font-bold text-[10px]">
+                        <img
+                          src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                          alt="avatar"
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
                       </div>
-                      <span className="text-[12px] font-medium text-[#000000] dark:text-white">
-                        {student.name}
+                      <span className="text-sm font-medium text-[#111827] dark:text-white">
+                        {student.fullName}
                       </span>
                     </div>
-                    <span className="text-[11px] text-[#203F78] dark:text-[#9fd0ff]">
-                      {student.subject}
+                    <span className="text-sm text-[#4C66EE] font-medium whitespace-nowrap">
+                      {student.learningInterest || ""}
                     </span>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           </div>
         </div>

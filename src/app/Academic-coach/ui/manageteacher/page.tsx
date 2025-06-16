@@ -194,7 +194,7 @@ const ManageTeacher: React.FC = () => {
       console.error("Teacher ID is undefined.");
       return;
     }
-    localStorage.setItem("supervisormanageTeacherId", teacherId);
+    localStorage.setItem("manageTeacherId", teacherId);
     console.log("Teacher ID:", teacherId); // Debugging
     router.push(`/Academic-coach/ui/teacherDetails?teacherId=${teacherId}`);
   };
