@@ -212,7 +212,7 @@ const ManageStudentView = () => {
       }
       const alstudentsId = localStorage.getItem("studentManageID");
       const res = await fetch(
-        `http://localhost:5001/alstudents/${alstudentsId}`,
+        `https://api.blackstoneinfomaticstech.com/alstudents/${alstudentsId}`,
           {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -248,7 +248,7 @@ const ManageStudentView = () => {
 
       try {
         const res = await fetch(
-          `http://localhost:5001/classShedule/students?studentId=${studentId}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
           {
           headers: {
             Authorization: `Bearer ${token}`,

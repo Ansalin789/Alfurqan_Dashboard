@@ -139,7 +139,7 @@ const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
 
       try {
         const res = await fetch(
-          `http://localhost:5001/classShedule/students?studentId=${studentId}`
+          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`
         );
 
         if (!res.ok) {
@@ -179,7 +179,7 @@ const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
       }
       const response = await fetch(
         
-        `http://localhost:5001/shiftschedule?role=TEACHER&startdate=${formattedDate}`,
+        `https://api.blackstoneinfomaticstech.com/shiftschedule?role=TEACHER&startdate=${formattedDate}`,
          {
           headers: {
             Authorization: `Bearer ${token}`,

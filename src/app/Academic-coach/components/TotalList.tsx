@@ -151,7 +151,7 @@ const Dashboard = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:5001/dashboard/widgets?academicCoachId=${academicCoachId}`
+          `https://api.blackstoneinfomaticstech.com/dashboard/widgets?academicCoachId=${academicCoachId}`
         );
         const apiData: ApiResponse = response.data;
         console.log('API Response:', apiData);
