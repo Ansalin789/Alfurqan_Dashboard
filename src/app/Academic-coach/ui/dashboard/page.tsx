@@ -181,14 +181,14 @@ export default function Dashboard() {
           </div>
 
           {/* Schedule */}
-          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[535px]">
+          <div className="bg-white rounded-xl shadow-lg p-4 dark:bg-[#343434] h-[543px]">
             {/* Header */}
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-[16px] font-semibold text-gray-700 dark:text-[#ffff]">
-                Schedule
+                Upcoming Class
               </h3>
-              <button className="px-2 py-1 bg-[#efefef] rounded flex items-center gap-1 text-[10px] dark:bg-[#747474]">
-                Today <span className="text-[#747474]">▼</span>
+              <button className="px-2 py-1 rounded flex items-center gap-1 text-[10px] dark:text-[#dddddd] dark:bg-[#565656] bg-[#efefef] text-[#576CBC]">
+                Today <span className="">▼</span>
               </button>
             </div>
 

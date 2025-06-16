@@ -33,9 +33,9 @@
   background: transparent;
 }
 
-.dark .custom-calendar .react-calendar__tile--active {
+/* .dark .custom-calendar .react-calendar__tile--active {
   background: transparent;
-}
+} */
 
 .dark .custom-calendar .react-calendar__tile--active:enabled:hover,
 .dark .custom-calendar .react-calendar__tile--active:enabled:focus {
@@ -133,7 +133,9 @@
 
 /* Selected date */
 .custom-calendar .react-calendar__tile--active {
-  background: transparent;
+  background: #5882BE !important;
+  color: #fff !important;
+  border-radius: 6px;
 }
 
 /* Neighboring month dates */
@@ -185,4 +187,9 @@
 
 .dark .custom-calendar .react-calendar__navigation__label {
   color: #FFFFFF;
+}
+
+.dark .custom-calendar .react-calendar__tile--active {
+  background: #5882be !important;
+  color: #FFFFFF !important;
 }
