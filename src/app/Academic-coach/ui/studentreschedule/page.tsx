@@ -1,12 +1,11 @@
 import React from 'react'
-import StudentReschedule from '../../components/StudentReschedule'
 import BaseLayout1 from '@/components/BaseLayout1'
-
+import SchedulePage from '../../components/StudentReschedule'
 const page = () => {
   return (
     
     <BaseLayout1 >
-     <StudentReschedule />
+    <SchedulePage />
    </BaseLayout1> 
 
     )

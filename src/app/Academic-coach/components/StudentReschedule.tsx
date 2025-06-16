@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CalendarDays, Clock } from "lucide-react";
 import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import moment from "moment";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
+
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 
 // Event interface for calendar events
@@ -112,26 +112,41 @@ interface TeacherShiftResponse {
 }
 
 const SchedulePage = () => {
+  const searchParams = useSearchParams();
+  const selectedClassId = searchParams?.get("id"); // ✅ ID from URL param
+
+  const [studentId, setStudentId] = useState<string | null>(null);
   const tabs = ["monthly", "weekly", "daily"] as const;
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">(
     "monthly"
   );
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [scheduledClasses, setScheduledClasses] = useState<ClassData[]>([]);
+  const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [availableTeachers, setAvailableTeachers] = useState<Teacher[]>([]);
-const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
-const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [rescheduleReason, setRescheduleReason] = useState("");
 
-  const searchParams = useSearchParams();
-  const studentId =
-    searchParams.get("studentId") || localStorage.getItem("studentManageID");
+  useEffect(() => {
+    const queryStudentId = searchParams?.get("studentId");
+    const localStudentId = localStorage.getItem("studentManageID");
+    setStudentId(queryStudentId || localStudentId);
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchClassSchedule = async () => {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AcademicCoachAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
       if (!studentId) {
-        console.warn("No studentId found in query params");
+        console.warn("No studentId found in query params or localStorage");
         return;
       }
 
@@ -139,7 +154,12 @@ const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
 
       try {
         const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`
+          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         if (!res.ok) {
@@ -160,65 +180,139 @@ const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
       }
     };
 
-    fetchClassSchedule();
+    if (studentId) {
+      fetchClassSchedule();
+    }
   }, [studentId]);
 
   const handleDateClick = async (date: Date) => {
     setSelectedDate(date);
+    setSelectedTeacher(null); // Clear previously selected
+    setAvailableTeachers([]);
+    setIsRescheduleOpen(false); // Close modal until teacher is chosen
+
+    const formattedDate = moment(date).format("YYYY-MM-DD");
+    const token = localStorage.getItem("AcademicCoachAuthToken");
+
+    if (!token) {
+      console.warn("⚠️ Missing token");
+      return;
+    }
 
     try {
-      const formattedDate = moment(date).format("YYYY-MM-DD");
-     const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachAuthToken")
-          : null;
+      const res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/shiftschedule?role=TEACHER&startdate=${formattedDate}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
-      if (!token) {
-        console.error("❌ AdminAuthToken not found");
+      if (!res.ok) {
+        console.error("❌ Failed to fetch teachers");
         return;
       }
-      const response = await fetch(
-        
-        `https://api.blackstoneinfomaticstech.com/shiftschedule?role=TEACHER&startdate=${formattedDate}`,
-         {
+
+      const data: TeacherShiftResponse = await res.json();
+
+      const filteredTeachers = data.users.filter((teacher) => {
+        const start = moment(teacher.startdate, "YYYY-MM-DD");
+        const end = moment(teacher.enddate, "YYYY-MM-DD");
+        const selected = moment(date);
+        return selected.isBetween(start, end, undefined, "[]");
+      });
+
+      setAvailableTeachers(filteredTeachers);
+    } catch (err) {
+      console.error("❌ Network error:", err);
+    }
+  };
+
+  const handleTeacherClick = (teacher: Teacher) => {
+    setSelectedTeacher(teacher);
+    setIsRescheduleOpen(true);
+  };
+
+  const handleRescheduleSubmit = async () => {
+    const token = localStorage.getItem("AcademicCoachAuthToken");
+    if (!token || !selectedClassId) {
+      console.error("❌ Missing token or class ID");
+      return;
+    }
+
+    if (
+      !selectedDate ||
+      !selectedTeacher?.fromtime ||
+      !selectedTeacher?.totime ||
+      !rescheduleReason
+    ) {
+      console.error("❌ Missing reschedule data");
+      return;
+    }
+
+    try {
+      // 1. Fetch existing data
+      const existingRes = await fetch(
+        `http://localhost:5001/classShedule/${selectedClassId}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
-        
-      );
-      const data: TeacherShiftResponse = await response.json();
-
-      const filteredTeachers = data.users.filter((teacher) =>
-        moment(teacher.enddate).isSameOrAfter(moment(date), "day")
       );
 
-      setAvailableTeachers(filteredTeachers);
+      if (!existingRes.ok) {
+        console.error("❌ Failed to fetch existing class schedule");
+        return;
+      }
+
+      const existingData = await existingRes.json();
+
+      // 2. Build updated payload with only specific changes
+      const updatedPayload = {
+        ...existingData,
+
+        // ✅ fix: classDay as array of objects
+        classDay: existingData.classDay.map((day: string | number | Date) => ({
+          label: new Date(day).toLocaleDateString("en-US", { weekday: "long" }),
+          value: day,
+        })),
+
+        startDate: new Date(selectedDate).toISOString(),
+        startTime: [
+          { label: selectedTeacher.fromtime, value: selectedTeacher.fromtime },
+        ],
+        endTime: [
+          { label: selectedTeacher.totime, value: selectedTeacher.totime },
+        ],
+        teacherId: selectedTeacher.teacherId,
+        teacherName: selectedTeacher.teacherName,
+        teacherEmail: selectedTeacher.teacherEmail,
+        scheduleStatus: "Rescheduled",
+        lastUpdatedDate: new Date().toISOString(),
+        rescheduleReason,
+      };
+
+      // 3. Send the PUT request
+      const res = await fetch(
+        `http://localhost:5001/classShedule/${selectedClassId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updatedPayload),
+        }
+      );
+
+      if (!res.ok) {
+        console.error("❌ Failed to update. Status:", res.status);
+      } else {
+        console.log("✅ Class rescheduled successfully.");
+      }
     } catch (error) {
-      console.error("Error fetching teachers:", error);
-      setAvailableTeachers([]);
+      console.error("❌ Error during reschedule:", error);
     }
-  };
-
-  //Reshcdule
-const handleArrowClick = (teacher: Teacher) => {
-  setSelectedTeacher(teacher);
-  setIsRescheduleOpen(true);
-};
-
-  const handleSubmitReschedule = () => {
-    if (!rescheduleReason.trim()) {
-      alert("Please enter a reason for rescheduling.");
-      return;
-    }
-
-    console.log("Reschedule submitted for:", selectedTeacher);
-    console.log("Reason:", rescheduleReason);
-
-    // Perform API call here if needed
-    setIsRescheduleOpen(false);
-    setRescheduleReason("");
-    setSelectedTeacher(null);
   };
 
   const handlePrevMonth = () => {
@@ -552,105 +646,101 @@ const handleArrowClick = (teacher: Teacher) => {
           </div>
 
           {/* Right: Available Teachers */}
-               <div className="w-full md:w-1/3 bg-white dark:bg-[#343434] rounded-xl p-6 shadow-md">
-        <h3 className="text-[16px] font-medium text-[#111111] dark:text-white mb-4">
-          Available Teachers
-        </h3>
+          <div className="w-full md:w-1/3 bg-white dark:bg-[#343434] rounded-xl p-6 shadow-md">
+            <h3 className="text-[16px] font-medium text-[#111111] dark:text-white mb-4">
+              Available Teachers
+            </h3>
 
-        <div className="divide-y divide-gray-200 dark:divide-gray-600 max-h-[600px] overflow-y-auto">
-          {availableTeachers.length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-gray-300 py-4">
-              No teachers available.
-            </p>
-          ) : (
-            availableTeachers.map((teacher) => (
-              <div
-                key={teacher._id}
-                className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
-              >
-                {/* Left Side */}
-                <div className="flex items-center gap-4">
-                  <img
-                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.name}`}
-                    alt={teacher.name}
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-gray-800 dark:text-white">
-                      {teacher.name}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-300">
-                      Level : {teacher.level || "N/A"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Right Side */}
-                <div className="flex items-center gap-2">
-                  <div className="text-sm text-gray-700 dark:text-gray-300 text-right">
-                    {teacher.fromtime} - {teacher.totime}
-                  </div>
-                  <button
-                    onClick={() => handleArrowClick(teacher)}
-                    className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
+            <div className="divide-y divide-gray-200 dark:divide-gray-600 max-h-[600px] overflow-y-auto">
+              {availableTeachers.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-300 py-4">
+                  No teachers available.
+                </p>
+              ) : (
+                availableTeachers.map((teacher) => (
+                  <div
+                    key={teacher._id}
+                    className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
                   >
-                    <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
-                  </button>
-                </div>
+                    {/* Left Side */}
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.name}`}
+                        alt={teacher.name}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-gray-800 dark:text-white">
+                          {teacher.name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-300">
+                          Level : {teacher.level || "N/A"}
+                        </p>
+                      </div>
+                    </div>
 
-
-              </div>
-            ))
-          )}
+                    {/* Right Side */}
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm text-gray-700 dark:text-gray-300 text-right">
+                        {teacher.fromtime} - {teacher.totime}
+                      </div>
+                      <button
+                        onClick={() => handleTeacherClick(teacher)}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
+                      >
+                        <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
-
-        </div>
-      </div>
-
 
       {/*reschdule*/}
-     {isRescheduleOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl p-6 w-[90%] max-w-md shadow-lg dark:bg-[#343434]">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4 dark:text-[#fff]">
-        Reschedule
-      </h2>
+      {isRescheduleOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-[90%] max-w-md shadow-lg dark:bg-[#343434]">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 dark:text-[#fff]">
+              Reschedule
+            </h2>
 
-      <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-[#fff]">
-        Reason for Reschedule
-      </label>
-      <textarea
-        rows={4}
-        placeholder="Enter reason..."
-        value={rescheduleReason}
-        onChange={(e) => setRescheduleReason(e.target.value)}
-        className="w-full border border-gray-300 dark:border-[#5c5c5c] rounded-md p-2 focus:outline-none dark:bg-[#5c5c5c]"
-      />
+            <label 
+             htmlFor="reason"
+            className="block text-sm font-medium text-gray-700 mb-1 dark:text-[#fff]">
+              Reason for Reschedule
+            </label>
+            <textarea
+              rows={4}
+              placeholder="Enter reason..."
+              value={rescheduleReason}
+              onChange={(e) => setRescheduleReason(e.target.value)}
+              className="w-full border border-gray-300 dark:border-[#5c5c5c] rounded-md p-2 focus:outline-none dark:bg-[#5c5c5c]"
+            />
 
-      <div className="border-t mt-6 pt-4 flex justify-end gap-3 dark:border-[#5c5c5c]">
-        <button
-          onClick={() => {
-            setIsRescheduleOpen(false);
-            setRescheduleReason("");
-            setSelectedTeacher(null);
-          }}
-          className="px-4 py-2 rounded-md border border-[#576CBC] text-[#576CBC]"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleSubmitReschedule}
-          className="px-4 py-2 rounded-md bg-[#576CBC] text-white hover:bg-[#576CBC]"
-        >
-          Submit
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-
+            <div className="border-t mt-6 pt-4 flex justify-end gap-3 dark:border-[#5c5c5c]">
+              <button
+                onClick={() => {
+                  setIsRescheduleOpen(false);
+                  setRescheduleReason("");
+                  setSelectedTeacher(null);
+                }}
+                className="px-4 py-2 rounded-md border border-[#576CBC] text-[#576CBC]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRescheduleSubmit}
+                className="px-4 py-2 rounded-md bg-[#576CBC] text-white hover:bg-[#4559a5]"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

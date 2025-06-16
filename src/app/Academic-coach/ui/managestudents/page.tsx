@@ -6,9 +6,7 @@ import { MoreVertical, Search } from "lucide-react";
 import BaseLayout1 from "@/components/BaseLayout1";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
-import { FaEye } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import Modal from "react-modal";
 
 interface Student {
   username: string;
@@ -39,19 +37,21 @@ const ManageStudents = () => {
     students: [],
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState<Student[] | null>(null);
+
   const router = useRouter();
 
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false); // State for filter moda
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const itemsPerPage = 10;
+  const totalPages = Math.ceil(studentData.students.length / itemsPerPage);
+  const studentsToRender = filteredUsers ? filteredUsers : studentData.students;
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = studentData.students.slice(
+  const currentItems = studentsToRender.slice(
     indexOfFirstItem,
     indexOfLastItem
   );
-  const totalPages = Math.ceil(studentData.students.length / itemsPerPage);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,7 +65,7 @@ const ManageStudents = () => {
         return;
       }
       const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/alstudents`,
+        `http://localhost:5001/alstudents`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -103,276 +103,43 @@ const ManageStudents = () => {
     router.push(`managestudentview?id=${_id}`);
   };
 
-  //Filter
+  //search
 
-  const openFilterModal = () => {
-    setIsFilterModalOpen(true); // Open filter modal
-    setIsModalOpen(false); // Ensure add student modal is closed
-  };
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    const queryLower = query.toLowerCase();
 
-  const FilterModal = ({
-    isOpen,
-    onClose,
-    onApplyFilters,
-    users,
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-    onApplyFilters: (filters: {
-      studentId: string;
-      dateOfJoining: string;
-      studentName: string;
-      teacherName: string;
-      contact: string;
-      scheduledClasses: string;
-      level: string;
-    }) => void;
-    users: Student[];
-  }) => {
-    const [filters, setFilters] = useState({
-      studentId: "",
-      dateOfJoining: "",
-      studentName: "",
-      teacherName: "",
-      contact: "",
-      scheduledClasses: "",
-      level: "",
+    const filtered = studentData.students.filter((item) => {
+      const studentId = item.student?.studentId?.toLowerCase() || "";
+      const fullName = (item.username || "").toLowerCase();
+      const teacher = (item.teacherName || "").toLowerCase();
+      const contact = item.student?.studentPhone?.toString() || "";
+      const classType = "group class"; // hardcoded in your UI
+      const classCount = item.classScheduleCount?.toString() || "";
+      const level = (item.level || "").toLowerCase();
+      const joiningDate = new Date(item.createdDate)
+        .toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        })
+        .toLowerCase(); // normalize date string too
+
+      return (
+        studentId.includes(queryLower) ||
+        fullName.includes(queryLower) ||
+        teacher.includes(queryLower) ||
+        contact.includes(queryLower) ||
+        classType.includes(queryLower) ||
+        classCount.includes(queryLower) ||
+        level.includes(queryLower) ||
+        joiningDate.includes(queryLower)
+      );
     });
 
-    const handleApply = () => {
-      onApplyFilters(filters);
-      onClose();
-    };
-
-    const handleReset = () => {
-      setFilters({
-        studentId: "",
-        dateOfJoining: "",
-        studentName: "",
-        teacherName: "",
-        contact: "",
-        scheduledClasses: "",
-        level: "",
-      });
-    };
-
-
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onRequestClose={onClose}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-100 border border-gray-300 p-8 rounded-lg shadow-lg w-[500px]"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-[16px] font-bold bg-gradient-to-r from-[#415075] via-[#1e273c] to-[#1e273c] text-transparent bg-clip-text">
-            Filter Options
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-[#223857] hover:text-gray-700 font-semibold text-[20px]"
-          >
-            ×
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-5">
-          <div>
-            <label
-              htmlFor="studentId"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Student ID
-            </label>
-            <input
-              type="text"
-              className="w-full p-2 rounded-lg text-[12px] font-medium bg-gray-200 border border-gray-300"
-              value={filters.studentId}
-              onChange={(e) =>
-                setFilters({ ...filters, studentId: e.target.value })
-              }
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="dateOfJoining"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Date of Joining
-            </label>
-            <input
-              type="date"
-              className="w-full p-2 rounded-lg text-[10px] font-medium bg-gray-200 border border-gray-300"
-              value={filters.dateOfJoining}
-              onChange={(e) =>
-                setFilters({ ...filters, dateOfJoining: e.target.value })
-              }
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="teacherName"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Teacher Name
-            </label>
-            <input
-              type="text"
-              className="w-full p-2 rounded-lg text-[12px] font-medium bg-gray-200 border border-gray-300"
-              value={filters.teacherName}
-              onChange={(e) =>
-                setFilters({ ...filters, teacherName: e.target.value })
-              }
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="studentName"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Student Name
-            </label>
-            <input
-              type="text"
-              className="w-full p-2 rounded-lg text-[12px] font-medium bg-gray-200 border border-gray-300"
-              value={filters.studentName}
-              onChange={(e) =>
-                setFilters({ ...filters, studentName: e.target.value })
-              }
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="contact"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Contact
-            </label>
-            <input
-              type="text"
-              className="w-full p-2 rounded-lg text-[12px] font-medium bg-gray-200 border border-gray-300"
-              value={filters.contact}
-              onChange={(e) =>
-                setFilters({ ...filters, contact: e.target.value })
-              }
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="scheduledClasses"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Scheduled Classes
-            </label>
-            <input
-              type="text"
-              className="w-full p-2 rounded-lg text-[12px] font-medium bg-gray-200 border border-gray-300"
-              value={filters.scheduledClasses}
-              onChange={(e) =>
-                setFilters({ ...filters, scheduledClasses: e.target.value })
-              }
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="level"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              Level
-            </label>
-            <input
-              type="text"
-              className="w-full p-2  rounded-lg text-[12px] font-medium bg-gray-200 border border-gray-300"
-              value={filters.level}
-              onChange={(e) =>
-                setFilters({ ...filters, level: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="flex space-x-4 mt-4 ml-12">
-            <button
-              onClick={handleReset}
-              className="px-4 py-[2px] rounded-lg hover:bg-gray-50 text-[13px] font-medium shadow bg-gray-200 border border-gray-300"
-            >
-              Reset
-            </button>
-            <button
-              onClick={handleApply}
-              className="px-4 py-[2px] bg-gray-800 text-white rounded-lg shadow hover:bg-gray-900 text-[13px] font-medium"
-            >
-              Apply
-            </button>
-          </div>
-        </div>
-      </Modal>
-    );
+    setFilteredUsers(filtered);
+    setCurrentPage(1);
   };
-
-  const handleApplyFilters = (filters: {
-    studentId: string;
-    dateOfJoining: string;
-    studentName: string;
-    teacherName: string;
-    contact: string;
-    scheduledClasses: string;
-    level: string;
-  }) => {
-    let filtered = [...studentData.students];
-    if (filters.studentId) {
-      filtered = filtered.filter((user) =>
-        user.studentId?.includes(filters.studentId)
-      );
-    }
-    if (filters.dateOfJoining) {
-      filtered = filtered.filter(
-        (user) =>
-          new Date(user.createdDate).toLocaleDateString() ===
-          new Date(filters.dateOfJoining).toLocaleDateString()
-      );
-    }
-    if (filters.studentName) {
-      filtered = filtered.filter((user) =>
-        user.username.toLowerCase().includes(filters.studentName.toLowerCase())
-      );
-    }
-    if (filters.teacherName) {
-      filtered = filtered.filter((user) =>
-        user.teacherName
-          ?.toLowerCase()
-          .includes(filters.teacherName.toLowerCase())
-      );
-    }
-    if (filters.contact) {
-      filtered = filtered.filter((user) =>
-        user.student?.studentPhone.toString().includes(filters.contact)
-      );
-    }
-    if (filters.scheduledClasses) {
-      filtered = filtered.filter((user) =>
-        user.classScheduleCount.toString().includes(filters.scheduledClasses)
-      );
-    }
-    if (filters.level) {
-      filtered = filtered.filter((user) =>
-        user.level?.toString().includes(filters.level)
-      ); // Adjust as necessary
-    }
-
-    setStudentData({ ...studentData, students: filtered });
-    setCurrentPage(1); // Reset to first page when filters change
-  };
-
-  const closeFilterModal = () => {
-  setIsFilterModalOpen(false);
-};
 
   return (
     <BaseLayout1>
@@ -389,14 +156,14 @@ const ManageStudents = () => {
                       type="text"
                       placeholder="Search by keyword"
                       className="bg-transparent outline-none text-[15px] w-52 py-3 "
-                      // value={searchText}
-                      // onChange={(e) => setSearchText(e.target.value)}
+                      value={searchQuery}
+                      onChange={(e) => handleSearch(e.target.value)}
                     />
                   </div>
 
                   <div
+                    onClick={() => setShowModal(true)}
                     className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                    onClick={openFilterModal}
                   >
                     {/* <BsFilterLeftFilter /> */}
                     <MdTune className="w-4 h-4" />
@@ -405,8 +172,7 @@ const ManageStudents = () => {
 
                   <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                     <span className="text-left -ml-60 ">
-                      {/* Showing {currentApplicants.length} Of{" "}
-                                        {dataToShow.length} */}
+                      Showing {currentItems.length} of {studentsToRender.length}
                     </span>
                   </div>
                 </div>
@@ -419,7 +185,10 @@ const ManageStudents = () => {
                         <input
                           type="checkbox"
                           checked={
-                            selectedRows.length === studentData.students.length
+                            currentItems.length > 0 &&
+                            currentItems.every((_, i) =>
+                              selectedRows.includes(indexOfFirstItem + i)
+                            )
                           }
                           onChange={toggleSelectAll}
                           className="h-4 w-4 rounded-3xl"
@@ -533,14 +302,116 @@ const ManageStudents = () => {
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
               />
-
-              <FilterModal
-                isOpen={isFilterModalOpen}
-                onClose={closeFilterModal}
-                onApplyFilters={handleApplyFilters}
-                users={studentData.students}
-              />
             </div>
+
+            {/*filterform  */}
+
+            {showModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
+                <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
+                  {/* Close Icon */}
+                  <button
+                    className="absolute top-2 right-3 text-gray-400 text-xl"
+                    onClick={() => setShowModal(false)}
+                  >
+                    &times;
+                  </button>
+
+                  <h2 className="text-lg font-semibold mb-4">Filter by</h2>
+
+                  {/* Date Input */}
+                  <div className="mb-4">
+                    <label
+                    htmlFor="date"
+                    className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                      Date Of Joining Range
+                    </label>
+
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="date"
+                        className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                        // value={fromDate}
+                        // onChange={(e) => setFromDate(e.target.value)}
+                      />
+                      <input
+                        type="date"
+                        className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                        // value={toDate}
+                        // onChange={(e) => setToDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Position Applied */}
+                  <div className="mb-4">
+                    {/* Timing */}
+                    <label
+                      htmlFor="input"
+                      className="block text-sm text-gray-700 mb-1 dark:text-white"
+                    >
+                      Class Type
+                    </label>
+                    <input
+                      // value={timing}
+                      // onChange={(e) => setTiming(e.target.value)}
+                      type="input"
+                      className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                    {/* Course */}
+                  <div className="mb-4">
+                    <label
+                      htmlFor="level"
+                      className="block text-sm text-gray-700 mb-1 dark:text-white"
+                    >
+                      Course
+                    </label>
+                    <input
+                      // value={timing}
+                      // onChange={(e) => setTiming(e.target.value)}
+                      type="input"
+                      className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  {/* Level */}
+                  <div className="mb-4">
+                    <label
+                      htmlFor="level"
+                      className="block text-sm text-gray-700 mb-1 dark:text-white"
+                    >
+                      Level
+                    </label>
+                    <input
+                      // value={timing}
+                      // onChange={(e) => setTiming(e.target.value)}
+                      type="input"
+                      className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+
+
+                  {/* Buttons */}
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                      // onClick={handleFilter}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
