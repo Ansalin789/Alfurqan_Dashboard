@@ -80,7 +80,7 @@ const Support = () => {
             </div>
           </div>
 
-          <div className="bg-[#5E6578] shadow-lg rounded-xl p-6 w-[915px] h-[616px]">
+         <div className="bg-[#5E6578] shadow-lg rounded-xl p-6 w-[915px] relative pb-20">
             <h2 className="text-[20px] p-4 text-left font-semibold text-[#FAFAFA] mb-7">
               Do you have questions?
             </h2>
@@ -142,12 +142,13 @@ const Support = () => {
               </details>
             </div>
 
-            <div className="sticky bottom-0 bg-[#5E6578] py-3 pr-4 flex justify-end">
-         <button className="bg-[#FAFAFA] text-[#1B242C] px-4 py-2 rounded-lg flex items-center gap-2 shadow-md">
+           <div className="absolute bottom-6 right-8 z-10">
+           <button className="bg-[#FAFAFA] text-[#1B242C] px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg">
            Connect Us
            <MdOutlineArrowOutward className="w-4 h-4" />
-         </button>
+           </button>
           </div>
+
           </div>
         </div>
       </div>

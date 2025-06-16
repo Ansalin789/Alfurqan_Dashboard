@@ -107,7 +107,7 @@ const FeedbackDetails: React.FC = () => {
       try {
         const courseQuery = courseQueryMap[selectedCourse];
         const response = await axios.get(
-          `http://localhost:5001/allfeedback?course=${courseQuery}`
+          `https://api.blackstoneinfomaticstech.com/allfeedback?course=${courseQuery}`
         );
         console.log(response.data);
         const rawData = await response.data;

@@ -4,14 +4,14 @@ import React from "react";
 import "react-calendar/dist/Calendar.css";
 import BaseLayout1 from "@/components/BaseLayout1";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import TotalList from "../../components/Academic/TotalList";
-import NextEvaluationClass from "../../components/Academic/NextEvaluationClass";
-import TeachersStudent from "../../components/Academic/TeachersStudent";
-import Countries from "@/components/Academic/Countries";
-import Teachers from "@/components/Academic/Teachers";
+import TotalList from "../Academic-coach/components/TotalList";
+import NextEvaluationClass from "../Academic-coach/components/NextEvaluationClass";
+import TeachersStudent from "../Academic-coach/components/TeachersStudent";
+import Countries from "@/app/Academic-coach/components/Countries";
+import Teachers from "@/app/Academic-coach/components/Teachers";
 import Calender from "@/components/Academic/Calender";
 import UpcomingClasses from "@/components/Academic/UpcommingClasses";
-import Dashboardevaluation from "@/components/Academic/Dashboardevaluation";
+import Dashboardevaluation from "@/app/Academic-coach/components/Dashboardevaluation";
 import { Search, Sun, Bell } from "lucide-react";
 
 // Register Chart.js components
