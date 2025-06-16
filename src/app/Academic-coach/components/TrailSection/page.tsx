@@ -976,6 +976,10 @@ const TrailSection = () => {
       switch (field) {
         case "TrialClassStatus":
           setTrialClassStatus(event.target.value);
+          // If trial status is PENDING, set student status to PENDING
+          if (event.target.value === "PENDING") {
+            setStudentStatus("PENDING");
+          }
           break;
         case "studentStatus":
           setStudentStatus(event.target.value);
@@ -1141,7 +1145,8 @@ const TrailSection = () => {
                                   original: item.studentStatus,
                                   upperCase: item.studentStatus?.toUpperCase(),
                                   isJoined: item.studentStatus?.toUpperCase() === "JOINED",
-                                  isWaiting: item.studentStatus?.toUpperCase() === "WAITING"
+                                  isWaiting: item.studentStatus?.toUpperCase() === "WAITING",
+                                  isPending: item.studentStatus?.toUpperCase() === "PENDING"
                                 });
                                 return (
                                   <span
@@ -1150,10 +1155,12 @@ const TrailSection = () => {
                                         ? "bg-[#ECFDF3] text-[#377E36] px-6 dark:bg-[#377E3633]"
                                         : item.studentStatus?.toUpperCase() === "WAITING"
                                         ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
+                                        : item.studentStatus?.toUpperCase() === "PENDING"
+                                        ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
                                         : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]"
                                     }`}
                                   >
-                                    {item.studentStatus?.toUpperCase() || "NOT JOINED"}
+                                    {item.studentStatus?.toUpperCase() || "PENDING"}
                                   </span>
                                 );
                               })()}
