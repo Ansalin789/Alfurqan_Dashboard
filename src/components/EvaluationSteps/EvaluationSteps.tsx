@@ -23,6 +23,7 @@ interface StudentData {
   lastName: string;
   academicCoach: AcademicCoach;
   email: string;
+  gender: string; // Assuming it's a string
   phoneNumber: string;
   city: string; // If it's a number, you can change this to `number`
   country: string;
@@ -49,6 +50,7 @@ interface EvaluationData {
   studentFirstName: string;
   studentLastName: string;
   studentEmail: string;
+  studentGender: string;
   studentCity: string;
   studentPhone: number;
   studentCountry: string;
@@ -2026,8 +2028,8 @@ const Step9 = ({
   updatedStudentDatass: any;
 }) => {
   const router = useRouter();
-  const [classStatus, setClassStatus] = useState("Completed");
-  const [studentStatus, setStudentStatus] = useState("Joined");
+  const [classStatus, setClassStatus] = useState("COMPLETED");
+  const [studentStatus, setStudentStatus] = useState("JOINED");
   console.log(updatedStudentDatass);
   // Function to handle form submission
   const handleSubmit = async () => {
@@ -2043,6 +2045,7 @@ classEndDate.setDate(classEndDate.getDate() + 28);
           studentFirstName: updatedStudentDatass.firstName,
           studentLastName: updatedStudentDatass.lastName,
           studentEmail: updatedStudentDatass.email,
+          studentGender:updatedStudentDatass.gender,
           studentPhone: updatedStudentDatass.phoneNumber,
           studentCity: updatedStudentDatass.city ?? "N/A",
           studentCountry: updatedStudentDatass.country,
@@ -2055,7 +2058,7 @@ classEndDate.setDate(classEndDate.getDate() + 28);
           timeZone: updatedStudentDatass.timeZone,
           referralSource: updatedStudentDatass.referralSource,
           preferredDate: updatedStudentDatass.startDate,
-          evaluationStatus: "COMPLETED",
+          evaluationStatus:  classStatus,
           status: updatedStudentDatass.status,
           createdDate: updatedStudentDatass.createdDate,
           createdBy: updatedStudentDatass.createdBy,
@@ -2131,7 +2134,7 @@ classEndDate.setDate(classEndDate.getDate() + 28);
       const result = await response.json();
       console.log("Status updated successfully:", result);
       alert("Status updated successfully!");
-      router.push("/Academic/trailSection");
+      router.push("/Academic-coach/components/trailmanagement");
     } catch (error) {
       console.error("Error submitting status:", error);
       alert("Error updating status. Please try again.");
@@ -2218,11 +2221,11 @@ classEndDate.setDate(classEndDate.getDate() + 28);
                             hover:bg-white/10"
                     aria-labelledby="classstatus"
                   >
-                    <option value="Completed" className="bg-gray-900">
-                      Completed
+                    <option value="COMPLETED" className="bg-gray-900">
+                      COMPLETED
                     </option>
-                    <option value="Not Completed" className="bg-gray-900">
-                      Not Completed
+                    <option value="NOT COMPLETED" className="bg-gray-900">
+                      NOT COMPLETED
                     </option>
                   </select>
                 </div>
@@ -2251,14 +2254,14 @@ classEndDate.setDate(classEndDate.getDate() + 28);
                             hover:bg-white/10"
                     aria-labelledby="studentstatus"
                   >
-                    <option value="Joined" className="bg-gray-900">
-                      Joined
+                    <option value="JOINED" className="bg-gray-900">
+                      JOINED
                     </option>
-                    <option value="Not Joined" className="bg-gray-900">
-                      Not Joined
+                    <option value="NOT JOINED" className="bg-gray-900">
+                      NOT JOINED
                     </option>
-                    <option value="Waiting" className="bg-gray-900">
-                      Waiting
+                    <option value="WAITING" className="bg-gray-900">
+                      WAITING
                     </option>
                   </select>
                 </div>
