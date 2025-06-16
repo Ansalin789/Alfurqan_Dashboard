@@ -377,6 +377,7 @@ const TrailSection = () => {
       studentFirstName: string;
       studentLastName: string;
       studentEmail: string;
+      studentGender: string;
       studentPhone: number;
       studentCity: string;
       studentCountry: string;
@@ -876,6 +877,7 @@ const TrailSection = () => {
         studentFirstName: formData?.student.studentFirstName,
         studentLastName: formData?.student.studentLastName,
         studentEmail: formData?.student.studentEmail,
+        studentGender: formData?.student.studentGender,
         studentPhone: formData?.student.studentPhone,
         studentCity: formData?.student.studentCity,
         studentCountry: formData?.student.studentCountry,
