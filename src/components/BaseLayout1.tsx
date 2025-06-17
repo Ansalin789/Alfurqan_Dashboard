@@ -33,7 +33,7 @@ const SidebarItems = [
   },
   {
     name: 'Manage Teachers',
-    href: '/Academic-coach/ui/teachers',
+    href: '/Academic-coach/ui/manageteacher',
     icon: FaBookOpenReader,
   },
   {
