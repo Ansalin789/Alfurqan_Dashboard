@@ -76,7 +76,7 @@ const Academic: React.FC = () => {
   };
 
   return (
-        <div className="dark:bg-[#343434] w-full rounded-xl">
+        <div className="dark:bg-[#343434] w-full rounded-xl h-[280px]">
           <Calendar
             onChange={(newValue) => setValue(newValue as Date)}
             value={value}
