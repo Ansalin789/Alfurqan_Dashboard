@@ -5,6 +5,8 @@ import BaseLayout1 from "@/components/BaseLayout1";
 import moment from "moment";
 import { CalendarDays, Clock } from "lucide-react";
 import AcademicHeader from "../../components/academicHeader";
+import { FaClock } from "react-icons/fa";
+import { BsFillCalendar2WeekFill } from "react-icons/bs";
 
 interface Event {
   id: string;
@@ -16,19 +18,27 @@ interface Event {
 }
 
 const SchedulePage = () => {
-  const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">("monthly");
+  const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">(
+    "monthly"
+  );
   const [selectedDate, setSelectedDate] = useState<string>(
     moment().format("YYYY-MM-DD")
   );
-  const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>([]);
+  const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>(
+    []
+  );
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
   useEffect(() => {
     const token =
-      typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachAuthToken")
+        : null;
 
     if (!token) {
       console.error("❌ AdminAuthToken not found");
@@ -36,8 +46,8 @@ const SchedulePage = () => {
     }
     fetch(`https://api.blackstoneinfomaticstech.com/meetingSchedulelist`, {
       headers: {
-        "Authorization": `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     })
       .then((response) => response.json())
       .then((data) => {
@@ -74,15 +84,21 @@ const SchedulePage = () => {
   };
 
   const handlePrevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1)
+    );
   };
 
   const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1)
+    );
   };
 
   const formatMonthYear = (date: Date) => {
-    return date.toLocaleString("default", { month: "long", year: "numeric" }).toUpperCase();
+    return date
+      .toLocaleString("default", { month: "long", year: "numeric" })
+      .toUpperCase();
   };
 
   const isToday = (day: number) => {
@@ -154,9 +170,8 @@ const SchedulePage = () => {
             const dayEvents = eventsByDay[day] || [];
             const isSelected = selectedDay === day;
             const date = moment(
-              weekEvents.find(
-                (e) => moment(e.date).format("dddd") === day
-              )?.date
+              weekEvents.find((e) => moment(e.date).format("dddd") === day)
+                ?.date
             );
 
             return (
@@ -167,7 +182,7 @@ const SchedulePage = () => {
                     isSelected
                       ? "dark:bg-[#414141] bg-[#f7f7f7] dark:text-white text-black"
                       : dayEvents.length > 0
-                      ? "dark:bg-[#414141] bg-[#f7f7f7] shadow-md hover:shadow-lg text-black"
+                      ? "dark:bg-[#414141] bg-[#f7f7f7] hover:shadow-lg text-black"
                       : "bg-[#f7f7f7] dark:bg-[#414141] text-black"
                   }`}
                 >
@@ -227,7 +242,8 @@ const SchedulePage = () => {
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
                               <Clock size={12} />
-                              {moment(event.start).format("h:mm A")} - {moment(event.end).format("h:mm A")}
+                              {moment(event.start).format("h:mm A")} -{" "}
+                              {moment(event.end).format("h:mm A")}
                             </div>
                           </div>
                         </div>
@@ -262,7 +278,8 @@ const SchedulePage = () => {
               </div>
               <div className="flex items-center gap-1 text-[10px] text-gray-600 dark:text-gray-300">
                 <Clock size={12} />
-                {moment(event.start).format("h:mm A")} - {moment(event.end).format("h:mm A")}
+                {moment(event.start).format("h:mm A")} -{" "}
+                {moment(event.end).format("h:mm A")}
               </div>
             </div>
 
@@ -278,7 +295,7 @@ const SchedulePage = () => {
   const MonthlyView = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDayOfMonth = getFirstDayOfMonth(currentDate);
-    
+
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     const emptyCells = Array.from({ length: firstDayOfMonth }, (_, i) => null);
     const totalDays = [...emptyCells, ...days];
@@ -315,10 +332,14 @@ const SchedulePage = () => {
               return <div key={i} className="min-h-[80px] bg-transparent" />;
             }
 
-            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+            const date = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              day
+            );
             const dayEvents = getEventsForDate(date);
             const hasEvents = dayEvents.length > 0;
-            
+
             return (
               <button
                 key={i}
@@ -344,7 +365,8 @@ const SchedulePage = () => {
                       {dayEvents[0].title}
                     </div>
                     <div className="text-[8px] truncate px-1">
-                      {moment(dayEvents[0].start).format("h:mm A")} - {moment(dayEvents[0].end).format("h:mm A")}
+                      {moment(dayEvents[0].start).format("h:mm A")} -{" "}
+                      {moment(dayEvents[0].end).format("h:mm A")}
                     </div>
                   </div>
                 )}
@@ -358,11 +380,10 @@ const SchedulePage = () => {
 
   return (
     <BaseLayout1>
-    <AcademicHeader currentSection="Calendar"/>
+      <AcademicHeader currentSection="Calendar" />
       <div className="flex flex-col mx-auto p-2">
         <div className="flex-1 mt-4">
-
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-5 gap-6">
             {/* Calendar Component */}
             <div className="col-span-3">
               <div className="bg-white dark:bg-[#343434] p-4 rounded-lg shadow overflow-hidden">
@@ -384,7 +405,7 @@ const SchedulePage = () => {
                       ))}
                     </div>
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={handlePrevMonth}
                         className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
                       >
@@ -393,7 +414,7 @@ const SchedulePage = () => {
                       <h2 className="text-[16px] font-semibold">
                         {formatMonthYear(currentDate)}
                       </h2>
-                      <button 
+                      <button
                         onClick={handleNextMonth}
                         className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
                       >
@@ -410,36 +431,52 @@ const SchedulePage = () => {
             </div>
 
             {/* List Schedule */}
-            <div className="col-span-1 w-full">
-              <div className="w-60 overflow-y-scroll h-[590px] scrollbar-none md:w-full p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
-                <h2 className="text-[18px] font-semibold">
-                  List Schedule 
-                </h2>
+            <div className="col-span-2 w-full">
+              <div className="overflow-y-scroll h-[590px] scrollbar-none md:w-full p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
+                <h2 className="text-[18px] font-semibold">List Schedule</h2>
                 <div className="space-y-6 mt-6">
                   {eventsForSelectedDate.length > 0 ? (
-                    eventsForSelectedDate.map((item) => (
-                      <div key={item.id} className="border-b pb-2 border-[#dadada] dark:border-[#5b5b5b]">
-                        <div className="flex justify-between">
-                          <h3 className="font-medium text-[13px]">
-                            {item.title}
-                          </h3>
-                          <div>
-                          <span className="text-[9px] text-gray-500 text-end">
-                            {moment(item.start).format("DD MMM YYYY")}
-                          </span>
-                          <div className="text-[9px] text-gray-500">
-                          {moment(item.start).format("h:mm A")} -{" "}
-                          {moment(item.end).format("h:mm A")}
-                        </div>
+                    eventsForSelectedDate.map((item, index) => {
+                      const textColors = [
+                        "text-[#d77277]",
+                        "text-[#72B0D7]",
+                        "text-[#BF63B3]",
+                        "text-[#BFBC63]",
+                        "text-[#BF8C63]",
+                        "text-[#6EBF63]"
+                      ];
+                      const currentTextColor = textColors[index % textColors.length];
+                      return (
+                        <div
+                          key={item.id}
+                          className="border-b pb-2 border-[#dadada] dark:border-[#5b5b5b]"
+                        >
+                          <div className="flex justify-between">
+                            <h3 className={`font-medium text-[14px] ${currentTextColor}`}>
+                              {item.title}
+                            </h3>
+                            <div>
+                              <div className="flex gap-4">
+                              
+                              <div className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
+                              <FaClock size={10} />
+                                {moment(item.start).format("h:mm A")} -{" "}
+                                {moment(item.end).format("h:mm A")}
+                              </div>
+                              <span className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
+                              <BsFillCalendar2WeekFill  size={10} />{" "}
+                                {moment(item.start).format("DD MMM YYYY")}
+                              </span>
+                              </div>
+                            </div>
                           </div>
-                          
+
+                          <p className="text-[10px] font-light text-[#333] dark:text-[#fff] mt-2">
+                            {item.description || ""}
+                          </p>
                         </div>
-                        
-                        <p className="text-[10px] text-gray-600 mt-2">
-                          {item.description || ""}
-                        </p>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <p className="text-gray-500 text-[12px] text-center">
                       No events scheduled
