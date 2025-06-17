@@ -306,7 +306,7 @@ useEffect(() => {
 
       try {
         const res = await fetch(
-          `http://localhost:5001/classShedule/students?studentId=${studentId}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
           {
           headers: {
             Authorization: `Bearer ${token}`,

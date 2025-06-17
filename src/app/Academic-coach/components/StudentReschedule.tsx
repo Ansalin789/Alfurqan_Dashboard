@@ -252,7 +252,7 @@ const SchedulePage = () => {
     try {
       // 1. Fetch existing data
       const existingRes = await fetch(
-        `http://localhost:5001/classShedule/${selectedClassId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/${selectedClassId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -294,7 +294,7 @@ const SchedulePage = () => {
 
       // 3. Send the PUT request
       const res = await fetch(
-        `http://localhost:5001/classShedule/${selectedClassId}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/${selectedClassId}`,
         {
           method: "PUT",
           headers: {

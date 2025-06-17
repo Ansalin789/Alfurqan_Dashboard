@@ -65,7 +65,7 @@ const ManageStudents = () => {
         return;
       }
       const response = await fetch(
-        `http://localhost:5001/alstudents`,
+        `https://api.blackstoneinfomaticstech.com/alstudents`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
