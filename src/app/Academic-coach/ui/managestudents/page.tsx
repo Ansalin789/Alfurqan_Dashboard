@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import { MoreVertical, Search } from "lucide-react";
 import BaseLayout1 from "@/components/BaseLayout1";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import { useRouter } from "next/navigation";
+import AcademicHeader from "../../components/academicHeader";
 
 interface Student {
   username: string;
@@ -144,7 +144,7 @@ const ManageStudents = () => {
   return (
     <BaseLayout1>
       <div>
-        <SupervisorHeader currentSection="Scheduled Meetings" />
+        <AcademicHeader currentSection="Student List" />
         <div className="md:p-0 mx-auto">
           <div className="h-full w-full flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">

@@ -2,11 +2,11 @@
 
 import BaseLayout1 from "@/components/BaseLayout1";
 import React, { useState, useRef, useEffect } from "react";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import { MdTune } from "react-icons/md";
 import { MoreVertical, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/Pagination";
+import AcademicHeader from "../../components/academicHeader";
 
 interface StudentDetails {
   studentDetails: {
@@ -376,7 +376,7 @@ const ManageStudentView = () => {
   return (
     <BaseLayout1>
       <div>
-        <SupervisorHeader currentSection="Scheduled Meetings" />
+        <AcademicHeader currentSection="Student" showBackButton={true} showBackPath="managestudents"/>
 
         {/* Top section */}
         <div className="flex flex-col lg:flex-row gap-6 mb-6">

@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import BaseLayout1 from "../../../../components/BaseLayout1";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import TotalList from "../../components/TotalList";
 import NextEvaluationClass from "../../components/NextEvaluationClass";
 import TeachersStudents from "../../components/TeachersStudent";
@@ -11,6 +10,7 @@ import Countries from "../../components/Countries";
 import Teacherscard from "../../components/Teachercard";
 import Calender from "../../components/Calender";
 import UpcomingClasses from "../../components/UpcommingClasses";
+import AcademicHeader from "../../components/academicHeader";
 
 type StudentData = {
   id: number;
@@ -92,7 +92,7 @@ export default function Dashboard() {
   if (error) return <div>Error: {error}</div>;
   return (
     <BaseLayout1>
-      <SupervisorHeader currentSection="Dashboard" />
+      <AcademicHeader currentSection="Dashboard" />
       <div className="flex flex-row gap-4 p-0 min-h-screen">
         {/* Main Content */}
         <div className="flex-1 flex flex-col gap-4">

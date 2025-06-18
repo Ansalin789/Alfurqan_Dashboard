@@ -5,12 +5,12 @@ import { useSearchParams } from "next/navigation";
 import { VscGraphLeft } from "react-icons/vsc";
 
 import BaseLayout1 from "@/components/BaseLayout1";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import { MoreVertical, Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import { Pagination } from "@nextui-org/react";
 import router from "next/router";
 import Modal from "react-modal";
+import AcademicHeader from "../../components/academicHeader";
 interface StudentDetails {
   studentDetails: {
     _id: string;
@@ -701,10 +701,10 @@ const TeacherDetails = () => {
   };
   return (
     <BaseLayout1>
-      <SupervisorHeader
-        currentSection="Teacher Details"
+      <AcademicHeader
+        currentSection="Teacher"
         showBackButton={true}
-        showBackPath="/supervisor/ui/teachers"
+        showBackPath="/Academic-coach/ui/manageteacher"
       />
       <div className="p-2 mx-auto">
         {/* Main Container */}

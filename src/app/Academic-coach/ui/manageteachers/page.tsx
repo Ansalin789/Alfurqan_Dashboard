@@ -3,7 +3,6 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Clock } from "lucide-react"
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader"
 import axios from "axios"
 import BaseLayout1 from "@/components/BaseLayout1"
 import { Calendar, momentLocalizer } from 'react-big-calendar'
@@ -12,6 +11,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css"
 import { View } from 'react-big-calendar'
 import { ToolbarProps } from "react-big-calendar"
 import { view } from "framer-motion"
+import AcademicHeader from "../../components/academicHeader"
 
 interface ClassScheduleResponse {
   totalCount: number;
@@ -497,7 +497,7 @@ const SchedulePage = () => {
 
   return (
     <BaseLayout1>
-      <SupervisorHeader currentSection="Calendar" showBackButton={true} showBackPath="/supervisor/ui/dashboard" />
+      <AcademicHeader currentSection="Teachers" showBackButton={true}/>
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
           <div className="w-full lg:w-2/3 p-4 md:p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
@@ -523,7 +523,7 @@ const SchedulePage = () => {
           <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[500px] lg:h-[700px]">
             <div className="p-4 md:p-6">
               <div className="mb-4 md:mb-6">
-                <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white">Add New Schedule</h3>
+                <h3 className="text-base md:text-base font-semibold text-gray-800 dark:text-white">Add New Schedule</h3>
               </div>
 
               <div className="space-y-3 md:space-y-4">
@@ -535,7 +535,7 @@ const SchedulePage = () => {
                     type="text"
                     value={formData.date}
                     onChange={(e) => handleInputChange("date", e.target.value)}
-                    className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-[#2b2b2b] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Select date"
                   />
                 </div>
@@ -550,7 +550,7 @@ const SchedulePage = () => {
                         type="time"
                         value={formData.fromTime}
                         onChange={(e) => handleInputChange("fromTime", e.target.value)}
-                        className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-[#2b2b2b] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent [&::-webkit-calendar-picker-indicator]:invert "
                       />
                       {/* <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <Clock className="h-4 w-4 md:h-5 md:w-5 text-gray-400" />
@@ -566,11 +566,8 @@ const SchedulePage = () => {
                         type="time"
                         value={formData.toTime}
                         onChange={(e) => handleInputChange("toTime", e.target.value)}
-                        className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-[#2b2b2b] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent [&::-webkit-calendar-picker-indicator]:invert"
                       />
-                      {/* <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <Clock className="h-4 w-4 md:h-5 md:w-5 text-gray-400" />
-                      </div> */}
                     </div>
                   </div>
                 </div>
@@ -583,7 +580,7 @@ const SchedulePage = () => {
                     value={formData.comment}
                     onChange={(e) => handleInputChange("comment", e.target.value)}
                     rows={4}
-                    className="w-full h-[90px] md:h-[110px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-[#2b2b2b] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full h-[90px] md:h-[110px] px-3 py-2 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none"
                     placeholder="Enter your comment here..."
                   />
                 </div>
@@ -593,7 +590,7 @@ const SchedulePage = () => {
             <div className="flex-1 min-h-[50px] lg:min-h-[150px]"></div>
 
             <div className="p-4 md:p-6">
-              <hr className="w-full border-t-[1px] border-gray-300 dark:border-gray-600 mb-4" />
+              <hr className="w-full border-t-[1px] border-[#dbdada] dark:border-[#dbdada] mb-4" />
               <div className="flex justify-end">
                 <button
                   type="submit"

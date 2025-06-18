@@ -9,7 +9,7 @@ import BaseLayout1 from "@/components/BaseLayout1";
 import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
 import { getSocket } from "@/app/utils/socket";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
+import AcademicHeader from "../../components/academicHeader";
 
  interface IProfessionalExperience {
   jobRole: string;
@@ -202,7 +202,7 @@ const ManageTeacher: React.FC = () => {
  
   return (
     <BaseLayout1>
-      <SupervisorHeader currentSection="Teacher's List" />
+      <AcademicHeader currentSection="Teachers" />
       <div className="flex h-screen">
         {/* Main Content */}
         <div className="flex-1">

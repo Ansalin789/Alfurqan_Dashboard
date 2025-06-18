@@ -8,7 +8,7 @@ import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { CgAttachment } from "react-icons/cg";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
+import AcademicHeader from "../../components/academicHeader";
 
 // Define your interfaces
 interface IMessage {
@@ -507,7 +507,7 @@ const Message = () => {
 
   return (
     <BaseLayout1>
-      <SupervisorHeader currentSection="Message" />
+      <AcademicHeader currentSection="Message" />
       <div className="py-3 px-5">
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
           {/* Left Panel */}

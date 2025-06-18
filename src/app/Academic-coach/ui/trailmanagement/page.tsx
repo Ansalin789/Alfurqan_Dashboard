@@ -1,9 +1,9 @@
 "use client";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import BaseLayout1 from "@/components/BaseLayout1";
 import React, { useState } from "react";
 import TrailSection from "../../components/TrailSection/page";
 import Evaluation from "../../components/Evaluation/page";
+import AcademicHeader from "../../components/academicHeader";
 
 const Page = () => {
   const [activeTab, setActiveTab] = useState("evaluation");
@@ -11,7 +11,7 @@ const Page = () => {
   return (
     <BaseLayout1>
       <div>
-        <SupervisorHeader currentSection="Applicants" />
+        <AcademicHeader currentSection="Trail Management" />
         <div className="flex space-x-6 px-4 py-2 rounded-md relative">
           <button
             onClick={() => setActiveTab("evaluation")}
