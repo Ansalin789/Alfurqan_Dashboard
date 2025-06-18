@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import moment from "moment";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
+import AcademicHeader from "./academicHeader";
 
 // Event interface for calendar events
 interface Event {
@@ -387,7 +387,7 @@ const SchedulePage = () => {
                 className={`w-full p-4 rounded-xl transition-all duration-200 cursor-pointer ${
                   isSelected
                     ? "bg-[#f7f7f7] dark:bg-[#414141] text-black dark:text-white"
-                    : "bg-[#f7f7f7] dark:bg-[#414141] text-black"
+                    : "bg-[#f7f7f7] dark:bg-[#414141] text-black dark:text-white"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -594,7 +594,7 @@ const SchedulePage = () => {
 
   return (
     <div>
-      <SupervisorHeader currentSection={"Calender"} />
+      <AcademicHeader currentSection="Reschedule Class" />
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col md:flex-row overflow-hidden h-[630px]">
           {/* Left: Calendar View */}
