@@ -348,7 +348,7 @@ const Popup: React.FC<PopupProps> = ({
             </div>
 
             {/* Number of Students */}
-            <div>
+            {/* <div>
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 Number of Students
               </label>
@@ -359,7 +359,7 @@ const Popup: React.FC<PopupProps> = ({
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
-            </div>
+            </div> */}
 
             {/* Preferred Date */}
             <div>
@@ -367,7 +367,7 @@ const Popup: React.FC<PopupProps> = ({
                 Preferred Date
               </label>
               <input
-                type="date"
+                type="text"
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
