@@ -67,7 +67,7 @@ const Message = () => {
   const [teachers, setTeachers] = useState<IUser[]>([]);
   const [admin, setAdmin] = useState<IUser[]>([]);
   const [activeTab, setActiveTab] = useState<
-    "teachers" | "admin" | "all" | "supervisor" | "academic-coach"
+    "teachers" | "admin" | "all" | "students" | "academic-coach"
   >("teachers");
 
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
@@ -483,13 +483,13 @@ setMessages(prev => {
               </button>
               <button
                 className={`px-2 py-1.5 text-[12px] font-medium ${
-                  activeTab === "supervisor"
+                  activeTab === "students"
                     ? "text-[#576CBC] border-b-2 border-[#576CBC]"
                     : "text-[#010e30] dark:text-[#ffffff]"
                 }`}
-                onClick={() => setActiveTab("supervisor")}
+                onClick={() => setActiveTab("students")}
               >
-                Supervisor
+                Students
               </button>
               <button
                 className={`px-2 py-1.5 text-[12px] font-medium ${
