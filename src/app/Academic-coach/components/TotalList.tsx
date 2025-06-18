@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import axios from "axios";
-import { useSearchParams } from "next/navigation";
+import { getSocket } from "@/app/utils/socket";
+
 
 interface ApiResponse {
   trialAssigned: number;
@@ -13,16 +14,25 @@ interface ApiResponse {
 }
 
 const TotalList = () => {
-  const searchParams = useSearchParams();
-  const academicCoachId = searchParams.get("academicCoachId");
-
   const [data, setData] = useState<ApiResponse>({
     trialAssigned: 0,
     evaluationCompleted: 0,
     evaluationPending: 0,
     totalPending: 0,
   });
-
+  useEffect(()=>{
+     const id  = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachPortalId") : null;
+     if(!id) return
+     const socket = getSocket(id);
+     const handleCount = (data:ApiResponse)=>{
+      setData(data);
+     };
+      socket.on('academicDashboardCard',handleCount);
+      return ()=>{
+        socket.off('academicDashboardCard',handleCount);
+      }
+  },[]);
+  
   useEffect(() => {
     const fetchData = async () => {
          const token  = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
@@ -51,7 +61,7 @@ const TotalList = () => {
     };
 
     fetchData();
-  }, [academicCoachId]);
+  }, []);
 
   const cards = [
     {

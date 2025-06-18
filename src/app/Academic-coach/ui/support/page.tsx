@@ -3,12 +3,13 @@ import BaseLayout1 from "@/components/BaseLayout1";
 import React from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { MdOutlineArrowOutward } from "react-icons/md";
+import AcademicHeader from "../../components/academicHeader";
 
 
 const Support = () => {
   return (
     <BaseLayout1>
-   
+   <AcademicHeader currentSection="Support"/>
       <div className="p-4 mx-auto">
         <div className="flex gap-x-5 w-auto">
           <div className="bg-[#7689BD] shadow-lg rounded-xl p-4 h-[616px] w-[340px]">

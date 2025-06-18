@@ -4,12 +4,15 @@ import React, { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import Link from "next/link";
 import axios from "axios";
+import { getSocket } from "@/app/utils/socket";
 
 interface TeacherData {
   _id: string | null;
   teacherName: string;
   teacherEmail: string;
   studentCount: number;
+  maleCount:string;
+  femaleCount:string;
 }
 
 interface ApiResponse {
@@ -18,7 +21,25 @@ interface ApiResponse {
 
 export default function Academic() {
   const [teachersData, setTeachersData] = useState<TeacherData[]>([]);
-
+    useEffect(()=>{
+     const academicId = typeof window !== "undefined"
+            ? localStorage.getItem("AcademicCoachPortalId")
+            : null;
+            if(!academicId) return;
+        const socket = getSocket(academicId);
+        const handlecount =(data : TeacherData)=>{
+            console.log("📩 Received WebSocket Data:", data);
+            setTeachersData((pre)=>
+              pre.map((app)=>
+                app._id?.toString() === data._id?.toString() ? {...app , studentCount : data.studentCount} : app
+              )
+          )    
+        };
+        socket.on("academicDashboardTeachersStudentCount",handlecount);
+        return()=>{
+        socket.off("academicDashboardTeachersStudentCount",handlecount);
+        }
+    },[]);
   useEffect(() => {
     const fetchTeachersData = async () => {
       try {
@@ -33,7 +54,6 @@ export default function Academic() {
         const response = await axios.get<ApiResponse>(
           `https://api.blackstoneinfomaticstech.com/teacher-student-count`,
           {
-            params: { teacherId },
             headers: {
               Authorization: `Bearer ${token}`,
               },

@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import BaseLayout1 from "../../../../components/BaseLayout1";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import TotalList from "../../components/TotalList";
 import NextEvaluationClass from "../../components/NextEvaluationClass";
 import TeachersStudents from "../../components/TeachersStudent";
@@ -11,6 +10,8 @@ import Countries from "../../components/Countries";
 import Teacherscard from "../../components/Teachercard";
 import Calender from "../../components/Calender";
 import UpcomingClasses from "../../components/UpcommingClasses";
+import AcademicHeader from "../../components/academicHeader";
+import { getSocket } from "@/app/utils/socket";
 
 type StudentData = {
   id: number;
@@ -21,15 +22,68 @@ type StudentData = {
   date: string;
   time: string;
 };
+interface Student {
+  learningInterest: string; // Replace with the exact type if known
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentPhone: number;
+  studentCountry: string;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  preferredDate:Date;
+  classStatus?: string;
+  status?: string;
+  trialClassStatus: string;
+  studentStatus: string;
+}
+
+interface EvaluationItem {
+  paymentLink: string;
+  _id: string;
+  student: Student;
+  trialClassStatus: string;
+  assignedTeacher: string;
+  paymentStatus: string;
+}
 
 export default function Dashboard() {
   const [evaluationList, setEvaluationList] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+   useEffect(()=>{
+     const academicId = typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
+        if(!academicId) return;
+    const socket = getSocket(academicId);
+     const handleList =(data : {event : string, data : EvaluationItem , sender : string})=>{
+        console.log("📩 Received WebSocket Data:", data);
+        if(data.event === "update"){
+          console.log("➡️ Action: create", data.data._id);
+          const formatted : StudentData ={
+            id : evaluationList.length + 1,
+            name: `${data.data.student.studentFirstName} ${data.data.student.studentLastName}`,
+            mobile: data.data.student.studentPhone.toString(),
+            country: data.data.student.studentCountry,
+            preferredTeacher: data.data.student.preferredTeacher,
+            date: new Date(data.data.student.preferredDate).toLocaleDateString(),
+            time: `${data.data.student.preferredFromTime} - ${data.data.student.preferredToTime}`,
+          }
+          setEvaluationList((pre)=> [...pre, formatted]);
+        }
+     }
+    socket.on('academicStudentList',handleList);
+    return ()=>{
+      socket.off('academicStudentList',handleList);
+    }
+   },[]);
   useEffect(() => {
     // Fetch data from API
-    const academicId = localStorage.getItem("AcademicCoachPortalId");
+    const academicId = typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
     console.log("academicId>>", academicId);
     const token =
       typeof window !== "undefined"
@@ -92,7 +146,7 @@ export default function Dashboard() {
   if (error) return <div>Error: {error}</div>;
   return (
     <BaseLayout1>
-      <SupervisorHeader currentSection="Dashboard" />
+      <AcademicHeader currentSection="Dashboard" />
       <div className="flex flex-row gap-4 p-0 min-h-screen">
         {/* Main Content */}
         <div className="flex-1 flex flex-col gap-4">
