@@ -70,6 +70,7 @@ interface Attendance {
       studentFirstName: string;
       studentLastName: string;
       studentEmail: string;
+      StudentGender: string;
       studentPhone: number;
       studentCity: string;
       studentCountry: string;
@@ -295,6 +296,7 @@ function LiveClass() {
         studentFirstName: formData?.student.studentFirstName,
         studentLastName: formData?.student.studentLastName,
         studentEmail: formData?.student.studentEmail,
+        studentGender: formData?.student.StudentGender,
         studentPhone: formData?.student.studentPhone,
         studentCity: formData?.student.studentCity,
         studentCountry: formData?.student.studentCountry,
