@@ -6,6 +6,8 @@ import moment from "moment";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
+import SuccessPopup from "@/app/supervisor/components/successPopup";
+import FailedPopup from "@/app/supervisor/components/failedPopup";
 
 // Event interface for calendar events
 interface Event {
@@ -127,6 +129,10 @@ const SchedulePage = () => {
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [rescheduleReason, setRescheduleReason] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     const queryStudentId = searchParams?.get("studentId");
@@ -203,7 +209,7 @@ const SchedulePage = () => {
       const res = await fetch(
         `https://api.blackstoneinfomaticstech.com/shiftschedule?role=TEACHER&startdate=${formattedDate}`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -267,6 +273,13 @@ const SchedulePage = () => {
 
       const existingData = await existingRes.json();
 
+      const to24HourFormat = (timeStr: string) => {
+        const [hours, minutes] = new Date(`1970-01-01T${timeStr}`)
+          .toTimeString()
+          .split(":");
+        return `${hours}:${minutes}`;
+      };
+
       // 2. Build updated payload with only specific changes
       const updatedPayload = {
         ...existingData,
@@ -279,11 +292,18 @@ const SchedulePage = () => {
 
         startDate: new Date(selectedDate).toISOString(),
         startTime: [
-          { label: selectedTeacher.fromtime, value: selectedTeacher.fromtime },
+          {
+            label: to24HourFormat(selectedTeacher.fromtime),
+            value: to24HourFormat(selectedTeacher.fromtime),
+          },
         ],
         endTime: [
-          { label: selectedTeacher.totime, value: selectedTeacher.totime },
+          {
+            label: to24HourFormat(selectedTeacher.totime),
+            value: to24HourFormat(selectedTeacher.totime),
+          },
         ],
+
         teacherId: selectedTeacher.teacherId,
         teacherName: selectedTeacher.teacherName,
         teacherEmail: selectedTeacher.teacherEmail,
@@ -304,6 +324,14 @@ const SchedulePage = () => {
           body: JSON.stringify(updatedPayload),
         }
       );
+
+      setSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        setIsRescheduleOpen(false);
+        setRescheduleReason("");
+      }, 2000);
 
       if (!res.ok) {
         console.error("❌ Failed to update. Status:", res.status);
@@ -707,9 +735,10 @@ const SchedulePage = () => {
               Reschedule
             </h2>
 
-            <label 
-             htmlFor="reason"
-            className="block text-sm font-medium text-gray-700 mb-1 dark:text-[#fff]">
+            <label
+              htmlFor="reason"
+              className="block text-sm font-medium text-gray-700 mb-1 dark:text-[#fff]"
+            >
               Reason for Reschedule
             </label>
             <textarea
@@ -740,6 +769,13 @@ const SchedulePage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {success && (
+        <SuccessPopup onClose={() => setSuccess(false)} title="ReSchedule" />
+      )}
+      {failed && (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
       )}
     </div>
   );
