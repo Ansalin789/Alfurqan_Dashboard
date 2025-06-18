@@ -369,7 +369,11 @@ const Popup: React.FC<PopupProps> = ({
               <input
                 type="text"
                 name="date"
-                value={formData.date}
+                value={formData.date ? new Date(formData.date).toLocaleDateString('en-US', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric'
+                }).replace(/\//g, '-') : ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
