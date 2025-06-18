@@ -59,6 +59,7 @@ interface StudentDetails {
       createdDate: string;
       createdBy: string;
     };
+    classType: string;
     classDay: string[];
     startTime: string[];
     endTime: string[];
@@ -166,14 +167,15 @@ const ManageStudentView = () => {
   const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
   const [paginatedData, setPaginatedData] = useState<ClassSchedule[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<"scheduled" | "completed">(
-    "scheduled"
-  );
+  const [activeTab, setActiveTab] = useState<"scheduled" | "completed">(  "scheduled");
   const searchParams = useSearchParams();
-  const studentId =
-    searchParams.get("studentId") || localStorage.getItem("studentManageID");
   const dropdownRef = useRef<HTMLTableCellElement | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const [searchText, setSearchText] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  
+
+
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -185,13 +187,65 @@ const ManageStudentView = () => {
   // Calculate total pages once, outside useEffect
   const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
 
-  useEffect(() => {
-    const paginated = dataToShow.slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage
-    );
-    setPaginatedData(paginated);
-  }, [dataToShow, currentPage]);
+  //search
+
+  const handleSearch = (query: string) => {
+  setSearchText(query);
+  const queryLower = query.toLowerCase();
+
+  const filtered = dataToShow.filter((item) => {
+    const studentFullName = `${item.student?.studentFirstName || ""} ${item.student?.studentLastName || ""}`;
+    const course = item.package || "";
+    const date = new Date(item.startDate).toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+    const time = `${item.startTime?.[0] || ""} - ${item.endTime?.[0] || ""}`;
+    const status = item.scheduleStatus || "";
+    const classType = "Group Class"; // static in your code
+
+    const combinedText = `${studentFullName} ${course} ${date} ${time} ${status} ${classType}`.toLowerCase();
+
+    return combinedText.includes(queryLower);
+  });
+
+  setPaginatedData(filtered.slice(0, itemsPerPage));
+  setCurrentPage(1);
+};
+
+
+
+useEffect(() => {
+  let filtered = dataToShow;
+
+  if (searchText.trim() !== "") {
+    const queryLower = searchText.toLowerCase();
+    filtered = dataToShow.filter((item) => {
+      const studentFullName = `${item.student?.studentFirstName || ""} ${item.student?.studentLastName || ""}`;
+      const course = item.package || "";
+      const date = new Date(item.startDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+      const time = `${item.startTime?.[0] || ""} - ${item.endTime?.[0] || ""}`;
+      const status = item.scheduleStatus || "";
+      const classType = "Group Class";
+
+      const combinedText = `${studentFullName} ${course} ${date} ${time} ${status} ${classType}`.toLowerCase();
+      return combinedText.includes(queryLower);
+    });
+  }
+
+  const paginated = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  setPaginatedData(paginated);
+}, [dataToShow, currentPage, searchText]);
+
 
   // Optional: reset page to 1 when tab changes
   useEffect(() => {
@@ -228,23 +282,27 @@ const ManageStudentView = () => {
 
   //Classschedule against the studentId
 
-  useEffect(() => {
-    const fetchClassSchedule = async () => {
-         const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachAuthToken")
-          : null;
+useEffect(() => {
+  const studentId =
+    searchParams?.get("studentId") || localStorage.getItem("studentManageID");
 
-      if (!token) {
-        console.error("❌ AdminAuthToken not found");
-        return;
-      }
-      if (!studentId) {
-        console.warn("No studentId found in query params");
-        return;
-      }
+  const fetchClassSchedule = async () => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachAuthToken")
+        : null;
 
-      console.log("Fetching class schedule for studentId:", studentId);
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
+
+    if (!studentId) {
+      console.warn("No studentId found in query params or localStorage");
+      return;
+    }
+
+    console.log("Fetching class schedule for studentId:", studentId);
 
       try {
         const res = await fetch(
@@ -254,46 +312,53 @@ const ManageStudentView = () => {
             Authorization: `Bearer ${token}`,
           },
         }
-        );
+      );
 
-        if (!res.ok) {
-          console.error("Server responded with status:", res.status);
-          return;
-        }
-
-        const data = await res.json();
-        console.log("Fetched data from API:", data);
-
-        const allSchedules: ClassSchedule[] = data.classSchedule;
-
-        setScheduledClasses(
-          allSchedules.filter((c) => c.scheduleStatus === "Scheduled")
-        );
-        setCompletedClasses(
-          allSchedules.filter((c) => c.scheduleStatus === "Completed")
-        );
-      } catch (err) {
-        console.error("Failed to fetch class schedule", err);
+      if (!res.ok) {
+        console.error("Server responded with status:", res.status);
+        return;
       }
-    };
 
-    fetchClassSchedule();
-  }, [studentId]);
+      const data = await res.json();
+      console.log("Fetched data from API:", data);
+
+      const allSchedules: ClassSchedule[] = data.classSchedule;
+
+     setScheduledClasses(
+  allSchedules.filter(
+    (c) => c.scheduleStatus === "Scheduled" || c.scheduleStatus === "Rescheduled"
+  )
+);
+
+      setCompletedClasses(
+        allSchedules.filter((c) => c.scheduleStatus === "Completed")
+      );
+    } catch (err) {
+      console.error("Failed to fetch class schedule", err);
+    }
+  };
+
+  fetchClassSchedule();
+}, [searchParams]);
+
 
   const toggleDropdown = (index: number) => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
 
-  const handleReschedule = (event: React.MouseEvent) => {
-    event.stopPropagation();
+  const handleReschedule = ( _id: string) => {
+   
     console.log("Navigating to reschedule page");
-    router.push("/Academic-coach/ui/studentreschedule");
+    router.push(`studentreschedule?id=${_id}`);
+ 
 
     setTimeout(() => {
       setActiveDropdown(null);
     }, 100);
   };
 
+
+  
   return (
     <BaseLayout1>
       <div>
@@ -341,9 +406,9 @@ const ManageStudentView = () => {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white text-[14px]">Mother Tongue</span>
+                  <span className="text-white text-[14px]">Class Type</span>
                   <span className="text-[#DADADACC] text-[14px]">
-                    {data?.studentEvaluationDetails?.gardianLanguage || "-"}
+                    {data?.studentEvaluationDetails?.classType}
                   </span>
                 </div>
               </div>
@@ -421,14 +486,14 @@ const ManageStudentView = () => {
                 type="text"
                 placeholder="Search by keyword"
                 className="bg-transparent outline-none text-[15px] w-52 py-3 "
-                // value={searchText}
-                // onChange={(e) => setSearchText(e.target.value)}
+                value={searchText}
+                onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
 
             <div
               className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-              //   onClick={() => setShowModal(true)}
+                onClick={() => setShowModal(true)}
             >
               {/* <BsFilterLeft /> */}
               <MdTune className="w-4 h-4" />
@@ -437,8 +502,7 @@ const ManageStudentView = () => {
 
             <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
               <span className="text-left -ml-60 ">
-                {/* Showing {currentApplicants.length} Of{" "}
-                                {dataToShow.length} */}
+                Showing {currentItems.length} of {paginatedData.length}
               </span>
             </div>
           </div>
@@ -473,11 +537,11 @@ const ManageStudentView = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200 dark:bg-[#343434] dark:divide-gray-600">
+            <tbody className="bg-white  dark:bg-[#343434] dark:divide-gray-600">
               {paginatedData.map((item, index) => (
                 <tr
                   key={item._id}
-                  className={`text-[12px] ${
+                  className={`text-[12px] h-[50px] ${
                     index % 2 === 0
                       ? "bg-[#fff] dark:bg-[#2C2C2C]"
                       : "bg-[#F8F8F8] dark:bg-[#303030]"
@@ -546,7 +610,7 @@ const ManageStudentView = () => {
                           <div className="py-1">
                             <button
                               className="w-full text-left px-4 py-2 text-[12px] text-gray-700  dark:text-[#fff]"
-                              onClick={handleReschedule}
+                               onClick={() => handleReschedule(item._id)}
                             >
                               Reschedule
                             </button>
@@ -572,6 +636,95 @@ const ManageStudentView = () => {
           onPageChange={setCurrentPage}
         />
       </div>
+
+         {/*filterform  */}
+
+            {showModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
+                <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
+                  {/* Close Icon */}
+                  <button
+                    className="absolute top-2 right-3 text-gray-400 text-xl"
+                    onClick={() => setShowModal(false)}
+                  >
+                    &times;
+                  </button>
+
+                  <h2 className="text-lg font-semibold mb-4">Filter by</h2>
+
+                  {/* Date Input */}
+                  <div className="mb-4">
+                    <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                      Date Range
+                    </label>
+
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="date"
+                        className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                        // value={fromDate}
+                        // onChange={(e) => setFromDate(e.target.value)}
+                      />
+                      <input
+                        type="date"
+                        className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                        // value={toDate}
+                        // onChange={(e) => setToDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Position Applied */}
+                  <div className="mb-4">
+                    {/* Timing */}
+                    <label
+                      htmlFor="timimg"
+                      className="block text-sm text-gray-700 mb-1 dark:text-white"
+                    >
+                      Time
+                    </label>
+                    <input
+                      // value={timing}
+                      // onChange={(e) => setTiming(e.target.value)}
+                      type="time"
+                      className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                    {/* Status */}
+                  <div className="mb-4">
+                    <label
+                      htmlFor="level"
+                      className="block text-sm text-gray-700 mb-1 dark:text-white"
+                    >
+                      status
+                    </label>
+                    <input
+                      // value={timing}
+                      // onChange={(e) => setTiming(e.target.value)}
+                      type="input"
+                      className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
+                      // onClick={handleFilter}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
     </BaseLayout1>
   );
 };

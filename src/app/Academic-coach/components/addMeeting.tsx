@@ -195,7 +195,7 @@ export default function AddMeeting({ onClose }: Props) {
         className="bg-white dark:bg-[#1D1D1D] rounded-lg shadow-xl p-5 w-full max-w-2xl mx-3 text-sm"
         style={{ maxHeight: "90vh", overflowY: "auto" }}
       >
-        <h1 className="text-lg font-normal text-gray-800 mb-3 dark:text-white">
+        <h1 className="text-lg font-normal text-gray-800 mb-4 dark:text-white">
           Add Meeting
         </h1>
 
@@ -205,7 +205,7 @@ export default function AddMeeting({ onClose }: Props) {
             <div className="mb-3">
               <label
                 htmlFor="uyvuhvyuc"
-                className="block text-sm text-gray-600 dark:text-white"
+                className="block text-sm mb-1 text-gray-600 dark:text-white"
               >
                 Meeting Name
               </label>
@@ -213,13 +213,13 @@ export default function AddMeeting({ onClose }: Props) {
                 value={meetingTitle}
                 onChange={(e) => setMeetingTitle(e.target.value)}
                 type="text"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border font-light rounded px-3 py-2 text-[10px] dark:text-white dark:opacity-80 dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
             </div>
             <div className="mb-3">
               <label
                 htmlFor="uyvuhvyuc"
-                className="block text-sm text-gray-600 dark:text-white"
+                className="block text-sm mb-1 text-gray-600 dark:text-white"
               >
                 Start Time
               </label>
@@ -227,18 +227,18 @@ export default function AddMeeting({ onClose }: Props) {
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border font-light rounded px-3 py-2 text-[10px] dark:text-white dark:opacity-80 dark:bg-[#343434] dark:border-[#5C5C5C] [&::-webkit-calendar-picker-indicator]:invert"
               />
             </div>
             <div className="mb-4">
               <label
                 htmlFor="uyvuhvyuc"
-                className="text-sm text-gray-600 dark:text-white flex justify-between"
+                className="text-sm text-gray-600 mb-1 dark:text-white flex justify-between"
               >
                 Add Students
               </label>
               <div className="relative flex items-center border rounded px-2 py-1 dark:bg-[#343434] dark:border-[#5C5C5C]">
-                <div className="flex-1 text-xs px-2 py-1.5 dark:text-white">
+                <div className="flex-1 px-2 font-light py-1.5 text-[10px] dark:text-white dark:opacity-80">
                   Select Students
                 </div>
                 <button
@@ -257,7 +257,7 @@ export default function AddMeeting({ onClose }: Props) {
                 <div className="fixed inset-0 bg-black/50" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
                   <section className="bg-white dark:bg-[#1D1D1D] rounded-lg p-5 w-full max-w-md">
-                    <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+                    <h2 className="text-base font-medium mb-4 text-gray-800 dark:text-white">
                       Select Students
                     </h2>
                     <div className="flex gap-2 mb-4">
@@ -307,13 +307,13 @@ export default function AddMeeting({ onClose }: Props) {
                     <div className="flex justify-end mt-4 gap-2">
                       <button
                         onClick={() => setOpen(false)}
-                        className="px-3 py-1 border text-[#576CBC] rounded"
+                        className="px-3 py-1 text-[11px] border text-[#576CBC] rounded"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={() => setOpen(false)}
-                        className="px-4 py-1 bg-[#576CBC] text-white rounded"
+                        className="px-4 py-1 text-[11px] bg-[#576CBC] text-white rounded"
                       >
                         Done
                       </button>
@@ -329,7 +329,7 @@ export default function AddMeeting({ onClose }: Props) {
             <div className="mb-3">
               <label
                 htmlFor="uyvuhvyuc"
-                className="block text-sm text-gray-600 dark:text-white"
+                className="block text-sm mb-1 text-gray-600 dark:text-white"
               >
                 Meeting Date
               </label>
@@ -337,13 +337,13 @@ export default function AddMeeting({ onClose }: Props) {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-[10px] dark:text-white dark:opacity-80 dark:bg-[#343434] dark:border-[#5C5C5C] [&::-webkit-calendar-picker-indicator]:invert"
               />
             </div>
             <div className="mb-3">
               <label
                 htmlFor="uyvuhvyuc"
-                className="block text-sm text-gray-600 dark:text-white"
+                className="block text-sm mb-[2px] text-gray-600 dark:text-white"
               >
                 End Time
               </label>
@@ -351,7 +351,7 @@ export default function AddMeeting({ onClose }: Props) {
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                className="w-full border rounded px-3 py-2 text-[10px] dark:text-white dark:opacity-80 dark:bg-[#343434] dark:border-[#5C5C5C] [&::-webkit-calendar-picker-indicator]:invert"
               />
             </div>
           </div>
@@ -361,7 +361,7 @@ export default function AddMeeting({ onClose }: Props) {
         <div className="mb-4 mt-2">
           <label
             htmlFor="uyvuhvyuc"
-            className="block text-sm text-gray-600 dark:text-white"
+            className="block text-sm mb-1 text-gray-600 dark:text-white"
           >
             Description
           </label>
@@ -369,7 +369,7 @@ export default function AddMeeting({ onClose }: Props) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            className="w-full border rounded px-3 py-6 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
             placeholder="Write meeting details..."
           />
         </div>

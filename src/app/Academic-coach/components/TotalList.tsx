@@ -1,200 +1,153 @@
 "use client";
 
-import axios from "axios";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import {
-  FaCheckCircle,
-  FaClock,
-  FaGraduationCap,
-  FaHandHolding,
-} from "react-icons/fa";
-import { GiSuitcase } from "react-icons/gi";
+import Image from "next/image";
+import axios from "axios";
 import { useSearchParams } from "next/navigation";
-import { TbClockHour9  } from "react-icons/tb";
-import { LuCircleCheck } from "react-icons/lu";
 
-
-
-// Define the type for the data items
-type DataItem = {
-  title: string;
-  value: number;
-  color: string;
-  icon: React.ReactNode;
-  iconBg: string;
-};
-
-type ApiResponse = {
+interface ApiResponse {
   trialAssigned: number;
   evaluationCompleted: number;
   evaluationPending: number;
   totalPending: number;
-};
+}
 
-// Initial card data (without values)
-const initialData: Omit<DataItem, "value">[] = [
-  {
-    title: "Trial Assigned",
-    color: "bg-[#fff]",
-    icon: (
-      <div className="bg-[#e3f4ff] dark:bg-[#3e4e50] rounded-full">
-        <Image
-          src="/assets/images/acgr.svg"
-          alt="Trial Assigned"
-          width={40}
-          height={40}
-          className="object-contain"
-        />
-      </div>
-    ),
-    iconBg: "bg-[#e3f4ff] dark:bg-[#3e4e50]",
-  },
-  {
-    title: "Evaluation Completed",
-    color: "bg-[#fff]",
-    icon: (
-      <div className="bg-[#e1ffde] dark:bg-[#3f503e] rounded-full relative">
-        <Image
-          src="/assets/images/accom.svg" 
-          alt="Evaluation Completed"
-          width={40}
-          height={40}
-          className="object-contain"
-        />
-      </div>
-    ),
-    iconBg: "bg-[#e1ffde] dark:bg-[#3f503e]",
-  },
-  {
-    title: "Evaluation Pending",
-    color: "bg-[#fff]",
-    icon: (
-      <div className="bg-[#ffdfde] dark:bg-[#503e3e] rounded-full">
-        <Image
-          src="/assets/images/acpend.svg"
-          alt="Evaluation Pending"
-          width={40}
-          height={40}
-          className="object-contain"
-        />
-      </div>
-    ),
-    iconBg: "bg-[#ffdfde] dark:bg-[#503e3e]",
-  },
-  {
-    title: "Total Pendings",
-    color: "bg-[#fff]",
-    icon: (
-      <div className="bg-[#fff1de] dark:bg-[#504d3e] rounded-full relative">
-        <Image
-          src="/assets/images/acepend.svg"
-          alt="Total Pending"
-          width={40}
-          height={40}
-          className="object-contain"
-        />
-      </div>
-    ),
-    iconBg: "bg-[#fff1de] dark:bg-[#504d3e]",
-  },
-];
-
-
-// Card component
-const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
-  <div
-    className={`p-4 py-4 shadow-lg items-start rounded-xl w-full ${color} relative dark:bg-[#343434] dark:text-[#fff]`}
-  >
-    <div className={`absolute top-8 right-6 ${iconBg} p-1 rounded-[100%]`}>
-      {React.isValidElement(icon) ? (
-        icon
-      ) : (
-        <Image
-          src={icon as string}
-          alt={`${title} icon`}
-          className="w-8 h-8 opacity-60"
-        />
-      )}
-    </div>
-    <div className="flex flex-col justify-between h-full">
-      <span className="text-[14px] font-medium text-black dark:text-white">
-        {title.split(" ").map((word, index) => (
-          <React.Fragment key={index}>
-            {word}
-            {index < title.split(" ").length - 1 && <br />}
-          </React.Fragment>
-        ))}
-      </span>
-      <span className="text-[28px] font-semibold text-black dark:text-white">
-        {value}
-      </span>
-    </div>
-  </div>
-);
-
-// Main Dashboard Component
-const Dashboard = () => {
-  const [data, setData] = useState<DataItem[]>(
-    initialData.map((item) => ({ ...item, value: 0 }))
-  );
-  const [error, setError] = useState<string | null>(null);
+const TotalList = () => {
   const searchParams = useSearchParams();
   const academicCoachId = searchParams.get("academicCoachId");
 
+  const [data, setData] = useState<ApiResponse>({
+    trialAssigned: 0,
+    evaluationCompleted: 0,
+    evaluationPending: 0,
+    totalPending: 0,
+  });
+
   useEffect(() => {
     const fetchData = async () => {
-      if (!academicCoachId) {
+         const token  = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+         const id  = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachPortalId") : null;
+
+      if (!id) {
         console.warn("⚠️ Missing academicCoachId in URL query params.");
         return;
       }
 
       try {
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/dashboard/widgets?academicCoachId=${academicCoachId}`
+          `https://api.blackstoneinfomaticstech.com/dashboard/widgets?academicCoachId=${id}`,{
+            headers:{
+              "Authorization" : `Bearer ${token}`
+            },
+           
+          }
         );
         const apiData: ApiResponse = response.data;
-        console.log('API Response:', apiData);
-
-        const mappedData: DataItem[] = initialData.map((item) => {
-          let value = 0;
-          switch (item.title) {
-            case "Trial Assigned":
-              value = apiData.trialAssigned ?? 0;
-              break;
-            case "Evaluation Completed":
-              value = apiData.evaluationCompleted ?? 0;
-              break;
-            case "Evaluation Pending":
-              value = apiData.evaluationPending ?? 0;
-              break;
-            case "Total Pendings":
-              value = apiData.totalPending ?? 0;
-              break;
-          }
-          return { ...item, value };
-        });
-
-        setData(mappedData);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError("❌ Failed to fetch dashboard data.");
-        console.error(err);
+        console.log("API Response:", apiData);
+        setData(apiData); // or response.data.data if nested
+      } catch (error) {
+        console.error("Failed to fetch widget data:", error);
       }
     };
 
     fetchData();
   }, [academicCoachId]);
 
-  if (error) return <div className="text-red-600">{error}</div>;
+  const cards = [
+    {
+      title: "Trial Assigned",
+      count: data.trialAssigned,
+      icon: (
+        <div className="bg-[#e3f4ff] dark:bg-[#3e4e50] rounded-full">
+          <Image
+            src="/assets/images/acgr.svg"
+            alt="Trial Assigned"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+        </div>
+      ),
+      bg: "bg-[#e3f4ff] dark:bg-[#3e4e50]",
+    },
+    {
+      title: "Evaluation Completed",
+      count: data.evaluationCompleted,
+      icon: (
+        <div className="bg-[#e1ffde] dark:bg-[#3f503e] rounded-full relative">
+          <Image
+            src="/assets/images/accom.svg"
+            alt="Evaluation Completed"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+        </div>
+      ),
+      bg: "bg-[#e1ffde] dark:bg-[#3f503e]",
+    },
+    {
+      title: "Evaluation Pending",
+      count: data.evaluationPending,
+      icon: (
+        <div className="bg-[#ffdfde] dark:bg-[#503e3e] rounded-full">
+          <Image
+            src="/assets/images/acpend.svg"
+            alt="Evaluation Pending"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+        </div>
+      ),
+      bg: "bg-[#ffdfde] dark:bg-[#503e3e]",
+    },
+    {
+      title: "Total Pending",
+      count: data.totalPending,
+      icon: (
+        <div className="bg-[#fff1de] dark:bg-[#504d3e] rounded-full relative">
+          <Image
+            src="/assets/images/acepend.svg"
+            alt="Total Pending"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+        </div>
+      ),
+      bg: "bg-[#fff1de] dark:bg-[#504d3e]",
+    },
+  ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {data.map((item) => (
-        <Card key={item.title} {...item} />
+      {cards.map((card, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between p-5 rounded-2xl shadow-sm bg-white dark:bg-[#343434] dark:text-[#fff]"
+        >
+          <div>
+            <p className="text-[14px] font-medium text-black dark:text-white">
+              {card.title.split(" ").map((word, index, array) => (
+                <React.Fragment key={index}>
+                  {word}
+                  {index < array.length - 1 && <br />}
+                </React.Fragment>
+              ))}
+            </p>
+            <p className="text-[28px] font-semibold text-black dark:text-white">{card.count}</p>
+          </div>
+          <div className={`${card.bg} p-3 rounded-full flex items-center justify-center`}>
+            {card.icon}
+          </div>
+        </div>
       ))}
     </div>
   );
 };
 
-export default Dashboard;
+export default TotalList;
+
+
+

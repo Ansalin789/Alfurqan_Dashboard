@@ -62,8 +62,77 @@ interface Attendance {
   joinTime:string;
   leaveTime:string;
 }
+ interface FormData {
+    _id: string;
+    student: {
+      city: string;
+      studentId: string;
+      studentFirstName: string;
+      studentLastName: string;
+      studentEmail: string;
+      StudentGender: string;
+      studentPhone: number;
+      studentCity: string;
+      studentCountry: string;
+      studentCountryCode: string;
+      learningInterest: string;
+      numberOfStudents: number;
+      preferredTeacher: string;
+      preferredFromTime: string;
+      preferredToTime: string;
+      timeZone: string;
+      referralSource: string;
+      preferredDate: string; // ISO date string
+      evaluationStatus: string;
+      status: string;
+      createdDate: string; // ISO date string
+      createdBy: string;
+    };
+    isLanguageLevel: boolean;
+    languageLevel: string;
+    isReadingLevel: boolean;
+    readingLevel: string;
+    isGrammarLevel: boolean;
+    grammarLevel: string;
+    hours: number;
+    subscription: {
+      subscriptionName: string;
+    };
+    planTotalPrice: number;
+    classStartDate: string; // ISO date string
+    classEndDate: string; // ISO date string
+    classStartTime: string;
+    classEndTime: string;
+    accomplishmentTime: string;
+    studentRate: number;
+    gardianName: string;
+    gardianEmail: string;
+    gardianPhone: string;
+    gardianCity: string;
+    gardianCountry: string;
+    gardianTimeZone: string;
+    gardianLanguage: string;
+    assignedTeacher: string;
+    assignedTeacherId: string;
+    assignedTeacherEmail: string;
+    studentStatus: string;
+    classStatus: string;
+    comments: string;
+    trialClassStatus: string;
+    invoiceStatus: string;
+    paymentLink: string;
+    paymentStatus: string;
+    status: string;
+    createdDate: string; // ISO date string
+    createdBy: string;
+    updatedDate: string; // ISO date string
+    updatedBy: string;
+    expectedFinishingDate: number;
+    __v: number;
+  }
 
 function LiveClass() {
+  const trailId = "";
     const [showFeedback, setShowFeedback] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const [ratings, setRatings] = useState([0, 0, 0]);
@@ -73,6 +142,17 @@ function LiveClass() {
   const[isFormData,setIsFormData]=useState(true);
   const [roomName, setRoomName] = useState('');
     const [attendance,setAttendance]=useState<Attendance[]>([]);
+    const [formData, setFormData] = useState<FormData>();
+      const [trialClassStatus, setTrialClassStatus] = useState("");
+      const [studentStatus, setStudentStatus] = useState("");
+      const [paymentStatus, setPaymentStatus] = useState("");
+      const [paymentLink, setPaymentLink] = useState("");
+      
+        const [options, setOptions] = useState({
+          trialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
+          studentStatus: ["JOINED", "NOT JOINED", "WAITING"],
+          paymentStatus: ["PAID", "FAILED", "PENDING"],
+        });
   
   const filterUpcomingClass = (response: { totalCount: number; classSchedule: any[] }): ClassData | null => {
     const classes = response.classSchedule;
@@ -158,7 +238,170 @@ function LiveClass() {
     return upcomingClass;
   };
   // Fetch class data
-  
+  useEffect(()=>{
+      const fetchClassData = async () =>{
+         try{
+           const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+             
+            const response = await fetch(
+        `https://api.blackstoneinfomaticstech.com/evaluationlist/${trailId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+             "Authorization": `Bearer ${token}`
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setOptions((prev) => ({
+        trialClassStatus: prev.trialClassStatus.includes(data.trialClassStatus)
+          ? prev.trialClassStatus
+          : [...prev.trialClassStatus, data.trialClassStatus],
+        studentStatus: prev.studentStatus.includes(data.studentStatus)
+          ? prev.studentStatus
+          : [...prev.studentStatus, data.studentStatus],
+        paymentStatus: prev.paymentStatus.includes(data.paymentStatus)
+          ? prev.paymentStatus
+          : [...prev.paymentStatus, data.paymentStatus],
+      }));
+      setTrialClassStatus(data.trialClassStatus);
+      setStudentStatus(data.studentStatus);
+      setPaymentStatus(data.paymentStatus);
+      setPaymentLink(
+        `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(data._id)}`
+      );
+      setFormData(data);
+      console.log(data);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+      }
+      fetchClassData();
+  },[]);
+
+ const updateClick = async (id: string | undefined) => {
+    const formDataNames = {
+      _id: formData?._id ?? "",
+      student: {
+        studentId: formData?.student.studentId,
+        studentFirstName: formData?.student.studentFirstName,
+        studentLastName: formData?.student.studentLastName,
+        studentEmail: formData?.student.studentEmail,
+        studentGender: formData?.student.StudentGender,
+        studentPhone: formData?.student.studentPhone,
+        studentCity: formData?.student.studentCity,
+        studentCountry: formData?.student.studentCountry,
+        studentCountryCode: formData?.student.studentCountryCode,
+        learningInterest: formData?.student.learningInterest,
+        numberOfStudents: formData?.student.numberOfStudents,
+        preferredTeacher: formData?.student.preferredTeacher,
+        preferredFromTime: formData?.student.preferredFromTime,
+        preferredToTime: formData?.student.preferredToTime,
+        timeZone: formData?.student.timeZone,
+        referralSource: formData?.student.referralSource,
+        preferredDate: formData?.student.preferredDate,
+        evaluationStatus: formData?.student.evaluationStatus,
+        status: formData?.student.status,
+        createdDate: formData?.student.createdDate,
+        createdBy: formData?.student.createdBy,
+      },
+      isLanguageLevel: formData?.isLanguageLevel,
+      languageLevel: formData?.languageLevel,
+      isReadingLevel: formData?.isReadingLevel,
+      readingLevel: formData?.readingLevel,
+      isGrammarLevel: formData?.isGrammarLevel,
+      grammarLevel: formData?.grammarLevel,
+      hours: formData?.hours,
+      subscription: {
+        subscriptionName: formData?.subscription.subscriptionName,
+      },
+      classStartDate: formData?.classStartDate,
+      classEndDate: formData?.classEndDate,
+      classStartTime: formData?.classStartTime,
+      classEndTime: formData?.classEndTime,
+      gardianName: formData?.gardianName,
+      gardianEmail: formData?.gardianEmail,
+      gardianPhone: formData?.gardianPhone,
+      gardianCity: formData?.gardianCity,
+      gardianCountry: formData?.gardianCountry,
+      gardianTimeZone: formData?.gardianTimeZone,
+      gardianLanguage: formData?.gardianLanguage,
+      assignedTeacher: formData?.assignedTeacher,
+      studentStatus: studentStatus,
+      classStatus: formData?.classStatus,
+      comments: formData?.comments,
+      trialClassStatus: trialClassStatus,
+      invoiceStatus: formData?.invoiceStatus,
+      paymentLink: paymentLink,
+      paymentStatus: paymentStatus,
+      status: formData?.status,
+      createdDate: formData?.createdDate,
+      createdBy: formData?.createdBy,
+      updatedDate: formData?.updatedDate,
+      updatedBy: formData?.updatedBy,
+      planTotalPrice: formData?.planTotalPrice,
+      accomplishmentTime: formData?.accomplishmentTime,
+      studentRate: formData?.studentRate,
+      expectedFinishingDate: formData?.expectedFinishingDate,
+    };
+
+    alert(JSON.stringify(formDataNames));
+    try {
+     const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+             "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(formDataNames),
+      });
+
+      console.log("response", response);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Open the modal after setting the form data
+      // setShowModal(true);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+  const handleChange =
+    (field: string) => (event: React.ChangeEvent<HTMLSelectElement>) => {
+      console.log(`Field: ${field}, Value: ${event.target.value}`);
+      switch (field) {
+        case "TrialClassStatus":
+          setTrialClassStatus(event.target.value);
+          break;
+        case "studentStatus":
+          setStudentStatus(event.target.value);
+          break;
+        case "paymentStatus":
+          setPaymentStatus(event.target.value);
+          break;
+        default:
+          break;
+      }
+    };
+
+
   useEffect(() => {
     const fetchClassData = async () => {
       try {
@@ -432,7 +675,7 @@ useEffect(() => {
                          <input
                            type="text"
                            name="firstName"
-                           value={classData?.student.studentFirstName}
+                           value={formData?.student.studentFirstName}
                            
                            className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
@@ -444,7 +687,7 @@ useEffect(() => {
                          <input
                            type="text"
                            name="lastName"
-                           value={classData?.student.studentLastName}
+                           value={formData?.student.studentLastName}
                            
                            className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
                            required
@@ -471,7 +714,7 @@ useEffect(() => {
                          <div className="relative">
                            <select
                              name="country"
-                             value={classData?.student.country}
+                             value={formData?.student.country}
                              className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
@@ -510,23 +753,46 @@ useEffect(() => {
                        </div>
                      </div>
          
-                     <div className="mt-6 w-1/2 ml-36">
-                       <label htmlFor='fifffrtname'  className="block text-[12px] mb-2">Class Status</label>
-                       <div className="relative">
-                         <select
-                           name="classStatus"
-                           value={classData?.student.classStatus}
-                         
-                           className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
-                           required
-                         >
-                           <option value="Joining">Joining</option>
-                           <option value="In Progress">In Progress</option>
-                           <option value="Completed">Completed</option>
-                         </select>
-                         <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
-                       </div>
-                     </div>
+                  <div>
+                <label
+                  htmlFor="studentStatus"
+                  className="block text-black text-xs font-medium"
+                >
+                  Student Status
+                </label>
+                <select
+                  id="studentStatus"
+                  value={studentStatus}
+                  onChange={handleChange("studentStatus")}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                >
+                  {options.studentStatus.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="trialClassStatus"
+                  className="block text-black text-xs font-medium"
+                >
+                  Trial Class Status
+                </label>
+                <select
+                  id="trialClassStatus"
+                  value={trialClassStatus}
+                  onChange={handleChange("TrialClassStatus")}
+                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
+                >
+                  {options.trialClassStatus.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
          
                      <div className="mt-6">
                        <label htmlFor='fiiugigrtname'  className="block text-[12px] mb-2">Additional Comments (Optional)</label>
@@ -546,6 +812,7 @@ useEffect(() => {
                        </button>
                        <button
                          type="submit"
+                         onClick={()=>updateClick(trailId)}
                          className="px-6 py-2 rounded-lg text-[12px] bg-[#587EB4] border-[#2A7CEB] border-2 transition-colors"
                        >
                          Save

@@ -112,14 +112,14 @@ const Teacherscard: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex justify-center items-center mt-1 dark:text-[#242424]">
-        <PieChart width={150} height={150}>
+      <div className="flex justify-center items-center mt-6 dark:text-[#242424]">
+        <PieChart width={200} height={200}>
           <Pie
             data={genderData}
             cx="50%"
             cy="50%"
-            innerRadius={28}
-            outerRadius={70}
+            innerRadius={40}
+            outerRadius={90}
             dataKey="value"
             labelLine={false}
             stroke="none"
@@ -136,7 +136,7 @@ const Teacherscard: React.FC = () => {
                   y={y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  className="text-[12px] font-medium fill-[#010E30]"
+                  className="text-[14px] font-medium fill-[#010E30]"
                 >
                   {`${data.totalCount}`}%
                 </text>
@@ -165,7 +165,7 @@ const Teacherscard: React.FC = () => {
         </PieChart>
       </div>
 
-      <div className="grid grid-cols-3 gap-1 w-full mt-6">
+      <div className="grid grid-cols-3 gap-1 w-full mt-10">
         {genderData.map((item) => (
           <div
             key={item.name}

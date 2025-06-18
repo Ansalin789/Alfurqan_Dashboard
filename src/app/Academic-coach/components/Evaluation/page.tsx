@@ -803,14 +803,21 @@ const TrailManagement = () => {
                                 const evalUser = evaluationUsers.find(
                                   (eu) => eu.studentId === item.studentId
                                 );
-                                const status =
-                                  evalUser?.studentStatus?.toUpperCase() ||
-                                  "NOT JOINED";
+                                
+                                // If evaluation status is PENDING, set student status to PENDING
+                                let status = "NOT JOINED";
+                                if (item.evaluationStatus === "PENDING") {
+                                  status = "PENDING";
+                                } else {
+                                  status = evalUser?.studentStatus?.toUpperCase() || "NOT JOINED";
+                                }
 
                                 const statusClass =
                                   status === "JOINED"
                                     ? "bg-[#ECFDF3] text-[#377E36] px-6 dark:bg-[#377E3633]"
                                     : status === "WAITING"
+                                    ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
+                                    : status === "PENDING"
                                     ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
                                     : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]";
 
