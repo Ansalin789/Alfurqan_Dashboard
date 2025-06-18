@@ -10,6 +10,7 @@ import { MoreVertical, Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import { Pagination } from "@nextui-org/react";
 import router from "next/router";
+import Modal from "react-modal";
 interface StudentDetails {
   studentDetails: {
     _id: string;
@@ -128,6 +129,7 @@ interface ClassSchedule {
     teacherName: string;
     teacherEmail: string;
   };
+  classType: string;
   startDate: string;
   endDate: string;
   startTime: string[];
@@ -210,9 +212,16 @@ const TeacherDetails = () => {
   const [activeTab, setActiveTab] = useState<"scheduled" | "completed">(
     "scheduled"
   );
+  const [showModal, setShowModal] = useState(false);
+
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLTableCellElement | null>(null);
+  const [teacherId, setTeacherId] = useState<string | null>(null);
+  const [filteredUsers, setFilteredUsers] = useState<ClassSchedule[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [users, setUsers] = useState<ClassSchedule[]>([]);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
   const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
@@ -226,7 +235,7 @@ const TeacherDetails = () => {
   const handleReschedule = (event: React.MouseEvent) => {
     event.stopPropagation();
     console.log("Navigating to reschedule page");
-    router.push("/Academic-coach/ui/teacherreschedule");
+    router.push("/Academic-coach/ui/manageteachers");
 
     setTimeout(() => {
       setActiveDropdown(null);
@@ -238,9 +247,19 @@ const TeacherDetails = () => {
     activeTab === "scheduled"
       ? Math.ceil(scheduledClasses.length / itemsPerPage)
       : Math.ceil(completedClasses.length / itemsPerPage);
-  const teacherId = search.get("teacherId");
+
   useEffect(() => {
+    const search = new URLSearchParams(window.location.search);
+    const id = search.get("teacherId");
+    setTeacherId(id);
+  }, []);
+
+  useEffect(() => {
+    console.log("🔍 useEffect triggered. Current teacherId:", teacherId);
+
     const fetchTeachers = async () => {
+      console.log("📢 fetchTeachers called with teacherId:", teacherId);
+
       try {
         const token =
           typeof window !== "undefined"
@@ -251,23 +270,29 @@ const TeacherDetails = () => {
           console.error("❌ AcademicCoachAuthToken not found");
           return;
         }
+
         const response = await fetch(
           `https://api.blackstoneinfomaticstech.com/applicants/${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "appliation/json",
+              "Content-Type": "application/json", // ✅ Corrected typo
             },
           }
         );
-        const data = await response.json();
 
-        console.log("Fetched data:", data);
+        if (!response.ok) {
+          console.error("❌ fetchTeachers response not OK:", response.status);
+        }
+
+        const data = await response.json();
+        console.log("✅ Fetched teacher data:", data);
         setTeachers(data);
       } catch (error) {
-        console.error("Error fetching teachers:", error);
+        console.error("❌ Error fetching teachers:", error);
       }
     };
+
     const fetchStats = async () => {
       try {
         const token =
@@ -300,25 +325,21 @@ const TeacherDetails = () => {
     };
     fetchStats();
     fetchTeachers();
-  }, []);
+  }, [teacherId]);
 
   useEffect(() => {
     const fetchClassSchedule = async () => {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachAuthToken")
-          : null;
-
+      const token = localStorage.getItem("AcademicCoachAuthToken");
       if (!token) {
         console.error("❌ AdminAuthToken not found");
         return;
       }
       if (!teacherId) {
-        console.warn("No studentId found in query params");
+        console.warn("No teacherId found in query params");
         return;
       }
 
-      console.log("Fetching class schedule for studentId:", teacherId);
+      console.log("Fetching class schedule for teacherId:", teacherId);
 
       try {
         const res = await fetch(
@@ -334,6 +355,7 @@ const TeacherDetails = () => {
           console.error("Server responded with status:", res.status);
           return;
         }
+
         const data = await res.json();
         const classSchedule = data.classSchedule || [];
 
@@ -354,8 +376,6 @@ const TeacherDetails = () => {
 
         setStudentInfoList(studentInfoArray);
 
-        console.log("Fetched data from API:", data);
-
         const allSchedules: ClassSchedule[] = data.classSchedule;
 
         setScheduledClasses(
@@ -369,17 +389,315 @@ const TeacherDetails = () => {
       }
     };
 
-    fetchClassSchedule();
+    if (teacherId) {
+      fetchClassSchedule();
+    }
   }, [teacherId]);
 
-  // Format working hours like "32h 40m"
-  const formatWorkingHours = (hours: number | string) => {
-    if (typeof hours === "number") {
-      const h = Math.floor(hours);
-      const m = Math.round((hours - h) * 60);
-      return `${h}h ${m}m`;
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+
+    // Choose the correct data source based on the active tab
+    const currentUsers =
+      activeTab === "scheduled" ? scheduledClasses : completedClasses;
+
+    if (!query.trim()) {
+      setFilteredUsers(currentUsers); // Show all if search is empty
+      setCurrentPage(1);
+      return;
     }
-    return hours;
+
+    const lowerQuery = query.toLowerCase();
+
+    const filtered = currentUsers.filter((user) => {
+      const fullName =
+        `${user.student.studentFirstName} ${user.student.studentLastName}`.toLowerCase();
+
+      return (
+        (user._id?.toLowerCase() || "").includes(lowerQuery) ||
+        (user.student.studentId?.toLowerCase() || "").includes(lowerQuery) ||
+        fullName.includes(lowerQuery) ||
+        (user.student.gender?.toLowerCase() || "").includes(lowerQuery) ||
+        (user.teacher.teacherName?.toLowerCase() || "").includes(lowerQuery) ||
+        (user.package?.toLowerCase() || "").includes(lowerQuery) ||
+        (user.scheduleStatus?.toLowerCase() || "").includes(lowerQuery) ||
+        (user.status?.toLowerCase() || "").includes(lowerQuery)
+      );
+    });
+
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const FilterModal = ({
+    isOpen,
+    onClose,
+    onApplyFilters,
+    users,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    onApplyFilters: (filters: {
+      studentName: string;
+      course: string;
+      Date: string;
+      Time: string;
+      classType: string;
+      status: string;
+    }) => void;
+    users: ClassSchedule[];
+  }) => {
+    const [filters, setFilters] = useState({
+      studentName: "",
+      course: "",
+      Date: "",
+      Time: "",
+      classType: "",
+      status: "",
+    });
+
+    const handleApply = () => {
+      onApplyFilters(filters);
+      onClose();
+    };
+
+    const handleReset = () => {
+      setFilters({
+        studentName: "",
+        course: "",
+        Date: "",
+        Time: "",
+        classType: "",
+        status: "",
+      });
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  p-8 rounded-lg  w-[500px]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+      >
+        <div className="fixed inset-0 bg-opacity-40 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-[320px] relative dark:bg-[#252525]">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
+                Filter by
+              </h2>
+              <button
+                onClick={onClose}
+                className="text-gray-400 text-xl absolute top-4 right-4"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Student Name */}
+              <div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Student Name
+                </label>
+                <input
+                  type="text"
+                  value={filters.studentName}
+                  onChange={(e) =>
+                    setFilters({ ...filters, studentName: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                />
+              </div>
+
+              {/* Course */}
+              {/* <div>
+            <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+              Course
+            </label>
+            <select
+              value={filters.course}
+              onChange={(e) =>
+                setFilters({ ...filters, course: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+            >
+              <option value="">Select Course</option>
+              {uniqueCourses.map((course) => (
+                <option key={course} value={course}>
+                  {course}
+                </option>
+              ))}
+            </select>
+          </div> */}
+
+              {/* Date */}
+              <div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={filters.Date}
+                  onChange={(e) =>
+                    setFilters({ ...filters, Date: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                />
+              </div>
+
+              {/* Time */}
+              <div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Time
+                </label>
+                <input
+                  type="time"
+                  value={filters.Time}
+                  onChange={(e) =>
+                    setFilters({ ...filters, Time: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                />
+              </div>
+
+              {/* Class Type */}
+              <div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Class Type
+                </label>
+                <select
+                  value={filters.classType}
+                  onChange={(e) =>
+                    setFilters({ ...filters, classType: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                >
+                  <option value="">Select Class Type</option>
+                  <option value="Online">Online</option>
+                  <option value="Offline">Offline</option>
+                </select>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Status
+                </label>
+                <select
+                  value={filters.status}
+                  onChange={(e) =>
+                    setFilters({ ...filters, status: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                >
+                  <option value="">Select Status</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="COMPLETED">Completed</option>
+                </select>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-between items-center pt-4 ">
+                <button
+                  onClick={handleReset}
+                  className="w-[45%] py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium hover:bg-blue-50"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={handleApply}
+                  className="w-[50%] py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
+                >
+                  Show{" "}
+                  {
+                    users.filter((user) => {
+                      return (
+                        (!filters.studentName ||
+                          `${user.student?.studentFirstName ?? ""} ${
+                            user.student?.studentLastName ?? ""
+                          }`
+                            .toLowerCase()
+                            .includes(filters.studentName.toLowerCase())) &&
+                        (!filters.course ||
+                          user.package?.toLowerCase() ===
+                            filters.course.toLowerCase()) &&
+                        (!filters.Date ||
+                          new Date(user.startDate).toLocaleDateString() ===
+                            new Date(filters.Date).toLocaleDateString()) &&
+                        (!filters.Time ||
+                          (user.startTime &&
+                            user.startTime.includes(filters.Time))) &&
+                        (!filters.classType ||
+                          user.classType?.toLowerCase() ===
+                            filters.classType.toLowerCase()) &&
+                        (!filters.status ||
+                          user.status?.toLowerCase() ===
+                            filters.status.toLowerCase())
+                      );
+                    }).length
+                  }{" "}
+                  results
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
+
+  // Add filter handling function
+  const handleApplyFilters = (filters: {
+    studentName: string;
+    course: string;
+    Date: string;
+    Time: string;
+    classType: string;
+    status: string;
+  }) => {
+    let filtered = [...users];
+
+    if (filters.studentName) {
+      // Filter by country (from student object)
+      filtered = filtered.filter(
+        (user) =>
+          user.student &&
+          `${user.student.studentFirstName} ${user.student.studentLastName}` ===
+            filters.studentName
+      );
+    }
+    // if (filters.course) {
+    //   filtered = filtered.filter((user) => user.course === filters.course);
+    // }
+    if (filters.Date) {
+      filtered = filtered.filter(
+        (user) =>
+          new Date(user.startDate).toLocaleDateString() ===
+          new Date(filters.Date).toLocaleDateString()
+      );
+    }
+    if (filters.status) {
+      filtered = filtered.filter((user) => user.status === filters.status);
+    }
+
+    if (filters.studentName) {
+      filtered = filtered.filter((user) =>
+        `${user.student?.studentFirstName ?? ""} ${
+          user.student?.studentLastName ?? ""
+        }`
+          .toLowerCase()
+          .includes(filters.studentName.toLowerCase())
+      );
+    }
+
+    if (filters.Time) {
+      filtered = filtered.filter((user) =>
+        user.startTime.includes(filters.Time)
+      );
+    }
+
+    setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
   };
   return (
     <BaseLayout1>
@@ -403,10 +721,10 @@ const TeacherDetails = () => {
                 className="rounded-full border-4 border-white mb-4"
               />
               <h2 className="text-lg font-semibold text-[#ffff]">
-                {teachers?.candidateFirstName ?? "Will Jonto"}
+                {teachers?.candidateFirstName}
               </h2>
               <p className="text-sm text-[#C9C9C9]">
-                {teachers?.candidateEmail ?? "willjonto@gmail.com"}
+                {teachers?.candidateEmail}
               </p>
             </div>
 
@@ -454,12 +772,12 @@ const TeacherDetails = () => {
               {[
                 {
                   title: "Performance",
-                  value: stats?.totalStudents?.toString() ?? "72%",
+                  value: stats?.totalStudents?.toString(),
                   sub: "60% increase than Last Month",
                 },
                 {
                   title: "Total Attendance",
-                  value: stats?.totalAttendance?.toString() ?? "97%",
+                  value: stats?.totalAttendance?.toString(),
                   sub: "90% Progressive than Last Month",
                 },
               ].map((item) => (
@@ -564,14 +882,14 @@ const TeacherDetails = () => {
                 type="text"
                 placeholder="Search by keyword"
                 className="bg-transparent outline-none text-[15px] w-52 py-3 "
-                // value={searchText}
-                // onChange={(e) => setSearchText(e.target.value)}
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
 
             <div
               className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-              //   onClick={() => setShowModal(true)}
+              onClick={() => setIsFilterModalOpen(true)}
             >
               {/* <BsFilterLeft /> */}
               <MdTune className="w-4 h-4" />
@@ -713,6 +1031,12 @@ const TeacherDetails = () => {
           page={currentPage}
           total={totalPages}
           onChange={setCurrentPage}
+        />
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApplyFilters={handleApplyFilters}
+          users={users}
         />
       </div>
     </BaseLayout1>
