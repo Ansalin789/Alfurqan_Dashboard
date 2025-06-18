@@ -70,7 +70,7 @@ interface Attendance {
       studentFirstName: string;
       studentLastName: string;
       studentEmail: string;
-      StudentGender: string;
+      studentGender: string;
       studentPhone: number;
       studentCity: string;
       studentCountry: string;
@@ -132,7 +132,7 @@ interface Attendance {
   }
 
 function LiveClass() {
-  const trailId = "";
+  const trailId = "68526aa20c2b24d70a1300cd";
     const [showFeedback, setShowFeedback] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const [ratings, setRatings] = useState([0, 0, 0]);
@@ -296,7 +296,7 @@ function LiveClass() {
         studentFirstName: formData?.student.studentFirstName,
         studentLastName: formData?.student.studentLastName,
         studentEmail: formData?.student.studentEmail,
-        studentGender: formData?.student.StudentGender,
+        studentGender: formData?.student.studentGender,
         studentPhone: formData?.student.studentPhone,
         studentCity: formData?.student.studentCity,
         studentCountry: formData?.student.studentCountry,
@@ -714,7 +714,6 @@ useEffect(() => {
                          <div className="relative">
                            <select
                              name="country"
-                             value={formData?.student.country}
                              className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
                              required
                            >
