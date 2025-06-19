@@ -241,8 +241,8 @@ export default function Dashboard() {
               <h3 className="text-[16px] font-semibold text-gray-700 dark:text-[#ffff]">
                 Upcoming Class
               </h3>
-              <button className="px-2 py-1 rounded flex items-center gap-1 text-[10px] dark:text-[#dddddd] dark:bg-[#565656] bg-[#efefef] text-[#576CBC]">
-                Today <span className="">▼</span>
+              <button className="px-2 py-1 rounded flex font-medium items-center gap-1 text-[10px] dark:text-[#576CBC] dark:bg-[#3D414A] bg-[#ebefff] text-[#576CBC]">
+                Today 
               </button>
             </div>
 

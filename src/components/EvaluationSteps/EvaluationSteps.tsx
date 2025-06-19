@@ -2134,7 +2134,7 @@ classEndDate.setDate(classEndDate.getDate() + 28);
       const result = await response.json();
       console.log("Status updated successfully:", result);
       alert("Status updated successfully!");
-      router.push("/Academic-coach/components/trailmanagement");
+      router.push("/Academic-coach/ui/trailmanagement");
     } catch (error) {
       console.error("Error submitting status:", error);
       alert("Error updating status. Please try again.");
