@@ -14,8 +14,8 @@ import AddGroupAssignClass from "@/app/Academic-coach/components/addGroupAssignC
 type Props = {
   readonly currentSection: string;
   readonly showBackButton?: boolean;
-  readonly showBackPath?:string;
-  readonly students?:string[];
+  readonly showBackPath?: string;
+  readonly students?: string[];
 };
 type NotificationType = {
   _id: string;
@@ -27,7 +27,12 @@ type NotificationType = {
   isRead: boolean;
 };
 
-export default function AcademicHeader({ currentSection, showBackButton = false, showBackPath = '', students=[] }: Props) {
+export default function AcademicHeader({
+  currentSection,
+  showBackButton = false,
+  showBackPath = "",
+  students = [],
+}: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
@@ -35,50 +40,87 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
   const [showLeaveForm, setShowLeaveForm] = useState(false);
   const [showAddMeeting, setAddMeetings] = useState(false);
   const [showAddApplicant, setAddApplicant] = useState(false);
-  const [showAssignGroupClass,setAssignGroupClass]=useState(false);
+  const [showAssignGroupClass, setAssignGroupClass] = useState(false);
   const router = useRouter();
   const notificationRef = useRef(null);
   const [activeTab, setActiveTab] = useState<"Seen" | "Unseen">("Unseen");
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
-  // Fetch old notifications
-   const userId =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachPortalId")
-          : null;
-  useEffect(() =>{
-  const fetchNotifications = async () => {
+  const [dashboardWrite, setDashboardWrite] = useState(false); // For Notifications
+  const [leaveWrite, setLeaveWrite] = useState(false); // For Leave Request
+  const [trailWrite, setTrailWrite] = useState(false); // For Add New Student
+  const [calendarWrite, setCalendarWrite] = useState(false); // For Add Meeting
+  const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
+
+
+  //roleAccessuseEffect
+
+
+useEffect(() => {
+  const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
+  if (roleAccessRaw) {
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachAuthToken")
-          : null;
-       const userId =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachPortalId")
-          : null;
-      const { data } = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const roleAccess = JSON.parse(roleAccessRaw);
+      const modules = roleAccess?.academicmodules || roleAccess;
 
-      const notifications = data?.data?.notifications ?? [];
-      setNotifications(notifications);
+      console.log("✅ Modules being used:", modules);
+      console.log("🔐 Dashboard write:", modules?.dashboard?.write);
+      console.log("🔐 Leave write:", modules?.leave);
 
-      const unreadCount = notifications.filter((n: any) => !n.isRead).length;
-      setNotificationCount(unreadCount);
+      setDashboardWrite(modules?.dashboard?.write ?? false);
+      setLeaveWrite(modules?.leave ?? modules?.dashboard?.write ?? false);
+      setTrailWrite(modules?.trailmanagement?.write ?? false);
+      setCalendarWrite(modules?.schedule?.write ?? false);
+      setStudentListWrite(modules?.managestudents?.write ?? false);
     } catch (error) {
-      console.error("❌ Failed to fetch notifications:", error);
+      console.error("❌ Invalid AcademicRolePermission JSON", error);
     }
-  };
-  fetchNotifications();
-  },[]);
+  }
+}, []);
+
+
+
+
+
+
+  // Fetch old notifications
+  const userId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("AcademicCoachPortalId")
+      : null;
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("AcademicCoachAuthToken")
+            : null;
+        const userId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("AcademicCoachPortalId")
+            : null;
+        const { data } = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const notifications = data?.data?.notifications ?? [];
+        setNotifications(notifications);
+
+        const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+        setNotificationCount(unreadCount);
+      } catch (error) {
+        console.error("❌ Failed to fetch notifications:", error);
+      }
+    };
+    fetchNotifications();
+  }, []);
   // Mark as Seen
   const handleNotificationClick = async (notificationId: string) => {
     try {
@@ -122,7 +164,7 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
 
   // Real-time notifications with Socket.IO
   useEffect(() => {
-    const socket = getSocket(userId ?? '');
+    const socket = getSocket(userId ?? "");
 
     const handleNotification = (newNotification: NotificationType) => {
       console.log("Received new notification:", newNotification);
@@ -139,71 +181,69 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
       socket.off("notification", handleNotification);
     };
   }, [userId]);
- const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case "STUDENT_NOTIFICATION":
-      return "🎓";
-    case "TEACHER_ADDED":
-      return "👩‍🏫"; 
-    case "SYSTEM_ALERT":
-      return "⚠️";
-    case "MEETING_REMINDER":
-      return "📅";
-    case "MESSAGE":
-      return "💬";
-    case "ASSIGNMENT_ALERT":
-      return "📝";
-    default:
-      return "🔔";
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "STUDENT_NOTIFICATION":
+        return "🎓";
+      case "TEACHER_ADDED":
+        return "👩‍🏫";
+      case "SYSTEM_ALERT":
+        return "⚠️";
+      case "MEETING_REMINDER":
+        return "📅";
+      case "MESSAGE":
+        return "💬";
+      case "ASSIGNMENT_ALERT":
+        return "📝";
+      default:
+        return "🔔";
+    }
+  };
+
+const renderButton = () => {
+if (currentSection.includes("Dashboard") && leaveWrite){
+      return (
+      <button
+        onClick={() => setShowLeaveForm(true)}
+        className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+      >
+        Request for Leave
+      </button>
+    );
   }
+  if (currentSection.includes("Trail Management") && trailWrite) {
+    return (
+      <button
+        onClick={() => setAddApplicant(true)}
+        className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+      >
+        Add New Student
+      </button>
+    );
+  }
+  if (currentSection.includes("Calendar") && calendarWrite) {
+    return (
+      <button
+        onClick={() => setAddMeetings(true)}
+        className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+      >
+        Add Meeting
+      </button>
+    );
+  }
+  if (currentSection.includes("Student List") && studentListWrite) {
+    return (
+      <button
+        onClick={() => setAssignGroupClass(true)}
+        className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+      >
+        Assign Group Class
+      </button>
+    );
+  }
+  return null;
 };
 
-
-  const renderButton = () => {
-    if (currentSection.startsWith("Dashboard")) {
-      return (
-        <button
-          onClick={() => setShowLeaveForm(true)}
-          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
-        >
-          Request for Leave
-        </button>
-      );
-    }
-    if (currentSection.startsWith("Trail Management")) {
-      return (
-        <button
-          onClick={() => setAddApplicant(true)}
-          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
-        >
-          Add New Student
-        </button>
-      );
-    }
-    if (
-      currentSection.startsWith("Calendar")
-    ) {
-      return (
-        <button
-          onClick={() => setAddMeetings(true)}
-          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
-        >
-          Add Meeting
-        </button>
-      );
-    }
-    if (currentSection.startsWith("Student List")) {
-      return (
-       <button
-          onClick={() => setAssignGroupClass(true)}
-          className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
-        >
-          Assign Group Class
-        </button>
-      );
-    }
-    return null;
-  };
 
   return (
     <div>
@@ -262,7 +302,12 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
       {showAddApplicant && (
         <StudentForm onClose={() => setAddApplicant(false)} />
       )}
-      {showAssignGroupClass && <AddGroupAssignClass onClose={()=> setAssignGroupClass(false)} students={[]} />}
+      {showAssignGroupClass && (
+        <AddGroupAssignClass
+          onClose={() => setAssignGroupClass(false)}
+          students={[]}
+        />
+      )}
       {showNotification && (
         <div
           ref={notificationRef}
@@ -320,6 +365,7 @@ export default function AcademicHeader({ currentSection, showBackButton = false,
                         handleNotificationClick(notification._id);
                       }
                     }}
+                     disabled={!dashboardWrite}
                     className={`w-full text-left p-2   flex items-start gap-3 transition-all duration-200 border-b border-[#D9D9D9]  ${
                       notification.notificationStatus === "Seen"
                         ? "bg-white/20 text-gray-900 hover:bg-white/50 dark:bg-[#252525]"
