@@ -5,28 +5,34 @@ import { AiOutlineClockCircle } from "react-icons/ai";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+interface AcademicCoach {
+  academicCoachId: string;
+  name: string;
+  email: string;
+}
+
 interface Student {
-  studentFirstName: string;
-  studentLastName: string;
+  studentId: string;
+  name: string;
+  email: string;
+  meetingLink: string;
 }
 
-interface Evaluation {
+interface UpcomingClass {
+  academicCoach: AcademicCoach;
   student: Student;
-  classStartDate: string;
-  classStartTime: string;
-  meetingLink?: string;
-}
-
-interface ClassData {
-  studentName: string;
-  classStartTime: string;
-  classStartDate: string;
-  meetingLink?: string;
+  _id: string;
+  classType: string;
+  scheduledStartDate: string;
+  scheduledEndDate: string;
+  scheduledFrom: string;
+  scheduledTo: string;
+  timeZone: string;
 }
 
 const NextEvaluationClass = () => {
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [classData, setClassData] = useState<ClassData | null>(null);
+  const [classData, setClassData] = useState<UpcomingClass | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
@@ -41,20 +47,13 @@ const NextEvaluationClass = () => {
             ? localStorage.getItem("AcademicCoachAuthToken")
             : null;
 
-        // // Hardcoded test data
-        // const mockData = {
-        //   studentName: "John Doe",
-        //   classStartTime: "14:30:00", // 2:30 PM
-        //   classStartDate: new Date().toISOString(), // Today's date
-        //   meetingLink: "https://meet.google.com/abc-defg-hij",
-        // };
-
         if (!token) {
           console.error("❌ AdminAuthToken not found");
           return;
         }
+
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/evaluationlist`,
+          `https://api.blackstoneinfomaticstech.com/dashboard/ac/upcomingclass`,
           {
             method: "GET",
             params: { academicCoachId: academicId },
@@ -65,35 +64,23 @@ const NextEvaluationClass = () => {
           }
         );
 
-        if (!response.data) {
-          throw new Error(`Failed to fetch data: ${response.statusText}`);
-        }
-
-        const data = await response.data;
-
-        if (!data.evaluation || !Array.isArray(data.evaluation)) {
+        if (!response.data || !Array.isArray(response.data)) {
           throw new Error("Invalid data format from API");
         }
 
-        const upcomingClass = data.evaluation
-          .filter((item: Evaluation) => {
-            const classStartDate = new Date(item.classStartDate);
+        const upcomingClass = response.data
+          .filter((item: UpcomingClass) => {
+            const classStartDate = new Date(item.scheduledStartDate);
             const now = new Date();
             return classStartDate > now;
           })
-          .sort((a: Evaluation, b: Evaluation) => {
+          .sort((a: UpcomingClass, b: UpcomingClass) => {
             return (
-              new Date(a.classStartDate).getTime() -
-              new Date(b.classStartDate).getTime()
+              new Date(a.scheduledStartDate).getTime() -
+              new Date(b.scheduledStartDate).getTime()
             );
           })
-          .slice(0, 1)
-          .map((item: Evaluation) => ({
-            studentName: `${item.student.studentFirstName} ${item.student.studentLastName}`,
-            classStartTime: item.classStartTime,
-            classStartDate: item.classStartDate,
-            meetingLink: item.meetingLink,
-          }))[0];
+          .slice(0, 1)[0];
 
         setClassData(upcomingClass ?? null);
       } catch (err) {
@@ -108,15 +95,13 @@ const NextEvaluationClass = () => {
     };
 
     fetchNextEvaluationClass();
-    // setClassData(mockData);
-    // setLoading(false);
   }, []);
 
   useEffect(() => {
-    if (classData?.classStartDate) {
+    if (classData?.scheduledStartDate) {
       const interval = setInterval(() => {
         const now = new Date();
-        const classStartDate = new Date(classData.classStartDate);
+        const classStartDate = new Date(classData.scheduledStartDate);
         const remainingTime = classStartDate.getTime() - now.getTime();
 
         if (remainingTime <= 0) {
@@ -136,9 +121,11 @@ const NextEvaluationClass = () => {
     }
   }, [classData]);
 
-  const handleStartClass = () => {
-    if (classData?.meetingLink) {
-      window.open(classData.meetingLink, "_blank");
+  const handleStartClass = (meetingLink: string | undefined) => {
+    if (meetingLink) {
+      window.open(meetingLink, "_blank");
+    } else {
+      console.error("No meeting link available");
     }
   };
 
@@ -171,16 +158,16 @@ const NextEvaluationClass = () => {
         <div className="flex items-center space-x-8 py-2">
           <div className="flex items-center space-x-2">
             <FaUserAlt className="w-[10px]" />
-            <p className="text-[13px]">{classData?.studentName}</p>
+            <p className="text-[13px]">{classData?.student.name}</p>
           </div>
           <div className="flex items-center space-x-2">
             <AiOutlineClockCircle className="w-[10px]" />
-            <p className="text-[13px]">{classData?.classStartTime}</p>
+            <p className="text-[13px]">{classData?.scheduledFrom}</p>
           </div>
         </div>
-        {classData?.classStartDate && (
+        {classData?.scheduledStartDate && (
           <p className="text-[13px] mt-2 text-gray-300 hidden">
-            Class Date: {formatDate(classData.classStartDate)}
+            Class Date: {formatDate(classData.scheduledStartDate)}
           </p>
         )}
       </div>
@@ -188,7 +175,7 @@ const NextEvaluationClass = () => {
         {isTimeUp ? (
           <>
             <button
-              onClick={handleStartClass}
+              onClick={() => handleStartClass(classData?.student.meetingLink)}
               className="relative text-white px-4 py-2 rounded-full text-sm font-medium"
               style={{
                 backgroundImage:

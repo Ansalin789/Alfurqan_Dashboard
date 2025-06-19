@@ -70,15 +70,15 @@ const UpcomingClasses: React.FC = () => {
           .filter((item: Evaluation) => {
             const classStartDate = new Date(item.classStartDate);
             const now = new Date();
-            return classStartDate > now;
+            // Check if the class is today
+            return classStartDate.toDateString() === now.toDateString();
           })
           .sort((a: Evaluation, b: Evaluation) => {
             return (
-              new Date(a.classStartDate).getTime() -
-              new Date(b.classStartDate).getTime()
+              new Date(a.classStartTime).getTime() -
+              new Date(b.classStartTime).getTime()
             );
           })
-          .slice(0, 2)
           .map((item: Evaluation, index: number) => ({
             id: item._id,
             date: new Date(item.classStartDate).toLocaleDateString("en-GB", {
@@ -118,7 +118,7 @@ const UpcomingClasses: React.FC = () => {
       </div> */}
       <div className="relative border-l-2 border-dotted border-[#000] dark:border-[#fff] ml-5 space-y-6">
         {classes.length === 0 ? (
-          <p className="text-center text-gray-600 text-sm">No upcoming classes.</p>
+          <p className="text-center text-gray-600 text-sm p-4 align-middle justify-center">No classes scheduled for today.</p>
         ) : (
           classes.map((classItem, index) => {
             const colors = [
@@ -146,7 +146,7 @@ const UpcomingClasses: React.FC = () => {
                 <div className="absolute -left-[46px] mt-6 flex flex-row items-center gap-2 justify-between">
                   <span className="text-xs font-medium text-gray-700 dark:text-[#fff]">{classItem.time.split(' ')[0]}</span>
                   <div
-                    className={`w-[10px] h-[10px] rounded-full ${currentColor} ml-[3px]`}
+                    className={`w-[10px] h-[10px] rounded-full ${currentColor} ml-[0px]`}
                   />
                 </div>
 

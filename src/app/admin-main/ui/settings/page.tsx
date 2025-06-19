@@ -146,7 +146,7 @@ useEffect(() => {
     let path = "";
      console.log(role[0])
     switch (role[0]) {
-      case "ACADEMIC COACH":
+      case "ACADEMICCOACH":
         path = `/admin-main/ui/settings/academic-coach?employeeId=${empId}`;
         break;
       case "STUDENT":
