@@ -282,17 +282,13 @@ const Popup: React.FC<PopupProps> = ({
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 Country
               </label>
-              <select
+              <input
                 name="country"
                 value={formData.country}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select Country</option>
-                <option value="USA">USA</option>
-                <option value="India">India</option>
-                {/* add more countries as needed */}
-              </select>
+              />
+               
             </div>
 
             {/* City */}
@@ -300,17 +296,13 @@ const Popup: React.FC<PopupProps> = ({
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 City
               </label>
-              <select
+              <input
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select City</option>
-                <option value="Texas">Texas</option>
-                <option value="Delhi">Delhi</option>
-                {/* add more cities as needed */}
-              </select>
+             />
+                
             </div>
 
             {/* Preferred Teacher */}
@@ -318,16 +310,13 @@ const Popup: React.FC<PopupProps> = ({
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 Preferred Teacher
               </label>
-              <select
+              <input
                 name="preferredTeacher"
                 value={formData.preferredTeacher}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
+              />
+              
             </div>
 
             {/* Course */}
@@ -335,16 +324,14 @@ const Popup: React.FC<PopupProps> = ({
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 Course
               </label>
-              <select
+              <input
+                type="text"
                 name="course"
                 value={formData.course}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select Course</option>
-                <option value="Arabic">Arabic</option>
-                <option value="Quran">Quran</option>
-              </select>
+              />
+               
             </div>
 
             {/* Number of Students */}
@@ -399,15 +386,13 @@ const Popup: React.FC<PopupProps> = ({
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 Evaluation Status
               </label>
-              <select
+              <input
                 name="status"
-                value={formData.status}
+                value={formData.evaluationStatus}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="Pending">Pending</option>
-                <option value="Completed">Completed</option>
-              </select>
+             />
+              
             </div>
           </div>
 

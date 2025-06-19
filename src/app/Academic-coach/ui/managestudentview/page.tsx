@@ -7,6 +7,7 @@ import { MoreVertical, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "@/components/Pagination";
 import AcademicHeader from "../../components/academicHeader";
+import Modal from "react-modal";
 
 interface StudentDetails {
   studentDetails: {
@@ -131,6 +132,7 @@ interface ClassSchedule {
     courseName: string;
   };
   startDate: string;
+  sessionClassType: string;
   endDate: string;
   startTime: string[];
   endTime: string[];
@@ -165,6 +167,8 @@ const Card = ({ title, value, description }: CardProps) => (
 const ManageStudentView = () => {
   const itemsPerPage = 5;
   const router = useRouter();
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  
   const [data, setData] = useState<StudentDetails | null>(null);
   const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
   const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
@@ -363,7 +367,287 @@ const ManageStudentView = () => {
       setActiveDropdown(null);
     }, 100);
   };
+  const FilterModal = ({
+    isOpen,
+    onClose,
+    onApplyFilters,
+    users,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    onApplyFilters: (filters: {
+      studentName: string;
+      course: string;
+      Date: string;
+      Time: string;
+      classType: string;
+      status: string;
+    }) => void;
+    users: ClassSchedule[];
+  }) => {
+    const [filters, setFilters] = useState({
+      studentName: "",
+      course: "",
+      Date: "",
+      Time: "",
+      classType: "",
+      status: "",
+    });
 
+    const handleApply = () => {
+      onApplyFilters(filters);
+      onClose();
+    };
+
+    const handleReset = () => {
+      setFilters({
+        studentName: "",
+        course: "",
+        Date: "",
+        Time: "",
+        classType: "",
+        status: "",
+      });
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={onClose}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  p-8 rounded-lg  w-[500px]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+      >
+        <div className="fixed inset-0 bg-opacity-40 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-[320px] relative dark:bg-[#252525]">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
+                Filter by
+              </h2>
+              <button
+                onClick={onClose}
+                className="text-gray-400 text-xl absolute top-4 right-4"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Student Name */}
+              <div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Student Name
+                </label>
+                <input
+                  type="text"
+                  value={filters.studentName}
+                  onChange={(e) =>
+                    setFilters({ ...filters, studentName: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                />
+              </div>
+
+              {/* Course */}
+              <div>
+            <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+              Course
+            </label>
+            <select
+              value={filters.course}
+              onChange={(e) =>
+                setFilters({ ...filters, course: e.target.value })
+              }
+              className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+            >
+              <option value="">Select Course</option>
+             <option value="QURAN">Quran</option>
+             <option value="ARABIC">Arabic</option>
+             <option value="ISLAMIC STUDIES">Islamic Studies</option>
+            </select>
+          </div>
+
+              {/* Date */}
+              <div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={filters.Date}
+                  onChange={(e) =>
+                    setFilters({ ...filters, Date: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                />
+              </div>
+
+              {/* Time */}
+              <div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Time
+                </label>
+                <input
+                  type="time"
+                  value={filters.Time}
+                  onChange={(e) =>
+                    setFilters({ ...filters, Time: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                />
+              </div>
+
+              {/* Class Type */}
+              <div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Class Type
+                </label>
+                <select
+                  value={filters.classType}
+                  onChange={(e) =>
+                    setFilters({ ...filters, classType: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                >
+                  <option value="">Select Class Type</option>
+                  <option value="REGULAR">Regular Class</option>
+                  <option value="GROUP">Group Class</option>
+                  <option value="TRAIL">Trail Class</option>
+                </select>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Status
+                </label>
+                <select
+                  value={filters.status}
+                  onChange={(e) =>
+                    setFilters({ ...filters, status: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                >
+                  <option value="">Select Status</option>
+                  <option value="SCHEDULED">Scheduled</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="RESCHEDULED">Rescheduled</option>
+                </select>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-between items-center pt-4 ">
+                <button
+                  onClick={handleReset}
+                  className="w-[45%] py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium hover:bg-blue-50"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={handleApply}
+                  className="w-[50%] py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
+                >
+                  Show{" "}
+                  {
+                    (activeTab === "scheduled"
+                      ? scheduledClasses
+                      : completedClasses
+                    ).filter((user) => {
+                      return (
+                        (!filters.studentName ||
+                          `${user.student?.studentFirstName ?? ""} ${
+                            user.student?.studentLastName ?? ""
+                          }`
+                            .toLowerCase()
+                            .includes(filters.studentName.toLowerCase())) &&
+                        (!filters.course ||
+                          user.course.courseName?.toLowerCase() ===
+                            filters.course.toLowerCase()) &&
+                        (!filters.Date ||
+                          new Date(user.startDate).toLocaleDateString() ===
+                            new Date(filters.Date).toLocaleDateString()) &&
+                        (!filters.Time ||
+                          (user.startTime &&
+                            user.startTime.includes(filters.Time))) &&
+                        (!filters.classType ||
+                          user.sessionClassType?.toLowerCase() ===
+                            filters.classType.toLowerCase()) &&
+                        (!filters.status ||
+                          user.scheduleStatus?.toLowerCase() ===
+                            filters.status.toLowerCase())
+                      );
+                    }).length
+                  }{" "}
+                  results
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    );
+  };
+
+  // Add filter handling function
+  const handleApplyFilters = (filters: {
+    studentName: string;
+    course: string;
+    Date: string;
+    Time: string;
+    classType: string;
+    status: string;
+  }) => {
+    const formatDate = (date: Date | string) =>
+      new Date(date).toISOString().split("T")[0]; // 'yyyy-mm-dd'
+
+    let filtered =
+      activeTab === "scheduled" ? [...scheduledClasses] : [...completedClasses];
+
+    if (filters.studentName) {
+      filtered = filtered.filter((user) =>
+        `${user.student?.studentFirstName ?? ""} ${
+          user.student?.studentLastName ?? ""
+        }`
+          .toLowerCase()
+          .includes(filters.studentName.toLowerCase())
+      );
+    }
+
+    if (filters.Date) {
+      filtered = filtered.filter(
+        (user) => formatDate(user.startDate) === filters.Date
+      );
+    }
+
+    if (filters.status) {
+      filtered = filtered.filter(
+        (user) =>
+          user.scheduleStatus?.toLowerCase() === filters.status.toLowerCase()
+      );
+    }
+
+    if (filters.Time) {
+      filtered = filtered.filter((user) =>
+        user.startTime.includes(filters.Time)
+      );
+    }
+
+    if (filters.course) {
+      filtered = filtered.filter(
+        (user) => user.course.courseName?.toLowerCase() === filters.course.toLowerCase()
+      );
+    }
+
+    if (filters.classType) {
+      filtered = filtered.filter(
+        (user) =>
+          user.sessionClassType?.toLowerCase() ===
+          filters.classType.toLowerCase()
+      );
+    }
+
+    setPaginatedData(filtered);
+    setCurrentPage(1); // Reset to first page
+  };
   return (
     <BaseLayout1>
       <div>
@@ -502,7 +786,7 @@ const ManageStudentView = () => {
 
             <div
               className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-              onClick={() => setShowModal(true)}
+              onClick={() => setIsFilterModalOpen(true)}
             >
               {/* <BsFilterLeft /> */}
               <MdTune className="w-4 h-4" />
@@ -651,93 +935,13 @@ const ManageStudentView = () => {
       </div>
 
       {/*filterform  */}
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
-          <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
-            {/* Close Icon */}
-            <button
-              className="absolute top-2 right-3 text-gray-400 text-xl"
-              onClick={() => setShowModal(false)}
-            >
-              &times;
-            </button>
-
-            <h2 className="text-lg font-semibold mb-4">Filter by</h2>
-
-            {/* Date Input */}
-            <div className="mb-4">
-              <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                Date Range
-              </label>
-
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="date"
-                  className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  // value={fromDate}
-                  // onChange={(e) => setFromDate(e.target.value)}
-                />
-                <input
-                  type="date"
-                  className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                  // value={toDate}
-                  // onChange={(e) => setToDate(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Position Applied */}
-            <div className="mb-4">
-              {/* Timing */}
-              <label
-                htmlFor="timimg"
-                className="block text-sm text-gray-700 mb-1 dark:text-white"
-              >
-                Time
-              </label>
-              <input
-                // value={timing}
-                // onChange={(e) => setTiming(e.target.value)}
-                type="time"
-                className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            {/* Status */}
-            <div className="mb-4">
-              <label
-                htmlFor="level"
-                className="block text-sm text-gray-700 mb-1 dark:text-white"
-              >
-                status
-              </label>
-              <input
-                // value={timing}
-                // onChange={(e) => setTiming(e.target.value)}
-                type="input"
-                className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
-                // onClick={handleFilter}
-              >
-                Submit
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+<FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApplyFilters={handleApplyFilters}
+          users={activeTab === "scheduled" ? scheduledClasses : completedClasses}
+        />
+     
     </BaseLayout1>
   );
 };

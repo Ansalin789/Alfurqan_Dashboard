@@ -494,7 +494,7 @@ const TeacherDetails = () => {
         fullName.includes(lowerQuery) ||
         (user.student.gender?.toLowerCase() || "").includes(lowerQuery) ||
         (user.teacher.teacherName?.toLowerCase() || "").includes(lowerQuery) ||
-        (user.package?.toLowerCase() || "").includes(lowerQuery) ||
+        (user.course.courseName?.toLowerCase() || "").includes(lowerQuery) ||
         (user.scheduleStatus?.toLowerCase() || "").includes(lowerQuery) ||
         (user.status?.toLowerCase() || "").includes(lowerQuery)
       );
@@ -585,7 +585,7 @@ const TeacherDetails = () => {
               </div>
 
               {/* Course */}
-              {/* <div>
+              <div>
             <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
               Course
             </label>
@@ -597,13 +597,11 @@ const TeacherDetails = () => {
               className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
             >
               <option value="">Select Course</option>
-              {uniqueCourses.map((course) => (
-                <option key={course} value={course}>
-                  {course}
-                </option>
-              ))}
+             <option value="QURAN">Quran</option>
+             <option value="ARABIC">Arabic</option>
+             <option value="ISLAMIC STUDIES">Islamic Studies</option>
             </select>
-          </div> */}
+          </div>
 
               {/* Date */}
               <div>
@@ -669,6 +667,7 @@ const TeacherDetails = () => {
                   <option value="">Select Status</option>
                   <option value="SCHEDULED">Scheduled</option>
                   <option value="COMPLETED">Completed</option>
+                  <option value="RESCHEDULED">Rescheduled</option>
                 </select>
               </div>
 
@@ -698,8 +697,7 @@ const TeacherDetails = () => {
                             .toLowerCase()
                             .includes(filters.studentName.toLowerCase())) &&
                         (!filters.course ||
-                          user.package?.toLowerCase() ===
-                            filters.course.toLowerCase()) &&
+                          user.course.courseName?.toLowerCase().includes(filters.course.toLowerCase())) &&
                         (!filters.Date ||
                           new Date(user.startDate).toLocaleDateString() ===
                             new Date(filters.Date).toLocaleDateString()) &&
@@ -771,7 +769,7 @@ const TeacherDetails = () => {
 
     if (filters.course) {
       filtered = filtered.filter(
-        (user) => user.package?.toLowerCase() === filters.course.toLowerCase()
+        (user) => user.course.courseName?.toLowerCase() === filters.course.toLowerCase()
       );
     }
 
