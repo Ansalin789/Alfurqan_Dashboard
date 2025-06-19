@@ -624,7 +624,7 @@ const SchedulePage = () => {
 
   return (
     <div>
-      <AcademicHeader currentSection="Reschedule Class" />
+      <AcademicHeader currentSection="Reschedule Class" showBackButton={true} showBackPath="managestudentview"/>
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col md:flex-row overflow-hidden h-[630px]">
           {/* Left: Calendar View */}

@@ -127,6 +127,9 @@ interface ClassSchedule {
     teacherName: string;
     teacherEmail: string;
   };
+  course: {
+    courseName: string;
+  };
   startDate: string;
   endDate: string;
   startTime: string[];
@@ -216,18 +219,6 @@ const ManageStudentView = () => {
     setPaginatedData(filtered.slice(0, itemsPerPage));
     setCurrentPage(1);
   };
-  //24 hours formaate
-  function convertTo24Hour(time: string): string {
-    const [t, modifier] = time.split(" ");
-    let [hours, minutes] = t.split(":").map(Number);
-
-    if (modifier === "PM" && hours < 12) hours += 12;
-    if (modifier === "AM" && hours === 12) hours = 0;
-
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}`;
-  }
 
   useEffect(() => {
     let filtered = dataToShow;
@@ -376,7 +367,11 @@ const ManageStudentView = () => {
   return (
     <BaseLayout1>
       <div>
-        <AcademicHeader currentSection="Student" showBackButton={true} showBackPath="managestudents"/>
+        <AcademicHeader
+          currentSection="Student"
+          showBackButton={true}
+          showBackPath="managestudents"
+        />
 
         {/* Top section */}
         <div className="flex flex-col lg:flex-row gap-6 mb-6">
@@ -566,7 +561,7 @@ const ManageStudentView = () => {
                     {item.student.studentLastName}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    {item.package}
+                    {item.course.courseName}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     {new Date(item.startDate).toLocaleDateString("en-US", {
@@ -576,12 +571,13 @@ const ManageStudentView = () => {
                     })}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    {convertTo24Hour(item.startTime?.[0])} -{" "}
-                    {convertTo24Hour(item.endTime?.[0])}{" "}
+                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                      {item.startTime?.[0]?.replace(/ AM| PM/, "") || "--:--"} -{" "}
+                      {item.endTime?.[0]?.replace(/ AM| PM/, "") || "--:--"}
+                    </td>
                   </td>
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    Group Class
-                  </td>
+
+                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left"></td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     <span
                       className={`font-semibold px-3 py-1 rounded-md text-[10px] ${
@@ -609,7 +605,7 @@ const ManageStudentView = () => {
                       }`}
                     >
                       <MoreVertical
-                        className={`w-4 h-4 ${
+                        className={`w-4 h-4 mr-12 ${
                           item.scheduleStatus === "Scheduled"
                             ? "text-slate-600 dark:text-[#FDFDFD]"
                             : "text-gray-500 dark:text-gray-200 opacity-50"
