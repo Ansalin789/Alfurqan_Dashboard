@@ -83,6 +83,23 @@ const Popup: React.FC<PopupProps> = ({
   });
 
   const [users, setUsers] = useState<User[]>([]);
+  const [trailWrite, setTrailWrite] = useState(false);
+
+  //RoleAccess
+
+useEffect(() => {
+  const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+  if (roleAccessRaw) {
+    try {
+      const roleAccess = JSON.parse(roleAccessRaw);
+      const modules = roleAccess?.academicmodules || roleAccess;
+
+      setTrailWrite(modules?.trailmanagement?.write === true); // ✅ already present
+    } catch (error) {
+      console.error("Invalid AdminRolePermission JSON", error);
+    }
+  }
+}, []);
   console.log(users);
 
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
@@ -288,7 +305,6 @@ const Popup: React.FC<PopupProps> = ({
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
-               
             </div>
 
             {/* City */}
@@ -301,8 +317,7 @@ const Popup: React.FC<PopupProps> = ({
                 value={formData.city}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-             />
-                
+              />
             </div>
 
             {/* Preferred Teacher */}
@@ -316,7 +331,6 @@ const Popup: React.FC<PopupProps> = ({
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
-              
             </div>
 
             {/* Course */}
@@ -331,7 +345,6 @@ const Popup: React.FC<PopupProps> = ({
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
-               
             </div>
 
             {/* Number of Students */}
@@ -356,11 +369,17 @@ const Popup: React.FC<PopupProps> = ({
               <input
                 type="text"
                 name="date"
-                value={formData.date ? new Date(formData.date).toLocaleDateString('en-US', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric'
-                }).replace(/\//g, '-') : ''}
+                value={
+                  formData.date
+                    ? new Date(formData.date)
+                        .toLocaleDateString("en-US", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                        .replace(/\//g, "-")
+                    : ""
+                }
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
@@ -391,8 +410,7 @@ const Popup: React.FC<PopupProps> = ({
                 value={formData.evaluationStatus}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-             />
-              
+              />
             </div>
           </div>
 
@@ -411,14 +429,16 @@ const Popup: React.FC<PopupProps> = ({
           </div>
 
           {/* Start Evaluation Button */}
-          <div className="flex justify-end">
-            <button
-              className="bg-[#576CBC] text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all duration-300 text-sm font-medium"
-              onClick={handleStart}
-            >
-              <span>Start Evaluation</span>
-            </button>
-          </div>
+          {trailWrite && (
+            <div className="flex justify-end">
+              <button
+                className="bg-[#576CBC] text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all duration-300 text-sm font-medium"
+                onClick={handleStart}
+              >
+                <span>Start Evaluation</span>
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </Modal>

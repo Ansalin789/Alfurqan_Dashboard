@@ -212,7 +212,7 @@ const TeacherDetails = () => {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const teacherId = searchParams.get("teacherId");
+  const teacherId = searchParams!.get("teacherId");
   const [studentInfoList, setStudentInfoList] = useState<StudentInfo[]>([]);
   const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
   const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
@@ -243,10 +243,10 @@ const TeacherDetails = () => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
 
-  const handleReschedule = (event: React.MouseEvent) => {
-    event.stopPropagation();
+  const handleReschedule = (_id: string) => {
+    
     console.log("Navigating to reschedule page");
-    router.push("/Academic-coach/ui/manageteachers");
+    router.push(`manageteachers?id=${_id}`);
 
     setTimeout(() => {
       setActiveDropdown(null);
@@ -1098,7 +1098,7 @@ const TeacherDetails = () => {
                           <div className="py-1">
                             <button
                               className="w-full text-left px-4 py-2 text-[12px] text-gray-700  dark:text-[#fff]"
-                              onClick={handleReschedule}
+                               onClick={() => handleReschedule(item._id)}
                             >
                               Reschedule
                             </button>
