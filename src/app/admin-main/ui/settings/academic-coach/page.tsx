@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import BaseLayout4 from '@/components/BaseLayout4';
-import axios from 'axios';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { FaRegSquare, FaRegCheckSquare } from 'react-icons/fa';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-type PermissionType = 'read' | 'write' | 'delete';
+import BaseLayout4 from "@/components/BaseLayout4";
+import axios from "axios";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { FaRegSquare, FaRegCheckSquare } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+type PermissionType = "read" | "write" | "delete";
 interface EmployeeAccessData {
   _id: string;
   employeeId: string;
@@ -102,143 +102,146 @@ type RoleAccess = {
 const AcademiccoachModuleAccess = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const employeeId = searchParams.get('employeeId');
+  const employeeId = searchParams.get("employeeId");
   const [permissions, setPermissions] = useState<Record<string, ModuleAccess>>({
     academicmodules: {},
   });
-  const [selectedModules, setSelectedModules] = useState<Record<string, boolean>>({});
+  const [selectedModules, setSelectedModules] = useState<
+    Record<string, boolean>
+  >({});
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const modules = [
-   'Dashboard',
-   'Trail Management',
-    'Manage Students',
-    'Manage Teachers',
-    'Schedule',
-    'Messages',
-    'Support',
+    "Dashboard",
+    "Trail Management",
+    "Manage Students",
+    "Manage Teachers",
+    "Schedule",
+    "Messages",
+    "Support",
   ];
 
   const getModuleKey = (moduleName: string) =>
-    moduleName.toLowerCase().replace(/ & /g, '').replace(/\s+/g, '');
-
-  
-
-   
-   useEffect(() => {
-    if (!employeeId) {
-      toast.error('Employee ID not found in the URL!');
-      setIsRedirecting(true);
-      return;
-      
-    }
-   const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
-
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-      if (token) {
-        fetchEmployeeData(token); // call your function with token
-      } else {
-        console.log("No auth token found.");
-      }
-    }, [employeeId]);
-    const fetchEmployeeData = async (token: string) => {
-      try {
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
-            },
-          }
-        );
-        const json = await res.json();
-        console.log('Fetched data:', json);
-  
-        const access = json?.data?.roleAccess;
-        const academicModules = access?.academicmodules ?? {};
-        
-        // Updated: permissions object
-        const selected: Record<string, boolean> = {};
-        const modulePermissions: ModuleAccess = {};
-  
-        modules.forEach((module) => {
-          const key = getModuleKey(module);
-          const perms = academicModules[key] ?? { read: false, write: false, delete: false };
-  
-          // Determine if module is selected (if any permission is true)
-          selected[key] = perms.read ?? perms.write ?? perms.delete;
-  
-          // Always store full permissions
-          modulePermissions[key] = perms;
-        });
-  
-        setSelectedModules(selected);
-        setPermissions((prev) => ({
-          ...prev,
-          academicmodules: modulePermissions,
-        }));
-      } catch (error) {
-        console.error('Failed to fetch employee data:', error);
-        toast.error('Error loading employee access data');
-      }
-    };
-  
- 
-  
+    moduleName.toLowerCase().replace(/ & /g, "").replace(/\s+/g, "");
 
   useEffect(() => {
-    if (isRedirecting) {
-      router.push('/admin-main/ui/settings');
+    if (!employeeId) {
+      toast.error("Employee ID not found in the URL!");
+      setIsRedirecting(true);
+      return;
     }
-  }, [isRedirecting, router]);
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
 
-  const toggleModule = (module: string, permission?: PermissionType) => {
-    if (!permission) {
-      // Toggle selection for the entire module
-      setSelectedModules((prev) => {
-        const newSelectedModules = { ...prev };
-        newSelectedModules[module] = !prev[module];
-        return newSelectedModules;
-      });
-
-      setPermissions((prev) => ({
-        ...prev,
-        academicmodules: {
-          ...prev.academicmodules,
-          [module]: {
-            read: !prev[module]?.read,
-            write: !prev[module]?.write,
-            delete: !prev[module]?.delete,
-          },
-        },
-      }));
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
+    if (token) {
+      fetchEmployeeData(token); // call your function with token
     } else {
-      // Toggle a specific permission
+      console.log("No auth token found.");
+    }
+  }, [employeeId]);
+  const fetchEmployeeData = async (token: string) => {
+    try {
+      const res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const json = await res.json();
+      console.log("Fetched data:", json);
+
+      const access = json?.data?.roleAccess;
+      const academicModules = access?.academicmodules ?? {};
+
+      // Updated: permissions object
+      const selected: Record<string, boolean> = {};
+      const modulePermissions: ModuleAccess = {};
+
+  modules.forEach((module) => {
+  const key = getModuleKey(module);
+  const perms = academicModules[key] ?? {
+    read: false,
+    write: false,
+    delete: false,
+  };
+
+  // ✅ Corrected: Mark as selected if any permission is true
+  selected[key] = perms.read || perms.write || perms.delete;
+
+  // ✅ Store permissions under normalized key
+  modulePermissions[key] = perms;
+});
+
+
+      setSelectedModules(selected);
       setPermissions((prev) => ({
         ...prev,
-        academicmodules: {
-          ...prev.academicmodules,
-          [module]: {
-            ...prev.academicmodules[module],
-            [permission]: !prev.academicmodules[module]?.[permission],
-          },
-        },
+        academicmodules: modulePermissions,
       }));
+    } catch (error) {
+      console.error("Failed to fetch employee data:", error);
+      toast.error("Error loading employee access data");
     }
   };
 
+  useEffect(() => {
+    if (isRedirecting) {
+      router.push("/admin-main/ui/settings");
+    }
+  }, [isRedirecting, router]);
+
+const toggleModule = (module: string, permission?: PermissionType) => {
+  const key = getModuleKey(module);
+
+  if (!permission) {
+    setSelectedModules((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+
+    setPermissions((prev) => ({
+      ...prev,
+      academicmodules: {
+        ...prev.academicmodules,
+        [key]: {
+          read: !prev.academicmodules[key]?.read,
+          write: !prev.academicmodules[key]?.write,
+          delete: !prev.academicmodules[key]?.delete,
+        },
+      },
+    }));
+  } else {
+    setPermissions((prev) => ({
+      ...prev,
+      academicmodules: {
+        ...prev.academicmodules,
+        [key]: {
+          ...prev.academicmodules[key],
+          [permission]: !prev.academicmodules[key]?.[permission],
+        },
+      },
+    }));
+  }
+};
+
+
   const handleUpdateAccess = async () => {
     const roleAccess = {
-      academic:true,
+      academicCoach:true,
       academicmodules: permissions.academicmodules,
     };
 
     try {
-      const token =
+     const token =
     typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
   if (!token) {
@@ -247,17 +250,18 @@ const AcademiccoachModuleAccess = () => {
   }
       const response = await axios.put(
         `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
-        { roleAccess },{
-          headers:{
-            'Content-Type':"application/json",
-            "Authorization": `Bearer ${token}`,
+        { roleAccess },
+         {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
           }
-        }
       );
       console.log('Access updated successfully:', response.data);
       toast.success('Access updated successfully!'); // ✅ Show success toast
       setTimeout(() => {
-        router.push('/admin-main/ui/settings'); // <-- change this to your desired route
+        router.push('/admin-main/ui/settings'); 
       }, 2000);
     } catch (error) {
       console.error('Failed to update access:', error);
@@ -265,12 +269,17 @@ const AcademiccoachModuleAccess = () => {
     }
   };
 
+
   return (
     <BaseLayout4>
-      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} />
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+      />
       <div className="w-full min-h-screen p-5 flex flex-col items-center">
         <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
-        Academic Module Access
+          Academic Module Access
         </h1>
 
         <div className="bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
@@ -288,23 +297,38 @@ const AcademiccoachModuleAccess = () => {
                 const moduleKey = module.toLowerCase();
 
                 return (
-                  <tr key={module} className="border-t hover:bg-gray-50 transition">
+                  <tr
+                    key={module}
+                    className="border-t hover:bg-gray-50 transition"
+                  >
                     <td className="p-4 flex items-center space-x-3">
-                      <button type="button" onClick={() => toggleModule(moduleKey)}>
-                        {selectedModules[moduleKey] ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleModule(module)}
+                      >
+                        {selectedModules[getModuleKey(module)] ? (
                           <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
                         ) : (
                           <FaRegSquare className="text-gray-400 text-sm" />
                         )}
                       </button>
-                      <span className="text-[12px] text-[#344054]">{module}</span>
+
+                      <span className="text-[12px] text-[#344054]">
+                        {module}
+                      </span>
                     </td>
-                    {['read', 'write', 'delete'].map((perm) => (
+                    {["read", "write", "delete"].map((perm) => (
                       <td key={perm} className="p-2 text-center">
                         <input
                           type="checkbox"
-                          checked={permissions.academicmodules[moduleKey]?.[perm as PermissionType] || false}
-                          onChange={() => toggleModule(moduleKey, perm as PermissionType)}
+                          checked={
+                            permissions.academicmodules[getModuleKey(module)]?.[
+                              perm as PermissionType
+                            ] || false
+                          }
+                          onChange={() =>
+                            toggleModule(module, perm as PermissionType)
+                          }
                           className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
                         />
                       </td>
