@@ -497,7 +497,7 @@ const SchedulePage = () => {
 
   return (
     <BaseLayout1>
-      <AcademicHeader currentSection="Teachers" showBackButton={true}/>
+      <AcademicHeader currentSection="Teachers" showBackButton={true} showBackPath="teacherDetails"/>
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
           <div className="w-full lg:w-2/3 p-4 md:p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
