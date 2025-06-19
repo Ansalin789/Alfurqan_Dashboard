@@ -3,12 +3,12 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { VscGraphLeft } from "react-icons/vsc";
+import Pagination from "@/components/Pagination";
 
 import BaseLayout1 from "@/components/BaseLayout1";
 import { MoreVertical, Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
-import { Pagination } from "@nextui-org/react";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 import Modal from "react-modal";
 import AcademicHeader from "../../components/academicHeader";
 interface StudentDetails {
@@ -129,9 +129,14 @@ interface ClassSchedule {
     teacherName: string;
     teacherEmail: string;
   };
+  course: {
+    courseId: string;
+    courseName: string;
+  };
   classType: string;
   startDate: string;
   endDate: string;
+  sessionClassType: string;
   startTime: string[];
   endTime: string[];
   scheduleStatus: string;
@@ -202,10 +207,15 @@ const TeacherDetails = () => {
   }
   interface StudentInfo {
     fullName: string;
-    learningInterest: string;
+    courseName: string;
   }
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const teacherId = searchParams.get("teacherId");
   const [studentInfoList, setStudentInfoList] = useState<StudentInfo[]>([]);
+  const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
+  const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
 
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [teachers, setTeachers] = useState<ICandidateApplication>();
@@ -217,14 +227,15 @@ const TeacherDetails = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLTableCellElement | null>(null);
-  const [teacherId, setTeacherId] = useState<string | null>(null);
   const [filteredUsers, setFilteredUsers] = useState<ClassSchedule[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState<ClassSchedule[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
-  const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
+  const [classScheduleData, setClassScheduleData] = useState<ClassSchedule[]>(
+    []
+  );
+
   const [paginatedData, setPaginatedData] = useState<ClassSchedule[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const search = useSearchParams();
@@ -247,12 +258,6 @@ const TeacherDetails = () => {
     activeTab === "scheduled"
       ? Math.ceil(scheduledClasses.length / itemsPerPage)
       : Math.ceil(completedClasses.length / itemsPerPage);
-
-  useEffect(() => {
-    const search = new URLSearchParams(window.location.search);
-    const id = search.get("teacherId");
-    setTeacherId(id);
-  }, []);
 
   useEffect(() => {
     console.log("🔍 useEffect triggered. Current teacherId:", teacherId);
@@ -327,72 +332,142 @@ const TeacherDetails = () => {
     fetchTeachers();
   }, [teacherId]);
 
-  useEffect(() => {
-    const fetchClassSchedule = async () => {
-      const token = localStorage.getItem("AcademicCoachAuthToken");
-      if (!token) {
-        console.error("❌ AdminAuthToken not found");
-        return;
-      }
-      if (!teacherId) {
-        console.warn("No teacherId found in query params");
-        return;
-      }
+  const fetchClassSchedule = async (): Promise<ClassSchedule[]> => {
+    const token = localStorage.getItem("AcademicCoachAuthToken");
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return [];
+    }
 
-      console.log("Fetching class schedule for teacherId:", teacherId);
+    const idFromStorage = localStorage.getItem("TeacherPortalId");
+    const finalTeacherId = teacherId || idFromStorage;
 
-      try {
-        const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    if (!finalTeacherId) {
+      console.warn("No teacherId found in query params or localStorage");
+      return [];
+    }
 
-        if (!res.ok) {
-          console.error("Server responded with status:", res.status);
-          return;
+    try {
+      const res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${finalTeacherId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
 
-        const data = await res.json();
-        const classSchedule = data.classSchedule || [];
-
-        const studentSet = new Set<string>();
-        const studentInfoArray: StudentInfo[] = [];
-
-        classSchedule.forEach((item: any) => {
-          if (item.student) {
-            const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`;
-            const learningInterest = item.student.learningInterest || "";
-
-            if (!studentSet.has(fullName)) {
-              studentSet.add(fullName);
-              studentInfoArray.push({ fullName, learningInterest });
-            }
-          }
-        });
-
-        setStudentInfoList(studentInfoArray);
-
-        const allSchedules: ClassSchedule[] = data.classSchedule;
-
-        setScheduledClasses(
-          allSchedules.filter((c) => c.scheduleStatus === "Scheduled")
-        );
-        setCompletedClasses(
-          allSchedules.filter((c) => c.scheduleStatus === "Completed")
-        );
-      } catch (err) {
-        console.error("Failed to fetch class schedule", err);
+      if (!res.ok) {
+        console.error("Server responded with status:", res.status);
+        return [];
       }
+
+      const data = await res.json();
+      return data.classSchedule || [];
+    } catch (err) {
+      console.error("Failed to fetch class schedule", err);
+      return [];
+    }
+  };
+
+  // 👇 Separate function to get unique students
+  const getUniqueStudentsFromSchedule = (
+    schedule: ClassSchedule[]
+  ): StudentInfo[] => {
+    const studentSet = new Set<string>();
+    const studentInfoArray: StudentInfo[] = [];
+
+    schedule.forEach((item: ClassSchedule) => {
+      if (item.student) {
+        const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`;
+        const courseName = item.course?.courseName || "";
+
+        if (!studentSet.has(fullName)) {
+          studentSet.add(fullName);
+          studentInfoArray.push({ fullName, courseName });
+        }
+      }
+    });
+
+    return studentInfoArray;
+  };
+
+  // 👇 Fetch class schedule and set Scheduled/Completed classes
+  useEffect(() => {
+    const fetchData = async () => {
+      const schedule = await fetchClassSchedule();
+      setClassScheduleData(schedule);
+
+      setScheduledClasses(
+        schedule.filter((c) => c.scheduleStatus === "Scheduled")
+      );
+      setCompletedClasses(
+        schedule.filter((c) => c.scheduleStatus === "Completed")
+      );
     };
 
     if (teacherId) {
-      fetchClassSchedule();
+      fetchData();
     }
   }, [teacherId]);
+  useEffect(() => {
+    console.log("Scheduled:", scheduledClasses);
+    console.log("Completed:", completedClasses);
+    console.log("Active Tab:", activeTab);
+    console.log("Current Page:", currentPage);
+
+    const dataToPaginate =
+      activeTab === "scheduled" ? scheduledClasses : completedClasses;
+
+    const totalItems = dataToPaginate.length; // total count
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    setPaginatedData(dataToPaginate.slice(startIndex, endIndex));
+  }, [
+    scheduledClasses,
+    completedClasses,
+    currentPage,
+    activeTab,
+    itemsPerPage,
+  ]);
+
+  // 👇 Fetch unique students separately
+  useEffect(() => {
+    if (classScheduleData.length > 0) {
+      const uniqueStudents = getUniqueStudentsFromSchedule(classScheduleData);
+      setStudentInfoList(uniqueStudents);
+    }
+  }, [classScheduleData]);
+
+  useEffect(() => {
+    const dataToPaginate =
+      filteredUsers.length > 0
+        ? filteredUsers
+        : activeTab === "scheduled"
+        ? scheduledClasses
+        : completedClasses;
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    setPaginatedData(dataToPaginate.slice(startIndex, endIndex));
+  }, [
+    scheduledClasses,
+    completedClasses,
+    filteredUsers,
+    currentPage,
+    activeTab,
+    itemsPerPage,
+  ]);
+
+  // Reset filters/search when switching tabs
+  useEffect(() => {
+    setFilteredUsers([]);
+    setSearchQuery("");
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -573,8 +648,9 @@ const TeacherDetails = () => {
                   className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 >
                   <option value="">Select Class Type</option>
-                  <option value="Online">Online</option>
-                  <option value="Offline">Offline</option>
+                  <option value="Online">Regular</option>
+                  <option value="Offline">Group</option>
+                  <option value="Offline">Trail</option>
                 </select>
               </div>
 
@@ -591,7 +667,7 @@ const TeacherDetails = () => {
                   className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
                 >
                   <option value="">Select Status</option>
-                  <option value="PENDING">Pending</option>
+                  <option value="SCHEDULED">Scheduled</option>
                   <option value="COMPLETED">Completed</option>
                 </select>
               </div>
@@ -610,7 +686,10 @@ const TeacherDetails = () => {
                 >
                   Show{" "}
                   {
-                    users.filter((user) => {
+                    (activeTab === "scheduled"
+                      ? scheduledClasses
+                      : completedClasses
+                    ).filter((user) => {
                       return (
                         (!filters.studentName ||
                           `${user.student?.studentFirstName ?? ""} ${
@@ -628,10 +707,10 @@ const TeacherDetails = () => {
                           (user.startTime &&
                             user.startTime.includes(filters.Time))) &&
                         (!filters.classType ||
-                          user.classType?.toLowerCase() ===
+                          user.sessionClassType?.toLowerCase() ===
                             filters.classType.toLowerCase()) &&
                         (!filters.status ||
-                          user.status?.toLowerCase() ===
+                          user.scheduleStatus?.toLowerCase() ===
                             filters.status.toLowerCase())
                       );
                     }).length
@@ -655,30 +734,11 @@ const TeacherDetails = () => {
     classType: string;
     status: string;
   }) => {
-    let filtered = [...users];
+    const formatDate = (date: Date | string) =>
+      new Date(date).toISOString().split("T")[0]; // 'yyyy-mm-dd'
 
-    if (filters.studentName) {
-      // Filter by country (from student object)
-      filtered = filtered.filter(
-        (user) =>
-          user.student &&
-          `${user.student.studentFirstName} ${user.student.studentLastName}` ===
-            filters.studentName
-      );
-    }
-    // if (filters.course) {
-    //   filtered = filtered.filter((user) => user.course === filters.course);
-    // }
-    if (filters.Date) {
-      filtered = filtered.filter(
-        (user) =>
-          new Date(user.startDate).toLocaleDateString() ===
-          new Date(filters.Date).toLocaleDateString()
-      );
-    }
-    if (filters.status) {
-      filtered = filtered.filter((user) => user.status === filters.status);
-    }
+    let filtered =
+      activeTab === "scheduled" ? [...scheduledClasses] : [...completedClasses];
 
     if (filters.studentName) {
       filtered = filtered.filter((user) =>
@@ -690,15 +750,49 @@ const TeacherDetails = () => {
       );
     }
 
+    if (filters.Date) {
+      filtered = filtered.filter(
+        (user) => formatDate(user.startDate) === filters.Date
+      );
+    }
+
+    if (filters.status) {
+      filtered = filtered.filter(
+        (user) =>
+          user.scheduleStatus?.toLowerCase() === filters.status.toLowerCase()
+      );
+    }
+
     if (filters.Time) {
       filtered = filtered.filter((user) =>
         user.startTime.includes(filters.Time)
       );
     }
 
+    if (filters.course) {
+      filtered = filtered.filter(
+        (user) => user.package?.toLowerCase() === filters.course.toLowerCase()
+      );
+    }
+
+    if (filters.classType) {
+      filtered = filtered.filter(
+        (user) =>
+          user.sessionClassType?.toLowerCase() ===
+          filters.classType.toLowerCase()
+      );
+    }
+
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1); // Reset to first page
   };
+
+  // Calculate totalItems for use in JSX
+  const totalItems =
+    activeTab === "scheduled"
+      ? scheduledClasses.length
+      : completedClasses.length;
+
   return (
     <BaseLayout1>
       <AcademicHeader
@@ -772,7 +866,7 @@ const TeacherDetails = () => {
               {[
                 {
                   title: "Performance",
-                  value: stats?.totalStudents?.toString(),
+                  value: stats?.overallPerformance?.toString(),
                   sub: "60% increase than Last Month",
                 },
                 {
@@ -799,8 +893,8 @@ const TeacherDetails = () => {
 
             {/* Right Side - Students List */}
             {/* Right Side - Students List */}
-            <div className="bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 w-[50%] h-[247px] flex flex-col justify-between scrollbar-none">
-              <div className="flex justify-between items-center mb-4">
+            <div className="bg-white dark:bg-[#2f2f2f] rounded-2xl p-4 w-[50%] h-[247px] flex flex-col gap-y-4 scrollbar-none">
+              <div className="flex justify-between items-center">
                 <h2 className="text-[14px] font-semibold text-[#111827] dark:text-white">
                   Students List
                 </h2>
@@ -829,7 +923,7 @@ const TeacherDetails = () => {
                       </span>
                     </div>
                     <span className="text-sm text-[#4C66EE] font-medium whitespace-nowrap">
-                      {student.learningInterest || ""}
+                      {student.courseName || ""}
                     </span>
                   </li>
                 ))}
@@ -898,8 +992,7 @@ const TeacherDetails = () => {
 
             <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
               <span className="text-left -ml-60 ">
-                {/* Showing {currentApplicants.length} Of{" "}
-                                {dataToShow.length} */}
+                Showing {paginatedData.length} Of {totalItems}
               </span>
             </div>
           </div>
@@ -949,7 +1042,7 @@ const TeacherDetails = () => {
                     {item.student.studentLastName}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    {item.package}
+                    {item.course?.courseName || "N/A"}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     {new Date(item.startDate).toLocaleDateString("en-US", {
@@ -962,7 +1055,7 @@ const TeacherDetails = () => {
                     {item.startTime[0]} - {item.endTime[0]}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    Group Class
+                    {item.sessionClassType}
                   </td>
                   <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     <span
@@ -1028,9 +1121,9 @@ const TeacherDetails = () => {
         </div>
 
         <Pagination
-          page={currentPage}
-          total={totalPages}
-          onChange={setCurrentPage}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
         />
         <FilterModal
           isOpen={isFilterModalOpen}
