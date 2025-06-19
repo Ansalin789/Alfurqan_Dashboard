@@ -88,7 +88,7 @@ const Popup: React.FC<PopupProps> = ({
   //RoleAccess
 
 useEffect(() => {
-  const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+  const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
   if (roleAccessRaw) {
     try {
       const roleAccess = JSON.parse(roleAccessRaw);
@@ -96,10 +96,13 @@ useEffect(() => {
 
       setTrailWrite(modules?.trailmanagement?.write === true); // ✅ already present
     } catch (error) {
-      console.error("Invalid AdminRolePermission JSON", error);
+      console.error("Invalid AcademicRolePermission JSON", error);
     }
   }
 }, []);
+
+
+
   console.log(users);
 
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
