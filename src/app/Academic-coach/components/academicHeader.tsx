@@ -51,6 +51,8 @@ export default function AcademicHeader({
   const [trailWrite, setTrailWrite] = useState(false); // For Add New Student
   const [calendarWrite, setCalendarWrite] = useState(false); // For Add Meeting
   const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
+  const [teacherRescheduleWrite, setTeacherRescheduleWrite] = useState(false); // For Assign Group Class
+
 
 
   //roleAccessuseEffect
@@ -72,6 +74,7 @@ useEffect(() => {
       setTrailWrite(modules?.trailmanagement?.write ?? false);
       setCalendarWrite(modules?.schedule?.write ?? false);
       setStudentListWrite(modules?.managestudents?.write ?? false);
+      setTeacherRescheduleWrite(modules?.manageteachers?.write ?? false);
     } catch (error) {
       console.error("❌ Invalid AcademicRolePermission JSON", error);
     }

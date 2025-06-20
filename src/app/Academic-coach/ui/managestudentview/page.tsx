@@ -167,8 +167,8 @@ const Card = ({ title, value, description }: CardProps) => (
 const ManageStudentView = () => {
   const itemsPerPage = 5;
   const router = useRouter();
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
   const [data, setData] = useState<StudentDetails | null>(null);
   const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
   const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
@@ -181,7 +181,22 @@ const ManageStudentView = () => {
   const dropdownRef = useRef<HTMLTableCellElement | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
+
+  //Rolebyaccess
+  useEffect(() => {
+    const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
+    if (roleAccessRaw) {
+      try {
+        const roleAccess = JSON.parse(roleAccessRaw);
+        const modules = roleAccess?.academicmodules || roleAccess;
+
+        setStudentListWrite(modules?.managestudents?.write === true); // ✅ already present
+      } catch (error) {
+        console.error("Invalid AcademicRolePermission JSON", error);
+      }
+    }
+  }, []);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -449,22 +464,22 @@ const ManageStudentView = () => {
 
               {/* Course */}
               <div>
-            <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
-              Course
-            </label>
-            <select
-              value={filters.course}
-              onChange={(e) =>
-                setFilters({ ...filters, course: e.target.value })
-              }
-              className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-            >
-              <option value="">Select Course</option>
-             <option value="QURAN">Quran</option>
-             <option value="ARABIC">Arabic</option>
-             <option value="ISLAMIC STUDIES">Islamic Studies</option>
-            </select>
-          </div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Course
+                </label>
+                <select
+                  value={filters.course}
+                  onChange={(e) =>
+                    setFilters({ ...filters, course: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                >
+                  <option value="">Select Course</option>
+                  <option value="QURAN">Quran</option>
+                  <option value="ARABIC">Arabic</option>
+                  <option value="ISLAMIC STUDIES">Islamic Studies</option>
+                </select>
+              </div>
 
               {/* Date */}
               <div>
@@ -633,7 +648,8 @@ const ManageStudentView = () => {
 
     if (filters.course) {
       filtered = filtered.filter(
-        (user) => user.course.courseName?.toLowerCase() === filters.course.toLowerCase()
+        (user) =>
+          user.course.courseName?.toLowerCase() === filters.course.toLowerCase()
       );
     }
 
@@ -906,8 +922,17 @@ const ManageStudentView = () => {
                         >
                           <div className="py-1">
                             <button
-                              className="w-full text-left px-4 py-2 text-[12px] text-gray-700  dark:text-[#fff]"
-                              onClick={() => handleReschedule(item._id)}
+                              className={`w-full text-left px-4 py-2 text-[12px] ${
+                                studentListWrite
+                                  ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                                  : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
+                              }`}
+                              onClick={
+                                studentListWrite
+                                  ? () => handleReschedule(item._id)
+                                  : undefined
+                              }
+                              disabled={!studentListWrite}
                             >
                               Reschedule
                             </button>
@@ -935,13 +960,12 @@ const ManageStudentView = () => {
       </div>
 
       {/*filterform  */}
-<FilterModal
-          isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          onApplyFilters={handleApplyFilters}
-          users={activeTab === "scheduled" ? scheduledClasses : completedClasses}
-        />
-     
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        users={activeTab === "scheduled" ? scheduledClasses : completedClasses}
+      />
     </BaseLayout1>
   );
 };

@@ -222,7 +222,6 @@ const TeacherDetails = () => {
   const [activeTab, setActiveTab] = useState<"scheduled" | "completed">(
     "scheduled"
   );
-  const [showModal, setShowModal] = useState(false);
 
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
@@ -238,6 +237,26 @@ const TeacherDetails = () => {
 
   const [paginatedData, setPaginatedData] = useState<ClassSchedule[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [teacherRescheduleWrite, setTeacherRescheduleWrite] = useState(false); 
+
+  //Rolebyaccess
+  useEffect(() => {
+    const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
+    if (roleAccessRaw) {
+      try {
+        const roleAccess = JSON.parse(roleAccessRaw);
+        const modules = roleAccess?.academicmodules || roleAccess;
+
+        setTeacherRescheduleWrite(modules?.manageteachers?.write === true); // ✅ already present
+      } catch (error) {
+        console.error("Invalid AcademicRolePermission JSON", error);
+      }
+    }
+  }, []);
+
+
+
+
   const search = useSearchParams();
   const toggleDropdown = (index: number) => {
     setActiveDropdown(activeDropdown === index ? null : index);
@@ -1091,14 +1110,20 @@ const fullName = `${item.student.studentFirstName} ${item.student.studentLastNam
                     {/* Only show dropdown if status is Scheduled and activeDropdown is set */}
                     {item.scheduleStatus === "Scheduled" &&
                       activeDropdown === index && (
-                        <div
-                          ref={dropdownRef}
-                          className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border dark:border-[#5c5c5c] dark:bg-[#343434]"
-                        >
-                          <div className="py-1">
+                        
+                         <div className="py-1 bg-white rounded-md shadow-lg ">
                             <button
-                              className="w-full text-left px-4 py-2 text-[12px] text-gray-700  dark:text-[#fff]"
-                               onClick={() => handleReschedule(item._id)}
+                              className={`w-full text-left px-4 py-2 text-[12px] ${
+                                teacherRescheduleWrite
+                                  ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                                  : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
+                              }`}
+                              onClick={
+                                teacherRescheduleWrite
+                                  ? () => handleReschedule(item._id)
+                                  : undefined
+                              }
+                              disabled={!teacherRescheduleWrite}
                             >
                               Reschedule
                             </button>
@@ -1109,7 +1134,7 @@ const fullName = `${item.student.studentFirstName} ${item.student.studentLastNam
                               Cancel
                             </button>
                           </div>
-                        </div>
+                          
                       )}
                   </td>
                 </tr>

@@ -87,21 +87,19 @@ const Popup: React.FC<PopupProps> = ({
 
   //RoleAccess
 
-useEffect(() => {
-  const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
-  if (roleAccessRaw) {
-    try {
-      const roleAccess = JSON.parse(roleAccessRaw);
-      const modules = roleAccess?.academicmodules || roleAccess;
+  useEffect(() => {
+    const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
+    if (roleAccessRaw) {
+      try {
+        const roleAccess = JSON.parse(roleAccessRaw);
+        const modules = roleAccess?.academicmodules || roleAccess;
 
-      setTrailWrite(modules?.trailmanagement?.write === true); // ✅ already present
-    } catch (error) {
-      console.error("Invalid AcademicRolePermission JSON", error);
+        setTrailWrite(modules?.trailmanagement?.write === true); // ✅ already present
+      } catch (error) {
+        console.error("Invalid AcademicRolePermission JSON", error);
+      }
     }
-  }
-}, []);
-
-
+  }, []);
 
   console.log(users);
 
@@ -432,16 +430,20 @@ useEffect(() => {
           </div>
 
           {/* Start Evaluation Button */}
-          {trailWrite && (
-            <div className="flex justify-end">
-              <button
-                className="bg-[#576CBC] text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all duration-300 text-sm font-medium"
-                onClick={handleStart}
-              >
-                <span>Start Evaluation</span>
-              </button>
-            </div>
-          )}
+          <div className="flex justify-end">
+            <button
+              className={`px-5 py-2 rounded-lg transition-all duration-300 text-sm font-medium 
+                ${
+                  trailWrite
+                    ? "bg-[#576CBC] text-white hover:shadow-lg"
+                    : "bg-[#576CBC] text-white hover:shadow-lg cursor-not-allowed"
+                }`}
+              onClick={trailWrite ? handleStart : undefined}
+              disabled={!trailWrite}
+            >
+              <span>Start Evaluation</span>
+            </button>
+          </div>
         </form>
       </div>
     </Modal>
