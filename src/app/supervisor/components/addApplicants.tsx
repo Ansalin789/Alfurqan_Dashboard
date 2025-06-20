@@ -74,6 +74,31 @@ export default function AddApplicants({ onClose }: Props) {
       jobDescription: "",
     },
   ]);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+
+  const updateWorkingHours = (start: string, end: string) => {
+  const value = start && end ? `${start} - ${end}` : "";
+
+  handleChange({
+    target: {
+      name: "workingHours",
+      value,
+    },
+  } as React.ChangeEvent<HTMLInputElement>);
+};
+
+  const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setStartTime(value);
+    updateWorkingHours(value, endTime);
+  };
+
+  const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEndTime(value);
+    updateWorkingHours(startTime, value);
+  };
 
   const handleChange1 = (
     index: number,
@@ -102,6 +127,9 @@ export default function AddApplicants({ onClose }: Props) {
   const removeExperienceForm = (index: number) => {
     setExperiences((prev) => prev.filter((_, i) => i !== index));
   };
+  useEffect(()=>{
+    console.log(addApplicantForm.workingHours);
+  },[addApplicantForm])
 
   // You might want to validate here or on submit
   const canAddNewForm = experiences.every(
@@ -488,20 +516,33 @@ export default function AddApplicants({ onClose }: Props) {
               </div>
             </div>
             <div>
-              <label
-                htmlFor="inonoin"
-                className="block mb-1 text-black dark:text-white"
-              >
-                Preferred Working Hours
-              </label>
-              <input
-                name="workingHours"
-                value={addApplicantForm.workingHours}
-                onChange={handleChange}
-                type="text"
-                className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div>
+              <label htmlFor="workingHours" className="block mb-1 text-black dark:text-white">
+        Preferred Working Hours
+      </label>
+      <div className="flex gap-2">
+        <input
+          type="time"
+          value={startTime}
+          onChange={handleStartTimeChange}
+          className="w-1/2 border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+        />
+        <input
+          type="time"
+          value={endTime}
+          onChange={handleEndTimeChange}
+          className="w-1/2 border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+        />
+      </div>
+      {/* Hidden input that stores final value like "09:00 - 13:00" */}
+      <input
+        type="hidden"
+        name="workingHours"
+        value={addApplicantForm.workingHours}
+      />
+      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        Selected: {addApplicantForm.workingHours || "None"}
+      </p>
+    </div>
             <div>
               <label
                 htmlFor="jbjb"
