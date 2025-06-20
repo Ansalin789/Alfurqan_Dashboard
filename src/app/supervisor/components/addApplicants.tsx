@@ -127,9 +127,7 @@ export default function AddApplicants({ onClose }: Props) {
   const removeExperienceForm = (index: number) => {
     setExperiences((prev) => prev.filter((_, i) => i !== index));
   };
-  useEffect(()=>{
-    console.log(addApplicantForm.workingHours);
-  },[addApplicantForm])
+
 
   // You might want to validate here or on submit
   const canAddNewForm = experiences.every(
