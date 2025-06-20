@@ -201,41 +201,45 @@ useEffect(() => {
   };
 
 const renderButton = () => {
-if (currentSection.includes("Dashboard") && leaveWrite){
+if (currentSection.includes("Dashboard") ){
       return (
       <button
         onClick={() => setShowLeaveForm(true)}
         className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+         disabled={!leaveWrite}
       >
         Request for Leave
       </button>
     );
   }
-  if (currentSection.includes("Trail Management") && trailWrite) {
+  if (currentSection.includes("Trail Management")) {
     return (
       <button
         onClick={() => setAddApplicant(true)}
         className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+        disabled={!trailWrite}
       >
         Add New Student
       </button>
     );
   }
-  if (currentSection.includes("Calendar") && calendarWrite) {
+  if (currentSection.includes("Calendar")) {
     return (
       <button
         onClick={() => setAddMeetings(true)}
         className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+        disabled={!calendarWrite}
       >
         Add Meeting
       </button>
     );
   }
-  if (currentSection.includes("Student List") && studentListWrite) {
+  if (currentSection.includes("Student List")) {
     return (
       <button
         onClick={() => setAssignGroupClass(true)}
         className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+        disabled={!studentListWrite}
       >
         Assign Group Class
       </button>
