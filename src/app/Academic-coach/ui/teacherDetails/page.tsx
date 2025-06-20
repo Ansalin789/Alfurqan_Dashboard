@@ -379,7 +379,7 @@ const TeacherDetails = () => {
 
     schedule.forEach((item: ClassSchedule) => {
       if (item.student) {
-        const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`;
+const fullName = `${item.student.studentFirstName} ${item.student.studentLastName || ''}`.trim();
         const courseName = item.course?.courseName || "";
 
         if (!studentSet.has(fullName)) {
@@ -902,25 +902,25 @@ const TeacherDetails = () => {
               </div>
 
               {/* Students List */}
-              <ul className="space-y-3 overflow-y-auto max-h-[180px]">
+              <ul className="space-y-3 overflow-y-auto max-h-[180px] scrollbar-none">
                 {studentInfoList.map((student, index) => (
                   <li
                     key={index}
                     className="flex items-center justify-between border-b pb-2 border-gray-200 dark:border-gray-700"
                   >
-                    <div className="flex items-center space-x-3 gap-2">
-                      <div className="w-8 h-8 rounded-full bg-pink-200 flex items-center justify-center font-bold text-[10px]">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-6 rounded-full bg-[#ffff] flex items-center justify-center font-bold text-[10px]">
                         <img
                           src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
                           alt="avatar"
-                          className="w-8 h-8 rounded-full object-cover"
+                          className="w-6 h-6 rounded-full object-cover"
                         />
                       </div>
-                      <span className="text-sm font-medium text-[#111827] dark:text-white">
+                      <span className="text-[12px] font-medium text-[#111827] dark:text-white">
                         {student.fullName}
                       </span>
                     </div>
-                    <span className="text-sm text-[#4C66EE] font-medium whitespace-nowrap">
+                    <span className="text-[11px] text-[#576CBC] font-medium whitespace-nowrap">
                       {student.courseName || ""}
                     </span>
                   </li>
