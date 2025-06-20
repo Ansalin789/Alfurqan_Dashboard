@@ -856,29 +856,29 @@ const ManageStudentView = () => {
                       : "bg-[#F8F8F8] dark:bg-[#303030]"
                   }`}
                 >
-                  <td className="px-3 py-3 text-[#3D8FDE] font-medium text-left">
+                  <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left">
                     {item.student.studentFirstName}{" "}
                     {item.student.studentLastName}
                   </td>
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     {item.course.courseName}
                   </td>
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     {new Date(item.startDate).toLocaleDateString("en-US", {
                       month: "short",
                       day: "2-digit",
                       year: "numeric",
                     })}
                   </td>
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                    <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                       {item.startTime?.[0]?.replace(/ AM| PM/, "") || "--:--"} -{" "}
                       {item.endTime?.[0]?.replace(/ AM| PM/, "") || "--:--"}
                     </td>
                   </td>
 
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left"></td>
-                  <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left"></td>
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     <span
                       className={`font-semibold px-3 py-1 rounded-md text-[10px] ${
                         item.scheduleStatus === "Scheduled"

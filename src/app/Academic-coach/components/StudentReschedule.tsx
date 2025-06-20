@@ -81,9 +81,15 @@ interface ClassSchedule {
   currency: string;
   classDay: string[];
   package: string;
+  course: {
+    courseName: string;
+  };
 }
 
 interface ClassData {
+  course: {
+    courseName: string;
+  };
   package: string;
   startDate: string;
   startTime: string[];
@@ -361,6 +367,22 @@ const SchedulePage = () => {
   const getFirstDayOfMonth = (date: Date) =>
     new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
+  //Colur
+
+  // Helper function to get border and text color based on course
+  const getCourseColorClass = (courseName: string) => {
+    switch (courseName) {
+      case "Quran":
+        return "border-[#21BAFF] text-[#21BAFF]";
+      case "Islamic Studies":
+        return "border-[#E49D2C] text-[#E49D2C]";
+      case "Arabic":
+        return "border-[#5362E4] text-[#5362E4]";
+      default:
+        return "border-gray-300 text-gray-500";
+    }
+  };
+
   const WeeklyView = ({
     selectedDate,
     scheduledClasses,
@@ -438,21 +460,27 @@ const SchedulePage = () => {
 
               {isSelected && dayClasses.length > 0 && (
                 <div className="mt-2 space-y-2 pl-4">
-                  {dayClasses.map((cls, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 bg-blue-100 dark:bg-[#2c2c2c] text-sm rounded-xl relative"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="font-semibold text-blue-700 dark:text-white">
-                          {cls.package}
-                        </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-300">
-                          {cls.startTime[0]} – {cls.endTime[0]}
+                  {dayClasses.map((cls, idx) => {
+                    const courseColorClass = getCourseColorClass(
+                      cls.course.courseName
+                    );
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`p-3 text-sm rounded-xl relative ${courseColorClass}`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="font-semibold">
+                            {cls.course.courseName}
+                          </div>
+                          <div className="text-xs">
+                            {cls.startTime[0]} – {cls.endTime[0]}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -483,19 +511,20 @@ const SchedulePage = () => {
         </div>
 
         {dayClasses.length > 0 ? (
-          dayClasses.map((cls, idx) => (
-            <div
-              key={idx}
-              className="p-4 bg-blue-100 dark:bg-[#2c2c2c] text-gray-700 dark:text-white rounded-xl"
-            >
-              <div className="flex justify-between items-start">
-                <div className="text-sm font-semibold">{cls.package}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-300">
-                  {cls.startTime[0]} – {cls.endTime[0]}
+          dayClasses.map((cls, idx) => {
+            const courseColorClass = getCourseColorClass(cls.course.courseName);
+
+            return (
+              <div key={idx} className={`p-4 rounded-xl ${courseColorClass}`}>
+                <div className="flex justify-between items-start">
+                  <div className="text-sm font-semibold">{cls.package}</div>
+                  <div className="text-xs">
+                    {cls.startTime[0]} – {cls.endTime[0]}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div className="text-gray-400 text-sm">
             No classes scheduled for this day.
@@ -582,34 +611,30 @@ const SchedulePage = () => {
             const isSelected =
               selectedDate && moment(date).isSame(moment(selectedDate), "day");
 
+            const courseName = dayClasses[0]?.course?.courseName || "";
+            const courseColorClass = getCourseColorClass(courseName);
+
             return (
               <button
                 key={i}
                 onClick={() => handleDateClick(date)}
-                className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer
-                ${
-                  hasClasses
-                    ? "bg-blue-100 dark:bg-[#2c2c2c] text-blue-700 dark:text-white border text-[10px]"
-                    : isToday(day)
-                    ? "bg-[#27176518] text-white"
-                    : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
-                }
-                ${isSelected ? "ring-2 ring-[#576cbc]" : ""}`}
+                className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer duration-200
+      ${hasClasses ? `border ${courseColorClass}` : "border text-[10px]"}
+      ${isToday(day)  ? "bg-[#27176518] text-white"
+                    : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"}
+      ${isSelected ? "ring-2 ring-[#576cbc]" : ""}
+    `}
               >
-                <div
-                  className={`font-semibold ${
-                    isToday(day) ? "dark:text-[#4b8cc9] text-[#4b8cc9]" : ""
-                  }`}
-                >
-                  {day}
-                </div>
+                <div className="font-semibold text-sm text-gray-700">{day}</div>
 
                 {hasClasses && (
-                  <div className="w-full overflow-hidden">
-                    <div className="text-[9px] truncate px-1">
-                      {dayClasses[0].package}
+                  <div className="w-full mt-2 text-center">
+                    <div
+                      className={`text-[10px] font-medium truncate ${courseColorClass}`}
+                    >
+                      {dayClasses[0].course?.courseName}
                     </div>
-                    <div className="text-[8px] truncate px-1">
+                    <div className={`text-[9px] truncate ${courseColorClass}`}>
                       {dayClasses[0].startTime[0]} - {dayClasses[0].endTime[0]}
                     </div>
                   </div>
@@ -624,7 +649,11 @@ const SchedulePage = () => {
 
   return (
     <div>
-      <AcademicHeader currentSection="Reschedule Class" showBackButton={true} showBackPath="managestudentview"/>
+      <AcademicHeader
+        currentSection="Reschedule Class"
+        showBackButton={true}
+        showBackPath="managestudentview"
+      />
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col md:flex-row overflow-hidden h-[630px]">
           {/* Left: Calendar View */}
