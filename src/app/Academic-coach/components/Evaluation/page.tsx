@@ -670,13 +670,13 @@ const TrailManagement = () => {
     setCurrentPage(1); // Reset to first page when search changes
   };
 
-  if (errorMessage) {
-    return (
-      <BaseLayout1>
-        <div className="min-h-screen p-2">{errorMessage}</div>
-      </BaseLayout1>
-    );
-  }
+ if (errorMessage) {
+  return (
+    <div className="min-h-screen flex items-center justify-center text-xl font-semibold text-red-600">
+      {errorMessage === "Failed to fetch users" ? "Not Found" : errorMessage}
+    </div>
+  );
+}
 
   // Pagination logic: calculate currentItems based on filteredUsers, currentPage, and itemsPerPage
   const indexOfLastItem = currentPage * itemsPerPage;
