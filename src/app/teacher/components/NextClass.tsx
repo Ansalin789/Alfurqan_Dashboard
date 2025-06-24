@@ -161,9 +161,9 @@ const token =
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-semibold text-gray-800 p-2">My Class</h2>
-      <div className="bg-[#1C3557] rounded-[25px] shadow flex items-center justify-between text-white p-4">
-        <div>
+      <div className="bg-[#78A1DB] rounded-[12px] shadow flex items-center justify-between text-white p-4">
+        <div>      <h2 className="text-[16px] font-medium text-[#FFF] p-2">Your Class Starts in</h2>
+
           <h3 className="text-[15px] font-medium">{classData?.student.studentFirstName} | <FaUser className='inline'/> {classData?.teacher.teacherName}</h3>
           <div className="flex items-center space-x-4 py-2">
             <MdDateRange className="w-[15px]" />
