@@ -6,6 +6,7 @@ import BaseLayout from "@/components/BaseLayout";
 import axios from "axios";
 import Link from "next/link";
 import NextTrailSession from "../../components/NextTrailSession";
+import TeacherHeader from "../../components/TeacherHeader";
 interface Student {
   studentId: string;
   studentFirstName: string;
@@ -715,87 +716,85 @@ function LiveClass() {
 
   return (
     <BaseLayout>
-      <div className="flex h-screen bg-[#E6E9ED]">
+    <TeacherHeader currentSection="Trail class"/>
+      <div className="flex h-screen">
         {isFormData ? (
-          <div className="min-h-screen bg-[#E6E9ED] p-4 w-full">
+          <div className="min-h-screen p-4 w-full">
             <div className="">
-              <h1 className="text-[25px] font-semibold text-gray-800 mb-3">
-                Trial Class
-              </h1>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 w-full">
                 {/* Form Section */}
-                <form className="bg-white w-full  rounded-2xl shadow-md p-4 mx-auto ">
-                  <h2 className="text-lg font-semibold mb-6 text-gray-800">
+                <form className="bg-white dark:bg-[#252525] dark:shadow-lg w-full  rounded-2xl shadow-md p-4 mx-auto ">
+                  <h2 className="text-lg font-semibold mb-6  dark:text-[#FFF] text-gray-800">
                     Student Details
                   </h2>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* First Name */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[14px] font-medium text-gray-700 dark:text-[#FFF] mb-1">
                         First name
                       </label>
                       <input
                         type="text"
                         name="firstName"
                         value={formData?.student.studentFirstName}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px] dark:text-[#FFF] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                         required
                       />
                     </div>
 
                     {/* Last Name */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
                         Last name
                       </label>
                       <input
                         type="text"
                         name="lastName"
                         value={formData?.student.studentLastName}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px]  dark:text-[#FFF] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                         required
                       />
                     </div>
 
                     {/* Email */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
                         Email
                       </label>
                       <input
                         type="email"
                         name="email"
                         value={formData?.student.studentEmail}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                         required
                       />
                     </div>
 
                     {/* Phone Number */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
                         Phone number
                       </label>
                       <input
                         type="text"
                         name="phone"
                         value={formData?.student.studentPhone}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                         required
                       />
                     </div>
 
                     {/* Country */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
                         Country
                       </label>
                       <select
                         name="country"
                         value={formData?.student.studentCountry}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                       >
                         <option value="USA">USA</option>
                         <option value="India">India</option>
@@ -805,40 +804,40 @@ function LiveClass() {
 
                     {/* City */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
                         City
                       </label>
                       <input
                         type="text"
                         name="city"
                         value={formData?.student.city}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                       />
                     </div>
 
                     {/* Trial ID */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
                         Trial ID
                       </label>
                       <input
                         type="text"
                         name="trialId"
                         value={formData?.student.studentId}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2  dark:bg-[#343434]  dark:border dark:border-[#5C5C5C]  border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                         readOnly
                       />
                     </div>
 
                     {/* Course */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
                         Course
                       </label>
                       <select
                         name="course"
                         // value={formData?.student.course}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2  dark:bg-[#343434]  dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                       >
                         <option value="Arabic">Arabic</option>
                         <option value="Quran">Quran</option>
@@ -847,14 +846,14 @@ function LiveClass() {
 
                     {/* Class Status */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
                         Class Status
                       </label>
                       <select
                         name="trialClassStatus"
                         value={trialClassStatus}
                         onChange={handleChange("TrialClassStatus")}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                       >
                         {options.trialClassStatus.map((status) => (
                           <option key={status} value={status}>
@@ -866,14 +865,14 @@ function LiveClass() {
 
                     {/* Student Status */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
                         Student Status
                       </label>
                       <select
                         name="studentStatus"
                         value={studentStatus}
                         onChange={handleChange("studentStatus")}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                       >
                         {options.studentStatus.map((status) => (
                           <option key={status} value={status}>
@@ -886,13 +885,13 @@ function LiveClass() {
 
                   {/* Additional Comments */}
                   <div className="mt-6">
-                    <label className="block text-[14px] font-medium text-gray-700 mb-1">
+                    <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
                       Additional Comments (Optional)
                     </label>
                     <textarea
                       name="comments"
                       placeholder="Write your comment here..."
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24 resize-none"
+                      className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px] dark:text-[#FFF] text-[#FFF] focus:outline-none focus:ring-2 focus:ring-[#576CBC] h-24 resize-none"
                     />
                   </div>
 
@@ -900,14 +899,14 @@ function LiveClass() {
                   <div className="mt-6 flex justify-end gap-4">
                     <button
                       type="button"
-                      className="px-6 py-2 rounded-md border border-gray-300 text-sm text-gray-700 hover:bg-gray-100"
+                      className="px-6 py-2 rounded-md  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       onClick={() => updateClick(trailId)}
-                      className="px-6 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700 transition"
+                      className="px-6 py-2 rounded-md bg-[#576CBC] text-white text-sm  dark:text-[#FFF] hover:bg-blue-700 transition"
                     >
                       Save
                     </button>
@@ -915,7 +914,7 @@ function LiveClass() {
                 </form>
 
                 {/* Student Info Card */}
-                <div className="w-full  rounded-2xl shadow-md mx-auto bg-white overflow-hidden ">
+                <div className="w-full  rounded-2xl shadow-md mx-auto bg-white dark:bg-[#3B3B3B] overflow-hidden ">
                   {/* Header Section */}
                   <div className="relative bg-[#4A5263] h-60 flex justify-end items-start p-4 rounded-t-2xl">
                     {/* Top-right Icon */}
@@ -946,20 +945,20 @@ function LiveClass() {
 
                   {/* Student Info */}
                   <div className="flex flex-col justify-between">
-                  <div className="pt-32 px-6 pb-6 bg-white">
+                  <div className="pt-32 px-6 pb-6">
                     <div className="border-t border-gray-200 pt-6 space-y-4">
-                      <div className="flex justify-between text-sm text-gray-800">
+                      <div className="flex justify-between dark:text-[#FFF] text-sm text-gray-800">
                         <span className="font-semibold">Full Name</span>
                         <span>
                           {formData?.student.studentFirstName}{" "}
                           {formData?.student.studentLastName}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm text-gray-800">
+                      <div className="flex justify-between dark:text-[#FFF] text-sm text-gray-800">
                         <span className="font-semibold">Day</span>
                         <span>{classData?.classDay}</span>
                       </div>
-                      <div className="flex justify-between text-sm text-gray-800">
+                      <div className="flex justify-between dark:text-[#FFF] text-sm text-gray-800">
                         <span className="font-semibold">Date</span>
                         <span>
                           {new Date(
