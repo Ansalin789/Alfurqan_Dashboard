@@ -716,12 +716,11 @@ function LiveClass() {
 
   return (
     <BaseLayout>
-    <TeacherHeader currentSection="Trail class"/>
+      <TeacherHeader currentSection="Trail class" />
       <div className="flex h-screen">
         {isFormData ? (
           <div className="min-h-screen p-4 w-full">
             <div className="">
-
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 w-full">
                 {/* Form Section */}
                 <form className="bg-white dark:bg-[#252525] dark:shadow-lg w-full  rounded-2xl shadow-md p-4 mx-auto ">
@@ -732,7 +731,7 @@ function LiveClass() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* First Name */}
                     <div>
-                      <label className="block text-[14px] font-medium text-gray-700 dark:text-[#FFF] mb-1">
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                         First name
                       </label>
                       <input
@@ -746,7 +745,7 @@ function LiveClass() {
 
                     {/* Last Name */}
                     <div>
-                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                         Last name
                       </label>
                       <input
@@ -760,7 +759,7 @@ function LiveClass() {
 
                     {/* Email */}
                     <div>
-                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                         Email
                       </label>
                       <input
@@ -774,7 +773,7 @@ function LiveClass() {
 
                     {/* Phone Number */}
                     <div>
-                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF]  mb-1">
                         Phone number
                       </label>
                       <input
@@ -788,7 +787,7 @@ function LiveClass() {
 
                     {/* Country */}
                     <div>
-                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                         Country
                       </label>
                       <select
@@ -804,7 +803,7 @@ function LiveClass() {
 
                     {/* City */}
                     <div>
-                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                         City
                       </label>
                       <input
@@ -817,7 +816,7 @@ function LiveClass() {
 
                     {/* Trial ID */}
                     <div>
-                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                         Trial ID
                       </label>
                       <input
@@ -831,7 +830,7 @@ function LiveClass() {
 
                     {/* Course */}
                     <div>
-                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                         Course
                       </label>
                       <select
@@ -846,7 +845,7 @@ function LiveClass() {
 
                     {/* Class Status */}
                     <div>
-                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                         Class Status
                       </label>
                       <select
@@ -865,7 +864,7 @@ function LiveClass() {
 
                     {/* Student Status */}
                     <div>
-                      <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                         Student Status
                       </label>
                       <select
@@ -885,7 +884,7 @@ function LiveClass() {
 
                   {/* Additional Comments */}
                   <div className="mt-6">
-                    <label className="block text-[14px] font-medium  dark:text-[#FFF] text-gray-700 mb-1">
+                    <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                       Additional Comments (Optional)
                     </label>
                     <textarea
@@ -914,17 +913,38 @@ function LiveClass() {
                 </form>
 
                 {/* Student Info Card */}
-                <div className="w-full  rounded-2xl shadow-md mx-auto bg-white dark:bg-[#3B3B3B] overflow-hidden ">
+                <div className="w-[460px] -ml-2  rounded-2xl shadow-md mx-auto bg-white dark:bg-[#3B3B3B] overflow-hidden ">
                   {/* Header Section */}
-                  <div className="relative bg-[#4A5263] h-60 flex justify-end items-start p-4 rounded-t-2xl">
+                  <div className="relative bg-[#5E6578] h-60 flex justify-end items-start p-4 rounded-t-2xl">
                     {/* Top-right Icon */}
                     <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-5 h-5 text-white"
-                      fill="none"
+                      width="24"
+                      height="24"
                       viewBox="0 0 24 24"
-                      stroke="currentColor"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
+                      <path
+                        d="M11 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H15C20 22 22 20 22 15V13"
+                        stroke="white"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M16.0399 3.01928L8.15988 10.8993C7.85988 11.1993 7.55988 11.7893 7.49988 12.2193L7.06988 15.2293C6.90988 16.3193 7.67988 17.0793 8.76988 16.9293L11.7799 16.4993C12.1999 16.4393 12.7899 16.1393 13.0999 15.8393L20.9799 7.95928C22.3399 6.59928 22.9799 5.01928 20.9799 3.01928C18.9799 1.01928 17.3999 1.65928 16.0399 3.01928Z"
+                        stroke="white"
+                        stroke-miterlimit="10"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M14.9102 4.15039C15.5802 6.54039 17.4502 8.41039 19.8502 9.09039"
+                        stroke="white"
+                        stroke-miterlimit="10"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -934,51 +954,50 @@ function LiveClass() {
                     </svg>
 
                     {/* Profile Image */}
-                    <div className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-white rounded-full flex items-center justify-center shadow-md border-4 border-white">
+                    <div className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-1/2 w-[160px] h-[160px] bg-white rounded-full flex items-center justify-center shadow-md border-4 border-white">
                       <img
                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100&h=100"
                         alt="Student avatar"
-                        className="w-[180px] h-[180px] rounded-full object-cover"
+                        className="w-[150px] h-[150px] rounded-full object-cover"
                       />
                     </div>
                   </div>
 
                   {/* Student Info */}
                   <div className="flex flex-col justify-between">
-                  <div className="pt-32 px-6 pb-6">
-                    <div className="border-t border-gray-200 pt-6 space-y-4">
-                      <div className="flex justify-between dark:text-[#FFF] text-sm text-gray-800">
-                        <span className="font-semibold">Full Name</span>
-                        <span>
-                          {formData?.student.studentFirstName}{" "}
-                          {formData?.student.studentLastName}
-                        </span>
-                      </div>
-                      <div className="flex justify-between dark:text-[#FFF] text-sm text-gray-800">
-                        <span className="font-semibold">Day</span>
-                        <span>{classData?.classDay}</span>
-                      </div>
-                      <div className="flex justify-between dark:text-[#FFF] text-sm text-gray-800">
-                        <span className="font-semibold">Date</span>
-                        <span>
-                          {new Date(
-                            classData?.startDate ?? "2022-01-01"
-                          ).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </span>
+                    <div className="pt-24 px-6 pb-6">
+                      <div className="border-t border-gray-200 pt-6 space-y-4">
+                        <div className="flex justify-between dark:text-[#959595] text-sm text-[#959595]">
+                          <span className="font-regular text-[#010E30] dark:text-[#FFF]">Full Name</span>
+                          <span>
+                            {formData?.student.studentFirstName}{""}
+                            {formData?.student.studentLastName}
+                          </span>
+                        </div>
+                        <div className="flex justify-between dark:text-[#959595] text-sm text-[#959595]">
+                          <span className="font-regular text-[#010E30] dark:text-[#FFF]">Day</span>
+                          <span>{classData?.classDay}</span>
+                        </div>
+                        <div className="flex justify-between dark:text-[#959595] text-sm text-[#959595]">
+                          <span className="font-regular text-[#010E30] dark:text-[#FFF]">Date</span>
+                          <span>
+                            {new Date(
+                              classData?.startDate ?? "2022-01-01"
+                            ).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Trial Countdown */}
-                  <div className=" px-4 mt-[90px]">
-                    <NextTrailSession />
+                    {/* Trial Countdown */}
+                    <div className=" px-4 mt-[90px]">
+                      <NextTrailSession />
+                    </div>
                   </div>
-                  </div>
-                  
                 </div>
               </div>
             </div>
