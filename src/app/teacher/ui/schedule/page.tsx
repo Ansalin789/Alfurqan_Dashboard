@@ -8,7 +8,7 @@ const Schedules = () => {
   return (
     <BaseLayout>
        <TeacherHeader currentSection="Calender" />
-        <div className='p-4 mx-auto w-[1250px] pr-12'>
+        <div className='p-4 mx-auto W-full'>
             <NextClass />
             <ScheduledClasses />
         </div>
