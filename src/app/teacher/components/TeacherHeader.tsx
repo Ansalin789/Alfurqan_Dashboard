@@ -26,14 +26,13 @@ type NotificationType = {
   isRead: boolean;
 };
 
-export default function SupervisorHeader({ currentSection, showBackButton = false, showBackPath = '' }: Props) {
+export default function TeacherHeader({ currentSection, showBackButton = false, showBackPath = '' }: Props) {
   const theme: any = useTheme();
   const darkMode = theme?.darkMode ?? false;
   const toggleDarkMode = theme?.toggleDarkMode ?? (() => {});
   const [showNotification, setShowNotification] = useState(false);
   const [showLeaveForm, setShowLeaveForm] = useState(false);
   const [showAddMeeting, setAddMeetings] = useState(false);
-  const [showAddApplicant, setAddApplicant] = useState(false);
   const router = useRouter();
   const notificationRef = useRef(null);
   const [activeTab, setActiveTab] = useState<"Seen" | "Unseen">("Unseen");
@@ -167,60 +166,36 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
 };
 
 
-  const renderButton = () => {
-    if (currentSection.startsWith("Dashboard")) {
-      return (
-        <button
-          onClick={() => setShowLeaveForm(true)}
-          className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
-        >
-          Request for Leave
-        </button>
-      );
-    }
-    if (currentSection.startsWith("Applicants")) {
-      return (
-        <button
-          onClick={() => setAddApplicant(true)}
-          className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
-        >
-          Add Applicant
-        </button>
-      );
-    }
-    if (
-      currentSection.startsWith("Scheduled Meetings") ||
-      currentSection.startsWith("Calendar")
-    ) {
-      return (
-        <button
-          onClick={() => setAddMeetings(true)}
-          className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
-        >
-          Add Meeting
-        </button>
-      );
-    }
-    if (currentSection.startsWith("Teacher's List")) {
-      return (
-        <div className="flex gap-2">
-          <button
-            onClick={() => router.push("/supervisor/ui/feedback")}
-            className="text-[#5a65d1] border border-[#5a65d1] text-sm font-semibold px-4 py-2 rounded-lg"
-          >
-            Feedback
-          </button>
-          <button
-            onClick={() => router.push("/supervisor/ui/viewschedule")}
-            className="bg-[#6C78F5] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
-          >
-            Scheduled Classes
-          </button>
-        </div>
-      );
-    }
-    return null;
-  };
+const renderButton = () => {
+  if (currentSection === "Dashboard") {
+    return (
+      <button
+        onClick={() => setShowLeaveForm(true)}
+        className="bg-[#576CBC] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
+      >
+        Request for Leave
+      </button>
+    );
+  }
+
+  if (
+    (currentSection === "Scheduled Meeting" || currentSection === "Schedule")
+  ) {
+    return (
+      <button
+        onClick={() => setAddMeetings(true)}
+        className="bg-[#576CBC] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
+      >
+        Add Meeting
+      </button>
+    );
+  }
+
+  return null;
+};
+
+
+
 
   return (
     <div>
@@ -274,9 +249,7 @@ export default function SupervisorHeader({ currentSection, showBackButton = fals
       </div>
       {showLeaveForm && <LeaveForm onClose={() => setShowLeaveForm(false)} />}
       {showAddMeeting && <AddMeeting onClose={() => setAddMeetings(false)} />}
-      {showAddApplicant && (
-        <AddApplicants onClose={() => setAddApplicant(false)} />
-      )}
+
       {showNotification && (
         <div
           ref={notificationRef}
