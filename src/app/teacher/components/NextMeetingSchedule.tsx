@@ -153,12 +153,11 @@ const NextMeetingSchedule = () => {
     <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white">
       <div className="items-center p-2 px-8">
         <h3 className="text-[13px] font-medium pt-3">
-          Your Next Evaluation Class
+          Your Next Meeting is Scheduled In
         </h3>
         <div className="flex items-center space-x-8 py-2">
           <div className="flex items-center space-x-2">
-            <FaUserAlt className="w-[10px]" />
-            <p className="text-[13px]">{classData?.student.name}</p>
+            <p className="text-[13px]">Weekly Meeting</p>
           </div>
           <div className="flex items-center space-x-2">
             <AiOutlineClockCircle className="w-[10px]" />
