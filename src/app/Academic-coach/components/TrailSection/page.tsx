@@ -12,6 +12,7 @@ import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
+import { getSocket } from "@/app/utils/socket";
 
 // Define interfaces for the API response structure
 interface Student {
@@ -29,7 +30,77 @@ interface Student {
   trialClassStatus: string;
   studentStatus: string;
 }
-
+interface ClassPayload {
+  academicCoachId: string;
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    studentGender: string;
+    studentPhone: number;
+    studentCity: string;
+    studentCountry: string;
+    studentCountryCode: string;
+    learningInterest?: string;
+    numberOfStudents: number;
+    preferredTeacher: string;
+    preferredFromTime?: string;
+    preferredToTime?: string;
+    timeZone: string;
+    referralSource: string;
+    preferredDate?: string;
+    evaluationStatus: string;
+    status: string;
+    createdDate: Date;
+    createdBy: string;
+  };
+  classType: string;
+  teacher: {
+    teacherName: string;
+  };
+  classDay?: string[]; // assuming it's an array of days like ['Monday', 'Wednesday']
+  startTime?: string[];
+  endTime?: string[];
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  subscription: {
+    subscriptionName: string;
+  };
+  planTotalPrice: number;
+  classStartDate: Date | string;
+  classEndDate: Date | string;
+  classStartTime: string;
+  classEndTime: string;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  accomplishmentTime?: string;
+  studentRate: number;
+  studentStatus: string;
+  classStatus: string;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  teacherStatus: string;
+  status: string;
+  createdDate: Date;
+  createdBy: string;
+  updatedDate: Date;
+  updatedBy: string;
+}
 interface EvaluationItem {
   paymentLink: string;
   _id: string;
@@ -345,6 +416,53 @@ const TrailSection = () => {
 
     fetchData();
   }, []);
+
+   useEffect(()=>{
+   const academicId = typeof window !== "undefined"
+          ? localStorage.getItem("AcademicCoachPortalId")
+          : null;
+          if(!academicId) return;
+       const socket = getSocket(academicId);
+       const handleList = ( data :{event : string , data : ClassPayload , sender : string })=>{
+           console.log("📩 Received WebSocket Data:", data);
+   if(data.event === "update"){
+      const classPayload = data.data as ClassPayload;
+      const student = classPayload.student;
+  
+      console.log("➡️ Action: update", student.studentId);
+  
+      setFilteredUsers((prev) =>
+        prev.map((user) =>
+          user.studentId === student.studentId
+            ? {
+                ...user,
+                paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
+                trialClassStatus: classPayload.trialClassStatus ?? "NOT COMPLETED",
+                studentStatus: classPayload.studentStatus ?? "NOT JOINED",
+              }
+            : user
+        )
+      );
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.studentId === student.studentId
+            ? {
+               ...user,
+                paymentStatus: classPayload.paymentStatus ?? "NOT JOINED",
+                trialClassStatus: classPayload.trialClassStatus ?? "NOT COMPLETED",
+                studentStatus: classPayload.studentStatus ?? "NOT JOINED",
+              }
+            : user
+        )
+      );
+    }
+          }
+  
+      socket.on("academicStudentList",handleList);
+      return () =>{
+        socket.off("academicStudentList",handleList);
+      }
+  },[]);
 
   useEffect(() => {
     Modal.setAppElement("body");

@@ -8,6 +8,7 @@ import Pagination from "@/components/Pagination";
 import { useRouter } from "next/navigation";
 import AcademicHeader from "../../components/academicHeader";
 import Modal from "react-modal";
+import { getSocket } from "@/app/utils/socket";
 
 export interface Student {
   _id: string;
@@ -90,6 +91,26 @@ const ManageStudents = () => {
 
     fetchData();
   }, []);
+  useEffect(()=>{
+     const academicId = typeof window !== "undefined"
+               ? localStorage.getItem("AcademicCoachPortalId")
+               : null;
+               if(!academicId) return;
+            const socket = getSocket(academicId);
+            const handleList = ( data : { data : Student  , sender : string }) =>{
+              console.log("web socket");
+               setStudentData((prev) => ({
+    totalCount: prev.totalCount + 1,
+    students: [...prev.students, data.data],
+  }));
+            }
+             
+            socket.on('academicStudentProfile', handleList);
+            return () =>{
+              socket.off('academicStudentProfile', handleList);
+            }
+
+  },[]);
 
   const toggleSelect = (index: number) => {
     setSelectedRows((prev) =>
