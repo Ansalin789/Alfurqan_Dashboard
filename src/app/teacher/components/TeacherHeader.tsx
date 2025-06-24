@@ -4,12 +4,11 @@ import { useTheme } from "@/context/ThemeContext";
 import { CalendarDays, Bell, Sun, Moon, User, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import LeaveForm from "@/app/supervisor/components/leaveForm";
-import AddMeeting from "@/app/supervisor/components/addMeeting";
-import AddApplicants from "@/app/supervisor/components/addApplicants";
 import { getSocket } from "@/app/utils/socket";
 import axios from "axios";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
+import LeaveForm from "./LeaveForm";
+import AddMeeting from "./AddMeeting";
 
 type Props = {
   readonly currentSection: string;
@@ -41,17 +40,17 @@ export default function TeacherHeader({ currentSection, showBackButton = false, 
   // Fetch old notifications
    const userId =
         typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorPortalId")
+          ? localStorage.getItem("TeacherPortalId")
           : null;
   const fetchNotifications = async (token: string) => {
     try {
       const token =
         typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
+          ? localStorage.getItem("TeacherAuthToken")
           : null;
        const userId =
         typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorPortalId")
+          ? localStorage.getItem("TeacherPortalId")
           : null;
       const { data } = await axios.get(
         `https://api.blackstoneinfomaticstech.com/notification/getlist?receiverId=${userId}`,
@@ -79,11 +78,11 @@ export default function TeacherHeader({ currentSection, showBackButton = false, 
     try {
       const token =
         typeof window !== "undefined"
-          ? localStorage.getItem("SupervisorAuthToken")
+          ? localStorage.getItem("TeacherAuthToken")
           : null;
 
       if (!token) {
-        console.error("❌ AdminAuthToken not found");
+        console.error("❌ TeacherAuthToken not found");
         return;
       }
 
@@ -138,7 +137,7 @@ export default function TeacherHeader({ currentSection, showBackButton = false, 
   // Load on component mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("SupervisorAuthToken");
+      const token = localStorage.getItem("TeacherAuthToken");
       if (token) {
         fetchNotifications(token);
       } else {
@@ -179,7 +178,7 @@ const renderButton = () => {
   }
 
   if (
-    (currentSection === "Scheduled Meeting" || currentSection === "Schedule")
+    (currentSection === "Scheduled Meeting" || currentSection === "Calender")
   ) {
     return (
       <button
@@ -214,7 +213,7 @@ const renderButton = () => {
         <div className="flex items-center gap-3 flex-wrap">
           {renderButton()}
           <button
-            onClick={() => router.push("/supervisor/ui/calendar")}
+            onClick={() => router.push("/teacher/ui/schedule")}
             className="p-2.5 bg-white dark:bg-gray-700 rounded-lg"
           >
             <CalendarDays className="w-4 h-4 text-gray-800 dark:text-white" />
@@ -356,6 +355,7 @@ const renderButton = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 }

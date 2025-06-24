@@ -7,7 +7,7 @@ import TeacherHeader from '../../components/TeacherHeader'
 const Schedules = () => {
   return (
     <BaseLayout>
-       <TeacherHeader currentSection="Schedule" />
+       <TeacherHeader currentSection="Calender" />
         <div className='p-4 mx-auto w-[1250px] pr-12'>
             <NextClass />
             <ScheduledClasses />
