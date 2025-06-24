@@ -717,13 +717,13 @@ function LiveClass() {
     <BaseLayout>
       <div className="flex h-screen bg-[#E6E9ED]">
         {isFormData ? (
-          <div className="min-h-screen bg-[#E6E9ED] p-4 w-full" >
+          <div className="min-h-screen bg-[#E6E9ED] p-4 w-full">
             <div className="">
               <h1 className="text-[25px] font-semibold text-gray-800 mb-3">
                 Trial Class
               </h1>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 w-full max-w-4xl">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 w-full">
                 {/* Form Section */}
                 <form className="bg-white w-full  rounded-2xl shadow-md p-4 mx-auto ">
                   <h2 className="text-lg font-semibold mb-6 text-gray-800">
@@ -740,7 +740,7 @@ function LiveClass() {
                         type="text"
                         name="firstName"
                         value={formData?.student.studentFirstName}
-                        className="w-[250px] px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
                     </div>
@@ -915,10 +915,9 @@ function LiveClass() {
                 </form>
 
                 {/* Student Info Card */}
-                <div className=" w-full rounded-2xl shadow-md mx-auto bg-white justify-between flex flex-col">
-                  <div>
+                <div className="w-full  rounded-2xl shadow-md mx-auto bg-white overflow-hidden ">
                   {/* Header Section */}
-                  <div className="relative bg-[#4A5263] h-60   flex justify-end items-start p-4 rounded-t-2xl">
+                  <div className="relative bg-[#4A5263] h-60 flex justify-end items-start p-4 rounded-t-2xl">
                     {/* Top-right Icon */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -936,22 +935,23 @@ function LiveClass() {
                     </svg>
 
                     {/* Profile Image */}
-                    <div className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-1/2 w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-md">
+                    <div className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-white rounded-full flex items-center justify-center shadow-md border-4 border-white">
                       <img
                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100&h=100"
                         alt="Student avatar"
-                        className="w-100 h-24 rounded-full object-cover"
+                        className="w-[180px] h-[180px] rounded-full object-cover"
                       />
                     </div>
                   </div>
 
                   {/* Student Info */}
-                  <div className="pt-16 px-6 pb-6 bg-white">
+                  <div className="flex flex-col justify-between">
+                  <div className="pt-32 px-6 pb-6 bg-white">
                     <div className="border-t border-gray-200 pt-6 space-y-4">
                       <div className="flex justify-between text-sm text-gray-800">
                         <span className="font-semibold">Full Name</span>
                         <span>
-                          {formData?.student.studentFirstName}
+                          {formData?.student.studentFirstName}{" "}
                           {formData?.student.studentLastName}
                         </span>
                       </div>
@@ -973,14 +973,13 @@ function LiveClass() {
                       </div>
                     </div>
                   </div>
-                  </div>
 
                   {/* Trial Countdown */}
-                  <div className="mt-6">
+                  <div className=" px-4 mt-[90px]">
                     <NextTrailSession />
                   </div>
-
-             
+                  </div>
+                  
                 </div>
               </div>
             </div>
