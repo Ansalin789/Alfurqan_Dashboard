@@ -7,6 +7,7 @@ import axios from "axios"
 import BaseLayout1 from "@/components/BaseLayout1"
 import moment from "moment"
 import AcademicHeader from "../../components/academicHeader"
+import { useSearchParams } from "next/navigation"
 
 interface ClassScheduleResponse {
   totalCount: number
@@ -66,11 +67,11 @@ const ManageTeachersSchedule = () => {
   const [filteredMeetings, setFilteredMeetings] = useState<ClassSchedule[]>([])
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-    // Add a new state for tracking if we're creating a new schedule
   const [isCreatingNewSchedule, setIsCreatingNewSchedule] = useState(false)
 
-  const [rescheduleDate , setRescheduleDate] = useState("");
+  const Search = useSearchParams()
+  const teacherId = Search.get("_id")
+  const [rescheduleDate, setRescheduleDate] = useState("")
 
   const [formData, setFormData] = useState({
     date: moment().format("YYYY-MM-DD"),
@@ -82,9 +83,11 @@ const ManageTeachersSchedule = () => {
   })
 
   const tabs = ["monthly", "weekly", "daily"] as const
-  useEffect(()=>{
-  setRescheduleDate(formData.date);
-  },[formData.date]);
+
+  // Sync rescheduleDate with formData.date
+  useEffect(() => {
+    setRescheduleDate(formData.date)
+  }, [formData.date])
 
   const meetingTypeColors = {
     "quran class": {
@@ -112,13 +115,16 @@ const ManageTeachersSchedule = () => {
           console.error("❌ AcademicCoachAuthToken not found")
           return
         }
-        const teacherId = "685149d90c2b24d70a12e3ea"
-        const response = await axios.get(`https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${teacherId}`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+
+        const response = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${teacherId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           },
-        })
+        )
 
         let scheduleData: ClassSchedule[] = []
         if (response.data?.classSchedule) {
@@ -136,17 +142,19 @@ const ManageTeachersSchedule = () => {
           // Initialize with today's date
           const today = new Date()
           setSelectedDate(today)
-          setIsCreatingNewSchedule(true) // Start in "create new" mode
-          
+          setIsCreatingNewSchedule(true)
+
           // Set form data with today's date as default
+          const todayFormatted = moment(today).format("YYYY-MM-DD")
           setFormData({
-            date: moment(today).format("YYYY-MM-DD"),
+            date: todayFormatted,
             fromTime: moment().format("HH:mm"),
             toTime: moment().add(1, "hour").format("HH:mm"),
             comment: "",
             meetingId: "",
             applyToAll: false,
           })
+          setRescheduleDate(todayFormatted)
         }
       } catch (error) {
         console.error("Error fetching meetings:", error)
@@ -154,8 +162,49 @@ const ManageTeachersSchedule = () => {
     }
 
     fetchMeetings()
-  }, [])
+  }, [teacherId])
 
+  // Handle tab switching with proper state updates
+  const handleTabSwitch = (newView: "monthly" | "weekly" | "daily") => {
+    setActiveView(newView)
+
+    // Reset selected date and update form data based on current view
+    const today = new Date()
+    setSelectedDate(today)
+
+    // Update current date for the new view
+    setCurrentDate(today)
+
+    // Check if there are meetings for today and update form accordingly
+    const todayMeetings = getMeetingsForDate(today)
+    const todayFormatted = moment(today).format("YYYY-MM-DD")
+
+    if (todayMeetings.length > 0) {
+      setIsCreatingNewSchedule(false)
+      const firstMeeting = todayMeetings[0]
+      setFormData({
+        date: todayFormatted,
+        fromTime: firstMeeting.startTime?.[0] || moment().format("HH:mm"),
+        toTime: firstMeeting.endTime?.[0] || moment().add(1, "hour").format("HH:mm"),
+        comment: "",
+        meetingId: firstMeeting._id,
+        applyToAll: false,
+      })
+    } else {
+      setIsCreatingNewSchedule(true)
+      setFormData({
+        date: todayFormatted,
+        fromTime: moment().format("HH:mm"),
+        toTime: moment().add(1, "hour").format("HH:mm"),
+        comment: "",
+        meetingId: "",
+        applyToAll: false,
+      })
+    }
+
+    setRescheduleDate(todayFormatted)
+    setFilteredMeetings(todayMeetings)
+  }
 
   const getMeetingTypeColor = (meetingName: string) => {
     const lowerName = meetingName.toLowerCase()
@@ -175,11 +224,13 @@ const ManageTeachersSchedule = () => {
   }
 
   const handlePrevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1)
+    setCurrentDate(newDate)
   }
 
   const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1)
+    setCurrentDate(newDate)
   }
 
   const formatMonthYear = (date: Date) => {
@@ -212,18 +263,18 @@ const ManageTeachersSchedule = () => {
     })
   }
 
-   const handleDateClick = (date: Date) => {
+  const handleDateClick = (date: Date) => {
     setSelectedDate(date)
-    // setRescheduleDate("");
     const dayMeetings = getMeetingsForDate(date)
     setFilteredMeetings(dayMeetings)
 
+    const dateFormatted = moment(date).format("YYYY-MM-DD")
+
     if (dayMeetings.length > 0) {
-      // If there are meetings on this date, we're in "edit" mode
       setIsCreatingNewSchedule(false)
       const firstMeeting = dayMeetings[0]
       setFormData({
-        date: moment(date).format("YYYY-MM-DD"),
+        date: dateFormatted,
         fromTime: firstMeeting.startTime?.[0] || moment().format("HH:mm"),
         toTime: firstMeeting.endTime?.[0] || moment().add(1, "hour").format("HH:mm"),
         comment: "",
@@ -231,10 +282,9 @@ const ManageTeachersSchedule = () => {
         applyToAll: false,
       })
     } else {
-      // If no meetings, we're in "create new" mode
       setIsCreatingNewSchedule(true)
       setFormData((prev) => ({
-        date: moment(date).format("YYYY-MM-DD"),
+        date: dateFormatted,
         fromTime: prev.fromTime || moment().format("HH:mm"),
         toTime: prev.toTime || moment().add(1, "hour").format("HH:mm"),
         comment: "",
@@ -242,18 +292,21 @@ const ManageTeachersSchedule = () => {
         applyToAll: false,
       }))
     }
+
+    setRescheduleDate(dateFormatted)
   }
 
-
-  // Handle date change from form
-  const handleDateChange = (newDate: string) => {
+  // Handle reschedule date change with proper synchronization
+  const handleRescheduleDateChange = (newDate: string) => {
     const date = new Date(newDate)
     setSelectedDate(date)
+    setRescheduleDate(newDate)
 
     const dayMeetings = getMeetingsForDate(date)
     setFilteredMeetings(dayMeetings)
 
     if (dayMeetings.length > 0) {
+      setIsCreatingNewSchedule(false)
       const firstMeeting = dayMeetings[0]
       setFormData({
         date: newDate,
@@ -264,6 +317,7 @@ const ManageTeachersSchedule = () => {
         applyToAll: false,
       })
     } else {
+      setIsCreatingNewSchedule(true)
       setFormData((prev) => ({
         ...prev,
         date: newDate,
@@ -281,24 +335,14 @@ const ManageTeachersSchedule = () => {
       if (!token) throw new Error("No auth token found")
 
       if (isCreatingNewSchedule) {
-        // Handle creating a new schedule
-        // You'll need to implement this based on your API
-        console.log("Creating new schedule for", formData.date)
-        // Example API call:
-        // await axios.post(`https://api.blackstoneinfomaticstech.com/classShedule`, {
-        //   ...formData,
-        //   teacherId: "685149d90c2b24d70a12e3ea"
-        // }, {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // })
+        console.log("Creating new schedule for", rescheduleDate)
         alert("New schedule created successfully!")
       } else {
-        // Handle rescheduling an existing meeting
         if (!formData.meetingId) {
           throw new Error("No meeting selected to reschedule")
         }
 
-        const meetingToReschedule = meetings.find(m => m._id === formData.meetingId)
+        const meetingToReschedule = meetings.find((m) => m._id === formData.meetingId)
         if (!meetingToReschedule) {
           throw new Error("Meeting not found")
         }
@@ -316,8 +360,8 @@ const ManageTeachersSchedule = () => {
           course: meetingToReschedule.course,
           package: meetingToReschedule.package,
           sessionClassType: meetingToReschedule.sessionClassType || "REGULARCLASS",
-          sessionStarttime:  "",
-          sessionsEndtime:  "",
+          sessionStarttime: "",
+          sessionsEndtime: "",
           startTime: [{ value: formData.fromTime, label: formData.fromTime }],
           endTime: [{ value: formData.toTime, label: formData.toTime }],
           totalHourse: "",
@@ -333,22 +377,24 @@ const ManageTeachersSchedule = () => {
           lastUpdatedDate: new Date().toISOString(),
         }
 
-        await axios.put(`https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`, payload, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+        await axios.put(
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-        })
+        )
 
-        // Refresh the meetings data
         const refreshResponse = await axios.get(
           `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${meetingToReschedule.teacher.teacherId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         )
-        
+
         setMeetings(refreshResponse.data?.classSchedule || refreshResponse.data?.students || [])
         alert("Schedule updated successfully!")
-        // setRescheduleDate("");
       }
     } catch (error: any) {
       console.error("Error:", error)
@@ -356,14 +402,6 @@ const ManageTeachersSchedule = () => {
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  // Add this helper function to calculate hours
-  const calculateHours = (start: string, end: string) => {
-    const [startH, startM] = start.split(":").map(Number)
-    const [endH, endM] = end.split(":").map(Number)
-    const totalMinutes = endH * 60 + endM - (startH * 60 + startM)
-    return Number.parseFloat((totalMinutes / 60).toFixed(2))
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -379,7 +417,7 @@ const ManageTeachersSchedule = () => {
         {tabs.map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveView(tab)}
+            onClick={() => handleTabSwitch(tab)}
             className={`capitalize ${
               activeView === tab ? "text-[#576cbc] border-b-2 border-[#576cbc]" : "text-gray-400 hover:text-[#576cbc]"
             } pb-1 transition-colors duration-200`}
@@ -546,6 +584,7 @@ const ManageTeachersSchedule = () => {
   }
 
   const DailyView = () => {
+    // Update daily view when currentDate changes
     useEffect(() => {
       handleDateClick(currentDate)
     }, [currentDate])
@@ -686,8 +725,8 @@ const ManageTeachersSchedule = () => {
                   {isCreatingNewSchedule ? "Schedule New Meeting" : "Reschedule Meeting"}
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {isCreatingNewSchedule 
-                    ? "Select date and time for new meeting" 
+                  {isCreatingNewSchedule
+                    ? "Select date and time for new meeting"
                     : "Modify the date and time for this meeting"}
                 </p>
               </div>
@@ -700,13 +739,7 @@ const ManageTeachersSchedule = () => {
                   <input
                     type="date"
                     value={rescheduleDate}
-                    onChange={(e) => {
-                      // handleDateChange(e.target.value)
-                      // const newDate = new Date(e.target.value)
-                      // const dayMeetings = getMeetingsForDate(newDate)
-                      // setIsCreatingNewSchedule(dayMeetings.length === 0)
-                      setRescheduleDate(e.target.value);
-                    }}
+                    onChange={(e) => handleRescheduleDateChange(e.target.value)}
                     min={moment().format("YYYY-MM-DD")}
                     className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -736,22 +769,6 @@ const ManageTeachersSchedule = () => {
                     />
                   </div>
                 </div>
-
-                {!isCreatingNewSchedule && (
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="applyToAll"
-                      checked={formData.applyToAll}
-                      onChange={(e) => handleInputChange("applyToAll", e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300 text-[#576cbc] focus:ring-[#576cbc]"
-                    />
-                    <label htmlFor="applyToAll" className="ml-2 block text-xs md:text-sm text-gray-700 dark:text-gray-300">
-                      Apply to all future classes with this student
-                    </label>
-                  </div>
-                )}
-
                 <div>
                   <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Comment
@@ -777,16 +794,10 @@ const ManageTeachersSchedule = () => {
                   onClick={handleFormSubmit}
                   disabled={isSubmitting}
                   className={`px-6 md:px-8 py-2 md:py-2.5 text-white text-xs md:text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                    isSubmitting
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-[#576cbc] hover:bg-[#4a5ba3]"
+                    isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#576cbc] hover:bg-[#4a5ba3]"
                   }`}
                 >
-                  {isSubmitting 
-                    ? "Processing..." 
-                    : isCreatingNewSchedule 
-                      ? "Create Schedule" 
-                      : "Update Schedule"}
+                  {isSubmitting ? "Processing..." : isCreatingNewSchedule ? "Create Schedule" : "Update Schedule"}
                 </button>
               </div>
             </div>
@@ -796,4 +807,6 @@ const ManageTeachersSchedule = () => {
     </BaseLayout1>
   )
 }
+
 export default ManageTeachersSchedule
+
