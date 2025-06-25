@@ -121,7 +121,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null
+        const token = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null
         if (!token) {
           console.error("❌ AcademicCoachAuthToken not found")
           return
@@ -325,7 +325,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
     setIsSubmitting(true)
 
     try {
-      const token = localStorage.getItem("TeacherAuthToken")
+      const token = localStorage.getItem("AcademicCoachAuthToken")
       if (!token){ 
         throw new Error("No auth token found")
     }
