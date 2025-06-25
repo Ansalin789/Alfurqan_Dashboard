@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import TeacherHeader from "../../components/TeacherHeader";
 import { MdTune } from "react-icons/md";
+import { closeSync } from "fs";
 
 interface Student {
   id: string;
@@ -37,11 +38,11 @@ interface Earning {
   studentName: string;
   course: string;
   amount: number;
-  classDateTime: number;
+  classDateTime: string;
   courseDuration: number;
-  courseType: number;
+  courseType: string;
   date: string;
-  status: "Paid" | "Pending";
+  status: "Active" | "Pending";
 }
 
 type ViewType = "students" | "classes" | "earnings";
@@ -83,35 +84,37 @@ function Analytics() {
       studentName: "Samantha William",
       course: "Tajweed",
       amount: 150,
-      classDateTime: 150,
+      classDateTime: "June 20 2023",
       courseDuration: 150,
-      courseType: 150,
+      courseType: "REGULAR ClASS",
       date: "March 15, 2024",
-      status: "Paid",
+      status: "Active",
     },
     {
       id: "PAY002",
       studentName: "Jordan Nico",
       course: "Arabic",
       amount: 200,
-      classDateTime: 150,
+      classDateTime: "June 20 2023",
       courseDuration: 150,
-      courseType: 150,
+      courseType: "REGULAR ClASS",
       date: "March 14, 2024",
-      status: "Pending",
+      status: "Active",
     },
     {
       id: "PAY003",
       studentName: "Nadila Adja",
       course: "Quran",
       amount: 175,
-      classDateTime: 150,
+     classDateTime: "June 20 2023",
       courseDuration: 150,
-      courseType: 150,
+       courseType: "REGULAR ClASS",
       date: "March 13, 2024",
-      status: "Paid",
+      status: "Active",
     },
   ];
+
+
   interface Student {
     studentId: string;
     studentFirstName: string;
@@ -131,6 +134,9 @@ function Analytics() {
     _id: string;
     classDay: string[];
     package: string;
+    course:{
+      courseName:string;
+    }
     preferedTeacher: string;
     totalHourse: number;
     startDate: string;
@@ -138,6 +144,7 @@ function Analytics() {
     startTime: string[];
     endTime: string[];
     scheduleStatus: string;
+    sessionClassType: string;
     status: string;
     createdBy: string;
     createdDate: string;
@@ -354,19 +361,19 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("students")}
-                className={`bg-white text-left ${
+                className={`bg-white text-left dark:bg-[#343434]  ${
                   activeView === "students" ? "border-[1px]" : ""
                 } border-[#576CBC] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex items-center justify-between focus:outline-none`}
               >
                 <div className="flex flex-col justify-center">
-                  <h3 className="text-sm font-medium text-[#0f172a] mb-4">
+                  <h3 className="text-sm font-medium text-[#0f172a] mb-4 dark:text-[#fff]">
                     Total Students
                   </h3>
                   <div className="flex items-center gap-2">
-                    <p className="text-[28px] font-bold text-[#0f172a]">
+                    <p className="text-[28px] font-bold text-[#0f172a] dark:text-[#fff] ">
                       {TotalStudents}
                     </p>
-                    <span className="text-xs bg-[#DEFFEC] text-[#010E30] px-2 py-1 rounded-full font-medium flex items-center">
+                    <span className="text-xs bg-[#DEFFEC]  text-[#010E30] px-2 py-1 rounded-full font-medium flex items-center">
                       <svg
                         className="w-3 h-3 mr-1"
                         fill="none"
@@ -384,7 +391,7 @@ function Analytics() {
                     </span>
                   </div>
                 </div>
-                <div className="w-16 h-16 rounded-full bg-[#e0e7ff] flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-[#e0e7ff] flex items-center justify-center dark:bg-[#2C2C2C]">
                   <Image
                     src="/assets/images/Layer 49.svg"
                     alt="Student Icon"
@@ -398,16 +405,16 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("classes")}
-                className={`bg-white text-left ${
+                className={`bg-white text-left dark:bg-[#343434]  ${
                   activeView === "classes" ? "border-[1px]" : ""
                 } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
               >
                 <div className="flex flex-col justify-center">
-                  <h3 className="text-sm font-medium text-[#0f172a] mb-4">
+                  <h3 className="text-sm font-medium text-[#0f172a] dark:text-[#fff] mb-4">
                     Classes
                   </h3>
                   <div className="flex items-center gap-2">
-                    <p className="text-[28px] font-bold text-[#0f172a]">
+                    <p className="text-[28px] font-bold text-[#0f172a] dark:text-[#fff]">
                       {TotalClasses}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
@@ -430,7 +437,7 @@ function Analytics() {
                     </div>
                   </div>
                 </div>
-                <div className="w-16 h-16 rounded-full bg-[#E3FAFF] flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-[#E3FAFF] dark:bg-[#2C2C2C] flex items-center justify-center">
                   <Image
                     src="/assets/images/Classes.svg"
                     alt="Classes Icon"
@@ -444,16 +451,18 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("earnings")}
-                className={`bg-white text-left ${
-                  activeView === "earnings" ? "border-[3px]" : ""
-                } border-[#1C3557] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
+                className={`bg-white text-left dark:bg-[#343434]  ${
+                  activeView === "earnings" ? "border-[1px]" : ""
+                } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
               >
                 <div className="flex flex-col justify-center">
-                  <h3 className="text-sm font-medium text-[#0f172a] mb-4">
+                  <h3 className="text-sm font-medium text-[#0f172a] dark:text-[#fff] mb-4">
                     Earnings
                   </h3>
                   <div className="flex items-center gap-2">
-                    <p className="text-2xl font-bold text-[#0f172a]">$45,000</p>
+                    <p className="text-2xl font-bold text-[#0f172a] dark:text-[#fff]">
+                      $45,000
+                    </p>
                     <div className="flex items-center gap-1 mt-1">
                       <span className="text-xs bg-[#DEFFEC] text-[#010E30] px-2 py-1 rounded-full font-medium flex items-center">
                         <svg
@@ -474,7 +483,7 @@ function Analytics() {
                     </div>
                   </div>
                 </div>
-                <div className="w-16 h-16 rounded-full bg-[#dcfce7] flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-[#dcfce7] dark:bg-[#2C2C2C] flex items-center justify-center">
                   <Image
                     src="/assets/images/Earnings.svg"
                     alt="Earnings Icon"
@@ -525,7 +534,7 @@ function Analytics() {
                         Student ID{" "}
                       </th>
                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                        Name{" "}
+                        Student Name{" "}
                       </th>
                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Course{" "}
@@ -545,7 +554,7 @@ function Analytics() {
                     </tr>
                   </thead>
                   <tbody className="bg-white  dark:bg-[#343434] dark:divide-gray-600">
-                    {sortedStudents.slice(0, 3).map((schedule) => (
+                    {sortedStudents.slice(0, 10).map((schedule) => (
                       <tr
                         key={schedule.student.studentId}
                         className={`text-[12px] h-[50px] ${"bg-[#fff] dark:bg-[#2C2C2C]"}`}
@@ -560,10 +569,10 @@ function Analytics() {
                         </td>
 
                         <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                          {schedule.package}
+                          {schedule.course.courseName}
                         </td>
                         <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                          {schedule.scheduleStatus}
+                          {schedule.sessionClassType}
                         </td>
                         <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                           {new Date(schedule.startDate).toLocaleDateString(
@@ -590,96 +599,66 @@ function Analytics() {
               )}
 
               {activeView === "classes" && (
-                <table className="table-auto w-full">
-                  <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
-                    <tr>
-                      <th className="px-6 py-3 text-center">
-                        Class Name{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("name")}
-                        />
-                      </th>
-                      <th className="px-6 py-3 text-center">
+                   <table
+                  className="table-auto xw-full"
+                  style={{ width: "100%", tableLayout: "fixed" }}
+                >
+                  <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                    <tr className="font-medium">
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Student ID{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("id")}
-                        />
                       </th>
-                      <th className="px-6 py-3 text-center">
+                         <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        Student Name{" "}
+                      </th>
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Courses{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("instructor")}
-                        />
                       </th>
-                      <th className="px-6 py-3 text-center">
-                        Course Type{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("schedule")}
-                        />
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        Class Type{" "}
                       </th>
-                      <th className="px-6 py-3 text-center">
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Course Duration{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("students")}
-                        />
                       </th>
-                      <th className="px-6 py-3 text-center">
-                        Class-Date & time{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("type")}
-                        />
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        Class Date{" "}
                       </th>
-                      <th className="px-6 py-3 text-center">
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Status{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("status")}
-                        />
                       </th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {sortedClasses.slice(0, 3).map((cls) => (
-                      <tr
+                  <tbody className="bg-white  dark:bg-[#343434] dark:divide-gray-600">
+                    {sortedClasses.slice(0, 10).map((cls) => (
+                    <tr
                         key={cls._id}
-                        className="text-[11px] font-medium mt-2"
-                        style={{
-                          backgroundColor: "rgba(230, 233, 237, 0.22)",
-                        }}
+                        className={`text-[12px] h-[50px] ${"bg-[#fff] dark:bg-[#2C2C2C]"}`}
                       >
-                        <td className="px-4 py-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-5 h-5 bg-[#DBDBDB] rounded-md"></div>
-                            <span className="px-6 py-2 text-center">
-                              Trail Class
-                            </span>
-                          </div>
+                        <td  className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">{cls._id}</td>
+                        <td  className="px-3 py-2 text-[#3D8FDE] font-medium text-left">
+                          {cls.student.studentFirstName}
                         </td>
-                        <td className="px-6 py-2 text-center">{cls._id}</td>
-                        <td className="px-6 py-2 text-center">{cls.package}</td>
-                        <td className="px-6 py-2 text-center">
-                          {cls.scheduleStatus}
+                         <td  className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          {cls.course.courseName}
                         </td>
-                        <td className="px-6 py-2 text-center">
+                         <td  className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          {cls.sessionClassType}
+                        </td>
+                        <td  className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                           {cls.totalHourse}
                         </td>
-                        <td className="px-6 py-2 text-center">
-                          {new Date(cls.startDate).toLocaleDateString()}
+                        <td  className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                            {new Date(cls.startDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "2-digit",
+                              year: "numeric",
+                            }
+                          )}
                         </td>
-                        <td className="px-6 py-1 text-center">
-                          <span
-                            className={`px-2.5 py-1 ${
-                              cls.status === "Ongoing"
-                                ? "bg-[#4ade80]/10 text-[#4ade80]"
-                                : "bg-gray-100 text-[#1e293b]"
-                            } rounded-lg text-[10px] border border-[#4ade80]`}
-                          >
+                       <td className="px-4 py-3">
+                          <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] border border-[#299350] rounded-lg text-[11px]">
                             {cls.status}
                           </span>
                         </td>
@@ -690,110 +669,68 @@ function Analytics() {
               )}
 
               {activeView === "earnings" && (
-                <table className="table-auto w-full">
-                  <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
-                    <tr>
-                      <th className="px-6 py-3 text-center">
-                        Name{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("studentName")}
-                        />
+                      <table
+                  className="table-auto xw-full"
+                  style={{ width: "100%", tableLayout: "fixed" }}
+                >
+                  <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                    <tr className="font-medium">
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        Student Id{" "}
                       </th>
-                      <th className="px-6 py-3 text-center">
-                        Student ID{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("id")}
-                        />
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        Student Name{" "}
                       </th>
-                      <th className="px-6 py-3 text-center">
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Courses{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("course")}
-                        />
                       </th>
-                      <th className="px-6 py-3 text-center">
-                        Course Type{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("courseType")}
-                        />
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        Class Type{" "}
                       </th>
-                      <th className="px-6 py-3 text-center">
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Course Duration{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("courseDuration")}
-                        />
                       </th>
-                      <th className="px-6 py-3 text-center">
-                        Class Date-Time{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("classDateTime")}
-                        />
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        Class Date{" "}
                       </th>
-                      <th className="px-6 py-3 text-center">
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Amount{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("amount")}
-                        />
                       </th>
-                      <th className="px-6 py-3 text-center">
+                      
+                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Status{" "}
-                        <FaSort
-                          className="inline ml-2 cursor-pointer"
-                          onClick={() => handleSort("status")}
-                        />
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {sortedEarnings.map((earning) => (
-                      <tr
+                       <tr
                         key={earning.id}
-                        className="text-[11px] font-medium mt-2"
-                        style={{
-                          backgroundColor: "rgba(230, 233, 237, 0.22)",
-                        }}
+                        className={`text-[12px] h-[50px] ${"bg-[#fff] dark:bg-[#2C2C2C]"}`}
                       >
-                        <td className="px-4 py-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-5 h-5 bg-[#DBDBDB] rounded-md"></div>
-                            <span className="px-6 py-2 text-center">
-                              {earning.id}
-                            </span>
-                          </div>
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          {earning.id}
                         </td>
-                        <td className="px-6 py-2 text-center">
+                        <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left">
                           {earning.studentName}
                         </td>
-                        <td className="px-6 py-2 text-center">
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                           {earning.course}
                         </td>
-                        <td className="px-6 py-2 text-center">
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                           {earning.courseType}
                         </td>
-                        <td className="px-6 py-2 text-center">
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                           {earning.courseDuration}
                         </td>
-                        <td className="px-6 py-2 text-center">
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                           {earning.classDateTime}
                         </td>
-                        <td className="px-6 py-2 text-center">
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                           ${earning.amount}
-                        </td>
-                        <td className="px-6 py-2 text-center">
-                          <span
-                            className={`px-2.5 py-1 ${
-                              earning.status === "Paid"
-                                ? "bg-[#4ade80]/10 text-[#4ade80] border border-[#4ade80] px-5"
-                                : "bg-yellow-100 border border-yellow-600 text-yellow-600 px-2.5"
-                            } rounded-lg text-[10px]`}
-                          >
+                        </td> 
+                         <td className="px-4 py-3">
+                          <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] border border-[#299350] rounded-lg text-[11px]">
                             {earning.status}
                           </span>
                         </td>
@@ -806,7 +743,7 @@ function Analytics() {
 
             <div className="flex justify-end">
               <button
-                className="text-[#fff] mt-4 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
+                className=" mt-4 text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-4 py-2 text-sm font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
                 onClick={() => {
                   if (activeView === "students") {
                     router.push("/teacher/ui/analytics/totalstudents");

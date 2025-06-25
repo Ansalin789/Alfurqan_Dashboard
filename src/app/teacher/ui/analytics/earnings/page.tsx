@@ -1,125 +1,142 @@
-'use client';
+"use client";
 
-
+import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import BaseLayout from "@/components/BaseLayout";
+import Pagination from "@/components/Pagination";
 import { Search } from "lucide-react";
 import React, { useState } from "react";
-import { FaSort } from 'react-icons/fa';
+import { FaSort } from "react-icons/fa";
+import { MdTune } from "react-icons/md";
 
 const Earnings = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const filteredData = data.filter(row =>
+  const filteredData = data.filter((row) =>
     row.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const currentData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <BaseLayout>
-    <div className="p-8 mx-auto w-[1250px] pr-16">
-        <h1 className="text-2xl font-semibold text-gray-800 p-2 mb-10">Earnings</h1>
-        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
-        <div>
-          <div className="p-4 pt-6 justify-between flex">
-            <h2 className="text-lg pl-10 font-semibold text-[#1e293b] mb-3">أرباحي</h2>
-            <div className="relative shadow-ld rounded-xl">
-              <Search className="absolute left-3 top-4 -translate-y-1/2 text-gray-500 w-3 h-3" />
-              <input
-                type="text" 
-                placeholder="Search"
-                className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] shadow-md rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#223857] w-56"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="table-auto w-full">
-              <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
-                <tr>
-                  {[
-                    "Name",
-                    "Student ID",
-                    "Courses",
-                    "Course Type",
-                    "Course Duration",
-                    "Class - Date & Time",
-                    "Amount",
-                    "Status",
-                  ].map((header) => (
-                    <th
-                      key={header}
-                      className="px-1 py-3 text-center"
-                    >
-                      {header} <FaSort className="inline ml-1" />
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="text-[11px]">
-                {currentData.map((row, index) => (
-                  <tr key={row.id} className="text-[12px] font-medium mt-2"
-                  style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
-                    <td className="px-5 py-2 text-center"><div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-[#DBDBDB] rounded-md"></div>
-                        <span className="px-2 py-2 text-center">{row.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-2 text-center">{row.id}</td>
-                    <td className="px-5 py-2 text-center">{row.course}</td>
-                    <td className="px-5 py-2 text-center">{row.type}</td>
-                    <td className="px-5 py-2 text-center">{row.duration}</td>
-                    <td className="px-5 py-2 text-center">{row.datetime}</td>
-                    <td className="px-5 py-2 text-center">{row.amount}</td>
-                    <td className="px-5 py-2 text-center">
-                        {(() => {
-                            let statusClass = "";
-                            if (row.status === "Completed") {
-                            statusClass =
-                                "bg-[#4cbc9a04] text-[#4CBC9A] rounded-lg border border-[#4CBC9A] text-[9px]";
-                            } else if (row.status === "Re Schedule") {
-                            statusClass =
-                                "bg-[#fec74f2a] text-[#FEC64F] rounded-lg border border-[#FEC64F] text-[9px]";
-                            } else {
-                            statusClass =
-                                "bg-[#fc6a573a] text-[#FC6B57] rounded-lg border border-[#FC6B57] text-[9px]";
-                            }
-                            return (
-                            <span className={`px-3 py-1 rounded-full text-[12px] ${statusClass}`}>
-                                {row.status}
-                            </span>
-                            );
-                        })()}
-                    </td>
+      <TeacherHeader currentSection="My Earnings" />
+      <div className="md:p-0 mx-auto">
+        <div className="h-full w-full  flex flex-col justify-between">
+          <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-6">
+            <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by keyword"
+                  className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                  // value={searchText}
+                  // onChange={(e) => handleSearch(e.target.value)}
+                />
+              </div>
 
-                    <td className="px-5 py-2 text-center">
-                      <span className="cursor-pointer text-gray-500">...</span>
-                    </td>
+              <div
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                // onClick={() => setIsFilterModalOpen(true)}
+              >
+                {/* <BsFilterLeft /> */}
+                <MdTune className="w-4 h-4" />
+                <span>Filter</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                <span className="text-left -ml-60 ">
+                  {/* Showing {currentItems.length} of {paginatedData.length} */}
+                </span>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table
+                className="table-auto w-full"
+                style={{ tableLayout: "fixed" }}
+              >
+                <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                  <tr className="font-medium">
+                    {[
+                      "Student ID",
+                      "Name",
+
+                      "Courses",
+                      "Course Type",
+                      "Course Duration",
+                      "date",
+                      "Amount",
+                      "Status",
+                    ].map((header) => (
+                      <th
+                        key={header}
+                        className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]"
+                      >
+                        {header}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          </div>
-          <div className="flex items-center justify-between p-4">
-            <p className="text-[11px] text-gray-600">Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} data</p>
-            <div className="flex items-center space-x-2">
-              {[...Array(totalPages)].map((i, index) => (
-                <button
-                  key={i}
-                  className={`px-3 py-1 text-[10px] ${currentPage === index + 1 ? 'text-white bg-[#374557]' : 'text-gray-600 bg-gray-200'} rounded-md hover:bg-gray-800`}
-                  onClick={() => setCurrentPage(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              ))}
+                </thead>
+                <tbody className="text-[11px]">
+                  {currentData.map((row, index) => (
+                    <tr
+                      key={row.id}
+                      className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
+                    >
+                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                        {row.name}
+                      </td>
+                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                        {row.id}
+                      </td>
+
+                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                        {row.course}
+                      </td>
+                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                        {row.type}
+                      </td>
+                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                        {row.duration}
+                      </td>
+                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                         {new Date(row.datetime).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "2-digit",
+                              year: "numeric",
+                            }
+                          )}
+                      </td>
+                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                        {row.amount}
+                      </td>
+                      <td className="text-[10px] font-semibold px-5 py-2 rounded-lg ">
+                        <span className="text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px] py-1  rounded-lg">
+                          {row.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
-    </div>
+      </div>
     </BaseLayout>
   );
 };
@@ -174,7 +191,7 @@ const data = [
     datetime: "January 3, 2020 - 9:00–10:30 AM",
     amount: "$25",
     status: "Canceled",
-  }
+  },
 ];
 
 export default Earnings;
