@@ -25,7 +25,7 @@ const Earnings = () => {
 
   return (
     <BaseLayout>
-      <TeacherHeader currentSection="My Earnings" />
+      <TeacherHeader currentSection="Earnings" />
       <div className="md:p-0 mx-auto">
         <div className="h-full w-full  flex flex-col justify-between">
           <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-6">
@@ -72,6 +72,7 @@ const Earnings = () => {
                       "Course Type",
                       "Course Duration",
                       "date",
+                      "Time",
                       "Amount",
                       "Status",
                     ].map((header) => (
@@ -117,6 +118,9 @@ const Earnings = () => {
                           )}
                       </td>
                       <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                        10.00
+                      </td>
+                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
                         {row.amount}
                       </td>
                       <td className="text-[10px] font-semibold px-5 py-2 rounded-lg ">
@@ -150,7 +154,7 @@ const data = [
     duration: "30 minutes",
     datetime: "January 2, 2020 - 9:00–10:30 AM",
     amount: "$04",
-    status: "Completed",
+    status: "Active",
   },
   {
     name: "Jordan Nico",
@@ -160,7 +164,7 @@ const data = [
     duration: "60 minutes",
     datetime: "January 2, 2020 - 11:00–12:00 AM",
     amount: "$30",
-    status: "Re Schedule",
+    status: "Active",
   },
   {
     name: "Nadila Adja",
@@ -170,7 +174,7 @@ const data = [
     duration: "45 minutes",
     datetime: "January 3, 2020 - 9:00–10:30 AM",
     amount: "$25",
-    status: "Canceled",
+    status: "Active",
   },
   {
     name: "Nadila Adja",
@@ -180,7 +184,7 @@ const data = [
     duration: "45 minutes",
     datetime: "January 3, 2020 - 9:00–10:30 AM",
     amount: "$25",
-    status: "Canceled",
+    status: "Active",
   },
   {
     name: "Nadila Adja",
@@ -190,7 +194,7 @@ const data = [
     duration: "45 minutes",
     datetime: "January 3, 2020 - 9:00–10:30 AM",
     amount: "$25",
-    status: "Canceled",
+    status: "Active",
   },
 ];
 

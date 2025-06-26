@@ -187,13 +187,16 @@ const Classes = () => {
                       Courses
                     </th>
                     <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                      Course Type
+                      Class Type
                     </th>
                     <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
                       Course Duration
                     </th>
                     <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
                       Date
+                    </th>
+                     <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                      Time
                     </th>
                     <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
                       Status
@@ -233,6 +236,9 @@ const Classes = () => {
                               year: "numeric",
                             }
                           )}
+                        </td>
+                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          10.00
                         </td>
                         <td className="text-[10px] font-semibold px-5 py-2 rounded-lg ">
                           <span className="text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px] py-1  rounded-lg">
