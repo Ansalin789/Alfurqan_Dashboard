@@ -13,6 +13,7 @@ import EarningAnalytics from '../../components/EarningAnalytics';
 import TeachingActivity from '../../components/TeachingActivity';
 import UpcomingTask from '../../components/UpcomingTask';
 import StudentsCard from '../../components/Students';
+import TeacherHeader from '../../components/TeacherHeader';
 
 
 // Register Chart.js components
@@ -25,6 +26,7 @@ export default function Academic() {
   return (
     <div>
       <BaseLayout>
+       <TeacherHeader currentSection="Dashboard" />
         <div className="flex flex-col lg:flex-row p-2 w-full">
           <div className="flex-1 pr-8 pl-4">
           <header className="flex p-2">

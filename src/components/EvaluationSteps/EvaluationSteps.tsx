@@ -1285,7 +1285,7 @@ const Step6 = ({
     teacher: isGroupClass
       ? { teacherId: '', teacherName: '', teacherEmail: '' }
       : {
-          teacherId: selectedTeacher?._id ?? "",
+          teacherId: selectedTeacher?.userId ?? "",
           teacherName: selectedTeacher?.userName ?? "",
           teacherEmail: selectedTeacher?.email ?? "",
         },

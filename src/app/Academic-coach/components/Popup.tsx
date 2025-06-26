@@ -83,6 +83,24 @@ const Popup: React.FC<PopupProps> = ({
   });
 
   const [users, setUsers] = useState<User[]>([]);
+  const [trailWrite, setTrailWrite] = useState(false);
+
+  //RoleAccess
+
+  useEffect(() => {
+    const roleAccessRaw = localStorage.getItem("AcademicRolePermission");
+    if (roleAccessRaw) {
+      try {
+        const roleAccess = JSON.parse(roleAccessRaw);
+        const modules = roleAccess?.academicmodules || roleAccess;
+
+        setTrailWrite(modules?.trailmanagement?.write === true); // ✅ already present
+      } catch (error) {
+        console.error("Invalid AcademicRolePermission JSON", error);
+      }
+    }
+  }, []);
+
   console.log(users);
 
   const getAllUsers = async (): Promise<GetAllUsersResponse> => {
@@ -282,17 +300,12 @@ const Popup: React.FC<PopupProps> = ({
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 Country
               </label>
-              <select
+              <input
                 name="country"
                 value={formData.country}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select Country</option>
-                <option value="USA">USA</option>
-                <option value="India">India</option>
-                {/* add more countries as needed */}
-              </select>
+              />
             </div>
 
             {/* City */}
@@ -300,17 +313,12 @@ const Popup: React.FC<PopupProps> = ({
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 City
               </label>
-              <select
+              <input
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select City</option>
-                <option value="Texas">Texas</option>
-                <option value="Delhi">Delhi</option>
-                {/* add more cities as needed */}
-              </select>
+              />
             </div>
 
             {/* Preferred Teacher */}
@@ -318,16 +326,12 @@ const Popup: React.FC<PopupProps> = ({
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 Preferred Teacher
               </label>
-              <select
+              <input
                 name="preferredTeacher"
                 value={formData.preferredTeacher}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
+              />
             </div>
 
             {/* Course */}
@@ -335,16 +339,13 @@ const Popup: React.FC<PopupProps> = ({
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 Course
               </label>
-              <select
+              <input
+                type="text"
                 name="course"
                 value={formData.course}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="">Select Course</option>
-                <option value="Arabic">Arabic</option>
-                <option value="Quran">Quran</option>
-              </select>
+              />
             </div>
 
             {/* Number of Students */}
@@ -369,11 +370,17 @@ const Popup: React.FC<PopupProps> = ({
               <input
                 type="text"
                 name="date"
-                value={formData.date ? new Date(formData.date).toLocaleDateString('en-US', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric'
-                }).replace(/\//g, '-') : ''}
+                value={
+                  formData.date
+                    ? new Date(formData.date)
+                        .toLocaleDateString("en-US", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                        .replace(/\//g, "-")
+                    : ""
+                }
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
               />
@@ -399,15 +406,12 @@ const Popup: React.FC<PopupProps> = ({
               <label className="block mb-1 text-xs font-medium text-gray-700 dark:text-[#D6D6D6]">
                 Evaluation Status
               </label>
-              <select
+              <input
                 name="status"
-                value={formData.status}
+                value={formData.evaluationStatus}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:border-[#293552] outline-none  dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              >
-                <option value="Pending">Pending</option>
-                <option value="Completed">Completed</option>
-              </select>
+              />
             </div>
           </div>
 
@@ -428,8 +432,14 @@ const Popup: React.FC<PopupProps> = ({
           {/* Start Evaluation Button */}
           <div className="flex justify-end">
             <button
-              className="bg-[#576CBC] text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all duration-300 text-sm font-medium"
-              onClick={handleStart}
+              className={`px-5 py-2 rounded-lg transition-all duration-300 text-sm font-medium 
+                ${
+                  trailWrite
+                    ? "bg-[#576CBC] text-white hover:shadow-lg"
+                    : "bg-[#576CBC] text-white hover:shadow-lg cursor-not-allowed"
+                }`}
+              onClick={trailWrite ? handleStart : undefined}
+              disabled={!trailWrite}
             >
               <span>Start Evaluation</span>
             </button>

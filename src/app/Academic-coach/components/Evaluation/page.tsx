@@ -10,12 +10,14 @@ import axios from "axios";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import Pagination from "@/components/Pagination";
+import { getSocket } from "@/app/utils/socket";
 
 interface Student {
   learningInterest: string; // Replace with the exact type if known
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
+  studentEmail:string;
   studentPhone: number;
   studentCountry: string;
   preferredTeacher: string;
@@ -46,6 +48,7 @@ interface TransformedUser {
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
+  studentEmail:string;
   number: string;
   country: string;
   course: string; // Assuming this corresponds to `learningInterest`
@@ -83,6 +86,78 @@ interface GetAllUsersResponse {
   data: User[];
   message?: string; // Make message optional
 }
+interface ClassPayload {
+  academicCoachId: string;
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    studentGender: string;
+    studentPhone: number;
+    studentCity: string;
+    studentCountry: string;
+    studentCountryCode: string;
+    learningInterest?: string;
+    numberOfStudents: number;
+    preferredTeacher: string;
+    preferredFromTime?: string;
+    preferredToTime?: string;
+    timeZone: string;
+    referralSource: string;
+    preferredDate?: string;
+    evaluationStatus: string;
+    status: string;
+    createdDate: Date;
+    createdBy: string;
+  };
+  classType: string;
+  teacher: {
+    teacherName: string;
+  };
+  classDay?: string[]; // assuming it's an array of days like ['Monday', 'Wednesday']
+  startTime?: string[];
+  endTime?: string[];
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  subscription: {
+    subscriptionName: string;
+  };
+  planTotalPrice: number;
+  classStartDate: Date | string;
+  classEndDate: Date | string;
+  classStartTime: string;
+  classEndTime: string;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  accomplishmentTime?: string;
+  studentRate: number;
+  studentStatus: string;
+  classStatus: string;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  teacherStatus: string;
+  status: string;
+  createdDate: Date;
+  createdBy: string;
+  updatedDate: Date;
+  updatedBy: string;
+}
+
 
 const getAllUser = async (): Promise<{
   success: boolean;
@@ -159,6 +234,7 @@ const getAllUser = async (): Promise<{
     };
   }
 };
+
 
 // Update the getAllUsers function to fetch from your API
 const getAllUsers = async (): Promise<GetAllUsersResponse> => {
@@ -511,6 +587,71 @@ const TrailManagement = () => {
     };
     fetchEvaluationUsers();
   }, []);
+  useEffect(()=>{
+ const academicId = typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
+        if(!academicId) return;
+     const socket = getSocket(academicId);
+     const handleList = ( data :{event : string , data : User | ClassPayload , sender : string })=>{
+         console.log("📩 Received WebSocket Data:", data);
+        if ('studentId' in data.data) {
+    const user = data.data as User;
+    const formatted: User = {
+      studentId: user.studentId,
+      fname: user.fname,
+      lname: user.lname,
+      email: user.email,
+      number: user.number,
+      country: user.country,
+      course: user.course,
+      preferredTeacher: user.preferredTeacher,
+      date: new Date(user.date).toLocaleDateString(),
+      time: user.time,
+      evaluationStatus: user.evaluationStatus ?? "PENDING",
+      status: "PENDING",
+    };
+
+    console.log("➡️ Action: create", formatted.studentId);
+    setFilteredUsers((prev) => [...prev, formatted]);
+    setUsers((pre)=> [...pre,formatted]);
+
+  } else{
+    const classPayload = data.data as ClassPayload;
+    const student = classPayload.student;
+
+    console.log("➡️ Action: update", student.studentId);
+
+    setFilteredUsers((prev) =>
+      prev.map((user) =>
+        user.studentId === student.studentId
+          ? {
+              ...user,
+              evaluationStatus: student.evaluationStatus ?? "PENDING",
+              status: classPayload.studentStatus ?? "NOT JOINED",
+            }
+          : user
+      )
+    );
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.studentId === student.studentId
+          ? {
+              ...user,
+              evaluationStatus: student.evaluationStatus ?? "PENDING",
+              status: classPayload.studentStatus ?? "NOT JOINED",
+            }
+          : user
+      )
+    );
+  }
+        }
+
+    socket.on("academicStudentList",handleList);
+    return () =>{
+      socket.off("academicStudentList",handleList);
+    }
+},[]);
 
   const router = useRouter();
   const handleSyncClick = () => {
@@ -670,13 +811,13 @@ const TrailManagement = () => {
     setCurrentPage(1); // Reset to first page when search changes
   };
 
-  if (errorMessage) {
-    return (
-      <BaseLayout1>
-        <div className="min-h-screen p-2">{errorMessage}</div>
-      </BaseLayout1>
-    );
-  }
+ if (errorMessage) {
+  return (
+    <div className="min-h-screen flex items-center justify-center text-xl font-semibold text-red-600">
+      {errorMessage === "Failed to fetch users" ? "Not Found" : errorMessage}
+    </div>
+  );
+}
 
   // Pagination logic: calculate currentItems based on filteredUsers, currentPage, and itemsPerPage
   const indexOfLastItem = currentPage * itemsPerPage;

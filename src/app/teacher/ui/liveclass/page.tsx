@@ -1,24 +1,22 @@
-'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Timer,
-  ChevronDown,
-  LogOut
-} from 'lucide-react';
-import { JitsiMeeting } from '@jitsi/react-sdk';
-import BaseLayout from '@/components/BaseLayout';
-import axios from 'axios';
-import Link from 'next/link';
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import { Timer, ChevronDown, LogOut } from "lucide-react";
+import { JitsiMeeting } from "@jitsi/react-sdk";
+import BaseLayout from "@/components/BaseLayout";
+import axios from "axios";
+import Link from "next/link";
+import NextTrailSession from "../../components/NextTrailSession";
+import TeacherHeader from "../../components/TeacherHeader";
 interface Student {
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
   studentEmail: string;
-  city:string;
-  country:string;
-  trailId:string;
-  course:string;
-  classStatus:string;
+  city: string;
+  country: string;
+  trailId: string;
+  course: string;
+  classStatus: string;
 }
 
 interface Teacher {
@@ -37,11 +35,11 @@ interface ClassData {
   totalHourse: number;
   startDate: string;
   endDate: string;
-  startTime: string[];  // Array of strings for startTime
-  endTime: string[];    // Array of strings for endTime
+  startTime: string[]; // Array of strings for startTime
+  endTime: string[]; // Array of strings for endTime
   scheduleStatus: string;
   classLink: string;
-  sessionStatus:string;
+  sessionStatus: string;
   status: string;
   createdBy: string;
   createdDate: string;
@@ -55,240 +53,272 @@ interface ApiResponse {
 interface Attendance {
   id: string | null;
   studentId: string;
-  name:string;
-  startTime:string | null;
-  endTime:string | null;
-  joined :boolean;
-  joinTime:string;
-  leaveTime:string;
+  name: string;
+  startTime: string | null;
+  endTime: string | null;
+  joined: boolean;
+  joinTime: string;
+  leaveTime: string;
 }
- interface FormData {
-    _id: string;
-    student: {
-      city: string;
-      studentId: string;
-      studentFirstName: string;
-      studentLastName: string;
-      studentEmail: string;
-      studentGender: string;
-      studentPhone: number;
-      studentCity: string;
-      studentCountry: string;
-      studentCountryCode: string;
-      learningInterest: string;
-      numberOfStudents: number;
-      preferredTeacher: string;
-      preferredFromTime: string;
-      preferredToTime: string;
-      timeZone: string;
-      referralSource: string;
-      preferredDate: string; // ISO date string
-      evaluationStatus: string;
-      status: string;
-      createdDate: string; // ISO date string
-      createdBy: string;
-    };
-    isLanguageLevel: boolean;
-    languageLevel: string;
-    isReadingLevel: boolean;
-    readingLevel: string;
-    isGrammarLevel: boolean;
-    grammarLevel: string;
-    hours: number;
-    subscription: {
-      subscriptionName: string;
-    };
-    planTotalPrice: number;
-    classStartDate: string; // ISO date string
-    classEndDate: string; // ISO date string
-    classStartTime: string;
-    classEndTime: string;
-    accomplishmentTime: string;
-    studentRate: number;
-    gardianName: string;
-    gardianEmail: string;
-    gardianPhone: string;
-    gardianCity: string;
-    gardianCountry: string;
-    gardianTimeZone: string;
-    gardianLanguage: string;
-    assignedTeacher: string;
-    assignedTeacherId: string;
-    assignedTeacherEmail: string;
-    studentStatus: string;
-    classStatus: string;
-    comments: string;
-    trialClassStatus: string;
-    invoiceStatus: string;
-    paymentLink: string;
-    paymentStatus: string;
+interface FormData {
+  _id: string;
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    studentGender: string;
+    studentPhone: number;
+    studentCity: string;
+    studentCountry: string;
+    studentCountryCode: string;
+    learningInterest: string;
+    numberOfStudents: number;
+    preferredTeacher: string;
+    preferredFromTime: string;
+    preferredToTime: string;
+    timeZone: string;
+    referralSource: string;
+    preferredDate: string; // ISO date string
+    evaluationStatus: string;
     status: string;
     createdDate: string; // ISO date string
     createdBy: string;
-    updatedDate: string; // ISO date string
-    updatedBy: string;
-    expectedFinishingDate: number;
-    __v: number;
-  }
+  };
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  subscription: {
+    subscriptionName: string;
+  };
+  planTotalPrice: number;
+  classStartDate: string; // ISO date string
+  classEndDate: string; // ISO date string
+  classStartTime: string;
+  classEndTime: string;
+  accomplishmentTime: string;
+  studentRate: number;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  assignedTeacherId: string;
+  assignedTeacherEmail: string;
+  studentStatus: string;
+  classStatus: string;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  status: string;
+  createdDate: string; // ISO date string
+  createdBy: string;
+  updatedDate: string; // ISO date string
+  updatedBy: string;
+  expectedFinishingDate: number;
+  __v: number;
+}
 
 function LiveClass() {
   const trailId = "68526aa20c2b24d70a1300cd";
-    const [showFeedback, setShowFeedback] = useState(false);
-    const [showPopup, setShowPopup] = useState(false);
-    const [ratings, setRatings] = useState([0, 0, 0]);
-    const [feedback, setFeedback] = useState('');
-    const [startTime, setStartTime] = useState<string | null>(null);
-    const [classData, setClassData] = useState<ClassData | null>(null);
-  const[isFormData,setIsFormData]=useState(true);
-  const [roomName, setRoomName] = useState('');
-    const [attendance,setAttendance]=useState<Attendance[]>([]);
-    const [formData, setFormData] = useState<FormData>();
-      const [trialClassStatus, setTrialClassStatus] = useState("");
-      const [studentStatus, setStudentStatus] = useState("");
-      const [paymentStatus, setPaymentStatus] = useState("");
-      const [paymentLink, setPaymentLink] = useState("");
-      
-        const [options, setOptions] = useState({
-          trialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
-          studentStatus: ["JOINED", "NOT JOINED", "WAITING"],
-          paymentStatus: ["PAID", "FAILED", "PENDING"],
-        });
-  
-  const filterUpcomingClass = (response: { totalCount: number; classSchedule: any[] }): ClassData | null => {
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [ratings, setRatings] = useState([0, 0, 0]);
+  const [feedback, setFeedback] = useState("");
+  const [startTime, setStartTime] = useState<string | null>(null);
+  const [classData, setClassData] = useState<ClassData | null>(null);
+  const [isFormData, setIsFormData] = useState(true);
+  const [roomName, setRoomName] = useState("");
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [formData, setFormData] = useState<FormData>();
+  const [trialClassStatus, setTrialClassStatus] = useState("");
+  const [studentStatus, setStudentStatus] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [paymentLink, setPaymentLink] = useState("");
+
+  const [options, setOptions] = useState({
+    trialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
+    studentStatus: ["JOINED", "NOT JOINED", "WAITING"],
+    paymentStatus: ["PAID", "FAILED", "PENDING"],
+  });
+
+  const filterUpcomingClass = (response: {
+    totalCount: number;
+    classSchedule: any[];
+  }): ClassData | null => {
     const classes = response.classSchedule;
-  
+
     if (!Array.isArray(classes)) {
       console.log("Expected an array, but received:", classes);
       return null;
     }
-  
+
     const now = new Date();
     let upcomingClass: ClassData | null = null;
-  
+
     classes.forEach((cls) => {
-      console.log(`Processing Class ID: ${cls._id}, startDate: ${cls.startDate}, startTime:`, cls.startTime);
-  
+      console.log(
+        `Processing Class ID: ${cls._id}, startDate: ${cls.startDate}, startTime:`,
+        cls.startTime
+      );
+
       // Validate startDate
       if (!cls.startDate || typeof cls.startDate !== "string") {
-        console.log(`Skipping class ${cls._id} due to missing or invalid startDate`);
+        console.log(
+          `Skipping class ${cls._id} due to missing or invalid startDate`
+        );
         return;
       }
-  
+
       const classDate = new Date(cls.startDate);
       if (isNaN(classDate.getTime())) {
         console.log(`Invalid startDate for class ${cls._id}:`, cls.startDate);
         return;
       }
-  
+
       // Validate startTime and endTime
       if (!Array.isArray(cls.startTime) || !Array.isArray(cls.endTime)) {
-        console.log(`Skipping class ${cls._id} due to incorrect startTime or endTime format`, cls.startTime, cls.endTime);
+        console.log(
+          `Skipping class ${cls._id} due to incorrect startTime or endTime format`,
+          cls.startTime,
+          cls.endTime
+        );
         return;
       }
-  
+
       // Assuming startTime and endTime are arrays of strings in "HH:mm" format
       const startTime = cls.startTime[0];
       const endTime = cls.endTime[0];
-  
+
       const startTimeParts = startTime.split(":").map(Number);
       const endTimeParts = endTime.split(":").map(Number);
-  
+
       if (startTimeParts.length !== 2 || endTimeParts.length !== 2) {
-        console.log(`Skipping class ${cls._id} due to invalid time format: startTime=${startTime}, endTime=${endTime}`);
+        console.log(
+          `Skipping class ${cls._id} due to invalid time format: startTime=${startTime}, endTime=${endTime}`
+        );
         return;
       }
-  
+
       const [startHours, startMinutes] = startTimeParts;
       const [endHours, endMinutes] = endTimeParts;
-  
+
       if (
-        isNaN(startHours) || isNaN(startMinutes) || 
-        isNaN(endHours) || isNaN(endMinutes) ||
-        startHours < 0 || startHours > 23 || 
-        endHours < 0 || endHours > 23 ||
-        startMinutes < 0 || startMinutes > 59 || 
-        endMinutes < 0 || endMinutes > 59
+        isNaN(startHours) ||
+        isNaN(startMinutes) ||
+        isNaN(endHours) ||
+        isNaN(endMinutes) ||
+        startHours < 0 ||
+        startHours > 23 ||
+        endHours < 0 ||
+        endHours > 23 ||
+        startMinutes < 0 ||
+        startMinutes > 59 ||
+        endMinutes < 0 ||
+        endMinutes > 59
       ) {
-        console.log(`Skipping class ${cls._id} due to out-of-range time values: startTime=${startTime}, endTime=${endTime}`);
+        console.log(
+          `Skipping class ${cls._id} due to out-of-range time values: startTime=${startTime}, endTime=${endTime}`
+        );
         return;
       }
-  
+
       // Set start and end times correctly in 24-hour format
       classDate.setHours(startHours, startMinutes, 0, 0);
       const classEndDate = new Date(classDate);
       classEndDate.setHours(endHours, endMinutes, 0, 0);
-  
+
       console.log(
-        `Checking class: ${cls._id}, Start: ${classDate.toISOString()}, End: ${classEndDate.toISOString()}, Now: ${now.toISOString()}`
+        `Checking class: ${
+          cls._id
+        }, Start: ${classDate.toISOString()}, End: ${classEndDate.toISOString()}, Now: ${now.toISOString()}`
       );
-  
+
       // Check if the class is currently ongoing
       if (now >= classDate && now <= classEndDate) {
         console.log(`Class ${cls._id} is currently LIVE`);
         upcomingClass = cls;
-      } 
+      }
       // If no live class, find the next upcoming class
-      else if (classDate > now && (!upcomingClass || classDate < new Date(upcomingClass.startDate))) {
+      else if (
+        classDate > now &&
+        (!upcomingClass || classDate < new Date(upcomingClass.startDate))
+      ) {
         console.log(`Class ${cls._id} is in the future`);
         upcomingClass = cls;
       }
     });
-  
+
     console.log("Selected Class:", upcomingClass);
     return upcomingClass;
   };
   // Fetch class data
-  useEffect(()=>{
-      const fetchClassData = async () =>{
-         try{
-           const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+  useEffect(() => {
+    const fetchClassData = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherAuthToken")
+            : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-             
-            const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/evaluationlist/${trailId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-             "Authorization": `Bearer ${token}`
-          },
+        if (!token) {
+          console.error("❌ AdminAuthToken not found");
+          return;
         }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setOptions((prev) => ({
-        trialClassStatus: prev.trialClassStatus.includes(data.trialClassStatus)
-          ? prev.trialClassStatus
-          : [...prev.trialClassStatus, data.trialClassStatus],
-        studentStatus: prev.studentStatus.includes(data.studentStatus)
-          ? prev.studentStatus
-          : [...prev.studentStatus, data.studentStatus],
-        paymentStatus: prev.paymentStatus.includes(data.paymentStatus)
-          ? prev.paymentStatus
-          : [...prev.paymentStatus, data.paymentStatus],
-      }));
-      setTrialClassStatus(data.trialClassStatus);
-      setStudentStatus(data.studentStatus);
-      setPaymentStatus(data.paymentStatus);
-      setPaymentLink(
-        `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(data._id)}`
-      );
-      setFormData(data);
-      console.log(data);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-      }
-      fetchClassData();
-  },[]);
 
- const updateClick = async (id: string | undefined) => {
+        const response = await fetch(
+          `https://api.blackstoneinfomaticstech.com/evaluationlist/${trailId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setOptions((prev) => ({
+          trialClassStatus: prev.trialClassStatus.includes(
+            data.trialClassStatus
+          )
+            ? prev.trialClassStatus
+            : [...prev.trialClassStatus, data.trialClassStatus],
+          studentStatus: prev.studentStatus.includes(data.studentStatus)
+            ? prev.studentStatus
+            : [...prev.studentStatus, data.studentStatus],
+          paymentStatus: prev.paymentStatus.includes(data.paymentStatus)
+            ? prev.paymentStatus
+            : [...prev.paymentStatus, data.paymentStatus],
+        }));
+        setTrialClassStatus(data.trialClassStatus);
+        setStudentStatus(data.studentStatus);
+        setPaymentStatus(data.paymentStatus);
+        setPaymentLink(
+          `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(
+            data._id
+          )}`
+        );
+        setFormData(data);
+        console.log(data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchClassData();
+  }, []);
+
+  const updateClick = async (id: string | undefined) => {
     const formDataNames = {
       _id: formData?._id ?? "",
       student: {
@@ -356,21 +386,26 @@ function LiveClass() {
 
     alert(JSON.stringify(formDataNames));
     try {
-     const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("TeacherAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-             "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(formDataNames),
-      });
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+      const response = await fetch(
+        `https://api.blackstoneinfomaticstech.com/evaluation/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formDataNames),
+        }
+      );
 
       console.log("response", response);
       if (!response.ok) {
@@ -401,116 +436,120 @@ function LiveClass() {
       }
     };
 
-
   useEffect(() => {
     const fetchClassData = async () => {
       try {
-        const teacherId =  typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null;
- const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  }
-          if (!teacherId || !token) {
-          console.log('Missing studentId or authToken');
+        const teacherId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherPortalId")
+            : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherAuthToken")
+            : null;
+        if (!token) {
+          console.error("❌ TeacherAuthToken not found");
           return;
         }
-       console.log("teacherid",teacherId);
+        if (!teacherId || !token) {
+          console.log("Missing studentId or authToken");
+          return;
+        }
+        console.log("teacherid", teacherId);
         const response = await axios.get<ApiResponse>(
           `https://api.blackstoneinfomaticstech.com/classShedule/teacher`,
           {
             params: { teacherId },
-             headers:{
-                 'Content-Type': 'application/json',
-        "Authorization":`Bearer ${token}`,
-          }
-         
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
-        
-        console.log('Raw API Response:', response.data.classSchedule); // Check data format
 
-          const nextClass = filterUpcomingClass(response.data);
-          
-          console.log('Filtered Next Class:', nextClass); // Debug if nextClass is valid
+        console.log("Raw API Response:", response.data.classSchedule); // Check data format
 
-          if (nextClass && nextClass.sessionStatus === 'NotCompleted') {
-              console.log("Setting classData to:", nextClass);
-              setClassData(nextClass);
-              setRoomName(nextClass.classLink);
-              setAttendance([{
-                id: "",
-                studentId: nextClass.student.studentId,
-                name: nextClass.student.studentFirstName,
-                startTime: null,
-                endTime: null,
-                joined: false,
-                joinTime: '',
-                leaveTime: ''
-              }
-              ]
-              )
-          } else {
-              console.log("No upcoming class found."); 
-              setClassData(null);
-          }
-    
+        const nextClass = filterUpcomingClass(response.data);
+
+        console.log("Filtered Next Class:", nextClass); // Debug if nextClass is valid
+
+        if (nextClass && nextClass.sessionStatus === "NotCompleted") {
+          console.log("Setting classData to:", nextClass);
+          setClassData(nextClass);
+          setRoomName(nextClass.classLink);
+          setAttendance([
+            {
+              id: "",
+              studentId: nextClass.student.studentId,
+              name: nextClass.student.studentFirstName,
+              startTime: null,
+              endTime: null,
+              joined: false,
+              joinTime: "",
+              leaveTime: "",
+            },
+          ]);
+        } else {
+          console.log("No upcoming class found.");
+          setClassData(null);
+        }
       } catch (err) {
-        console.log('Error loading class details:', err);
+        console.log("Error loading class details:", err);
       }
     };
-  
+
     fetchClassData();
   }, []);
   const handleEndCall = async () => {
     const endCallTime = new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
+      hour: "2-digit",
+      minute: "2-digit",
       hour12: true,
     });
-  
-   
+
     setShowFeedback(true);
-  
-    console.log('startTime:', startTime);
-    console.log('endTime:', endCallTime);
-  
-    if ( !classData?._id || !startTime) {
+
+    console.log("startTime:", startTime);
+    console.log("endTime:", endCallTime);
+
+    if (!classData?._id || !startTime) {
       console.error("Missing class data or start time.");
       return;
     }
-  
+
     const payload = {
       ...classData,
-  classDay: classData.classDay.map((day) => ({
-    label: day,
-    value: day,
-  })),
-  startTime: classData.startTime.map((time) => ({
-    label: time,
-    value: time,
-  })),
-  endTime: classData.endTime.map((time) => ({
-    label: time,
-    value: time,
-  })), 
-      sessionStarttime: startTime,    // new/updated field
-      sessionsEndtime: endCallTime,    // new/updated field
-      sessionClassType:'regular',
-      sessionStatus:'Completed',
+      classDay: classData.classDay.map((day) => ({
+        label: day,
+        value: day,
+      })),
+      startTime: classData.startTime.map((time) => ({
+        label: time,
+        value: time,
+      })),
+      endTime: classData.endTime.map((time) => ({
+        label: time,
+        value: time,
+      })),
+      sessionStarttime: startTime, // new/updated field
+      sessionsEndtime: endCallTime, // new/updated field
+      sessionClassType: "regular",
+      sessionStatus: "Completed",
     };
     console.log(payload);
     try {
       const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+        typeof window !== "undefined"
+          ? localStorage.getItem("TeacherAuthToken")
+          : null;
       const response = await axios.put(
         `https://api.blackstoneinfomaticstech.com/classShedule/${classData._id}`,
-        payload,{
+        payload,
+        {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-            },
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       console.log("Class schedule updated:", response.data);
@@ -518,15 +557,22 @@ function LiveClass() {
       console.error("Failed to update class schedule:", error);
     }
   };
-  
 
-  const StarRating = ({ value, onChange }: { value: number; onChange: (rating: number) => void }) => {
+  const StarRating = ({
+    value,
+    onChange,
+  }: {
+    value: number;
+    onChange: (rating: number) => void;
+  }) => {
     return (
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
-            className={`cursor-pointer text-xl ${star <= value ? "text-yellow-400" : "text-gray-300"}`}
+            className={`cursor-pointer text-xl ${
+              star <= value ? "text-yellow-400" : "text-gray-300"
+            }`}
             onClick={() => onChange(star)}
           >
             ★
@@ -536,19 +582,17 @@ function LiveClass() {
     );
   };
   useEffect(() => {
-    let timeoutId: number | undefined
+    let timeoutId: number | undefined;
     if (showPopup) {
       timeoutId = window.setTimeout(() => {
-        setShowPopup(false)
-      }, 3000)
+        setShowPopup(false);
+      }, 3000);
     }
     return () => {
-      if (timeoutId) clearTimeout(timeoutId)
-    }
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [showPopup]);
   const handleSubmit = async () => {
-   
-
     // Create request body
     const feedbackData = {
       student: {
@@ -585,19 +629,25 @@ function LiveClass() {
     };
 
     try {
-       const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("TeacherAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-      const response = await axios.post("https://api.blackstoneinfomaticstech.com/feedback", feedbackData, {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization" :`Bearer ${token}`
-        },
-      });
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+      const response = await axios.post(
+        "https://api.blackstoneinfomaticstech.com/feedback",
+        feedbackData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.status === 201 || response.status === 200) {
         setShowPopup(true);
@@ -611,18 +661,19 @@ function LiveClass() {
     }
   };
 
-  
   const attendanceRef = useRef(attendance);
-useEffect(() => {
-  attendanceRef.current = attendance;
-}, [attendance]);
-
-  
+  useEffect(() => {
+    attendanceRef.current = attendance;
+  }, [attendance]);
 
   const handleStartSession = () => {
     setIsFormData(false);
   };
-  const categories = ["Listening Ability", "Reading Ability", " Overall Performance"];
+  const categories = [
+    "Listening Ability",
+    "Reading Ability",
+    " Overall Performance",
+  ];
   const [timeRemaining, setTimeRemaining] = useState("");
   useEffect(() => {
     if (!classData) return;
@@ -632,506 +683,661 @@ useEffect(() => {
 
       // Extract class date and time
       const classDate = new Date(classData.startDate);
-      const [hours, minutes] = classData.startTime[0].split(":").map(Number);  // Assuming startTime is an array
+      const [hours, minutes] = classData.startTime[0].split(":").map(Number); // Assuming startTime is an array
 
-      classDate.setHours(hours, minutes, 0, 0);  // Set time for the class
+      classDate.setHours(hours, minutes, 0, 0); // Set time for the class
 
       const diff = classDate.getTime() - now.getTime();
 
       if (diff > 0) {
         const remainingDays = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const remainingHours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const remainingMinutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const remainingHours = Math.floor(
+          (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const remainingMinutes = Math.floor(
+          (diff % (1000 * 60 * 60)) / (1000 * 60)
+        );
 
-        setTimeRemaining(`${remainingDays}d ${remainingHours}h ${remainingMinutes}m`);
+        setTimeRemaining(
+          `${remainingDays}d ${remainingHours}h ${remainingMinutes}m`
+        );
       } else {
         setTimeRemaining("Started");
       }
     };
 
-    updateRemainingTime();  // Initial call
+    updateRemainingTime(); // Initial call
 
-    const timer = setInterval(updateRemainingTime, 60000);  // Update every minute
+    const timer = setInterval(updateRemainingTime, 60000); // Update every minute
 
-    return () => clearInterval(timer);  // Cleanup on unmount
+    return () => clearInterval(timer); // Cleanup on unmount
   }, [classData]);
-  
+
   return (
     <BaseLayout>
-      <div className="flex h-screen bg-[#E6E9ED]">
+      <TeacherHeader currentSection="Trail class" />
+      <div className="flex h-screen">
         {isFormData ? (
-               <div className="min-h-screen bg-[#E6E9ED] p-4">
-               <div className="max-w-[100%] mx-auto">
-                 <h1 className="text-[25px] font-semibold text-gray-800 mb-3">Trial Class</h1>
-                 
-                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                   {/* Form Section */}
-                   <form className="lg:col-span-2 bg-[#1E3F6C] w-full lg:w-[80%] rounded-3xl opacity-[90%] text-white p-5 mx-auto">
-                     <h2 className="text-[14px] font-medium mb-4">Student Details</h2>
-                     
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <div>
-                         <label htmlFor='firtname' className="block text-[12px] mb-2">First name</label>
-                         <input
-                           type="text"
-                           name="firstName"
-                           value={formData?.student.studentFirstName}
-                           
-                           className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
-                           required
-                         />
-                       </div>
-                       
-                       <div>
-                         <label htmlFor='firname'  className="block text-[12px] mb-2">Last name</label>
-                         <input
-                           type="text"
-                           name="lastName"
-                           value={formData?.student.studentLastName}
-                           
-                           className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
-                           required
-                         />
-                       </div>
-         
-                       <div>
-                         <label  htmlFor='fname' className="block text-[12px] mb-2">City</label>
-                         <div className="relative">
-                           <select
-                             name="city"
-                             value="Coimbatote"
-                             className="w-full px-4 text-[12px] py-2 rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
-                             required
-                           >
-                               <option value="Coimbatore">Coimbatore</option>
-                             </select>
-                           <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
-                         </div>
-                       </div>
-         
-                       <div>
-                         <label htmlFor='firthgchgname'  className="block text-[12px] mb-2">Country</label>
-                         <div className="relative">
-                           <select
-                             name="country"
-                             className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
-                             required
-                           >
-                             <option value="Coimbatore">India</option>
-                           </select>
-                           <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
-                         </div>
-                       </div>
-         
-                       <div>
-                         <label htmlFor='firfftname'  className="block text-[12px] mb-2">Trial ID</label>
-                         <input
-                           type="text"
-                           name="trialId"
-                           value="67a06f973e286e72332e18d3"
-                          
-                           className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400"
-                           required
-                         />
-                          
-                       </div>
-         
-                       <div>
-                         <label htmlFor='firtghggname'  className="block text-[12px] mb-2">Course</label>
-                         <div className="relative">
-                           <select
-                             name="course"
-                             value="Quran"
-                             className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 appearance-none"
-                             required
-                           >
-                              <option value="Coimbatore"> Quarn</option>
-                           </select>
-                           <ChevronDown className="absolute text-[#030303] right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" />
-                         </div>
-                       </div>
-                     </div>
-         
-                  <div>
-                <label
-                  htmlFor="studentStatus"
-                  className="block text-black text-xs font-medium"
-                >
-                  Student Status
-                </label>
-                <select
-                  id="studentStatus"
-                  value={studentStatus}
-                  onChange={handleChange("studentStatus")}
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                >
-                  {options.studentStatus.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label
-                  htmlFor="trialClassStatus"
-                  className="block text-black text-xs font-medium"
-                >
-                  Trial Class Status
-                </label>
-                <select
-                  id="trialClassStatus"
-                  value={trialClassStatus}
-                  onChange={handleChange("TrialClassStatus")}
-                  className="w-full mt-2 p-1 bg-gray-200 border border-gray-300 rounded-md text-[10px] text-gray-800"
-                >
-                  {options.trialClassStatus.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-         
-                     <div className="mt-6">
-                       <label htmlFor='fiiugigrtname'  className="block text-[12px] mb-2">Additional Comments (Optional)</label>
-                       <textarea
-                         name="comments"
-                         placeholder="Write your comment here..."
-                         className="w-full px-4 py-2 text-[12px] rounded-lg bg-white text-[#030303] border border-white/20 focus:outline-none focus:border-blue-400 h-24 resize-none"
-                       />
-                     </div>
-         
-                     <div className="mt-6 flex justify-end gap-4">
-                       <button
-                         type="button"
-                         className="px-6 py-2 rounded-lg text-[12px] border border-white/20 hover:bg-white/10 transition-colors"
-                       >
-                         Clear
-                       </button>
-                       <button
-                         type="submit"
-                         onClick={()=>updateClick(trailId)}
-                         className="px-6 py-2 rounded-lg text-[12px] bg-[#587EB4] border-[#2A7CEB] border-2 transition-colors"
-                       >
-                         Save
-                       </button>
-                     </div>
-                   </form>
-                   
-                   {/* Student Info Card */}
-                   <div className=" rounded-lg p-6 h-fit">
-                    <div className='bg-[#fff] p-3 rounded-2xl'>
-                    <div className="flex justify-center">
-                       <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
-                         <img
-                           src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100&h=100"
-                           alt="Student avatar"
-                           className="w-20 h-20 rounded-full object-cover"
-                         />
-                       </div>
-                     </div>
-                     <h2 className="text-xl font-semibold text-center mt-4">
-                       {classData?.student.studentFirstName} {classData?.student.studentLastName}
-                     </h2>
-                     <div className="flex items-center justify-center gap-2 mt-2 text-gray-600">
-                       <Timer size={16} />
-                       <span>{classData?.classDay[0]} - {new Date(classData?.startDate ?? '2022-01-01').toLocaleDateString()}</span>
-                     </div>
-                     <div className="mt-6 text-center">
-                       <p className="text-gray-600 mb-2">Trial Session<br />is Due in</p>
-                       <div className="inline-block relative">
-                         <div className="w-16 h-16 rounded-full border-4 border-blue-500 flex items-center justify-center">
-                           <span className="font-bold text-[10px]">{timeRemaining}</span>
-                         </div>
-                         <span className="text-xs text-gray-500 mt-1 block">Mins</span>
-                       </div>
-                     </div>
+          <div className="min-h-screen p-4 w-full">
+            <div className="">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 w-full">
+                {/* Form Section */}
+                <form className="bg-white dark:bg-[#252525] dark:shadow-lg w-full  rounded-2xl shadow-md p-4 mx-auto ">
+                  <h2 className="text-lg font-semibold mb-6  dark:text-[#FFF] text-gray-800">
+                    Student Details
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* First Name */}
+                    <div>
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
+                        First name
+                      </label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={formData?.student.studentFirstName}
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px] dark:text-[#FFF] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                        required
+                      />
                     </div>
-                     
-         
-                     <button
-                       onClick={handleStartSession}
-                       className="w-full bg-red-500 text-white rounded-lg py-3 mt-6 hover:bg-red-600 transition-colors"
-                     >
-                       Start Trial Session Now
-                     </button>
-         
-                     <div className="mt-4 bg-red-100 rounded-lg p-3 text-sm text-red-800">
-                       Once start session is clicked, link to be sent to the student
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </div>
-        ):(
 
+                    {/* Last Name */}
+                    <div>
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
+                        Last name
+                      </label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={formData?.student.studentLastName}
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px]  dark:text-[#FFF] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                        required
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData?.student.studentEmail}
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                        required
+                      />
+                    </div>
+
+                    {/* Phone Number */}
+                    <div>
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF]  mb-1">
+                        Phone number
+                      </label>
+                      <input
+                        type="text"
+                        name="phone"
+                        value={formData?.student.studentPhone}
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                        required
+                      />
+                    </div>
+
+                    {/* Country */}
+                    <div>
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
+                        Country
+                      </label>
+                      <select
+                        name="country"
+                        value={formData?.student.studentCountry}
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                      >
+                        <option value="USA">USA</option>
+                        <option value="India">India</option>
+                        {/* Add other options as needed */}
+                      </select>
+                    </div>
+
+                    {/* City */}
+                    <div>
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={formData?.student.studentCity}
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                      />
+                    </div>
+
+                    {/* Trial ID */}
+                    <div>
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
+                        Trial ID
+                      </label>
+                      <input
+                        type="text"
+                        name="trialId"
+                        value={formData?.student.studentId}
+                        className="w-full px-4 py-2  dark:bg-[#343434]  dark:border dark:border-[#5C5C5C]  border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                        readOnly
+                      />
+                    </div>
+
+                    {/* Course */}
+                    <div>
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
+                        Course
+                      </label>
+                      <input
+                        name="course"
+                        value={formData?.student.learningInterest}
+                        className="w-full px-4 py-2  dark:bg-[#343434]  dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                      />
+                    
+                    </div>
+
+                    {/* Class Status */}
+                    <div>
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
+                        Class Status
+                      </label>
+                      <select
+                        name="trialClassStatus"
+                        value={trialClassStatus}
+                        onChange={handleChange("TrialClassStatus")}
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                      >
+                        {options.trialClassStatus.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Student Status */}
+                    <div>
+                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
+                        Student Status
+                      </label>
+                      <select
+                        name="studentStatus"
+                        value={studentStatus}
+                        onChange={handleChange("studentStatus")}
+                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                      >
+                        {options.studentStatus.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Additional Comments */}
+                  <div className="mt-6">
+                    <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
+                      Additional Comments (Optional)
+                    </label>
+                    <textarea
+                      name="comments"
+                      placeholder="Write your comment here..."
+                      className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px] dark:text-[#FFF] text-[#FFF] focus:outline-none focus:ring-2 focus:ring-[#576CBC] h-24 resize-none"
+                    />
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="mt-6 flex justify-end gap-4">
+                    <button
+                      type="button"
+                      className="px-6 py-2 rounded-md  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      onClick={() => updateClick(trailId)}
+                      className="px-6 py-2 rounded-md bg-[#576CBC] text-white text-sm  dark:text-[#FFF] hover:bg-blue-700 transition"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </form>
+
+                {/* Student Info Card */}
+                <div className="w-[460px] -ml-2  rounded-2xl shadow-md mx-auto bg-white dark:bg-[#3B3B3B] overflow-hidden ">
+                  {/* Header Section */}
+                  <div className="relative bg-[#5E6578] h-60 flex justify-end items-start p-4 rounded-t-2xl">
+                    {/* Top-right Icon */}
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M11 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H15C20 22 22 20 22 15V13"
+                        stroke="white"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M16.0399 3.01928L8.15988 10.8993C7.85988 11.1993 7.55988 11.7893 7.49988 12.2193L7.06988 15.2293C6.90988 16.3193 7.67988 17.0793 8.76988 16.9293L11.7799 16.4993C12.1999 16.4393 12.7899 16.1393 13.0999 15.8393L20.9799 7.95928C22.3399 6.59928 22.9799 5.01928 20.9799 3.01928C18.9799 1.01928 17.3999 1.65928 16.0399 3.01928Z"
+                        stroke="white"
+                        stroke-miterlimit="10"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M14.9102 4.15039C15.5802 6.54039 17.4502 8.41039 19.8502 9.09039"
+                        stroke="white"
+                        stroke-miterlimit="10"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z"
+                      />
+                    </svg>
+
+                    {/* Profile Image */}
+                    <div className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-1/2 w-[160px] h-[160px] bg-white rounded-full flex items-center justify-center shadow-md border-4 border-white">
+                      <img
+                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100&h=100"
+                        alt="Student avatar"
+                        className="w-[150px] h-[150px] rounded-full object-cover"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Student Info */}
+                  <div className="flex flex-col justify-between">
+                    <div className="pt-24 px-6 pb-6">
+                      <div className="border-t border-gray-200 pt-6 space-y-4">
+                        <div className="flex justify-between dark:text-[#959595] text-sm text-[#959595]">
+                          <span className="font-regular text-[#010E30] dark:text-[#FFF]">Full Name</span>
+                          <span>
+                            {formData?.student.studentFirstName}{""}
+                            {formData?.student.studentLastName}
+                          </span>
+                        </div>
+                        <div className="flex justify-between dark:text-[#959595] text-sm text-[#959595]">
+                          <span className="font-regular text-[#010E30] dark:text-[#FFF]">Day</span>
+                          <span>{classData?.classDay}</span>
+                        </div>
+                        <div className="flex justify-between dark:text-[#959595] text-sm text-[#959595]">
+                          <span className="font-regular text-[#010E30] dark:text-[#FFF]">Date</span>
+                          <span>
+                            {new Date(
+                              classData?.startDate ?? "2022-01-01"
+                            ).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Trial Countdown */}
+                    <div className=" px-4 mt-[90px]">
+                      <NextTrailSession />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
           <div className="flex flex-col w-full min-h-screen px-4 sm:px-6 md:px-8">
-
-  {/* Centered Popup */}
-  <div className={`
+            {/* Centered Popup */}
+            <div
+              className={`
     fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50
     bg-[#1C3557] text-white px-6 py-3 rounded-xl shadow-lg
     flex items-center gap-3 transition-opacity duration-300
-    ${showPopup ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-  `}>
-    <img src='/assets/images/Check.png' alt='find' className='w-10 mt-1' />
-    <span className="font-semibold text-sm sm:text-base">Submitted Successfully</span>
-  </div>
-
-  {/* Overlay */}
-  <div className={`
-    fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity z-20 duration-300
-    ${showPopup ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-  `} />
-
-  {/* Page Content */}
-  <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl mx-auto py-6">
-    <div className="flex-1 overflow-auto">
-
-      {/* Header */}
-      <div className="relative mb-6">
-        {showFeedback && (
-          <Link href="/supervisor/ui/viewschedule" className="absolute top-0 right-0">
-            <LogOut className="w-6 h-6 text-red-500 hover:text-red-600 transition" />
-          </Link>
-        )}
-        <h1 className="text-xl sm:text-xl font-bold text-[#1C3557]">Live Class</h1>
-      </div>
-
-      {showFeedback ? (
-        <div className="flex flex-col xl:flex-row gap-4 items-stretch justify-center px-4 py-6 w-full">
-
-          {/* Feedback Card */}
-          <div className="bg-white rounded-2xl shadow-md flex-1 w-full flex flex-col">
-            <img
-              src="/assets/images/tajweedmasterclass.png"
-              alt="Tajweed"
-              className="w-full h-40 object-cover rounded-t-2xl"
-            />
-            <div className="p-5 text-center flex-1 flex flex-col justify-center">
-              <h3 className="text-lg text-primary font-semibold mb-1">Masterclass</h3>
-              <h4 className="text-sm text-gray-500 mb-1">
-                {classData?.classDay} - {new Date(classData?.startDate ?? '2022-01-01').toLocaleDateString()}
-              </h4>
-              <p className="text-sm text-gray-600 mb-2">
-                {classData?.startTime[0]} to {classData?.endTime[0]}
-              </p>
-              <p className="text-sm text-gray-800 font-medium mb-1">
-                {classData?.teacher?.teacherName}
-              </p>
-              <span className="text-xs text-gray-400">Session - 12</span>
-            </div>
-          </div>
-
-          {/* Rating Card */}
-          <div className="bg-white rounded-2xl shadow-md flex-1 w-full flex flex-col p-5">
-            <div className="flex-1 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#19216C">
-                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                  </svg>
-                  <h2 className="text-sm text-gray-700 font-medium">Rate this Class</h2>
-                </div>
-
-                {categories.map((category, index) => (
-                  <div key={category} className="mb-3">
-                    <p className="text-xs text-gray-600 mb-1">Rate {category}</p>
-                    <StarRating
-                      value={ratings[index]}
-                      onChange={(rating) => {
-                        const newRatings = [...ratings];
-                        newRatings[index] = rating;
-                        setRatings(newRatings);
-                      }}
-                    />
-                  </div>
-                ))}
-
-                <div className="mt-4">
-                  <h3 className="text-xs text-gray-600 mb-1">Additional Feedback</h3>
-                  <textarea
-                    className="w-full min-h-[100px] p-3 bg-red-50 rounded-lg text-xs
-                      border-none focus:outline-none resize-none placeholder-gray-500"
-                    placeholder="Type your feedback here..."
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <button
-                className="w-full bg-[#1C3557] text-white py-2 px-4 rounded-lg text-xs font-medium mt-4
-                  hover:bg-[#1C3557]/90 transition"
-                onClick={handleSubmit}
-              >
-                Submit Feedback
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="p-1 sm:p-2 relative w-full flex flex-col flex-1 h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] xl:h-[85vh]">
-          {/* Exit Button */}
-          <button
-            onClick={handleEndCall}
-            className="absolute top-4 right-4 cursor-pointer z-10"
-            aria-label="Leave meeting"
-          >
-            <LogOut className="w-6 h-6 text-red-500 hover:text-red-600 transition" />
-          </button>
-
-          {/* Student Info */}
-          <div className="flex justify-between items-start mb-4">
-  <div>
-    <h2 className="text-lg font-medium">
-      {classData?.student.studentFirstName} {classData?.student.studentLastName}
-    </h2>
-    <span className="text-sm text-gray-500">{classData?.student.course}</span>
-  </div>
-
-  <div className="ml-auto w-64">
-  <label htmlFor='attendance-select' className="block text-sm font-semibold mb-1">Attendance</label>
-  <select id="attendance-select" className="w-full border p-2 rounded">
-    {attendance.map((s) => {
-      let statusLabel = '❌ Not Joined';
-
-      if (s.joined) {
-        statusLabel = s.leaveTime
-          ? `🚪 Left at ${s.leaveTime}`
-          : `✅ Joined at ${s.joinTime}`;
-      }
-
-      return (
-        <option key={s.studentId} value={s.studentId}>
-          {s.name} – {statusLabel}
-        </option>
-      );
-    })}
-  </select>
-</div>
-
-</div>
-
-
-          {/* Jitsi Video Box */}
-          <div className="flex-1 min-w-0 w-full h-[50vh] md:h-[60vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
-            {roomName && (
-              <JitsiMeeting
-                roomName={roomName}
-                domain="meet.blackstoneinfomaticstech.com"
-                configOverwrite={{
-                  startWithAudioMuted: false,
-                  startWithVideoMuted: false,
-                  toolbarButtons: [
-                    'microphone',
-                    'camera',
-                    'closedcaptions',
-                    'desktop',
-                    'fullscreen',
-                    'fodeviceselection',
-                    'hangup',
-                    'profile',
-                    'chat',
-                    'settings',
-                    'raisehand',
-                    'videoquality',
-                    'filmstrip',
-                    'shortcuts',
-                    'tileview',
-                    'recording'
-                  ]
-                }}
-                onApiReady={(externalApi) => {
-  type ParticipantLog = {
-    id: string;
-    name?: string;
-    studentId?: string;
-    startCallTime: string;
-    endCallTime?: string;
-  };
-
-  const participantList: ParticipantLog[] = [];
-
-  // ✅ Handle Participant Joined
-  externalApi.addListener('participantJoined', (event: { id: string; displayName?: string }) => {
-    const joinTime = new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
-
-    console.log('Participant displayName:', event.displayName);
-const parts = event.displayName?.split('| ID :');
-console.log('Split parts:', parts);
-
-const name = parts?.[0]?.trim() ?? 'Unknown';
-const studentId = parts?.[1]?.trim() ?? 'N/A';
-
-alert(`Name: ${name}, studentId: ${studentId}`);
-    setAttendance(prev =>
-      prev.map(a =>
-         a.studentId === studentId
-          ? { ...a, id:event.id, joined: true, joinTime:joinTime }
-          : a
-      )
-    );
-  });
-
-  // 🔴 Handle Participant Left
-  externalApi.addListener('participantLeft', (event: { id: string }) => {
-    console.log('participantLeft event fired:', event);
-    const leaveTime = new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
-
-    const participant =attendanceRef.current.find(p => p.id === event.id);
-      console.log('Matching participant:', participant);
-    if (participant) {
-       setAttendance(prev =>
-      prev.map(a =>
-        a.id === event.id 
-          ? { ...a,  leaveTime:leaveTime }
-          : a
-      )
-    );
-      console.log(`🔴 ${participant.name} left at ${leaveTime}`);
-    }
-     else {
-    console.warn(`Participant with id ${event.id} not found in attendance.`);
-  }
-  });
-
-  // 🎥 Host/teacher Joined Call
-  externalApi.addEventListener('videoConferenceJoined', () => {
-    const startCallTime = new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
-
-    console.log('Call started at', startCallTime);
-    setStartTime(startCallTime);
-  });
-}}
-
-                getIFrameRef={(iframeRef) => {
-                  iframeRef.style.border = '0px';
-                  iframeRef.style.height = '100%';
-                  iframeRef.style.width = '100%';
-                }}
+    ${showPopup ? "opacity-100" : "opacity-0 pointer-events-none"}
+  `}
+            >
+              <img
+                src="/assets/images/Check.png"
+                alt="find"
+                className="w-10 mt-1"
               />
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  </div>
-</div>
+              <span className="font-semibold text-sm sm:text-base">
+                Submitted Successfully
+              </span>
+            </div>
 
+            {/* Overlay */}
+            <div
+              className={`
+    fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity z-20 duration-300
+    ${showPopup ? "opacity-100" : "opacity-0 pointer-events-none"}
+  `}
+            />
+
+            {/* Page Content */}
+            <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl mx-auto py-6">
+              <div className="flex-1 overflow-auto">
+                {/* Header */}
+                <div className="relative mb-6">
+                  {showFeedback && (
+                    <Link
+                      href="/supervisor/ui/viewschedule"
+                      className="absolute top-0 right-0"
+                    >
+                      <LogOut className="w-6 h-6 text-red-500 hover:text-red-600 transition" />
+                    </Link>
+                  )}
+                  <h1 className="text-xl sm:text-xl font-bold text-[#1C3557]">
+                    Live Class
+                  </h1>
+                </div>
+
+                {showFeedback ? (
+                  <div className="flex flex-col xl:flex-row gap-4 items-stretch justify-center px-4 py-6 w-full">
+                    {/* Feedback Card */}
+                    <div className="bg-white rounded-2xl shadow-md flex-1 w-full flex flex-col">
+                      <img
+                        src="/assets/images/tajweedmasterclass.png"
+                        alt="Tajweed"
+                        className="w-full h-40 object-cover rounded-t-2xl"
+                      />
+                      <div className="p-5 text-center flex-1 flex flex-col justify-center">
+                        <h3 className="text-lg text-primary font-semibold mb-1">
+                          Masterclass
+                        </h3>
+                        <h4 className="text-sm text-gray-500 mb-1">
+                          {classData?.classDay} -{" "}
+                          {new Date(
+                            classData?.startDate ?? "2022-01-01"
+                          ).toLocaleDateString()}
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {classData?.startTime[0]} to {classData?.endTime[0]}
+                        </p>
+                        <p className="text-sm text-gray-800 font-medium mb-1">
+                          {classData?.teacher?.teacherName}
+                        </p>
+                        <span className="text-xs text-gray-400">
+                          Session - 12
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Rating Card */}
+                    <div className="bg-white rounded-2xl shadow-md flex-1 w-full flex flex-col p-5">
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-4">
+                            <svg
+                              className="w-4 h-4"
+                              viewBox="0 0 24 24"
+                              fill="#19216C"
+                            >
+                              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                            </svg>
+                            <h2 className="text-sm text-gray-700 font-medium">
+                              Rate this Class
+                            </h2>
+                          </div>
+
+                          {categories.map((category, index) => (
+                            <div key={category} className="mb-3">
+                              <p className="text-xs text-gray-600 mb-1">
+                                Rate {category}
+                              </p>
+                              <StarRating
+                                value={ratings[index]}
+                                onChange={(rating) => {
+                                  const newRatings = [...ratings];
+                                  newRatings[index] = rating;
+                                  setRatings(newRatings);
+                                }}
+                              />
+                            </div>
+                          ))}
+
+                          <div className="mt-4">
+                            <h3 className="text-xs text-gray-600 mb-1">
+                              Additional Feedback
+                            </h3>
+                            <textarea
+                              className="w-full min-h-[100px] p-3 bg-red-50 rounded-lg text-xs
+                      border-none focus:outline-none resize-none placeholder-gray-500"
+                              placeholder="Type your feedback here..."
+                              value={feedback}
+                              onChange={(e) => setFeedback(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          className="w-full bg-[#1C3557] text-white py-2 px-4 rounded-lg text-xs font-medium mt-4
+                  hover:bg-[#1C3557]/90 transition"
+                          onClick={handleSubmit}
+                        >
+                          Submit Feedback
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-1 sm:p-2 relative w-full flex flex-col flex-1 h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] xl:h-[85vh]">
+                    {/* Exit Button */}
+                    <button
+                      onClick={handleEndCall}
+                      className="absolute top-4 right-4 cursor-pointer z-10"
+                      aria-label="Leave meeting"
+                    >
+                      <LogOut className="w-6 h-6 text-red-500 hover:text-red-600 transition" />
+                    </button>
+
+                    {/* Student Info */}
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h2 className="text-lg font-medium">
+                          {classData?.student.studentFirstName}{" "}
+                          {classData?.student.studentLastName}
+                        </h2>
+                        <span className="text-sm text-gray-500">
+                          {classData?.student.course}
+                        </span>
+                      </div>
+
+                      <div className="ml-auto w-64">
+                        <label
+                          htmlFor="attendance-select"
+                          className="block text-sm font-semibold mb-1"
+                        >
+                          Attendance
+                        </label>
+                        <select
+                          id="attendance-select"
+                          className="w-full border p-2 rounded"
+                        >
+                          {attendance.map((s) => {
+                            let statusLabel = "❌ Not Joined";
+
+                            if (s.joined) {
+                              statusLabel = s.leaveTime
+                                ? `🚪 Left at ${s.leaveTime}`
+                                : `✅ Joined at ${s.joinTime}`;
+                            }
+
+                            return (
+                              <option key={s.studentId} value={s.studentId}>
+                                {s.name} – {statusLabel}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Jitsi Video Box */}
+                    <div className="flex-1 min-w-0 w-full h-[50vh] md:h-[60vh] rounded-md overflow-hidden shadow-inner border border-gray-300">
+                      {roomName && (
+                        <JitsiMeeting
+                          roomName={roomName}
+                          domain="meet.blackstoneinfomaticstech.com"
+                          configOverwrite={{
+                            startWithAudioMuted: false,
+                            startWithVideoMuted: false,
+                            toolbarButtons: [
+                              "microphone",
+                              "camera",
+                              "closedcaptions",
+                              "desktop",
+                              "fullscreen",
+                              "fodeviceselection",
+                              "hangup",
+                              "profile",
+                              "chat",
+                              "settings",
+                              "raisehand",
+                              "videoquality",
+                              "filmstrip",
+                              "shortcuts",
+                              "tileview",
+                              "recording",
+                            ],
+                          }}
+                          onApiReady={(externalApi) => {
+                            type ParticipantLog = {
+                              id: string;
+                              name?: string;
+                              studentId?: string;
+                              startCallTime: string;
+                              endCallTime?: string;
+                            };
+
+                            const participantList: ParticipantLog[] = [];
+
+                            // ✅ Handle Participant Joined
+                            externalApi.addListener(
+                              "participantJoined",
+                              (event: { id: string; displayName?: string }) => {
+                                const joinTime = new Date().toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  }
+                                );
+
+                                console.log(
+                                  "Participant displayName:",
+                                  event.displayName
+                                );
+                                const parts =
+                                  event.displayName?.split("| ID :");
+                                console.log("Split parts:", parts);
+
+                                const name = parts?.[0]?.trim() ?? "Unknown";
+                                const studentId = parts?.[1]?.trim() ?? "N/A";
+
+                                alert(`Name: ${name}, studentId: ${studentId}`);
+                                setAttendance((prev) =>
+                                  prev.map((a) =>
+                                    a.studentId === studentId
+                                      ? {
+                                          ...a,
+                                          id: event.id,
+                                          joined: true,
+                                          joinTime: joinTime,
+                                        }
+                                      : a
+                                  )
+                                );
+                              }
+                            );
+
+                            // 🔴 Handle Participant Left
+                            externalApi.addListener(
+                              "participantLeft",
+                              (event: { id: string }) => {
+                                console.log(
+                                  "participantLeft event fired:",
+                                  event
+                                );
+                                const leaveTime = new Date().toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  }
+                                );
+
+                                const participant = attendanceRef.current.find(
+                                  (p) => p.id === event.id
+                                );
+                                console.log(
+                                  "Matching participant:",
+                                  participant
+                                );
+                                if (participant) {
+                                  setAttendance((prev) =>
+                                    prev.map((a) =>
+                                      a.id === event.id
+                                        ? { ...a, leaveTime: leaveTime }
+                                        : a
+                                    )
+                                  );
+                                  console.log(
+                                    `🔴 ${participant.name} left at ${leaveTime}`
+                                  );
+                                } else {
+                                  console.warn(
+                                    `Participant with id ${event.id} not found in attendance.`
+                                  );
+                                }
+                              }
+                            );
+
+                            // 🎥 Host/teacher Joined Call
+                            externalApi.addEventListener(
+                              "videoConferenceJoined",
+                              () => {
+                                const startCallTime =
+                                  new Date().toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  });
+
+                                console.log("Call started at", startCallTime);
+                                setStartTime(startCallTime);
+                              }
+                            );
+                          }}
+                          getIFrameRef={(iframeRef) => {
+                            iframeRef.style.border = "0px";
+                            iframeRef.style.height = "100%";
+                            iframeRef.style.width = "100%";
+                          }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </BaseLayout>

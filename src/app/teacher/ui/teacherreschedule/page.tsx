@@ -3,13 +3,11 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Clock } from "lucide-react"
-import axios, { AxiosError } from "axios"
+import axios from "axios"
 import moment from "moment"
 import { useSearchParams } from "next/navigation"
-import BaseLayout1 from "@/components/BaseLayout1"
-import AcademicHeader from "../../components/academicHeader"
-import SuccessPopup from "@/app/supervisor/components/successPopup";
-import FailedPopup from "@/app/supervisor/components/failedPopup";
+import BaseLayout from "@/components/BaseLayout"
+import TeacherHeader from "../../components/TeacherHeader"
 
 interface ClassScheduleResponse {
   totalCount: number
@@ -81,9 +79,7 @@ const TeachersSchedule = () => {
   const Search = useSearchParams()
   const teacherId = Search.get("_id")
   const [rescheduleDate, setRescheduleDate] = useState("")
-    const [success, setSucces] = useState(false);
-    const [failed, setFailed] = useState(false);
-    const [failedMessage, setFailedMessage] = useState("");
+
   const [formData, setFormData] = useState({
     date: moment().format("YYYY-MM-DD"),
     fromTime: moment().format("HH:mm"),
@@ -121,14 +117,14 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null
+        const token = typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null
         if (!token) {
           console.error("❌ AcademicCoachAuthToken not found")
           return
         }
         
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${teacherId}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=685155890c2b24d70a12e620`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -325,7 +321,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
     setIsSubmitting(true)
 
     try {
-      const token = localStorage.getItem("AcademicCoachAuthToken")
+      const token = localStorage.getItem("TeacherAuthToken")
       if (!token){ 
         throw new Error("No auth token found")
     }
@@ -337,8 +333,8 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
           throw new Error("Meeting not found")
         }
 
-        // const formattedStartDate = moment(rescheduleDate).format("YYYY-MM-DD")
-        // const formattedEndDate = moment(rescheduleDate).format("YYYY-MM-DD")
+        const formattedStartDate = moment(rescheduleDate).format("YYYY-MM-DD")
+        const formattedEndDate = moment(rescheduleDate).format("YYYY-MM-DD")
         const classDayName = moment(rescheduleDate).format("dddd")
 
         const payload = {
@@ -354,9 +350,9 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
           sessionsEndtime: "",
           startTime: [{ value: formData.fromTime, label: formData.fromTime }],
           endTime: [{ value: formData.toTime, label: formData.toTime }],
-          totalHourse: 0,
-          startDate: rescheduleDate,
-          endDate: rescheduleDate,
+          totalHourse: "",
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
           scheduleStatus: "Reschedule",
           studentAttendee: "absent",
           teacherAttendee: "absent",
@@ -367,7 +363,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
           lastUpdatedDate: new Date().toISOString(),
         }
 
-       const response= await axios.put(
+        await axios.put(
           `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
           payload,
           {
@@ -377,15 +373,6 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
             },
           },
         )
-        if ([200, 201].includes(response.status)) {
-        setSucces(true);
-        setFormData( {date: moment().format("YYYY-MM-DD"),
-    fromTime: moment().format("HH:mm"),
-    toTime: moment().add(1, "hour").format("HH:mm"),
-    comment: "",
-    meetingId: "",
-    applyToAll: false,});
-      }
 
         const refreshResponse = await axios.get(
           `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${meetingToReschedule.teacher.teacherId}`,
@@ -394,28 +381,10 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
 
         setMeetings(refreshResponse.data?.classSchedule ?? refreshResponse.data?.students ?? [])
       }
-     catch (err) {
-           const error = err as AxiosError;
-     
-           const status = error.response?.status;
-           if (Number(status === 400)) {
-             console.log("please >");
-             setFailedMessage("Please check the form inputs.");
-             setFailed(true);
-           } else if (status === 401) {
-             setFailedMessage("Please login again.");
-             setFailed(true);
-           } else if (status === 403) {
-             setFailedMessage("You don't have permission to perform this action.");
-             setFailed(true);
-           } else if (status === 500) {
-             setFailedMessage("Server error");
-             setFailed(true);
-           } else {
-             setFailed(true);
-             console.error(`Unexpected error: ${status}`);
-           }
-         }
+     catch (error: any) {
+      console.error("Error:", error)
+      alert(`Failed to  ${error.message}`)
+    } 
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -753,8 +722,8 @@ const CalendarControls = ({
   }
 
   return (
-    <BaseLayout1>
-      <AcademicHeader currentSection="Reschedule Calendar" showBackButton={true} />
+    <BaseLayout>
+      <TeacherHeader currentSection="Re-Schedule Class" showBackButton={true} />
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
           {/* Left Side - Calendar View */}
@@ -807,7 +776,7 @@ const CalendarControls = ({
             <div className="p-4 md:p-6">
               <div className="mb-4 md:mb-6">
                 <h3 className="text-base md:text-base font-semibold text-gray-800 dark:text-white">
-                 Add New Schedule
+                 Re-Schedule
                 </h3>
               </div>
 
@@ -853,7 +822,7 @@ const CalendarControls = ({
                 </div>
                 <div>
                   <label htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Comment
+                    Reason for Re-Schedule
                   </label>
                   <textarea
                     value={formData.comment}
@@ -874,7 +843,9 @@ const CalendarControls = ({
                 <button
                   type="submit"
                   onClick={handleFormSubmit}
-                   className="px-3 py-1 text-lg bg-[#576CBC] text-white rounded hover:bg-[#4459A9]"
+                  className={`px-6 md:px-8 py-2 md:py-2.5 text-white text-xs md:text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                    isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#576cbc] hover:bg-[#4a5ba3]"
+                  }`}
                 >
                   Submit
                 </button>
@@ -882,14 +853,8 @@ const CalendarControls = ({
             </div>
           </div>
         </div>
-        {success && (
-        <SuccessPopup onClose={() => setSucces(false)} title="Class Rescheduled" />
-      )}
-      {failed &&  (
-        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
-      )}
       </div>
-    </BaseLayout1>
+    </BaseLayout>
   )
 }
 

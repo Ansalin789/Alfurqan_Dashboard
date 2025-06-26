@@ -500,10 +500,10 @@ export default function ApplicantsPage() {
         console.warn("⚠️ Unknown event type:", data.event);
       }
     };
-
+  
     socket.on("recruitmentlist", handleList);
     return () => {
-      socket.on("recruitmentlist", handleList);
+      socket.off("recruitmentlist", handleList);
     };
   }, []);
 

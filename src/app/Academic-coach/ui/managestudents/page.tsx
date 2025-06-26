@@ -7,21 +7,32 @@ import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import { useRouter } from "next/navigation";
 import AcademicHeader from "../../components/academicHeader";
+import Modal from "react-modal";
+import { getSocket } from "@/app/utils/socket";
 
-interface Student {
-  username: string;
-  createdDate: string | number | Date;
-  studentId: string;
-  student: {
-    studentPhone: number;
-    studentId: string;
-    username: string;
-    createdDate: string;
-  };
-  classScheduleCount: number;
+export interface Student {
   _id: string;
   teacherName: string;
-  level: string;
+  sessionClassType: string;
+  username: string;
+  password: string;
+  role: string;
+  status: string;
+  createdDate: string | number | Date;
+  createdBy: string;
+  updatedDate: string | number | Date;
+  __v: number;
+  classScheduleCount: number;
+  student: {
+    studentId: string;
+    studentEmail: string;
+    studentPhone: string | number;
+    course: string;
+    package: string;
+    city: string;
+    country: string;
+    gender: string;
+  };
 }
 
 interface Users {
@@ -42,6 +53,7 @@ const ManageStudents = () => {
   const [filteredUsers, setFilteredUsers] = useState<Student[] | null>(null);
 
   const router = useRouter();
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   const itemsPerPage = 10;
   const totalPages = Math.ceil(studentData.students.length / itemsPerPage);
@@ -79,6 +91,26 @@ const ManageStudents = () => {
 
     fetchData();
   }, []);
+  useEffect(()=>{
+     const academicId = typeof window !== "undefined"
+               ? localStorage.getItem("AcademicCoachPortalId")
+               : null;
+               if(!academicId) return;
+            const socket = getSocket(academicId);
+            const handleList = ( data : { data : Student  , sender : string }) =>{
+              console.log("web socket");
+               setStudentData((prev) => ({
+    totalCount: prev.totalCount + 1,
+    students: [...prev.students, data.data],
+  }));
+            }
+             
+            socket.on('academicStudentProfile', handleList);
+            return () =>{
+              socket.off('academicStudentProfile', handleList);
+            }
+
+  },[]);
 
   const toggleSelect = (index: number) => {
     setSelectedRows((prev) =>
@@ -112,11 +144,11 @@ const ManageStudents = () => {
     const filtered = studentData.students.filter((item) => {
       const studentId = item.student?.studentId?.toLowerCase() || "";
       const fullName = (item.username || "").toLowerCase();
-      const teacher = (item.teacherName || "").toLowerCase();
+      // const teacher = (item.teacherName || "").toLowerCase();
       const contact = item.student?.studentPhone?.toString() || "";
       const classType = "group class"; // hardcoded in your UI
       const classCount = item.classScheduleCount?.toString() || "";
-      const level = (item.level || "").toLowerCase();
+      // const level = (item.level || "").toLowerCase();
       const joiningDate = new Date(item.createdDate)
         .toLocaleDateString("en-US", {
           month: "short",
@@ -128,11 +160,11 @@ const ManageStudents = () => {
       return (
         studentId.includes(queryLower) ||
         fullName.includes(queryLower) ||
-        teacher.includes(queryLower) ||
+        // teacher.includes(queryLower) ||
         contact.includes(queryLower) ||
         classType.includes(queryLower) ||
         classCount.includes(queryLower) ||
-        level.includes(queryLower) ||
+        // level.includes(queryLower) ||
         joiningDate.includes(queryLower)
       );
     });
@@ -141,6 +173,268 @@ const ManageStudents = () => {
     setCurrentPage(1);
   };
 
+    const FilterModal = ({
+      isOpen,
+      onClose,
+      onApplyFilters,
+      users,
+    }: {
+      isOpen: boolean;
+      onClose: () => void;
+      onApplyFilters: (filters: {
+        studentName: string;
+        studentID: string;
+        Date: string;
+        TeacherName: string;
+        contact: string;
+        scheduledClasses: string;
+        level: string;
+        Time: string;
+        classType: string;
+        status: string;
+      }) => void;
+      users:Student[];
+    }) => {
+      const [filters, setFilters] = useState({
+       studentName:"",
+        studentID: "",
+        Date: "",
+        TeacherName: "",
+        contact: "",
+        scheduledClasses:"",
+        level: "",
+        Time: "",
+        classType: "",
+        status: "",
+      });
+  
+      const handleApply = () => {
+        onApplyFilters(filters);
+        onClose();
+      };
+  
+      const handleReset = () => {
+        setFilters({
+          studentName:"",
+        studentID: "",
+        Date: "",
+        TeacherName: "",
+        contact: "",
+        scheduledClasses:"",
+        level: "",
+        Time: "",
+        classType: "",
+        status: "",
+        });
+      };
+  
+      return (
+        <Modal
+          isOpen={isOpen}
+          onRequestClose={onClose}
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  p-8 rounded-lg  w-[500px]"
+          overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+        >
+          <div className="fixed inset-0 bg-opacity-40 flex justify-center items-center">
+            <div className="bg-white p-6 rounded-lg w-[320px] relative dark:bg-[#252525]">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
+                  Filter by
+                </h2>
+                <button
+                  onClick={onClose}
+                  className="text-gray-400 text-xl absolute top-4 right-4"
+                >
+                  ×
+                </button>
+              </div>
+  
+              <div className="space-y-4">
+                {/* Student Name */}
+                <div>
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                    Student Name
+                  </label>
+                  <input
+                    type="text"
+                    value={filters.studentName}
+                    onChange={(e) =>
+                      setFilters({ ...filters, studentName: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  />
+                </div>
+  
+                {/* Course */}
+                <div>
+              <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                Student ID
+              </label>
+              <input
+                value={filters.studentID}
+                onChange={(e) =>
+                  setFilters({ ...filters, studentID: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+              />
+               
+            </div>
+  
+                {/* Date */}
+                <div>
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.Date}
+                    onChange={(e) =>
+                      setFilters({ ...filters, Date: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  />
+                </div>
+  
+                {/* Time */}
+                <div>
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                    Time
+                  </label>
+                  <input
+                    type="time"
+                    value={filters.Time}
+                    onChange={(e) =>
+                      setFilters({ ...filters, Time: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  />
+                </div>
+  
+                {/* Class Type */}
+                <div>
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                    Class Type
+                  </label>
+                  <select
+                    value={filters.classType}
+                    onChange={(e) =>
+                      setFilters({ ...filters, classType: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  >
+                    <option value="">Select Class Type</option>
+                    <option value="REGULAR">Regular Class</option>
+                    <option value="GROUP">Group Class</option>
+                    <option value="TRAIL">Trail Class</option>
+                  </select>
+                </div>
+  
+                {/* Status */}
+                <div>
+                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                    Status
+                  </label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) =>
+                      setFilters({ ...filters, status: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="SCHEDULED">Scheduled</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="RESCHEDULED">Rescheduled</option>
+                  </select>
+                </div>
+  
+                {/* Buttons */}
+                <div className="flex justify-between items-center pt-4 ">
+                  <button
+                    onClick={handleReset}
+                    className="w-[45%] py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium hover:bg-blue-50"
+                  >
+                    Reset
+                  </button>
+                <button
+                  onClick={handleApply}
+                  className="w-[50%] py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
+                >
+                  Show{" "}
+                  {
+                    users
+                      .filter((user) => {
+                        return (
+                          (!filters.studentName ||
+                            `${user.username ?? ""}`
+                              .toLowerCase()
+                              .includes(filters.studentName.toLowerCase())) &&
+                          (!filters.studentID ||
+                            user.student?.studentId
+                              ?.toLowerCase()
+                              .includes(filters.studentID.toLowerCase())) &&
+                          (!filters.Date ||
+                            new Date(user.createdDate)
+                              .toLocaleDateString() ===
+                              new Date(filters.Date).toLocaleDateString()) 
+                        
+                          
+                         
+                        );
+                      }
+                    ).length
+                  }{" "}
+                  results
+                </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      );
+    };
+  
+    // Add filter handling function
+    const handleApplyFilters = (filters: {
+      studentName: string;
+      studentID: string;
+      Date: string;
+      TeacherName: string;
+      contact: string;
+      scheduledClasses: string;
+      level: string;
+      Time: string;
+      classType: string;
+      status: string;
+    }) => {
+      const formatDate = (date: Date | string) =>
+        new Date(date).toISOString().split("T")[0]; // 'yyyy-mm-dd'
+  
+      let filtered = [...studentData.students];
+  
+      if (filters.studentName) {
+        filtered = filtered.filter((user) =>
+          `${user.username ?? ""}`.toLowerCase().includes(filters.studentName.toLowerCase())
+        );
+      }
+
+      if (filters.studentID) {
+        filtered = filtered.filter((user) =>
+          (user.student?.studentId ?? "").toLowerCase().includes(filters.studentID.toLowerCase())
+        );
+      }
+
+      if (filters.Date) {
+        filtered = filtered.filter(
+          (user) => formatDate(user.createdDate as string | Date) === filters.Date
+        );
+      }
+
+      // Add more filter logic as needed for TeacherName, contact, scheduledClasses, level, Time, classType, status
+
+      setFilteredUsers(filtered);
+      setCurrentPage(1); // Reset to first page
+    };
   return (
     <BaseLayout1>
       <div>
@@ -162,8 +456,9 @@ const ManageStudents = () => {
                   </div>
 
                   <div
-                    onClick={() => setShowModal(true)}
                     className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+              onClick={() => setIsFilterModalOpen(true)}
+                   
                   >
                     {/* <BsFilterLeftFilter /> */}
                     <MdTune className="w-4 h-4" />
@@ -258,11 +553,12 @@ const ManageStudents = () => {
                         <td className="px-3 py-2 text-[#3D8FDE] font-medium">
                           {item.username}
                         </td>
-                        <td className="px-3 py-2">David</td>
-                        <td className="px-3 py-2">Group Class</td>
+                        <td className="px-3 py-2">{item.teacherName}</td>
+                        <td className="px-3 py-2">{item.sessionClassType}</td>
                         <td className="px-3 py-2">
                           {item.student.studentPhone}
                         </td>
+                        
                         <td className="px-3 py-2 whitespace-nowrap">
                           {item.classScheduleCount}
                         </td>
@@ -303,115 +599,15 @@ const ManageStudents = () => {
                 onPageChange={setCurrentPage}
               />
             </div>
-
+<FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApplyFilters={handleApplyFilters}
+          users={studentData.students}
+        />
             {/*filterform  */}
 
-            {showModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
-                <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
-                  {/* Close Icon */}
-                  <button
-                    className="absolute top-2 right-3 text-gray-400 text-xl"
-                    onClick={() => setShowModal(false)}
-                  >
-                    &times;
-                  </button>
-
-                  <h2 className="text-lg font-semibold mb-4">Filter by</h2>
-
-                  {/* Date Input */}
-                  <div className="mb-4">
-                    <label
-                    htmlFor="date"
-                    className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                      Date Of Joining Range
-                    </label>
-
-                    <div className="flex gap-2 mb-2">
-                      <input
-                        type="date"
-                        className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                        // value={fromDate}
-                        // onChange={(e) => setFromDate(e.target.value)}
-                      />
-                      <input
-                        type="date"
-                        className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                        // value={toDate}
-                        // onChange={(e) => setToDate(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Position Applied */}
-                  <div className="mb-4">
-                    {/* Timing */}
-                    <label
-                      htmlFor="input"
-                      className="block text-sm text-gray-700 mb-1 dark:text-white"
-                    >
-                      Class Type
-                    </label>
-                    <input
-                      // value={timing}
-                      // onChange={(e) => setTiming(e.target.value)}
-                      type="input"
-                      className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-
-                    {/* Course */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="level"
-                      className="block text-sm text-gray-700 mb-1 dark:text-white"
-                    >
-                      Course
-                    </label>
-                    <input
-                      // value={timing}
-                      // onChange={(e) => setTiming(e.target.value)}
-                      type="input"
-                      className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-
-                  {/* Level */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="level"
-                      className="block text-sm text-gray-700 mb-1 dark:text-white"
-                    >
-                      Level
-                    </label>
-                    <input
-                      // value={timing}
-                      // onChange={(e) => setTiming(e.target.value)}
-                      type="input"
-                      className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-
-
-
-                  {/* Buttons */}
-                  <div className="flex justify-end gap-3">
-                    <button
-                      onClick={() => setShowModal(false)}
-                      className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
-                      // onClick={handleFilter}
-                    >
-                      Submit
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            
           </div>
         </div>
       </div>

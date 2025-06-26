@@ -1,78 +1,89 @@
-'use client'
+"use client";
 
 import BaseLayout from "@/components/BaseLayout";
 import React, { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import axios from "axios";
+import TeacherHeader from "@/app/teacher/components/TeacherHeader";
+import { MdTune } from "react-icons/md";
+import Pagination from "@/components/Pagination";
 
-  interface Student {
-    studentId: string;
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-  }
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
 
-  interface Teacher {
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-  }
+interface Teacher {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
 
-  interface Schedule {
-    student: Student;
-    teacher: Teacher;
-    _id: string;
-    classDay: string[];
-    package: string;
-    preferedTeacher: string;
-    totalHourse: number;
-    startDate: string;
-    endDate: string;
-    startTime: string[];
-    endTime: string[];
-    scheduleStatus: string;
-    status: string;
-    createdBy: string;
-    createdDate: string;
-    lastUpdatedDate: string;
-    __v: number;
-  }
+interface Schedule {
+  student: Student;
+  teacher: Teacher;
+  _id: string;
+  classDay: string[];
+  package: string;
+  course: {
+    courseName: string;
+  };
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  sessionClassType: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+}
 
-  interface ApiResponse {
-    totalCount: number;
-    students: Schedule[];
-  }
-
-
+interface ApiResponse {
+  totalCount: number;
+  students: Schedule[];
+}
 
 const Totalstudents = () => {
-  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
+    Schedule[]
+  >([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   useEffect(() => {
     const fetchData = async () => {
       try {
-        
         const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
 
         if (!teacherIdToFilter) {
           console.error("No teacher ID found in localStorage.");
           return;
         }
- const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherAuthToken")
+            : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule",{
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        if (!token) {
+          console.error("❌ AdminAuthToken not found");
+          return;
+        }
+        const response = await axios.get<ApiResponse>(
+          "https://api.blackstoneinfomaticstech.com/classShedule",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         const filteredData = response.data.students.filter(
           (item) => item.teacher.teacherId === teacherIdToFilter
@@ -102,108 +113,146 @@ const Totalstudents = () => {
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const currentData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
-    <BaseLayout>
-    <div className="p-8 mx-auto w-[1250px] pr-16">
-      <h1 className="text-2xl font-semibold text-gray-800 p-2 mb-10">Students List</h1>
-      <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
-        <div>
-          <div className="p-4 pt-6 justify-between flex">
-            <h2 className="text-lg pl-10 font-semibold text-[#1e293b] mb-3 justify-end">قائمة طلابي</h2>
-            <div className="relative">
-              <Search className="absolute left-3 top-4 -translate-y-1/2 text-gray-500 w-3 h-3" />
-              <input
-                type="text"
-                placeholder="Search"
-                className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] shadow-md rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#223857] w-56"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="table-auto w-full">
-              <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
-                <tr>
-                  <th className="px-6 py-3 text-center">Name</th>
-                  <th className="px-6 py-3 text-center">Student ID</th>
-                  <th className="px-6 py-3 text-center">Courses</th>
-                  <th className="px-6 py-3 text-center">Course Type</th>
-                  <th className="px-6 py-3 text-center">Join Date</th>
-                  <th className="px-6 py-3 text-center">Level</th>
-                  <th className="px-6 py-3 text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody className="text-[11px]">
-              {currentData.length > 0 ? (
-                  currentData.map((student) => (
-                    <tr key={student.student.studentId} className="bg-gray-100  hover:bg-gray-50">
-                      <td className="p-3" style={{ width: "190px" }}>
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-[#DBDBDB] rounded-full"></div>
-                          <span className="text-center">
-                            {student.student.studentFirstName} {student.student.studentLastName}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-3 text-center">{student.student.studentId}</td>
-                      <td className="p-3 text-center">{student.package}</td>
-                      <td className="p-3 text-center">{student.scheduleStatus}</td>
-                      <td className="p-3 text-center">{new Date(student.startDate).toLocaleDateString()}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2 ml-7">
-                               <span className=" text-sm">Level 1</span>
-                                  <div className="w-5 h-5 bg-[#1e293b] rounded-full text-white flex items-center justify-center text-xs">
-                                  </div>
-                                   </div>
-                               </td>
-                      <td className="p-3">
-                        <span
-                          className={`px-3 py-1 justify-center ml-7 font-medium ${
-                            student.status === "Active"
-                              ? "text-green-600 bg-green-100"
-                              : "text-red-600 bg-red-100"
-                          } rounded-full`}
-                        >
-                          {student.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="text-center p-4 text-gray-500">
-                      No students found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
+    <div>
+      <BaseLayout>
+        <TeacherHeader currentSection="Student List" />
+        <div className="md:p-0 mx-auto">
+          <div className="h-full w-full  flex flex-col justify-between">
+            <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-6">
+              <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by keyword"
+                    className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                    // value={searchText}
+                    // onChange={(e) => handleSearch(e.target.value)}
+                  />
+                </div>
 
-            </table>
+                <div
+                  className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                  // onClick={() => setIsFilterModalOpen(true)}
+                >
+                  {/* <BsFilterLeft /> */}
+                  <MdTune className="w-4 h-4" />
+                  <span>Filter</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                  <span className="text-left -ml-60 ">
+                    {/* Showing {currentItems.length} of {paginatedData.length} */}
+                  </span>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table
+                  className="table-auto w-full"
+                  style={{ tableLayout: "fixed" }}
+                >
+                  <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                    <tr className="font-medium">
+                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                        Student ID
+                      </th>
+                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                         Name
+                      </th>
+                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                        Course
+                      </th>
+                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                        Class Type
+                      </th>
+                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                        Join Date
+                      </th>
+                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                        Level
+                      </th>
+                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
+                    {currentData.length > 0 ? (
+                      currentData.map((student) => (
+                        <tr
+                          key={student.student.studentId}
+                          className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
+                        >
+                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                            {student.student.studentId}
+                          </td>
+                          <td className="px-4 py-2 text-[#3D8FDE] dark:text-[#3D8FDE] font-medium">
+                            {student.student.studentFirstName}
+                          </td>
+                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                            {student.course.courseName}
+                          </td>
+                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                            {student.sessionClassType}
+                          </td>
+                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                            {new Date(student.startDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "2-digit",
+                                year: "numeric",
+                              }
+                            )}
+                          </td>
+                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                            1
+                          </td>
+                          <td className="px-3 py-2 text-left">
+                            <span
+                              className={`text-[10px] font-semibold px-5 py-1 rounded-lg  ${
+                                student.status === "Active"
+                                  ? "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px]"
+                                  : "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white"
+                              }`}
+                            >
+                              {student.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="text-center p-4 text-gray-500"
+                        >
+                          No students found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            
+            </div>
+               <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
           </div>
         </div>
-        <div className="flex items-center justify-between align-bottom p-4 mt-5">
-          <p className="text-[11px] text-gray-600">Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} data</p>
-          <div className="flex items-center space-x-2">
-            {[...Array(totalPages)].map((i, index) => (
-              <button
-                key={i}
-                className={`px-3 py-1 text-[10px] ${currentPage === index + 1 ? 'text-white bg-[#1C3557]' : 'text-gray-600 bg-gray-200'} rounded-md hover:bg-gray-800`}
-                onClick={() => setCurrentPage(index + 1)}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      </BaseLayout>
     </div>
-    </BaseLayout>
   );
 };
-
 
 const data = [
   {
