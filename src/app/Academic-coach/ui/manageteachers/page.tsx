@@ -128,7 +128,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
         }
         
         const response = await axios.get(
-          `http://localhost:5001/classShedule?teacherId=${teacherId}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${teacherId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -368,7 +368,7 @@ const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily
         }
 
        const response= await axios.put(
-          `http://localhost:5001/classShedule/teacherreschedule/${meetingToReschedule._id}`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
           payload,
           {
             headers: {
