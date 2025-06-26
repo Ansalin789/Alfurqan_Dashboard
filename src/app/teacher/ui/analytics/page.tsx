@@ -361,7 +361,7 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("students")}
-                className={`bg-white text-left dark:bg-[#343434]  ${
+                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left  dark:from-[#343434] dark:to-[#2A2A2A]  ${
                   activeView === "students" ? "border-[1px]" : ""
                 } border-[#576CBC] rounded-xl p-4 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex items-center justify-between focus:outline-none`}
               >
@@ -373,22 +373,7 @@ function Analytics() {
                     <p className="text-[28px] font-bold text-[#0f172a] dark:text-[#fff] ">
                       {TotalStudents}
                     </p>
-                    <span className="text-xs bg-[#DEFFEC]  text-[#010E30] px-2 py-1 rounded-full font-medium flex items-center">
-                      <svg
-                        className="w-3 h-3 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M5 10l7-7m0 0l7 7m-7-7v18"
-                        />
-                      </svg>
-                      12%
-                    </span>
+
                   </div>
                 </div>
                 <div className="w-16 h-16 rounded-full bg-[#e0e7ff] flex items-center justify-center dark:bg-[#2C2C2C]">
@@ -405,7 +390,7 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("classes")}
-                className={`bg-white text-left dark:bg-[#343434]  ${
+                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left  dark:from-[#343434] dark:to-[#2A2A2A]  ${
                   activeView === "classes" ? "border-[1px]" : ""
                 } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
               >
@@ -417,24 +402,6 @@ function Analytics() {
                     <p className="text-[28px] font-bold text-[#0f172a] dark:text-[#fff]">
                       {TotalClasses}
                     </p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className="text-xs bg-[#FFE5DE] text-[#010E30] px-2 py-1 rounded-full font-medium flex items-center">
-                        <svg
-                          className="w-3 h-3 mr-1 rotate-180"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 10l7-7m0 0l7 7m-7-7v18"
-                          />
-                        </svg>
-                        16%
-                      </span>
-                    </div>
                   </div>
                 </div>
                 <div className="w-16 h-16 rounded-full bg-[#E3FAFF] dark:bg-[#2C2C2C] flex items-center justify-center">
@@ -451,7 +418,7 @@ function Analytics() {
               <button
                 type="button"
                 onClick={() => setActiveView("earnings")}
-                className={`bg-white text-left dark:bg-[#343434]  ${
+                className={`bg-gradient-to-b from-white to-[#F6FAFF] text-left  dark:from-[#343434] dark:to-[#2A2A2A] ${
                   activeView === "earnings" ? "border-[1px]" : ""
                 } border-[#576CBC] rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-md transition-shadow flex justify-between items-center focus:outline-none`}
               >
@@ -463,24 +430,6 @@ function Analytics() {
                     <p className="text-2xl font-bold text-[#0f172a] dark:text-[#fff]">
                       $45,000
                     </p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className="text-xs bg-[#DEFFEC] text-[#010E30] px-2 py-1 rounded-full font-medium flex items-center">
-                        <svg
-                          className="w-3 h-3 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 10l7-7m0 0l7 7m-7-7v18"
-                          />
-                        </svg>
-                        12%
-                      </span>
-                    </div>
                   </div>
                 </div>
                 <div className="w-16 h-16 rounded-full bg-[#dcfce7] dark:bg-[#2C2C2C] flex items-center justify-center">
@@ -543,7 +492,7 @@ function Analytics() {
                         Class Type{" "}
                       </th>
                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                        Join Date{" "}
+                        Joined Date{" "}
                       </th>
                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Level
@@ -623,6 +572,9 @@ function Analytics() {
                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Class Date{" "}
                       </th>
+                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        Time{" "}
+                      </th>
                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Status{" "}
                       </th>
@@ -657,6 +609,9 @@ function Analytics() {
                             }
                           )}
                         </td>
+                         <td  className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          10.00
+                        </td>
                        <td className="px-4 py-3">
                           <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] border border-[#299350] rounded-lg text-[11px]">
                             {cls.status}
@@ -682,7 +637,7 @@ function Analytics() {
                         Student Name{" "}
                       </th>
                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                        Courses{" "}
+                        Course{" "}
                       </th>
                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Class Type{" "}
@@ -692,6 +647,9 @@ function Analytics() {
                       </th>
                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Class Date{" "}
+                      </th>
+                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                        Time{" "}
                       </th>
                       <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                         Amount{" "}
@@ -726,6 +684,9 @@ function Analytics() {
                         <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                           {earning.classDateTime}
                         </td>
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          10.00
+                        </td> 
                         <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                           ${earning.amount}
                         </td> 

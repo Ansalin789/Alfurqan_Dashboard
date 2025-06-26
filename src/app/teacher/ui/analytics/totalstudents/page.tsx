@@ -163,7 +163,7 @@ const Totalstudents = () => {
                         Student ID
                       </th>
                       <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                        Student Name
+                         Name
                       </th>
                       <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
                         Course
