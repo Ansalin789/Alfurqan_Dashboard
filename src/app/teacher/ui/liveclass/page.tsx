@@ -63,7 +63,6 @@ interface Attendance {
 interface FormData {
   _id: string;
   student: {
-    city: string;
     studentId: string;
     studentFirstName: string;
     studentLastName: string;
@@ -809,7 +808,7 @@ function LiveClass() {
                       <input
                         type="text"
                         name="city"
-                        value={formData?.student.city}
+                        value={formData?.student.studentCity}
                         className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                       />
                     </div>
@@ -833,14 +832,12 @@ function LiveClass() {
                       <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
                         Course
                       </label>
-                      <select
+                      <input
                         name="course"
-                        // value={formData?.student.course}
+                        value={formData?.student.learningInterest}
                         className="w-full px-4 py-2  dark:bg-[#343434]  dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                      >
-                        <option value="Arabic">Arabic</option>
-                        <option value="Quran">Quran</option>
-                      </select>
+                      />
+                    
                     </div>
 
                     {/* Class Status */}

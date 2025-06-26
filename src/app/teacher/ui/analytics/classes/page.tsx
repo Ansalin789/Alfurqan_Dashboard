@@ -1,10 +1,13 @@
-'use client';
+"use client";
 
+import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import BaseLayout from "@/components/BaseLayout";
+import Pagination from "@/components/Pagination";
 import axios from "axios";
 import { Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { FaSort } from "react-icons/fa";
+import { MdTune } from "react-icons/md";
 
 const Classes = () => {
   interface Student {
@@ -44,39 +47,46 @@ const Classes = () => {
     totalCount: number;
     students: Schedule[];
   }
-  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
+    Schedule[]
+  >([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherAuthToken")
+            : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
+        if (!token) {
+          console.error("❌ AdminAuthToken not found");
+          return;
+        }
         const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
         if (!teacherIdToFilter) {
           console.error("No teacher ID found in localStorage.");
           return;
         }
 
-        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule",{
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get<ApiResponse>(
+          "https://api.blackstoneinfomaticstech.com/classShedule",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const filteredData = response.data.students.filter(
-          (item:any) => item.teacher.teacherId === teacherIdToFilter
+          (item: any) => item.teacher.teacherId === teacherIdToFilter
         );
 
         const studentScheduleMap = new Map<string, Schedule>();
 
-        filteredData.forEach((item:any) => {
+        filteredData.forEach((item: any) => {
           studentScheduleMap.set(item.student.studentId, item);
         });
 
@@ -91,125 +101,162 @@ const Classes = () => {
     fetchData();
   }, []);
 
-  const filteredData = uniqueStudentSchedules.filter(row =>
-    row.student.studentFirstName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredData = uniqueStudentSchedules.filter((row) =>
+    row.student.studentFirstName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const currentData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   console.log(currentData);
 
   const getStatus = (index: number) => {
     if (index % 3 === 0) {
-      return { text: "Completed", style: "text-green-600 bg-green-100 border-[1px] border-green-600 rounded-lg px-4" };
+      return {
+        text: "Completed",
+        style:
+          "text-green-600 bg-green-100 border-[1px] border-green-600 rounded-lg px-4",
+      };
     } else if (index % 3 === 1) {
-      return { text: "Re Schedule", style: "text-yellow-600 bg-yellow-100 border-[1px] border-yellow-600 rounded-lg px-3" };
+      return {
+        text: "Re Schedule",
+        style:
+          "text-yellow-600 bg-yellow-100 border-[1px] border-yellow-600 rounded-lg px-3",
+      };
     } else {
-      return { text: "Canceled", style: "text-red-600 bg-red-100 border-[1px] border-red-600 rounded-lg px-5" };
+      return {
+        text: "Canceled",
+        style:
+          "text-red-600 bg-red-100 border-[1px] border-red-600 rounded-lg px-5",
+      };
     }
   };
 
   return (
     <BaseLayout>
-      <div className="p-8 mx-auto w-[1250px] pr-16">
-        <h1 className="text-2xl font-semibold text-gray-800 p-2 mb-10">My Classes</h1>
-        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
-          <div>
-            <div className="p-4 pt-6 justify-between flex">
-              <h2 className="text-lg pl-10 font-semibold text-[#1e293b] mb-3">صفي</h2>
-              <div className="relative">
-                <Search className="absolute left-3 top-4 -translate-y-1/2 text-gray-500 w-3 h-3" />
+      <TeacherHeader currentSection="My Classes" />
+      <div className="md:p-0 mx-auto">
+        <div className="h-full w-full  flex flex-col justify-between">
+          <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-6">
+            <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search"
-                  className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] shadow-md rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[#223857] w-56"
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by keyword"
+                  className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                  // value={searchText}
+                  // onChange={(e) => handleSearch(e.target.value)}
                 />
               </div>
+
+              <div
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                // onClick={() => setIsFilterModalOpen(true)}
+              >
+                {/* <BsFilterLeft /> */}
+                <MdTune className="w-4 h-4" />
+                <span>Filter</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                <span className="text-left -ml-60 ">
+                  {/* Showing {currentItems.length} of {paginatedData.length} */}
+                </span>
+              </div>
             </div>
+
             <div className="overflow-x-auto">
-              <table className="table-auto w-full">
-                <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
-                  <tr>
-                    <th className="px-3 py-3 text-center">
-                      Name <FaSort className="inline w-3 h-3" />
+              <table
+                className="table-auto w-full"
+                style={{ tableLayout: "fixed" }}
+              >
+                <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                  <tr className="font-medium">
+                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                      Student ID
                     </th>
-                    <th className="px-3 py-3 text-center">
-                      Student ID <FaSort className="inline w-3 h-3" />
+                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                      StudentName
                     </th>
-                    <th className="px-3 py-3 text-center">
-                      Courses <FaSort className="inline w-3 h-3" />
+                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                      Courses
                     </th>
-                    <th className="px-3 py-3 text-center">
-                      Course Type <FaSort className="inline w-3 h-3" />
+                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                      Class Type
                     </th>
-                    <th className="px-3 py-3 text-center">
-                      Course Duration <FaSort className="inline w-3 h-3" />
+                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                      Course Duration
                     </th>
-                    <th className="px-3 py-3 text-center">
-                      Class - Date & Time <FaSort className="inline w-3 h-3" />
+                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                      Date
                     </th>
-                    <th className="px-3 py-3 text-center">
-                      Status <FaSort className="inline w-3 h-3" />
+                     <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                      Time
                     </th>
-                    <th className="px-3 py-3 text-center">
-                      Action <FaSort className="inline w-3 h-3" />
+                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                      Status
                     </th>
                   </tr>
                 </thead>
                 <tbody className="text-[11px]">
-                {filteredData.map((schedule, index) => {
-    const { student,scheduleStatus, startTime,endTime } = schedule;
-    const uniqueKey = `row-${index}`; // Generate a unique key for each row
-
+                  {filteredData.map((schedule, index) => {
+                    const { student, scheduleStatus, startTime, endTime } =
+                      schedule;
+                    const uniqueKey = `row-${index}`; // Generate a unique key for each row
 
                     return (
-                      <tr key={uniqueKey} className="text-[12px] font-medium mt-2"
-                      style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}>
-                        <td className="px-3 py-2 text-center">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-[#DBDBDB] rounded-md"></div>
-                            <span className="px-6 py-2 text-center">Trail Class</span>
-                          </div>
+                      <tr
+                        key={uniqueKey}
+                        className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
+                      >
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          {student.studentId}
                         </td>
-                        <td className="px-3 py-2 text-center">{student.studentId}</td>
-                        <td className="px-3 py-2 text-center">Quran</td>
-                        <td className="px-3 py-2 text-center">{schedule.package}</td>
-                        <td className="px-3 py-2 text-center">{`${schedule.totalHourse} hours`}</td>
-                        <td className="px-3 py-2 text-center">
-                        {`${new Date(schedule.startDate).toLocaleDateString()} - ${startTime.join("–")} to ${new Date(schedule.endDate).toLocaleDateString()} - ${endTime.join("–")}`}
+                        <td className="px-4 py-2 text-[#3D8FDE] dark:text-[#3D8FDE] font-medium">
+                          {student.studentFirstName}
                         </td>
-                        <td className="px-3 py-2 text-center">
-                          <span className={`px-3 py-1 font-medium ${getStatus} rounded-full`}>
-                          {scheduleStatus}
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          Quran
+                        </td>
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          {schedule.package}
+                        </td>
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">{`${schedule.totalHourse} hours`}</td>
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          {new Date(schedule.startDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "2-digit",
+                              year: "numeric",
+                            }
+                          )}
+                        </td>
+                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          10.00
+                        </td>
+                        <td className="text-[10px] font-semibold px-5 py-2 rounded-lg ">
+                          <span className="text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px] py-1  rounded-lg">
+                            {schedule.status}
                           </span>
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          <span className="cursor-pointer text-xl">...</span>
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
-
               </table>
             </div>
           </div>
-          
-          <div className="flex items-center justify-between p-4 mt-5">
-            <p className="text-[11px] text-gray-600">Showing {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} data</p>
-            <div className="flex items-center space-x-2">
-              {[...Array(totalPages)].map((i, index) => (
-                <button
-                  key={i}
-                  className={`px-3 py-1 text-[10px] ${currentPage === index + 1 ? 'text-white bg-[#1C3557]' : 'text-gray-600 bg-gray-200'} rounded-md hover:bg-gray-800`}
-                  onClick={() => setCurrentPage(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              ))}
-            </div>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </BaseLayout>

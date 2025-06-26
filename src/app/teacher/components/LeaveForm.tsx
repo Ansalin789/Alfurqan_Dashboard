@@ -153,7 +153,7 @@ export default function LeaveForm({ onClose }: LeaveFormProps) {
               </label>
               <input
                 name="designation"
-                value="Supervisor"
+                value="Teacher"
                 readOnly
                 type="text"
                 className="w-full border rounded px-3 py-2 text-xs dark:text-[#FFFFFF] dark:bg-[#343434] dark:border-[#5C5C5C]"
