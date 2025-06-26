@@ -450,6 +450,8 @@ export default function Home() {
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [barData, setBarData] = useState<ChartDataItem[]>([]);
   const [data, setData] = useState<StudentInvoice[]>([]);
+
+  
   useEffect(() => {
     if (!socketRef.current) {
           socketRef.current = io("https://api.blackstoneinfomaticstech.com", {

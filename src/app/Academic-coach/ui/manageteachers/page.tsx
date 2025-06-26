@@ -3,15 +3,25 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Clock } from "lucide-react"
-import axios from "axios"
-import BaseLayout1 from "@/components/BaseLayout1"
+import axios, { AxiosError } from "axios"
 import moment from "moment"
-import AcademicHeader from "../../components/academicHeader"
 import { useSearchParams } from "next/navigation"
+import BaseLayout1 from "@/components/BaseLayout1"
+import AcademicHeader from "../../components/academicHeader"
+import SuccessPopup from "@/app/supervisor/components/successPopup";
+import FailedPopup from "@/app/supervisor/components/failedPopup";
 
 interface ClassScheduleResponse {
   totalCount: number
   students: ClassSchedule[]
+}
+interface CalendarControlsProps {
+  activeView: "monthly" | "weekly" | "daily";
+  handleTabSwitch: (view: "monthly" | "weekly" | "daily") => void;
+  currentDate: Date;
+  handlePrevMonth: () => void;
+  handleNextMonth: () => void;
+  formatMonthYear: (date: Date) => string;
 }
 
 interface ClassSchedule {
@@ -60,19 +70,20 @@ interface Course {
   courseName: string
 }
 
-const ManageTeachersSchedule = () => {
+const TeachersSchedule = () => {
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">("monthly")
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [meetings, setMeetings] = useState<ClassSchedule[]>([])
-  const [filteredMeetings, setFilteredMeetings] = useState<ClassSchedule[]>([])
+  const [meetings, setMeetings] = useState<ClassSchedule[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isCreatingNewSchedule, setIsCreatingNewSchedule] = useState(false)
+  
 
   const Search = useSearchParams()
   const teacherId = Search.get("_id")
   const [rescheduleDate, setRescheduleDate] = useState("")
-
+    const [success, setSucces] = useState(false);
+    const [failed, setFailed] = useState(false);
+    const [failedMessage, setFailedMessage] = useState("");
   const [formData, setFormData] = useState({
     date: moment().format("YYYY-MM-DD"),
     fromTime: moment().format("HH:mm"),
@@ -82,7 +93,7 @@ const ManageTeachersSchedule = () => {
     applyToAll: false,
   })
 
-  const tabs = ["monthly", "weekly", "daily"] as const
+const tabs: Array<"monthly" | "weekly" | "daily"> = ["monthly", "weekly", "daily"];
 
   // Sync rescheduleDate with formData.date
   useEffect(() => {
@@ -115,7 +126,7 @@ const ManageTeachersSchedule = () => {
           console.error("❌ AcademicCoachAuthToken not found")
           return
         }
-
+        
         const response = await axios.get(
           `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${teacherId}`,
           {
@@ -134,7 +145,7 @@ const ManageTeachersSchedule = () => {
         }
 
         if (scheduleData.length > 0) {
-          const sortedMeetings = scheduleData.sort(
+          const sortedMeetings = scheduleData.toSorted(
             (a: ClassSchedule, b: ClassSchedule) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
           )
           setMeetings(sortedMeetings)
@@ -142,7 +153,6 @@ const ManageTeachersSchedule = () => {
           // Initialize with today's date
           const today = new Date()
           setSelectedDate(today)
-          setIsCreatingNewSchedule(true)
 
           // Set form data with today's date as default
           const todayFormatted = moment(today).format("YYYY-MM-DD")
@@ -163,9 +173,41 @@ const ManageTeachersSchedule = () => {
 
     fetchMeetings()
   }, [teacherId])
+  const handlePrev = () => {
+    if (activeView === "monthly") {
+      setCurrentDate(moment(currentDate).subtract(1, "month").toDate());
+    } else if (activeView === "weekly") {
+      setCurrentDate(moment(currentDate).subtract(1, "week").toDate());
+    } else if (activeView === "daily") {
+      setCurrentDate(moment(currentDate).subtract(1, "day").toDate());
+    }
+  };
+
+  const handleNext = () => {
+    if (activeView === "monthly") {
+      setCurrentDate(moment(currentDate).add(1, "month").toDate());
+    } else if (activeView === "weekly") {
+      setCurrentDate(moment(currentDate).add(1, "week").toDate());
+    } else if (activeView === "daily") {
+      setCurrentDate(moment(currentDate).add(1, "day").toDate());
+    }
+  };
+
+  const getFormattedLabel = () => {
+    if (activeView === "monthly") {
+      return moment(currentDate).format("MMMM YYYY");
+    } else if (activeView === "weekly") {
+      const start = moment(currentDate).startOf("week");
+      const end = moment(currentDate).endOf("week");
+      return `${start.format("MMM D")} - ${end.format("MMM D, YYYY")}`;
+    } else {
+      return moment(currentDate).format("dddd, MMMM D, YYYY");
+    }
+  };
 
   // Handle tab switching with proper state updates
   const handleTabSwitch = (newView: "monthly" | "weekly" | "daily") => {
+     if (activeView !== newView) {
     setActiveView(newView)
 
     // Reset selected date and update form data based on current view
@@ -180,7 +222,6 @@ const ManageTeachersSchedule = () => {
     const todayFormatted = moment(today).format("YYYY-MM-DD")
 
     if (todayMeetings.length > 0) {
-      setIsCreatingNewSchedule(false)
       const firstMeeting = todayMeetings[0]
       setFormData({
         date: todayFormatted,
@@ -191,7 +232,6 @@ const ManageTeachersSchedule = () => {
         applyToAll: false,
       })
     } else {
-      setIsCreatingNewSchedule(true)
       setFormData({
         date: todayFormatted,
         fromTime: moment().format("HH:mm"),
@@ -203,7 +243,7 @@ const ManageTeachersSchedule = () => {
     }
 
     setRescheduleDate(todayFormatted)
-    setFilteredMeetings(todayMeetings)
+     }
   }
 
   const getMeetingTypeColor = (meetingName: string) => {
@@ -223,19 +263,7 @@ const ManageTeachersSchedule = () => {
     return firstDay.getDay()
   }
 
-  const handlePrevMonth = () => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1)
-    setCurrentDate(newDate)
-  }
-
-  const handleNextMonth = () => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1)
-    setCurrentDate(newDate)
-  }
-
-  const formatMonthYear = (date: Date) => {
-    return date.toLocaleString("default", { month: "long", year: "numeric" }).toUpperCase()
-  }
+ 
 
   const isToday = (day: number) => {
     const today = new Date()
@@ -266,12 +294,9 @@ const ManageTeachersSchedule = () => {
   const handleDateClick = (date: Date) => {
     setSelectedDate(date)
     const dayMeetings = getMeetingsForDate(date)
-    setFilteredMeetings(dayMeetings)
-
     const dateFormatted = moment(date).format("YYYY-MM-DD")
 
     if (dayMeetings.length > 0) {
-      setIsCreatingNewSchedule(false)
       const firstMeeting = dayMeetings[0]
       setFormData({
         date: dateFormatted,
@@ -282,7 +307,6 @@ const ManageTeachersSchedule = () => {
         applyToAll: false,
       })
     } else {
-      setIsCreatingNewSchedule(true)
       setFormData((prev) => ({
         date: dateFormatted,
         fromTime: prev.fromTime || moment().format("HH:mm"),
@@ -296,59 +320,25 @@ const ManageTeachersSchedule = () => {
     setRescheduleDate(dateFormatted)
   }
 
-  // Handle reschedule date change with proper synchronization
-  const handleRescheduleDateChange = (newDate: string) => {
-    const date = new Date(newDate)
-    setSelectedDate(date)
-    setRescheduleDate(newDate)
-
-    const dayMeetings = getMeetingsForDate(date)
-    setFilteredMeetings(dayMeetings)
-
-    if (dayMeetings.length > 0) {
-      setIsCreatingNewSchedule(false)
-      const firstMeeting = dayMeetings[0]
-      setFormData({
-        date: newDate,
-        fromTime: firstMeeting.startTime?.[0] || moment().format("HH:mm"),
-        toTime: firstMeeting.endTime?.[0] || moment().add(1, "hour").format("HH:mm"),
-        comment: "",
-        meetingId: firstMeeting._id,
-        applyToAll: false,
-      })
-    } else {
-      setIsCreatingNewSchedule(true)
-      setFormData((prev) => ({
-        ...prev,
-        date: newDate,
-        meetingId: "",
-      }))
-    }
-  }
-
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
       const token = localStorage.getItem("AcademicCoachAuthToken")
-      if (!token) throw new Error("No auth token found")
-
-      if (isCreatingNewSchedule) {
-        console.log("Creating new schedule for", rescheduleDate)
-        alert("New schedule created successfully!")
-      } else {
-        if (!formData.meetingId) {
-          throw new Error("No meeting selected to reschedule")
-        }
-
+      if (!token){ 
+        throw new Error("No auth token found")
+    }
+       if (!formData.meetingId){ 
+        throw new Error("No meeting ID provided");
+    }
         const meetingToReschedule = meetings.find((m) => m._id === formData.meetingId)
         if (!meetingToReschedule) {
           throw new Error("Meeting not found")
         }
 
-        const formattedStartDate = moment(rescheduleDate).format("YYYY-MM-DD")
-        const formattedEndDate = moment(rescheduleDate).format("YYYY-MM-DD")
+        // const formattedStartDate = moment(rescheduleDate).format("YYYY-MM-DD")
+        // const formattedEndDate = moment(rescheduleDate).format("YYYY-MM-DD")
         const classDayName = moment(rescheduleDate).format("dddd")
 
         const payload = {
@@ -364,9 +354,9 @@ const ManageTeachersSchedule = () => {
           sessionsEndtime: "",
           startTime: [{ value: formData.fromTime, label: formData.fromTime }],
           endTime: [{ value: formData.toTime, label: formData.toTime }],
-          totalHourse: "",
-          startDate: formattedStartDate,
-          endDate: formattedEndDate,
+          totalHourse: 0,
+          startDate: rescheduleDate,
+          endDate: rescheduleDate,
           scheduleStatus: "Reschedule",
           studentAttendee: "absent",
           teacherAttendee: "absent",
@@ -377,7 +367,7 @@ const ManageTeachersSchedule = () => {
           lastUpdatedDate: new Date().toISOString(),
         }
 
-        await axios.put(
+       const response= await axios.put(
           `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
           payload,
           {
@@ -387,21 +377,45 @@ const ManageTeachersSchedule = () => {
             },
           },
         )
+        if ([200, 201].includes(response.status)) {
+        setSucces(true);
+        setFormData( {date: moment().format("YYYY-MM-DD"),
+    fromTime: moment().format("HH:mm"),
+    toTime: moment().add(1, "hour").format("HH:mm"),
+    comment: "",
+    meetingId: "",
+    applyToAll: false,});
+      }
 
         const refreshResponse = await axios.get(
           `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${meetingToReschedule.teacher.teacherId}`,
           { headers: { Authorization: `Bearer ${token}` } },
         )
 
-        setMeetings(refreshResponse.data?.classSchedule || refreshResponse.data?.students || [])
-        alert("Schedule updated successfully!")
+        setMeetings(refreshResponse.data?.classSchedule ?? refreshResponse.data?.students ?? [])
       }
-    } catch (error: any) {
-      console.error("Error:", error)
-      alert(`Failed to ${isCreatingNewSchedule ? "create" : "update"} schedule: ${error.message}`)
-    } finally {
-      setIsSubmitting(false)
-    }
+     catch (err) {
+           const error = err as AxiosError;
+     
+           const status = error.response?.status;
+           if (Number(status === 400)) {
+             console.log("please >");
+             setFailedMessage("Please check the form inputs.");
+             setFailed(true);
+           } else if (status === 401) {
+             setFailedMessage("Please login again.");
+             setFailed(true);
+           } else if (status === 403) {
+             setFailedMessage("You don't have permission to perform this action.");
+             setFailed(true);
+           } else if (status === 500) {
+             setFailedMessage("Server error");
+             setFailed(true);
+           } else {
+             setFailed(true);
+             console.error(`Unexpected error: ${status}`);
+           }
+         }
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -411,7 +425,38 @@ const ManageTeachersSchedule = () => {
     }))
   }
 
-  const CalendarControls = () => (
+const CalendarControls = ({
+  activeView,
+  handleTabSwitch,
+  currentDate,
+  handlePrevMonth,
+  handleNextMonth,
+  formatMonthYear,
+}: CalendarControlsProps) => {
+  // Determine the correct navigation handlers based on active view
+  const getNavigationHandlers = () => {
+    switch (activeView) {
+      case "weekly":
+        return {
+          prev: () => setCurrentDate(moment(currentDate).subtract(1, 'week').toDate()),
+          next: () => setCurrentDate(moment(currentDate).add(1, 'week').toDate())
+        };
+      case "daily":
+        return {
+          prev: () => setCurrentDate(moment(currentDate).subtract(1, 'day').toDate()),
+          next: () => setCurrentDate(moment(currentDate).add(1, 'day').toDate())
+        };
+      default: // monthly
+        return {
+          prev: handlePrevMonth,
+          next: handleNextMonth
+        };
+    }
+  };
+
+  const { prev, next } = getNavigationHandlers();
+
+  return (
     <div className="flex items-center justify-between mb-4">
       <div className="flex space-x-4 text-sm font-medium">
         {tabs.map((tab) => (
@@ -419,31 +464,33 @@ const ManageTeachersSchedule = () => {
             key={tab}
             onClick={() => handleTabSwitch(tab)}
             className={`capitalize ${
-              activeView === tab ? "text-[#576cbc] border-b-2 border-[#576cbc]" : "text-gray-400 hover:text-[#576cbc]"
+              activeView === tab
+                ? "text-[#576cbc] border-b-2 border-[#576cbc]"
+                : "text-gray-400 hover:text-[#576cbc]"
             } pb-1 transition-colors duration-200`}
           >
             {tab}
           </button>
         ))}
       </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handlePrevMonth}
-          className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-        >
-          &lt;
-        </button>
-        <h2 className="text-[16px] font-semibold">{formatMonthYear(currentDate)}</h2>
-        <button
-          onClick={handleNextMonth}
-          className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-        >
-          &gt;
-        </button>
-      </div>
+ <div className="flex items-center gap-2">
+          <button
+            onClick={handlePrev}
+            className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
+          >
+            &lt;
+          </button>
+          <h2 className="text-[16px] font-semibold">{getFormattedLabel()}</h2>
+          <button
+            onClick={handleNext}
+            className="py-[1px] px-2 rounded-lg bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
+          >
+            &gt;
+          </button>
+        </div>
     </div>
-  )
+  );
+};
 
   const WeeklyView = () => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null)
@@ -483,7 +530,7 @@ const ManageTeachersSchedule = () => {
 
     return (
       <div className="space-y-4">
-        <CalendarControls />
+       
         <div className="h-[540px] md:h-[540px] sm:h-[400px] overflow-y-scroll scrollbar-none">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm md:text-[16px] font-semibold">
@@ -594,7 +641,7 @@ const ManageTeachersSchedule = () => {
 
     return (
       <div className="space-y-4">
-        <CalendarControls />
+    
         <div className="h-[500px] md:h-[600px] overflow-y-scroll scrollbar-none">
           <div className="mb-4">
             <h3 className="text-sm md:text-[16px] font-semibold">{moment(currentDate).format("dddd, MMMM D, YYYY")}</h3>
@@ -605,7 +652,7 @@ const ManageTeachersSchedule = () => {
               const colors = getMeetingTypeColor(meeting.course.courseName)
               return (
                 <div
-                  key={idx}
+                  key={meeting._id}
                   className={`p-3 md:p-4 text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl dark:text-[#fff] ${
                     isPast ? "opacity-70" : ""
                   }`}
@@ -642,7 +689,7 @@ const ManageTeachersSchedule = () => {
 
     return (
       <div className="space-y-4">
-        <CalendarControls />
+     
 
         <div className="grid grid-cols-7 gap-1 md:gap-2 text-center text-xs md:text-sm font-medium text-gray-500 mb-2 dark:bg-[#414141] bg-gray-100 rounded-xl p-2 md:p-3 dark:text-[#fff]">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
@@ -651,7 +698,7 @@ const ManageTeachersSchedule = () => {
         </div>
 
         <div className="grid grid-cols-7 gap-1 md:gap-2 text-xs md:text-sm h-[350px] md:h-[455px] overflow-scroll scrollbar-none">
-          {totalDays.map((day, i) => {
+          {totalDays.map((day, i : number) => {
             if (day === null) {
               return <div key={i} className="min-h-[50px] md:min-h-[80px] bg-transparent" />
             }
@@ -707,11 +754,49 @@ const ManageTeachersSchedule = () => {
 
   return (
     <BaseLayout1>
-      <AcademicHeader currentSection="Teachers" showBackButton={true} />
+      <AcademicHeader currentSection="Reschedule Calendar" showBackButton={true} />
       <div className="p-2">
         <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
           {/* Left Side - Calendar View */}
           <div className="w-full lg:w-2/3 p-4 md:p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
+          <div className="flex items-center justify-between mb-4">
+  {/* Tabs (left aligned) */}
+  <div className="flex space-x-4 text-sm font-medium">
+    {tabs.map((tab) => (
+      <button
+        key={tab}
+        onClick={() => setActiveView(tab)}
+        className={`capitalize ${
+          activeView === tab
+            ? "text-[#576cbc] border-b-2 border-[#576cbc]"
+            : "text-gray-400 hover:text-[#576cbc]"
+        } pb-1 transition-colors duration-200`}
+      >
+        {tab}
+      </button>
+    ))}
+  </div>
+
+  {/* Date Controls (right aligned) */}
+  <div className="flex items-center gap-2 justify-end">
+    <button
+      onClick={handlePrev}
+      className="py-[2px] px-3 rounded-md bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
+    >
+      &lt;
+    </button>
+    <h2 className="text-sm md:text-base font-semibold text-gray-800 dark:text-white whitespace-nowrap">
+      {getFormattedLabel()}
+    </h2>
+    <button
+      onClick={handleNext}
+      className="py-[2px] px-3 rounded-md bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
+    >
+      &gt;
+    </button>
+  </div>
+</div>
+
             {activeView === "monthly" && <MonthlyView />}
             {activeView === "weekly" && <WeeklyView />}
             {activeView === "daily" && <DailyView />}
@@ -722,24 +807,21 @@ const ManageTeachersSchedule = () => {
             <div className="p-4 md:p-6">
               <div className="mb-4 md:mb-6">
                 <h3 className="text-base md:text-base font-semibold text-gray-800 dark:text-white">
-                  {isCreatingNewSchedule ? "Schedule New Meeting" : "Reschedule Meeting"}
+                 Add New Schedule
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {isCreatingNewSchedule
-                    ? "Select date and time for new meeting"
-                    : "Modify the date and time for this meeting"}
-                </p>
               </div>
 
               <div className="space-y-3 md:space-y-4">
                 <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Date
                   </label>
                   <input
                     type="date"
                     value={rescheduleDate}
-                    onChange={(e) => handleRescheduleDateChange(e.target.value)}
+                    onChange={(e) => {const date = e.target.value 
+                        setRescheduleDate(date);
+                    }}
                     min={moment().format("YYYY-MM-DD")}
                     className="w-full h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -747,7 +829,7 @@ const ManageTeachersSchedule = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       From Time
                     </label>
                     <input
@@ -758,7 +840,7 @@ const ManageTeachersSchedule = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label  htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       To Time
                     </label>
                     <input
@@ -770,7 +852,7 @@ const ManageTeachersSchedule = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="gcuyc" className="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Comment
                   </label>
                   <textarea
@@ -778,7 +860,7 @@ const ManageTeachersSchedule = () => {
                     onChange={(e) => handleInputChange("comment", e.target.value)}
                     rows={4}
                     className="w-full h-[90px] md:h-[110px] px-3 py-2 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs md:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none"
-                    placeholder={isCreatingNewSchedule ? "Enter meeting details..." : "Meeting notes..."}
+                   
                   />
                 </div>
               </div>
@@ -792,21 +874,24 @@ const ManageTeachersSchedule = () => {
                 <button
                   type="submit"
                   onClick={handleFormSubmit}
-                  disabled={isSubmitting}
-                  className={`px-6 md:px-8 py-2 md:py-2.5 text-white text-xs md:text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                    isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-[#576cbc] hover:bg-[#4a5ba3]"
-                  }`}
+                   className="px-3 py-1 text-lg bg-[#576CBC] text-white rounded hover:bg-[#4459A9]"
                 >
-                  {isSubmitting ? "Processing..." : isCreatingNewSchedule ? "Create Schedule" : "Update Schedule"}
+                  Submit
                 </button>
               </div>
             </div>
           </div>
         </div>
+        {success && (
+        <SuccessPopup onClose={() => setSucces(false)} title="Class Rescheduled" />
+      )}
+      {failed &&  (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+      )}
       </div>
     </BaseLayout1>
   )
 }
 
-export default ManageTeachersSchedule
+export default TeachersSchedule
 
