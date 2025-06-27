@@ -3,18 +3,99 @@
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import BaseLayout from "@/components/BaseLayout";
 import Pagination from "@/components/Pagination";
+import axios from "axios";
 import { Search } from "lucide-react";
-import React, { useState } from "react";
-import { FaSort } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
 
+interface ClassScheduleResponse {
+  totalCount: number;
+  classSchedule: Schedule[];
+}
+
+interface Schedule {
+  _id: string;
+  student: {
+    studentId: string;
+    studentFirstName: string;
+    studentLastName: string;
+    studentEmail: string;
+    gender: string;
+  };
+  teacher: {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  };
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+  classDay: string[];
+  package: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[]; // ["09:30"]
+  endTime: string[];
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  createdBy: string;
+  sessionClassType: string;
+  sessionStarttime: string;
+  sessionsEndtime: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+  amount: string;
+  sessionStatus: string;
+}
+
 const Earnings = () => {
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
+    Schedule[]
+  >([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
-  const filteredData = data.filter((row) =>
-    row.name.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    const fetchSchedulesByTeacher = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherAuthToken")
+            : null;
+        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+
+        if (!token || !teacherIdToFilter) {
+          console.error("Missing token or teacher ID");
+          return;
+        }
+
+        const response = await axios.get<ClassScheduleResponse>(
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherIdToFilter}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setUniqueStudentSchedules(response.data.classSchedule);
+      } catch (error) {
+        console.error("Error fetching class schedules:", error);
+      }
+    };
+
+    fetchSchedulesByTeacher();
+  }, []);
+
+  const filteredData = uniqueStudentSchedules.filter((row) =>
+    row.student.studentFirstName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -22,6 +103,7 @@ const Earnings = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+  console.log(currentData);
 
   return (
     <BaseLayout>
@@ -67,7 +149,6 @@ const Earnings = () => {
                     {[
                       "Student ID",
                       "Name",
-
                       "Courses",
                       "Course Type",
                       "Course Duration",
@@ -78,58 +159,69 @@ const Earnings = () => {
                     ].map((header) => (
                       <th
                         key={header}
-                        className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]"
+                        className={`text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0] ${
+                          header === "Name" ? "pl-20" : ""
+                        }`}
                       >
                         {header}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="text-[11px]">
-                  {currentData.map((row, index) => (
-                    <tr
-                      key={row.id}
-                      className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
-                    >
-                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                        {row.name}
-                      </td>
-                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                        {row.id}
-                      </td>
 
-                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                        {row.course}
-                      </td>
-                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                        {row.type}
-                      </td>
-                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                        {row.duration}
-                      </td>
-                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                         {new Date(row.datetime).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "2-digit",
-                              year: "numeric",
-                            }
-                          )}
-                      </td>
-                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                        10.00
-                      </td>
-                      <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                        {row.amount}
-                      </td>
-                      <td className="text-[10px] font-semibold px-5 py-2 rounded-lg ">
-                        <span className="text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px] py-1  rounded-lg">
-                          {row.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                <tbody className="text-[11px]">
+                  {currentData.map((row, index) => {
+                    const { student, startTime, endTime } = row; // Destructure from `row`
+
+                    return (
+                      <tr
+                        key={row._id}
+                        className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
+                      >
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          {student.studentId}
+                        </td>
+                        <td className="px-4 py-2 text-left font-medium text-[#3D8FDE] pl-20">
+                          {student.studentFirstName}
+                        </td>
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          {row.course.courseName}
+                        </td>
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          {row.sessionClassType}
+                        </td>
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          {row.totalHourse}
+                        </td>
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          {new Date(row.startDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "2-digit",
+                            year: "numeric",
+                          })}
+                        </td>
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          {startTime?.[0]} - {endTime?.[0]}
+                        </td>
+                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                          {row.amount}
+                        </td>
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <span
+                            className={`font-semibold px-3 py-1 rounded-md text-[10px] ${
+                              row.scheduleStatus === "Scheduled"
+                                ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] px-[18px]"
+                                : row.scheduleStatus === "Rescheduled"
+                                ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
+                                : "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
+                            }`}
+                          >
+                            {row.scheduleStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -144,58 +236,5 @@ const Earnings = () => {
     </BaseLayout>
   );
 };
-
-const data = [
-  {
-    name: "Samantha William",
-    id: "1234567890",
-    course: "Quran",
-    type: "Trial Class",
-    duration: "30 minutes",
-    datetime: "January 2, 2020 - 9:00–10:30 AM",
-    amount: "$04",
-    status: "Active",
-  },
-  {
-    name: "Jordan Nico",
-    id: "1234567890",
-    course: "Tajweed",
-    type: "Regular Class",
-    duration: "60 minutes",
-    datetime: "January 2, 2020 - 11:00–12:00 AM",
-    amount: "$30",
-    status: "Active",
-  },
-  {
-    name: "Nadila Adja",
-    id: "1234567890",
-    course: "Arabic",
-    type: "Group Class",
-    duration: "45 minutes",
-    datetime: "January 3, 2020 - 9:00–10:30 AM",
-    amount: "$25",
-    status: "Active",
-  },
-  {
-    name: "Nadila Adja",
-    id: "1234567890",
-    course: "Arabic",
-    type: "Group Class",
-    duration: "45 minutes",
-    datetime: "January 3, 2020 - 9:00–10:30 AM",
-    amount: "$25",
-    status: "Active",
-  },
-  {
-    name: "Nadila Adja",
-    id: "1234567890",
-    course: "Arabic",
-    type: "Group Class",
-    duration: "45 minutes",
-    datetime: "January 3, 2020 - 9:00–10:30 AM",
-    amount: "$25",
-    status: "Active",
-  },
-];
 
 export default Earnings;
