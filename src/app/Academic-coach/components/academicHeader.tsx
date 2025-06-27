@@ -204,7 +204,7 @@ useEffect(() => {
   };
 
 const renderButton = () => {
-if (currentSection.includes("Dashboard") ){
+if (currentSection === ("Dashboard") ){
       return (
       <button
         onClick={() => setShowLeaveForm(true)}
@@ -215,7 +215,7 @@ if (currentSection.includes("Dashboard") ){
       </button>
     );
   }
-  if (currentSection.includes("Trail Management")) {
+  if (currentSection === ("Trail Management")) {
     return (
       <button
         onClick={() => setAddApplicant(true)}
@@ -226,7 +226,7 @@ if (currentSection.includes("Dashboard") ){
       </button>
     );
   }
-  if (currentSection.includes("Calendar")) {
+  if (currentSection === ("Calendar")) {
     return (
       <button
         onClick={() => setAddMeetings(true)}
@@ -237,7 +237,7 @@ if (currentSection.includes("Dashboard") ){
       </button>
     );
   }
-  if (currentSection.includes("Student List")) {
+  if (currentSection === ("Student List")) {
     return (
       <button
         onClick={() => setAssignGroupClass(true)}
