@@ -201,7 +201,6 @@ function LiveClass() {
     paymentStatus: ["PAID", "FAILED", "PENDING"],
   });
 
-  const [trials, setTrials] = useState<TrialClass[]>([]);
   const [selectedTrial, setSelectedTrial] = useState<TrialClass | null>(null);
   const fullName = selectedTrial?.student.name || "";
   const [firstName, ...lastNameParts] = fullName.trim().split(" ");

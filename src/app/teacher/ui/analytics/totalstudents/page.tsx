@@ -8,76 +8,57 @@ import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 
-interface Student {
+interface SimpleStudent {
   studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
-}
-
-interface Teacher {
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
-}
-
-interface Schedule {
-  student: Student;
-  teacher: Teacher;
-  _id: string;
-  classDay: string[];
-  package: string;
-  course: {
-    courseName: string;
+  name: string;
+  studentDetails: {
+    student: {
+      learningInterest?: string;
+      languageLevel?: string;
+    
+    };
+      studentRate?:string;
+    classType?: string;
+    classStartDate?: string;
+    status?: string;
   };
-  preferedTeacher: string;
-  totalHourse: number;
-  startDate: string;
-  endDate: string;
-  startTime: string[];
-  endTime: string[];
-  scheduleStatus: string;
-  sessionClassType: string;
-  status: string;
-  createdBy: string;
-  createdDate: string;
-  lastUpdatedDate: string;
-  __v: number;
-}
-
-interface ApiResponse {
-  totalCount: number;
-  students: Schedule[];
 }
 
 const Totalstudents = () => {
-  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
-    Schedule[]
-  >([]);
+  const [students, setStudents] = useState<SimpleStudent[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
 
-        if (!teacherIdToFilter) {
+
+  const teacherId = localStorage.getItem("TeacherPortalId");
+console.log("Teacher ID used in API:", teacherId);
+
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const teacherId = localStorage.getItem("TeacherPortalId");
+
+        if (!teacherId) {
           console.error("No teacher ID found in localStorage.");
           return;
         }
+
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("TeacherAuthToken")
             : null;
 
         if (!token) {
-          console.error("❌ AdminAuthToken not found");
+          console.error("❌ TeacherAuthToken not found");
           return;
         }
-        const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule",
+
+        const response = await axios.get<SimpleStudent[]>(
+          "http://localhost:5001/classShedule/teacher/list",
           {
+            params: { teacherId },
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
@@ -85,31 +66,17 @@ const Totalstudents = () => {
           }
         );
 
-        const filteredData = response.data.students.filter(
-          (item) => item.teacher.teacherId === teacherIdToFilter
-        );
-
-        const studentScheduleMap = new Map<string, Schedule>();
-
-        filteredData.forEach((item) => {
-          studentScheduleMap.set(item.student.studentId, item);
-        });
-
-        const uniqueSchedules = Array.from(studentScheduleMap.values());
-
-        setUniqueStudentSchedules(uniqueSchedules);
+        setStudents(response.data);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching students:", error);
       }
     };
 
-    fetchData();
+    fetchStudents();
   }, []);
 
-  const filteredData = uniqueStudentSchedules.filter((row) =>
-    `${row.student.studentFirstName} ${row.student.studentLastName}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+  const filteredData = students.filter((student) =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -162,8 +129,8 @@ const Totalstudents = () => {
                       <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
                         Student ID
                       </th>
-                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                         Name
+                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0] pl-10">
+                        Name
                       </th>
                       <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
                         Course
@@ -183,46 +150,47 @@ const Totalstudents = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
-                    {currentData.length > 0 ? (
-                      currentData.map((student) => (
+                    {students.length > 0 ? (
+                      students.map((student) => (
                         <tr
-                          key={student.student.studentId}
+                          key={student.studentId}
                           className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
                         >
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {student.student.studentId}
+                            {student.studentId}
                           </td>
-                          <td className="px-4 py-2 text-[#3D8FDE] dark:text-[#3D8FDE] font-medium">
-                            {student.student.studentFirstName}
-                          </td>
-                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {student.course.courseName}
+                          <td className="px-4 py-2 text-[#3D8FDE] dark:text-[#3D8FDE] font-medium pl-10">
+                            {student.name}
                           </td>
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {student.sessionClassType}
+                            {student.studentDetails?.student?.learningInterest}
                           </td>
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {new Date(student.startDate).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "2-digit",
-                                year: "numeric",
-                              }
-                            )}
+                            {student.studentDetails?.classType}
                           </td>
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            1
+                            {student.studentDetails?.classStartDate
+                              ? new Date(
+                                  student.studentDetails.classStartDate
+                                ).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                })
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                            {student.studentDetails.studentRate}
                           </td>
                           <td className="px-3 py-2 text-left">
                             <span
-                              className={`text-[10px] font-semibold px-5 py-1 rounded-lg  ${
-                                student.status === "Active"
+                              className={`text-[10px] font-semibold px-5 py-1 rounded-lg ${
+                                student.studentDetails?.status === "Active"
                                   ? "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px]"
                                   : "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white"
                               }`}
                             >
-                              {student.status}
+                              {student.studentDetails?.status}
                             </span>
                           </td>
                         </tr>
@@ -240,51 +208,17 @@ const Totalstudents = () => {
                   </tbody>
                 </table>
               </div>
-            
             </div>
-               <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
       </BaseLayout>
     </div>
   );
 };
-
-const data = [
-  {
-    name: "Samantha William",
-    id: "1234567890",
-    course: "Quran",
-    type: "Trial Class",
-    duration: "30 minutes",
-    datetime: "January 2, 2020 - 9:00–10:30 AM",
-    amount: "$04",
-    status: "Completed",
-  },
-  {
-    name: "Jordan Nico",
-    id: "1234567890",
-    course: "Tajweed",
-    type: "Regular Class",
-    duration: "60 minutes",
-    datetime: "January 2, 2020 - 11:00–12:00 AM",
-    amount: "$30",
-    status: "Re Schedule",
-  },
-  {
-    name: "Nadila Adja",
-    id: "1234567890",
-    course: "Arabic",
-    type: "Group Class",
-    duration: "45 minutes",
-    datetime: "January 3, 2020 - 9:00–10:30 AM",
-    amount: "$25",
-    status: "Canceled",
-  },
-];
 
 export default Totalstudents;

@@ -705,13 +705,14 @@ const SchedulePage = () => {
       ${hasClasses ? `border ${courseColorClass}` : "border text-[10px]"}
       ${
         isToday(day)
-          ? "bg-[#27176518] text-white"
-          : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"
+          ? "bg-[#27176518] text-white dark:text-white"
+          : "bg-gray-100 text-gray-500 dark:bg-[#414141] dark:text-white"
       }
+
       ${isSelected ? "ring-2 ring-[#576cbc]" : ""}
     `}
               >
-                <div className="font-semibold text-sm text-gray-700">{day}</div>
+                <div className="font-semibold text-sm text-inherit">{day}</div>
 
                 {hasClasses && (
                   <div className="w-full mt-2 text-center">
