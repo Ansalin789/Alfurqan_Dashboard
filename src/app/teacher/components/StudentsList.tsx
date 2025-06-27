@@ -1,146 +1,376 @@
-'use client';
+"use client";
 
 import axios from "axios";
+import { Search } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-interface Student {
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
+import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { MdTune } from "react-icons/md";
+
+// Interfaces
+interface ApiResponse {
+  totalCount: number;
+  assignments: Assignment[];
 }
 
-interface Teacher {
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
-}
-
-interface Schedule {
-  student: Student;
-  teacher: Teacher;
+export interface Assignment {
   _id: string;
-  classDay: string[];
-  package: string;
-  preferedTeacher: string;
-  totalHourse: number;
-  startDate: string;
-  endDate: string;
-  startTime: string[];
-  endTime: string[];
-  scheduleStatus: string;
+  studentId: string;
+  studentName: string;
+  assignmentName: string;
+  assignedTeacher: string;
+  assignedTeacherId: string;
+  assignmentType: string;
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question: string;
+  hasOptions: boolean;
+  options: {
+    optionOne: string;
+    optionTwo: string;
+    optionThree: string;
+    optionFour: string;
+  };
+  audioFile: string;
+  uploadFile: string;
   status: string;
-  createdBy: string;
   createdDate: string;
-  lastUpdatedDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  level: string;
+  courses: string;
+  assignedDate: string;
+  dueDate: string;
+  answer: string;
+  answerValidation: string;
+  assignmentStatus: string;
+  sessionClassType?: string;
   __v: number;
 }
 
-interface ApiResponse {
-  totalCount: number;
-  students: Schedule[];
-}
-
+const getStatusStyle = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "active":
+      return "bg-green-100 text-green-700";
+    case "pending":
+      return "bg-yellow-100 text-yellow-700";
+    case "inactive":
+      return "bg-red-100 text-red-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+};
 
 const StudentList = () => {
-  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
+  const [activeTab, setActiveTab] = useState<string>("Regular");
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [regularStudents, setRegularStudents] = useState<Assignment[]>([]);
+  const [groupStudents, setGroupStudents] = useState<Assignment[]>([]);
+  const [regularCount, setRegularCount] = useState(0);
+  const [groupCount, setGroupCount] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const router = useRouter();
+
+  const handleClick = () => {
+    console.log('clicked')
+    router.push("/teacher/ui/addingnewassignment");
+  };
+
+  const handleViewProfile = (studentId: string) => {
+    router.push(`/teacher/ui/managestudentview/${studentId}`);
+  };
+
+  const toggleDropdown = (assignmentId: string) => {
+    setOpenDropdownId((prev) => (prev === assignmentId ? null : assignmentId));
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-       
-        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
-const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+        const teacherId = localStorage.getItem("TeacherPortalId");
+        const token = localStorage.getItem("TeacherAuthToken");
 
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  }
-        if (!teacherIdToFilter) {
-          console.error("No teacher ID found in localStorage.");
+        if (!token || !teacherId) {
+          console.warn("Missing teacherId or token");
           return;
         }
 
-        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule",
+        const res = await axios.get<ApiResponse>(
+          "http://localhost:5001/allAssignment",
           {
-             headers:{
-                 'Content-Type': 'application/json',
-        "Authorization":`Bearer ${token}`,
-          }
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
-        const filteredData = response.data.students.filter(
-          (item) => item.teacher.teacherId === teacherIdToFilter
+        const teacherAssignments = res.data.assignments.filter(
+          (a) => a.assignedTeacherId === teacherId
         );
 
-        const studentScheduleMap = new Map<string, Schedule>();
+        const uniqueMap = new Map<string, Assignment>();
+        for (const assign of teacherAssignments) {
+          if (!uniqueMap.has(assign.studentId)) {
+            uniqueMap.set(assign.studentId, assign);
+          }
+        }
 
-        filteredData.forEach((item) => {
-          studentScheduleMap.set(item.student.studentId, item);
-        });
+        const uniqueList = Array.from(uniqueMap.values());
 
-        const uniqueSchedules = Array.from(studentScheduleMap.values());
+        const regular = uniqueList.filter(
+          (student) =>
+            student.sessionClassType?.toUpperCase() === "REGULARCLASS"
+        );
+        const group = uniqueList.filter(
+          (student) => student.sessionClassType?.toUpperCase() === "GROUPCLASS"
+        );
 
-        setUniqueStudentSchedules(uniqueSchedules);
+        setRegularStudents(regular);
+        setGroupStudents(group);
+        setRegularCount(regular.length);
+        setGroupCount(group.length);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching assignments", error);
       }
     };
 
     fetchData();
   }, []);
 
+  const studentsToDisplay =
+    activeTab === "Regular" ? regularStudents : groupStudents;
+
   return (
-    <div className="p-4 w-[1250px] pr-20">
-        <h2 className="text-2xl font-semibold text-gray-800 p-2">Students List</h2>
-        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[340px]">
-          <div className="overflow-x-auto">
-            <table className="table-auto w-full">
-              <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
+    <div className="md:p-0 mx-auto w-full">
+      <div className="flex flex-col h-full w-full justify-between">
+        <div className="flex flex-col">
+          {/* Tabs */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
+            <div className="flex flex-wrap gap-4 font-semibold">
+              {[
+                { type: "Regular", count: regularCount },
+                { type: "Group", count: groupCount },
+              ].map(({ type, count }) => (
+                <button
+                  key={type}
+                  onClick={() => setActiveTab(type)}
+                  className={
+                    activeTab === type
+                      ? "text-[#576CBC] border-b-2 text-[16px] border-[#576CBC]"
+                      : "text-[#010E30] dark:text-white text-[16px]"
+                  }
+                >
+                  {type} Students ({count})
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Search + Filter */}
+          <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg">
+            <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by keyword"
+                  className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                  // value={searchText}
+                  // onChange={(e) => handleSearch(e.target.value)}
+                />
+              </div>
+
+              <div
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                // onClick={() => setIsFilterModalOpen(true)}
+              >
+                {/* <BsFilterLeft /> */}
+                <MdTune className="w-4 h-4" />
+                <span>Filter</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                <span className="text-left -ml-60 ">
+                  Showing {studentsToDisplay.length} of{" "}
+                  {studentsToDisplay.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Table */}
+            <table className="table-fixed w-full">
+              <thead className="text-[12px] bg-[#4C6993] text-white">
                 <tr>
-                  <th className="px-6 py-3 text-center">Assigned ID</th>
-                  <th className="px-6 py-3 text-center">Name</th>
-                  <th className="px-6 py-3 text-center">Student ID</th>
-                  <th className="px-6 py-3 text-center">Level</th>
-                  <th className="px-6 py-3 text-center">Courses</th>
-                  <th className="px-6 py-3 text-center">Assigned Date</th>
-                  <th className="px-6 py-3 text-center">Due Date</th>
-                  <th className="px-6 py-3 text-center">Status</th>
+                  {[
+                    "Assignment ID",
+                    "Student Name",
+                    "Student ID",
+                    "Level",
+                    "Course",
+                    "Assignment Name",
+                    "Assigned Date",
+                    "Due Date",
+                    "Status",
+                    "Action",
+                  ].map((header, idx) => (
+                    <th
+                      key={idx}
+                      className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                    >
+                      {header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {uniqueStudentSchedules.slice(0,3).map((student) => (
+                {studentsToDisplay.map((student, index) => (
                   <tr
-                  key={student.student.studentId}
-                    className="text-[12px] font-medium mt-2"
-                    style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}
+                    key={index}
+                    className={`text-[12px] ${
+                      index % 2 === 0
+                        ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                        : "bg-[#F8F8F8] dark:bg-[#303030]"
+                    }`}
                   >
-                    <td className="px-6 py-2 text-center">{student._id}</td>
-                    <td className="px-6 py-2 text-center">{student.student.studentFirstName}</td>
-                    <td className="px-6 py-2 text-center">{student.student.studentId}</td>
-                    <td className="px-6 py-2 text-center">1</td>
-                    <td className="px-6 py-2 text-center">{student.package}</td>
-                    <td className="px-6 py-2 text-center">{new Date(student.startDate).toLocaleDateString()}</td>
-                    <td className="px-6 py-2 text-center">{new Date(student.endDate).toLocaleDateString()}</td>
-                    <td className="px-6 py-2 text-center">
+                    <td className="px-3 py-3 break-words">{student._id}</td>
+                    <td className="px-3 py-3 text-[#3D8FDE] font-medium">
+                      {student.studentName}
+                    </td>
+                    <td className="px-3 py-3 whitespace-normal break-all w-40">
+                      {student.studentId}
+                    </td>{" "}
+                    <td className="px-3 py-3">{student.level}</td>
+                    <td className="px-3 py-3">{student.courses}</td>
+                    <td className="px-3 py-3">{student.assignmentName}</td>
+                    <td className="px-3 py-3">
+                      {new Date(student.assignedDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-3">
+                      {new Date(student.dueDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-3">
                       <span
-                        className={`py-1 text-[#223857] rounded-lg border-[1px] border-[#1c3557c0] bg-[#D0FECA] text-[10px] ${student.status}`}
+                        className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
+                          student.status
+                        )}`}
                       >
                         {student.status}
                       </span>
+                    </td>
+                    <td className="px-4 py-2 text-center relative">
+                      <button
+                        className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
+                        onClick={() => toggleDropdown(student._id)}
+                      >
+                        <BsThreeDotsVertical />
+                      </button>
+                      {openDropdownId === student._id && (
+                        <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200b dark:bg-[#343434]">
+                          <button
+                            className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                            onClick={() => handleViewProfile(student.studentId)}
+                          >
+                            View Profile
+                          </button>
+                          <button className="block w-full px-4 py-1 text-[12px] 0 dark:text-[#ffff]">
+                            Assign
+                          </button>
+                          <button
+                            className="block w-full px-4 py-1 text-[12px]  dark:text-[#ffff]"
+                            onClick={() => setIsModalOpen(true)}
+                          >
+                            New Assignment
+                          </button>
+                          {isModalOpen && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ">
+                              <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border  flex flex-col justify-between text-left dark:bg-[#343434]">
+                                <div>
+                                  <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">
+                                    Assign
+                                  </h2>
+
+                                  <div className="mb-4">
+                                    <label className="text-sm block mb-1 dark:text-[#fff]">
+                                      Title
+                                    </label>
+                                    <input
+                                      type="text"
+                                      placeholder="Enter title"
+                                      className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                    />
+                                  </div>
+
+                                  <div className="flex gap-4 mb-4">
+                                    <div className="flex-1">
+                                      <label className="text-sm block mb-1 dark:text-[#fff]">
+                                        Assigned Date
+                                      </label>
+                                      <input
+                                        type="date"
+                                        className="w-full border  rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                      />
+                                    </div>
+                                    <div className="flex-1">
+                                      <label className="text-sm block mb-1 dark:text-[#fff]">
+                                        Due Date
+                                      </label>
+                                      <input
+                                        type="date"
+                                        className="w-full border  rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div className="mb-4">
+                                    <label className="text-sm block mb-1 dark:text-[#fff]">
+                                      Comment
+                                    </label>
+                                    <textarea
+                                      placeholder="Write your comment here..."
+                                      className="w-full border border-gray-300 rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                    ></textarea>
+                                  </div>
+                                </div>
+
+                                <div className="flex justify-end gap-3">
+                                  <button
+                                    className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
+                                    onClick={() => setIsModalOpen(false)}
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
+                                  onClick={handleClick}>
+                                    Create Assignment
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {/* View All */}
+          <div className="mt-4 text-right">
+            <Link
+              href="/teacher/ui/allstudents"
+              className="text-[#576CBC] text-[14px] border border-[#576CBC] px-3 py-1 rounded-md bg-white"
+            >
+              View All
+            </Link>
+          </div>
         </div>
-        <div className="mt-4 text-right">
-          <Link href="/teacher/ui/allstudents" className="text-teal-500 text-sm hover:underline">
-            View all
-          </Link>
-        </div>
+      </div>
     </div>
   );
 };
