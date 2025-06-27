@@ -8,115 +8,72 @@ import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 
-interface Student {
+interface SimpleStudent {
   studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
+  name: string;
 }
 
-interface Teacher {
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
-}
-
-interface Schedule {
-  student: Student;
-  teacher: Teacher;
-  _id: string;
-  classDay: string[];
-  package: string;
-  course: {
-    courseName: string;
-  };
-  preferedTeacher: string;
-  totalHourse: number;
-  startDate: string;
-  endDate: string;
-  startTime: string[];
-  endTime: string[];
-  scheduleStatus: string;
-  sessionClassType: string;
-  status: string;
-  createdBy: string;
-  createdDate: string;
-  lastUpdatedDate: string;
-  __v: number;
-}
-
-interface ApiResponse {
-  totalCount: number;
-  students: Schedule[];
-}
 
 const Totalstudents = () => {
-  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
-    Schedule[]
-  >([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
 
-        if (!teacherIdToFilter) {
-          console.error("No teacher ID found in localStorage.");
-          return;
-        }
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("TeacherAuthToken")
-            : null;
 
-        if (!token) {
-          console.error("❌ AdminAuthToken not found");
-          return;
-        }
-        const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+const [students, setStudents] = useState<SimpleStudent[]>([]);
+const [searchTerm, setSearchTerm] = useState("");
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 10;
 
-        const filteredData = response.data.students.filter(
-          (item) => item.teacher.teacherId === teacherIdToFilter
-        );
 
-        const studentScheduleMap = new Map<string, Schedule>();
+useEffect(() => {
+  const fetchStudents = async () => {
+    try {
+      const teacherId = localStorage.getItem("TeacherPortalId");
 
-        filteredData.forEach((item) => {
-          studentScheduleMap.set(item.student.studentId, item);
-        });
-
-        const uniqueSchedules = Array.from(studentScheduleMap.values());
-
-        setUniqueStudentSchedules(uniqueSchedules);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      if (!teacherId) {
+        console.error("No teacher ID found in localStorage.");
+        return;
       }
-    };
 
-    fetchData();
-  }, []);
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("TeacherAuthToken")
+          : null;
 
-  const filteredData = uniqueStudentSchedules.filter((row) =>
-    `${row.student.studentFirstName} ${row.student.studentLastName}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+      if (!token) {
+        console.error("❌ TeacherAuthToken not found");
+        return;
+      }
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const currentData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+      const response = await axios.get<SimpleStudent[]>(
+        "http://localhost:5001/classShedule/teacher/list",
+        {
+          params: { teacherId },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setStudents(response.data);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    }
+  };
+
+  fetchStudents();
+}, []);
+
+
+
+const filteredData = students.filter((student) =>
+  student.name.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+const currentData = filteredData.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage
+);
 
   return (
     <div>
@@ -162,7 +119,7 @@ const Totalstudents = () => {
                       <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
                         Student ID
                       </th>
-                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0] pl-10">
                          Name
                       </th>
                       <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
@@ -186,36 +143,36 @@ const Totalstudents = () => {
                     {currentData.length > 0 ? (
                       currentData.map((student) => (
                         <tr
-                          key={student.student.studentId}
+                          key={student.studentId}
                           className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
                         >
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {student.student.studentId}
+                            {student.studentId}
                           </td>
-                          <td className="px-4 py-2 text-[#3D8FDE] dark:text-[#3D8FDE] font-medium">
-                            {student.student.studentFirstName}
-                          </td>
-                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {student.course.courseName}
+                          <td className="px-4 py-2 text-[#3D8FDE] dark:text-[#3D8FDE] font-medium pl-10">
+                            {student.name}
                           </td>
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {student.sessionClassType}
+                            {/* {student.course.courseName} */}
                           </td>
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {new Date(student.startDate).toLocaleDateString(
+                            {/* {student.sessionClassType} */}
+                          </td>
+                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                            {/* {new Date(student.startDate).toLocaleDateString(
                               "en-US",
                               {
                                 month: "short",
                                 day: "2-digit",
                                 year: "numeric",
                               }
-                            )}
+                            )} */}
                           </td>
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            1
+                            
                           </td>
                           <td className="px-3 py-2 text-left">
-                            <span
+                            {/* <span
                               className={`text-[10px] font-semibold px-5 py-1 rounded-lg  ${
                                 student.status === "Active"
                                   ? "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px]"
@@ -223,7 +180,7 @@ const Totalstudents = () => {
                               }`}
                             >
                               {student.status}
-                            </span>
+                            </span> */}
                           </td>
                         </tr>
                       ))
@@ -254,37 +211,6 @@ const Totalstudents = () => {
   );
 };
 
-const data = [
-  {
-    name: "Samantha William",
-    id: "1234567890",
-    course: "Quran",
-    type: "Trial Class",
-    duration: "30 minutes",
-    datetime: "January 2, 2020 - 9:00–10:30 AM",
-    amount: "$04",
-    status: "Completed",
-  },
-  {
-    name: "Jordan Nico",
-    id: "1234567890",
-    course: "Tajweed",
-    type: "Regular Class",
-    duration: "60 minutes",
-    datetime: "January 2, 2020 - 11:00–12:00 AM",
-    amount: "$30",
-    status: "Re Schedule",
-  },
-  {
-    name: "Nadila Adja",
-    id: "1234567890",
-    course: "Arabic",
-    type: "Group Class",
-    duration: "45 minutes",
-    datetime: "January 3, 2020 - 9:00–10:30 AM",
-    amount: "$25",
-    status: "Canceled",
-  },
-];
+
 
 export default Totalstudents;
