@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import {  LogOut } from "lucide-react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
@@ -7,6 +8,7 @@ import axios from "axios";
 import Link from "next/link";
 import TeacherHeader from "../../components/TeacherHeader";
 import dayjs from "dayjs";
+import { useParams } from "next/navigation";
 
 interface Student {
   studentId: string;
@@ -51,7 +53,7 @@ interface ClassData {
 }
 interface ApiResponse {
   totalCount: number;
-  classSchedule: ClassData[];
+  classSchedule: ClassData;
 }
 interface Attendance {
   id: string | null;
@@ -65,7 +67,7 @@ interface Attendance {
 }
 
 
-function LiveClass() {
+export default function LiveClass() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [ratings, setRatings] = useState([0, 0, 0]);
@@ -74,118 +76,10 @@ function LiveClass() {
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
+const params = useParams();
+const id = params.id;
 
-  const filterUpcomingClass = (response: {
-    totalCount: number;
-    classSchedule: any[];
-  }): ClassData | null => {
-    const classes = response.classSchedule;
-
-    if (!Array.isArray(classes)) {
-      console.log("Expected an array, but received:", classes);
-      return null;
-    }
-
-    const now = new Date();
-    let upcomingClass: ClassData | null = null;
-
-    classes.forEach((cls) => {
-      console.log(
-        `Processing Class ID: ${cls._id}, startDate: ${cls.startDate}, startTime:`,
-        cls.startTime
-      );
-
-      // Validate startDate
-      if (!cls.startDate || typeof cls.startDate !== "string") {
-        console.log(
-          `Skipping class ${cls._id} due to missing or invalid startDate`
-        );
-        return;
-      }
-
-      const classDate = new Date(cls.startDate);
-      if (isNaN(classDate.getTime())) {
-        console.log(`Invalid startDate for class ${cls._id}:`, cls.startDate);
-        return;
-      }
-
-      // Validate startTime and endTime
-      if (!Array.isArray(cls.startTime) || !Array.isArray(cls.endTime)) {
-        console.log(
-          `Skipping class ${cls._id} due to incorrect startTime or endTime format`,
-          cls.startTime,
-          cls.endTime
-        );
-        return;
-      }
-
-      // Assuming startTime and endTime are arrays of strings in "HH:mm" format
-      const startTime = cls.startTime[0];
-      const endTime = cls.endTime[0];
-
-      const startTimeParts = startTime.split(":").map(Number);
-      const endTimeParts = endTime.split(":").map(Number);
-
-      if (startTimeParts.length !== 2 || endTimeParts.length !== 2) {
-        console.log(
-          `Skipping class ${cls._id} due to invalid time format: startTime=${startTime}, endTime=${endTime}`
-        );
-        return;
-      }
-
-      const [startHours, startMinutes] = startTimeParts;
-      const [endHours, endMinutes] = endTimeParts;
-
-      if (
-        isNaN(startHours) ||
-        isNaN(startMinutes) ||
-        isNaN(endHours) ||
-        isNaN(endMinutes) ||
-        startHours < 0 ||
-        startHours > 23 ||
-        endHours < 0 ||
-        endHours > 23 ||
-        startMinutes < 0 ||
-        startMinutes > 59 ||
-        endMinutes < 0 ||
-        endMinutes > 59
-      ) {
-        console.log(
-          `Skipping class ${cls._id} due to out-of-range time values: startTime=${startTime}, endTime=${endTime}`
-        );
-        return;
-      }
-
-      // Set start and end times correctly in 24-hour format
-      classDate.setHours(startHours, startMinutes, 0, 0);
-      const classEndDate = new Date(classDate);
-      classEndDate.setHours(endHours, endMinutes, 0, 0);
-
-      console.log(
-        `Checking class: ${
-          cls._id
-        }, Start: ${classDate.toISOString()}, End: ${classEndDate.toISOString()}, Now: ${now.toISOString()}`
-      );
-
-      // Check if the class is currently ongoing
-      if (now >= classDate && now <= classEndDate) {
-        console.log(`Class ${cls._id} is currently LIVE`);
-        upcomingClass = cls;
-      }
-      // If no live class, find the next upcoming class
-      else if (
-        classDate > now &&
-        (!upcomingClass || classDate < new Date(upcomingClass.startDate))
-      ) {
-        console.log(`Class ${cls._id} is in the future`);
-        upcomingClass = cls;
-      }
-    });
-
-    console.log("Selected Class:", upcomingClass);
-    return upcomingClass;
-  };
-  
+ 
   useEffect(() => {
     const fetchClassData = async () => {
       try {
@@ -207,9 +101,8 @@ function LiveClass() {
         }
         console.log("teacherid", teacherId);
         const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher`,
+          `https://api.blackstoneinfomaticstech.com/classShedule/${id}`,
           {
-            params: { teacherId },
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -219,7 +112,7 @@ function LiveClass() {
 
         console.log("Raw API Response:", response.data.classSchedule); // Check data format
 
-        const nextClass = filterUpcomingClass(response.data);
+        const nextClass =  response.data.classSchedule;
 
         console.log("Filtered Next Class:", nextClass); // Debug if nextClass is valid
 
