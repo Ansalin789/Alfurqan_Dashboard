@@ -1,11 +1,10 @@
 'use client';
 
-import React from 'react'
-import 'react-calendar/dist/Calendar.css'
-import BaseLayout from '@/components/BaseLayout'
+import React from 'react';
+import 'react-calendar/dist/Calendar.css';
+import BaseLayout from '@/components/BaseLayout';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { FaSearch } from "react-icons/fa";
-import Calender from '@/app/teacher/components/Calender';
+import Calender from '../../components/Calender';
 import Total from '@/app/teacher/components/total';
 import NextScheduleClass from '@/app/teacher/components/NextScheduleclass';
 import ClassAnalyticsChart from '@/app/teacher/components/ClassAnalyticsChart';
@@ -15,84 +14,62 @@ import UpcomingTask from '../../components/UpcomingTask';
 import StudentsCard from '../../components/Students';
 import TeacherHeader from '../../components/TeacherHeader';
 
-
-// Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-
 export default function Academic() {
-
-
   return (
-    <div>
-      <BaseLayout>
-       <TeacherHeader currentSection="Dashboard" />
-        <div className="flex flex-col lg:flex-row p-2 w-full">
-          <div className="flex-1 pr-8 pl-4">
-          <header className="flex p-2">
-            <div className="flex space-x-4 -pl-8">
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                  {/* Search Icon */}
-                  <FaSearch className="absolute w-4 h-4 left-3 top-1/2 transform -translate-y-1/2 text-[#35324B]" />
-                  {/* Input Field */}
-                  <input
-                    type="text"
-                    placeholder="Search here..."
-                    className="h-9 w-60 pl-14 text-sm text-[#35324B] bg-[#E1E5EA] rounded-[10px] shadow-[0_4px_6px_rgba(0,0,0,0.2)] outline-none focus:ring-2 focus:ring-[#9CA3AF]"
-                  />
-                </div>
-              </div>
-            </div>
-            {/* <div className="flex space-x-4 ml-[590px]">
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                <button
-                  className="flex items-center bg-[#D5D7DA] p-[4px] rounded-lg text-[14px]  shadow-[0_4px_6px_rgba(0,0,0,0.2)] outline-none focus:ring-2 focus:ring-[#9CA3AF]"
-                >
-                  <BiFilterAlt className="mr-2 p-2" /><span className='text-[#223857]'>Filter</span> 
-                </button>
-                </div>
-              </div>
-            </div> */}
-          </header>
-          
-            <main className="grid grid-cols-12 gap-5 pr-20">
-              <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
-                <Total />
-              </div>
-              <div className="col-span-12 grid grid-cols-1 gap-4 p-0">
-                <NextScheduleClass />
-              </div>
+    <BaseLayout>
+      <TeacherHeader currentSection="Dashboard" />
 
-              <div className="col-span-6 grid grid-cols-1 gap-4 p-0">
-                <EarningAnalytics />
-              </div>
-              <div className="col-span-6 grid grid-cols-1 gap-4 p-0">
-              <ClassAnalyticsChart />
-              </div>
-
-              <div className="col-span-9 grid grid-cols-1 gap-4 p-0">
-                <TeachingActivity />
-              </div>
-              
-              <div className="col-span-3 grid grid-cols-1 gap-4 p-0">
-                <StudentsCard />
-              </div>
-              
-            </main>
+      <div className="flex flex-col lg:flex-row gap-4 bg-[#E4E7F4] dark:bg-[#252525] px-2 py-4 min-h-screen">
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col gap-4 w-full">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 gap-4">
+            <Total />
           </div>
-          {/* calender sidebar */}
-          <div className=" lg:w-[250px] mt-8 lg:mt-1 rounded-[20px] h-[70vh]">
-            <div className="col-span-4 pr-8 rounded-lg">
-              <Calender />
+
+          {/* Next Class Schedule */}
+          <div className="grid grid-cols-1 gap-4">
+            <NextScheduleClass />
+          </div>
+
+          {/* Analytics Row */}
+         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 w-full">
+  <div className="col-span-12 md:col-span-8">
+    <EarningAnalytics />
+  </div>
+  <div className="col-span-12 md:col-span-4">
+    <StudentsCard />
+  </div>
+</div>
+
+
+
+          {/* Teaching Activity and Class Analytics */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="col-span-12 lg:col-span-8">
+              <TeachingActivity />
             </div>
-            <div className="col-span-4 pr-8 rounded-lg mt-4">
-              <UpcomingTask />
+            <div className="col-span-12 lg:col-span-4">
+              <ClassAnalyticsChart />
             </div>
           </div>
         </div>
-      </BaseLayout>
-    </div>
-  )
+
+        {/* Sidebar */}
+        <div className="w-full lg:w-[310px] flex flex-col gap-4">
+          {/* Calendar */}
+          <div className="rounded-xl shadow-lg h-[320px] bg-white dark:bg-[#343434] flex items-center justify-center">
+            <Calender />
+          </div>
+
+          {/* Upcoming Tasks */}
+          <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] overflow-y-auto scrollbar-none flex-1">
+            <UpcomingTask />
+          </div>
+        </div>
+      </div>
+    </BaseLayout>
+  );
 }

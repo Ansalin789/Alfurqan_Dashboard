@@ -1,15 +1,8 @@
+'use client';
+
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Doughnut } from "react-chartjs-2";
-import {
-  Chart,
-  ArcElement,
-  Tooltip,
-  Legend
-} from "chart.js";
-import ChartDataLabels from "chartjs-plugin-datalabels";
 
-Chart.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 interface Student {
   studentId: string;
   studentFirstName: string;
@@ -47,170 +40,139 @@ interface ClassSchedule {
   teacherAttendee: string;
 }
 
+const COLORS = ["#B4B6FD", "#6BE7A4", "#F7A9A8"]; // Scheduled, Completed, Absent
 
-
-
-const ClassAnalytics: React.FC = () => {
-  const [classData, setClassData] = useState<ClassSchedule[]>([]);
+const ClassAnalytics = () => {
   const [chartData, setChartData] = useState<number[]>([]);
   const [totalClasses, setTotalClasses] = useState<number>(0);
-  const [labels, setLabels] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  console.log('classData',classData);
 
   useEffect(() => {
     const fetchClassData = async () => {
       try {
         const teacherId = localStorage.getItem("TeacherPortalId");
-        const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+        const token = localStorage.getItem("TeacherAuthToken");
 
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  }
-  
-        if (!teacherId) {
-          setError("Teacher ID not found");
+        if (!teacherId || !token) {
+          setError("Authentication data missing.");
           setLoading(false);
           return;
         }
-  
+
         const response = await axios.get<{ classSchedule: ClassSchedule[] }>(
           "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
           {
             params: { teacherId },
             headers: {
               "Content-Type": "application/json",
-              "Authorization" : `Bearer ${token}`
+              Authorization: `Bearer ${token}`,
             },
           }
         );
-  
+
         const classSchedule = response.data.classSchedule;
-  
         const statusCount: Record<string, number> = {
           Scheduled: 0,
           Completed: 0,
           Absent: 0,
         };
-  
+
         classSchedule.forEach((cls) => {
           if (cls.classStatus?.toLowerCase() === "pending") {
             statusCount["Scheduled"] += 1;
           } else if (cls.classStatus?.toLowerCase() === "completed") {
             statusCount["Completed"] += 1;
           }
-  
           if (cls.teacherAttendee?.toLowerCase() === "absent") {
             statusCount["Absent"] += 1;
           }
         });
-  
-        // Ensure total includes all statuses (Scheduled + Completed + Absent)
-        const total = statusCount["Scheduled"] + statusCount["Completed"] + statusCount["Absent"];
 
-      // Function to calculate percentage
-      const calculatePercentage = (count: number) =>
-        total > 0 ? ((count / total) * 100).toFixed(0) + "%" : "0%";
+        const total =
+          statusCount["Scheduled"] +
+          statusCount["Completed"] +
+          statusCount["Absent"];
 
-      // Update labels with percentage values
-      const updatedLabels = [
-        `Scheduled (${calculatePercentage(statusCount["Scheduled"])})`,
-        `Completed (${calculatePercentage(statusCount["Completed"])})`,
-        `Absent (${calculatePercentage(statusCount["Absent"])})`,
-      ];
-  
-        setLabels(updatedLabels);
-        setChartData(Object.values(statusCount));
-        setTotalClasses(total); // Fix: This now correctly includes all statuses
-        setClassData(classSchedule);
+        setChartData([
+          statusCount["Scheduled"],
+          statusCount["Completed"],
+          statusCount["Absent"],
+        ]);
+        setTotalClasses(total);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An unexpected error occurred");
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchClassData();
   }, []);
-  
-  
 
-  const data = {
-    labels,
-    datasets: [
-      {
-        data: chartData,
-        backgroundColor: ["#FEC64F", "#0BF4C8", "#F2A0FF"], // Ensure "Absent" has a color
-        hoverBackgroundColor: ["#FEC64F", "#0BF4C8", "#FF6384"],
-        borderWidth: 0, // ✅ Removes the white border
-      },
-    ],
-  };
-  
-  
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      datalabels: {
-        color: "white",
-        formatter: (value: number, ctx: any) => {
-          let total = ctx.dataset.data.reduce((acc: number, val: number) => acc + val, 0);
-          return total > 0 ? ((value / total) * 100).toFixed(0) + "%" : "0%";
-        },
-        font: { weight: "bold" as const, size: 12 }, // ✅ Fix applied here
-      },
-    },
-  };
-  
+  const radiusOffset = [65, 50, 35]; // Radius for Scheduled, Completed, Absent
+  const total = chartData.reduce((a, b) => a + b, 0);
+  const circleData = chartData.map((value, i) => {
+    const percent = total ? (value / total) * 100 : 0;
+    const radius = radiusOffset[i];
+    const circumference = 2 * Math.PI * radius;
+    const dash = (percent / 100) * circumference;
+    return { radius, color: COLORS[i], dash, circumference };
+  });
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="w-[100%] bg-[#3E68A1] p-4 rounded-[17px] shadow-lg flex justify-between">
-      <div className="relative w-36 h-36 mx-auto">
-        <Doughnut data={data} options={options} />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-[12px] font-bold text-white bg-[#223857] rounded-full p-3">
+    <div className="bg-white dark:bg-[#343434] shadow-md rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between w-full h-full">
+      {/* SVG Chart */}
+      <div className="relative w-[200px] h-[200px] flex items-center justify-center">
+        <svg viewBox="0 0 160 160" className="w-full h-full">
+          {circleData.map(({ radius, color, dash, circumference }, i) => (
+            <circle
+              key={i}
+              cx="80"
+              cy="80"
+              r={radius}
+              fill="transparent"
+              stroke={color}
+              strokeWidth="6"
+              strokeDasharray={`${dash} ${circumference - dash}`}
+              strokeLinecap="round"
+              transform="rotate(-90 80 80)"
+            />
+          ))}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <p className="text-[28px] font-bold text-[#0E1B3D] dark:text-white">
             {totalClasses}
-          </span>
+          </p>
+          <p className="text-xs text-[#7B7E8E] dark:text-gray-300 font-semibold mt-1">
+            TOTAL CLASS ASSIGNED
+          </p>
         </div>
       </div>
-      <div className="text-white text-sm w-[60%]">
-        <h3 className="text-[13px] font-semibold ml-4 justify-center">
+
+      {/* Analytics Summary */}
+      <div className="flex flex-col w-full max-w-[300px] mt-6 md:mt-0 md:ml-6">
+        <h3 className="text-[#0E1B3D] dark:text-white font-bold text-[18px] mb-4">
           Class Analytics
         </h3>
-        <div className="flex justify-between items-center mr-2">
-          <span className="flex items-center">
-            <div className="w-2 h-2 rounded-full bg-[#FEC64F] mr-2"></div>
-            <p className="text-[#6BF4FD] font-semibold text-[11px]">
-              TOTAL CLASS ASSIGNED
-            </p>
-          </span>
-          <span>{totalClasses}</span>
-        </div>
-        <div className="flex flex-col ml-4 mt-3 text-[10px] text-[#A098AE]">
-          {labels.map((label, index) => (
+        <div className="space-y-3">
+          {["Scheduled", "Completed", "Absent"].map((label, index) => (
             <div key={label} className="flex justify-between items-center">
-              <span className="flex items-center">
-                <div
-                  className="w-2 h-2 rounded-sm mr-2"
-                  style={{
-                    backgroundColor: Array.isArray(data.datasets?.[0]?.backgroundColor)
-                      ? data.datasets[0].backgroundColor[index] || "#000"
-                      : "#000",
-                  }}
-                ></div>
-                {label}
+              <div className="flex items-center">
+                <span
+                  className="inline-block w-3 h-3 rounded-full mr-2"
+                  style={{ backgroundColor: COLORS[index] }}
+                />
+                <span className="text-[#1E2B4B] dark:text-white/80 font-medium text-sm">
+                  {label}
+                </span>
+              </div>
+              <span className="text-[#1E2B4B] dark:text-white/80 font-semibold text-sm">
+                {chartData[index]}
               </span>
-              <span>{chartData[index]}</span>
             </div>
           ))}
         </div>

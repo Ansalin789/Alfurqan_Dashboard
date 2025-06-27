@@ -1,92 +1,58 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
-import "react-calendar/dist/Calendar.css";
+import 'react-calendar/dist/Calendar.css';
 import axios from 'axios';
-import "./Calender.css";
- 
+import './Calender.css'; // ✅ uses same styling
+import { useRouter } from 'next/navigation';
 
-// Rename Event interface to avoid conflicts
-interface ClassEvent {
-  student: {
-    studentId: string;
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-  };
-  teacher: {
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-  };
-  _id: string;
-  classDay: string[];
-  package: string;
-  preferedTeacher: string;
-  totalHours: number;
-  startDate: string;
-  endDate: string;
-  startTime: string[];
-  endTime: string[];
-  scheduleStatus: string;
-  status: string;
-  createdBy: string;
-  createdDate: string;
-  lastUpdatedDate: string;
-  __v: number;
+interface TeacherMeeting {
+  subject: string;
+  scheduledStartDate: string;
+  scheduledEndDate: string;
 }
 
-// API Response Interface
-interface ApiResponse {
-  totalCount: number;
-  classSchedule: ClassEvent[];
+interface CalendarEvent {
+  title: string;
+  start: Date;
+  end: Date;
 }
 
 const Calender: React.FC = () => {
-  const [events, setEvents] = useState<{ title: string; startDate: Date; endDate: Date }[]>([]);
+  const router = useRouter();
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [value, setValue] = useState<Date>(new Date());
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const teacherId = localStorage.getItem('TeacherPortalId');
-       const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('TeacherAuthToken') : null;
 
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  }
+    if (!token) {
+      console.error('❌ TeacherAuthToken not found');
+      return;
+    }
 
-        const response = await axios.get<ApiResponse>('https://api.blackstoneinfomaticstech.com/classShedule/teacher', {
-          params: { teacherId: teacherId,},
-          headers:{
-                 'Content-Type': 'application/json',
-        "Authorization":`Bearer ${token}`,
-          }
-        
-        });
-
-        // ✅ Correct Mapping (Use `classSchedule`, not `teacher.map`)
-        const mappedEvents = response.data.classSchedule.map((classItem) => ({
-          title: `${classItem.package} - ${classItem.teacher.teacherName}`, // Event title
-          startDate: new Date(classItem.startDate),
-          endDate: new Date(classItem.endDate),
+    axios
+      .get('https://api.blackstoneinfomaticstech.com/meetingSchedulelist', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        const mappedEvents = response.data.teacherMeeting.map((item: TeacherMeeting) => ({
+          title: item.subject,
+          start: new Date(item.scheduledStartDate),
+          end: new Date(item.scheduledEndDate),
         }));
-
         setEvents(mappedEvents);
-        console.log("Fetched Events: ", mappedEvents);
-      } catch (error) {
-        console.error('Error fetching data: ', error);
-      }
-    };
-
-    fetchEvents();
+        console.log('📅 Teacher Events:', mappedEvents);
+      })
+      .catch((error) => {
+        console.error('❌ Error fetching teacher meetings:', error);
+      });
   }, []);
 
-  const isMeetingDate = (date: Date) => {
+  const isMeetingDate = (date: Date): boolean => {
     return events.some((event) => {
-      const eventStart = new Date(event.startDate);
+      const eventStart = new Date(event.start);
       return (
         eventStart.getFullYear() === date.getFullYear() &&
         eventStart.getMonth() === date.getMonth() &&
@@ -95,28 +61,33 @@ const Calender: React.FC = () => {
     });
   };
 
-  return (
-    <div className="flex items-center justify-center mt-12">
-      <div className="calendar-container rounded-[50px] -ml-28">
-        <Calendar
-          onChange={(newValue) => setValue(newValue as Date)}
-          value={value}
-          className="custom-calendar"
-          navigationLabel={({ date }) =>
-            `${date.toLocaleString('default', { month: 'long' }).toUpperCase()}, ${date.getFullYear()}`
-          }
-          nextLabel="›"
-          prevLabel="‹"
-          next2Label={null}
-          prev2Label={null}
-          showNeighboringMonth={false}
-          tileClassName={({ date, view }) =>
-            view === 'month' && isMeetingDate(date) ? 'event-day' : undefined
-          }
-        />
-      </div>
-    </div>
-  );
+return (
+  <div className="dark:bg-[#343434] w-full rounded-xl h-[280px]">
+    <Calendar
+      onChange={(newValue) => setValue(newValue as Date)}
+      value={value}
+      navigationLabel={({ date }) =>
+        `${date.toLocaleString('default', { month: 'long' }).toUpperCase()}, ${date.getFullYear()}`
+      }
+      onClickDay={() => {
+        router.push(`/teacher/meetingSchedule`);
+      }}
+      locale="en-GB"
+      calendarType="iso8601"
+      className="custom-calendar dark:bg-[#343434]"
+      nextLabel="›"
+      prevLabel="‹"
+      next2Label={null}
+      prev2Label={null}
+      showNeighboringMonth={true}
+      tileClassName={({ date, view }) =>
+        view === 'month' && isMeetingDate(date) ? 'event-day' : undefined
+      }
+    />
+  </div>
+);
+
+
 };
 
 export default Calender;

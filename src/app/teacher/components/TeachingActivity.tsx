@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const TeachingActivity: React.FC = () => {
   const [monthlyHours, setMonthlyHours] = useState<number[]>(Array(12).fill(0));
@@ -9,24 +9,20 @@ const TeachingActivity: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
-
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  }        const teacherId = localStorage.getItem("TeacherPortalId");
+        const token =
+          typeof window !== 'undefined' ? localStorage.getItem('TeacherAuthToken') : null;
+        const teacherId = localStorage.getItem('TeacherPortalId');
 
         if (!token || !teacherId) {
-          console.error("Missing authentication token or teacher ID.");
+          console.error('Missing authentication token or teacher ID.');
           return;
         }
 
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule",{
-           headers:{
-                 'Content-Type': 'application/json',
-        "Authorization":`Bearer ${token}`,
-          }
+        const response = await axios.get('https://api.blackstoneinfomaticstech.com/classShedule', {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         const filteredData = response.data.students.filter(
@@ -44,83 +40,126 @@ const token =
           schedule.classDay.forEach((_: any, index: number) => {
             if (!schedule.startTime[index] || !schedule.endTime[index]) return;
 
-            const startHour = parseInt(schedule.startTime[index].split(":")[0], 10);
-            const endHour = parseInt(schedule.endTime[index].split(":")[0], 10);
+            const startHour = parseInt(schedule.startTime[index].split(':')[0], 10);
+            const endHour = parseInt(schedule.endTime[index].split(':')[0], 10);
 
-            if (isNaN(startHour) || isNaN(endHour)) return; // Prevent NaN values
+            if (isNaN(startHour) || isNaN(endHour)) return;
 
-            const dailyHours = Math.max(0, endHour - startHour); // Ensure non-negative values
-
-            monthlyData[monthIndex] += dailyHours;
+            monthlyData[monthIndex] += Math.max(0, endHour - startHour);
           });
         });
 
         setMonthlyHours(monthlyData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
   }, []);
 
-  // Function to generate SVG path
-  const getGraphPath = (monthlyHours: number[]) => {
-    const width = 680;
-    const height = 160;
-    const padding = 10;
-    const maxHours = Math.max(...monthlyHours, 1); // Avoid division by zero
+  const width = 1000;
+  const height = 160;
+  const padding = 20;
+  const max = Math.max(...monthlyHours, 1);
 
-    let path = `M0 ${height}`;
+  const points = monthlyHours.map((val, i) => {
+    const x = (i / 11) * width;
+    const y = height - (val / max) * (height - padding);
+    return { x, y };
+  });
 
-    monthlyHours.forEach((hours, i) => {
-      const x = (i / 11) * width; // Spread points evenly
-      const y = height - (hours / maxHours) * (height - padding); // Scale correctly
+  const getSmoothPath = (pts: { x: number; y: number }[]) => {
+    if (pts.length < 2) return '';
 
-      path += ` L${x} ${y}`;
-    });
+    let d = `M${pts[0].x},${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      const cp1x = (pts[i - 1].x + pts[i].x) / 2;
+      const cp1y = pts[i - 1].y;
+      const cp2x = (pts[i - 1].x + pts[i].x) / 2;
+      const cp2y = pts[i].y;
+      d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${pts[i].x},${pts[i].y}`;
+    }
 
-    path += ` L${width} ${height} L0 ${height} Z`; // Close the shape properly
-
-    return path;
+    return d;
   };
 
+  const curvePath = getSmoothPath(points);
+  const areaPath = `${curvePath} L${width},${height} L0,${height} Z`;
+
   return (
-    <div className="bg-gradient-to-t from-[#5C92DE] to-[#324F78] border border-black text-white p-2 rounded-[15px] shadow-lg w-[100%] h-[205px]">
+    <div className="bg-white dark:bg-[#343434] rounded-xl p-5 shadow-sm">
       {/* Header */}
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-[13px] font-semibold ml-4">Teaching Activity</h2>
-        <select className="bg-white text-[#35537F] py-[1px] px-1 rounded-md text-[10px] font-semibold shadow-md">
-          <option value="monthly">Monthly</option>
-          <option value="weekly">Weekly</option>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-[16px] dark:text-white font-semibold text-[#0f172a]">
+          Teaching Activity
+        </h2>
+        <select className="bg-[#EFEFEF] dark:bg-[#565656] text-[#3E5E8A] dark:text-white py-[2px] px-2 rounded-md text-[11px] font-medium">
+          <option>Monthly</option>
+          <option>Weekly</option>
         </select>
       </div>
 
-      <div className="relative flex-1">
-  <svg viewBox="0 0 1000 190" className="w-full h-full">
-    <defs>
-      <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#fef08a" stopOpacity="1" />
-        <stop offset="100%" stopColor="#1e40af" stopOpacity="0.8" />
-      </linearGradient>
-    </defs>
+      {/* Graph Container */}
+      <div className="flex">
+        {/* Y-Axis Labels */}
+        <div className="flex flex-col justify-between text-xs text-slate-400 dark:text-gray-400 mr-3 h-[160px] pt-2 pb-4">
+          {['50', '40', '30', '20', '10', '0'].map((label, i) => (
+            <div key={i} className="h-[26px] flex items-center justify-end pr-1">
+              <span className="block leading-none">L{label}</span>
+            </div>
+          ))}
+        </div>
 
-    {/* Ensure the graph starts at Jan by mapping data correctly */}
-    <path d={getGraphPath(monthlyHours)} fill="url(#gradient)" stroke="#ffffff" strokeWidth="2" />
+        {/* Chart */}
+        <div className="relative flex-1 h-[160px]">
+          <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="w-full h-full">
+            <defs>
+              <linearGradient id="greenGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#86efac" stopOpacity="0.7" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+              </linearGradient>
+            </defs>
 
-    {/* Horizontal Grid Lines - Full Width */}
-    {[40, 80, 120, 160].map((y) => (
-      <line key={y} x1="0" y1={y} x2="1000" y2={y} stroke="#94a3b8" strokeWidth="0.5" />
-    ))}
-  </svg>
-</div>
+            {/* Area fill */}
+            <path d={areaPath} fill="url(#greenGradient)" stroke="none" />
+            {/* Dashed Line */}
+            <path d={curvePath} fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="4" />
 
+            {/* Dots (Pins) */}
+            {points.map((point, idx) => (
+              <circle
+                key={idx}
+                cx={point.x}
+                cy={point.y}
+                r="4"
+                fill="#22c55e"
+                stroke="#fff"
+                strokeWidth="1.5"
+              />
+            ))}
+
+            {/* Horizontal Grid Lines */}
+            {[32, 64, 96, 128].map((y) => (
+              <line
+                key={y}
+                x1="0"
+                y1={y}
+                x2={width}
+                y2={y}
+                stroke="#e2e8f0"
+                strokeWidth="0.6"
+              />
+            ))}
+          </svg>
+        </div>
+      </div>
 
       {/* X-Axis Labels */}
-      <div className="flex  text-[12px] text-gray-300">
-        {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map(
+      <div className="flex justify-between text-xs text-slate-500 dark:text-slate-300 mt-2 px-4">
+        {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(
           (month) => (
-            <span key={month} className="flex-1 text-center text-[11px]">
+            <span key={month} className="w-[8%] text-center">
               {month}
             </span>
           )
