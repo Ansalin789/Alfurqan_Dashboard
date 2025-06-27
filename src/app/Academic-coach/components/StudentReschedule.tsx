@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import moment from "moment";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 
@@ -10,6 +10,8 @@ import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 
 import AcademicHeader from "./academicHeader";
+import { getSocket } from "@/app/utils/socket";
+import { AnimatePresence, motion } from "framer-motion";
 
 // Event interface for calendar events
 interface Event {
@@ -120,6 +122,13 @@ interface TeacherShiftResponse {
   users: Teacher[];
   totalCount: number;
 }
+interface TeacherSlot {
+  fromTime: string;
+  toTime: string;
+  teacherName: string;
+  teacherId: string;
+  isStatus: boolean;
+}
 
 const SchedulePage = () => {
   const searchParams = useSearchParams();
@@ -133,9 +142,11 @@ const SchedulePage = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [scheduledClasses, setScheduledClasses] = useState<ClassSchedule[]>([]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [availableTeachers, setAvailableTeachers] = useState<Teacher[]>([]);
+  const [availableTeachers, setAvailableTeachers] = useState<TeacherSlot[]>([]);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
-  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [selectedTeacher, setSelectedTeacher] = useState<TeacherSlot | null>(
+    null
+  );
   const [rescheduleReason, setRescheduleReason] = useState("");
   const [success, setSuccess] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -199,12 +210,12 @@ const SchedulePage = () => {
     }
   }, [studentId]);
 
-  const handleDateClick = async (date: Date) => {
+  const handleDateClick = async (date: Date, position: string) => {
     setSelectedDate(date);
     setSelectedTeacher(null); // Clear previously selected
     setAvailableTeachers([]);
     setIsRescheduleOpen(false); // Close modal until teacher is chosen
-
+    console.log("date is ", date);
     const formattedDate = moment(date).format("YYYY-MM-DD");
     const token = localStorage.getItem("AcademicCoachAuthToken");
 
@@ -214,37 +225,95 @@ const SchedulePage = () => {
     }
 
     try {
-      const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/shiftschedule?role=TEACHER&startdate=${formattedDate}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const url = `http://localhost:5001/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
+        position + " Teacher"
+      )}`;
+
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (!res.ok) {
         console.error("❌ Failed to fetch teachers");
         return;
       }
 
-      const data: TeacherShiftResponse = await res.json();
-
-      const filteredTeachers = data.users.filter((teacher) => {
-        const start = moment(teacher.startdate, "YYYY-MM-DD");
-        const end = moment(teacher.enddate, "YYYY-MM-DD");
-        const selected = moment(date);
-        return selected.isBetween(start, end, undefined, "[]");
-      });
-
-      setAvailableTeachers(filteredTeachers);
+      const data = await res.json();
+      setAvailableTeachers(data);
     } catch (err) {
       console.error("❌ Network error:", err);
     }
   };
 
-  const handleTeacherClick = (teacher: Teacher) => {
+  const handleTeacherClick = (teacher: TeacherSlot) => {
     setSelectedTeacher(teacher);
     setIsRescheduleOpen(true);
   };
+  useEffect(() => {
+    const academicId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
+    if (!academicId) return;
+
+    const socket = getSocket(academicId);
+
+    const handleList = (payload: {
+      event: "update" | "create";
+      date: string;
+      slots: {
+        [teacherId: string]: {
+          from: string;
+          to: string;
+          isStatus: boolean;
+        }[];
+      };
+    }) => {
+      if (payload.event !== "update") return;
+
+      const selectedDay = moment(selectedDate).format("YYYY-MM-DD");
+      const payloadDay = moment(payload.date).format("YYYY-MM-DD");
+
+      console.log("📦 WS Payload:", payload);
+      console.log("📅 Selected Date:", selectedDay, "| WS Date:", payloadDay);
+
+      if (selectedDay !== payloadDay) {
+        console.warn("⛔ Date mismatch: skipping update");
+        return;
+      }
+
+      // 🔥 Update flat array
+      setAvailableTeachers((prev: any[]) => {
+        const slotsToRemove = Object.entries(payload.slots).flatMap(
+          ([teacherId, updates]) =>
+            updates
+              .filter((u) => !u.isStatus) // ❌ only removing slots
+              .map((u) => ({
+                teacherId,
+                from: u.from,
+                to: u.to,
+              }))
+        );
+
+        const filtered = prev.filter((slot) => {
+          return !slotsToRemove.some(
+            (r) =>
+              r.teacherId === slot.teacherId &&
+              r.from === slot.fromTime &&
+              r.to === slot.toTime
+          );
+        });
+
+        console.log("🧹 After Slot Removal:", filtered);
+        return filtered;
+      });
+    };
+
+    socket.on("academicAvailableTeachers", handleList);
+    return () => {
+      socket.off("academicAvailableTeachers", handleList);
+    };
+  }, [selectedDate]);
 
   const handleRescheduleSubmit = async () => {
     const token = localStorage.getItem("AcademicCoachAuthToken");
@@ -255,8 +324,8 @@ const SchedulePage = () => {
 
     if (
       !selectedDate ||
-      !selectedTeacher?.fromtime ||
-      !selectedTeacher?.totime ||
+      !selectedTeacher?.fromTime ||
+      !selectedTeacher?.toTime ||
       !rescheduleReason
     ) {
       console.error("❌ Missing reschedule data");
@@ -288,33 +357,47 @@ const SchedulePage = () => {
         return `${hours}:${minutes}`;
       };
 
+      // This ensures the selected date doesn't shift due to timezone conversion
+      const normalizeDate = (date: Date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth(); // 0-indexed
+        const day = date.getDate();
+
+        // Create a new Date at noon UTC (avoids time shift)
+        const utcDate = new Date(Date.UTC(year, month, day, 12, 0, 0));
+        return utcDate.toISOString(); // Safe to store in DB
+      };
+
       // 2. Build updated payload with only specific changes
       const updatedPayload = {
         ...existingData,
+        // Inside your handleRescheduleSubmit
+        startDate: normalizeDate(selectedDate),
+        endDate: normalizeDate(selectedDate),
+        classDay: [
+          {
+            label: selectedDate.toLocaleDateString("en-US", {
+              weekday: "long",
+            }),
+            value: normalizeDate(selectedDate),
+          },
+        ],
 
-        // ✅ fix: classDay as array of objects
-        classDay: existingData.classDay.map((day: string | number | Date) => ({
-          label: new Date(day).toLocaleDateString("en-US", { weekday: "long" }),
-          value: day,
-        })),
-
-        startDate: new Date(selectedDate).toISOString(),
         startTime: [
           {
-            label: to24HourFormat(selectedTeacher.fromtime),
-            value: to24HourFormat(selectedTeacher.fromtime),
+            label: to24HourFormat(selectedTeacher.fromTime),
+            value: to24HourFormat(selectedTeacher.fromTime),
           },
         ],
         endTime: [
           {
-            label: to24HourFormat(selectedTeacher.totime),
-            value: to24HourFormat(selectedTeacher.totime),
+            label: to24HourFormat(selectedTeacher.toTime),
+            value: to24HourFormat(selectedTeacher.toTime),
           },
         ],
 
         teacherId: selectedTeacher.teacherId,
         teacherName: selectedTeacher.teacherName,
-        teacherEmail: selectedTeacher.teacherEmail,
         scheduleStatus: "Rescheduled",
         lastUpdatedDate: new Date().toISOString(),
         rescheduleReason,
@@ -617,15 +700,19 @@ const SchedulePage = () => {
             return (
               <button
                 key={i}
-                onClick={() => handleDateClick(date)}
+                onClick={() => handleDateClick(date, courseName)}
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer duration-200
       ${hasClasses ? `border ${courseColorClass}` : "border text-[10px]"}
-      ${isToday(day)  ? "bg-[#27176518] text-white"
-                    : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"}
+      ${
+        isToday(day)
+          ? "bg-[#27176518] text-white dark:text-white"
+          : "bg-gray-100 text-gray-500 dark:bg-[#414141] dark:text-white"
+      }
+
       ${isSelected ? "ring-2 ring-[#576cbc]" : ""}
     `}
               >
-                <div className="font-semibold text-sm text-gray-700">{day}</div>
+                <div className="font-semibold text-sm text-inherit">{day}</div>
 
                 {hasClasses && (
                   <div className="w-full mt-2 text-center">
@@ -710,48 +797,51 @@ const SchedulePage = () => {
               Available Teachers
             </h3>
 
-            <div className="divide-y divide-gray-200 dark:divide-gray-600 max-h-[600px] overflow-y-auto">
+            <div className="divide-y divide-gray-200 dark:divide-gray-600 max-h-[600px] ">
               {availableTeachers.length === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-300 py-4">
                   No teachers available.
                 </p>
               ) : (
-                availableTeachers.map((teacher) => (
-                  <div
-                    key={teacher._id}
-                    className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
-                  >
-                    {/* Left Side */}
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.name}`}
-                        alt={teacher.name}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-gray-800 dark:text-white">
-                          {teacher.name}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-300">
-                          Level : {teacher.level || "N/A"}
-                        </p>
+                <AnimatePresence>
+                  {availableTeachers.map((teacher, index) => (
+                    <motion.div
+                      key={`${teacher.teacherId}-${teacher.fromTime}-${teacher.toTime}`}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.25 }}
+                      className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
+                    >
+                      {/* Left Side */}
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.teacherName}`}
+                          alt={teacher.teacherName}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white">
+                            {teacher.teacherName}
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Right Side */}
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm text-gray-700 dark:text-gray-300 text-right">
-                        {teacher.fromtime} - {teacher.totime}
+                      {/* Right Side */}
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm text-gray-700 dark:text-gray-300 text-right">
+                          {teacher.fromTime} - {teacher.toTime}
+                        </div>
+                        <button
+                          onClick={() => handleTeacherClick(teacher)}
+                          className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
+                        >
+                          <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleTeacherClick(teacher)}
-                        className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
-                      >
-                        <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
-                      </button>
-                    </div>
-                  </div>
-                ))
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               )}
             </div>
           </div>

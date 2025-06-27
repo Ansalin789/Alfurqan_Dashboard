@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import axios from "axios";
-import { useState, useEffect } from "react";
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
 interface Teacher {
   _id: string;
@@ -13,34 +13,26 @@ interface Teacher {
   femaleCount: number;
 }
 
-interface TeacherListProps {
-  teachers: Teacher[];
-}
-
-const fetchTeacherData = async (): Promise<Teacher[] | null> => {
+const fetchTeacherData = async (): Promise<Teacher | null> => {
   try {
-    const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('TeacherAuthToken') : null;
+    const studentId = localStorage.getItem('TeacherPortalId');
+    if (!token || !studentId) return null;
 
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-  }
-    const studentId = localStorage.getItem("TeacherPortalId");
-    console.log(">>>>>", studentId);
     const response = await axios.get(
-      "https://api.blackstoneinfomaticstech.com/teacher-student-count",
+      'https://api.blackstoneinfomaticstech.com/teacher-student-count',
       {
         params: { teacherId: studentId },
-         headers:{
-                 'Content-Type': 'application/json',
-        "Authorization":`Bearer ${token}`,
-          }
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
 
-    return response.data.data;
+    return response.data?.data?.[0] ?? null;
   } catch (error) {
-    console.error("Error fetching teacher data", error);
+    console.error('Error fetching teacher data', error);
     return null;
   }
 };
@@ -49,96 +41,90 @@ const StudentsCard: React.FC = () => {
   const [teacher, setTeacher] = useState<Teacher | null>(null);
 
   useEffect(() => {
-    const getTeacherData = async () => {
-      const data = await fetchTeacherData();
-      if (data && data.length > 0) {
-        setTeacher(data[0]);
-      }
-    };
-    getTeacherData();
+    fetchTeacherData().then(setTeacher);
   }, []);
 
+  const getPercentage = (count: number, total: number) =>
+    total > 0 ? Math.round((count / total) * 100) : 0;
+
+  if (!teacher) return null;
+
+  const malePercent = getPercentage(teacher.maleCount, teacher.studentCount);
+  const femalePercent = 100 - malePercent;
+  const showCenterValue = malePercent === 100 || femalePercent === 100;
+
   return (
-    <div>
-      {teacher && (
-        <div
-          key={teacher._id}
-          className="bg-[#324F78] text-white rounded-[15px] shadow-lg w-[100%] h-[205px] p-4"
-        >
-          <div className="flex justify-center items-center mb-2 -mt-2 bg-[#fff] text-center rounded-md">
-            <h2 className="text-[14px] font-semibold text-[#242424] text-center py-[1px]">
-              {localStorage.getItem("TeacherPortalName")}
-            </h2>
+    <div className="bg-white dark:bg-[#343434] rounded-xl shadow-md w-full h-full p-4">
+      {/* Header */}
+      <div className="flex justify-between items-start mb-3">
+        <h2 className="text-sm font-semibold text-[#010E30] dark:text-white">Students</h2>
+        <div className="flex gap-2 text-[10px]">
+          <div className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded bg-pink-400"></span>
+            <span className="text-[#010E30] dark:text-white">Female</span>
           </div>
-
-          <div className="relative flex justify-center items-center">
-            <div className="relative w-[100px] h-[100px] rounded-full">
-              <div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: `conic-gradient(#fff 0% ${
-                    (teacher.maleCount / teacher.studentCount) * 100
-                  }%, #83DBFC ${
-                    (teacher.maleCount / teacher.studentCount) * 100
-                  }% 100%)`,
-                }}
-              ></div>
-
-              <div
-                className="absolute inset-[10px] w-[80px] h-[80px] rounded-full bg-[#324F78]"
-                style={{
-                  clipPath: "inset(0 round 50px)",
-                  background: `conic-gradient(#FF5BBE 0% ${
-                    (teacher.femaleCount / teacher.studentCount) * 100
-                  }%, #fff ${
-                    (teacher.femaleCount / teacher.studentCount) * 100
-                  }% 100%)`,
-                }}
-              ></div>
-
-              <div className="absolute inset-[20px] w-[60px] h-[60px] bg-[#324F78] rounded-full flex items-center justify-center">
-                <span className="text-[12px] text-blue-400">
-                  {teacher.maleCount}
-                </span>
-                <span className="text-[12px] text-pink-400 ml-1">
-                  {teacher.femaleCount}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex justify-around text-center text-[12px]">
-            <div>
-              <div className="flex items-center justify-center space-x-1">
-                <span className="w-[6px] h-[6px] bg-blue-400 rounded-full"></span>
-                <span className="font-semibold text-[10px]">
-                  {teacher.maleCount}
-                </span>
-              </div>
-              <span className="text-gray-300 text-[10px]">
-                Boys (
-                {((teacher.maleCount / teacher.studentCount) * 100).toFixed(1)}
-                %)
-              </span>
-            </div>
-            <div>
-              <div className="flex items-center justify-center space-x-1">
-                <span className="w-[6px] h-[6px] bg-pink-400 rounded-full"></span>
-                <span className="font-semibold text-[10px]">
-                  {teacher.femaleCount}
-                </span>
-              </div>
-              <span className="text-gray-300 text-[10px]">
-                Girls (
-                {((teacher.femaleCount / teacher.studentCount) * 100).toFixed(
-                  1
-                )}
-                %)
-              </span>
-            </div>
+          <div className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded bg-sky-300"></span>
+            <span className="text-[#010E30] dark:text-white">Male</span>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Donut Chart */}
+      <div className="relative mx-auto my-4 aspect-square w-full max-w-[180px] min-w-[140px]">
+        <div
+          className="w-full h-full rounded-full"
+          style={{
+            background: `conic-gradient(#83DBFC 0% ${malePercent}%, #FFB6F1 ${malePercent}% 100%)`,
+            border: '8px solid transparent',
+          }}
+        ></div>
+
+        {/* Inner Circle */}
+        {/* Inner Circle - solid and seamless */}
+<div
+  className="absolute inset-1/4 w-1/2 h-1/2 dark:bg-[#343434] rounded-full flex items-center justify-center bg-white dark:bg-[#242424] shadow-inner"
+>
+  <span className="text-sm font-bold text-[#010E30] dark:text-white">
+    {showCenterValue ? '100%' : ''}
+  </span>
+</div>
+
+
+
+        {/* Male % */}
+        {malePercent > 0 && malePercent < 100 && (
+          <div
+            className="absolute text-[10px] font-semibold text-[#010E30] dark:text-white"
+            style={{
+              top: '25%',
+              left: '70%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            {malePercent}%
+          </div>
+        )}
+
+        {/* Female % */}
+        {femalePercent > 0 && femalePercent < 100 && (
+          <div
+            className="absolute text-[10px] font-semibold text-[#010E30] dark:text-white"
+            style={{
+              top: '75%',
+              left: '30%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            {femalePercent}%
+          </div>
+        )}
+      </div>
+
+      {/* Optional Name from LocalStorage */}
+      <div className="mt-3 text-center text-xs text-[#010E30] dark:text-white font-medium">
+        {localStorage.getItem("TeacherPortalName")}
+      </div>
     </div>
   );
 };

@@ -1,14 +1,9 @@
-'use client'
-import { AiOutlineClockCircle } from 'react-icons/ai';
+"use client";
+
 import { useEffect, useState } from "react";
+import { AiOutlineClockCircle } from "react-icons/ai";
 import { FaUser } from "react-icons/fa";
-import { BsThreeDotsVertical } from 'react-icons/bs';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
-
-
+import axios from "axios";
 
 interface Student {
   studentId: string;
@@ -27,195 +22,170 @@ interface ClassData {
   _id: string;
   student: Student;
   teacher: Teacher;
-  classDay: string[];
-  package: string;
-  preferedTeacher: string;
-  totalHourse: number;
   startDate: string;
-  endDate: string;
   startTime: string[];
   endTime: string[];
-  scheduleStatus: string;
   classLink: string;
-  status: string;
-  classStatus: string;
-  createdBy: string;
-  createdDate: string;
-  lastUpdatedDate: string;
-}
-
-interface ApiResponse {
-  totalCount: number;
-  classSchedule: ClassData[];
 }
 
 const NextScheduledClass = () => {
   const [classData, setClassData] = useState<ClassData | null>(null);
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const [isCountdownFinished, setIsCountdownFinished] = useState(false);
-  const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const router = useRouter();
-
-  const filterUpcomingClass = (response: ApiResponse): ClassData | null => {
-    const now = new Date();
-  
-    const upcomingClasses = response.classSchedule.filter(cls => {
-      const classDate = new Date(cls.startDate);
-       const timeString =cls.startTime[0] ?? '';
-          const [startHours, startMinutes] = timeString
-            .split(":")
-            .map(Number);
-             const timeString1 =cls.endTime[0] ?? '';
-         const [endHours, endMinutes]= timeString1
-            .split(":")
-            .map(Number);
-      classDate.setHours(startHours, startMinutes, 0, 0);
-      const classEndTime = new Date(classDate);
-      classEndTime.setHours(endHours, endMinutes, 0, 0);
-  
-      // Include classes that are upcoming OR currently ongoing
-      return now < classEndTime;
-    });
-  
-    // Sort by closest upcoming class or ongoing one first
-    upcomingClasses.sort((a, b) => {
-      const dateA = new Date(a.startDate);
-      const dateB = new Date(b.startDate);
-  
-     const timeA = a.startTime?.[0] ?? '';
-const [hoursA, minutesA] = timeA.split(":").map(Number);
-
-const timeB = b.startTime?.[0] ?? '';
-const [hoursB, minutesB] = timeB.split(":").map(Number);
-
-      dateA.setHours(hoursA, minutesA, 0, 0);
-      dateB.setHours(hoursB, minutesB, 0, 0);
-  
-      return dateA.getTime() - dateB.getTime();
-    });
-  
-    return upcomingClasses.length > 0 ? upcomingClasses[0] : null;
-  };
-  
+  const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [isTimeUp, setIsTimeUp] = useState(false);
 
   useEffect(() => {
     const fetchClassData = async () => {
       try {
-        const teacherId =  typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null;
- const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+        const teacherId = localStorage.getItem("TeacherPortalId");
+        const token = localStorage.getItem("TeacherAuthToken");
+        if (!teacherId || !token) return;
 
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-    return;
-  }
-          if (!teacherId || !token) {
-          console.log('Missing studentId or authToken');
-          return;
-        }
-       console.log("teacherid",teacherId);
-        const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/teacher`,
+        const response = await axios.get(
+          "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
           {
             params: { teacherId },
-             headers:{
-                 'Content-Type': 'application/json',
-        "Authorization":`Bearer ${token}`,
-          }
-         
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
-        console.log(response.data);
-        setClassData(filterUpcomingClass(response.data));
-      } catch (err) {
-        console.log('Error loading class details:', err);
+
+        const now = new Date();
+        const upcoming = response.data.classSchedule
+          .map((item: ClassData) => {
+            const classDate = new Date(item.startDate);
+            const [h, m] = item.startTime[0]?.split(":").map(Number) || [0, 0];
+            classDate.setHours(h, m, 0, 0);
+            return { ...item, classStart: classDate };
+          })
+          .filter((item: any) => item.classStart > now)
+          .sort((a: any, b: any) => a.classStart - b.classStart)[0];
+
+        setClassData(upcoming ?? null);
+      } catch (error) {
+        console.error("Failed to fetch scheduled class:", error);
       }
     };
+
     fetchClassData();
   }, []);
 
   useEffect(() => {
     if (!classData) return;
-  
-    const updateRemainingTime = () => {
+
+    const classStart = new Date(classData.startDate);
+    const [h, m] = classData.startTime[0]?.split(":").map(Number) || [0, 0];
+    classStart.setHours(h, m, 0, 0);
+
+    const interval = setInterval(() => {
       const now = new Date();
-      const classDate = new Date(classData.startDate);
-      const startTimeString = classData.startTime?.[0] ?? '';
-const [startHours, startMinutes] = startTimeString.split(":").map(Number);
+      const remaining = classStart.getTime() - now.getTime();
 
-const endTimeString = classData.endTime?.[0] ?? '';
-const [endHours, endMinutes] = endTimeString.split(":").map(Number);
-
-  
-      classDate.setHours(startHours, startMinutes, 0, 0);
-      const classEndTime = new Date(classDate);
-      classEndTime.setHours(endHours, endMinutes, 0, 0);
-  
-      const timeToStart = classDate.getTime() - now.getTime();
-      const timeToEnd = classEndTime.getTime() - now.getTime();
-  
-      if (timeToStart > 0) {
-        // Before class starts
-        setTimeRemaining(Math.floor(timeToStart / (1000 * 60))); // Convert to minutes
-        setIsCountdownFinished(false);
-      } else if (timeToEnd > 0) {
-        // Class ongoing
-        setTimeRemaining(0); // Special value to indicate class is ongoing
-        setIsCountdownFinished(true);
+      if (remaining <= 0) {
+        clearInterval(interval);
+        setIsTimeUp(true);
+        setTime({ hours: 0, minutes: 0, seconds: 0 });
       } else {
-        // Class ended
-        setTimeRemaining(-2); // Special value to hide class
-        setIsCountdownFinished(false);
+        const hours = Math.floor(remaining / 1000 / 60 / 60);
+        const minutes = Math.floor((remaining / 1000 / 60) % 60);
+        const seconds = Math.floor((remaining / 1000) % 60);
+        setTime({ hours, minutes, seconds });
+        setIsTimeUp(false);
       }
-    };
-  
-    updateRemainingTime();
-    const timer = setInterval(updateRemainingTime, 1000); // Update every second
-    return () => clearInterval(timer);
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, [classData]);
-  
+
+  const formatTime = (num: number) => (num < 10 ? `0${num}` : num);
+
+  const handleJoinClass = () => {
+    if (classData?.classLink) {
+      window.open(classData.classLink, "_blank");
+    }
+  };
+
+  const progress =
+    ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) * 100;
 
   return (
-      <div className="bg-gradient-to-r from-[#30507C] to-[#5792E2] rounded-[25px] shadow flex items-center justify-between text-white">
-        <h3 className="text-[15px] font-medium pt-2 p-3 underline">Your Next Evaluation Class</h3>
-        <div className="items-center p-1 px-8">
-          <h3 className="text-[16px] font-medium pt-2 ml-4">{classData?.student.studentFirstName} | <FaUser className='inline'/> {classData?.teacher.teacherName}</h3>
-          <div className="flex items-center space-x-6 py-2">
-          {/* <FaUserAlt className="w-[10px]" /> */}
-            <p className="text-[13px]">{classData?.classDay[0]} - {new Date(classData?.startDate ?? '').toLocaleDateString()}</p>
-            <AiOutlineClockCircle className="w-[15px]" />
-            <p className="text-[13px]">{classData?.startTime[0]} - {classData?.endTime[0]}</p>
+    <div className="bg-[#71a1db] rounded-xl  shadow flex items-center justify-between text-white">
+      <div className="items-center p-2 px-8">
+        <h3 className="text-[13px] font-medium pt-3">Your Next Scheduled Class</h3>
+        <div className="flex items-center space-x-8 py-2">
+          <div className="flex items-center space-x-2">
+            <FaUser className="w-[10px]" />
+            <p className="text-[13px]">{classData?.student?.studentFirstName}</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <AiOutlineClockCircle className="w-[10px]" />
+            <p className="text-[13px]">{classData?.startTime?.[0]}</p>
           </div>
         </div>
-        <div className="relative flex items-center space-x-4">
-          {isPopupVisible && !isCountdownFinished && (
-            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center z-10 bg-black bg-opacity-50">
-              <div className="bg-white p-6 rounded shadow">
-                <p className="text-gray-800 mb-4">Please wait until your session starts...</p>
-                <button
-                  className="bg-[#1C3557] text-white px-4 py-2 rounded text-center ml-28 justify-center"
-                  onClick={() => setIsPopupVisible(false)}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          )}
-          <p className="text-white text-[13px] font-semibold">Starts in</p>
-          <div className="w-12 h-12">
-            <CircularProgressbar value={timeRemaining} maxValue={60} text={`${timeRemaining}m`} styles={buildStyles({ textSize: '20px', textColor: '#fff', pathColor: '#fff' })} />
-          </div>
-          {isCountdownFinished && (
+      </div>
+
+      <div className="flex items-center space-x-2 px-14">
+        {isTimeUp ? (
+          <>
             <button
-              className="bg-white-500 px-4 py-2 rounded-full"
-              onClick={() => router.push(`/teacher/ui/liveclass`)}
+              onClick={handleJoinClass}
+              className="relative text-white px-4 py-2 rounded-full text-sm font-medium"
+              style={{
+                backgroundImage:
+                  "linear-gradient(270deg, #0048AB, #0F79BB, #1aa3c7)",
+                backgroundSize: "400% 400%",
+                animation: "moveGradient 5s ease infinite",
+              }}
             >
               Join Now
             </button>
-          )}
-          <BsThreeDotsVertical className="cursor-pointer" onClick={() => setIsPopupVisible(!isPopupVisible)} />
-        </div>
+            <style>
+              {`
+                @keyframes moveGradient {
+                  0% { background-position: 0% 50%; }
+                  50% { background-position: 100% 50%; }
+                  100% { background-position: 0% 50%; }
+                }
+              `}
+            </style>
+          </>
+        ) : (
+          <>
+            <p className="text-[13px] font-medium">Starts in</p>
+            <div className="relative flex items-center justify-center p-10">
+              <svg className="absolute w-14 h-20" viewBox="0 0 36 36">
+                <path
+                  className="circle-bg"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth="2"
+                />
+                <path
+                  className="circle"
+                  strokeDasharray={`${progress}, 100`}
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="#295CA0"
+                  strokeWidth="3"
+                />
+              </svg>
+              <div className="relative flex items-center justify-center w-2 rounded-full bg-[#234878] text-center">
+                <div className="absolute flex items-center justify-center w-10 h-10 rounded-full bg-white">
+                  <div className="text-[#234878]">
+                    <p className="text-[4px] font-bold">SESSION</p>
+                    <p className="text-[8px] font-extrabold text-[#223857]">
+                      {formatTime(time.hours)}:{formatTime(time.minutes)}:
+                      {formatTime(time.seconds)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
+    </div>
   );
 };
 

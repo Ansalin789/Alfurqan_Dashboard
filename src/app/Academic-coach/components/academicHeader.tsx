@@ -204,7 +204,7 @@ useEffect(() => {
   };
 
 const renderButton = () => {
-if (currentSection.includes("Dashboard") ){
+if (currentSection === ("Dashboard") ){
       return (
       <button
         onClick={() => setShowLeaveForm(true)}
@@ -215,7 +215,7 @@ if (currentSection.includes("Dashboard") ){
       </button>
     );
   }
-  if (currentSection.includes("Trail Management")) {
+  if (currentSection === ("Trail Management")) {
     return (
       <button
         onClick={() => setAddApplicant(true)}
@@ -226,7 +226,7 @@ if (currentSection.includes("Dashboard") ){
       </button>
     );
   }
-  if (currentSection.includes("Calendar")) {
+  if (currentSection === ("Calendar")) {
     return (
       <button
         onClick={() => setAddMeetings(true)}
@@ -237,7 +237,7 @@ if (currentSection.includes("Dashboard") ){
       </button>
     );
   }
-  if (currentSection.includes("Student List")) {
+  if (currentSection === ("Student List")) {
     return (
       <button
         onClick={() => setAssignGroupClass(true)}
@@ -269,7 +269,7 @@ if (currentSection.includes("Dashboard") ){
         <div className="flex items-center gap-3 flex-wrap">
           {renderButton()}
           <button
-            onClick={() => router.push("/Academic-coach/ui/calendar")}
+            onClick={() => router.push("/Academic-coach/ui/schedule")}
             className="p-2.5 bg-white dark:bg-gray-700 rounded-lg"
           >
             <CalendarDays className="w-4 h-4 text-gray-800 dark:text-white" />

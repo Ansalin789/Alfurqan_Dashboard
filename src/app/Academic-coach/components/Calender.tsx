@@ -86,7 +86,7 @@ const Academic: React.FC = () => {
                 .toUpperCase()}, ${date.getFullYear()}`
             }
             onClickDay={() => {
-              router.push(`/Academic-coach/meetingSchedule`);
+              router.push(`/Academic-coach/ui/schedule`);
             }}
             locale="en-GB"
             calendarType="iso8601"

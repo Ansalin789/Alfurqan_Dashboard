@@ -72,10 +72,10 @@ const ScheduledClasses = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const teacherId =
-          typeof window !== "undefined"
-            ? localStorage.getItem("TeacherPortalId")
-            : null;
+        const teacherId = "685bfa19c3ca01ce33f47cf8";
+          // typeof window !== "undefined"
+          //   ? localStorage.getItem("TeacherPortalId")
+          //   : null;
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("TeacherAuthToken")
