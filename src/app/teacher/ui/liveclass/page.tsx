@@ -1,12 +1,13 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Timer, ChevronDown, LogOut } from "lucide-react";
+import {  LogOut } from "lucide-react";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import BaseLayout from "@/components/BaseLayout";
 import axios from "axios";
 import Link from "next/link";
-import NextTrailSession from "../../components/NextTrailSession";
 import TeacherHeader from "../../components/TeacherHeader";
+import dayjs from "dayjs";
+
 interface Student {
   studentId: string;
   studentFirstName: string;
@@ -40,6 +41,8 @@ interface ClassData {
   scheduleStatus: string;
   classLink: string;
   sessionStatus: string;
+  teacherAttendee:string;
+  studentAttendee:string;
   status: string;
   createdBy: string;
   createdDate: string;
@@ -60,96 +63,17 @@ interface Attendance {
   joinTime: string;
   leaveTime: string;
 }
-interface FormData {
-  _id: string;
-  student: {
-    studentId: string;
-    studentFirstName: string;
-    studentLastName: string;
-    studentEmail: string;
-    studentGender: string;
-    studentPhone: number;
-    studentCity: string;
-    studentCountry: string;
-    studentCountryCode: string;
-    learningInterest: string;
-    numberOfStudents: number;
-    preferredTeacher: string;
-    preferredFromTime: string;
-    preferredToTime: string;
-    timeZone: string;
-    referralSource: string;
-    preferredDate: string; // ISO date string
-    evaluationStatus: string;
-    status: string;
-    createdDate: string; // ISO date string
-    createdBy: string;
-  };
-  isLanguageLevel: boolean;
-  languageLevel: string;
-  isReadingLevel: boolean;
-  readingLevel: string;
-  isGrammarLevel: boolean;
-  grammarLevel: string;
-  hours: number;
-  subscription: {
-    subscriptionName: string;
-  };
-  planTotalPrice: number;
-  classStartDate: string; // ISO date string
-  classEndDate: string; // ISO date string
-  classStartTime: string;
-  classEndTime: string;
-  accomplishmentTime: string;
-  studentRate: number;
-  gardianName: string;
-  gardianEmail: string;
-  gardianPhone: string;
-  gardianCity: string;
-  gardianCountry: string;
-  gardianTimeZone: string;
-  gardianLanguage: string;
-  assignedTeacher: string;
-  assignedTeacherId: string;
-  assignedTeacherEmail: string;
-  studentStatus: string;
-  classStatus: string;
-  comments: string;
-  trialClassStatus: string;
-  invoiceStatus: string;
-  paymentLink: string;
-  paymentStatus: string;
-  status: string;
-  createdDate: string; // ISO date string
-  createdBy: string;
-  updatedDate: string; // ISO date string
-  updatedBy: string;
-  expectedFinishingDate: number;
-  __v: number;
-}
+
 
 function LiveClass() {
-  const trailId = "68526aa20c2b24d70a1300cd";
   const [showFeedback, setShowFeedback] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [ratings, setRatings] = useState([0, 0, 0]);
   const [feedback, setFeedback] = useState("");
   const [startTime, setStartTime] = useState<string | null>(null);
   const [classData, setClassData] = useState<ClassData | null>(null);
-  const [isFormData, setIsFormData] = useState(true);
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [formData, setFormData] = useState<FormData>();
-  const [trialClassStatus, setTrialClassStatus] = useState("");
-  const [studentStatus, setStudentStatus] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState("");
-  const [paymentLink, setPaymentLink] = useState("");
-
-  const [options, setOptions] = useState({
-    trialClassStatus: ["PENDING", "INPROGRESS", "COMPLETED"],
-    studentStatus: ["JOINED", "NOT JOINED", "WAITING"],
-    paymentStatus: ["PAID", "FAILED", "PENDING"],
-  });
 
   const filterUpcomingClass = (response: {
     totalCount: number;
@@ -261,181 +185,7 @@ function LiveClass() {
     console.log("Selected Class:", upcomingClass);
     return upcomingClass;
   };
-  // Fetch class data
-  useEffect(() => {
-    const fetchClassData = async () => {
-      try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("TeacherAuthToken")
-            : null;
-
-        if (!token) {
-          console.error("❌ AdminAuthToken not found");
-          return;
-        }
-
-        const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/evaluationlist/${trailId}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setOptions((prev) => ({
-          trialClassStatus: prev.trialClassStatus.includes(
-            data.trialClassStatus
-          )
-            ? prev.trialClassStatus
-            : [...prev.trialClassStatus, data.trialClassStatus],
-          studentStatus: prev.studentStatus.includes(data.studentStatus)
-            ? prev.studentStatus
-            : [...prev.studentStatus, data.studentStatus],
-          paymentStatus: prev.paymentStatus.includes(data.paymentStatus)
-            ? prev.paymentStatus
-            : [...prev.paymentStatus, data.paymentStatus],
-        }));
-        setTrialClassStatus(data.trialClassStatus);
-        setStudentStatus(data.studentStatus);
-        setPaymentStatus(data.paymentStatus);
-        setPaymentLink(
-          `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(
-            data._id
-          )}`
-        );
-        setFormData(data);
-        console.log(data);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-    fetchClassData();
-  }, []);
-
-  const updateClick = async (id: string | undefined) => {
-    const formDataNames = {
-      _id: formData?._id ?? "",
-      student: {
-        studentId: formData?.student.studentId,
-        studentFirstName: formData?.student.studentFirstName,
-        studentLastName: formData?.student.studentLastName,
-        studentEmail: formData?.student.studentEmail,
-        studentGender: formData?.student.studentGender,
-        studentPhone: formData?.student.studentPhone,
-        studentCity: formData?.student.studentCity,
-        studentCountry: formData?.student.studentCountry,
-        studentCountryCode: formData?.student.studentCountryCode,
-        learningInterest: formData?.student.learningInterest,
-        numberOfStudents: formData?.student.numberOfStudents,
-        preferredTeacher: formData?.student.preferredTeacher,
-        preferredFromTime: formData?.student.preferredFromTime,
-        preferredToTime: formData?.student.preferredToTime,
-        timeZone: formData?.student.timeZone,
-        referralSource: formData?.student.referralSource,
-        preferredDate: formData?.student.preferredDate,
-        evaluationStatus: formData?.student.evaluationStatus,
-        status: formData?.student.status,
-        createdDate: formData?.student.createdDate,
-        createdBy: formData?.student.createdBy,
-      },
-      isLanguageLevel: formData?.isLanguageLevel,
-      languageLevel: formData?.languageLevel,
-      isReadingLevel: formData?.isReadingLevel,
-      readingLevel: formData?.readingLevel,
-      isGrammarLevel: formData?.isGrammarLevel,
-      grammarLevel: formData?.grammarLevel,
-      hours: formData?.hours,
-      subscription: {
-        subscriptionName: formData?.subscription.subscriptionName,
-      },
-      classStartDate: formData?.classStartDate,
-      classEndDate: formData?.classEndDate,
-      classStartTime: formData?.classStartTime,
-      classEndTime: formData?.classEndTime,
-      gardianName: formData?.gardianName,
-      gardianEmail: formData?.gardianEmail,
-      gardianPhone: formData?.gardianPhone,
-      gardianCity: formData?.gardianCity,
-      gardianCountry: formData?.gardianCountry,
-      gardianTimeZone: formData?.gardianTimeZone,
-      gardianLanguage: formData?.gardianLanguage,
-      assignedTeacher: formData?.assignedTeacher,
-      studentStatus: studentStatus,
-      classStatus: formData?.classStatus,
-      comments: formData?.comments,
-      trialClassStatus: trialClassStatus,
-      invoiceStatus: formData?.invoiceStatus,
-      paymentLink: paymentLink,
-      paymentStatus: paymentStatus,
-      status: formData?.status,
-      createdDate: formData?.createdDate,
-      createdBy: formData?.createdBy,
-      updatedDate: formData?.updatedDate,
-      updatedBy: formData?.updatedBy,
-      planTotalPrice: formData?.planTotalPrice,
-      accomplishmentTime: formData?.accomplishmentTime,
-      studentRate: formData?.studentRate,
-      expectedFinishingDate: formData?.expectedFinishingDate,
-    };
-
-    alert(JSON.stringify(formDataNames));
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("TeacherAuthToken")
-          : null;
-
-      if (!token) {
-        console.error("❌ AdminAuthToken not found");
-        return;
-      }
-      const response = await fetch(
-        `https://api.blackstoneinfomaticstech.com/evaluation/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formDataNames),
-        }
-      );
-
-      console.log("response", response);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Open the modal after setting the form data
-      // setShowModal(true);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
-  const handleChange =
-    (field: string) => (event: React.ChangeEvent<HTMLSelectElement>) => {
-      console.log(`Field: ${field}, Value: ${event.target.value}`);
-      switch (field) {
-        case "TrialClassStatus":
-          setTrialClassStatus(event.target.value);
-          break;
-        case "studentStatus":
-          setStudentStatus(event.target.value);
-          break;
-        case "paymentStatus":
-          setPaymentStatus(event.target.value);
-          break;
-        default:
-          break;
-      }
-    };
-
+  
   useEffect(() => {
     const fetchClassData = async () => {
       try {
@@ -501,41 +251,77 @@ function LiveClass() {
     fetchClassData();
   }, []);
   const handleEndCall = async () => {
-    const endCallTime = new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
 
-    setShowFeedback(true);
+const endCallTime = new Date().toLocaleTimeString([], {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
 
-    console.log("startTime:", startTime);
-    console.log("endTime:", endCallTime);
+setShowFeedback(true);
 
-    if (!classData?._id || !startTime) {
-      console.error("Missing class data or start time.");
-      return;
-    }
+console.log("startTime:", startTime);
+console.log("endTime:", endCallTime);
 
+if (!classData?._id || !startTime) {
+  console.error("Missing class data or start time.");
+  return;
+}
+
+const scheduledDate = classData.startDate; // "YYYY-MM-DD"
+const scheduledTime = classData.startTime?.[0]; // "HH:mm"
+const scheduledStart = dayjs(`${scheduledDate}T${scheduledTime}`);
+const [joinHour, joinMinute] = startTime.split(":").map(Number);
+const actualJoin = dayjs(`${scheduledDate}T${joinHour.toString().padStart(2, "0")}:${joinMinute.toString().padStart(2, "0")}`);
+const diffMinutes = actualJoin.diff(scheduledStart, "minute");
+const teacherAbsent = diffMinutes >= 15;
+console.log("⏱️ Teacher joined late by:", diffMinutes, "min");
+console.log("🚫 Teacher is", teacherAbsent ? "ABSENT" : "PRESENT");
+const student = attendance[0]; // only one student
+const studentJoined = student.joinTime && student.joinTime !== "";
+const parsedStudentJoin = studentJoined
+  ? dayjs(`${scheduledDate}T${student.joinTime}`)
+  : null;
+const studentLateBy = parsedStudentJoin
+  ? parsedStudentJoin.diff(scheduledStart, "minute")
+  : Infinity;
+const studentAbsent = !studentJoined || studentLateBy > 15;
+const studentAttendee = studentAbsent ? "absent" : "present";
+const isStudentPresent = studentAttendee === "present";
+let sessionStarttime = "00:00";
+let sessionsEndtime = "00:00";
+
+if (!teacherAbsent) {
+  if (isStudentPresent) {
+    sessionStarttime = startTime;
+    sessionsEndtime = endCallTime;
+  } else {
+    sessionStarttime = classData.startTime[0];
+    sessionsEndtime = classData.endTime[0];
+  }
+}
     const payload = {
-      ...classData,
-      classDay: classData.classDay.map((day) => ({
-        label: day,
-        value: day,
-      })),
-      startTime: classData.startTime.map((time) => ({
-        label: time,
-        value: time,
-      })),
-      endTime: classData.endTime.map((time) => ({
-        label: time,
-        value: time,
-      })),
-      sessionStarttime: startTime, // new/updated field
-      sessionsEndtime: endCallTime, // new/updated field
-      sessionClassType: "regular",
-      sessionStatus: "Completed",
-    };
+  ...classData,
+  classDay: classData.classDay.map((day) => ({
+    label: day,
+    value: day,
+  })),
+  startTime: classData.startTime.map((time) => ({
+    label: time,
+    value: time,
+  })),
+  endTime: classData.endTime.map((time) => ({
+    label: time,
+    value: time,
+  })),
+  
+  sessionStarttime:  sessionStarttime,
+  sessionsEndtime:  sessionsEndtime,
+  sessionStatus: "COMPLETED",
+  teacherAttendee: teacherAbsent ? "absent" : "present",
+  studentAttendee: studentAttendee, 
+};
+
     console.log(payload);
     try {
       const token =
@@ -665,369 +451,18 @@ function LiveClass() {
   useEffect(() => {
     attendanceRef.current = attendance;
   }, [attendance]);
-
-  const handleStartSession = () => {
-    setIsFormData(false);
-  };
   const categories = [
     "Listening Ability",
     "Reading Ability",
     " Overall Performance",
   ];
-  const [timeRemaining, setTimeRemaining] = useState("");
-  useEffect(() => {
-    if (!classData) return;
-
-    const updateRemainingTime = () => {
-      const now = new Date();
-
-      // Extract class date and time
-      const classDate = new Date(classData.startDate);
-      const [hours, minutes] = classData.startTime[0].split(":").map(Number); // Assuming startTime is an array
-
-      classDate.setHours(hours, minutes, 0, 0); // Set time for the class
-
-      const diff = classDate.getTime() - now.getTime();
-
-      if (diff > 0) {
-        const remainingDays = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const remainingHours = Math.floor(
-          (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
-        const remainingMinutes = Math.floor(
-          (diff % (1000 * 60 * 60)) / (1000 * 60)
-        );
-
-        setTimeRemaining(
-          `${remainingDays}d ${remainingHours}h ${remainingMinutes}m`
-        );
-      } else {
-        setTimeRemaining("Started");
-      }
-    };
-
-    updateRemainingTime(); // Initial call
-
-    const timer = setInterval(updateRemainingTime, 60000); // Update every minute
-
-    return () => clearInterval(timer); // Cleanup on unmount
-  }, [classData]);
+ 
 
   return (
     <BaseLayout>
       <TeacherHeader currentSection="Trail class" />
       <div className="flex h-screen">
-        {isFormData ? (
-          <div className="min-h-screen p-4 w-full">
-            <div className="">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 w-full">
-                {/* Form Section */}
-                <form className="bg-white dark:bg-[#252525] dark:shadow-lg w-full  rounded-2xl shadow-md p-4 mx-auto ">
-                  <h2 className="text-lg font-semibold mb-6  dark:text-[#FFF] text-gray-800">
-                    Student Details
-                  </h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* First Name */}
-                    <div>
-                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
-                        First name
-                      </label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData?.student.studentFirstName}
-                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px] dark:text-[#FFF] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                        required
-                      />
-                    </div>
-
-                    {/* Last Name */}
-                    <div>
-                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
-                        Last name
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData?.student.studentLastName}
-                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px]  dark:text-[#FFF] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                        required
-                      />
-                    </div>
-
-                    {/* Email */}
-                    <div>
-                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData?.student.studentEmail}
-                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                        required
-                      />
-                    </div>
-
-                    {/* Phone Number */}
-                    <div>
-                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF]  mb-1">
-                        Phone number
-                      </label>
-                      <input
-                        type="text"
-                        name="phone"
-                        value={formData?.student.studentPhone}
-                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                        required
-                      />
-                    </div>
-
-                    {/* Country */}
-                    <div>
-                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
-                        Country
-                      </label>
-                      <select
-                        name="country"
-                        value={formData?.student.studentCountry}
-                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                      >
-                        <option value="USA">USA</option>
-                        <option value="India">India</option>
-                        {/* Add other options as needed */}
-                      </select>
-                    </div>
-
-                    {/* City */}
-                    <div>
-                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
-                        City
-                      </label>
-                      <input
-                        type="text"
-                        name="city"
-                        value={formData?.student.studentCity}
-                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                      />
-                    </div>
-
-                    {/* Trial ID */}
-                    <div>
-                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
-                        Trial ID
-                      </label>
-                      <input
-                        type="text"
-                        name="trialId"
-                        value={formData?.student.studentId}
-                        className="w-full px-4 py-2  dark:bg-[#343434]  dark:border dark:border-[#5C5C5C]  border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                        readOnly
-                      />
-                    </div>
-
-                    {/* Course */}
-                    <div>
-                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
-                        Course
-                      </label>
-                      <input
-                        name="course"
-                        value={formData?.student.learningInterest}
-                        className="w-full px-4 py-2  dark:bg-[#343434]  dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                      />
-                    
-                    </div>
-
-                    {/* Class Status */}
-                    <div>
-                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
-                        Class Status
-                      </label>
-                      <select
-                        name="trialClassStatus"
-                        value={trialClassStatus}
-                        onChange={handleChange("TrialClassStatus")}
-                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                      >
-                        {options.trialClassStatus.map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Student Status */}
-                    <div>
-                      <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
-                        Student Status
-                      </label>
-                      <select
-                        name="studentStatus"
-                        value={studentStatus}
-                        onChange={handleChange("studentStatus")}
-                        className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                      >
-                        {options.studentStatus.map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Additional Comments */}
-                  <div className="mt-6">
-                    <label className="block text-[14px] font-regular text-[#010E30] dark:text-[#FFF] mb-1">
-                      Additional Comments (Optional)
-                    </label>
-                    <textarea
-                      name="comments"
-                      placeholder="Write your comment here..."
-                      className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px] dark:text-[#FFF] text-[#FFF] focus:outline-none focus:ring-2 focus:ring-[#576CBC] h-24 resize-none"
-                    />
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="mt-6 flex justify-end gap-4">
-                    <button
-                      type="button"
-                      className="px-6 py-2 rounded-md  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      onClick={() => updateClick(trailId)}
-                      className="px-6 py-2 rounded-md bg-[#576CBC] text-white text-sm  dark:text-[#FFF] hover:bg-blue-700 transition"
-                    >
-                      Save
-                    </button>
-                  </div>
-                </form>
-
-                {/* Student Info Card */}
-                <div className="w-[460px] -ml-2  rounded-2xl shadow-md mx-auto bg-white dark:bg-[#3B3B3B] overflow-hidden ">
-                  {/* Header Section */}
-                  <div className="relative bg-[#5E6578] h-60 flex justify-end items-start p-4 rounded-t-2xl">
-                    {/* Top-right Icon */}
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M11 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H15C20 22 22 20 22 15V13"
-                        stroke="white"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                      <path
-                        d="M16.0399 3.01928L8.15988 10.8993C7.85988 11.1993 7.55988 11.7893 7.49988 12.2193L7.06988 15.2293C6.90988 16.3193 7.67988 17.0793 8.76988 16.9293L11.7799 16.4993C12.1999 16.4393 12.7899 16.1393 13.0999 15.8393L20.9799 7.95928C22.3399 6.59928 22.9799 5.01928 20.9799 3.01928C18.9799 1.01928 17.3999 1.65928 16.0399 3.01928Z"
-                        stroke="white"
-                        stroke-miterlimit="10"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                      <path
-                        d="M14.9102 4.15039C15.5802 6.54039 17.4502 8.41039 19.8502 9.09039"
-                        stroke="white"
-                        stroke-miterlimit="10"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15.232 5.232l3.536 3.536M9 13l6.536-6.536a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-1.414.586H7v-3a2 2 0 01.586-1.414z"
-                      />
-                    </svg>
-
-                    {/* Profile Image */}
-                    <div className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-1/2 w-[160px] h-[160px] bg-white rounded-full flex items-center justify-center shadow-md border-4 border-white">
-                      <img
-                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100&h=100"
-                        alt="Student avatar"
-                        className="w-[150px] h-[150px] rounded-full object-cover"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Student Info */}
-                  <div className="flex flex-col justify-between">
-                    <div className="pt-24 px-6 pb-6">
-                      <div className="border-t border-gray-200 pt-6 space-y-4">
-                        <div className="flex justify-between dark:text-[#959595] text-sm text-[#959595]">
-                          <span className="font-regular text-[#010E30] dark:text-[#FFF]">Full Name</span>
-                          <span>
-                            {formData?.student.studentFirstName}{""}
-                            {formData?.student.studentLastName}
-                          </span>
-                        </div>
-                        <div className="flex justify-between dark:text-[#959595] text-sm text-[#959595]">
-                          <span className="font-regular text-[#010E30] dark:text-[#FFF]">Day</span>
-                          <span>{classData?.classDay}</span>
-                        </div>
-                        <div className="flex justify-between dark:text-[#959595] text-sm text-[#959595]">
-                          <span className="font-regular text-[#010E30] dark:text-[#FFF]">Date</span>
-                          <span>
-                            {new Date(
-                              classData?.startDate ?? "2022-01-01"
-                            ).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Trial Countdown */}
-                    <div className=" px-4 mt-[90px]">
-                      <NextTrailSession />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
           <div className="flex flex-col w-full min-h-screen px-4 sm:px-6 md:px-8">
-            {/* Centered Popup */}
-            <div
-              className={`
-    fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50
-    bg-[#1C3557] text-white px-6 py-3 rounded-xl shadow-lg
-    flex items-center gap-3 transition-opacity duration-300
-    ${showPopup ? "opacity-100" : "opacity-0 pointer-events-none"}
-  `}
-            >
-              <img
-                src="/assets/images/Check.png"
-                alt="find"
-                className="w-10 mt-1"
-              />
-              <span className="font-semibold text-sm sm:text-base">
-                Submitted Successfully
-              </span>
-            </div>
-
-            {/* Overlay */}
-            <div
-              className={`
-    fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity z-20 duration-300
-    ${showPopup ? "opacity-100" : "opacity-0 pointer-events-none"}
-  `}
-            />
-
             {/* Page Content */}
             <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl mx-auto py-6">
               <div className="flex-1 overflow-auto">
@@ -1136,14 +571,7 @@ function LiveClass() {
                   </div>
                 ) : (
                   <div className="p-1 sm:p-2 relative w-full flex flex-col flex-1 h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] xl:h-[85vh]">
-                    {/* Exit Button */}
-                    <button
-                      onClick={handleEndCall}
-                      className="absolute top-4 right-4 cursor-pointer z-10"
-                      aria-label="Leave meeting"
-                    >
-                      <LogOut className="w-6 h-6 text-red-500 hover:text-red-600 transition" />
-                    </button>
+                    
 
                     {/* Student Info */}
                     <div className="flex justify-between items-start mb-4">
@@ -1216,115 +644,116 @@ function LiveClass() {
                             ],
                           }}
                           onApiReady={(externalApi) => {
-                            type ParticipantLog = {
-                              id: string;
-                              name?: string;
-                              studentId?: string;
-                              startCallTime: string;
-                              endCallTime?: string;
-                            };
+  type ParticipantLog = {
+    id: string;
+    name?: string;
+    studentId?: string;
+    startCallTime: string;
+    endCallTime?: string;
+  };
 
-                            const participantList: ParticipantLog[] = [];
+  const participantList: ParticipantLog[] = [];
 
-                            // ✅ Handle Participant Joined
-                            externalApi.addListener(
-                              "participantJoined",
-                              (event: { id: string; displayName?: string }) => {
-                                const joinTime = new Date().toLocaleTimeString(
-                                  [],
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  }
-                                );
+  // ✅ Handle Participant Joined
+  externalApi.addListener(
+    "participantJoined",
+    (event: { id: string; displayName?: string }) => {
+      const joinTime = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false, 
+      });
 
-                                console.log(
-                                  "Participant displayName:",
-                                  event.displayName
-                                );
-                                const parts =
-                                  event.displayName?.split("| ID :");
-                                console.log("Split parts:", parts);
+      const parts = event.displayName?.split("| ID :");
+      const name = parts?.[0]?.trim() ?? "Unknown";
+      const studentId = parts?.[1]?.trim() ?? "N/A";
 
-                                const name = parts?.[0]?.trim() ?? "Unknown";
-                                const studentId = parts?.[1]?.trim() ?? "N/A";
+      console.log("🟢 New participant joined:", { name, studentId });
 
-                                alert(`Name: ${name}, studentId: ${studentId}`);
-                                setAttendance((prev) =>
-                                  prev.map((a) =>
-                                    a.studentId === studentId
-                                      ? {
-                                          ...a,
-                                          id: event.id,
-                                          joined: true,
-                                          joinTime: joinTime,
-                                        }
-                                      : a
-                                  )
-                                );
-                              }
-                            );
+      setAttendance((prev) =>
+        prev.map((a) =>
+          a.studentId === studentId
+            ? { ...a, id: event.id, joined: true, joinTime }
+            : a
+        )
+      );
+    }
+  );
 
-                            // 🔴 Handle Participant Left
-                            externalApi.addListener(
-                              "participantLeft",
-                              (event: { id: string }) => {
-                                console.log(
-                                  "participantLeft event fired:",
-                                  event
-                                );
-                                const leaveTime = new Date().toLocaleTimeString(
-                                  [],
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  }
-                                );
+  // 🔴 Handle Participant Left
+  externalApi.addListener("participantLeft", (event: { id: string }) => {
+    const leaveTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false, 
+    });
 
-                                const participant = attendanceRef.current.find(
-                                  (p) => p.id === event.id
-                                );
-                                console.log(
-                                  "Matching participant:",
-                                  participant
-                                );
-                                if (participant) {
-                                  setAttendance((prev) =>
-                                    prev.map((a) =>
-                                      a.id === event.id
-                                        ? { ...a, leaveTime: leaveTime }
-                                        : a
-                                    )
-                                  );
-                                  console.log(
-                                    `🔴 ${participant.name} left at ${leaveTime}`
-                                  );
-                                } else {
-                                  console.warn(
-                                    `Participant with id ${event.id} not found in attendance.`
-                                  );
-                                }
-                              }
-                            );
+    const participant = attendanceRef.current.find(
+      (p) => p.id === event.id
+    );
 
-                            // 🎥 Host/teacher Joined Call
-                            externalApi.addEventListener(
-                              "videoConferenceJoined",
-                              () => {
-                                const startCallTime =
-                                  new Date().toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  });
+    if (participant) {
+      setAttendance((prev) =>
+        prev.map((a) =>
+          a.id === event.id ? { ...a, leaveTime } : a
+        )
+      );
+      console.log(`🔴 ${participant.name} left at ${leaveTime}`);
+    } else {
+      console.warn(`❗ Participant with id ${event.id} not found in attendance.`);
+    }
+  });
 
-                                console.log("Call started at", startCallTime);
-                                setStartTime(startCallTime);
-                              }
-                            );
-                          }}
+  // 🎥 Host/Teacher Joined
+  externalApi.addListener("videoConferenceJoined", async () => {
+    const startCallTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false, 
+    });
+
+    console.log("✅ Teacher joined, call started at", startCallTime);
+    setStartTime(startCallTime);
+
+    // ✅ Handle already-present participants (students who joined before teacher)
+    const existingParticipants = externalApi.getParticipantsInfo();
+
+    existingParticipants.forEach((participant: any) => {
+      const parts = participant.displayName?.split("| ID :");
+      const name = parts?.[0]?.trim() ?? "Unknown";
+      const studentId = parts?.[1]?.trim() ?? "N/A";
+
+      const joinTime = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false, 
+      });
+
+      console.log("🟡 Detected existing student in room:", {
+        name,
+        studentId,
+      });
+
+      setAttendance((prev) =>
+        prev.map((a) =>
+          a.studentId === studentId
+            ? {
+                ...a,
+                id: participant.participantId,
+                joined: true,
+                joinTime,
+              }
+            : a
+        )
+      );
+    });
+  });
+  externalApi.addListener("videoConferenceLeft", () => {
+  console.log("📞 Hangup clicked or call ended by user");
+  handleEndCall();
+});
+}}
+
                           getIFrameRef={(iframeRef) => {
                             iframeRef.style.border = "0px";
                             iframeRef.style.height = "100%";
@@ -1338,10 +767,10 @@ function LiveClass() {
               </div>
             </div>
           </div>
-        )}
       </div>
     </BaseLayout>
   );
 }
 
-export default LiveClass;
+
+

@@ -237,7 +237,7 @@ const TeacherDetails = () => {
 
   const [paginatedData, setPaginatedData] = useState<ClassSchedule[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [teacherRescheduleWrite, setTeacherRescheduleWrite] = useState(false); 
+  const [teacherRescheduleWrite, setTeacherRescheduleWrite] = useState(false);
 
   //Rolebyaccess
   useEffect(() => {
@@ -254,16 +254,12 @@ const TeacherDetails = () => {
     }
   }, []);
 
-
-
-
   const search = useSearchParams();
   const toggleDropdown = (index: number) => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
 
   const handleReschedule = (_id: string) => {
-    
     console.log("Navigating to reschedule page");
     router.push(`manageteachers?id=${_id}`);
 
@@ -398,7 +394,9 @@ const TeacherDetails = () => {
 
     schedule.forEach((item: ClassSchedule) => {
       if (item.student) {
-const fullName = `${item.student.studentFirstName} ${item.student.studentLastName || ''}`.trim();
+        const fullName = `${item.student.studentFirstName} ${
+          item.student.studentLastName || ""
+        }`.trim();
         const courseName = item.course?.courseName || "";
 
         if (!studentSet.has(fullName)) {
@@ -605,22 +603,22 @@ const fullName = `${item.student.studentFirstName} ${item.student.studentLastNam
 
               {/* Course */}
               <div>
-            <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
-              Course
-            </label>
-            <select
-              value={filters.course}
-              onChange={(e) =>
-                setFilters({ ...filters, course: e.target.value })
-              }
-              className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-            >
-              <option value="">Select Course</option>
-             <option value="QURAN">Quran</option>
-             <option value="ARABIC">Arabic</option>
-             <option value="ISLAMIC STUDIES">Islamic Studies</option>
-            </select>
-          </div>
+                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  Course
+                </label>
+                <select
+                  value={filters.course}
+                  onChange={(e) =>
+                    setFilters({ ...filters, course: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
+                >
+                  <option value="">Select Course</option>
+                  <option value="QURAN">Quran</option>
+                  <option value="ARABIC">Arabic</option>
+                  <option value="ISLAMIC STUDIES">Islamic Studies</option>
+                </select>
+              </div>
 
               {/* Date */}
               <div>
@@ -716,7 +714,9 @@ const fullName = `${item.student.studentFirstName} ${item.student.studentLastNam
                             .toLowerCase()
                             .includes(filters.studentName.toLowerCase())) &&
                         (!filters.course ||
-                          user.course.courseName?.toLowerCase().includes(filters.course.toLowerCase())) &&
+                          user.course.courseName
+                            ?.toLowerCase()
+                            .includes(filters.course.toLowerCase())) &&
                         (!filters.Date ||
                           new Date(user.startDate).toLocaleDateString() ===
                             new Date(filters.Date).toLocaleDateString()) &&
@@ -788,7 +788,8 @@ const fullName = `${item.student.studentFirstName} ${item.student.studentLastNam
 
     if (filters.course) {
       filtered = filtered.filter(
-        (user) => user.course.courseName?.toLowerCase() === filters.course.toLowerCase()
+        (user) =>
+          user.course.courseName?.toLowerCase() === filters.course.toLowerCase()
       );
     }
 
@@ -819,11 +820,11 @@ const fullName = `${item.student.studentFirstName} ${item.student.studentLastNam
       />
       <div className="p-2 mx-auto">
         {/* Main Container */}
-        <div className="flex gap-x-5 w-auto">
+        <div className="flex gap-x-5 w-full">
           {/* Left Profile Card */}
           <div className="rounded-xl flex items-center p-6 w-[630px] h-[247px] border bg-[#5e6578] text-white ">
             {/* Profile Section */}
-            <div className="flex flex-col items-center w-1/3">
+            <div className="flex flex-col items-center w-full px-4 text-center">
               <Image
                 src="/assets/images/proff.jpg"
                 width={100}
@@ -831,10 +832,10 @@ const fullName = `${item.student.studentFirstName} ${item.student.studentLastNam
                 alt="Profile"
                 className="rounded-full border-4 border-white mb-4"
               />
-              <h2 className="text-lg font-semibold text-[#ffff]">
+              <h2 className="text-xl font-semibold text-white break-words">
                 {teachers?.candidateFirstName}
               </h2>
-              <p className="text-sm text-[#C9C9C9]">
+              <p className="text-sm text-[#C9C9C9] break-words">
                 {teachers?.candidateEmail}
               </p>
             </div>
@@ -1044,7 +1045,7 @@ const fullName = `${item.student.studentFirstName} ${item.student.studentLastNam
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200 dark:bg-[#343434] dark:divide-gray-600">
+            <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
               {paginatedData.map((item, index) => (
                 <tr
                   key={item._id}
@@ -1110,31 +1111,29 @@ const fullName = `${item.student.studentFirstName} ${item.student.studentLastNam
                     {/* Only show dropdown if status is Scheduled and activeDropdown is set */}
                     {item.scheduleStatus === "Scheduled" &&
                       activeDropdown === index && (
-                        
-                         <div className="py-1 bg-white rounded-md shadow-lg ">
-                            <button
-                              className={`w-full text-left px-4 py-2 text-[12px] ${
-                                teacherRescheduleWrite
-                                  ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
-                                  : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
-                              }`}
-                              onClick={
-                                teacherRescheduleWrite
-                                  ? () => handleReschedule(item._id)
-                                  : undefined
-                              }
-                              disabled={!teacherRescheduleWrite}
-                            >
-                              Reschedule
-                            </button>
-                            <button
-                              onClick={() => setActiveDropdown(null)}
-                              className="w-full text-left px-4 py-2 text-red-600"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                          
+                        <div className="py-1 bg-white rounded-md shadow-lg ">
+                          <button
+                            className={`w-full text-left px-4 py-2 text-[12px] ${
+                              teacherRescheduleWrite
+                                ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
+                                : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
+                            }`}
+                            onClick={
+                              teacherRescheduleWrite
+                                ? () => handleReschedule(item._id)
+                                : undefined
+                            }
+                            disabled={!teacherRescheduleWrite}
+                          >
+                            Reschedule
+                          </button>
+                          <button
+                            onClick={() => setActiveDropdown(null)}
+                            className="w-full text-left px-4 py-2 text-red-600"
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       )}
                   </td>
                 </tr>

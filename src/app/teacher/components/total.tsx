@@ -1,146 +1,119 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import React, {  useEffect, useState } from 'react';
 import axios from 'axios';
 
-// Define the type for the data items
-type DataItem = {
-  title: string;
-  value: number;
-  color: string;
-  icon: React.ReactNode;
-  iconBg: string;
-};
-
-// Define the type for the API response
-type ApiResponse = {
+interface ApiResponse {
   totalclasses: number;
   totalstudents: number;
   totalhours: number;
   totalearnings: number;
 }
-// Initial data configuration
-const initialData: Omit<DataItem, 'value'>[] = [
-  { title: 'Total Classes', color: 'bg-[#FAD85D]', icon: <img src="/assets/images/total-classes.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
-  { title: 'Total Students', color: 'bg-[#0BF4C8]', icon: <img src="/assets/images/total-students.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
-  { title: 'Total Hours', color: 'bg-[#85D8F2]', icon: <img src="/assets/images/total-hours.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
-  { title: 'Total Earnings', color: 'bg-[#F2A0FF]', icon: <img src="/assets/images/total-earnings.png" alt="Total Classes" style={{ width: 20, height: 20 }} />, iconBg: 'bg-[#fff]' },
-];
 
-// Card Component
-const Card: React.FC<DataItem> = ({ title, value, color, icon, iconBg }) => (
-  <div className={`p-4 size-[100%] rounded-2xl py-7 shadow-lg flex flex-col items-start ${color} relative bg-pattern`}>
-    <div className={`absolute top-4 right-2 ${iconBg} p-2 rounded-[100%] shadow-md`}>
-      {React.isValidElement(icon) ? (
-        <div className="flex items-center justify-center w-4 h-4">{icon}</div>
-      ) : (
-        <Image src={icon as string} alt={`${title} icon`} className="w-6 h-6 opacity-60" />
-      )}
-    </div>
-    <div className="flex flex-col justify-between h-full">
-      <div>
-        <span className="text-[13px] font-semibold text-black">{title}</span>
-      </div>
-      <div>
-        <span className="text-[17px] font-bold text-black">{value}</span>
-      </div>
-    </div>
-  </div>
-);
-
-const fetchDashboardData = async (teacherId: string, authToken: string | null): Promise<ApiResponse> => {
-  try {
-    const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
-
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-  }
-    const response = await axios.get(`https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts`, {
-      params: {
-        teacherId: teacherId
-      },
-      headers:{
-         'Content-Type': 'application/json',
-        "Authorization":`Bearer ${token}`,
-      }
-    });
-
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw new Error('HTTP Error');
-  }
-};
-
-
-// Map API response to dashboard data
-const mapApiResponseToData = (apiResponse: ApiResponse): DataItem[] => {
-  return initialData.map(item => {
-    let value = 0;
-    switch (item.title) {
-      case 'Total Classes':
-        value = apiResponse.totalclasses || 0;
-        break;
-      case 'Total Students':
-        value = apiResponse.totalstudents || 0;
-        break;
-      case 'Total Hours':
-        value = apiResponse.totalhours || 0;
-        break;
-      case 'Total Earnings':
-        value = apiResponse.totalearnings || 0;
-        break;
-    }
-    return { ...item, value };
+const Total = () => {
+  const [data, setData] = useState<ApiResponse>({
+    totalclasses: 0,
+    totalstudents: 0,
+    totalhours: 0,
+    totalearnings: 0,
   });
-};
-
-// Dashboard Component
-const Dash = () => {
-  const [data, setData] = useState<DataItem[]>(initialData.map(item => ({ ...item, value: 0 })));
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const fetchData = async () => {
+      const teacherId = typeof window !== 'undefined' ? localStorage.getItem('TeacherPortalId') : null;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('TeacherAuthToken') : null;
+
+      if (!teacherId || !token) return;
+
       try {
-        setIsLoading(true);
-        setError(null);
-
-        const authToken = localStorage.getItem('TeacherAuthToken');
-        const teacherId = localStorage.getItem('TeacherPortalId'); // Retrieve teacherId from localStorage
-
-        if (!teacherId) {
-          throw new Error('Teacher ID is not available');
-        }
-
-        const apiResponse = await fetchDashboardData(teacherId, authToken);
-        const updatedData = mapApiResponseToData(apiResponse);
-        setData(updatedData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setIsLoading(false);
+        const response = await axios.get(
+          'https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts',
+          {
+            params: { teacherId },
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setData(response.data);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
       }
     };
 
-    loadDashboardData();
+    fetchData();
   }, []);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  const cards = [
+    {
+      title: 'Total Classes',
+      count: data.totalclasses,
+      icon: (
+        <div className="bg-[#e3efff] dark:bg-[#3e4e50] rounded-full">
+          <Image src="/assets/images/totalclass.png" alt="Total Classes" width={40} height={40} />
+        </div>
+      ),
+      bg: 'bg-[#e3efff] dark:bg-[#3e4e50]',
+    },
+    {
+      title: 'Total Students',
+      count: data.totalstudents,
+      icon: (
+        <div className="bg-[#ede5ff] dark:bg-[#3f3e50] rounded-full">
+          <Image src="/assets/images/totalstudents.png" alt="Total Students" width={40} height={40} />
+        </div>
+      ),
+      bg: 'bg-[#ede5ff] dark:bg-[#3f3e50]',
+    },
+    {
+      title: 'Total Hours',
+      count: data.totalhours,
+      icon: (
+        <div className="bg-[#ffe9e9] dark:bg-[#503e3e] rounded-full">
+          <Image src="/assets/images/totalhours.png" alt="Total Hours" width={40} height={40} />
+        </div>
+      ),
+      bg: 'bg-[#ffe9e9] dark:bg-[#503e3e]',
+    },
+    {
+      title: 'Total Earnings',
+      count: `$ ${data.totalearnings}`,
+      icon: (
+        <div className="bg-[#fff5d4] dark:bg-[#504d3e] rounded-full">
+          <Image src="/assets/images/totalearnings.png" alt="Total Earnings" width={40} height={40} />
+        </div>
+      ),
+      bg: 'bg-[#fff5d4] dark:bg-[#504d3e]',
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-4 gap-6">
-      {data.map(item => (
-        <Card key={item.title} {...item} />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {cards.map((card, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between p-5 rounded-2xl shadow-sm bg-white dark:bg-[#343434] dark:text-[#fff]"
+        >
+          <div>
+            <p className="text-[14px] font-medium text-black dark:text-white">
+              {card.title.split(' ').map((word, idx, arr) => (
+                <React.Fragment key={idx}>
+                  {word}
+                  {idx < arr.length - 1 && <br />}
+                </React.Fragment>
+              ))}
+            </p>
+            <p className="text-[28px] font-semibold text-black dark:text-white">{card.count}</p>
+          </div>
+          <div className={`${card.bg} p-3 rounded-full flex items-center justify-center`}>
+            {card.icon}
+          </div>
+        </div>
       ))}
     </div>
   );
 };
 
-export default Dash;
+export default Total;

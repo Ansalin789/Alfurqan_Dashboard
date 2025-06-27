@@ -877,7 +877,7 @@ const ManageStudentView = () => {
                     </td>
                   </td>
 
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left"></td>
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">{item.sessionClassType}</td>
                   <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
                     <span
                       className={`font-semibold px-3 py-1 rounded-md text-[10px] ${

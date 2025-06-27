@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+'use client';
+
 import axios from "axios";
+import { useState, useEffect } from "react";
 import { FaBook } from "react-icons/fa";
 
 interface ClassItem {
@@ -21,41 +23,48 @@ const UpcomingTask: React.FC = () => {
     const fetchClassData = async () => {
       try {
         const teacherId = localStorage.getItem("TeacherPortalId");
-           const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+        const token = typeof window !== "undefined"
+          ? localStorage.getItem("TeacherAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ TeacherAuthToken not found");
-  }
+        if (!token) {
+          console.error("❌ TeacherAuthToken not found");
+        }
 
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/classShedule/teacher", {
-          params: { teacherId: teacherId },
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization" :`Bearer ${token}`
-          },
-        });
+        const response = await axios.get(
+          "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+          {
+            params: { teacherId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        const fetchedClasses = response.data.classSchedule.map((classItem: any) => ({
-          id: classItem._id,
-          date: classItem.startDate,
-          time: `${classItem.startTime[0]} - ${classItem.endTime[0]}`,
-          title: classItem.package,
-          color: "bg-[#FAD85D] opacity-[90%]",
-          icon: <FaBook className="text-yellow-700" />,
-          teacher: classItem.teacher.teacherName,
+        const fetchedClasses = response.data.classSchedule.map((item: any) => ({
+          id: item._id,
+          date: new Date(item.startDate).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }).replace(/\//g, "-"),
+          time: `${item.startTime[0]} - ${item.endTime[0]}`,
+          title: item.package,
+          teacher: item.teacher.teacherName,
+          color: "",
+          icon: <FaBook className="text-sm" />,
         }));
 
-        // Sort by date (assuming startDate is in ISO format) and get the last 5 upcoming classes
-        const sortedClasses = fetchedClasses
-        .sort((a: ClassItem, b: ClassItem) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort ascending by date
-        .slice(0, 5); // Get the first 5 upcoming classes
-      
-      setClasses(sortedClasses);
-      
+        const sorted = fetchedClasses
+          .sort((a: ClassItem, b: ClassItem) => new Date(a.date).getTime() - new Date(b.date).getTime())
+          .slice(0, 7);
 
+        setClasses(sorted);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An unexpected error occurred");
+        setError(
+          err instanceof Error ? err.message : "An unexpected error occurred"
+        );
       } finally {
         setLoading(false);
       }
@@ -63,6 +72,24 @@ const UpcomingTask: React.FC = () => {
 
     fetchClassData();
   }, []);
+
+  const dotColors = [
+    "bg-[#d77277]",
+    "bg-[#72B0D7]",
+    "bg-[#BF63B3]",
+    "bg-[#BFBC63]",
+    "bg-[#BF8C63]",
+    "bg-[#6EBF63]",
+  ];
+
+  const textColors = [
+    "text-[#d77277]",
+    "text-[#72B0D7]",
+    "text-[#BF63B3]",
+    "text-[#BFBC63]",
+    "text-[#BF8C63]",
+    "text-[#6EBF63]",
+  ];
 
   if (loading) {
     return <div className="text-center text-gray-600">Loading...</div>;
@@ -73,26 +100,52 @@ const UpcomingTask: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-100 p-4 w-[250px] rounded-lg shadow-lg -ml-14 h-[40vh] overflow-y-scroll scrollbar-none">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-[14px] font-semibold text-gray-800">Upcoming Task</h3>
+    <div className="bg-white dark:bg-[#343434] w-full rounded-xl px-4 pt-4 pb-6">
+      <div className="flex justify-between items-center mb-4 px-1">
+        <h2 className="font-semibold text-lg text-[#010e30] dark:text-white">
+          Upcoming Tasks
+        </h2>
+        <span className="bg-[#EBEFFF] dark:bg-[#576CBC33] text-[#6B73FF] text-xs font-medium px-2 py-1 rounded-md">
+          Today
+        </span>
       </div>
-      <div className="space-y-3">
-        {classes.map((classItem) => (
-          <div key={classItem.id} className={`relative ${classItem.color} p-4 rounded-md shadow-md`}>
-            <div className="flex items-center space-x-2">
-              {classItem.icon}
-              <h4 className="text-[13px] fontdd-medium text-gray-800">{classItem.title}</h4>
-            </div>
-            <p className="text-[10px] text-gray-600 mt-1">{classItem.date}</p>
-            <p className="text-[10px] text-gray-600">{classItem.time}</p>
-            {classItem.teacher && (
-              <p className="absolute right-3 bottom-2 text-gray-700 text-[12px] font-medium">
-                {classItem.teacher}
-              </p>
-            )}
-          </div>
-        ))}
+
+      <div className="relative">
+        {/* Vertical Dotted Line */}
+        <div className="absolute left-[48px] top-0 bottom-0 border-l-2 border-dotted border-black dark:border-white" />
+
+        <div className="space-y-4 pl-[8px]">
+          {classes.length === 0 ? (
+            <p className="text-center text-gray-500 text-sm p-4">No tasks scheduled.</p>
+          ) : (
+            classes.map((classItem, index) => {
+              const dotColor = dotColors[index % dotColors.length];
+              const textColor = textColors[index % textColors.length];
+              const startTime = classItem.time.split("-")[0].trim();
+
+              return (
+                <div key={classItem.id} className="flex items-start gap-2 relative w-full">
+                  {/* Time */}
+                  <div className="w-[38px] text-[12px] text-black dark:text-white mt-[3px] text-right pr-1">
+                    {startTime}
+                  </div>
+
+                  {/* Dot */}
+                  <div className="flex items-center justify-center mt-[3px] w-[12px]">
+                    <div className={`w-[10px] h-[10px] rounded-full ${dotColor}`} />
+                  </div>
+
+                  {/* Task Box */}
+                  <div className="flex-1 bg-[#f4f4f4] dark:bg-[#404040] rounded-md px-3 py-2">
+                    <h4 className={`text-[14px] font-semibold capitalize ${textColor}`}>
+                      {classItem.title}
+                    </h4>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );
