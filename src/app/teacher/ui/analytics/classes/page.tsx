@@ -6,73 +6,76 @@ import Pagination from "@/components/Pagination";
 import axios from "axios";
 import { Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { FaSort } from "react-icons/fa";
 import { MdTune } from "react-icons/md";
 
-const Classes = () => {
-  interface Student {
+interface ClassScheduleResponse {
+  totalCount: number;
+  classSchedule: Schedule[];
+}
+
+interface Schedule {
+  _id: string;
+  student: {
     studentId: string;
     studentFirstName: string;
     studentLastName: string;
     studentEmail: string;
-  }
-
-  interface Teacher {
+    gender: string;
+  };
+  teacher: {
     teacherId: string;
     teacherName: string;
     teacherEmail: string;
-  }
+  };
+  course: {
+    courseId: string;
+    courseName: string;
+  };
+  classDay: string[];
+  package: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[]; // ["09:30"]
+  endTime: string[];
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  createdBy: string;
+  sessionClassType: string;
+  sessionStarttime: string;
+  sessionsEndtime: string;
+  createdDate: string;
+  lastUpdatedDate: string;
+  __v: number;
+  amount: string;
+  sessionStatus: string;
+}
 
-  interface Schedule {
-    student: Student;
-    teacher: Teacher;
-    _id: string;
-    classDay: string[];
-    package: string;
-    preferedTeacher: string;
-    totalHourse: number;
-    startDate: string;
-    endDate: string;
-    startTime: string[];
-    endTime: string[];
-    scheduleStatus: string;
-    status: string;
-    createdBy: string;
-    createdDate: string;
-    lastUpdatedDate: string;
-    __v: number;
-  }
-
-  interface ApiResponse {
-    totalCount: number;
-    students: Schedule[];
-  }
+const Classes = () => {
   const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
     Schedule[]
   >([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
+
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchSchedulesByTeacher = async () => {
       try {
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("TeacherAuthToken")
             : null;
-
-        if (!token) {
-          console.error("❌ AdminAuthToken not found");
-          return;
-        }
         const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
-        if (!teacherIdToFilter) {
-          console.error("No teacher ID found in localStorage.");
+
+        if (!token || !teacherIdToFilter) {
+          console.error("Missing token or teacher ID");
           return;
         }
 
-        const response = await axios.get<ApiResponse>(
-          "https://api.blackstoneinfomaticstech.com/classShedule",
+        const response = await axios.get<ClassScheduleResponse>(
+          `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherIdToFilter}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -80,25 +83,13 @@ const Classes = () => {
           }
         );
 
-        const filteredData = response.data.students.filter(
-          (item: any) => item.teacher.teacherId === teacherIdToFilter
-        );
-
-        const studentScheduleMap = new Map<string, Schedule>();
-
-        filteredData.forEach((item: any) => {
-          studentScheduleMap.set(item.student.studentId, item);
-        });
-
-        const uniqueSchedules = Array.from(studentScheduleMap.values());
-
-        setUniqueStudentSchedules(uniqueSchedules);
+        setUniqueStudentSchedules(response.data.classSchedule);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching class schedules:", error);
       }
     };
 
-    fetchData();
+    fetchSchedulesByTeacher();
   }, []);
 
   const filteredData = uniqueStudentSchedules.filter((row) =>
@@ -113,28 +104,6 @@ const Classes = () => {
     currentPage * itemsPerPage
   );
   console.log(currentData);
-
-  const getStatus = (index: number) => {
-    if (index % 3 === 0) {
-      return {
-        text: "Completed",
-        style:
-          "text-green-600 bg-green-100 border-[1px] border-green-600 rounded-lg px-4",
-      };
-    } else if (index % 3 === 1) {
-      return {
-        text: "Re Schedule",
-        style:
-          "text-yellow-600 bg-yellow-100 border-[1px] border-yellow-600 rounded-lg px-3",
-      };
-    } else {
-      return {
-        text: "Canceled",
-        style:
-          "text-red-600 bg-red-100 border-[1px] border-red-600 rounded-lg px-5",
-      };
-    }
-  };
 
   return (
     <BaseLayout>
@@ -177,57 +146,51 @@ const Classes = () => {
               >
                 <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                   <tr className="font-medium">
-                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                      Student ID
-                    </th>
-                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                      StudentName
-                    </th>
-                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                      Courses
-                    </th>
-                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                      Class Type
-                    </th>
-                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                      Course Duration
-                    </th>
-                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                      Date
-                    </th>
-                     <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                      Time
-                    </th>
-                    <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
-                      Status
-                    </th>
+                    {[
+                      "Student ID",
+                      "StudentName",
+                      "Courses",
+                      "Class Type",
+                      "Course Duration",
+                      "Date",
+                      "Time",
+                      "Status",
+                    ].map((header, i) => (
+                      <th
+                        key={i}
+                        className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]"
+                      >
+                        {header}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="text-[11px]">
                   {filteredData.map((schedule, index) => {
                     const { student, scheduleStatus, startTime, endTime } =
                       schedule;
-                    const uniqueKey = `row-${index}`; // Generate a unique key for each row
 
                     return (
                       <tr
-                        key={uniqueKey}
+                        key={`row-${index}`}
                         className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
                       >
-                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                        <td className="px-4 py-2 text-left">
                           {student.studentId}
                         </td>
-                        <td className="px-4 py-2 text-[#3D8FDE] dark:text-[#3D8FDE] font-medium">
+                        <td className="px-4 py-2 text-left font-medium text-[#3D8FDE] pl-10">
                           {student.studentFirstName}
                         </td>
-                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                          Quran
+                        <td className="px-4 py-2 text-left">
+                          {schedule.course.courseName}
                         </td>
-                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                        <td className="px-4 py-2 text-left">
                           {schedule.package}
                         </td>
-                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">{`${schedule.totalHourse} hours`}</td>
-                        <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                        <td className="px-4 py-2 text-left">
+                          {schedule.totalHourse} hours
+                        </td>
+                        <td className="px-4 py-2 text-left">
                           {new Date(schedule.startDate).toLocaleDateString(
                             "en-US",
                             {
@@ -237,12 +200,20 @@ const Classes = () => {
                             }
                           )}
                         </td>
-                          <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                          10.00
+                        <td className="px-4 py-2 text-left">
+                          {startTime[0]} - {endTime[0]}
                         </td>
-                        <td className="text-[10px] font-semibold px-5 py-2 rounded-lg ">
-                          <span className="text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px] py-1  rounded-lg">
-                            {schedule.status}
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <span
+                            className={`font-semibold px-3 py-1 rounded-md text-[10px] ${
+                              schedule.scheduleStatus === "Scheduled"
+                                ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] px-[18px]"
+                                : schedule.scheduleStatus === "Rescheduled"
+                                ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
+                                : "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
+                            }`}
+                          >
+                            {schedule.scheduleStatus}
                           </span>
                         </td>
                       </tr>
@@ -262,38 +233,5 @@ const Classes = () => {
     </BaseLayout>
   );
 };
-
-const data = [
-  {
-    name: "Samantha William",
-    id: "1234567890",
-    course: "Quran",
-    type: "Trial Class",
-    duration: "30 minutes",
-    datetime: "January 2, 2020 - 9:00–10:30 AM",
-    amount: "$04",
-    status: "Completed",
-  },
-  {
-    name: "Jordan Nico",
-    id: "1234567890",
-    course: "Tajweed",
-    type: "Regular Class",
-    duration: "60 minutes",
-    datetime: "January 2, 2020 - 11:00–12:00 AM",
-    amount: "$30",
-    status: "Re Schedule",
-  },
-  {
-    name: "Nadila Adja",
-    id: "1234567890",
-    course: "Arabic",
-    type: "Group Class",
-    duration: "45 minutes",
-    datetime: "January 3, 2020 - 9:00–10:30 AM",
-    amount: "$25",
-    status: "Canceled",
-  },
-];
 
 export default Classes;

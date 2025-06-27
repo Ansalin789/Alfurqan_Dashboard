@@ -269,7 +269,7 @@ if (currentSection.includes("Dashboard") ){
         <div className="flex items-center gap-3 flex-wrap">
           {renderButton()}
           <button
-            onClick={() => router.push("/Academic-coach/ui/calendar")}
+            onClick={() => router.push("/Academic-coach/ui/schedule")}
             className="p-2.5 bg-white dark:bg-gray-700 rounded-lg"
           >
             <CalendarDays className="w-4 h-4 text-gray-800 dark:text-white" />

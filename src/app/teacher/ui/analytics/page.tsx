@@ -69,14 +69,7 @@ function Analytics() {
     { month: string; classes: number }[]
   >([]);
 
-  const earningsData = [
-    { month: "Jan", earnings: 30000 },
-    { month: "Feb", earnings: 35000 },
-    { month: "Mar", earnings: 32000 },
-    { month: "Apr", earnings: 40000 },
-    { month: "May", earnings: 38000 },
-    { month: "Jun", earnings: 45741 },
-  ];
+
 
   const earnings: Earning[] = [
     {
@@ -156,11 +149,11 @@ function Analytics() {
     totalCount: number;
     students: Schedule[];
   }
-  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<
-    Schedule[]
-  >([]);
+  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<  Schedule[]>([]);
   const [TotalStudents, setTotalStudents] = useState<number>();
   const [TotalClasses, setTotalClasses] = useState<number>();
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {

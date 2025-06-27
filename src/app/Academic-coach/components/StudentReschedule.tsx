@@ -123,11 +123,11 @@ interface TeacherShiftResponse {
   totalCount: number;
 }
 interface TeacherSlot {
-  fromTime: string;      
-  toTime: string;         
-  teacherName: string;   
-  teacherId: string;    
-  isStatus: boolean;      
+  fromTime: string;
+  toTime: string;
+  teacherName: string;
+  teacherId: string;
+  isStatus: boolean;
 }
 
 const SchedulePage = () => {
@@ -144,7 +144,9 @@ const SchedulePage = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [availableTeachers, setAvailableTeachers] = useState<TeacherSlot[]>([]);
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
-  const [selectedTeacher, setSelectedTeacher] = useState<TeacherSlot | null>(null);
+  const [selectedTeacher, setSelectedTeacher] = useState<TeacherSlot | null>(
+    null
+  );
   const [rescheduleReason, setRescheduleReason] = useState("");
   const [success, setSuccess] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -208,13 +210,12 @@ const SchedulePage = () => {
     }
   }, [studentId]);
 
-  const handleDateClick = async (date: Date , position : string) => {
-    
+  const handleDateClick = async (date: Date, position: string) => {
     setSelectedDate(date);
     setSelectedTeacher(null); // Clear previously selected
     setAvailableTeachers([]);
     setIsRescheduleOpen(false); // Close modal until teacher is chosen
-  console.log("date is " , date);
+    console.log("date is ", date);
     const formattedDate = moment(date).format("YYYY-MM-DD");
     const token = localStorage.getItem("AcademicCoachAuthToken");
 
@@ -224,20 +225,21 @@ const SchedulePage = () => {
     }
 
     try {
-      const url = `http://localhost:5001/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(position + " Teacher")}`;
+      const url = `http://localhost:5001/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
+        position + " Teacher"
+      )}`;
 
-const res = await fetch(url, {
-  headers: { Authorization: `Bearer ${token}` },
-});
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-if (!res.ok) {
-  console.error("❌ Failed to fetch teachers");
-  return;
-}
+      if (!res.ok) {
+        console.error("❌ Failed to fetch teachers");
+        return;
+      }
 
-const data = await res.json();
-setAvailableTeachers(data);
-
+      const data = await res.json();
+      setAvailableTeachers(data);
     } catch (err) {
       console.error("❌ Network error:", err);
     }
@@ -247,73 +249,71 @@ setAvailableTeachers(data);
     setSelectedTeacher(teacher);
     setIsRescheduleOpen(true);
   };
- useEffect(() => {
-  const academicId =
-    typeof window !== "undefined"
-      ? localStorage.getItem("AcademicCoachPortalId")
-      : null;
-  if (!academicId) return;
+  useEffect(() => {
+    const academicId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
+    if (!academicId) return;
 
-  const socket = getSocket(academicId);
+    const socket = getSocket(academicId);
 
-  const handleList = (payload: {
-    event: "update" | "create";
-    date: string;
-    slots: {
-      [teacherId: string]: {
-        from: string;
-        to: string;
-        isStatus: boolean;
-      }[];
-    };
-  }) => {
-    if (payload.event !== "update") return;
+    const handleList = (payload: {
+      event: "update" | "create";
+      date: string;
+      slots: {
+        [teacherId: string]: {
+          from: string;
+          to: string;
+          isStatus: boolean;
+        }[];
+      };
+    }) => {
+      if (payload.event !== "update") return;
 
-    const selectedDay = moment(selectedDate).format("YYYY-MM-DD");
-    const payloadDay = moment(payload.date).format("YYYY-MM-DD");
+      const selectedDay = moment(selectedDate).format("YYYY-MM-DD");
+      const payloadDay = moment(payload.date).format("YYYY-MM-DD");
 
-    console.log("📦 WS Payload:", payload);
-    console.log("📅 Selected Date:", selectedDay, "| WS Date:", payloadDay);
+      console.log("📦 WS Payload:", payload);
+      console.log("📅 Selected Date:", selectedDay, "| WS Date:", payloadDay);
 
-    if (selectedDay !== payloadDay) {
-      console.warn("⛔ Date mismatch: skipping update");
-      return;
-    }
+      if (selectedDay !== payloadDay) {
+        console.warn("⛔ Date mismatch: skipping update");
+        return;
+      }
 
-    // 🔥 Update flat array
-    setAvailableTeachers((prev: any[]) => {
-      const slotsToRemove = Object.entries(payload.slots).flatMap(
-        ([teacherId, updates]) =>
-          updates
-            .filter(u => !u.isStatus) // ❌ only removing slots
-            .map(u => ({
-              teacherId,
-              from: u.from,
-              to: u.to,
-            }))
-      );
-
-      const filtered = prev.filter(slot => {
-        return !slotsToRemove.some(r =>
-          r.teacherId === slot.teacherId &&
-          r.from === slot.fromTime &&
-          r.to === slot.toTime
+      // 🔥 Update flat array
+      setAvailableTeachers((prev: any[]) => {
+        const slotsToRemove = Object.entries(payload.slots).flatMap(
+          ([teacherId, updates]) =>
+            updates
+              .filter((u) => !u.isStatus) // ❌ only removing slots
+              .map((u) => ({
+                teacherId,
+                from: u.from,
+                to: u.to,
+              }))
         );
+
+        const filtered = prev.filter((slot) => {
+          return !slotsToRemove.some(
+            (r) =>
+              r.teacherId === slot.teacherId &&
+              r.from === slot.fromTime &&
+              r.to === slot.toTime
+          );
+        });
+
+        console.log("🧹 After Slot Removal:", filtered);
+        return filtered;
       });
+    };
 
-      console.log("🧹 After Slot Removal:", filtered);
-      return filtered;
-    });
-  };
-
-  socket.on("academicAvailableTeachers", handleList);
-  return () => {
-    socket.off("academicAvailableTeachers", handleList);
-  };
-}, [selectedDate]);
-
-
-
+    socket.on("academicAvailableTeachers", handleList);
+    return () => {
+      socket.off("academicAvailableTeachers", handleList);
+    };
+  }, [selectedDate]);
 
   const handleRescheduleSubmit = async () => {
     const token = localStorage.getItem("AcademicCoachAuthToken");
@@ -357,17 +357,32 @@ setAvailableTeachers(data);
         return `${hours}:${minutes}`;
       };
 
+      // This ensures the selected date doesn't shift due to timezone conversion
+      const normalizeDate = (date: Date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth(); // 0-indexed
+        const day = date.getDate();
+
+        // Create a new Date at noon UTC (avoids time shift)
+        const utcDate = new Date(Date.UTC(year, month, day, 12, 0, 0));
+        return utcDate.toISOString(); // Safe to store in DB
+      };
+
       // 2. Build updated payload with only specific changes
       const updatedPayload = {
         ...existingData,
+        // Inside your handleRescheduleSubmit
+        startDate: normalizeDate(selectedDate),
+        endDate: normalizeDate(selectedDate),
+        classDay: [
+          {
+            label: selectedDate.toLocaleDateString("en-US", {
+              weekday: "long",
+            }),
+            value: normalizeDate(selectedDate),
+          },
+        ],
 
-        // ✅ fix: classDay as array of objects
-        classDay: existingData.classDay.map((day: string | number | Date) => ({
-          label: new Date(day).toLocaleDateString("en-US", { weekday: "long" }),
-          value: day,
-        })),
-
-        startDate: new Date(selectedDate).toISOString(),
         startTime: [
           {
             label: to24HourFormat(selectedTeacher.fromTime),
@@ -383,7 +398,6 @@ setAvailableTeachers(data);
 
         teacherId: selectedTeacher.teacherId,
         teacherName: selectedTeacher.teacherName,
-        teacherEmail: selectedTeacher.teacherEmail,
         scheduleStatus: "Rescheduled",
         lastUpdatedDate: new Date().toISOString(),
         rescheduleReason,
@@ -686,15 +700,19 @@ setAvailableTeachers(data);
             return (
               <button
                 key={i}
-                onClick={() => handleDateClick(date,courseName)}
+                onClick={() => handleDateClick(date, courseName)}
                 className={`min-h-[80px] rounded-xl flex flex-col items-center justify-start mt-1 p-1 cursor-pointer duration-200
       ${hasClasses ? `border ${courseColorClass}` : "border text-[10px]"}
-      ${isToday(day)  ? "bg-[#27176518] text-white"
-                    : "bg-gray-100 dark:bg-[#414141] dark:text-[#fff] text-gray-500"}
+      ${
+        isToday(day)
+          ? "bg-[#27176518] text-white dark:text-white"
+          : "bg-gray-100 text-gray-500 dark:bg-[#414141] dark:text-white"
+      }
+
       ${isSelected ? "ring-2 ring-[#576cbc]" : ""}
     `}
               >
-                <div className="font-semibold text-sm text-gray-700">{day}</div>
+                <div className="font-semibold text-sm text-inherit">{day}</div>
 
                 {hasClasses && (
                   <div className="w-full mt-2 text-center">
@@ -775,58 +793,58 @@ setAvailableTeachers(data);
 
           {/* Right: Available Teachers */}
           <div className="w-full md:w-1/3 bg-white dark:bg-[#343434] rounded-xl p-6 shadow-md">
-  <h3 className="text-[16px] font-medium text-[#111111] dark:text-white mb-4">
-    Available Teachers
-  </h3>
+            <h3 className="text-[16px] font-medium text-[#111111] dark:text-white mb-4">
+              Available Teachers
+            </h3>
 
-  <div className="divide-y divide-gray-200 dark:divide-gray-600 max-h-[600px] overflow-y-auto">
-    {availableTeachers.length === 0 ? (
-      <p className="text-sm text-gray-500 dark:text-gray-300 py-4">
-        No teachers available.
-      </p>
-    ) : (
-      <AnimatePresence>
-        {availableTeachers.map((teacher, index) => (
-          <motion.div
-            key={`${teacher.teacherId}-${teacher.fromTime}-${teacher.toTime}`}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ duration: 0.25 }}
-            className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
-          >
-            {/* Left Side */}
-            <div className="flex items-center gap-4">
-              <img
-                src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.teacherName}`}
-                alt={teacher.teacherName}
-                className="w-10 h-10 rounded-full"
-              />
-              <div>
-                <p className="text-sm font-medium text-gray-800 dark:text-white">
-                  {teacher.teacherName}
+            <div className="divide-y divide-gray-200 dark:divide-gray-600 max-h-[600px] ">
+              {availableTeachers.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-300 py-4">
+                  No teachers available.
                 </p>
-              </div>
-            </div>
+              ) : (
+                <AnimatePresence>
+                  {availableTeachers.map((teacher, index) => (
+                    <motion.div
+                      key={`${teacher.teacherId}-${teacher.fromTime}-${teacher.toTime}`}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.25 }}
+                      className="flex items-center justify-between py-4 px-2 border-b-2 dark:border-[#5c5c5c]"
+                    >
+                      {/* Left Side */}
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={`https://api.dicebear.com/7.x/initials/svg?seed=${teacher.teacherName}`}
+                          alt={teacher.teacherName}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-gray-800 dark:text-white">
+                            {teacher.teacherName}
+                          </p>
+                        </div>
+                      </div>
 
-            {/* Right Side */}
-            <div className="flex items-center gap-2">
-              <div className="text-sm text-gray-700 dark:text-gray-300 text-right">
-                {teacher.fromTime} - {teacher.toTime}
-              </div>
-              <button
-                onClick={() => handleTeacherClick(teacher)}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
-              >
-                <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
-              </button>
+                      {/* Right Side */}
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm text-gray-700 dark:text-gray-300 text-right">
+                          {teacher.fromTime} - {teacher.toTime}
+                        </div>
+                        <button
+                          onClick={() => handleTeacherClick(teacher)}
+                          className="p-1 hover:bg-gray-200 dark:hover:bg-[#5c5c5c] rounded-full transition"
+                        >
+                          <MdOutlineKeyboardArrowRight className="text-xl text-gray-500 dark:text-[#5c5c5c]" />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              )}
             </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    )}
-  </div>
-</div>
+          </div>
         </div>
       </div>
 
