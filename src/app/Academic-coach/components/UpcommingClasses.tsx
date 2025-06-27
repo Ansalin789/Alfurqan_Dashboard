@@ -50,7 +50,7 @@ const UpcomingClasses: React.FC = () => {
         const academicId = localStorage.getItem("AcademicCoachPortalId");
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/evaluationlist`,
+          `https://api.blackstoneinfomaticstech.com/dashboard/ac/upcomingclass`,
           {
             method: "GET",
             params: { academicCoachId: academicId },
@@ -61,33 +61,32 @@ const UpcomingClasses: React.FC = () => {
           }
         );
 
-        if (!response.data) {
+        if (!response.data || !Array.isArray(response.data)) {
           throw new Error(`Failed to fetch classes: ${response.statusText}`);
         }
 
-        const data = response.data;
-        const upcomingClasses = data.evaluation
-          .filter((item: Evaluation) => {
-            const classStartDate = new Date(item.classStartDate);
-            const now = new Date();
+        const now = new Date();
+        const upcomingClasses = response.data
+          .filter((item: any) => {
+            const classStartDate = new Date(item.scheduledStartDate);
             // Check if the class is today
             return classStartDate.toDateString() === now.toDateString();
           })
-          .sort((a: Evaluation, b: Evaluation) => {
+          .sort((a: any, b: any) => {
             return (
-              new Date(a.classStartTime).getTime() -
-              new Date(b.classStartTime).getTime()
+              new Date(a.scheduledFrom).getTime() -
+              new Date(b.scheduledFrom).getTime()
             );
           })
-          .map((item: Evaluation, index: number) => ({
+          .map((item: any, index: number) => ({
             id: item._id,
-            date: new Date(item.classStartDate).toLocaleDateString("en-GB", {
+            date: new Date(item.scheduledStartDate).toLocaleDateString("en-GB", {
               day: '2-digit',
               month: '2-digit',
               year: 'numeric'
             }).replace(/\//g, '-'),
-            time: `${item.classStartTime} - ${item.classEndTime}`,
-            title: item.student.learningInterest || "Class",
+            time: `${item.scheduledFrom} - ${item.scheduledTo}`,
+            title: item.student?.name || item.classType || "Class",
             color: colorCycle[index % colorCycle.length],
           }));
 
