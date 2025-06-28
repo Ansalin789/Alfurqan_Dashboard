@@ -1,243 +1,385 @@
-'use client';
+"use client";
 
-
-import BaseLayout from "@/components/BaseLayout";
-import React, { useEffect, useState } from "react";
-import { BsSearch, BsThreeDots } from "react-icons/bs";
+import { Search } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { IoArrowBackCircleSharp } from "react-icons/io5";
+import React, { useEffect, useState } from "react";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { MdTune } from "react-icons/md";
+import BaseLayout from '@/components/BaseLayout';
+import SupervisorHeader from '../../components/TeacherHeader';
 import axios from "axios";
-
-
-interface Student {
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail: string;
-}
-
-interface Teacher {
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
-}
-
-interface Schedule {
-  student: Student;
-  teacher: Teacher;
-  _id: string;
-  classDay: string[];
-  package: string;
-  preferedTeacher: string;
-  totalHourse: number;
-  startDate: string;
-  endDate: string;
-  startTime: string[];
-  endTime: string[];
-  scheduleStatus: string;
-  status: string;
-  createdBy: string;
-  createdDate: string;
-  lastUpdatedDate: string;
-  __v: number;
-}
 
 interface ApiResponse {
   totalCount: number;
-  students: Schedule[];
+  assignments: Assignment[];
 }
 
-const AllStudents = () => {
-  const router = useRouter();
+export interface Assignment {
+  _id: string;
+  studentId: string;
+  studentName: string;
+  assignmentName: string;
+  assignedTeacher: string;
+  assignedTeacherId: string;
+  assignmentType: string;
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question: string;
+  hasOptions: boolean;
+  options: {
+    optionOne: string;
+    optionTwo: string;
+    optionThree: string;
+    optionFour: string;
+  };
+  audioFile: string;
+  uploadFile: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  level: string;
+  courses: string;
+  assignedDate: string;
+  dueDate: string;
+  answer: string;
+  answerValidation: string;
+  assignmentStatus: string;
+  sessionClassType?: string;
+  __v: number;
+}
+
+const getStatusStyle = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "active":
+      return "bg-green-100 text-green-700";
+    case "pending":
+      return "bg-yellow-100 text-yellow-700";
+    case "inactive":
+      return "bg-red-100 text-red-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+};
+
+const StudentList = () => {
+  const [activeTab, setActiveTab] = useState<string>("Regular");
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [regularStudents, setRegularStudents] = useState<Assignment[]>([]);
+  const [groupStudents, setGroupStudents] = useState<Assignment[]>([]);
+  const [regularCount, setRegularCount] = useState(0);
+  const [groupCount, setGroupCount] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [uniqueStudentSchedules, setUniqueStudentSchedules] = useState<Schedule[]>([]);
+  const router = useRouter();
 
+  const handleClick = () => {
+    console.log('clicked')
+    router.push("/teacher/ui/addingnewassignment");
+  };
+
+const handleViewProfile = (studentId: string) => {
+  localStorage.setItem("studentManageID", studentId);
+  router.push(`/teacher/ui/managestudentview`); // ✅ Add leading slash
+};
+
+
+  const toggleDropdown = (assignmentId: string) => {
+    setOpenDropdownId((prev) => (prev === assignmentId ? null : assignmentId));
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const teacherIdToFilter = localStorage.getItem("TeacherPortalId");
+        const teacherId = localStorage.getItem("TeacherPortalId");
+        const token = localStorage.getItem("TeacherAuthToken");
 
-        if (!teacherIdToFilter) {
-          console.error("No teacher ID found in localStorage.");
+        if (!token || !teacherId) {
+          console.warn("Missing teacherId or token");
           return;
         }
-        const token =
-    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule",{
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+        const res = await axios.get<ApiResponse>(
+          "http://localhost:5001/allAssignment",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-        });
-
-        const filteredData = response.data.students.filter(
-          (item) => item.teacher.teacherId === teacherIdToFilter
+          }
         );
 
-        const studentScheduleMap = new Map<string, Schedule>();
+        const teacherAssignments = res.data.assignments.filter(
+          (a) => a.assignedTeacherId === teacherId
+        );
 
-        filteredData.forEach((item) => {
-          studentScheduleMap.set(item.student.studentId, item);
-        });
+        const uniqueMap = new Map<string, Assignment>();
+        for (const assign of teacherAssignments) {
+          if (!uniqueMap.has(assign.studentId)) {
+            uniqueMap.set(assign.studentId, assign);
+          }
+        }
 
-        const uniqueSchedules = Array.from(studentScheduleMap.values());
+        const uniqueList = Array.from(uniqueMap.values());
 
-        setUniqueStudentSchedules(uniqueSchedules);
+        const regular = uniqueList.filter(
+          (student) =>
+            student.sessionClassType?.toUpperCase() === "REGULARCLASS"
+        );
+        const group = uniqueList.filter(
+          (student) => student.sessionClassType?.toUpperCase() === "GROUPCLASS"
+        );
+
+        setRegularStudents(regular);
+        setGroupStudents(group);
+        setRegularCount(regular.length);
+        setGroupCount(group.length);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching assignments", error);
       }
     };
 
     fetchData();
   }, []);
 
-  const handleviewcontrol=(studentId:string)=>{
-    router.push(`/teacher/ui/managestudentview`);
-    setOpenDropdownId(null);
-    localStorage.setItem('studentviewcontrol',studentId);
-  };
-  // Calculate the current students to display based on the current page
-  const indexOfLastStudent = currentPage * itemsPerPage;
-  const indexOfFirstStudent = indexOfLastStudent - itemsPerPage;
-
-  // Function to handle page change
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
+  const studentsToDisplay =
+    activeTab === "Regular" ? regularStudents : groupStudents;
 
   return (
     <BaseLayout>
-      <div className="p-8 mx-auto w-[1250px] pr-16">
-      <div className="p-2">
-          <IoArrowBackCircleSharp 
-            className="text-[25px] bg-[#fff] rounded-full text-[#012a4a] cursor-pointer" 
-            onClick={() => router.push('assignment')}
-          />
-        </div>
-        <h1 className="text-2xl font-semibold text-gray-800 p-2 mb-10">Assignment</h1>
-        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px] overflow-y-scroll scrollbar-none flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="p-4 justify-between flex font-medium text-gray-700">Students List</h2>
-                <div className="relative shadow-ld rounded-xl">
-                    <span className="absolute left-3 top-4 -translate-y-1/2 text-gray-500 w-3 h-3">
-                    <BsSearch />
-                    </span>
-                    <input
-                    type="text"
-                    placeholder="Search"
-                    className="pl-9 pr-4 py-1.5 bg-[#FAFAFA] shadow-lg rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#374557] w-56"
-                    />
-                </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="table-auto w-full">
-                <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
-                  <tr>
-                    <th className="px-6 py-3 text-center">Assigned ID</th>
-                    <th className="px-6 py-3 text-center">Name</th>
-                    <th className="px-6 py-3 text-center">Student ID</th>
-                    <th className="px-6 py-3 text-center">Level</th>
-                    <th className="px-6 py-3 text-center">Courses</th>
-                    <th className="px-6 py-3 text-center">Assigned Date</th>
-                    <th className="px-6 py-3 text-center">Due Date</th>
-                    <th className="px-6 py-3 text-center">Status</th>
-                    <th className="px-6 py-3 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {uniqueStudentSchedules.slice(0,3).map((student) => (
-                    <tr
-                      key={student._id}
-                      className="text-[12px] font-medium mt-2"
-                        style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}
-                    >
-                      <td className="px-6 py-2 text-center">{student._id}</td>
-                      <td className="px-6 py-2 text-center">{student.student.studentFirstName}</td>
-                      <td className="px-6 py-2 text-center">{student._id}</td>
-                      <td className="px-6 py-2 text-center">1</td>
-                      <td className="px-6 py-2 text-center">{student.package}</td>
-                      <td className="px-6 py-2 text-center">{new Date(student.startDate).toLocaleDateString()}</td>
-                      <td className="px-6 py-2 text-center">{new Date(student.endDate).toLocaleDateString()}</td>
-                      <td className="px-6 py-2 text-center">
-                        <span
-                          className={`text-green-600 border bg-green-100 px-1 py-[3px] rounded-lg text-[11px] ${student.status}`}
-                        >
-                          {student.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-2 text-center">
-                        <div className="relative">
-                          <button 
-                            className="text-gray-500 hover:text-gray-700"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenDropdownId(openDropdownId === student._id ? null : student._id);
-                            }}
-                          >
-                            <BsThreeDots />
-                          </button>
-                          {openDropdownId === student._id && (
-                            <button 
-                              className="absolute right-0 mr-10 w-24 shadow-2xl bg-white rounded-md  z-10 border border-gray-200"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <button
-                                className="block w-full text-center px-4 py-1 text-[12px] text-black hover:bg-gray-100 cursor-pointer"
-                                onClick={() => {
-                                  handleviewcontrol(student.student.studentId)
-
-                                }}
-                              >
-                                View
-                              </button>
-                              <button
-                                className="block w-full text-center px-4 py-1 text-[12px] text-black hover:bg-gray-100 cursor-pointer"
-                                onClick={() => setOpenDropdownId(null)}
-                              >
-                                Cancel
-                              </button>
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="flex items-center justify-between align-bottom px-4 mb-1">
-            <p className="text-[10px] text-gray-600">
-              Showing {indexOfFirstStudent + 1}-{Math.min(indexOfLastStudent, uniqueStudentSchedules.length)} of {uniqueStudentSchedules.length} data
-            </p>
-            <div className="flex space-x-2 text-[10px]">
-              {Array.from({ length: Math.ceil(uniqueStudentSchedules.length / itemsPerPage) }, (_, index) => (
+          <SupervisorHeader currentSection="Dashboard" />
+    
+   <div className="md:p-0 mx-auto w-full">
+      <div className="flex flex-col h-full w-full justify-between">
+        <div className="flex flex-col">
+          {/* Tabs */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
+            <div className="flex flex-wrap gap-4 font-semibold">
+              {[
+                { type: "Regular", count: regularCount },
+                { type: "Group", count: groupCount },
+              ].map(({ type, count }) => (
                 <button
-                  key={index + 1}
-                  className={`px-3 py-1 border rounded-md ${currentPage === index + 1 ? 'bg-[#223857] text-white p-3' : 'text-gray-600 border-gray-300 hover:bg-gray-200'}`}
-                  onClick={() => handlePageChange(index + 1)}
+                  key={type}
+                  onClick={() => setActiveTab(type)}
+                  className={
+                    activeTab === type
+                      ? "text-[#576CBC] border-b-2 text-[16px] border-[#576CBC]"
+                      : "text-[#010E30] dark:text-white text-[16px]"
+                  }
                 >
-                  {index + 1}
+                  {type} Students ({count})
                 </button>
               ))}
             </div>
           </div>
- 
+
+          {/* Search + Filter */}
+          <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg">
+            <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by keyword"
+                  className="bg-transparent outline-none text-[15px] w-52 py-3 "
+                  // value={searchText}
+                  // onChange={(e) => handleSearch(e.target.value)}
+                />
+              </div>
+
+              <div
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                // onClick={() => setIsFilterModalOpen(true)}
+              >
+                {/* <BsFilterLeft /> */}
+                <MdTune className="w-4 h-4" />
+                <span>Filter</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                <span className="text-left -ml-60 ">
+                  Showing {studentsToDisplay.length} of{" "}
+                  {studentsToDisplay.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Table */}
+            <table className="table-fixed w-full">
+              <thead className="text-[12px] bg-[#4C6993] text-white">
+                <tr>
+                  {[
+                    "Assignment ID",
+                    "Student Name",
+                    "Student ID",
+                    "Level",
+                    "Course",
+                    "Assignment Name",
+                    "Assigned Date",
+                    "Due Date",
+                    "Status",
+                    "Action",
+                  ].map((header, idx) => (
+                    <th
+                      key={idx}
+                      className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {studentsToDisplay.map((student, index) => (
+                  <tr
+                    key={index}
+                    className={`text-[12px] ${
+                      index % 2 === 0
+                        ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                        : "bg-[#F8F8F8] dark:bg-[#303030]"
+                    }`}
+                  >
+                    <td className="px-3 py-3 break-words">{student._id}</td>
+                    <td className="px-3 py-3 text-[#3D8FDE] font-medium">
+                      {student.studentName}
+                    </td>
+                    <td className="px-3 py-3 whitespace-normal break-all w-40">
+                      {student.studentId}
+                    </td>{" "}
+                    <td className="px-3 py-3">{student.level}</td>
+                    <td className="px-3 py-3">{student.courses}</td>
+                    <td className="px-3 py-3">{student.assignmentName}</td>
+                    <td className="px-3 py-3">
+                      {new Date(student.assignedDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-3">
+                      {new Date(student.dueDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-3">
+                      <span
+                        className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
+                          student.status
+                        )}`}
+                      >
+                        {student.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 text-center relative">
+                      <button
+                        className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
+                        onClick={() => toggleDropdown(student._id)}
+                      >
+                        <BsThreeDotsVertical />
+                      </button>
+                      {openDropdownId === student._id && (
+                        <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200b dark:bg-[#343434]">
+                          <button
+                            className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                            onClick={() => handleViewProfile(student.studentId)}
+                          >
+                            View Profile
+                          </button>
+                          <button className="block w-full px-4 py-1 text-[12px] 0 dark:text-[#ffff]">
+                            Assign
+                          </button>
+                          <button
+                            className="block w-full px-4 py-1 text-[12px]  dark:text-[#ffff]"
+                            onClick={() => setIsModalOpen(true)}
+                          >
+                            New Assignment
+                          </button>
+                          {isModalOpen && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ">
+                              <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border  flex flex-col justify-between text-left dark:bg-[#343434]">
+                                <div>
+                                  <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">
+                                    Assign
+                                  </h2>
+
+                                  <div className="mb-4">
+                                    <label className="text-sm block mb-1 dark:text-[#fff]">
+                                      Title
+                                    </label>
+                                    <input
+                                      type="text"
+                                      placeholder="Enter title"
+                                      className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                    />
+                                  </div>
+
+                                  <div className="flex gap-4 mb-4">
+                                    <div className="flex-1">
+                                      <label className="text-sm block mb-1 dark:text-[#fff]">
+                                        Assigned Date
+                                      </label>
+                                      <input
+                                        type="date"
+                                        className="w-full border  rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                      />
+                                    </div>
+                                    <div className="flex-1">
+                                      <label className="text-sm block mb-1 dark:text-[#fff]">
+                                        Due Date
+                                      </label>
+                                      <input
+                                        type="date"
+                                        className="w-full border  rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div className="mb-4">
+                                    <label className="text-sm block mb-1 dark:text-[#fff]">
+                                      Comment
+                                    </label>
+                                    <textarea
+                                      placeholder="Write your comment here..."
+                                      className="w-full border border-gray-300 rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                    ></textarea>
+                                  </div>
+                                </div>
+
+                                <div className="flex justify-end gap-3">
+                                  <button
+                                    className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
+                                    onClick={() => setIsModalOpen(false)}
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
+                                  onClick={handleClick}>
+                                    Create Assignment
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* View All */}
+          <div className="mt-4 text-right">
+            <Link
+              href="/teacher/ui/allstudents"
+              className="text-[#576CBC] text-[14px] border border-[#576CBC] px-3 py-1 rounded-md bg-white"
+            >
+              View All
+            </Link>
+          </div>
         </div>
       </div>
+    </div>
     </BaseLayout>
   );
 };
 
-export default AllStudents;
+export default StudentList;

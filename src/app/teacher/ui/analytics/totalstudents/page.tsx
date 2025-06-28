@@ -11,69 +11,79 @@ import Pagination from "@/components/Pagination";
 interface SimpleStudent {
   studentId: string;
   name: string;
+  studentDetails: {
+    student: {
+      learningInterest?: string;
+      languageLevel?: string;
+    
+    };
+      studentRate?:string;
+    classType?: string;
+    classStartDate?: string;
+    status?: string;
+  };
 }
 
-
 const Totalstudents = () => {
+  const [students, setStudents] = useState<SimpleStudent[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
 
-const [students, setStudents] = useState<SimpleStudent[]>([]);
-const [searchTerm, setSearchTerm] = useState("");
-const [currentPage, setCurrentPage] = useState(1);
-const itemsPerPage = 10;
+  const teacherId = localStorage.getItem("TeacherPortalId");
+console.log("Teacher ID used in API:", teacherId);
 
 
-useEffect(() => {
-  const fetchStudents = async () => {
-    try {
-      const teacherId = localStorage.getItem("TeacherPortalId");
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const teacherId = localStorage.getItem("TeacherPortalId");
 
-      if (!teacherId) {
-        console.error("No teacher ID found in localStorage.");
-        return;
-      }
-
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("TeacherAuthToken")
-          : null;
-
-      if (!token) {
-        console.error("❌ TeacherAuthToken not found");
-        return;
-      }
-
-      const response = await axios.get<SimpleStudent[]>(
-        "http://localhost:5001/classShedule/teacher/list",
-        {
-          params: { teacherId },
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+        if (!teacherId) {
+          console.error("No teacher ID found in localStorage.");
+          return;
         }
-      );
 
-      setStudents(response.data);
-    } catch (error) {
-      console.error("Error fetching students:", error);
-    }
-  };
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherAuthToken")
+            : null;
 
-  fetchStudents();
-}, []);
+        if (!token) {
+          console.error("❌ TeacherAuthToken not found");
+          return;
+        }
 
+        const response = await axios.get<SimpleStudent[]>(
+          "http://localhost:5001/classShedule/teacher/list",
+          {
+            params: { teacherId },
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
+        setStudents(response.data);
+      } catch (error) {
+        console.error("Error fetching students:", error);
+      }
+    };
 
-const filteredData = students.filter((student) =>
-  student.name.toLowerCase().includes(searchTerm.toLowerCase())
-);
+    fetchStudents();
+  }, []);
 
-const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-const currentData = filteredData.slice(
-  (currentPage - 1) * itemsPerPage,
-  currentPage * itemsPerPage
-);
+  const filteredData = students.filter((student) =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const currentData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div>
@@ -120,7 +130,7 @@ const currentData = filteredData.slice(
                         Student ID
                       </th>
                       <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0] pl-10">
-                         Name
+                        Name
                       </th>
                       <th className="text-left px-4 py-3 border border-[#4C6993] dark:border-[#6087C0]">
                         Course
@@ -140,8 +150,8 @@ const currentData = filteredData.slice(
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-[#343434] dark:divide-gray-600">
-                    {currentData.length > 0 ? (
-                      currentData.map((student) => (
+                    {students.length > 0 ? (
+                      students.map((student) => (
                         <tr
                           key={student.studentId}
                           className="text-[12px] h-[50px] bg-[#fff] dark:bg-[#2C2C2C]"
@@ -153,34 +163,35 @@ const currentData = filteredData.slice(
                             {student.name}
                           </td>
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {/* {student.course.courseName} */}
+                            {student.studentDetails?.student?.learningInterest}
                           </td>
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {/* {student.sessionClassType} */}
+                            {student.studentDetails?.classType}
                           </td>
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            {/* {new Date(student.startDate).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "2-digit",
-                                year: "numeric",
-                              }
-                            )} */}
+                            {student.studentDetails?.classStartDate
+                              ? new Date(
+                                  student.studentDetails.classStartDate
+                                ).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                })
+                              : "-"}
                           </td>
                           <td className="px-4 py-2 text-[#17243E] dark:text-[#FDFDFD]">
-                            
+                            {student.studentDetails.studentRate}
                           </td>
                           <td className="px-3 py-2 text-left">
-                            {/* <span
-                              className={`text-[10px] font-semibold px-5 py-1 rounded-lg  ${
-                                student.status === "Active"
+                            <span
+                              className={`text-[10px] font-semibold px-5 py-1 rounded-lg ${
+                                student.studentDetails?.status === "Active"
                                   ? "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px]"
                                   : "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white"
                               }`}
                             >
-                              {student.status}
-                            </span> */}
+                              {student.studentDetails?.status}
+                            </span>
                           </td>
                         </tr>
                       ))
@@ -197,20 +208,17 @@ const currentData = filteredData.slice(
                   </tbody>
                 </table>
               </div>
-            
             </div>
-               <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
       </BaseLayout>
     </div>
   );
 };
-
-
 
 export default Totalstudents;
