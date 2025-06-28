@@ -11,8 +11,8 @@ import { BsFillCalendar2WeekFill } from "react-icons/bs";
 interface Event {
   id: string;
   title: string;
-  start: Date;
-  end: Date;
+  start: string;
+  end: string;
   description: string;
   date: string;
 }
@@ -54,8 +54,8 @@ const SchedulePage = () => {
         const mappedEvents = data.academicCoach.map((item: any) => ({
           id: item._id,
           title: item.subject,
-          start: new Date(item.scheduledStartDate),
-          end: new Date(item.scheduledEndDate),
+          start: item.scheduledFrom,
+          end: item.scheduledTo,
           description: item.description,
           date: moment(item.scheduledStartDate).format("YYYY-MM-DD"),
         }));
@@ -365,8 +365,8 @@ const SchedulePage = () => {
                       {dayEvents[0].title}
                     </div>
                     <div className="text-[8px] truncate px-1">
-                      {moment(dayEvents[0].start).format("h:mm A")} -{" "}
-                      {moment(dayEvents[0].end).format("h:mm A")}
+                     {dayEvents[0].start} -
+                     {dayEvents[0].end}
                     </div>
                   </div>
                 )}
@@ -455,12 +455,12 @@ const SchedulePage = () => {
                               
                               <div className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
                               <FaClock size={10} />
-                                {moment(item.start).format("h:mm A")} -{" "}
-                                {moment(item.end).format("h:mm A")}
+                                {(item.start)} -{" "}
+                                {(item.end)}
                               </div>
                               <span className="text-[9px] text-gray-500 flex items-center gap-1 dark:text-[#f4f4f4]">
                               <BsFillCalendar2WeekFill  size={10} />{" "}
-                                {moment(item.start).format("DD MMM YYYY")}
+                                {moment(item.date).format("DD MMM YYYY")}
                               </span>
                               </div>
                             </div>
