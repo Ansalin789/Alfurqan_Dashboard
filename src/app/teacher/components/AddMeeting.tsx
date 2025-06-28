@@ -11,7 +11,7 @@ type Props = {
   readonly onClose: () => void;
 };
 
-interface Teacher {
+interface Participants {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
@@ -32,51 +32,67 @@ export default function AddMeeting({ onClose }: Props) {
   const [failedMessage, setFailedMessage] = useState("");
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("All");
-  const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
+const [selectedTeachers, setSelectedTeachers] = useState<Participants[]>([]);
+const [Teachers, setTeachers] = useState<Participants[]>([]);
 
-  useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const teacherId = localStorage.getItem("TeacherPortalId") ?? "";
-        const token = localStorage.getItem("TeacherAuthToken") ?? "";
 
-        const params: Record<string, string> = {
-          teacherId,
-        };
 
-        if (activeTab !== "All") {
-          params.teacherGroup = `${activeTab} Teacher`;
+useEffect(() => {
+  if (!open) return; // ✅ Only run when modal is open
+
+  const fetchTeachers = async () => {
+    try {
+      const teacherId = localStorage.getItem("TeacherPortalId") ?? "";
+      const token = localStorage.getItem("TeacherAuthToken") ?? "";
+
+      const params: Record<string, string> = {
+        teacherId,
+      };
+
+      const response = await axios.get(
+        "http://localhost:5001/classShedule/teacher/list",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params,
         }
+      );
 
-        const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/teacher",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            params,
-          }
-        );
+      const allTeachers = response.data.teachers ?? [];
+      console.log("Teachers received:", allTeachers);
 
-        setTeachers(response.data.teachers ?? []);
-      } catch (error) {
-        console.error("Error fetching teachers", error);
-        setTeachers([]);
-      }
-    };
+      const filteredTeachers =
+        activeTab === "All"
+          ? allTeachers
+          : allTeachers.filter(
+              (teacher: any) =>
+                teacher.studentDetails?.learningInterest?.toLowerCase() ===
+                activeTab.toLowerCase()
+            );
 
-    fetchTeachers();
-  }, [activeTab]);
-
-  const toggleTeacher = (teacher: Teacher) => {
-    setSelectedTeachers((prev) => {
-      const exists = prev.some((t) => t.teacherId === teacher.teacherId);
-      return exists
-        ? prev.filter((t) => t.teacherId !== teacher.teacherId)
-        : [...prev, teacher];
-    });
+      setTeachers(filteredTeachers);
+    } catch (error) {
+      console.error("Error fetching teachers", error);
+      setTeachers([]);
+    }
   };
+
+  fetchTeachers();
+}, [open, activeTab]); // ✅ make sure `open` is also in the dependency
+
+
+
+
+const toggleTeacher = (teacher: Participants) => {
+  setSelectedTeachers((prev) => {
+    const exists = prev.some((t) => t.teacherId === teacher.teacherId);
+    return exists
+      ? prev.filter((t) => t.teacherId !== teacher.teacherId)
+      : [...prev, teacher];
+  });
+};
+
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -110,28 +126,28 @@ export default function AddMeeting({ onClose }: Props) {
       startTime,
       endTime,
       meetingStatus: "Scheduled",
-      supervisor: {
-        supervisorId: localStorage.getItem("SupervisorPortalId"),
-        supervisorName: localStorage.getItem("SupervisorPortalName"),
-        supervisorEmail: "arthi.blackstoneinfomatics@gmail.com",
-        supervisorRole: "SUPERVISOR",
+      teacher: {
+        teacher: localStorage.getItem("TeacherPortalId"),
+       teacherName: localStorage.getItem("TeacherPortalName"),
+        teacherEmail: localStorage.getItem("TeacherPortalEmail"),
+        teacherrRole: "Teacher",
       },
-      teacher: teacherPayload,
+      participants: teacherPayload,
       meetingminutes: " ",
       description,
       status: "Active",
       createdDate,
-      createdBy: localStorage.getItem("SupervisorPortalName"),
+      createdBy: localStorage.getItem("TeacherPortalName"),
     };
 
     try {
-      const token = localStorage.getItem("SupervisorAuthToken");
+      const token = localStorage.getItem("TeacherAuthToken");
       if (!token) {
-        throw new Error("SupervisorAuthToken not found");
+        throw new Error("TeacherAuthToken not found");
       }
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/addMeeting",
+        "http://localhost:5001/teacherMeeting", // ✅ NEW LOCAL API ENDPOINT
         requestData,
         {
           headers: {
@@ -187,8 +203,9 @@ export default function AddMeeting({ onClose }: Props) {
         {/* Meeting Name */}
         <div className="mb-4">
           <label
-          htmlFor="meetingname"
-          className="block text-sm text-gray-600 dark:text-white mb-1">
+            htmlFor="meetingname"
+            className="block text-sm text-gray-600 dark:text-white mb-1"
+          >
             Meeting Name
           </label>
           <input
@@ -203,8 +220,9 @@ export default function AddMeeting({ onClose }: Props) {
         {/* Add Participants */}
         <div className="mb-4">
           <label
-          htmlFor="add participants"
-          className="block text-sm text-gray-600 dark:text-white mb-1">
+            htmlFor="add participants"
+            className="block text-sm text-gray-600 dark:text-white mb-1"
+          >
             Add Participants
           </label>
           <div className="relative">
@@ -222,14 +240,75 @@ export default function AddMeeting({ onClose }: Props) {
               <Plus size={18} />
             </button>
           </div>
+          <Dialog
+            open={open}
+            onClose={() => setOpen(false)}
+            className="relative z-50"
+          >
+            <div className="fixed inset-0 bg-black/50" />
+            <div className="fixed inset-0 flex items-center justify-center p-4">
+              <section className="bg-white dark:bg-[#1D1D1D] rounded-lg p-5 w-full max-w-md">
+                <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+                  Select Participants
+                </h2>
+                <div className="flex gap-2 mb-4">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`px-3 py-2 text-xs rounded ${
+                        activeTab === tab
+                          ? "bg-[#576CBC] text-white"
+                          : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white"
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto text-sm">
+                  {Teachers.map((teacher) => (
+                    <label
+                      key={teacher.teacherId}
+                      className="flex items-center gap-2"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedTeachers.includes(teacher)}
+                        onChange={() => toggleTeacher(teacher)}
+                      />
+                      <span className="dark:text-white">
+                        {teacher.teacherName}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex justify-end mt-4 gap-2">
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="px-3 py-1 border text-[#576CBC] rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="px-4 py-1 bg-[#576CBC] text-white rounded"
+                  >
+                    Done
+                  </button>
+                </div>
+              </section>
+            </div>
+          </Dialog>
         </div>
 
         {/* Date and Time */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label
-            htmlFor="meetingdate"
-            className="block text-sm text-gray-600 dark:text-white mb-1">
+              htmlFor="meetingdate"
+              className="block text-sm text-gray-600 dark:text-white mb-1"
+            >
               Meeting Date
             </label>
             <input
@@ -241,8 +320,9 @@ export default function AddMeeting({ onClose }: Props) {
           </div>
           <div>
             <label
-            htmlFor="meetingtime"
-            className="block text-sm text-gray-600 dark:text-white mb-1">
+              htmlFor="meetingtime"
+              className="block text-sm text-gray-600 dark:text-white mb-1"
+            >
               Meeting Time
             </label>
             <div className="flex items-center gap-2">
@@ -266,8 +346,9 @@ export default function AddMeeting({ onClose }: Props) {
         {/* Description */}
         <div className="mb-6">
           <label
-          htmlFor="description"
-          className="block text-sm text-gray-600 dark:text-white mb-1">
+            htmlFor="description"
+            className="block text-sm text-gray-600 dark:text-white mb-1"
+          >
             Add Description
           </label>
           <textarea
