@@ -1040,7 +1040,7 @@ const TeacherDetails = () => {
                 <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
                   Status
                 </th>
-                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] w-[90px] min-w-[90px] max-w-[90px]">
                   Action
                 </th>
               </tr>
@@ -1086,21 +1086,21 @@ const TeacherDetails = () => {
                       {item.scheduleStatus}
                     </span>
                   </td>
-                  <td className="py-1 text-center relative" ref={dropdownRef}>
+                  <td className="py-1 text-center relative w-[90px] min-w-[90px] max-w-[90px]" ref={dropdownRef}>
                     <button
                       onClick={
                         item.scheduleStatus === "Scheduled"
                           ? () => toggleDropdown(index)
                           : undefined
                       }
-                      className={`${
+                      className={`$${
                         item.scheduleStatus === "Scheduled"
                           ? "cursor-pointer"
                           : "cursor-default"
                       }`}
                     >
                       <MoreVertical
-                        className={`w-4 h-4 ${
+                        className={`w-4 h-4 $${
                           item.scheduleStatus === "Scheduled"
                             ? "text-slate-600 dark:text-[#FDFDFD]"
                             : "text-gray-400 dark:text-gray-600 opacity-50"
@@ -1111,9 +1111,12 @@ const TeacherDetails = () => {
                     {/* Only show dropdown if status is Scheduled and activeDropdown is set */}
                     {item.scheduleStatus === "Scheduled" &&
                       activeDropdown === index && (
-                        <div className="py-1 bg-white rounded-md shadow-lg ">
+                        <div
+                          className="py-1 bg-white rounded-md shadow-lg daerk absolute right-0 top-6 z-20 w-32 min-w-[120px] max-w-[160px]  dark:bg-[#252525]"
+                          style={{ minWidth: '120px' }}
+                        >
                           <button
-                            className={`w-full text-left px-4 py-2 text-[12px] ${
+                            className={`w-full text-left px-4 py-2 text-[12px] $${
                               teacherRescheduleWrite
                                 ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
                                 : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
