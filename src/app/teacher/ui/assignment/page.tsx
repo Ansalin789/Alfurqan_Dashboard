@@ -10,7 +10,7 @@ const page = () => {
         <TeacherHeader currentSection="Assignments" />
 
       {/* Page wrapper */}
-      <div className=" min-h-screen py-px-4 md:px-8">
+      <div className=" min-h-screen py-px-4 ">
         {/* Dashboard Title */}
 
         {/* Assignment Cards Section */}

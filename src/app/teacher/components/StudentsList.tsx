@@ -79,9 +79,11 @@ const StudentList = () => {
     router.push("/teacher/ui/addingnewassignment");
   };
 
-  const handleViewProfile = (studentId: string) => {
-    router.push(`/teacher/ui/managestudentview/${studentId}`);
-  };
+const handleViewProfile = (studentId: string) => {
+  localStorage.setItem("studentManageID", studentId);
+  router.push(`/teacher/ui/managestudentview`); // ✅ Add leading slash
+};
+
 
   const toggleDropdown = (assignmentId: string) => {
     setOpenDropdownId((prev) => (prev === assignmentId ? null : assignmentId));

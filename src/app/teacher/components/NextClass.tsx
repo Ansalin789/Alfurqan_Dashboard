@@ -153,21 +153,21 @@ const NextClass = () => {
   return (
     <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white">
       <div className="items-center p-2 px-8">
-        <h3 className="text-[16px] font-medium pt-3">
+        <h3 className="text-[13px] font-medium pt-3">
           Your Next Class Starts In
         </h3>
         <div className="flex items-center space-x-4 py-2">
           <div className="flex items-center space-x-2">
             <FaUserAlt className="w-[16px]" />
-            <p className="text-[16px]">Prasanna{classData?.student.name}</p>
+            <p className="text-[13px]">Prasanna{classData?.student.name}</p>
           </div>
           <div className="flex items-center space-x-2">
             <PiChalkboardLight  className="w-[16px]" />
-            <p className="text-[16px]">Session 22{classData?.student.name}</p>
+            <p className="text-[13px]">Session 22{classData?.student.name}</p>
           </div>
           <div className="flex items-center space-x-2">
             <AiOutlineClockCircle className="w-[16px]" />
-            <p className="text-[16px]">9.00 AM{classData?.scheduledFrom}</p>
+            <p className="text-[13px]">9.00 AM{classData?.scheduledFrom}</p>
           </div>
         </div>
         {classData?.scheduledStartDate && (

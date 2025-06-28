@@ -24,7 +24,7 @@ const SidebarItems = [
   { name: 'Schedule', href: '/teacher/ui/schedule', icon: FaRegCalendarAlt },
   {
     name: 'Live Class',
-    href: '/teacher/ui/liveclass',
+    href: '/teacher/ui/trailclass',
     icon: () => (
       <Image
         src="/assets/images/group-add.svg"
