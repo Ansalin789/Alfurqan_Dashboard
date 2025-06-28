@@ -25,6 +25,8 @@ const searchParams = useSearchParams();
   const [emailNotExist, setEmailNotExist] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [username, setUsername] = useState("");
+  const [userId, setUserId] = useState("");
+
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showError, setShowError] = useState(false);
@@ -83,9 +85,9 @@ const searchParams = useSearchParams();
     setError(""); // Clear previous errors
     try {
       const data = await signIn(username, password);
-      const { accessToken, role, _id, userName } = data;
+      const { accessToken, role, userId, userName } = data;
       localStorage.setItem("TeacherAuthToken", accessToken);
-      localStorage.setItem("TeacherPortalId", _id);
+      localStorage.setItem("TeacherPortalId", userId);
       localStorage.setItem("TeacherPortalName", userName);
       const authToken = localStorage.getItem("TeacherAuthToken");
       console.log(accessToken);
