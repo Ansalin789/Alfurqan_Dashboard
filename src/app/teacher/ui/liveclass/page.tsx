@@ -72,12 +72,13 @@ export default function LiveClass() {
   const [showPopup, setShowPopup] = useState(false);
   const [ratings, setRatings] = useState([0, 0, 0]);
   const [feedback, setFeedback] = useState("");
-  const [startTime, setStartTime] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState<string>("");
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
 const params = useParams();
-const id = params.id;
+const id = "685d21de36b68d13cc1f69f7";
+const startTimeRef = useRef<string>("");
 
  
   useEffect(() => {
@@ -100,8 +101,8 @@ const id = params.id;
           return;
         }
         console.log("teacherid", teacherId);
-        const response = await axios.get<ApiResponse>(
-          `https://api.blackstoneinfomaticstech.com/classShedule/${id}`,
+        const response = await axios.get(
+          `https://api.blackstoneinfomaticstech.com/classShedule/685d21de36b68d13cc1f69f7`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -110,9 +111,9 @@ const id = params.id;
           }
         );
 
-        console.log("Raw API Response:", response.data.classSchedule); // Check data format
+        console.log("Raw API Response:", response.data); // Check data format
 
-        const nextClass =  response.data.classSchedule;
+        const nextClass =  response.data;
 
         console.log("Filtered Next Class:", nextClass); // Debug if nextClass is valid
 
@@ -152,11 +153,11 @@ const endCallTime = new Date().toLocaleTimeString([], {
 });
 
 setShowFeedback(true);
-
-console.log("startTime:", startTime);
+const startTimeUsed = startTimeRef.current;
+console.log("startTime:", startTimeUsed);
 console.log("endTime:", endCallTime);
 
-if (!classData?._id || !startTime) {
+if (!classData?._id || !startTimeUsed) {
   console.error("Missing class data or start time.");
   return;
 }
@@ -164,13 +165,27 @@ if (!classData?._id || !startTime) {
 const scheduledDate = classData.startDate; // "YYYY-MM-DD"
 const scheduledTime = classData.startTime?.[0]; // "HH:mm"
 const scheduledStart = dayjs(`${scheduledDate}T${scheduledTime}`);
-const [joinHour, joinMinute] = startTime.split(":").map(Number);
-const actualJoin = dayjs(`${scheduledDate}T${joinHour.toString().padStart(2, "0")}:${joinMinute.toString().padStart(2, "0")}`);
+let joinHour = 0;
+let joinMinute = 0;
+
+if (startTimeUsed && startTimeUsed.includes(":")) {
+  const [h, m] = startTimeUsed.split(":").map(Number);
+  if (!isNaN(h) && !isNaN(m)) {
+    joinHour = h;
+    joinMinute = m;
+  } else {
+    console.warn("⛔ Invalid parsed start time (NaN):", h, m);
+  }
+} else {
+  console.warn("⛔ Invalid startTimeUsed format:", startTimeUsed);
+}
+const actualJoin = dayjs(`${scheduledDate}T${String(joinHour).padStart(2, "0")}:${String(joinMinute).padStart(2, "0")}`);
 const diffMinutes = actualJoin.diff(scheduledStart, "minute");
 const teacherAbsent = diffMinutes >= 15;
 console.log("⏱️ Teacher joined late by:", diffMinutes, "min");
 console.log("🚫 Teacher is", teacherAbsent ? "ABSENT" : "PRESENT");
-const student = attendance[0]; // only one student
+const student = attendanceRef.current[0]; // only one student
+console.log("stuiudent",student);
 const studentJoined = student.joinTime && student.joinTime !== "";
 const parsedStudentJoin = studentJoined
   ? dayjs(`${scheduledDate}T${student.joinTime}`)
@@ -178,6 +193,7 @@ const parsedStudentJoin = studentJoined
 const studentLateBy = parsedStudentJoin
   ? parsedStudentJoin.diff(scheduledStart, "minute")
   : Infinity;
+  console.log("student late by ",studentLateBy);
 const studentAbsent = !studentJoined || studentLateBy > 15;
 const studentAttendee = studentAbsent ? "absent" : "present";
 const isStudentPresent = studentAttendee === "present";
@@ -186,7 +202,7 @@ let sessionsEndtime = "00:00";
 
 if (!teacherAbsent) {
   if (isStudentPresent) {
-    sessionStarttime = startTime;
+    sessionStarttime = startTimeUsed;
     sessionsEndtime = endCallTime;
   } else {
     sessionStarttime = classData.startTime[0];
@@ -563,13 +579,19 @@ if (!teacherAbsent) {
 
       console.log("🟢 New participant joined:", { name, studentId });
 
-      setAttendance((prev) =>
-        prev.map((a) =>
-          a.studentId === studentId
-            ? { ...a, id: event.id, joined: true, joinTime }
-            : a
-        )
-      );
+       const updated = attendanceRef.current.map((a) =>
+    a.studentId === studentId
+      ? {
+          ...a,
+          id: event.id,
+          joined: true,
+          joinTime: joinTime,
+          startTime: joinTime,
+        }
+      : a
+  );
+  setAttendance(updated);
+  console.log(updated);
     }
   );
 
@@ -604,9 +626,11 @@ if (!teacherAbsent) {
       minute: "2-digit",
       hour12: false, 
     });
+     startTimeRef.current = startCallTime;     // ✅ store in ref
+  setStartTime(startCallTime); 
 
     console.log("✅ Teacher joined, call started at", startCallTime);
-    setStartTime(startCallTime);
+   
 
     // ✅ Handle already-present participants (students who joined before teacher)
     const existingParticipants = externalApi.getParticipantsInfo();
