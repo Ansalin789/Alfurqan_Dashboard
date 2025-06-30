@@ -12,10 +12,86 @@ type Props = {
 };
 
 interface Participants {
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
-  attendee: string;
+  studentId: string;
+  name: string;
+  studentDetails: {
+    student: {
+      studentId: string;
+      studentFirstName: string;
+      studentLastName: string;
+      studentEmail: string;
+      studentGender: string;
+      studentPhone: number;
+      studentCity: string;
+      studentCountry: string;
+      studentCountryCode: string;
+      learningInterest: string;
+      numberOfStudents: number;
+      preferredTeacher: string;
+      preferredFromTime: string;
+      preferredToTime: string;
+      timeZone: string;
+      referralSource: string;
+      preferredDate: string;
+      evaluationStatus: string;
+      status: string;
+      createdDate: string;
+      createdBy: string;
+    };
+    teacher: {
+      teacherId: string;
+      teacherName: string;
+      teacherEmail: string;
+    };
+    subscription: {
+      subscriptionName: string;
+    };
+    _id: string;
+    academicCoachId: string;
+    classType: string;
+    classDay: string[];
+    startTime: string[];
+    endTime: string[];
+    isLanguageLevel: boolean;
+    languageLevel: string;
+    isReadingLevel: boolean;
+    readingLevel: string;
+    isGrammarLevel: boolean;
+    grammarLevel: string;
+    hours: number;
+    planTotalPrice: number;
+    classStartDate: string;
+    classEndDate: string;
+    classStartTime: string;
+    classEndTime: string;
+    accomplishmentTime: string;
+    studentRate: number;
+    gardianName: string;
+    gardianEmail: string;
+    gardianPhone: string;
+    gardianCity: string;
+    gardianCountry: string;
+    gardianTimeZone: string;
+    gardianLanguage: string;
+    assignedTeacher: string;
+    studentStatus: string;
+    classStatus: string;
+    comments: string;
+    trialClassStatus: string;
+    invoiceStatus: string;
+    paymentLink: string;
+    paymentStatus: string;
+    teacherStatus: string;
+    status: string;
+    createdDate: string;
+    createdBy: string;
+    updatedDate: string;
+    updatedBy: string;
+    expectedFinishingDate: number;
+    assignedTeacherId: string;
+    assignedTeacherEmail: string;
+    __v: number;
+  };
 }
 
 const tabs = ["All", "Quran", "Arabic", "Islamic"] as const;
@@ -32,67 +108,63 @@ export default function AddMeeting({ onClose }: Props) {
   const [failedMessage, setFailedMessage] = useState("");
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("All");
-const [selectedTeachers, setSelectedTeachers] = useState<Participants[]>([]);
-const [Teachers, setTeachers] = useState<Participants[]>([]);
+  const [selectedParticipants, setSelectedParticipants] = useState<
+    Participants[]
+  >([]);
+  const [Participants, setParticipants] = useState<Participants[]>([]);
 
+  useEffect(() => {
+    if (!open) return; // ✅ Only run when modal is open
 
+    const fetchTeachers = async () => {
+      try {
+        const teacherId = localStorage.getItem("TeacherPortalId") ?? "";
+        const token = localStorage.getItem("TeacherAuthToken") ?? "";
 
-useEffect(() => {
-  if (!open) return; // ✅ Only run when modal is open
+        const params: Record<string, string> = {
+          teacherId,
+        };
 
-  const fetchTeachers = async () => {
-    try {
-      const teacherId = localStorage.getItem("TeacherPortalId") ?? "";
-      const token = localStorage.getItem("TeacherAuthToken") ?? "";
+        const response = await axios.get(
+          "http://localhost:5001/classShedule/teacher/list",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params,
+          }
+        );
 
-      const params: Record<string, string> = {
-        teacherId,
-      };
+        const allParticipants = response.data ?? [];
+        console.log("Applicants received:", allParticipants);
 
-      const response = await axios.get(
-        "http://localhost:5001/classShedule/teacher/list",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params,
-        }
-      );
+        const filteredParticipants =
+          activeTab === "All"
+            ? allParticipants
+            : allParticipants.filter(
+                (teacher: any) =>
+                  teacher.studentDetails.student.learningInterest?.toLowerCase() ===
+                  activeTab.toLowerCase()
+              );
 
-      const allTeachers = response.data.teachers ?? [];
-      console.log("Teachers received:", allTeachers);
+        setParticipants(filteredParticipants);
+      } catch (error) {
+        console.error("Error fetching teachers", error);
+        setParticipants([]);
+      }
+    };
 
-      const filteredTeachers =
-        activeTab === "All"
-          ? allTeachers
-          : allTeachers.filter(
-              (teacher: any) =>
-                teacher.studentDetails?.learningInterest?.toLowerCase() ===
-                activeTab.toLowerCase()
-            );
+    fetchTeachers();
+  }, [open, activeTab]);
 
-      setTeachers(filteredTeachers);
-    } catch (error) {
-      console.error("Error fetching teachers", error);
-      setTeachers([]);
-    }
+  const toggleTeacher = (teacher: Participants) => {
+    setSelectedParticipants((prev) => {
+      const exists = prev.some((t) => t.studentId === teacher.studentId);
+      return exists
+        ? prev.filter((t) => t.studentId !== teacher.studentId)
+        : [...prev, teacher];
+    });
   };
-
-  fetchTeachers();
-}, [open, activeTab]); // ✅ make sure `open` is also in the dependency
-
-
-
-
-const toggleTeacher = (teacher: Participants) => {
-  setSelectedTeachers((prev) => {
-    const exists = prev.some((t) => t.teacherId === teacher.teacherId);
-    return exists
-      ? prev.filter((t) => t.teacherId !== teacher.teacherId)
-      : [...prev, teacher];
-  });
-};
-
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -102,7 +174,7 @@ const toggleTeacher = (teacher: Participants) => {
       !selectedDate ||
       !startTime ||
       !endTime ||
-      selectedTeachers.length === 0
+      selectedParticipants.length === 0
     ) {
       alert("Please fill all required fields!");
       return;
@@ -111,28 +183,28 @@ const toggleTeacher = (teacher: Participants) => {
     const formattedDate = new Date(selectedDate).toISOString();
     const createdDate = new Date().toISOString();
 
-    const teacherPayload = selectedTeachers.map((teacher) => ({
-      teacherId: teacher.teacherId,
-      teacherName: teacher.teacherName,
-      teacherEmail: teacher.teacherEmail,
-      _id: teacher.teacherId,
+    const studentPayload = selectedParticipants.map((student) => ({
+      studentId: student.studentId,
+      studentName: student.name,
+      studentEmail: student.studentDetails.student.studentEmail,
+      _id: student.studentId,
       attendee: "absent",
     }));
 
     const requestData = {
       meetingId: "",
       meetingName: meetingTitle,
-      selectedDate: formattedDate,
-      startTime,
-      endTime,
+      meetingdate: formattedDate, // ✅ Changed from selectedDate
+      fromTime: startTime, // ✅ Changed from startTime
+      toTime: endTime, // ✅ Changed from endTime
       meetingStatus: "Scheduled",
       teacher: {
         teacher: localStorage.getItem("TeacherPortalId"),
-       teacherName: localStorage.getItem("TeacherPortalName"),
-        teacherEmail: localStorage.getItem("TeacherPortalEmail"),
+        teacherName: localStorage.getItem("TeacherPortalName"),
+        teacherEmail: "gomathi.blackstone@gmail.com",
         teacherrRole: "Teacher",
       },
-      participants: teacherPayload,
+      participants: studentPayload,
       meetingminutes: " ",
       description,
       status: "Active",
@@ -164,7 +236,7 @@ const toggleTeacher = (teacher: Participants) => {
           setSelectedDate("");
           setStartTime("");
           setEndTime("");
-          setSelectedTeachers([]);
+          setSelectedParticipants([]);
           setDescription("");
         }, 2000);
       }
@@ -267,19 +339,17 @@ const toggleTeacher = (teacher: Participants) => {
                   ))}
                 </div>
                 <div className="space-y-2 max-h-40 overflow-y-auto text-sm">
-                  {Teachers.map((teacher) => (
+                  {Participants.map((student) => (
                     <label
-                      key={teacher.teacherId}
+                      key={student.studentId}
                       className="flex items-center gap-2"
                     >
                       <input
                         type="checkbox"
-                        checked={selectedTeachers.includes(teacher)}
-                        onChange={() => toggleTeacher(teacher)}
+                        checked={selectedParticipants.includes(student)}
+                        onChange={() => toggleTeacher(student)}
                       />
-                      <span className="dark:text-white">
-                        {teacher.teacherName}
-                      </span>
+                      <span className="dark:text-white">{student.name}</span>
                     </label>
                   ))}
                 </div>
@@ -302,7 +372,7 @@ const toggleTeacher = (teacher: Participants) => {
           </Dialog>
         </div>
 
-        {/* Date and Time */}
+        {/* Participants */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label
@@ -318,28 +388,46 @@ const toggleTeacher = (teacher: Participants) => {
               className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
             />
           </div>
-          <div>
+
+          <div className="mt-2">
             <label
-              htmlFor="meetingtime"
-              className="block text-sm text-gray-600 dark:text-white mb-1"
+              htmlFor="uyvuhvyuc"
+              className="block text-sm text-gray-600 dark:text-white"
             >
-              Meeting Time
+              Selected Paticipants
             </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-              <span className="text-gray-500 dark:text-white">-</span>
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div>
+            <select className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
+              <option value="">Show</option>
+              {selectedParticipants.map((student: Participants) => (
+                <option key={student.studentId} value={student.name}>
+                  {student.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="meetingtime"
+            className="block text-sm text-gray-600 dark:text-white mb-1"
+          >
+            Meeting Time
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            />
+            <span className="text-gray-500 dark:text-white">-</span>
+            <input
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            />
           </div>
         </div>
 
