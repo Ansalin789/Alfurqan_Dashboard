@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
-import Modal from "react-modal";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import Pagination from "@/components/Pagination"; // use same pagination as TrailManagement
 
 interface Student {
   studentId: string;
@@ -63,12 +63,8 @@ const ScheduledClasses = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const teacherId = "685bfa19c3ca01ce33f47cf8";
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("TeacherAuthToken")
-            : null;
-
+        const teacherId = localStorage.getItem("TeacherPortalId");
+        const token = localStorage.getItem("TeacherAuthToken");
         if (!token || !teacherId) return;
 
         const response = await axios.get<ApiResponse>(
@@ -110,42 +106,39 @@ const ScheduledClasses = () => {
     fetchClasses();
   }, []);
 
-  const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
+  const dataToShow: ClassData[] =
+    activeTab === "upcoming" ? upcomingClasses : completedData;
 
   useEffect(() => {
     setFilteredClasses(dataToShow);
+    setSearchQuery("");
+    setCurrentPage(1);
   }, [activeTab, upcomingClasses, completedData]);
-
-  const currentItems = filteredClasses.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    const source = activeTab === "upcoming" ? upcomingClasses : completedData;
-    const filtered = source.filter((item) => {
-      const fullName =
-        `${item.student.studentFirstName} ${item.student.studentLastName}`.toLowerCase();
+    const filtered = dataToShow.filter((item) => {
+      const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`.toLowerCase();
       return (
         item.student.studentId?.toLowerCase().includes(query.toLowerCase()) ||
         fullName.includes(query.toLowerCase()) ||
-        item.student.studentEmail
-          ?.toLowerCase()
-          .includes(query.toLowerCase()) ||
+        item.student.studentEmail?.toLowerCase().includes(query.toLowerCase()) ||
         item.student.course?.toLowerCase().includes(query.toLowerCase())
       );
     });
     setFilteredClasses(filtered);
+    setCurrentPage(1);
   };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredClasses.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
 
   return (
     <div className="md:p-0 mt-4 mx-auto">
-      <div className="h-full w-full  flex flex-col justify-between">
+      <div className="h-full w-full flex flex-col justify-between">
         <div className="p-0 justify-between flex flex-col">
-          {/* Tabs */}
           <div className="flex space-x-6 px-4 py-2 rounded-md">
             <button
               onClick={() => setActiveTab("upcoming")}
@@ -175,9 +168,8 @@ const ScheduledClasses = () => {
             </button>
           </div>
 
-          {/* Search and Filter Bar */}
           <div className="mt-2">
-            <div className=" w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
+            <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
               <div className="flex justify-between items-center px-4 py-0">
                 <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                 <input
@@ -200,12 +192,8 @@ const ScheduledClasses = () => {
             </div>
           </div>
 
-          {/* Table */}
           <div className="w-full h-[610px] bg-[#FAFAFB] dark:bg-[#343434] overflow-y-auto">
-            <table
-              className="table-auto w-full"
-              style={{ tableLayout: "fixed" }}
-            >
+            <table className="table-auto w-full" style={{ tableLayout: "fixed" }}>
               <thead className="text-[12px] bg-[#4C6993] text-white">
                 <tr className="font-medium">
                   <th className="text-left px-4 py-3">Meeting ID</th>
@@ -230,8 +218,7 @@ const ScheduledClasses = () => {
                       {item._id}
                     </td>
                     <td className="px-3 py-2">
-                      {item.student.studentFirstName}{" "}
-                      {item.student.studentLastName}
+                      {item.student.studentFirstName} {item.student.studentLastName}
                     </td>
                     <td className="px-3 py-2">
                       {new Date(item.startDate).toLocaleDateString("en-US", {
@@ -242,19 +229,20 @@ const ScheduledClasses = () => {
                     </td>
                     <td className="px-3 py-2">{item.startTime[0]}</td>
                     <td className="px-3 py-2">{item.status}</td>
-                    <td className="px-3 py-2">—</td>
+                    <td className="px-3 py-2">-</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          {/* ✅ Pagination Component */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+          <div className="mt-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -262,36 +250,3 @@ const ScheduledClasses = () => {
 };
 
 export default ScheduledClasses;
-
-// Simple Pagination component for demo
-const Pagination = ({
-  currentPage,
-  totalPages,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) => {
-  return (
-    <div className="flex justify-center items-center mt-4 space-x-2">
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-      >
-        Prev
-      </button>
-      <span className="text-sm font-medium">
-        Page {currentPage} of {totalPages}
-      </span>
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-      >
-        Next
-      </button>
-    </div>
-  );
-};
