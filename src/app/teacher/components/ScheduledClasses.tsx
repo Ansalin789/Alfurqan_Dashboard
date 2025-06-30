@@ -1,11 +1,14 @@
+// updated
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
-import { Search } from "lucide-react";
+import { MoreVertical, Search } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import Pagination from "@/components/Pagination"; // use same pagination as TrailManagement
+import Pagination from "@/components/Pagination";
+import Modal from "react-modal";
+import { FaEye } from "react-icons/fa";
 
 interface Student {
   studentId: string;
@@ -25,12 +28,19 @@ interface Teacher {
   teacherEmail: string;
 }
 
+interface Course {
+  courseName: string;
+  courseId: string;
+}
+
 interface ClassData {
+  course: Course;
   student: Student;
   teacher: Teacher;
   _id: string;
   classDay: string[];
   package: string;
+  coruse: string;
   preferedTeacher: string;
   totalHourse: number;
   startDate: string;
@@ -54,11 +64,27 @@ const ScheduledClasses = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredClasses, setFilteredClasses] = useState<ClassData[]>([]);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
   const [activeTab, setActiveTab] = useState("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    courseName: "",
+    teacher: "",
+    scheduleStatus: "",
+    studentName: "",
+    fromDate: "",
+    toDate: "",
+  });
+
   const itemsPerPage = 5;
   const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([]);
   const [completedData, setCompletedData] = useState<ClassData[]>([]);
+
+  useEffect(() => {
+    Modal.setAppElement("body");
+  }, []);
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -105,7 +131,11 @@ const ScheduledClasses = () => {
     };
     fetchClasses();
   }, []);
-
+  const handleRescheduleRedirect = (id: string) => {
+    alert(`Reschedule for ${id}`);
+    setOpenDropdownId(null);
+    router.push(`/teacher/ui/teacherreschedule`);
+  };
   const dataToShow: ClassData[] =
     activeTab === "upcoming" ? upcomingClasses : completedData;
 
@@ -118,17 +148,89 @@ const ScheduledClasses = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     const filtered = dataToShow.filter((item) => {
-      const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`.toLowerCase();
+      const fullName =
+        `${item.student.studentFirstName} ${item.student.studentLastName}`.toLowerCase();
       return (
-        item.student.studentId?.toLowerCase().includes(query.toLowerCase()) ||
+        item._id.toLowerCase().includes(query.toLowerCase()) ||
         fullName.includes(query.toLowerCase()) ||
-        item.student.studentEmail?.toLowerCase().includes(query.toLowerCase()) ||
-        item.student.course?.toLowerCase().includes(query.toLowerCase())
+        item.student.studentEmail
+          ?.toLowerCase()
+          .includes(query.toLowerCase()) ||
+        item.student.course?.toLowerCase().includes(query.toLowerCase()) ||
+        item.scheduleStatus?.toLowerCase().includes(query.toLowerCase()) ||
+        item.teacher.teacherName?.toLowerCase().includes(query.toLowerCase())
       );
     });
     setFilteredClasses(filtered);
     setCurrentPage(1);
   };
+
+  const handleApplyFilters = () => {
+    const latestDataToShow =
+      activeTab === "upcoming" ? upcomingClasses : completedData;
+    let filtered = [...latestDataToShow];
+
+ if (filters.courseName) {
+  filtered = filtered.filter((c) =>
+    c.course?.courseName?.toLowerCase().includes(filters.courseName.toLowerCase())
+  );
+}
+
+    if (filters.teacher) {
+      filtered = filtered.filter((c) =>
+        c.teacher.teacherName
+          ?.toLowerCase()
+          .includes(filters.teacher.toLowerCase())
+      );
+    }
+    if (filters.scheduleStatus) {
+      filtered = filtered.filter(
+        (c) =>
+          c.scheduleStatus?.toLowerCase() ===
+          filters.scheduleStatus.toLowerCase()
+      );
+    }
+    if (filters.studentName) {
+      filtered = filtered.filter((c) => {
+        const fullName =
+          `${c.student.studentFirstName} ${c.student.studentLastName}`.toLowerCase();
+        return fullName.includes(filters.studentName.toLowerCase());
+      });
+    }
+    if (filters.fromDate && filters.toDate) {
+      const from = new Date(filters.fromDate);
+      const to = new Date(filters.toDate);
+      filtered = filtered.filter((c) => {
+        const date = new Date(c.startDate);
+        return date >= from && date <= to;
+      });
+    }
+    setFilteredClasses(filtered);
+    setCurrentPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      courseName: "",
+      teacher: "",
+      scheduleStatus: "",
+      studentName: "",
+      fromDate: "",
+      toDate: "",
+    });
+    const latestDataToShow =
+      activeTab === "upcoming" ? upcomingClasses : completedData;
+    setFilteredClasses(latestDataToShow);
+    setIsFilterModalOpen(false);
+  };
+
+  const studentNames = Array.from(
+    new Set(
+      dataToShow.map(
+        (c) => `${c.student.studentFirstName} ${c.student.studentLastName}`
+      )
+    )
+  );
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -180,7 +282,10 @@ const ScheduledClasses = () => {
                   onChange={(e) => handleSearch(e.target.value)}
                 />
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+              <div
+                onClick={() => setIsFilterModalOpen(true)}
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+              >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
@@ -193,11 +298,15 @@ const ScheduledClasses = () => {
           </div>
 
           <div className="w-full h-[610px] bg-[#FAFAFB] dark:bg-[#343434] overflow-y-auto">
-            <table className="table-auto w-full" style={{ tableLayout: "fixed" }}>
+            <table
+              className="table-auto w-full"
+              style={{ tableLayout: "fixed" }}
+            >
               <thead className="text-[12px] bg-[#4C6993] text-white">
                 <tr className="font-medium">
-                  <th className="text-left px-4 py-3">Meeting ID</th>
+                  <th className="text-left px-4 py-3">Class ID</th>
                   <th className="text-left px-4 py-3">Student Name</th>
+                  <th className="text-left px-4 py-3">Course</th>
                   <th className="text-left px-4 py-3">Date</th>
                   <th className="text-left px-4 py-3">Timing</th>
                   <th className="text-left px-4 py-3">Status</th>
@@ -214,22 +323,63 @@ const ScheduledClasses = () => {
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    <td className="px-3 py-2 text-[#3D8FDE] font-medium">
+                    <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
                       {item._id}
                     </td>
-                    <td className="px-3 py-2">
-                      {item.student.studentFirstName} {item.student.studentLastName}
+                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+                      {item.student.studentFirstName}{" "}
+                      {item.student.studentLastName}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">{item.course.courseName} </td>
+                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
                       {new Date(item.startDate).toLocaleDateString("en-US", {
                         month: "short",
                         day: "2-digit",
                         year: "numeric",
                       })}
                     </td>
-                    <td className="px-3 py-2">{item.startTime[0]}</td>
-                    <td className="px-3 py-2">{item.status}</td>
-                    <td className="px-3 py-2">-</td>
+                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">{item.startTime[0]}</td>
+                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">{item.scheduleStatus}</td>
+                    <td className="px-3 py-2 relative">
+                      {item.scheduleStatus === "Scheduled" ||
+                      item.scheduleStatus === "Rescheduled" ? (
+                        <div className="relative inline-block text-left">
+                          <button
+                            onClick={() =>
+                              setOpenDropdownId(
+                                openDropdownId === item._id ? null : item._id
+                              )
+                            }
+                            className="p-2 rounded-md"
+                          >
+                            <MoreVertical className="w-4 h-4 text-slate-600 dark:text-white" />
+                          </button>
+
+                          {openDropdownId === item._id && (
+                            <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg ring-1 ring-black ring-opacity-5">
+                              <div className="py-1 text-sm text-gray-700 dark:text-white">
+                                <button
+                                  onClick={() => {
+                                    handleRescheduleRedirect(item._id);
+                                  }}
+                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#404040]"
+                                >
+                                  Reschedule
+                                </button>
+                                <button
+                                  onClick={() => setOpenDropdownId(null)}
+                                  className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-[#404040]"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <FaEye className="w-4 h-4 text-slate-600 dark:text-white" />
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -245,6 +395,95 @@ const ScheduledClasses = () => {
           </div>
         </div>
       </div>
+
+      {/* Filter Modal */}
+      <Modal
+        isOpen={isFilterModalOpen}
+        onRequestClose={() => setIsFilterModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-lg bg-white w-[320px] dark:bg-[#252525]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+      >
+        <div>
+          <h2 className="text-sm font-semibold mb-4 dark:text-white">
+            Filter by
+          </h2>
+
+          <select
+            className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+            value={filters.courseName}
+            onChange={(e) =>
+              setFilters({ ...filters, courseName: e.target.value })
+            }
+          >
+            {" "}
+            <option value="">Select Course</option>
+            <option value="Quran">Quran</option>
+            <option value="Arabic">Arabic</option>
+            <option value="Tajweed">Tajweed</option>
+          </select>
+
+          <select
+            className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+            value={filters.scheduleStatus}
+            onChange={(e) =>
+              setFilters({ ...filters, scheduleStatus: e.target.value })
+            }
+          >
+            <option value="">Select Schedule Status</option>
+            <option value="Scheduled">Scheduled</option>
+            <option value="Rescheduled">Rescheduled</option>
+          </select>
+
+          <select
+            className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+            value={filters.studentName}
+            onChange={(e) =>
+              setFilters({ ...filters, studentName: e.target.value })
+            }
+          >
+            <option value="">Select Student</option>
+            {studentNames.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+            value={filters.fromDate}
+            onChange={(e) =>
+              setFilters({ ...filters, fromDate: e.target.value })
+            }
+          />
+
+          <input
+            type="date"
+            className="w-full px-3 py-2 mb-4 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+            value={filters.toDate}
+            onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
+          />
+
+          <div className="flex justify-between gap-2">
+            <button
+              onClick={handleResetFilters}
+              className="w-1/2 py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium"
+            >
+              Reset
+            </button>
+            <button
+              onClick={() => {
+                handleApplyFilters();
+                setIsFilterModalOpen(false);
+              }}
+              className="w-1/2 py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
