@@ -226,28 +226,28 @@ const StudentList = () => {
                   return (
                     <tr
                       key={index}
-                      className={`text-[12px] ${
+                      className={`text-[10px] ${
                         index % 2 === 0
                           ? "bg-[#fff] dark:bg-[#2C2C2C]"
                           : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
                       <td className="px-3 py-3 break-words">{studentInfo?.studentId}</td>
-                      <td className="px-3 py-3 text-[#3D8FDE] font-medium">
+                      <td className="px-3 py-3 text-[#3D8FDE] font-medium break-words">
                         {studentInfo?.studentFirstName} {studentInfo?.studentLastName}
                       </td>
-                      <td className="px-3 py-3">{studentInfo?.studentId}</td>
-                      <td className="px-3 py-3">{assignmentInfo?.languageLevel || "-"}</td>
-                      <td className="px-3 py-3">{studentInfo?.learningInterest || "-"}</td>
-                      <td className="px-3 py-3">{assignmentInfo?.classType}</td>
-                      <td className="px-3 py-3">
+                      <td className="px-3 py-3 break-words">{studentInfo?.studentId}</td>
+                      <td className="px-3 py-3 break-words">{assignmentInfo?.languageLevel || "-"}</td>
+                      <td className="px-3 py-3 break-words">{studentInfo?.learningInterest || "-"}</td>
+                      <td className="px-3 py-3 break-words">{assignmentInfo?.classType}</td>
+                      <td className="px-3 py-3 break-words">
                         {new Date(assignmentInfo?.classStartDate).toLocaleDateString()}
                       </td>
-                      <td className="px-3 py-3">
+                      <td className="px-3 py-3 break-words">
                         {new Date(assignmentInfo?.classEndDate).toLocaleDateString()}
                       </td>
-                      <td className="px-3 py-3">
-                        <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(assignmentInfo?.classStatus)}`}>
+                      <td className="px-3 py-3 break-words">
+                        <span className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(assignmentInfo?.classStatus)}`}>
                           {assignmentInfo?.classStatus}
                         </span>
                       </td>
