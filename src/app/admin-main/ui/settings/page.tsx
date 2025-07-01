@@ -6,7 +6,7 @@ import { FaChevronDown, FaFilter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-export interface OtherEmployee {
+export interface TenantUser {
   _id: string;
   userName: string;
   email: string;
@@ -25,13 +25,13 @@ export interface OtherEmployee {
   country?: string; // optional since some users have country field
 }
 
-interface OtherEmployeesResponse {
-  users: OtherEmployee[];
+interface TenantUsersResponse {
+  users: TenantUser[];
   totalCount: number;
 }
 
 const Page: React.FC = () => {
-  const [employees, setEmployees] = useState<OtherEmployee[]>([]);
+  const [employees, setEmployees] = useState<TenantUser[]>([]);
   const [selectedRole, setSelectedRole] = useState("Academic Coach");
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -55,42 +55,38 @@ const Page: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-useEffect(() => {
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('AdminAuthToken');
       if (token) {
-        fetchOtherEmployees(token); // pass token into the function
+        fetchTenantUsers(token);
       } else {
         console.log("No auth token found.");
       }
     }
-  }, []);      
-    const fetchOtherEmployees = async (token: string) => {
-      try {
-        const res = await axios.get<OtherEmployeesResponse>(
-          "https://api.blackstoneinfomaticstech.com/otheremployees",
-          {
+  }, []);
+
+  const fetchTenantUsers = async (token: string) => {
+    try {
+      const res = await axios.get<TenantUsersResponse>(
+        "http://localhost:5001/users",
+        {
           headers: {
             "Content-Type": "application/json",
             'Authorization': `Bearer ${token}`,
-
           },
         }
-        );
-        setEmployees(res.data.users);
-
-        console.log(res.data);
-
-        setError(null);
-      } catch (error: any) {
-        console.error("Error fetching other employees:", error);
-        setError("Failed to load employee data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-
+      );
+      setEmployees(res.data.users);
+      console.log(res.data);
+      setError(null);
+    } catch (error: any) {
+      console.error("Error fetching tenant users:", error);
+      setError("Failed to load user data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -136,8 +132,6 @@ useEffect(() => {
       toDate: "",
     });
   };
-
-
 
   const handleChanges = (
     empId: string,
