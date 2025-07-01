@@ -50,8 +50,8 @@ interface Participants {
     academicCoachId: string;
     classType: string;
     classDay: string[];
-    startTime: string[];
-    endTime: string[];
+    startTime: string;
+    endTime: string;
     isLanguageLevel: boolean;
     languageLevel: string;
     isReadingLevel: boolean;
@@ -183,6 +183,25 @@ export default function AddMeeting({ onClose }: Props) {
     const formattedDate = new Date(selectedDate).toISOString();
     const createdDate = new Date().toISOString();
 
+    if (
+  !meetingTitle ||
+  !selectedDate ||
+  !startTime ||
+  !endTime ||
+  selectedParticipants.length === 0
+) {
+  alert("Please fill all required fields!");
+  return;
+}
+
+
+
+// ✅ Debug logs
+console.log("Start Time:", startTime);
+console.log("End Time:", endTime);
+console.log("Selected Date:", selectedDate);
+
+
     const studentPayload = selectedParticipants.map((student) => ({
       studentId: student.studentId,
       studentName: student.name,
@@ -195,8 +214,8 @@ export default function AddMeeting({ onClose }: Props) {
       meetingId: "",
       meetingName: meetingTitle,
       meetingdate: formattedDate, // ✅ Changed from selectedDate
-      fromTime: startTime, // ✅ Changed from startTime
-      toTime: endTime, // ✅ Changed from endTime
+     startTime,
+endTime,
       meetingStatus: "Scheduled",
       teacher: {
         teacher: localStorage.getItem("TeacherPortalId"),
@@ -228,6 +247,8 @@ export default function AddMeeting({ onClose }: Props) {
           },
         }
       );
+
+      console.log("Meeting created successfully:", response.data);
 
       if ([200, 201, 400].includes(response.status)) {
         setSuccess(true);
