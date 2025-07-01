@@ -9,6 +9,7 @@ import Pagination from "@/components/Pagination";
 import Modal from "react-modal";
 import AcademicHeader from "@/app/Academic-coach/components/academicHeader";
 import { PieChart, Pie, Cell } from "recharts";
+import TeacherHeader from "../../components/TeacherHeader";
 
 interface StudentDetails {
   studentDetails: {
@@ -217,7 +218,8 @@ const ManageStudentView = () => {
   const [activeTab, setActiveTab] = useState<"pending" | "completed">(
     "pending"
   );
-  const searchParams = useParams();
+  const searchParams = useSearchParams();
+const studentId = searchParams.get("studentId");
   const dropdownRef = useRef<HTMLTableCellElement | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
@@ -353,11 +355,9 @@ const ManageStudentView = () => {
   //Student data gettingby ID
   useEffect(() => {
     const fetchData = async () => {
-       const studentId =
-       localStorage.getItem("studentManageID");
       const token =
         typeof window !== "undefined"
-          ? localStorage.getItem("AcademicCoachAuthToken")
+          ? localStorage.getItem("TeacherAuthToken")
           : null;
 
       if (!token) {
@@ -740,11 +740,8 @@ const ManageStudentView = () => {
   return (
     <BaseLayout>
       <div>
-        <AcademicHeader
-          currentSection="Student"
-          showBackButton={true}
-          showBackPath="managestudents"
-        />
+               <TeacherHeader currentSection="Assignments" />
+       
 
         {/* Top section */}
         <div className="grid grid-cols-2 lg:flex-row  gap-6 mb-6">
