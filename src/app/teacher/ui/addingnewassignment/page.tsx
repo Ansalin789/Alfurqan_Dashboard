@@ -4,6 +4,16 @@ import React, { useRef, useState } from "react";
 import TeacherHeader from "../../components/TeacherHeader";
 import { FaMicrophone, FaTrash, FaUpload } from "react-icons/fa";
 
+interface Assignment {
+  name: string;
+  type: string;
+  question: string;
+  imageURL?: string;
+  imageName?: string;
+  audioURL?: string;
+  audioName?: string;
+}
+
 const NewAssignment = () => {
   const [noOptions, setNoOptions] = useState(false);
   const [answerType, setAnswerType] = useState<"choose" | "truefalse" | null>(
@@ -23,22 +33,12 @@ const NewAssignment = () => {
   const [typedQuestion, setTypedQuestion] = useState("");
   const [assignmentName, setAssignmentName] = useState("");
   const [assignmentType, setAssignmentType] = useState("Quiz");
-  const [assignments, setAssignments] = useState<
-    {
-      name: string;
-      type: string;
-      question: string;
-      imageURL?: string; // Existing image properties
-      imageName?: string;
-      audioURL?: string; // New audio properties
-      audioName?: string;
-    }[]
-  >([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
 
   const handleAddAssignment = () => {
     if (!assignmentName.trim() || !typedQuestion.trim()) return;
 
-    let newAssignment = {
+    let newAssignment: Assignment = {
       name: assignmentName.trim(),
       type: assignmentType,
       question: typedQuestion.trim(),
@@ -52,7 +52,7 @@ const NewAssignment = () => {
     ) {
       newAssignment = {
         ...newAssignment,
-        imageURL: uploadedFileURL.toString,
+        imageURL: uploadedFileURL,
         imageName: uploadedFileName || "Uploaded Image",
       };
     }
@@ -196,7 +196,7 @@ const NewAssignment = () => {
                     onChange={() =>
                       setAnswerType(answerType === "choose" ? null : "choose")
                     }
-                    className="appearance-none w-4 h-4 rounded-sm border-2 border-white bg-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
+                    className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
                   />
                   <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
                     Choose
@@ -205,7 +205,7 @@ const NewAssignment = () => {
 
                 <label className="flex items-center gap-2 dark:text-[#fff]">
                   <input
-                    className="appearance-none w-4 h-4 rounded-sm border-2 border-white bg-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
+                    className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
                     type="checkbox"
                     checked={answerType === "truefalse"}
                     onChange={() =>
@@ -297,7 +297,7 @@ const NewAssignment = () => {
               {audioURL &&
                 uploadedFileType?.startsWith("audio/") &&
                 !isUploading && (
-                  <div className="flex items-center gap-3 mt-1 bg-gray-100 rounded-lg px-4 py-2 shadow dark:text-[#fff]">
+                  <div className="flex items-center gap-3 mt-1 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2 shadow dark:text-[#fff]">
                     <audio
                       controls
                       src={audioURL}
@@ -321,7 +321,7 @@ const NewAssignment = () => {
                 uploadedFileType &&
                 !uploadedFileType.startsWith("audio/") &&
                 !isUploading && (
-                  <div className="flex items-center gap-3 mt-1 bg-gray-100 rounded-lg px-4 py-2 shadow dark:text-[#fff]">
+                  <div className="flex items-center gap-3 mt-1 dark:bg-[#3B3B3B] rounded-lg px-4 py-2 dark:text-[#fff]">
                     <a
                       href={uploadedFileURL}
                       target="_blank"
@@ -332,11 +332,11 @@ const NewAssignment = () => {
                     </a>
                     <button
                       type="button"
-                      className="p-2 bg-red-100 hover:bg-red-200 rounded-full border border-gray-300 dark:border-[#343434] dark:text-[#fff]"
+                      className="p-2 rounded-full border border-gray-300 dark:border-[#343434] dark:text-[#fff]"
                       title="Delete File"
                       onClick={handleDeleteFile}
                     >
-                      <FaTrash className="text-lg text-red-600" />
+                      <FaTrash className="text-lg text-red-300" />
                     </button>
                   </div>
                 )}
@@ -349,7 +349,7 @@ const NewAssignment = () => {
                     type="checkbox"
                     checked={noOptions}
                     onChange={() => setNoOptions(!noOptions)}
-                    className="appearance-none w-4 h-4 rounded-sm border-2 border-white bg-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
+                    className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
                   />
                   <span>No Options</span>
                 </label>
@@ -358,7 +358,7 @@ const NewAssignment = () => {
                     <label key={idx} className="flex items-center gap-2 mb-2">
                       <input
                         type="checkbox"
-                        className="appearance-none w-4 h-4 rounded-sm border-2 border-white bg-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
+                        className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
                       />
                       <input
                         type="text"
@@ -376,7 +376,7 @@ const NewAssignment = () => {
                   <input
                     type="radio"
                     name="truefalse"
-                    className="appearance-none w-4 h-4 rounded-sm border-2 border-white bg-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
+                    className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
                   />
                   <span>True</span>
                 </label>
@@ -384,7 +384,7 @@ const NewAssignment = () => {
                   <input
                     type="radio"
                     name="truefalse"
-                    className="appearance-none w-4 h-4 rounded-sm border-2 border-white bg-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
+                    className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
                   />
                   <span>False</span>
                 </label>
@@ -461,7 +461,7 @@ const NewAssignment = () => {
                       <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
                         Uploaded Audio
                       </label>
-                      <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+                      <div className="flex items-center gap-3 mt-1 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2 shadow dark:text-[#fff]">
                         <audio
                           controls
                           src={item.audioURL}
