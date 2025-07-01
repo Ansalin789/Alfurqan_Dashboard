@@ -112,8 +112,8 @@ const TeacherModuleAccess = () => {
 
   const modules = [
     'Dashboard',
-    'Live Classes',
-    'Schedule',
+    'LiveClasses',
+    'scheduledclasses',
     'Assignments',
     'Messages',
     'Analytics',
@@ -246,7 +246,7 @@ useEffect(() => {
     return;
   }
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        `http://localhost:5001/update-access/${employeeId}`,
         { roleAccess },
         {
           headers:{
