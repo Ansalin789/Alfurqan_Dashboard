@@ -1,357 +1,340 @@
-"use client"
+"use client";
 
-import BaseLayout2 from "@/components/BaseLayout2"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { FaCalendarAlt, FaSort } from "react-icons/fa"
-import { BsThreeDots } from "react-icons/bs"
-import DatePicker from "react-datepicker"
-import "react-datepicker/dist/react-datepicker.css"
-import MyClass from "./MyClass"
-import axios from "axios"
+import BaseLayout2 from "@/components/BaseLayout2";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import "react-datepicker/dist/react-datepicker.css";
+import MyClass from "./MyClass";
+import axios from "axios";
+import { MoreVertical, Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
+import Pagination from "@/components/Pagination";
+import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 
 interface Student {
-  studentId: string
-  studentFirstName: string
-  studentLastName: string
-  studentEmail: string
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
 }
 
 interface Teacher {
-  teacherId: string
-  teacherName: string
-  teacherEmail: string
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
 }
 
 interface ClassData {
-  _id: string
-  student: Student
-  teacher: Teacher
-  classDay: string[]
-  package: string
-  preferedTeacher: string
-  totalHourse: number
-  startDate: string
-  endDate: string
-  startTime: string[]
-  endTime: string[]
-  scheduleStatus: string
-  classLink: string
-  status: string
-  classStatus: string
-  createdBy: string
-  createdDate: string
-  lastUpdatedDate: string
+  _id: string;
+  student: Student;
+  teacher: Teacher;
+  classDay: string[];
+  package: string;
+  preferedTeacher: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  classStatus: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
 }
 
 interface ApiResponse {
-  totalCount: number
-  classSchedule: ClassData[]
+  totalCount: number;
+  classSchedule: ClassData[];
 }
 
-type SortableKeys = "classID" | "teacherName" | "package" | "startDate" | "status"
+type SortableKeys =
+  | "classID"
+  | "teacherName"
+  | "package"
+  | "startDate"
+  | "status";
 
 const Classes = () => {
-  const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"Upcoming" | "Completed">("Upcoming")
-  const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([])
-  const [completedClasses, setCompletedClasses] = useState<ClassData[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [popupVisible, setPopupVisible] = useState<string | null>(null)
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
-  const [sortKey, setSortKey] = useState<SortableKeys>("classID")
-  const [isPremiumUser] = useState(true) // Replace with actual role determination logic
-  const itemsPerPage = 5
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"Scheduled" | "Completed">(
+    "Scheduled"
+  );
+  const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([]);
+  const [completedClasses, setCompletedClasses] = useState<ClassData[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [popupVisible, setPopupVisible] = useState<string | null>(null);
+  const [popupDirection, setPopupDirection] = useState<"up" | "down">("down");
+
+  const itemsPerPage = 8;
 
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const studentId = localStorage.getItem("StudentPortalId")
-const token =
-    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+        const studentId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentPortalId")
+            : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentAuthToken")
+            : null;
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }          if (!studentId || !token) {
-          console.log('Missing studentId or authToken');
+        if (!studentId || !token) {
+          console.log("Missing studentId or authToken");
           return;
-        }        if (!studentId || !token) {
-          console.log("Missing studentId or authToken")
-          return
         }
 
-        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule/students", {
-          params: { studentId },
-        headers: { "Content-Type": "application/json",
-               'Authorization': `Bearer ${token}`,
-           },
-        })
-        const classes = response.data.classSchedule
+        const response = await axios.get<ApiResponse>(
+          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          {
+            params: { studentId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        const now = new Date()
-        const upcoming = classes.filter((cls) => {
-          const classDate = new Date(cls.startDate)
-          const [startHours, startMinutes] = cls.startTime[0].split(":").map(Number)
-          classDate.setHours(startHours, startMinutes, 0, 0)
-          return now < classDate
-        })
+        const classes = response.data.classSchedule;
+        const now = new Date();
 
-        const completed = classes.filter((cls) => new Date(cls.startDate) <= now)
+        const upcoming = classes
+          .filter((cls) => {
+            const classDate = new Date(cls.startDate);
+            const [startHours, startMinutes] = cls.startTime[0]?.split(":") || [
+              0, 0,
+            ];
+            classDate.setHours(+startHours, +startMinutes, 0, 0);
+            return (
+              now < classDate &&
+              (cls.scheduleStatus === "Scheduled" ||
+                cls.scheduleStatus === "Rescheduled")
+            );
+          })
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          );
 
-        setUpcomingClasses(upcoming)
-        setCompletedClasses(completed)
+        const completed = classes
+          .filter((cls) => cls.scheduleStatus === "Completed")
+          .sort(
+            (a, b) =>
+              new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+          );
+        setUpcomingClasses(upcoming);
+        setCompletedClasses(completed);
       } catch (error) {
-        console.error("Error fetching class data:", error)
+        console.error("Error fetching class data:", error);
       }
-    }
-    fetchClasses()
-  }, [])
+    };
 
-  const sortClasses = (classes: ClassData[]) => {
-    return classes.sort((a, b) => {
-      if (sortOrder === "asc") {
-        return a[sortKey as keyof ClassData] > b[sortKey as keyof ClassData] ? 1 : -1
-      }
-      return a[sortKey as keyof ClassData] < b[sortKey as keyof ClassData] ? 1 : -1
-    })
-  }
+    fetchClasses();
+  }, []);
 
-  const filteredClasses = activeTab === "Upcoming" ? sortClasses(upcomingClasses) : sortClasses(completedClasses)
-  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage)
-  const displayedClasses = filteredClasses.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const handleTabChange = (tab: "Upcoming" | "Completed") => {
-    setActiveTab(tab)
-    setCurrentPage(1)
-  }
+  const filteredClasses =
+    activeTab === "Scheduled" ? upcomingClasses : completedClasses;
+  const displayedClasses = filteredClasses.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handlePopupToggle = (classId: string) => {
-    setPopupVisible(popupVisible === classId ? null : classId)
-  }
+    setPopupVisible(popupVisible === classId ? null : classId);
+  };
 
   const handleReschedule = (classId: string) => {
-    router.push(`/student/ui/Reschedule?classId=${classId}`)
-  }
+    router.push(`/student/ui/Reschedule?classId=${classId}`);
+  };
 
   const handleCancel = (classId: string) => {
-    console.log(`Cancel clicked for classId: ${classId}`)
-    setPopupVisible(null)
-  }
+    console.log(`Cancel clicked for classId: ${classId}`);
+    setPopupVisible(null);
+  };
 
-  const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date)
-  }
-
-  const handleSort = (key: SortableKeys): void => {
-    const order = sortOrder === "asc" ? "desc" : "asc"
-    setSortOrder(order)
-    setSortKey(key)
-  }
-
-  const handleUpgradePlan = () => {
-    setPopupVisible(null)
-    console.log("User prompted to switch to a higher plan.")
-  }
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredClasses.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
 
   return (
     <BaseLayout2>
-      <style>
-        {`
-          .custom-datepicker {
-            width: 80px;
-            text-align: center;
-            border: 2px solid #1C3557;
-            border-radius: 8px;
-            padding: 5px;
-            background-color: #f0f8ff;
-          }
-
-          .react-datepicker {
-            border-radius: 8px;
-            background-color: white;
-          }
-
-          .react-datepicker__header {
-            background-color: #1C3557;
-            color: white !important;
-          }
-          .react-datepicker__header .react-datepicker__current-month,
-          .react-datepicker__header .react-datepicker__day-name {
-            color: white !important;
-          }
-
-          .react-datepicker__day {
-            color: #1C3557 !important;
-          }
-        `}
-      </style>
-
-      <div className="p-4 mx-auto w-[1250px] pr-12 pl-4">
+      <div className="mx-auto max-w-screen-2xl sm:px-1 md:px-2 lg:px-4 ">
+        <SupervisorHeader currentSection="Scheduled Meetings" />
         <MyClass />
-        <div className="p-4">
-          <h2 className="text-2xl font-semibold text-gray-800 p-2">Scheduled Classes</h2>
 
-          <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px] flex flex-col justify-between">
-            <div>
-              <div className="flex">
-                <button
-                  onClick={() => handleTabChange("Upcoming")}
-                  className={`py-3 px-2 ml-5 ${
-                    activeTab === "Upcoming"
-                      ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold"
-                      : "text-gray-500"
-                  } focus:outline-none text-[13px]`}
-                >
-                  Upcoming ({upcomingClasses.length})
-                </button>
-                <button
-                  onClick={() => handleTabChange("Completed")}
-                  className={`py-3 px-6 ${
-                    activeTab === "Completed"
-                      ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold"
-                      : "text-gray-500"
-                  } focus:outline-none text-[13px]`}
-                >
-                  Completed ({completedClasses.length})
-                </button>
-              </div>
-              <div className="flex justify-end px-[50px] h-6">
-                <div className="flex items-center border border-[#1C3557] rounded-md overflow-hidden">
-                  <div className="px-3 py-2 flex items-center">
-                    <FaCalendarAlt className="text-[#1C3557] text-sm" />
-                  </div>
-                  <DatePicker
-                    selected={selectedDate}
-                    onChange={handleDateChange}
-                    dateFormat="MMMM d, yyyy"
-                    className="w-20 text-[10px] text-gray-600 focus:outline-none"
-                    placeholderText="ddmmyy"
-                  />
-                </div>
-              </div>
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-6 py-6 px-2 sm:px-4">
+          {["Scheduled", "Completed"].map((tab) => (
+            <button
+              key={tab}
+              className={`relative text-sm sm:text-base md:text-lg transition font-medium ${
+                activeTab === tab
+                  ? "text-[#576CBC] font-medium "
+                  : "text-[#010E30] dark:text-white"
+              }`}
+              onClick={() => setActiveTab(tab as "Scheduled" | "Completed")}
+            >
+              {tab} (
+              {tab === "Scheduled"
+                ? upcomingClasses.length
+                : completedClasses.length}
+              )
+              {activeTab === tab && (
+                <span className="absolute left-0 -bottom-1 w-full h-[2px] rounded-full bg-[#576CBC]" />
+              )}
+            </button>
+          ))}
+        </div>
 
-              <div className="overflow-x-auto">
-                <table className="table-auto w-full">
-                  <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
-                    <tr>
-                      <th className="px-6 py-3 text-center">
-                        Class ID <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("classID")} />
-                      </th>
-                      <th className="px-6 py-3 text-center">
-                        Teacher Name{" "}
-                        <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("teacherName")} />
-                      </th>
-                      <th className="px-6 py-3 text-center">
-                        time <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("startDate")} />
-                      </th>
-                      <th className="px-6 py-3 text-center">
-                        Start Date{" "}
-                        <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("startDate")} />
-                      </th>
-                      <th className="px-6 py-3 text-center">Scheduled</th>
-
-                      {activeTab === "Completed" && <th className="px-6 py-3 text-center">Status</th>}
-                      {activeTab === "Upcoming" && <th className="px-6 py-3 text-center"></th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayedClasses.map((item) => (
-                      <tr
-                        key={item._id}
-                        className="text-[12px] font-medium mt-2"
-                        style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}
-                      >
-                        <td className="px-6 py-3 text-center">{item._id}</td>
-                        <td className="px-6 py-3 text-center">{item.teacher.teacherName}</td>
-                        <td className="px-6 py-3 text-center">{`${item.startTime[0]} - ${item.endTime[0]}`}</td>
-                        <td className="px-6 py-3 text-center">{new Date(item.startDate).toLocaleDateString()}</td>
-                        <td className="px-6 py-3 text-center">{item.classStatus}</td>
-                        
-                        {activeTab === "Completed" && (
-                          <td className="px-6 py-2 text-center">
-                            <div className="px-2 py-2 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] text-[10px]">
-                              {item.status}
-                            </div>
-                          </td>
-                        )}
-                        {activeTab === "Upcoming" && (
-                          <td className="relative px-6 py-3 text-center">
-                            <BsThreeDots className="cursor-pointer" onClick={() => handlePopupToggle(item._id)} />
-                            {popupVisible === item._id && (
-                              <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-                                {isPremiumUser ? (
-                                  <>
-                                    <button
-                                      className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-100"
-                                      onClick={() => handleReschedule(item._id)}
-                                    >
-                                      Reschedule
-                                    </button>
-                                    <button
-                                      className="w-full px-4 py-3 text-left text-sm text-red-500 hover:bg-gray-100"
-                                      onClick={() => handleCancel(item._id)}
-                                    >
-                                      Cancel
-                                    </button>
-                                  </>
-                                ) : (
-                                  <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-                                    <div className="bg-[#fff5f3] p-10 rounded shadow border border-[#F4B0A1] flex">
-                                      <p className="text-[#27303A] text-lg font">
-                                        Switch to a higher plan for extended benefits...
-                                      </p>
-                                      <button
-                                        className="bg-[#1C3557] text-white px-4 py-2 rounded text-center ml-10"
-                                        onClick={handleUpgradePlan}
-                                      >
-                                        OK
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+        <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] overflow-x-auto scrollbar-none">
+          <div className="flex flex-col md:flex-row items-start md:items-center px-4 relative gap-4 md:gap-0">
+            <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 justify-start px-4">
+              <Search className="w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by keyword"
+                className="bg-transparent outline-none text-sm w-full max-w-[200px] py-2"
+              />
             </div>
-
-            <div>
-              <div className="flex justify-end items-center px-6 py-3">
-                <div className="flex space-x-2">
-                  {Array.from({ length: totalPages }).map((_, index) => {
-                    const page = index + 1
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`w-5 h-5 text-[13px] flex items-center justify-center rounded ${
-                          page === currentPage ? "bg-[#1C3557] text-white" : "text-[#1C3557] border border-[#1C3557]"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
+            <div className="flex-1 flex items-center gap-2 text-sm text-gray-400 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4">
+              <MdTune className="w-5 h-5" />
+              <span>Filter</span>
+            </div>
+            <div className="flex-1 flex items-center text-sm  px-4 text-gray-500 justify-start">
+              <span>
+                Showing {displayedClasses.length} of {filteredClasses.length}
+              </span>
             </div>
           </div>
+
+          <div className="overflow-x-auto scrollbar-none">
+            <table className="w-full border-collapse table-auto">
+              <thead>
+                <tr>
+                  {[
+                    "Class ID",
+                    "Teacher Name",
+                    "Course",
+                    "Date",
+                    "Time",
+                    "Status",
+                    "Action",
+                  ].map((col, idx) => (
+                    <th
+                      key={col}
+                      className="px-4 py-3.5 text-center font-light border text-sm border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                    >
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-4">
+                      No classes found.
+                    </td>
+                  </tr>
+                ) : (
+                  currentItems.map((cls, index) => (
+                    <tr
+                      key={cls._id}
+                      className={`${
+                        index % 2 === 0
+                          ? "bg-white dark:bg-[#2C2C2C]"
+                          : "bg-[#F8F8F8] dark:bg-[#303030]"
+                      }`}
+                    >
+                      <td className="px-4 py-3 text-xs text-center break-words">
+                        {cls._id}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-center text-[#576CBC]">
+                        {cls.teacher?.teacherName || "N/A"}
+                      </td>
+                      <td className="px-4 py-3  text-xs text-center">
+                        {cls.package}
+                      </td>
+                      <td className="px-4 py-3  text-xs text-center">
+                        {new Date(cls.startDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "2-digit",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="px-4 py-3  text-xs text-center">
+                        {cls.startTime[0]} - {cls.endTime[0]}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-center">
+                        <span
+                          className={`px-3 py-1 rounded-sm text-xs font-semibold inline-block ${
+                            cls.scheduleStatus === "Scheduled"
+                              ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#408d4033]"
+                              : cls.scheduleStatus === "Completed"
+                              ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#408d4033]"
+                              : "bg-gray-200 text-gray-600 dark:bg-[#DEDEDE33] dark:text-[#ECFDF3]"
+                          }`}
+                        >
+                          {cls.scheduleStatus}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center relative">
+                        {activeTab === "Scheduled" &&
+                        (cls.scheduleStatus === "Scheduled" ||
+                          cls.scheduleStatus === "Rescheduled") ? (
+                          <>
+                           {popupVisible === cls._id && (
+                              <div
+                          className="absolute right-0 z-50 w-40 bottom-2 bg-white border rounded-lg shadow-lg dark:bg-[#2C2C2C] ">
+
+                                <button
+                                  onClick={() => handleReschedule(cls._id)}
+                                  className="block w-full px-4 py-2 text-center text-xs text-gray-700 dark:text-[#ECFDF3] hover:bg-gray-100 dark:hover:bg-gray-600"
+                                >
+                                  Request Reschedule
+                                </button>
+                                <div className="w-full h-px bg-[#D4D4D4] mx-auto" />
+                                <button
+                                  onClick={() => handleCancel(cls._id)}
+                                  className="block w-full px-4 py-2 text-center text-xs text-gray-700 hover:bg-gray-100 dark:text-[#ECFDF3] dark:hover:bg-gray-600"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
+                            <button
+                              onClick={(e) => handlePopupToggle(cls._id)}
+                              className="inline-flex justify-center p-1"
+                            >
+                              <MoreVertical className="w-4 h-4 text-slate-900 dark:text-white" />
+                            </button>
+                          
+                          </>
+                        ) : activeTab === "Completed" ? (
+                          <div className="flex justify-center">
+                            <MoreVertical className="w-4 h-4 text-slate-900 dark:text-white" />
+                          </div>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </BaseLayout2>
-  )
-}
+  );
+};
 
-export default Classes
-
+export default Classes;
