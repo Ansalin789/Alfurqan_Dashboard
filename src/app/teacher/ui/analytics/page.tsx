@@ -147,7 +147,7 @@ function Analytics() {
 
       try {
         const res = await axios.get(
-          `http://localhost:5001/analyticscardcount?teacherId=${teacherId}`
+          `https://api.blackstoneinfomaticstech.com/analyticscardcount?teacherId=${teacherId}`
         );
         console.log("Analytics data fetched:", res.data); // DEBUG
         setAnalytics(res.data);
@@ -180,7 +180,7 @@ function Analytics() {
         }
 
         const response = await axios.get<SimpleStudent[]>(
-          "http://localhost:5001/classShedule/teacher/list",
+          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
           {
             params: { teacherId },
             headers: {

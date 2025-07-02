@@ -57,7 +57,7 @@ const NextMeetingSchedule = () => {
           console.error("❌ AdminAuthToken not found");
           return;
         }
-        const res = await axios.get(`http://localhost:5001/teacherMeeting`,
+        const res = await axios.get(`https://api.blackstoneinfomaticstech.com/teacherMeeting`,
           {
             method: "GET",
             params: { teacherId: teacherId },

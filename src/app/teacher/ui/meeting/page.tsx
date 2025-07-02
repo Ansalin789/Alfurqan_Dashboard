@@ -47,7 +47,7 @@ interface Meeting {
   // fromTime: string;
   // toTime: string;
   description: string;
-  meetingStatus: string;
+  meetingStatus: "Scheduled" | "Rescheduled" | "Completed";
   status: string;
   createdDate: string; // ISO string
   createdBy: string;
@@ -193,7 +193,7 @@ useEffect(() => {
       }
 
       const response = await axios.get(
-        "http://localhost:5001/teacherMeetinglist",
+        "https://api.blackstoneinfomaticstech.com/teacherMeetinglist",
         {
           headers: {
             "Content-Type": "application/json",
@@ -219,10 +219,22 @@ useEffect(() => {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Normalize for comparison
 
-      // Separate meetings by status
-      const upcomingMeetings = allMeetings.filter(
-        (meeting) => meeting.meetingStatus === "Scheduled"
-      );
+      const upcomingMeetings = allMeetings
+        .filter((meeting) => {
+          if (!meeting.selectedDate || !meeting.meetingStatus) return false;
+
+          const meetingDate = new Date(meeting.selectedDate);
+          return (
+            (meeting.meetingStatus === "Scheduled" ||
+              meeting.meetingStatus === "Rescheduled") &&
+            meetingDate >= today
+          );
+        })
+        .sort(
+          (a, b) =>
+            new Date(a.selectedDate).getTime() -
+            new Date(b.selectedDate).getTime()
+        );
 
       const completedMeetings = allMeetings.filter(
         (meeting) => meeting.meetingStatus === "Completed"
@@ -321,7 +333,7 @@ useEffect(() => {
  try {
       const token = localStorage.getItem("TeacherAuthToken"); // or use context/auth provider
       const response = await fetch(
-        `http://localhost:5001/updateTeacherMeeting/${selectedItemId}`,
+        `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${selectedItemId}`,
         {
           method: "PUT",
           headers: {
@@ -332,7 +344,7 @@ useEffect(() => {
             selectedDate: rescheduleDate,
             startTime: rescheduleTime,
             description: rescheduleReason,
-            meetingStatus: "Re-Scheduled",
+            meetingStatus: "Rescheduled",
           }),
         }
       );
@@ -344,6 +356,7 @@ console.log("Reschedule Time:", rescheduleTime);
       if (!response.ok) {
         throw new Error(result.message || "Failed to update meeting");
       }
+
       // Update frontend UI
       setUpcomingClasses((prevClasses) =>
         prevClasses.map((item) =>
@@ -371,7 +384,7 @@ console.log("Reschedule Time:", rescheduleTime);
 //     try {
 //       const token = localStorage.getItem("TeacherAuthToken");
 //       const response = await axios.put(
-//         `http://localhost:5001/updateTeacherMeeting/${selectedItemId}`,
+//         `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${selectedItemId}`,
 //         {
 //           headers: {
 //             "Content-Type": "application/json",
@@ -482,7 +495,7 @@ console.log("Reschedule Time:", rescheduleTime);
 
     try {
       const response = await axios.get(
-        "http://localhost:5001/teacherMeetinglist", // Use your backend URL here
+        "https://api.blackstoneinfomaticstech.com/teacherMeetinglist", // Use your backend URL here
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -225,7 +225,7 @@ const SchedulePage = () => {
     }
 
     try {
-      const url = `http://localhost:5001/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
+      const url = `https://api.blackstoneinfomaticstech.com/teacher/availabletime?scheduleDate=${formattedDate}&position=${encodeURIComponent(
         position + " Teacher"
       )}`;
 

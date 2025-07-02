@@ -126,7 +126,7 @@ export default function AddMeeting({ onClose }: Props) {
         };
 
         const response = await axios.get(
-          "http://localhost:5001/classShedule/teacher/list",
+          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -238,7 +238,7 @@ endTime,
       }
 
       const response = await axios.post(
-        "http://localhost:5001/teacherMeeting", // ✅ NEW LOCAL API ENDPOINT
+        "https://api.blackstoneinfomaticstech.com/teacherMeeting", // ✅ NEW LOCAL API ENDPOINT
         requestData,
         {
           headers: {
