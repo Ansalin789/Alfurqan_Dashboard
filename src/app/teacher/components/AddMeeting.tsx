@@ -213,12 +213,12 @@ console.log("Selected Date:", selectedDate);
     const requestData = {
       meetingId: "",
       meetingName: meetingTitle,
-      meetingdate: formattedDate, // ✅ Changed from selectedDate
+      selectedDate: formattedDate, // ✅ Changed from selectedDate
      startTime,
 endTime,
       meetingStatus: "Scheduled",
       teacher: {
-        teacher: localStorage.getItem("TeacherPortalId"),
+        teacherId: localStorage.getItem("TeacherPortalId"),
         teacherName: localStorage.getItem("TeacherPortalName"),
         teacherEmail: "gomathi.blackstone@gmail.com",
         teacherrRole: "Teacher",
