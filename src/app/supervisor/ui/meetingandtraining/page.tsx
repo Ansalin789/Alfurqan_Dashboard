@@ -319,7 +319,7 @@ useEffect(() => {
     try {
       const token = localStorage.getItem("token"); // or use context/auth provider
       const response = await fetch(
-        `http://localhost:5001/meeting/${selectedItemId}`,
+        `https://api.blackstoneinfomaticstech.com/meeting/${selectedItemId}`,
         {
           method: "PUT",
           headers: {
