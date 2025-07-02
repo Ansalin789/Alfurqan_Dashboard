@@ -40,10 +40,15 @@ interface StudentDetails {
   classEndDate: string;
   classStatus: string;
   languageLevel?: string;
-  [key: string]: any; // fallback for additional props
+  [key: string]: any; 
 }
 
 interface Assignment {
+  assignmentId?: string; // Optional since not all objects have this
+  assignmentType: string;
+  status: string;
+  assignmentName: string;
+  title: string;
   studentId: string;
   name: string;
   studentDetails: StudentDetails;
@@ -206,9 +211,9 @@ const StudentList = () => {
                 <thead className="text-[12px] bg-[#4C6993] text-white">
                   <tr>
                     {[
-                      "Assignment ID",
-                      "Student Name",
                       "Student ID",
+                      "Student Name",
+                      "Assignment ID",
                       "Level",
                       "Course",
                       "Assignment Name",
@@ -244,7 +249,7 @@ const StudentList = () => {
                         <td className="px-3 py-3 text-[#3D8FDE] font-medium break-words">
                           {studentInfo?.studentFirstName} {studentInfo?.studentLastName}
                         </td>
-                        <td className="px-3 py-3 break-words">{studentInfo?.studentId}</td>
+                        <td className="px-3 py-3 break-words">{assignmentInfo?.assignmentId}</td>
                         <td className="px-3 py-3 break-words">{assignmentInfo?.languageLevel || "-"}</td>
                         <td className="px-3 py-3 break-words">{studentInfo?.learningInterest || "-"}</td>
                         <td className="px-3 py-3 break-words text-[">{assignmentInfo?.classType}</td>
