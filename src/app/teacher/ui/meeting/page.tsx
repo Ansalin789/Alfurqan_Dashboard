@@ -28,7 +28,7 @@ interface Teacher {
 
 // Interface for Student (Participant)
 interface Participant {
-  studentId: string;
+  studentId: string; 
   studentName: string;
   studentEmail: string;
 }
@@ -37,15 +37,15 @@ interface Participant {
 interface Meeting {
   meetingminutes: string | number | readonly string[] | undefined;
   duration: string | number | readonly string[] | undefined;
-  endTime: any;
-  startTime: any;
-  selectedDate: any;
+  endTime: string;
+  startTime: string;
+  // selectedDate: any;
   _id: string;
   meetingId: string;
   meetingName: string;
-  meetingdate: string; // ISO string
-  fromTime: string;
-  toTime: string;
+  selectedDate: string; // ISO string
+  // fromTime: string;
+  // toTime: string;
   description: string;
   meetingStatus: string;
   status: string;
@@ -193,7 +193,7 @@ useEffect(() => {
       }
 
       const response = await axios.get(
-        "http://localhost:5001/teacherMeeting",
+        "http://localhost:5001/teacherMeetinglist",
         {
           headers: {
             "Content-Type": "application/json",
@@ -228,9 +228,18 @@ useEffect(() => {
         (meeting) => meeting.meetingStatus === "Completed"
       );
 
+  const teachersMap: Record<string, any[]> = {};
+      allMeetings.forEach((meeting) => {
+        if (meeting.teacher && Array.isArray(meeting.teacher)) {
+          teachersMap[meeting.meetingId] = meeting.teacher;
+        }
+      });
+
       // Set state after fetching
       setUpcomingClasses(upcomingMeetings);
       setCompletedData(completedMeetings);
+      setTeachersByMeetingId(teachersMap);
+
 
       console.log("✅ Upcoming Meetings Set to State:", upcomingMeetings);
       console.log("✅ Completed Meetings Set to State:", completedMeetings);
@@ -242,7 +251,6 @@ useEffect(() => {
   fetchMeetings();
 }, []);
 
-
   interface Teacher {
     teacherId: string;
     teacherName: string;
@@ -250,10 +258,9 @@ useEffect(() => {
   }
   // Remove duplicate Teacher interface and teachersByMeetingId state, not needed since teacher is a single object
 
-  interface FilterMeetingsParams {
-    meetings: Meeting[];
-    searchLower: string;
-  }
+ type TeachersByMeetingId = Record<string, Teacher[]>;
+  const [teachersByMeetingId, setTeachersByMeetingId] =
+    useState<TeachersByMeetingId>({});
 
   const filterMeetingsBySearch = (
     meetings: Meeting[],
@@ -278,17 +285,17 @@ useEffect(() => {
         .toLowerCase()
         .includes(searchLower);
 
-      const timingMatch: boolean = meeting.startTime.toLowerCase().includes(searchLower);
-
-      // Search in status
+      const timingMatch: boolean = !!meeting.startTime && meeting.startTime.toLowerCase().includes(searchLower);
+    
       const statusMatch: boolean = meeting.meetingStatus.toLowerCase().includes(searchLower);
 
       return nameMatch || attendeeMatch || dateMatch || timingMatch || statusMatch;
     });
   };
 
-  const dataToShow: Meeting[] =
-    activeTab === "upcoming" ? upcomingClasses : completedData;
+  const dataToShow = filterMeetingsBySearch(
+    activeTab === "upcoming" ? upcomingClasses || [] : completedData || []
+  );
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -310,55 +317,106 @@ useEffect(() => {
       alert("Please fill all fields");
       return;
     }
+    
+ try {
+      const token = localStorage.getItem("TeacherAuthToken"); // or use context/auth provider
+      const response = await fetch(
+        `http://localhost:5001/updateTeacherMeeting/${selectedItemId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            selectedDate: rescheduleDate,
+            startTime: rescheduleTime,
+            description: rescheduleReason,
+            meetingStatus: "Re-Scheduled",
+          }),
+        }
+      );
+console.log("Reschedule Date:", rescheduleDate);
+console.log("Reschedule Time:", rescheduleTime);
 
-    // try {
-    //   const token = localStorage.getItem("token"); // or use context/auth provider
-    //   const response = await fetch(
-    //     `https://api.blackstoneinfomaticstech.com/meeting/${selectedItemId}`,
-    //     {
-    //       method: "PUT",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         Authorization: `Bearer ${token}`,
-    //       },
-    //       body: JSON.stringify({
-    //         selectedDate: rescheduleDate,
-    //         startTime: rescheduleTime,
-    //         description: rescheduleReason,
-    //         meetingStatus: "Rescheduled",
-    //       }),
-    //     }
-    //   );
+      const result = await response.json();
 
-    //   const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to update meeting");
+      }
+      // Update frontend UI
+      setUpcomingClasses((prevClasses) =>
+        prevClasses.map((item) =>
+          item._id === selectedItemId
+            ? {
+                ...item,
+                meetingStatus: "Re-Scheduled" as Meeting["meetingStatus"],
+              }
+            : item
+        )
+      );
 
-    //   if (!response.ok) {
-    //     throw new Error(result.message || "Failed to update meeting");
-    //   }
+      setSuccess(true);
 
-    //   // Update frontend UI
-    //   setUpcomingClasses((prevClasses) =>
-    //     prevClasses.map((item) =>
-    //       item._id === selectedItemId
-    //         ? {
-    //             ...item,
-    //             meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
-    //           }
-    //         : item
-    //     )
-    //   );
+      setTimeout(() => {
+        setShowSuccess(false);
+        setIsRescheduleModalOpen(false);
+        setRescheduleReason("");
+      }, 2000);
+    } catch (error) {
+      console.error("Error during rescheduling:", error);
+      alert("Could not update meeting. Please try again.");
+    }
 
-    //   setSuccess(true);
+//     try {
+//       const token = localStorage.getItem("TeacherAuthToken");
+//       const response = await axios.put(
+//         `http://localhost:5001/updateTeacherMeeting/${selectedItemId}`,
+//         {
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${token}`,
+//           },
+//           body: JSON.stringify({
+//             selectedDate: rescheduleDate,
+//             startTime: rescheduleTime,
+//             description: rescheduleReason,
+//             meetingStatus: "Re-Scheduled",
+//           }),
+//         }
+//       );
+// console.log("Reschedule Date:", rescheduleDate);
+// console.log("Reschedule Time:", rescheduleTime);
 
-    //   setTimeout(() => {
-    //     setShowSuccess(false);
-    //     setIsRescheduleModalOpen(false);
-    //     setRescheduleReason("");
-    //   }, 2000);
-    // } catch (error) {
-    //   console.error("Error during rescheduling:", error);
-    //   alert("Could not update meeting. Please try again.");
-    // }
+//       const result = response.data;
+
+//       if (response.status !== 200) {
+//         throw new Error(result.message || "Failed to update meeting");
+//       }
+
+//       // Update frontend UI
+//       setUpcomingClasses((prevClasses) =>
+//         prevClasses.map((item) =>
+//           item._id === selectedItemId
+//             ? {
+//                 ...item,
+//                 meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
+//               }
+//             : item
+//         )
+//       );
+
+//       setSuccess(true);
+
+//       setTimeout(() => {
+//         setShowSuccess(false);
+//         setIsRescheduleModalOpen(false);
+//         setRescheduleReason("");
+//       }, 2000);
+//     } catch (error) {
+//       console.error("Error during rescheduling:", error);
+//       alert("Could not update meeting. Please try again.");
+//     }
   };
 
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -422,39 +480,40 @@ useEffect(() => {
 
     console.log("📤 Sending filter params:", params);
 
-    // try {
-    //   const response = await axios.get(
-    //     "https://api.blackstoneinfomaticstech.com/allMeetings", // Use your backend URL here
-    //     {
-    //       headers: {
-    //         Authorization: `Bearer ${token}`,
-    //         "Content-Type": "application/json",
-    //       },
-    //       params,
-    //     }
-    //   );
+    try {
+      const response = await axios.get(
+        "http://localhost:5001/teacherMeetinglist", // Use your backend URL here
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          params,
+        }
+      );
 
-    //   console.log("✅ Response:", response.data);
+      console.log("✅ Response:", response.data);
 
-    //   // You can split meetings into upcoming/completed based on your logic
-    //   const meetings: Meeting[] = response.data.meetings || [];
+      // You can split meetings into upcoming/completed based on your logic
+      const meetings: Meeting[] = response.data.meetings || [];
 
-    //   setUpcomingClasses(
-    //     meetings.filter((m: Meeting) => m.meetingStatus !== "Completed")
-    //   );
-    //   setCompletedData(
-    //     meetings.filter((m: Meeting) => m.meetingStatus === "Completed")
-    //   );
-    // } catch (error) {
-    //   console.error("❌ Error fetching filtered meetings:", error);
-    // }
+      setUpcomingClasses(
+        meetings.filter((m: Meeting) => m.meetingStatus !== "Completed")
+      );
+      setCompletedData(
+        meetings.filter((m: Meeting) => m.meetingStatus === "Completed")
+      );
+    } catch (error) {
+      console.error("❌ Error fetching filtered meetings:", error);
+    }
   };
 
 return (
   <BaseLayout>
     <TeacherHeader currentSection="Scheduled Meeting"/>
+    <NextMeetingSchedule />
     {/* Tabs */}
-    <div className="flex space-x-6  px-4 py-2 rounded-md">
+    <div className="flex space-x-6 mt-4 px-4 py-2 rounded-md">
       <button
         className={`relative text-[14px] transition font-medium ${
           activeTab === "upcoming"
@@ -571,8 +630,8 @@ return (
                   </div>
                 </td> */}
                 <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                  {item.selectedDate || item.meetingdate
-                    ? new Date(item.selectedDate || item.meetingdate).toLocaleDateString("en-US", {
+                  {item.selectedDate || item.selectedDate
+                    ? new Date(item.selectedDate || item.selectedDate).toLocaleDateString("en-US", {
                         month: "short",
                         day: "2-digit",
                         year: "numeric",
@@ -580,12 +639,12 @@ return (
                     : "N/A"}
                 </td>
                 <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left w-[80px] break-words whitespace-normal">
-                  {item.fromTime}
+                  {item.startTime}
                 </td>
                 <td className="px-3 py-2 text-left">
                   {(() => {
                     if (activeTab === "upcoming") {
-                      if (isStartMeetingNow(item.meetingdate, item.startTime, item.endTime)) {
+                      if (isStartMeetingNow(item.selectedDate, item.startTime, item.endTime)) {
                         return (
                           <button
                             className="text-[10px] font-semibold px-[11px] py-1 rounded-lg bg-[#576cbc] text-white border"
@@ -688,7 +747,7 @@ return (
             <h2 className="text-lg font-semibold mb-4">Filter by</h2>
 
             {/* Date Input */}
-             <div className="mb-6">
+             {/* <div className="mb-6">
               <label
                 htmlFor="meeting"
                 className="block text-sm font-medium mb-1"
@@ -704,7 +763,7 @@ return (
                 <option value="Weekly Meeting">Weekly Meeting</option>
                 <option value="Monthly Meeting">Monthly Meeting</option>
               </select>
-            </div>
+            </div> */}
 
             <div className="mb-4">
               <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
@@ -970,3 +1029,7 @@ return (
 };
 
 export default Meeting;
+function setTeachersByMeetingId(teachersMap: any) {
+  throw new Error("Function not implemented.");
+}
+
