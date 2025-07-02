@@ -247,7 +247,7 @@ function LiveClass() {
 
   useEffect(() => {
     console.log("select");
-    console.log("select", selectedTrial?._id);
+    console.log("select", selectedTrial?.trialId);
   }, [selectedTrial]);
 
   const filterUpcomingClass = (response: {
@@ -360,62 +360,64 @@ function LiveClass() {
     console.log("Selected Class:", upcomingClass);
     return upcomingClass;
   };
-  // Fetch class data
-  // useEffect(() => {
-  //   const fetchClassData = async () => {
-  //     try {
-  //       const token =
-  //         typeof window !== "undefined"
-  //           ? localStorage.getItem("TeacherAuthToken")
-  //           : null;
 
-  //       if (!token) {
-  //         console.error("❌ AdminAuthToken not found");
-  //         return;
-  //       }
+  useEffect(() => {
+    const fetchClassData = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherAuthToken")
+            : null;
 
-  //       const response = await fetch(
-  //         `https://api.blackstoneinfomaticstech.com/evaluationlist/${trailId}`,
-  //         {
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             Authorization: `Bearer ${token}`,
-  //           },
-  //         }
-  //       );
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-  //       const data = await response.json();
-  //       setOptions((prev) => ({
-  //         trialClassStatus: prev.trialClassStatus.includes(
-  //           data.trialClassStatus
-  //         )
-  //           ? prev.trialClassStatus
-  //           : [...prev.trialClassStatus, data.trialClassStatus],
-  //         studentStatus: prev.studentStatus.includes(data.studentStatus)
-  //           ? prev.studentStatus
-  //           : [...prev.studentStatus, data.studentStatus],
-  //         paymentStatus: prev.paymentStatus.includes(data.paymentStatus)
-  //           ? prev.paymentStatus
-  //           : [...prev.paymentStatus, data.paymentStatus],
-  //       }));
-  //       setTrialClassStatus(data.trialClassStatus);
-  //       setStudentStatus(data.studentStatus);
-  //       setPaymentStatus(data.paymentStatus);
-  //       setPaymentLink(
-  //         `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(
-  //           data._id
-  //         )}`
-  //       );
-  //       setFormData(data);
-  //       console.log(data);
-  //     } catch (error) {
-  //       console.error("Error fetching user data:", error);
-  //     }
-  //   };
-  //   fetchClassData();
-  // }, []);
+        if (!token) {
+          console.error("❌ AdminAuthToken not found");
+          return;
+        }
+
+        const response = await fetch(
+          `https://api.blackstoneinfomaticstech.com/evaluationlist/${selectedTrial?.trialId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+   
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+            console.log("data>>>>", data);
+        setOptions((prev) => ({
+          trialClassStatus: prev.trialClassStatus.includes(
+            data.trialClassStatus
+          )
+            ? prev.trialClassStatus
+            : [...prev.trialClassStatus, data.trialClassStatus],
+          studentStatus: prev.studentStatus.includes(data.studentStatus)
+            ? prev.studentStatus
+            : [...prev.studentStatus, data.studentStatus],
+          paymentStatus: prev.paymentStatus.includes(data.paymentStatus)
+            ? prev.paymentStatus
+            : [...prev.paymentStatus, data.paymentStatus],
+        }));
+        setTrialClassStatus(data.trialClassStatus);
+        setStudentStatus(data.studentStatus);
+        setPaymentStatus(data.paymentStatus);
+        setPaymentLink(
+          `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(
+            data._id
+          )}`
+        );
+        setFormData(data);
+        console.log(data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchClassData();
+  }, [selectedTrial?.trialId]);
 
   const updateClick = async (id: string | undefined) => {
     const formDataNames = {
