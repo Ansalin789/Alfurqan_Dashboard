@@ -26,73 +26,145 @@ interface ClassData {
   startTime: string[];
   endTime: string[];
   classLink: string;
+  sessionStatus: string;
 }
 
 const NextScheduledClass = () => {
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [isTimeUp, setIsTimeUp] = useState(false);
+  const [isClassOngoing, setIsClassOngoing] = useState(false);
+  const [hasClassEnded, setHasClassEnded] = useState(false);
+
+  const fetchClassData = async () => {
+    try {
+      const teacherId = localStorage.getItem("TeacherPortalId");
+      const token = localStorage.getItem("TeacherAuthToken");
+      if (!teacherId || !token) return;
+
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
+        {
+          params: { teacherId },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const now = new Date();
+
+      const upcoming = response.data.classSchedule
+        .map((item: ClassData) => {
+          const startDate = new Date(item.startDate);
+          const [startHour, startMin] = item.startTime[0]
+            .split(":")
+            .map(Number);
+          startDate.setHours(startHour, startMin, 0, 0);
+
+          const endDate = new Date(item.startDate);
+          const [endHour, endMin] = item.endTime[0].split(":").map(Number);
+          endDate.setHours(endHour, endMin, 0, 0);
+
+          return { ...item, classStart: startDate, classEnd: endDate };
+        })
+        .filter(
+  (item: any) =>
+    now < item.classEnd &&
+    (!item.sessionStatus || item.sessionStatus !== "Completed")
+)
+
+        .sort((a: any, b: any) => a.classStart - b.classStart)[0];
+
+      setClassData(upcoming ?? null);
+    } catch (error) {
+      console.error("Failed to fetch scheduled class:", error);
+    }
+  };
+
+  const triggerHandleEndCall = async () => {
+    try {
+      const token = localStorage.getItem("TeacherAuthToken");
+      if (!token || !classData?._id) {
+        console.warn("⚠️ Missing token or class ID");
+        return;
+      }
+
+      const payload = { sessionId: classData._id };
+
+      const response = await axios.post(
+        "https://api.blackstoneinfomaticstech.com/classSession/triggerEnd",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("✅ Session marked completed:", response.data);
+
+      setClassData((prev) =>
+        prev ? { ...prev, sessionStatus: "Completed" } : prev
+      );
+      setHasClassEnded(true);
+      fetchClassData();
+    } catch (err: any) {
+      console.error(
+        "❌ Error calling handleEndCall:",
+        err?.response?.data || err.message
+      );
+    }
+  };
 
   useEffect(() => {
-    const fetchClassData = async () => {
-      try {
-        const teacherId = localStorage.getItem("TeacherPortalId");
-        const token = localStorage.getItem("TeacherAuthToken");
-        if (!teacherId || !token) return;
-
-        const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
-          {
-            params: { teacherId },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const now = new Date();
-        const upcoming = response.data.classSchedule
-          .map((item: ClassData) => {
-            const classDate = new Date(item.startDate);
-            const [h, m] = item.startTime[0]?.split(":").map(Number) || [0, 0];
-            classDate.setHours(h, m, 0, 0);
-            return { ...item, classStart: classDate };
-          })
-          .filter((item: any) => item.classStart > now)
-          .sort((a: any, b: any) => a.classStart - b.classStart)[0];
-
-        setClassData(upcoming ?? null);
-      } catch (error) {
-        console.error("Failed to fetch scheduled class:", error);
-      }
-    };
-
     fetchClassData();
   }, []);
 
   useEffect(() => {
     if (!classData) return;
 
-    const classStart = new Date(classData.startDate);
-    const [h, m] = classData.startTime[0]?.split(":").map(Number) || [0, 0];
-    classStart.setHours(h, m, 0, 0);
-
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       const now = new Date();
-      const remaining = classStart.getTime() - now.getTime();
 
-      if (remaining <= 0) {
-        clearInterval(interval);
-        setIsTimeUp(true);
-        setTime({ hours: 0, minutes: 0, seconds: 0 });
-      } else {
-        const hours = Math.floor(remaining / 1000 / 60 / 60);
-        const minutes = Math.floor((remaining / 1000 / 60) % 60);
-        const seconds = Math.floor((remaining / 1000) % 60);
-        setTime({ hours, minutes, seconds });
-        setIsTimeUp(false);
+      const start = new Date(classData.startDate);
+      const [sh, sm] = classData.startTime[0].split(":").map(Number);
+      start.setHours(sh, sm, 0, 0);
+
+      const end = new Date(classData.startDate);
+      const [eh, em] = classData.endTime[0].split(":").map(Number);
+      end.setHours(eh, em, 0, 0);
+
+      // ✅ Check if class has ended and not marked completed
+      if (now > end && classData.sessionStatus !== "Completed") {
+        console.log(`⏹ Class ${classData._id} ended — marking via evaluation`);
+
+        const token = localStorage.getItem("TeacherAuthToken");
+        if (!token) return;
+
+        try {
+          // ✅ Trigger evaluation table update
+          await axios.post(
+            "https://api.blackstoneinfomaticstech.com/classSession/triggerEnd",
+            { sessionId: classData._id },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          console.log("✅ Evaluation marked as completed");
+
+          // ✅ Clear and fetch next
+          setClassData(null);
+          setTimeout(() => {
+            fetchClassData();
+          }, 2000);
+        } catch (err) {
+          console.error("❌ Failed to mark in evaluation:", err);
+        }
       }
-    }, 1000);
+    }, 10000); // every 10 sec
 
     return () => clearInterval(interval);
   }, [classData]);
@@ -106,39 +178,42 @@ const NextScheduledClass = () => {
   };
 
   const progress =
-    ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) * 100;
+    ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) *
+    100;
+
+  if (!classData) return null;
 
   return (
-    <div className="bg-[#71a1db] rounded-xl  shadow flex items-center justify-between text-white">
+    <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white">
       <div className="items-center p-2 px-8">
-        <h3 className="text-[13px] font-medium pt-3">Your Next Scheduled Class</h3>
+        <h3 className="text-[13px] font-medium pt-3">
+          Your Next Scheduled Class
+        </h3>
         <div className="flex items-center space-x-8 py-2">
           <div className="flex items-center space-x-2">
             <FaUser className="w-[10px]" />
-            <p className="text-[13px]">{classData?.student?.studentFirstName}</p>
+            <p className="text-[13px]">{classData.student?.studentFirstName}</p>
           </div>
           <div className="flex items-center space-x-2">
             <AiOutlineClockCircle className="w-[10px]" />
-            <p className="text-[13px]">{classData?.startTime?.[0]}</p>
+            <p className="text-[13px]">{classData.startTime[0]}</p>
           </div>
         </div>
       </div>
 
       <div className="flex items-center space-x-2 px-14">
-        {isTimeUp ? (
-          <>
-            <button
-              onClick={handleJoinClass}
-              className="relative text-white px-4 py-2 rounded-full text-sm font-medium"
-              style={{
-                backgroundImage:
-                  "linear-gradient(270deg, #0048AB, #0F79BB, #1aa3c7)",
-                backgroundSize: "400% 400%",
-                animation: "moveGradient 5s ease infinite",
-              }}
-            >
-              Join Now
-            </button>
+        {isClassOngoing ? (
+          <button
+            onClick={handleJoinClass}
+            className="relative text-white px-4 py-2 rounded-full text-sm font-medium"
+            style={{
+              backgroundImage:
+                "linear-gradient(270deg, #0048AB, #0F79BB, #1aa3c7)",
+              backgroundSize: "400% 400%",
+              animation: "moveGradient 5s ease infinite",
+            }}
+          >
+            Join Now
             <style>
               {`
                 @keyframes moveGradient {
@@ -148,7 +223,7 @@ const NextScheduledClass = () => {
                 }
               `}
             </style>
-          </>
+          </button>
         ) : (
           <>
             <p className="text-[13px] font-medium">Starts in</p>

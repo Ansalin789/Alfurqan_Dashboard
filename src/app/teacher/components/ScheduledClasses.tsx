@@ -106,7 +106,7 @@ const ScheduledClasses = () => {
 
         const classes = response.data.classSchedule;
         const now = new Date();
-
+           console.log("Fetched classes:", classes);
         const upcoming = classes.filter((cls) => {
           const classDate = new Date(cls.startDate);
           const timeString = cls.startTime[0] ?? "";
@@ -170,11 +170,13 @@ const ScheduledClasses = () => {
       activeTab === "upcoming" ? upcomingClasses : completedData;
     let filtered = [...latestDataToShow];
 
- if (filters.courseName) {
-  filtered = filtered.filter((c) =>
-    c.course?.courseName?.toLowerCase().includes(filters.courseName.toLowerCase())
-  );
-}
+    if (filters.courseName) {
+      filtered = filtered.filter((c) =>
+        c.course?.courseName
+          ?.toLowerCase()
+          .includes(filters.courseName.toLowerCase())
+      );
+    }
 
     if (filters.teacher) {
       filtered = filtered.filter((c) =>
@@ -330,7 +332,9 @@ const ScheduledClasses = () => {
                       {item.student.studentFirstName}{" "}
                       {item.student.studentLastName}
                     </td>
-                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">{item.course.courseName} </td>
+                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+                      {item.course.courseName}{" "}
+                    </td>
                     <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
                       {new Date(item.startDate).toLocaleDateString("en-US", {
                         month: "short",
@@ -338,9 +342,23 @@ const ScheduledClasses = () => {
                         year: "numeric",
                       })}
                     </td>
-                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">{item.startTime[0]}</td>
-                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">{item.scheduleStatus}</td>
-                    <td className="px-3 py-2 relative">
+                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+                      {item.startTime[0]}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
+                      <span
+                        className={`px-2 text-[10px] text-center py-[3px] rounded-md ${
+                          item.scheduleStatus === "Scheduled"
+                            ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
+                            : item.scheduleStatus === "Rescheduled"
+                            ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
+                            : ""
+                        }`}
+                      >
+                        {(item.scheduleStatus || "UNKNOWN").toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 relative ">
                       {item.scheduleStatus === "Scheduled" ||
                       item.scheduleStatus === "Rescheduled" ? (
                         <div className="relative inline-block text-left">
@@ -400,75 +418,101 @@ const ScheduledClasses = () => {
       <Modal
         isOpen={isFilterModalOpen}
         onRequestClose={() => setIsFilterModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-lg bg-white w-[320px] dark:bg-[#252525]"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white w-[650px] "
+        overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
       >
         <div>
-          <h2 className="text-sm font-semibold mb-4 dark:text-white">
+          <h2 className="text-[16px] font-semibold mb-6 text-[#2D2D2D] dark:text-white">
             Filter by
           </h2>
 
-          <select
-            className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
-            value={filters.courseName}
-            onChange={(e) =>
-              setFilters({ ...filters, courseName: e.target.value })
-            }
-          >
-            {" "}
-            <option value="">Select Course</option>
-            <option value="Quran">Quran</option>
-            <option value="Arabic">Arabic</option>
-            <option value="Tajweed">Tajweed</option>
-          </select>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
+                Student
+              </label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                value={filters.studentName}
+                onChange={(e) =>
+                  setFilters({ ...filters, studentName: e.target.value })
+                }
+              >
+                <option value="">Select Student</option>
+                {studentNames.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
+                Course
+              </label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                value={filters.courseName}
+                onChange={(e) =>
+                  setFilters({ ...filters, courseName: e.target.value })
+                }
+              >
+                <option value="">Select Course</option>
+                <option value="Quran">Quran</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Tajweed">Tajweed</option>
+              </select>
+            </div>
 
-          <select
-            className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
-            value={filters.scheduleStatus}
-            onChange={(e) =>
-              setFilters({ ...filters, scheduleStatus: e.target.value })
-            }
-          >
-            <option value="">Select Schedule Status</option>
-            <option value="Scheduled">Scheduled</option>
-            <option value="Rescheduled">Rescheduled</option>
-          </select>
+            <div>
+              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
+                From Date
+              </label>
+              <input
+                type="date"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                value={filters.fromDate}
+                onChange={(e) =>
+                  setFilters({ ...filters, fromDate: e.target.value })
+                }
+              />
+            </div>
 
-          <select
-            className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
-            value={filters.studentName}
-            onChange={(e) =>
-              setFilters({ ...filters, studentName: e.target.value })
-            }
-          >
-            <option value="">Select Student</option>
-            {studentNames.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
+            <div>
+              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
+                To Date
+              </label>
+              <input
+                type="date"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                value={filters.toDate}
+                onChange={(e) =>
+                  setFilters({ ...filters, toDate: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[#444] dark:text-white mb-1 block">
+                Status
+              </label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                value={filters.scheduleStatus}
+                onChange={(e) =>
+                  setFilters({ ...filters, scheduleStatus: e.target.value })
+                }
+              >
+                <option value="">Select Status</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Rescheduled">Rescheduled</option>
+              </select>
+            </div>
+          </div>
 
-          <input
-            type="date"
-            className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
-            value={filters.fromDate}
-            onChange={(e) =>
-              setFilters({ ...filters, fromDate: e.target.value })
-            }
-          />
-
-          <input
-            type="date"
-            className="w-full px-3 py-2 mb-4 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
-            value={filters.toDate}
-            onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
-          />
-
-          <div className="flex justify-between gap-2">
+          <div className="flex justify-end gap-3">
             <button
               onClick={handleResetFilters}
-              className="w-1/2 py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium"
+              className="px-5 py-2 border border-[#576CBC] text-[#576CBC] bg-white rounded-lg text-sm font-medium hover:bg-[#f6f8ff]"
             >
               Reset
             </button>
@@ -477,9 +521,9 @@ const ScheduledClasses = () => {
                 handleApplyFilters();
                 setIsFilterModalOpen(false);
               }}
-              className="w-1/2 py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
+              className="px-5 py-2 bg-[#576CBC] text-white rounded-lg text-sm font-medium hover:bg-[#475ab1]"
             >
-              Apply
+              Show {filteredClasses.length} results
             </button>
           </div>
         </div>
