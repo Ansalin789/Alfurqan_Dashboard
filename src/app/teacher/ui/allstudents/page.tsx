@@ -140,10 +140,12 @@ const StudentList = () => {
     switch (status?.toUpperCase()) {
       case "COMPLETED":
         return "bg-green-100 text-green-700";
-      case "ONGOING":
+      case "NOTCOMPLETED":
         return "bg-yellow-100 text-yellow-700";
-      case "PENDING":
+      case "NOTASSIGNED":
         return "bg-red-100 text-red-700";
+        case "ASSIGNED":
+          return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-600";
     }
@@ -266,75 +268,111 @@ const StudentList = () => {
                           </button>
                           {openDropdownId === student.studentId && (
                             <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
-                              <button
-                                className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
-                                onClick={() => handleViewProfile(student.studentId)}
-                              >
-                                View Profile
-                              </button>
-                              <button className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]">
-                                Assign
-                              </button>
-                              <button
-                                className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                onClick={() => setIsModalOpen(true)}
-                              >
-                                New Assignment
-                              </button>
-                              {isModalOpen && (
-                                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                                  <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
-                                    <div>
-                                      <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">Assign</h2>
-                                      <div className="mb-4">
-                                        <label className="text-sm block mb-1 dark:text-[#fff]">Title</label>
-                                        <input
-                                          type="text"
-                                          placeholder="Enter title"
-                                          className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
-                                        />
-                                      </div>
-                                      <div className="flex gap-4 mb-4">
-                                        <div className="flex-1">
-                                          <label className="text-sm block mb-1 dark:text-[#fff]">Assigned Date</label>
-                                          <input
-                                            type="date"
-                                            className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
-                                          />
-                                        </div>
-                                        <div className="flex-1">
-                                          <label className="text-sm block mb-1 dark:text-[#fff]">Due Date</label>
-                                          <input
-                                            type="date"
-                                            className="w-full border rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
-                                          />
-                                        </div>
-                                      </div>
-                                      <div className="mb-4">
-                                        <label className="text-sm block mb-1 dark:text-[#fff]">Comment</label>
-                                        <textarea
-                                          placeholder="Write your comment here..."
-                                          className="w-full border rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
-                                        ></textarea>
-                                      </div>
-                                    </div>
-                                    <div className="flex justify-end gap-3">
+                              {(() => {
+                                const status = assignmentInfo?.classStatus?.toUpperCase();
+                                if (["COMPLETED", "NOTCOMPLETED", "ASSIGNED"].includes(status)) {
+                                  return (
+                                    <>
                                       <button
-                                        className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
-                                        onClick={() => setIsModalOpen(false)}
+                                        className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                                        onClick={() => handleViewProfile(student.studentId)}
+                                      >
+                                        View Profile
+                                      </button>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                        onClick={() => setOpenDropdownId(null)}
                                       >
                                         Cancel
                                       </button>
-                                      <button
-                                        className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                        onClick={handleClick}
-                                      >
-                                        Create Assignment
+                                    </>
+                                  );
+                                } else if (status === "NOTASSIGNED") {
+                                  return (
+                                    <>
+                                      <button className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]">
+                                        Assign
                                       </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                        onClick={() => setIsModalOpen(true)}
+                                      >
+                                        New Assignment
+                                      </button>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                        onClick={() => setOpenDropdownId(null)}
+                                      >
+                                        Cancel
+                                      </button>
+                                      {isModalOpen && (
+                                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                          <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
+                                            <div>
+                                              <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">Assign</h2>
+                                              <div className="mb-4">
+                                                <label className="text-sm block mb-1 dark:text-[#fff]">Title</label>
+                                                <input
+                                                  type="text"
+                                                  placeholder="Enter title"
+                                                  className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                                />
+                                              </div>
+                                              <div className="flex gap-4 mb-4">
+                                                <div className="flex-1">
+                                                  <label className="text-sm block mb-1 dark:text-[#fff]">Assigned Date</label>
+                                                  <input
+                                                    type="date"
+                                                    className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                                  />
+                                                </div>
+                                                <div className="flex-1">
+                                                  <label className="text-sm block mb-1 dark:text-[#fff]">Due Date</label>
+                                                  <input
+                                                    type="date"
+                                                    className="w-full border rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                                  />
+                                                </div>
+                                              </div>
+                                              <div className="mb-4">
+                                                <label className="text-sm block mb-1 dark:text-[#fff]">Comment</label>
+                                                <textarea
+                                                  placeholder="Write your comment here..."
+                                                  className="w-full border rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                                ></textarea>
+                                              </div>
+                                            </div>
+                                            <div className="flex justify-end gap-3">
+                                              <button
+                                                className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
+                                                onClick={() => setIsModalOpen(false)}
+                                              >
+                                                Cancel
+                                              </button>
+                                              <button
+                                                className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
+                                                onClick={handleClick}
+                                              >
+                                                Create Assignment
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </>
+                                  );
+                                } else {
+                                  // fallback for unknown status
+                                  return (
+                                    <button
+                                      className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                      onClick={() => setOpenDropdownId(null)}
+                                    >
+                                      Cancel
+                                    </button>
+                                  );
+                                }
+                              })()}
                             </div>
                           )}
                         </td>
