@@ -7,6 +7,100 @@ import { GoogleLogin, CredentialResponse, GoogleOAuthProvider } from "@react-oau
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
+export interface RoleModuleAccess {
+  read: boolean;
+  write: boolean;
+  delete: boolean;
+}
+
+export interface AdminModules {
+  dashboard: RoleModuleAccess;
+  evaluation: RoleModuleAccess;
+  student: RoleModuleAccess;
+  employees: RoleModuleAccess;
+  courses: RoleModuleAccess;
+  classes: RoleModuleAccess;
+  invoice: RoleModuleAccess;
+  analytics: RoleModuleAccess;
+  messages: RoleModuleAccess;
+  settings: RoleModuleAccess;
+  meetings: RoleModuleAccess;
+}
+
+export interface AcademicModules {
+  dashboard: RoleModuleAccess;
+  scheduledevaluation: RoleModuleAccess;
+  scheduledtrail: RoleModuleAccess;
+  students: RoleModuleAccess;
+  teachers: RoleModuleAccess;
+  messages: RoleModuleAccess;
+  support: RoleModuleAccess;
+}
+
+export interface SupervisorModules {
+  dashboard: RoleModuleAccess;
+  recuirement: RoleModuleAccess;
+  meeting: RoleModuleAccess;
+  teachers: RoleModuleAccess;
+  messages: RoleModuleAccess;
+  support: RoleModuleAccess;
+}
+
+export interface StudentModules {
+  dashboard: RoleModuleAccess;
+  classes: RoleModuleAccess;
+  assignments: RoleModuleAccess;
+  payments: RoleModuleAccess;
+  knowledgebase: RoleModuleAccess;
+  support: RoleModuleAccess;
+}
+
+export interface TeacherModules {
+  dashboard: RoleModuleAccess;
+  liveclasses: RoleModuleAccess;
+  scheduledclasses: RoleModuleAccess;
+  assignments: RoleModuleAccess;
+  messages: RoleModuleAccess;
+  analytics: RoleModuleAccess;
+  support: {
+    read: boolean;
+    write: boolean;
+  };}
+
+export interface RoleAccess {
+  admin: boolean;
+  adminmodules: AdminModules;
+  academicCoach: boolean;
+  academicmodules: AcademicModules;
+  supervisor: boolean;
+  supervisormodules: SupervisorModules;
+  student: boolean;
+  studentmodules: StudentModules;
+  teacher: boolean;
+  teachermodules: TeacherModules;
+}
+
+export interface EmployeeAccessData {
+  _id: string;
+  employeeId: string;
+  employeeName: string;
+  contact: string;
+  designation: string[];
+  dateOfJoining: string;
+  roleAccess: RoleAccess;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  __v: number;
+}
+
+export interface AccessApiResponse {
+  success: boolean;
+  data: EmployeeAccessData;
+}
+
 const slides = [
   {
     text: "Start your journey by one click, explore beautiful world!",
@@ -75,6 +169,54 @@ const searchParams = useSearchParams();
     }
   };
 
+  const fetchrolebasedaccesscontrol = async (
+    userId: string,
+    token: string,
+    role?: string
+  ) => {
+    try {
+      const response = await axios.get<AccessApiResponse>(
+        `https://api.blackstoneinfomaticstech.com/update-access/${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        const roleAccess = response.data.data.roleAccess;
+
+        console.log("Original Role Access from backend:", roleAccess);
+
+        // ✅ Use role string to determine the real access (override incorrect backend flags)
+        if (role?.includes("TEACHER")) {
+          // Override if necessary
+          roleAccess.teacher = true;
+          roleAccess.admin = false;
+
+          localStorage.setItem(
+            "TeacherRolePermission",
+            JSON.stringify(roleAccess.teachermodules)
+          );
+
+          console.log(
+            "Stored only academicmodules after overriding admin flag"
+          );
+        } else {
+          console.warn(
+            "User is not an Academic Coach. Ignoring academicmodules."
+          );
+        }
+      } else {
+        throw new Error("Failed to fetch role-based access control");
+      }
+    } catch (error) {
+      console.log("Error fetching role-based access:", error);
+    }
+  };
+
   const setLoginError = (message: string) => {
     setError(message);
     setEmailNotExist(true);
@@ -86,9 +228,14 @@ const searchParams = useSearchParams();
     try {
       const data = await signIn(username, password);
       const { accessToken, role, userId, userName } = data;
+      if (!role?.includes("TEACHER")) {
+        setLoginError("Only Teacher are allowed to log in.");
+        return;
+      }
       localStorage.setItem("TeacherAuthToken", accessToken);
       localStorage.setItem("TeacherPortalId", userId);
       localStorage.setItem("TeacherPortalName", userName);
+      await fetchrolebasedaccesscontrol(userId, accessToken, role);
       const authToken = localStorage.getItem("TeacherAuthToken");
       console.log(accessToken);
       console.log(authToken);
@@ -200,7 +347,7 @@ const searchParams = useSearchParams();
     handleGoogleFailure(error);
   };
   const newuserclick = () => {
-    router.push("https://alfurqanwebsite.vercel.app/StudentForm");
+    router.push("https://alfweb.vercel.app/StudentForm");
   };
   return (
         <GoogleOAuthProvider clientId="45636645803-6arfjuthmcvfj3r6e6qep23dlpfntrc7.apps.googleusercontent.com">
