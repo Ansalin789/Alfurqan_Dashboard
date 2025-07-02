@@ -11,52 +11,117 @@ import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import BaseLayout from "@/components/BaseLayout";
 import TeacherHeader from "../../components/TeacherHeader";
 
-// Interfaces
-interface StudentInfo {
+export interface AssignmentItem {
+  assignmentId?: string;
+  assignmentType: string;
+  status: string;
+  assignmentName: string;
+  title: string;
+}
+
+export interface StudentCoreInfo {
+  studentId: string;
+  name: string;
+}
+
+export interface EvaluationStudentInfo {
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
-  studentEmail?: string;
+  studentEmail: string;
+  studentGender: string;
+  studentPhone: number;
+  studentCity: string;
+  studentCountry: string;
+  studentCountryCode: string;
   learningInterest: string;
+  numberOfStudents: number;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  timeZone: string;
+  referralSource: string;
+  preferredDate: string;
+  evaluationStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
 }
 
-interface TeacherInfo {
+export interface EvaluationTeacherInfo {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
 }
 
-interface SubscriptionInfo {
+export interface EvaluationSubscriptionInfo {
   subscriptionName: string;
 }
 
-interface StudentDetails {
+export interface StudentEvaluationDetails {
+  student: EvaluationStudentInfo;
+  teacher: EvaluationTeacherInfo;
+  subscription: EvaluationSubscriptionInfo;
   _id: string;
-  student: StudentInfo;
-  teacher: TeacherInfo;
-  subscription: SubscriptionInfo;
+  academicCoachId: string;
   classType: string;
+  classDay: string[];
+  startTime: string[];
+  endTime: string[];
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  planTotalPrice: number;
   classStartDate: string;
   classEndDate: string;
+  classStartTime: string;
+  classEndTime: string;
+  accomplishmentTime: string;
+  studentRate: number;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  studentStatus: string;
   classStatus: string;
-  languageLevel?: string;
-  [key: string]: any; 
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  teacherStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  expectedFinishingDate: number;
+  assignedTeacherId: string;
+  assignedTeacherEmail: string;
+  __v: number;
 }
 
-interface Assignment {
-  assignmentId?: string; // Optional since not all objects have this
-  assignmentType: string;
-  status: string;
-  assignmentName: string;
-  title: string;
-  studentId: string;
-  name: string;
-  studentDetails: StudentDetails;
+export interface StudentWithAssignments extends StudentCoreInfo {
+  studentDetails: StudentEvaluationDetails;
+  assignment: AssignmentItem[];
 }
 
 const StudentList = () => {
-  const [regularStudents, setRegularStudents] = useState<Assignment[]>([]);
-  const [groupStudents, setGroupStudents] = useState<Assignment[]>([]);
+  const [regularStudents, setRegularStudents] = useState<
+    StudentWithAssignments[]
+  >([]);
+  const [groupStudents, setGroupStudents] = useState<StudentWithAssignments[]>(
+    []
+  );
+
   const [regularCount, setRegularCount] = useState<number>(0);
   const [groupCount, setGroupCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<"Regular" | "Group">("Regular");
@@ -77,7 +142,7 @@ const StudentList = () => {
 
         console.log("Fetching data for teacherId:", teacherId);
 
-        const res = await axios.get<Assignment[]>(
+        const res = await axios.get<AssignmentItem[]>(
           "http://localhost:5001/classShedule/teacher/list/",
           {
             headers: {
@@ -91,7 +156,7 @@ const StudentList = () => {
         const allAssignments = res.data;
         console.log("API Response:", allAssignments);
 
-        const uniqueMap = new Map<string, Assignment>();
+        const uniqueMap = new Map<string, AssignmentItem();
         for (const assign of allAssignments) {
           if (!uniqueMap.has(assign.studentId)) {
             uniqueMap.set(assign.studentId, assign);
@@ -132,7 +197,7 @@ const StudentList = () => {
   };
   const router = useRouter(); // Add this
 
-   const handleViewProfile = (studentId: string) => {
+  const handleViewProfile = (studentId: string) => {
     router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
   };
 
@@ -149,8 +214,8 @@ const StudentList = () => {
         return "bg-yellow-100 text-yellow-700";
       case "NOTASSIGNED":
         return "bg-red-100 text-red-700";
-        case "ASSIGNED":
-          return "bg-green-100 text-green-800";
+      case "ASSIGNED":
+        return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-600";
     }
@@ -158,15 +223,18 @@ const StudentList = () => {
 
   return (
     <BaseLayout>
-        <TeacherHeader currentSection="Assignments" />
-    
-   <div className="md:p-0 mx-auto w-full">
+      <TeacherHeader currentSection="Assignments" />
+
+      <div className="md:p-0 mx-auto w-full">
         <div className="flex flex-col h-full w-full justify-between">
           <div className="flex flex-col">
             {/* Tabs */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
               <div className="flex flex-wrap gap-4 font-semibold">
-                {[{ type: "Regular", count: regularCount }, { type: "Group", count: groupCount }].map(({ type, count }) => (
+                {[
+                  { type: "Regular", count: regularCount },
+                  { type: "Group", count: groupCount },
+                ].map(({ type, count }) => (
                   <button
                     key={type}
                     onClick={() => setActiveTab(type as "Regular" | "Group")}
@@ -181,7 +249,7 @@ const StudentList = () => {
                 ))}
               </div>
             </div>
-  
+
             {/* Search + Filter */}
             <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg">
               <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
@@ -193,19 +261,20 @@ const StudentList = () => {
                     className="bg-transparent outline-none text-[15px] w-52 py-3"
                   />
                 </div>
-  
+
                 <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
                   <MdTune className="w-4 h-4" />
                   <span>Filter</span>
                 </div>
-  
+
                 <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                   <span className="text-left -ml-60">
-                    Showing {studentsToDisplay.length} of {studentsToDisplay.length}
+                    Showing {studentsToDisplay.length} of{" "}
+                    {studentsToDisplay.length}
                   </span>
                 </div>
               </div>
-  
+
               {/* Table */}
               <table className="table-fixed w-full">
                 <thead className="text-[12px] bg-[#4C6993] text-white">
@@ -232,156 +301,202 @@ const StudentList = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {studentsToDisplay.map((student, index) => {
+                  {studentsToDisplay.map((student, studentIndex) => {
                     const studentInfo = student.studentDetails?.student;
-                    const assignmentInfo = student.studentDetails;
-  
-                    return (
-                      <tr
-                        key={index}
-                        className={`text-[10px] ${
-                          index % 2 === 0
-                            ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                            : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
-                      >
-                        <td className="px-3 py-3 break-words">{studentInfo?.studentId}</td>
-                        <td className="px-3 py-3 text-[#3D8FDE] font-medium break-words">
-                          {studentInfo?.studentFirstName} {studentInfo?.studentLastName}
-                        </td>
-                        <td className="px-3 py-3 break-words">{assignmentInfo?.assignmentId}</td>
-                        <td className="px-3 py-3 break-words">{assignmentInfo?.languageLevel || "-"}</td>
-                        <td className="px-3 py-3 break-words">{studentInfo?.learningInterest || "-"}</td>
-                        <td className="px-3 py-3 break-words text-[">{assignmentInfo?.classType}</td>
-                        <td className="px-3 py-3 break-words">
-                          {new Date(assignmentInfo?.classStartDate).toLocaleDateString()}
-                        </td>
-                        <td className="px-3 py-3 break-words">
-                          {new Date(assignmentInfo?.classEndDate).toLocaleDateString()}
-                        </td>
-                        <td className="px-3 py-3 break-words">
-                          <span className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(assignmentInfo?.classStatus)}`}>
-                            {assignmentInfo?.classStatus}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 text-center relative">
-                          <button
-                            className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
-                            onClick={() => toggleDropdown(student.studentId)}
-                          >
-                            <BsThreeDotsVertical />
-                          </button>
-                          {openDropdownId === student.studentId && (
-                            <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
-                              {(() => {
-                                const status = assignmentInfo?.classStatus?.toUpperCase();
-                                if (["COMPLETED", "NOTCOMPLETED", "ASSIGNED"].includes(status)) {
-                                  return (
-                                    <>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
-                                        onClick={() => handleViewProfile(student.studentId)}
-                                      >
-                                        View Profile
-                                      </button>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                        onClick={() => setOpenDropdownId(null)}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </>
-                                  );
-                                } else if (status === "NOTASSIGNED") {
-                                  return (
-                                    <>
-                                      <button className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]">
-                                        Assign
-                                      </button>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                        onClick={() => setIsModalOpen(true)}
-                                      >
-                                        New Assignment
-                                      </button>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                        onClick={() => setOpenDropdownId(null)}
-                                      >
-                                        Cancel
-                                      </button>
-                                      {isModalOpen && (
-                                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                                          <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
-                                            <div>
-                                              <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">Assign</h2>
-                                              <div className="mb-4">
-                                                <label className="text-sm block mb-1 dark:text-[#fff]">Title</label>
-                                                <input
-                                                  type="text"
-                                                  placeholder="Enter title"
-                                                  className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
-                                                />
-                                              </div>
-                                              <div className="flex gap-4 mb-4">
-                                                <div className="flex-1">
-                                                  <label className="text-sm block mb-1 dark:text-[#fff]">Assigned Date</label>
+                    const studentDetails = student.studentDetails;
+
+                    return student.assignment.map(
+                      (assignmentItem, assignIndex) => (
+                        <tr
+                          key={`${student.studentId}-${assignIndex}`}
+                          className={`text-[10px] ${
+                            studentIndex % 2 === 0
+                              ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                              : "bg-[#F8F8F8] dark:bg-[#303030]"
+                          }`}
+                        >
+                          <td className="px-3 py-3 break-words">
+                            {studentInfo?.studentId}
+                          </td>
+                          <td className="px-3 py-3 text-[#3D8FDE] font-medium break-words">
+                            {studentInfo?.studentFirstName}{" "}
+                            {studentInfo?.studentLastName}
+                          </td>
+                          <td className="px-3 py-3 break-words">
+                            {assignmentItem.assignmentId || "-"}
+                          </td>
+                          <td className="px-3 py-3 break-words">
+                            {studentDetails?.languageLevel || "-"}
+                          </td>
+                          <td className="px-3 py-3 break-words">
+                            {assignmentItem.assignmentName}
+                          </td>
+                          <td className="px-3 py-3 break-words">
+                            {studentDetails?.classType}
+                          </td>
+                          <td className="px-3 py-3 break-words">
+                            {new Date(
+                              studentDetails?.classStartDate
+                            ).toLocaleDateString()}
+                          </td>
+                          <td className="px-3 py-3 break-words">
+                            {new Date(
+                              studentDetails?.classEndDate
+                            ).toLocaleDateString()}
+                          </td>
+                          <td className="px-3 py-3 break-words">
+                            <span
+                              className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
+                                assignmentItem.status
+                              )}`}
+                            >
+                              {assignmentItem.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 text-center relative">
+                            <button
+                              className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
+                              onClick={() => toggleDropdown(student.studentId)}
+                            >
+                              <BsThreeDotsVertical />
+                            </button>
+                            {openDropdownId === student.studentId && (
+                              <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
+                                {(() => {
+                                  const status =
+                                    assignmentItem.status?.toUpperCase();
+                                  if (
+                                    [
+                                      "COMPLETED",
+                                      "NOTCOMPLETED",
+                                      "ASSIGNED",
+                                      "NOTASSIGNED"
+                                    ].includes(status)
+                                  ) {
+                                    return (
+                                      <>
+                                        <button
+                                          className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                                          onClick={() =>
+                                            handleViewProfile(student.studentId)
+                                          }
+                                        >
+                                          View Profile
+                                        </button>
+                                        <button
+                                          className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                          onClick={() =>
+                                            setOpenDropdownId(null)
+                                          }
+                                        >
+                                          Cancel
+                                        </button>
+                                      </>
+                                    );
+                                  } else if (status === "NOTASSIGNED") {
+                                    return (
+                                      <>
+                                        <button className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]">
+                                          Assign
+                                        </button>
+                                        <button
+                                          className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                          onClick={() => setIsModalOpen(true)}
+                                        >
+                                          New Assignment
+                                        </button>
+                                        <button
+                                          className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                          onClick={() =>
+                                            setOpenDropdownId(null)
+                                          }
+                                        >
+                                          Cancel
+                                        </button>
+                                        {isModalOpen && (
+                                          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                            <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
+                                              <div>
+                                                <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">
+                                                  Assign
+                                                </h2>
+                                                <div className="mb-4">
+                                                  <label className="text-sm block mb-1 dark:text-[#fff]">
+                                                    Title
+                                                  </label>
                                                   <input
-                                                    type="date"
+                                                    type="text"
+                                                    placeholder="Enter title"
                                                     className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
                                                   />
                                                 </div>
-                                                <div className="flex-1">
-                                                  <label className="text-sm block mb-1 dark:text-[#fff]">Due Date</label>
-                                                  <input
-                                                    type="date"
-                                                    className="w-full border rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
-                                                  />
+                                                <div className="flex gap-4 mb-4">
+                                                  <div className="flex-1">
+                                                    <label className="text-sm block mb-1 dark:text-[#fff]">
+                                                      Assigned Date
+                                                    </label>
+                                                    <input
+                                                      type="date"
+                                                      className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                                    />
+                                                  </div>
+                                                  <div className="flex-1">
+                                                    <label className="text-sm block mb-1 dark:text-[#fff]">
+                                                      Due Date
+                                                    </label>
+                                                    <input
+                                                      type="date"
+                                                      className="w-full border rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                                    />
+                                                  </div>
+                                                </div>
+                                                <div className="mb-4">
+                                                  <label className="text-sm block mb-1 dark:text-[#fff]">
+                                                    Comment
+                                                  </label>
+                                                  <textarea
+                                                    placeholder="Write your comment here..."
+                                                    className="w-full border rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                                  ></textarea>
                                                 </div>
                                               </div>
-                                              <div className="mb-4">
-                                                <label className="text-sm block mb-1 dark:text-[#fff]">Comment</label>
-                                                <textarea
-                                                  placeholder="Write your comment here..."
-                                                  className="w-full border rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
-                                                ></textarea>
+                                              <div className="flex justify-end gap-3">
+                                                <button
+                                                  className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
+                                                  onClick={() =>
+                                                    setIsModalOpen(false)
+                                                  }
+                                                >
+                                                  Cancel
+                                                </button>
+                                                <button
+                                                  className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
+                                                  onClick={handleClick}
+                                                >
+                                                  Create Assignment
+                                                </button>
                                               </div>
                                             </div>
-                                            <div className="flex justify-end gap-3">
-                                              <button
-                                                className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
-                                                onClick={() => setIsModalOpen(false)}
-                                              >
-                                                Cancel
-                                              </button>
-                                              <button
-                                                className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                                onClick={handleClick}
-                                              >
-                                                Create Assignment
-                                              </button>
-                                            </div>
                                           </div>
-                                        </div>
-                                      )}
-                                    </>
-                                  );
-                                } else {
-                                  // fallback for unknown status
-                                  return (
-                                    <button
-                                      className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                      onClick={() => setOpenDropdownId(null)}
-                                    >
-                                      Cancel
-                                    </button>
-                                  );
-                                }
-                              })()}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
+                                        )}
+                                      </>
+                                    );
+                                  } else {
+                                    return (
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                        onClick={() => setOpenDropdownId(null)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    );
+                                  }
+                                })()}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )
                     );
                   })}
                 </tbody>
