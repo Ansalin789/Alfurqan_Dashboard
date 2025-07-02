@@ -362,26 +362,26 @@ function Analytics() {
       });
     }
 
-   if (searchQuery) {
-  const query = searchQuery.toLowerCase(); // 🔽 normalize once
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase(); // 🔽 normalize once
 
-  filtered = filtered.filter((item) => {
-    const name = item.name?.toLowerCase() || "";
-    const course = item.studentDetails?.course?.courseName?.toLowerCase() || "";
-    const classType = item.studentDetails?.classType?.toLowerCase() || "";
-    const status = item.studentDetails?.status?.toLowerCase() || "";
-    const studentId = item.studentId?.toLowerCase() || "";
+      filtered = filtered.filter((item) => {
+        const name = item.name?.toLowerCase() || "";
+        const course =
+          item.studentDetails?.course?.courseName?.toLowerCase() || "";
+        const classType = item.studentDetails?.classType?.toLowerCase() || "";
+        const status = item.studentDetails?.status?.toLowerCase() || "";
+        const studentId = item.studentId?.toLowerCase() || "";
 
-    return (
-      studentId.includes(query) ||
-      name.includes(query) ||
-      course.includes(query) ||
-      classType.includes(query) ||
-      status.includes(query)
-    );
-  });
-}
-
+        return (
+          studentId.includes(query) ||
+          name.includes(query) ||
+          course.includes(query) ||
+          classType.includes(query) ||
+          status.includes(query)
+        );
+      });
+    }
 
     setFilteredStudents(filtered);
   }, [students, filters, searchQuery]);
@@ -517,7 +517,14 @@ function Analytics() {
 
                 <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                   <span className="text-left -ml-60 ">
-                    {/* Showing {currentItems.length} of {paginatedData.length} */}
+                    {activeView === "students" &&
+                      `Showing ${filteredStudents.slice(0, 10).length} of ${
+                        filteredStudents.length
+                      }`}
+                    {activeView === "classes" &&
+                      `Showing ${currentItems.length} of ${filteredClasses.length}`}
+                    {activeView === "earnings" &&
+                      `Showing ${currentItems.length} of ${filteredClasses.length}`}
                   </span>
                 </div>
               </div>
