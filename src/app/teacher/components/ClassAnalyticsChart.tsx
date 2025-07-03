@@ -110,7 +110,8 @@ const ClassAnalytics = () => {
     fetchClassData();
   }, []);
 
-  const radiusOffset = [65, 50, 35]; // Radius for Scheduled, Completed, Absent
+  // SVG chart calculations
+  const radiusOffset = [65, 50, 35]; // Outer to inner rings
   const total = chartData.reduce((a, b) => a + b, 0);
   const circleData = chartData.map((value, i) => {
     const percent = total ? (value / total) * 100 : 0;
@@ -120,12 +121,12 @@ const ClassAnalytics = () => {
     return { radius, color: COLORS[i], dash, circumference };
   });
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (loading) return <p className="text-center text-gray-500">Loading...</p>;
+  if (error) return <p className="text-red-500 text-center">{error}</p>;
 
   return (
     <div className="bg-white dark:bg-[#343434] shadow-md rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between w-full h-full">
-      {/* SVG Chart */}
+      {/* SVG Circular Chart */}
       <div className="relative w-[200px] h-[200px] flex items-center justify-center">
         <svg viewBox="0 0 160 160" className="w-full h-full">
           {circleData.map(({ radius, color, dash, circumference }, i) => (
@@ -143,6 +144,7 @@ const ClassAnalytics = () => {
             />
           ))}
         </svg>
+        {/* Center Total Display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           <p className="text-[28px] font-bold text-[#0E1B3D] dark:text-white">
             {totalClasses}
@@ -153,7 +155,7 @@ const ClassAnalytics = () => {
         </div>
       </div>
 
-      {/* Analytics Summary */}
+      {/* Status Summary */}
       <div className="flex flex-col w-full max-w-[300px] mt-6 md:mt-0 md:ml-6">
         <h3 className="text-[#0E1B3D] dark:text-white font-bold text-[18px] mb-4">
           Class Analytics

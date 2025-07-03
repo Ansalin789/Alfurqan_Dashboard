@@ -9,8 +9,7 @@ const TeachingActivity: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token =
-          typeof window !== 'undefined' ? localStorage.getItem('TeacherAuthToken') : null;
+        const token = typeof window !== 'undefined' ? localStorage.getItem('TeacherAuthToken') : null;
         const teacherId = localStorage.getItem('TeacherPortalId');
 
         if (!token || !teacherId) {
@@ -100,9 +99,9 @@ const TeachingActivity: React.FC = () => {
         </select>
       </div>
 
-      {/* Graph Container */}
+      {/* Graph */}
       <div className="flex">
-        {/* Y-Axis Labels */}
+        {/* Y-Axis */}
         <div className="flex flex-col justify-between text-xs text-slate-400 dark:text-gray-400 mr-3 h-[160px] pt-2 pb-4">
           {['50', '40', '30', '20', '10', '0'].map((label, i) => (
             <div key={i} className="h-[26px] flex items-center justify-end pr-1">
@@ -121,12 +120,11 @@ const TeachingActivity: React.FC = () => {
               </linearGradient>
             </defs>
 
-            {/* Area fill */}
+            {/* Area under the line */}
             <path d={areaPath} fill="url(#greenGradient)" stroke="none" />
-            {/* Dashed Line */}
+            {/* Curved Line */}
             <path d={curvePath} fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="4" />
-
-            {/* Dots (Pins) */}
+            {/* Dots */}
             {points.map((point, idx) => (
               <circle
                 key={idx}
@@ -138,18 +136,9 @@ const TeachingActivity: React.FC = () => {
                 strokeWidth="1.5"
               />
             ))}
-
-            {/* Horizontal Grid Lines */}
+            {/* Grid lines */}
             {[32, 64, 96, 128].map((y) => (
-              <line
-                key={y}
-                x1="0"
-                y1={y}
-                x2={width}
-                y2={y}
-                stroke="#e2e8f0"
-                strokeWidth="0.6"
-              />
+              <line key={y} x1="0" y1={y} x2={width} y2={y} stroke="#e2e8f0" strokeWidth="0.6" />
             ))}
           </svg>
         </div>
