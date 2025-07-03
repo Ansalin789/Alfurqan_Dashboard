@@ -23,6 +23,10 @@ interface Teacher {
   teacherName: string;
   teacherEmail: string;
 }
+interface Course {
+  courseId: string;
+  courseName: string;
+}
 
 interface ClassData {
   _id: string;
@@ -31,6 +35,7 @@ interface ClassData {
   classDay: string[];
   package: string;
   preferedTeacher: string;
+  course: Course;
   totalHourse: number;
   startDate: string;
   endDate: string;
@@ -66,9 +71,16 @@ const Classes = () => {
   const [completedClasses, setCompletedClasses] = useState<ClassData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [popupVisible, setPopupVisible] = useState<string | null>(null);
-  const [popupDirection, setPopupDirection] = useState<"up" | "down">("down");
-
   const itemsPerPage = 8;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredClass, setFilteredClass] = useState<ClassData[]>([]);
+  const [showFilter, setShowFilter] = useState(false);
+  const [filterCourse, setFilterCourse] = useState("");
+  const [filterFromDate, setFilterFromDate] = useState("");
+  const [filterToDate, setFilterToDate] = useState("");
+  const [filterFromTime, setFilterFromTime] = useState("");
+  const [filterToTime, setFilterToTime] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -137,10 +149,62 @@ const Classes = () => {
 
   const filteredClasses =
     activeTab === "Scheduled" ? upcomingClasses : completedClasses;
-  const displayedClasses = filteredClasses.slice(
+  const displayedClasses = filteredClass.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  useEffect(() => {
+    const query = searchQuery.toLowerCase();
+
+    const filtered = filteredClasses.filter((cls) => {
+      const teacherName = cls.teacher?.teacherName?.toLowerCase() ?? "";
+      const courseName = cls.course?.courseName?.toLowerCase() ?? "";
+      const classDate = new Date(cls.startDate);
+      const classTime = cls.startTime[0] ?? "";
+      const status = cls.scheduleStatus;
+
+      const matchesSearch = teacherName.includes(query);
+      const matchesCourse = filterCourse
+        ? courseName === filterCourse.toLowerCase()
+        : true;
+      const matchesStatus = filterStatus ? status === filterStatus : true;
+      const matchesDate =
+        (!filterFromDate || classDate >= new Date(filterFromDate)) &&
+        (!filterToDate || classDate <= new Date(filterToDate));
+      const matchesTime =
+        (!filterFromTime || classTime >= filterFromTime) &&
+        (!filterToTime || classTime <= filterToTime);
+
+      return (
+        matchesSearch &&
+        matchesCourse &&
+        matchesStatus &&
+        matchesDate &&
+        matchesTime
+      );
+    });
+
+    setFilteredClass(filtered);
+    setCurrentPage(1);
+  }, [
+    searchQuery,
+    filteredClasses,
+    filterCourse,
+    filterFromDate,
+    filterToDate,
+    filterFromTime,
+    filterToTime,
+    filterStatus,
+  ]);
+
+  const getStatusClass = (status: string) => {
+    if (status === "Scheduled" || status === "Completed") {
+      return "bg-[#ECFDF3] text-[#377E36] dark:bg-[#408d4033]";
+    } else {
+      return "bg-gray-200 text-gray-600 dark:bg-[#DEDEDE33] dark:text-[#bbbdbc]";
+    }
+  };
 
   const handlePopupToggle = (classId: string) => {
     setPopupVisible(popupVisible === classId ? null : classId);
@@ -157,22 +221,22 @@ const Classes = () => {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredClasses.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
+  const currentItems = filteredClass.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredClass.length / itemsPerPage);
 
   return (
     <BaseLayout2>
-      <div className="mx-auto max-w-screen-2xl sm:px-1 md:px-2 lg:px-4 ">
+      <div className="mx-auto max-w-screen-2xl px-2 sm:px-4 lg:px-6">
         <SupervisorHeader currentSection="Scheduled Meetings" />
         <MyClass />
-
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-6 py-6 px-2 sm:px-4">
+        {/* Tabs */}
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 py-4">
           {["Scheduled", "Completed"].map((tab) => (
             <button
               key={tab}
-              className={`relative text-sm sm:text-base md:text-lg transition font-medium ${
+              className={`relative text-xs sm:text-sm md:text-base font-medium transition ${
                 activeTab === tab
-                  ? "text-[#576CBC] font-medium "
+                  ? "text-[#576CBC] font-semibold"
                   : "text-[#010E30] dark:text-white"
               }`}
               onClick={() => setActiveTab(tab as "Scheduled" | "Completed")}
@@ -189,20 +253,26 @@ const Classes = () => {
           ))}
         </div>
 
-        <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] overflow-x-auto scrollbar-none">
+        {/* Table Header & Filters */}
+        <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg overflow-x-auto scrollbar-none">
           <div className="flex flex-col md:flex-row items-start md:items-center px-4 relative gap-4 md:gap-0">
             <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 justify-start px-4">
               <Search className="w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by keyword"
-                className="bg-transparent outline-none text-sm w-full max-w-[200px] py-2"
+                placeholder="Search by Teacher name"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
               />
             </div>
-            <div className="flex-1 flex items-center gap-2 text-sm text-gray-400 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4">
+            <button
+              onClick={() => setShowFilter(true)}
+              className="flex-1 flex items-center gap-2 text-sm text-gray-400 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
+            >
               <MdTune className="w-5 h-5" />
               <span>Filter</span>
-            </div>
+            </button>
             <div className="flex-1 flex items-center text-sm  px-4 text-gray-500 justify-start">
               <span>
                 Showing {displayedClasses.length} of {filteredClasses.length}
@@ -210,8 +280,9 @@ const Classes = () => {
             </div>
           </div>
 
+          {/* Table */}
           <div className="overflow-x-auto scrollbar-none">
-            <table className="w-full border-collapse table-auto">
+            <table className="w-full table-auto border-collapse text-[13px] sm:text-sm">
               <thead>
                 <tr>
                   {[
@@ -222,10 +293,10 @@ const Classes = () => {
                     "Time",
                     "Status",
                     "Action",
-                  ].map((col, idx) => (
+                  ].map((col) => (
                     <th
                       key={col}
-                      className="px-4 py-3.5 text-center font-light border text-sm border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                      className="px-4 py-3.5 text-center font-medium border border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]"
                     >
                       {col}
                     </th>
@@ -235,7 +306,7 @@ const Classes = () => {
               <tbody>
                 {currentItems.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-4">
+                    <td colSpan={7} className="text-center py-6 text-sm">
                       No classes found.
                     </td>
                   </tr>
@@ -249,34 +320,30 @@ const Classes = () => {
                           : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      <td className="px-4 py-3 text-xs text-center break-words">
-                        {cls._id}
+                      <td className="px-4 py-3 text-center break-words">
+                        <span className="text-xs">{cls._id}</span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-center text-[#576CBC]">
+                      <td className="px-4 py-3 text-center text-[#576CBC] text-xs sm:text-sm">
                         {cls.teacher?.teacherName || "N/A"}
                       </td>
-                      <td className="px-4 py-3  text-xs text-center">
-                        {cls.package}
+                      <td className="px-4 py-3 text-center text-xs">
+                        {cls.course.courseName}
                       </td>
-                      <td className="px-4 py-3  text-xs text-center">
+                      <td className="px-4 py-3 text-center text-xs">
                         {new Date(cls.startDate).toLocaleDateString("en-US", {
                           month: "short",
                           day: "2-digit",
                           year: "numeric",
                         })}
                       </td>
-                      <td className="px-4 py-3  text-xs text-center">
+                      <td className="px-4 py-3 text-center text-xs">
                         {cls.startTime[0]} - {cls.endTime[0]}
                       </td>
-                      <td className="px-4 py-3 text-xs text-center">
+                      <td className="px-4 py-3 text-center text-xs">
                         <span
-                          className={`px-3 py-1 rounded-sm text-xs font-semibold inline-block ${
-                            cls.scheduleStatus === "Scheduled"
-                              ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#408d4033]"
-                              : cls.scheduleStatus === "Completed"
-                              ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#408d4033]"
-                              : "bg-gray-200 text-gray-600 dark:bg-[#DEDEDE33] dark:text-[#ECFDF3]"
-                          }`}
+                          className={`px-3 py-1 rounded-sm font-semibold inline-block text-xs ${getStatusClass(
+                            cls.scheduleStatus
+                          )}`}
                         >
                           {cls.scheduleStatus}
                         </span>
@@ -286,10 +353,8 @@ const Classes = () => {
                         (cls.scheduleStatus === "Scheduled" ||
                           cls.scheduleStatus === "Rescheduled") ? (
                           <>
-                           {popupVisible === cls._id && (
-                              <div
-                          className="absolute right-0 z-50 w-40 bottom-2 bg-white border rounded-lg shadow-lg dark:bg-[#2C2C2C] ">
-
+                            {popupVisible === cls._id && (
+                              <div className="absolute right-0 z-50 w-40 bottom-2 bg-white border rounded-sm  dark:bg-[#2C2C2C]">
                                 <button
                                   onClick={() => handleReschedule(cls._id)}
                                   className="block w-full px-4 py-2 text-center text-xs text-gray-700 dark:text-[#ECFDF3] hover:bg-gray-100 dark:hover:bg-gray-600"
@@ -299,25 +364,26 @@ const Classes = () => {
                                 <div className="w-full h-px bg-[#D4D4D4] mx-auto" />
                                 <button
                                   onClick={() => handleCancel(cls._id)}
-                                  className="block w-full px-4 py-2 text-center text-xs text-gray-700 hover:bg-gray-100 dark:text-[#ECFDF3] dark:hover:bg-gray-600"
+                                  className="block w-full px-4 py-2 text-center text-xs text-gray-700 dark:text-[#ECFDF3] hover:bg-gray-100 dark:hover:bg-gray-600"
                                 >
                                   Cancel
                                 </button>
                               </div>
                             )}
                             <button
-                              onClick={(e) => handlePopupToggle(cls._id)}
+                              onClick={() => handlePopupToggle(cls._id)}
                               className="inline-flex justify-center p-1"
                             >
                               <MoreVertical className="w-4 h-4 text-slate-900 dark:text-white" />
                             </button>
-                          
                           </>
-                        ) : activeTab === "Completed" ? (
-                          <div className="flex justify-center">
-                            <MoreVertical className="w-4 h-4 text-slate-900 dark:text-white" />
-                          </div>
-                        ) : null}
+                        ) : (
+                          activeTab === "Completed" && (
+                            <div className="flex justify-center">
+                              <MoreVertical className="w-4 h-4 text-slate-900 dark:text-white" />
+                            </div>
+                          )
+                        )}
                       </td>
                     </tr>
                   ))
@@ -327,11 +393,156 @@ const Classes = () => {
           </div>
         </div>
 
+        {/* Pagination */}
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
         />
+        {showFilter && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="bg-white dark:bg-[#1E1E1E] w-full max-w-sm rounded-xl shadow-xl p-6 relative space-y-5 mx-3 sm:mx-0">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold text-[#010E30] dark:text-white">
+                  Filter by
+                </h3>
+                <button
+                  className="text-red-500 hover:text-gray-700 dark:hover:text-white text-sm"
+                  onClick={() => setShowFilter(false)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Course */}
+              <div>
+                <label
+                  htmlFor="jhvch"
+                  className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                >
+                  Course
+                </label>
+                <select
+                  value={filterCourse}
+                  onChange={(e) => setFilterCourse(e.target.value)}
+                  className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-sm bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-white"
+                >
+                  <option value="">Select Course</option>
+                  <option value="Quran">Quran</option>
+                  <option value="Arabic">Arabic</option>
+                  <option value="Islamic">Islamic</option>
+                </select>
+              </div>
+
+              {/* Date Range */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label
+                    htmlFor="iiu"
+                    className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                  >
+                    From Date
+                  </label>
+                  <input
+                    type="date"
+                    value={filterFromDate}
+                    onChange={(e) => setFilterFromDate(e.target.value)}
+                    className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-xs bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-[#FFFFFFCC]/80"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label
+                    htmlFor="hcvccv"
+                    className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                  >
+                    To Date
+                  </label>
+                  <input
+                    type="date"
+                    value={filterToDate}
+                    onChange={(e) => setFilterToDate(e.target.value)}
+                    className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-xs bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-[#FFFFFFCC]/80"
+                  />
+                </div>
+              </div>
+
+              {/* Time Range */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label
+                    htmlFor="uycuycf"
+                    className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                  >
+                    From Time
+                  </label>
+                  <input
+                    type="time"
+                    value={filterFromTime}
+                    onChange={(e) => setFilterFromTime(e.target.value)}
+                    className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-sm bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-[#FFFFFFCC]/80"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label
+                    htmlFor="hvv"
+                    className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                  >
+                    To Time
+                  </label>
+                  <input
+                    type="time"
+                    value={filterToTime}
+                    onChange={(e) => setFilterToTime(e.target.value)}
+                    className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-sm bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-[#FFFFFFCC]/80"
+                  />
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label
+                  htmlFor="hvvjh"
+                  className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                >
+                  Status
+                </label>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-sm bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-[#FFFFFFCC]/80"
+                >
+                  <option value="">Select Status</option>
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Rescheduled">Rescheduled</option>
+                </select>
+              </div>
+              {/* Buttons */}
+              <div className="flex gap-7 pt-2 justify-center ">
+                <button
+                  onClick={() => {
+                    setFilterCourse("");
+                    setFilterFromDate("");
+                    setFilterToDate("");
+                    setFilterFromTime("");
+                    setFilterToTime("");
+                    setFilterStatus("");
+                    setShowFilter(false);
+                  }}
+                  className="px-4 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition "
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => setShowFilter(false)}
+                  className="px-5 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700 transition"
+                >
+                  Show {filteredClass.length} results
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </BaseLayout2>
   );
