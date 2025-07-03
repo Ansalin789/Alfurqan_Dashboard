@@ -1,137 +1,214 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation"; // Add this at the top
+import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
+import BaseLayout from "@/components/BaseLayout";
+import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 
-// Interfaces
-interface StudentInfo {
+export interface AssignmentItem {
+  assignmentId?: string;
+  assignmentType: string;
+  status: string;
+  assignmentName: string;
+  title: string;
+}
+
+export interface StudentCoreInfo {
+  studentId: string;
+  name: string;
+}
+
+export interface EvaluationStudentInfo {
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
-  studentEmail?: string;
+  studentEmail: string;
+  studentGender: string;
+  studentPhone: number;
+  studentCity: string;
+  studentCountry: string;
+  studentCountryCode: string;
   learningInterest: string;
+  numberOfStudents: number;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  timeZone: string;
+  referralSource: string;
+  preferredDate: string;
+  evaluationStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
 }
 
-interface TeacherInfo {
+export interface EvaluationTeacherInfo {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
 }
 
-interface SubscriptionInfo {
+export interface EvaluationSubscriptionInfo {
   subscriptionName: string;
 }
 
-interface StudentDetails {
+export interface StudentEvaluationDetails {
+  student: EvaluationStudentInfo;
+  teacher: EvaluationTeacherInfo;
+  subscription: EvaluationSubscriptionInfo;
   _id: string;
-  student: StudentInfo;
-  teacher: TeacherInfo;
-  subscription: SubscriptionInfo;
+  academicCoachId: string;
   classType: string;
+  classDay: string[];
+  startTime: string[];
+  endTime: string[];
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  planTotalPrice: number;
   classStartDate: string;
   classEndDate: string;
+  classStartTime: string;
+  classEndTime: string;
+  accomplishmentTime: string;
+  studentRate: number;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  studentStatus: string;
   classStatus: string;
-  languageLevel?: string;
-  [key: string]: any;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  teacherStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  expectedFinishingDate: number;
+  assignedTeacherId: string;
+  assignedTeacherEmail: string;
+  __v: number;
 }
 
-interface Assignment {
-  studentId: string;
-  name: string;
-  studentDetails: StudentDetails;
+export interface StudentWithAssignments extends StudentCoreInfo {
+  studentDetails: StudentEvaluationDetails;
+  assignment: AssignmentItem[];
 }
+
+const hardcodedAssignments: StudentWithAssignments[] = [
+  {
+    studentId: "S001",
+    name: "Assignment 1",
+    studentDetails: {
+      _id: "1",
+      student: {
+        studentId: "S001",
+        studentFirstName: "Ali",
+        studentLastName: "Khan",
+        studentEmail: "ali.khan@example.com",
+        learningInterest: "Math",
+      } as EvaluationStudentInfo,
+      teacher: {
+        teacherId: "T001",
+        teacherName: "Mr. Ahmed",
+        teacherEmail: "ahmed@example.com",
+      },
+      subscription: {
+        subscriptionName: "Basic",
+      },
+      classType: "REGULARCLASS",
+      classStartDate: "2025-07-01T00:00:00Z",
+      classEndDate: "2025-07-10T00:00:00Z",
+  classStatus: "INPROGRESS",
+        languageLevel: "Beginner",
+    } as StudentEvaluationDetails,
+    assignment: [],
+  },
+  {
+    studentId: "S002",
+    name: "Assignment 2",
+    studentDetails: {
+      _id: "2",
+      student: {
+        studentId: "S002",
+        studentFirstName: "Sara",
+        studentLastName: "Ali",
+        studentEmail: "sara.ali@example.com",
+        learningInterest: "Science",
+      } as EvaluationStudentInfo,
+      teacher: {
+        teacherId: "T002",
+        teacherName: "Ms. Fatima",
+        teacherEmail: "fatima@example.com",
+      },
+      subscription: {
+        subscriptionName: "Premium",
+      },
+      classType: "GROUPCLASS",
+      classStartDate: "2025-07-05T00:00:00Z",
+      classEndDate: "2025-07-15T00:00:00Z",
+      classStatus: "COMPLETED",
+      languageLevel: "Intermediate",
+    } as StudentEvaluationDetails,
+    assignment: [],
+  },
+  {
+    studentId: "S003",
+    name: "Assignment 3",
+    studentDetails: {
+      _id: "3",
+      student: {
+        studentId: "S003",
+        studentFirstName: "Joe",
+        studentLastName: "Ali",
+        studentEmail: "joe.ali@example.com",
+        learningInterest: "Science",
+      } as EvaluationStudentInfo,
+      teacher: {
+        teacherId: "T003",
+        teacherName: "Ms. Fatima",
+        teacherEmail: "fatima@example.com",
+      },
+      subscription: {
+        subscriptionName: "Premium",
+      },
+      classType: "REGULARCLASS",
+      classStartDate: "2025-07-05T00:00:00Z",
+      classEndDate: "2025-07-15T00:00:00Z",
+      classStatus: "ASSIGNED",
+      languageLevel: "Intermediate",
+    } as StudentEvaluationDetails,
+    assignment: [],
+  },
+];
 
 const StudentList = () => {
-  // Hardcoded data for assignments
-  const hardcodedAssignments: Assignment[] = [
-    {
-      studentId: "S001",
-      name: "Assignment 1",
-      studentDetails: {
-        _id: "1",
-        student: {
-          studentId: "S001",
-          studentFirstName: "Ali",
-          studentLastName: "Khan",
-          studentEmail: "ali.khan@example.com",
-          learningInterest: "Math",
-        },
-        teacher: {
-          teacherId: "T001",
-          teacherName: "Mr. Ahmed",
-          teacherEmail: "ahmed@example.com",
-        },
-        subscription: {
-          subscriptionName: "Basic",
-        },
-        classType: "REGULARCLASS",
-        classStartDate: "2025-07-01T00:00:00Z",
-        classEndDate: "2025-07-10T00:00:00Z",
-        classStatus: "INPROGRESS",
-        languageLevel: "Beginner",
-      },
-    },
-    {
-      studentId: "S002",
-      name: "Assignment 2",
-      studentDetails: {
-        _id: "2",
-        student: {
-          studentId: "S002",
-          studentFirstName: "Sara",
-          studentLastName: "Ali",
-          studentEmail: "sara.ali@example.com",
-          learningInterest: "Science",
-        },
-        teacher: {
-          teacherId: "T002",
-          teacherName: "Ms. Fatima",
-          teacherEmail: "fatima@example.com",
-        },
-        subscription: {
-          subscriptionName: "Premium",
-        },
-        classType: "GROUPCLASS",
-        classStartDate: "2025-07-05T00:00:00Z",
-        classEndDate: "2025-07-15T00:00:00Z",
-        classStatus: "COMPLETED",
-        languageLevel: "Intermediate",
-      },
-    },
-     {
-      studentId: "S003",
-      name: "Assignment 3",
-      studentDetails: {
-        _id: "3",
-        student: {
-          studentId: "S003",
-          studentFirstName: "Joe",
-          studentLastName: "Ali",
-          studentEmail: "joe.ali@example.com",
-          learningInterest: "Science",
-        },
-        teacher: {
-          teacherId: "T003",
-          teacherName: "Ms. Fatima",
-          teacherEmail: "fatima@example.com",
-        },
-        subscription: {
-          subscriptionName: "Premium",
-        },
-        classType: "REGULARCLASS",
-        classStartDate: "2025-07-05T00:00:00Z",
-        classEndDate: "2025-07-15T00:00:00Z",
-        classStatus: "ASSIGNED",
-        languageLevel: "Intermediate",
-      },
-    },
-  ];
+  const [regularStudents, setRegularStudents] = useState<
+    StudentWithAssignments[]
+  >([]);
+  const [groupStudents, setGroupStudents] = useState<StudentWithAssignments[]>(
+    []
+  );
 
-  const [regularStudents, setRegularStudents] = useState<Assignment[]>([]);
-  const [groupStudents, setGroupStudents] = useState<Assignment[]>([]);
   const [regularCount, setRegularCount] = useState<number>(0);
   const [groupCount, setGroupCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<"Pending" | "Completed">("Pending");
@@ -153,8 +230,7 @@ const StudentList = () => {
     setGroupCount(completed.length);
   }, []);
 
-  const studentsToDisplay =
-    activeTab === "Pending" ? regularStudents : groupStudents;
+  const studentsToDisplay = activeTab === "Pending" ? regularStudents : groupStudents;
 
   const toggleDropdown = (id: string) => {
     setOpenDropdownId((prev) => (prev === id ? null : id));
@@ -167,8 +243,9 @@ const StudentList = () => {
 
   const handleClick = () => {
     console.log("Create Assignment clicked");
-    router.push(`/teacher/ui/addingnewassignment`);
+    // Add assignment creation logic
   };
+
 
   const getStatusStyle = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -182,7 +259,6 @@ const StudentList = () => {
         return "bg-gray-100 text-gray-600";
     }
   };
-
   // Fix tab logic: use correct tab types and mapping
   const tabOptions = [
     { type: "Pending", label: "Pending", count: regularCount },
@@ -190,55 +266,58 @@ const StudentList = () => {
   ];
 
   return (
-    <div className="md:p-0 mx-auto w-full">
-      <div className="flex flex-col h-full w-full justify-between">
-        <div className="flex flex-col">
-          {/* Tabs */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
-            <div className="flex flex-wrap gap-4 font-semibold">
-              {tabOptions.map(({ type, label, count }) => (
-                <button
-                  key={type}
-                  onClick={() => setActiveTab(type as "Pending" | "Completed")}
-                  className={
-                    activeTab === type
-                      ? "text-[#576CBC] border-b-2 text-[16px] border-[#576CBC]"
-                      : "text-[#010E30] dark:text-white text-[16px]"
-                  }
-                >
-                  {label} ({count})
-                </button>
-              ))}
-            </div>
-          </div>
+    <BaseLayout>
+      <TeacherHeader currentSection="Assignments" />
 
-          {/* Search + Filter */}
-          <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg">
-            <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search by keyword"
-                  className="bg-transparent outline-none text-[15px] w-52 py-3"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
-                <MdTune className="w-4 h-4" />
-                <span>Filter</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-                <span className="text-left -ml-60">
-                  Showing {studentsToDisplay.length} of{" "}
-                  {studentsToDisplay.length}
-                </span>
+      <div className="md:p-0 mx-auto w-full">
+        <div className="flex flex-col h-full w-full justify-between">
+          <div className="flex flex-col">
+            {/* Tabs */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
+              <div className="flex flex-wrap gap-4 font-semibold">
+                {tabOptions.map(({ type, label, count }) => (
+                  <button
+                    key={type}
+                    onClick={() => setActiveTab(type as "Pending" | "Completed")}
+                    className={
+                      activeTab === type
+                        ? "text-[#576CBC] border-b-2 text-[16px] border-[#576CBC]"
+                        : "text-[#010E30] dark:text-white text-[16px]"
+                    }
+                  >
+                    {label} ({count})
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Table */}
-            <table className="table-fixed w-full">
+            {/* Search + Filter */}
+            <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg">
+              <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by keyword"
+                    className="bg-transparent outline-none text-[15px] w-52 py-3"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+                  <MdTune className="w-4 h-4" />
+                  <span>Filter</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                  <span className="text-left -ml-60">
+                    Showing {studentsToDisplay.length} of{" "}
+                    {studentsToDisplay.length}
+                  </span>
+                </div>
+              </div>
+
+              {/* Table */}
+               <table className="table-fixed w-full">
               <thead className="text-[13px] bg-[#4C6993] text-white">
                 <tr>
                   {[
@@ -296,14 +375,14 @@ const StudentList = () => {
                       <td className="px-3 py-3 break-words text-[11px]">
                         {assignmentInfo?.languageLevel || "-"}
                       </td>
-                      <td className="px-3 py-3 break-word text-[11px]" >
+                      <td className="px-3 py-3 break-words text-[11px]">
                         {studentInfo?.studentId}
                       </td>
                       <td className="px-3 py-3 break-words text-[11px]">
                         {assignmentInfo?.classType}
                       </td>
 
-                      <td className="px-3 py-3 break-words text-[11px]">
+                         <td className="px-3 py-3 break-words text-[11px]">
                        
                           {new Date(assignmentInfo.classStartDate).toLocaleDateString(
                               "en-US",
@@ -324,7 +403,7 @@ const StudentList = () => {
                               }
                             )}
                       </td>
-                      <td className="px-3 py-3 break-words text-[11px]">
+                      <td className="px-3 py-3 break-words">
                         <span
                           className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
                             assignmentInfo?.classStatus
@@ -333,7 +412,7 @@ const StudentList = () => {
                           {assignmentInfo?.classStatus}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-center relative text-[11px]">
+                         <td className="px-4 py-2 text-center relative text-[11px]">
                         <button
                           className={`text-gray-500 hover:text-gray-700 dark:text-[#ffff] ${
                             isNotAssigned || isCompleted ? "opacity-40 cursor-not-allowed" : ""
@@ -349,19 +428,13 @@ const StudentList = () => {
                           <div className="absolute right-0 w-40 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
                             <button
                               className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                              onClick={() => {
-                                setOpenDropdownId(null);
-                                router.push(`/student/ui/startassignment?studentId=${student.studentId}`);
-                              }}
+                              onClick={() => setOpenDropdownId(null)}
                             >
                               Start Assignment
                             </button>
                             <button
                               className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                              onClick={() => {
-                                setOpenDropdownId(null);
-                                router.push(`/student/ui/assignmentlist?studentId=${student.studentId}`);
-                              }}
+                              onClick={() => setOpenDropdownId(null)}
                             >
                               View List
                             </button>
@@ -401,24 +474,11 @@ const StudentList = () => {
                 })}
               </tbody>
             </table>
-          </div>
-
-          <div className="flex justify-end">
-              <button
-                className=" mt-4 text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-4 py-1 text-sm font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
-                onClick={() => {
-                  
-                    router.push("/student/ui/allassignment");
-                 
-                }}
-              >
-                View All
-              </button>
             </div>
-
+          </div>
         </div>
       </div>
-    </div>
+    </BaseLayout>
   );
 };
 
