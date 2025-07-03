@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AiOutlineClockCircle } from "react-icons/ai";
 import { FaUser } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
 interface Student {
@@ -27,9 +28,12 @@ interface ClassData {
   endTime: string[];
   classLink: string;
   sessionStatus: string;
+  classStart?: Date;
+  classEnd?: Date;
 }
 
 const NextScheduledClass = () => {
+  const router = useRouter();
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isClassOngoing, setIsClassOngoing] = useState(false);
@@ -67,13 +71,8 @@ const NextScheduledClass = () => {
 
           return { ...item, classStart: startDate, classEnd: endDate };
         })
-        .filter(
-  (item: any) =>
-    now < item.classEnd &&
-    (!item.sessionStatus || item.sessionStatus !== "Completed")
-)
-
-        .sort((a: any, b: any) => a.classStart - b.classStart)[0];
+        .filter((item: ClassData) => item.classEnd! > now)
+        .sort((a: ClassData, b: ClassData) => a.classStart!.getTime() - b.classStart!.getTime())[0];
 
       setClassData(upcoming ?? null);
     } catch (error) {
@@ -84,10 +83,7 @@ const NextScheduledClass = () => {
   const triggerHandleEndCall = async () => {
     try {
       const token = localStorage.getItem("TeacherAuthToken");
-      if (!token || !classData?._id) {
-        console.warn("⚠️ Missing token or class ID");
-        return;
-      }
+      if (!token || !classData?._id) return;
 
       const payload = { sessionId: classData._id };
 
@@ -102,12 +98,14 @@ const NextScheduledClass = () => {
       );
 
       console.log("✅ Session marked completed:", response.data);
-
       setClassData((prev) =>
         prev ? { ...prev, sessionStatus: "Completed" } : prev
       );
       setHasClassEnded(true);
-      fetchClassData();
+
+      setTimeout(() => {
+        fetchClassData();
+      }, 1500); // delay ensures backend update
     } catch (err: any) {
       console.error(
         "❌ Error calling handleEndCall:",
@@ -121,20 +119,19 @@ const NextScheduledClass = () => {
   }, []);
 
   useEffect(() => {
-    if (!classData) return;
-
     const interval = setInterval(async () => {
+      if (!classData) return;
+
       const now = new Date();
+      const start = classData.classStart!;
+      const end = classData.classEnd!;
 
-      const start = new Date(classData.startDate);
-      const [sh, sm] = classData.startTime[0].split(":").map(Number);
-      start.setHours(sh, sm, 0, 0);
+      if (now >= start && now <= end) {
+        setIsClassOngoing(true);
+      } else {
+        setIsClassOngoing(false);
+      }
 
-      const end = new Date(classData.startDate);
-      const [eh, em] = classData.endTime[0].split(":").map(Number);
-      end.setHours(eh, em, 0, 0);
-
-      // ✅ Check if class has ended and not marked completed
       if (now > end && classData.sessionStatus !== "Completed") {
         console.log(`⏹ Class ${classData._id} ended — marking via evaluation`);
 
@@ -142,7 +139,6 @@ const NextScheduledClass = () => {
         if (!token) return;
 
         try {
-          // ✅ Trigger evaluation table update
           await axios.post(
             "https://api.blackstoneinfomaticstech.com/classSession/triggerEnd",
             { sessionId: classData._id },
@@ -155,11 +151,10 @@ const NextScheduledClass = () => {
 
           console.log("✅ Evaluation marked as completed");
 
-          // ✅ Clear and fetch next
           setClassData(null);
           setTimeout(() => {
             fetchClassData();
-          }, 2000);
+          }, 1500);
         } catch (err) {
           console.error("❌ Failed to mark in evaluation:", err);
         }
@@ -173,7 +168,8 @@ const NextScheduledClass = () => {
 
   const handleJoinClass = () => {
     if (classData?.classLink) {
-      window.open(classData.classLink, "_blank");
+      // window.open(classData.classLink, "_blank");
+      router.push(`/teacher/ui/liveclass?id=${classData._id}`);
     }
   };
 

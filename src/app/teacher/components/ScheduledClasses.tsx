@@ -106,22 +106,14 @@ const ScheduledClasses = () => {
 
         const classes = response.data.classSchedule;
         const now = new Date();
-           console.log("Fetched classes:", classes);
-        const upcoming = classes.filter((cls) => {
-          const classDate = new Date(cls.startDate);
-          const timeString = cls.startTime[0] ?? "";
-          const [h, m] = timeString.split(":").map(Number);
-          classDate.setHours(h, m, 0, 0);
-          return now < classDate;
-        });
+        console.log("Fetched classes:", classes);
+        const upcoming = classes.filter((cls) =>
+          ["Scheduled", "Rescheduled"].includes(cls.scheduleStatus)
+        );
 
-        const completed = classes.filter((cls) => {
-          const classDate = new Date(cls.startDate);
-          const timeString = cls.startTime[0] ?? "";
-          const [h, m] = timeString.split(":").map(Number);
-          classDate.setHours(h, m, 0, 0);
-          return now >= classDate;
-        });
+        const completed = classes.filter(
+          (cls) => cls.scheduleStatus === "Completed"
+        );
 
         setUpcomingClasses(upcoming);
         setCompletedData(completed);
@@ -223,7 +215,7 @@ const ScheduledClasses = () => {
     const latestDataToShow =
       activeTab === "upcoming" ? upcomingClasses : completedData;
     setFilteredClasses(latestDataToShow);
-    setIsFilterModalOpen(false);
+    setIsFilterModalOpen(true);
   };
 
   const studentNames = Array.from(
