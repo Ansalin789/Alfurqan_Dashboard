@@ -56,7 +56,7 @@ console.log("Teacher ID used in API:", teacherId);
         }
 
         const response = await axios.get<SimpleStudent[]>(
-          "http://localhost:5001/classShedule/teacher/list",
+          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
           {
             params: { teacherId },
             headers: {

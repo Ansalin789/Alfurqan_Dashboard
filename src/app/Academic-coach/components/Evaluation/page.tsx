@@ -831,7 +831,7 @@ const TrailManagement = () => {
         <div className="md:p-0 mx-auto mb-10">
           <div className="h-full w-full  flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
-              <div className="w-full h-[588px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+              <div className="w-full h-[588px] overflow-y-scroll scrollbar-none bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
                 <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
@@ -959,8 +959,8 @@ const TrailManagement = () => {
                                     : status === "WAITING"
                                     ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
                                     : status === "PENDING"
-                                    ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 dark:bg-[#F0AD4E33]"
-                                    : "bg-[#FDECEC] text-[#D34645] px-3 dark:bg-[#D3464533]";
+                                    ? "bg-[#FDF6EC] text-[#F0AD4E] px-5 dark:bg-[#F0AD4E33]"
+                                    : "bg-[#FDECEC] text-[#D34645] px-5 dark:bg-[#D3464533]";
 
                                 return (
                                   <span

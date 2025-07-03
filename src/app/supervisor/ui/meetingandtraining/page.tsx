@@ -334,6 +334,8 @@ useEffect(() => {
           }),
         }
       );
+console.log("Reschedule Date:", rescheduleDate);
+console.log("Reschedule Time:", rescheduleTime);
 
       const result = await response.json();
 

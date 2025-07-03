@@ -11,11 +11,87 @@ type Props = {
   readonly onClose: () => void;
 };
 
-interface Teacher {
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
-  attendee: string;
+interface Participants {
+  studentId: string;
+  name: string;
+  studentDetails: {
+    student: {
+      studentId: string;
+      studentFirstName: string;
+      studentLastName: string;
+      studentEmail: string;
+      studentGender: string;
+      studentPhone: number;
+      studentCity: string;
+      studentCountry: string;
+      studentCountryCode: string;
+      learningInterest: string;
+      numberOfStudents: number;
+      preferredTeacher: string;
+      preferredFromTime: string;
+      preferredToTime: string;
+      timeZone: string;
+      referralSource: string;
+      preferredDate: string;
+      evaluationStatus: string;
+      status: string;
+      createdDate: string;
+      createdBy: string;
+    };
+    teacher: {
+      teacherId: string;
+      teacherName: string;
+      teacherEmail: string;
+    };
+    subscription: {
+      subscriptionName: string;
+    };
+    _id: string;
+    academicCoachId: string;
+    classType: string;
+    classDay: string[];
+    startTime: string;
+    endTime: string;
+    isLanguageLevel: boolean;
+    languageLevel: string;
+    isReadingLevel: boolean;
+    readingLevel: string;
+    isGrammarLevel: boolean;
+    grammarLevel: string;
+    hours: number;
+    planTotalPrice: number;
+    classStartDate: string;
+    classEndDate: string;
+    classStartTime: string;
+    classEndTime: string;
+    accomplishmentTime: string;
+    studentRate: number;
+    gardianName: string;
+    gardianEmail: string;
+    gardianPhone: string;
+    gardianCity: string;
+    gardianCountry: string;
+    gardianTimeZone: string;
+    gardianLanguage: string;
+    assignedTeacher: string;
+    studentStatus: string;
+    classStatus: string;
+    comments: string;
+    trialClassStatus: string;
+    invoiceStatus: string;
+    paymentLink: string;
+    paymentStatus: string;
+    teacherStatus: string;
+    status: string;
+    createdDate: string;
+    createdBy: string;
+    updatedDate: string;
+    updatedBy: string;
+    expectedFinishingDate: number;
+    assignedTeacherId: string;
+    assignedTeacherEmail: string;
+    __v: number;
+  };
 }
 
 const tabs = ["All", "Quran", "Arabic", "Islamic"] as const;
@@ -32,10 +108,14 @@ export default function AddMeeting({ onClose }: Props) {
   const [failedMessage, setFailedMessage] = useState("");
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("All");
-  const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [selectedParticipants, setSelectedParticipants] = useState<
+    Participants[]
+  >([]);
+  const [Participants, setParticipants] = useState<Participants[]>([]);
 
   useEffect(() => {
+    if (!open) return; // ✅ Only run when modal is open
+
     const fetchTeachers = async () => {
       try {
         const teacherId = localStorage.getItem("TeacherPortalId") ?? "";
@@ -45,12 +125,8 @@ export default function AddMeeting({ onClose }: Props) {
           teacherId,
         };
 
-        if (activeTab !== "All") {
-          params.teacherGroup = `${activeTab} Teacher`;
-        }
-
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/teacher",
+          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -59,21 +135,33 @@ export default function AddMeeting({ onClose }: Props) {
           }
         );
 
-        setTeachers(response.data.teachers ?? []);
+        const allParticipants = response.data ?? [];
+        console.log("Applicants received:", allParticipants);
+
+        const filteredParticipants =
+          activeTab === "All"
+            ? allParticipants
+            : allParticipants.filter(
+                (teacher: any) =>
+                  teacher.studentDetails.student.learningInterest?.toLowerCase() ===
+                  activeTab.toLowerCase()
+              );
+
+        setParticipants(filteredParticipants);
       } catch (error) {
         console.error("Error fetching teachers", error);
-        setTeachers([]);
+        setParticipants([]);
       }
     };
 
     fetchTeachers();
-  }, [activeTab]);
+  }, [open, activeTab]);
 
-  const toggleTeacher = (teacher: Teacher) => {
-    setSelectedTeachers((prev) => {
-      const exists = prev.some((t) => t.teacherId === teacher.teacherId);
+  const toggleTeacher = (teacher: Participants) => {
+    setSelectedParticipants((prev) => {
+      const exists = prev.some((t) => t.studentId === teacher.studentId);
       return exists
-        ? prev.filter((t) => t.teacherId !== teacher.teacherId)
+        ? prev.filter((t) => t.studentId !== teacher.studentId)
         : [...prev, teacher];
     });
   };
@@ -86,7 +174,7 @@ export default function AddMeeting({ onClose }: Props) {
       !selectedDate ||
       !startTime ||
       !endTime ||
-      selectedTeachers.length === 0
+      selectedParticipants.length === 0
     ) {
       alert("Please fill all required fields!");
       return;
@@ -95,43 +183,62 @@ export default function AddMeeting({ onClose }: Props) {
     const formattedDate = new Date(selectedDate).toISOString();
     const createdDate = new Date().toISOString();
 
-    const teacherPayload = selectedTeachers.map((teacher) => ({
-      teacherId: teacher.teacherId,
-      teacherName: teacher.teacherName,
-      teacherEmail: teacher.teacherEmail,
-      _id: teacher.teacherId,
+    if (
+  !meetingTitle ||
+  !selectedDate ||
+  !startTime ||
+  !endTime ||
+  selectedParticipants.length === 0
+) {
+  alert("Please fill all required fields!");
+  return;
+}
+
+
+
+// ✅ Debug logs
+console.log("Start Time:", startTime);
+console.log("End Time:", endTime);
+console.log("Selected Date:", selectedDate);
+
+
+    const studentPayload = selectedParticipants.map((student) => ({
+      studentId: student.studentId,
+      studentName: student.name,
+      studentEmail: student.studentDetails.student.studentEmail,
+      _id: student.studentId,
       attendee: "absent",
     }));
 
     const requestData = {
       meetingId: "",
       meetingName: meetingTitle,
-      selectedDate: formattedDate,
-      startTime,
-      endTime,
+      selectedDate: formattedDate, // ✅ Changed from selectedDate
+     startTime,
+endTime,
       meetingStatus: "Scheduled",
-      supervisor: {
-        supervisorId: localStorage.getItem("SupervisorPortalId"),
-        supervisorName: localStorage.getItem("SupervisorPortalName"),
-        supervisorEmail: "arthi.blackstoneinfomatics@gmail.com",
-        supervisorRole: "SUPERVISOR",
+      teacher: {
+        teacherId: localStorage.getItem("TeacherPortalId"),
+        teacherName: localStorage.getItem("TeacherPortalName"),
+        teacherEmail: "gomathi.blackstone@gmail.com",
+        teacherrRole: "Teacher",
       },
-      teacher: teacherPayload,
+      participants: studentPayload,
       meetingminutes: " ",
       description,
       status: "Active",
       createdDate,
-      createdBy: localStorage.getItem("SupervisorPortalName"),
+      createdBy: localStorage.getItem("TeacherPortalName"),
     };
 
     try {
-      const token = localStorage.getItem("SupervisorAuthToken");
+      const token = localStorage.getItem("TeacherAuthToken");
       if (!token) {
-        throw new Error("SupervisorAuthToken not found");
+        throw new Error("TeacherAuthToken not found");
       }
 
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/addMeeting",
+        "https://api.blackstoneinfomaticstech.com/teacherMeeting", // ✅ NEW LOCAL API ENDPOINT
         requestData,
         {
           headers: {
@@ -141,6 +248,8 @@ export default function AddMeeting({ onClose }: Props) {
         }
       );
 
+      console.log("Meeting created successfully:", response.data);
+
       if ([200, 201, 400].includes(response.status)) {
         setSuccess(true);
         setTimeout(() => {
@@ -148,7 +257,7 @@ export default function AddMeeting({ onClose }: Props) {
           setSelectedDate("");
           setStartTime("");
           setEndTime("");
-          setSelectedTeachers([]);
+          setSelectedParticipants([]);
           setDescription("");
         }, 2000);
       }
@@ -187,8 +296,9 @@ export default function AddMeeting({ onClose }: Props) {
         {/* Meeting Name */}
         <div className="mb-4">
           <label
-          htmlFor="meetingname"
-          className="block text-sm text-gray-600 dark:text-white mb-1">
+            htmlFor="meetingname"
+            className="block text-sm text-gray-600 dark:text-white mb-1"
+          >
             Meeting Name
           </label>
           <input
@@ -203,8 +313,9 @@ export default function AddMeeting({ onClose }: Props) {
         {/* Add Participants */}
         <div className="mb-4">
           <label
-          htmlFor="add participants"
-          className="block text-sm text-gray-600 dark:text-white mb-1">
+            htmlFor="add participants"
+            className="block text-sm text-gray-600 dark:text-white mb-1"
+          >
             Add Participants
           </label>
           <div className="relative">
@@ -222,14 +333,73 @@ export default function AddMeeting({ onClose }: Props) {
               <Plus size={18} />
             </button>
           </div>
+          <Dialog
+            open={open}
+            onClose={() => setOpen(false)}
+            className="relative z-50"
+          >
+            <div className="fixed inset-0 bg-black/50" />
+            <div className="fixed inset-0 flex items-center justify-center p-4">
+              <section className="bg-white dark:bg-[#1D1D1D] rounded-lg p-5 w-full max-w-md">
+                <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+                  Select Participants
+                </h2>
+                <div className="flex gap-2 mb-4">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`px-3 py-2 text-xs rounded ${
+                        activeTab === tab
+                          ? "bg-[#576CBC] text-white"
+                          : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white"
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto text-sm">
+                  {Participants.map((student) => (
+                    <label
+                      key={student.studentId}
+                      className="flex items-center gap-2"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedParticipants.includes(student)}
+                        onChange={() => toggleTeacher(student)}
+                      />
+                      <span className="dark:text-white">{student.name}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex justify-end mt-4 gap-2">
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="px-3 py-1 border text-[#576CBC] rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="px-4 py-1 bg-[#576CBC] text-white rounded"
+                  >
+                    Done
+                  </button>
+                </div>
+              </section>
+            </div>
+          </Dialog>
         </div>
 
-        {/* Date and Time */}
+        {/* Participants */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label
-            htmlFor="meetingdate"
-            className="block text-sm text-gray-600 dark:text-white mb-1">
+              htmlFor="meetingdate"
+              className="block text-sm text-gray-600 dark:text-white mb-1"
+            >
               Meeting Date
             </label>
             <input
@@ -239,35 +409,55 @@ export default function AddMeeting({ onClose }: Props) {
               className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
             />
           </div>
-          <div>
+
+          <div className="mt-2">
             <label
-            htmlFor="meetingtime"
-            className="block text-sm text-gray-600 dark:text-white mb-1">
-              Meeting Time
+              htmlFor="uyvuhvyuc"
+              className="block text-sm text-gray-600 dark:text-white"
+            >
+              Selected Paticipants
             </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-              <span className="text-gray-500 dark:text-white">-</span>
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-              />
-            </div>
+            <select className="w-full border rounded px-3 py-2 text-xs dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]">
+              <option value="">Show</option>
+              {selectedParticipants.map((student: Participants) => (
+                <option key={student.studentId} value={student.name}>
+                  {student.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="meetingtime"
+            className="block text-sm text-gray-600 dark:text-white mb-1"
+          >
+            Meeting Time
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            />
+            <span className="text-gray-500 dark:text-white">-</span>
+            <input
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className="w-full border rounded px-3 py-2 text-sm dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+            />
           </div>
         </div>
 
         {/* Description */}
         <div className="mb-6">
           <label
-          htmlFor="description"
-          className="block text-sm text-gray-600 dark:text-white mb-1">
+            htmlFor="description"
+            className="block text-sm text-gray-600 dark:text-white mb-1"
+          >
             Add Description
           </label>
           <textarea

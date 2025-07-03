@@ -9,6 +9,7 @@ import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { Bell } from "lucide-react";
+import TeacherHeader from "../../components/TeacherHeader";
 
 type ChatUser = IUser | IStudent;
 
@@ -387,15 +388,15 @@ const Message = () => {
 
   return (
     <BaseLayout>
+    <TeacherHeader currentSection="Message" />
       <div className="py-3 px-5">
-        <h1 className="text-[20px] mt-3 font-semibold mb-3">Messages</h1>
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
           {/* Left Panel */}
           <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="w-full md:w-[350px] bg-white p-4 rounded-lg shadow-md flex flex-col border border-gray-100"
+            className="w-full md:w-[350px] dark:bg-[#343434] bg-white p-4 rounded-lg shadow-md flex flex-col border "
           >
             <div className="flex items-center space-x-3 p-2">
               <motion.div whileHover={{ scale: 1.05 }}>
@@ -407,7 +408,7 @@ const Message = () => {
               </motion.div>
               <div>
                 <div className="flex">
-                  <h3 className="text-sm font-semibold text-[#374557]">
+                  <h3 className="text-sm font-semibold dark:text-white text-[#374557]">
                   Supervisor{" "}
                   </h3>
                   <button className="ml-[1px] text-gray-500">
@@ -420,7 +421,7 @@ const Message = () => {
                   </button>
                 </div>
 
-                <p className="text-xs text-gray-400">Administrator</p>
+                <p className="text-xs dark:text-[#FFFFFF99] text-gray-400">Administrator</p>
               </div>
             </div>
 
@@ -435,7 +436,7 @@ const Message = () => {
               <input
                 type="text"
                 placeholder="Search messages..."
-                className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#4CBC9A]"
+                className="dark:bg-[#343434] block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 "
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -446,7 +447,7 @@ const Message = () => {
               <button
                 className={`px-3 py-1.5 text-xs font-medium ${
                   activeTab === "students"
-                    ? "text-[#002B4D] border-b-2 border-[#002B4D]"
+                    ? "text-[#002B4D] dark:text-[#576CBC] border-b-2 border-[#576CBC]"
                     : "text-gray-500"
                 }`}
                 onClick={() => setActiveTab("students")}
@@ -454,17 +455,17 @@ const Message = () => {
                 Students
               </button>
               <button
-                className={`px-3 py-1.5 text-xs font-medium ${
+                className={`px-3 py-1.5 text-xs  font-medium ${
                   activeTab === "supervisor"
-                    ? "text-[#002B4D] border-b-2 border-[#002B4D]"
-                    : "text-gray-500"
+                    ? "text-[#002B4D] dark:text-[#576CBC] border-b-2 border-[#576CBC]"
+                    : "text-gray-500 "
                 }`}
                 onClick={() => setActiveTab("supervisor")}
               >
                 Supervisor
               </button>
             </div>
-            <div className="h-full overflow-scroll scrollbar-none">
+            <div className="h-full overflow-scroll   scrollbar-none">
               {/* User List */}
               {filteredUsers.map((user) => {
                 const isSupervisor = "userName" in user;
@@ -484,10 +485,10 @@ const Message = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className={`flex items-center bg-[#fff] border-b-2 justify-between w-full p-2 rounded cursor-pointer ${
+                    className={`flex items-center  dark:bg-[#343434] border-b-1 justify-between w-full p-2 rounded cursor-pointer ${
                       selectedUser?._id === user._id
-                        ? "bg-blue-100 text-blue-600"
-                        : "hover:bg-gray-50"
+                        ? "bg-gray-100 text-blue-600"
+                        : "hover:bg-gray-100"
                     }`}
                     onClick={() => handleUserClick(user)}
                   >
@@ -495,9 +496,9 @@ const Message = () => {
                       <div className="relative">
                         <motion.div
                           whileHover={{ scale: 1.05 }}
-                          className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center"
+                          className="w-9 h-9 bg-gray-200 dark:text-[#576CBC] rounded-lg flex items-center justify-center"
                         >
-                          <span className="text-gray-600 text-xs">
+                          <span className="text-gray-600  text-xs">
                             {avatarInitial}
                           </span>
                         </motion.div>
@@ -508,10 +509,10 @@ const Message = () => {
                         ></div>
                       </div>
                       <div className="text-left">
-                        <h5 className="font-medium text-xs text-[#374557]">
+                        <h5 className="font-medium text-xs dark:text-[#FFFFFF] text-[#374557]">
                           {displayName}
                         </h5>
-                        <p className="text-[10px] text-gray-400 truncate max-w-[180px]">
+                        <p className="text-[10px]  text-gray-400 truncate max-w-[180px]">
                           {email}
                         </p>
                       </div>
@@ -528,7 +529,7 @@ const Message = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="w-full md:flex-1 bg-white rounded-lg shadow-md flex flex-col border border-gray-100 overflow-hidden"
+            className="w-full md:flex-1 bg-white dark:bg-[#2C2C2C] rounded-lg shadow-md flex flex-col border  overflow-hidden"
           >
             {selectedUser ? (
               <>
@@ -539,7 +540,7 @@ const Message = () => {
                       className="relative"
                     >
                       <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <span className="text-gray-600 text-sm">
+                        <span className="text-gray-600  text-sm">
                           {selectedUser.userName.charAt(0)}
                         </span>
                       </div>
@@ -550,7 +551,7 @@ const Message = () => {
                       ></div>
                     </motion.div>
                     <div>
-                      <h3 className="text-xs font-semibold">
+                      <h3 className="text-xs dark:text-[#FFFFFF] font-semibold">
                         {selectedUser.userName}
                       </h3>
                       <div className="flex items-center">
@@ -559,7 +560,7 @@ const Message = () => {
                             selectedUser.status ?? "offline"
                           )}`}
                         ></span>
-                        <p className="text-[10px] text-gray-400 capitalize">
+                        <p className="text-[10px] dark:text-[#FFFFFF99]/60 text-gray-400 capitalize">
                           {selectedUser.status} • {selectedUser.role}
                         </p>
                       </div>
@@ -567,7 +568,7 @@ const Message = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 p-3 overflow-y-auto scrollbar-none bg-gray-50 flex flex-col">
+                <div className="flex-1 p-3 overflow-y-auto dark:bg-[#343434] scrollbar-none bg-gray-50 flex flex-col">
                   {" "}
                   {/* Added flex-col-reverse */}
                   <AnimatePresence>
@@ -590,7 +591,7 @@ const Message = () => {
                             whileHover={{ scale: 1.01 }}
                             className={`p-2 rounded-lg max-w-[80%] shadow-sm ${
                               msg.senderId === userId
-                                ? "bg-[#223857] text-white shadow-lg rounded-tr-none"
+                                ? "bg-[#223857]  text-white shadow-lg rounded-tr-none"
                                 : "bg-white shadow-lg rounded-tl-none"
                             }`}
                           >
@@ -622,9 +623,9 @@ const Message = () => {
                 <motion.div
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  className="border-t border-gray-200 p-3 bg-white"
+                  className="border-t border-gray-200 dark:bg-[#2C2C2C] p-3 bg-white"
                 >
-                  <div className="flex items-center rounded-lg bg-gray-50 p-1">
+                  <div className="flex items-center rounded-lg dark:bg-[#343434] bg-gray-50 p-1">
                     <button className="p-1 text-gray-500 hover:text-gray-700 ml-1">
                       <GrAttachment size={14} />
                     </button>
@@ -643,10 +644,10 @@ const Message = () => {
                       whileTap={{ scale: 0.95 }}
                       onClick={handleSendMessage}
                       disabled={!messageText.trim()}
-                      className={`p-1 rounded-lg flex items-center ${
+                      className={`p-1 rounded-lg dark:bg-[#343434]  flex items-center ${
                         messageText.trim()
-                          ? "bg-[#4CBC9A] text-white"
-                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                          ? "bg-[#4CBC9A] dark:bg-[#343434] text-white"
+                          : "bg-gray-200 dark:text-[#576CBC] text-gray-400 cursor-not-allowed"
                       }`}
                     >
                       <FaTelegramPlane size={14} />
@@ -658,10 +659,10 @@ const Message = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center justify-center h-full bg-gray-50"
+                className="flex items-center justify-center h-full dark:bg-[#343434] bg-gray-50"
               >
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full mb-3 flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto dark:bg-[#343434] bg-gray-200 rounded-full mb-3 flex items-center justify-center">
                     <svg
                       className="w-8 h-8 text-gray-400"
                       fill="none"

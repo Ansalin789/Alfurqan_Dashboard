@@ -112,8 +112,8 @@ const TeacherModuleAccess = () => {
 
   const modules = [
     'Dashboard',
-    'Live Classes',
-    'Schedule',
+    'LiveClasses',
+    'scheduledclasses',
     'Assignments',
     'Messages',
     'Analytics',

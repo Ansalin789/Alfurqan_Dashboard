@@ -14,6 +14,9 @@ interface Student {
   studentFirstName: string;
   studentLastName: string;
   studentEmail: string;
+  email: string;
+  phonenumber: string;
+
   city: string;
   country: string;
   trailId: string;
@@ -169,7 +172,9 @@ interface TrialClass {
   student: {
     studentId: string;
     name: string;
+    email: string;
     city: string;
+    phonenumber: string;
     country: string;
   };
 
@@ -247,7 +252,7 @@ function LiveClass() {
 
   useEffect(() => {
     console.log("select");
-    console.log("select", selectedTrial?._id);
+    console.log("select", selectedTrial?.trialId);
   }, [selectedTrial]);
 
   const filterUpcomingClass = (response: {
@@ -350,9 +355,10 @@ function LiveClass() {
       // If no live class, find the next upcoming class
       else if (
         classDate > now &&
+        cls.sessionStatus !== "Completed" &&
         (!upcomingClass || classDate < new Date(upcomingClass.startDate))
       ) {
-        console.log(`Class ${cls._id} is in the future`);
+        console.log(`Class ${cls._id} is in the future and not completed`);
         upcomingClass = cls;
       }
     });
@@ -360,62 +366,64 @@ function LiveClass() {
     console.log("Selected Class:", upcomingClass);
     return upcomingClass;
   };
-  // Fetch class data
-  // useEffect(() => {
-  //   const fetchClassData = async () => {
-  //     try {
-  //       const token =
-  //         typeof window !== "undefined"
-  //           ? localStorage.getItem("TeacherAuthToken")
-  //           : null;
 
-  //       if (!token) {
-  //         console.error("❌ AdminAuthToken not found");
-  //         return;
-  //       }
+  useEffect(() => {
+    const fetchClassData = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherAuthToken")
+            : null;
 
-  //       const response = await fetch(
-  //         `https://api.blackstoneinfomaticstech.com/evaluationlist/${trailId}`,
-  //         {
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             Authorization: `Bearer ${token}`,
-  //           },
-  //         }
-  //       );
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-  //       const data = await response.json();
-  //       setOptions((prev) => ({
-  //         trialClassStatus: prev.trialClassStatus.includes(
-  //           data.trialClassStatus
-  //         )
-  //           ? prev.trialClassStatus
-  //           : [...prev.trialClassStatus, data.trialClassStatus],
-  //         studentStatus: prev.studentStatus.includes(data.studentStatus)
-  //           ? prev.studentStatus
-  //           : [...prev.studentStatus, data.studentStatus],
-  //         paymentStatus: prev.paymentStatus.includes(data.paymentStatus)
-  //           ? prev.paymentStatus
-  //           : [...prev.paymentStatus, data.paymentStatus],
-  //       }));
-  //       setTrialClassStatus(data.trialClassStatus);
-  //       setStudentStatus(data.studentStatus);
-  //       setPaymentStatus(data.paymentStatus);
-  //       setPaymentLink(
-  //         `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(
-  //           data._id
-  //         )}`
-  //       );
-  //       setFormData(data);
-  //       console.log(data);
-  //     } catch (error) {
-  //       console.error("Error fetching user data:", error);
-  //     }
-  //   };
-  //   fetchClassData();
-  // }, []);
+        if (!token) {
+          console.error("❌ AdminAuthToken not found");
+          return;
+        }
+
+        const response = await fetch(
+          `https://api.blackstoneinfomaticstech.com/evaluationlist/${selectedTrial?.trialId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("data>>>>", data);
+        setOptions((prev) => ({
+          trialClassStatus: prev.trialClassStatus.includes(
+            data.trialClassStatus
+          )
+            ? prev.trialClassStatus
+            : [...prev.trialClassStatus, data.trialClassStatus],
+          studentStatus: prev.studentStatus.includes(data.studentStatus)
+            ? prev.studentStatus
+            : [...prev.studentStatus, data.studentStatus],
+          paymentStatus: prev.paymentStatus.includes(data.paymentStatus)
+            ? prev.paymentStatus
+            : [...prev.paymentStatus, data.paymentStatus],
+        }));
+        setTrialClassStatus(data.trialClassStatus);
+        setStudentStatus(data.studentStatus);
+        setPaymentStatus(data.paymentStatus);
+        setPaymentLink(
+          `https://blackstoneinfomaticstech.com/invoice?id=${encodeURIComponent(
+            data._id
+          )}`
+        );
+        setFormData(data);
+        console.log(data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchClassData();
+  }, [selectedTrial?.trialId]);
 
   const updateClick = async (id: string | undefined) => {
     const formDataNames = {
@@ -572,8 +580,7 @@ function LiveClass() {
 
         console.log("Filtered Next Class:", nextClass); // Debug if nextClass is valid
 
-        if (nextClass && nextClass.sessionStatus === "NotCompleted") {
-          console.log("Setting classData to:", nextClass);
+        if (nextClass) {
           setClassData(nextClass);
           setRoomName(nextClass.classLink);
           setAttendance([
@@ -841,7 +848,7 @@ function LiveClass() {
                             : ""
                         }
                         className="w-full px-4 py-2 dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px] dark:text-[#FFF] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                        required
+                        readOnly
                       />
                     </div>
 
@@ -862,7 +869,7 @@ function LiveClass() {
                             : ""
                         }
                         className="w-full px-4 py-2 dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300 rounded-md text-[12px] dark:text-[#FFF] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                        required
+                        readOnly
                       />
                     </div>
 
@@ -874,9 +881,9 @@ function LiveClass() {
                       <input
                         type="email"
                         name="email"
-                        // value={selectedTrial?.student.name}
+                        value={selectedTrial?.student.email || ""}
                         className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                        required
+                        readOnly
                       />
                     </div>
 
@@ -888,8 +895,9 @@ function LiveClass() {
                       <input
                         type="text"
                         name="phone"
+                        value={selectedTrial?.student.phonenumber || ""}
                         className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                        required
+                        readOnly
                       />
                     </div>
 
@@ -904,7 +912,7 @@ function LiveClass() {
                         name="phone"
                         value={selectedTrial?.student.country}
                         className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
-                        required
+                        readOnly
                       />
                     </div>
 
@@ -918,6 +926,7 @@ function LiveClass() {
                         name="city"
                         value={selectedTrial?.student.city}
                         className="w-full px-4 py-2  dark:bg-[#343434] dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                        readOnly
                       />
                     </div>
 
@@ -929,7 +938,7 @@ function LiveClass() {
                       <input
                         type="text"
                         name="trialId"
-                        value={selectedTrial?.student.studentId}
+                        value={selectedTrial?.trialId}
                         className="w-full px-4 py-2  dark:bg-[#343434]  dark:border dark:border-[#5C5C5C]  border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
                         readOnly
                       />
@@ -944,6 +953,7 @@ function LiveClass() {
                         name="course"
                         value={selectedTrial?.course.courseName}
                         className="w-full px-4 py-2  dark:bg-[#343434]  dark:border dark:border-[#5C5C5C] border border-gray-300  dark:text-[#FFF] rounded-md text-[12px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#576CBC]"
+                        readOnly
                       />
                     </div>
 

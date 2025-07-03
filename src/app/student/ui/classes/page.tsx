@@ -1,357 +1,551 @@
-"use client"
+"use client";
 
-import BaseLayout2 from "@/components/BaseLayout2"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { FaCalendarAlt, FaSort } from "react-icons/fa"
-import { BsThreeDots } from "react-icons/bs"
-import DatePicker from "react-datepicker"
-import "react-datepicker/dist/react-datepicker.css"
-import MyClass from "./MyClass"
-import axios from "axios"
+import BaseLayout2 from "@/components/BaseLayout2";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import "react-datepicker/dist/react-datepicker.css";
+import MyClass from "./MyClass";
+import axios from "axios";
+import { MoreVertical, Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
+import Pagination from "@/components/Pagination";
+import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 
 interface Student {
-  studentId: string
-  studentFirstName: string
-  studentLastName: string
-  studentEmail: string
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
 }
 
 interface Teacher {
-  teacherId: string
-  teacherName: string
-  teacherEmail: string
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+interface Course {
+  courseId: string;
+  courseName: string;
 }
 
 interface ClassData {
-  _id: string
-  student: Student
-  teacher: Teacher
-  classDay: string[]
-  package: string
-  preferedTeacher: string
-  totalHourse: number
-  startDate: string
-  endDate: string
-  startTime: string[]
-  endTime: string[]
-  scheduleStatus: string
-  classLink: string
-  status: string
-  classStatus: string
-  createdBy: string
-  createdDate: string
-  lastUpdatedDate: string
+  _id: string;
+  student: Student;
+  teacher: Teacher;
+  classDay: string[];
+  package: string;
+  preferedTeacher: string;
+  course: Course;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  classLink: string;
+  status: string;
+  classStatus: string;
+  createdBy: string;
+  createdDate: string;
+  lastUpdatedDate: string;
 }
 
 interface ApiResponse {
-  totalCount: number
-  classSchedule: ClassData[]
+  totalCount: number;
+  classSchedule: ClassData[];
 }
 
-type SortableKeys = "classID" | "teacherName" | "package" | "startDate" | "status"
+type SortableKeys =
+  | "classID"
+  | "teacherName"
+  | "package"
+  | "startDate"
+  | "status";
 
 const Classes = () => {
-  const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"Upcoming" | "Completed">("Upcoming")
-  const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([])
-  const [completedClasses, setCompletedClasses] = useState<ClassData[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [popupVisible, setPopupVisible] = useState<string | null>(null)
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
-  const [sortKey, setSortKey] = useState<SortableKeys>("classID")
-  const [isPremiumUser] = useState(true) // Replace with actual role determination logic
-  const itemsPerPage = 5
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"Scheduled" | "Completed">(
+    "Scheduled"
+  );
+  const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([]);
+  const [completedClasses, setCompletedClasses] = useState<ClassData[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [popupVisible, setPopupVisible] = useState<string | null>(null);
+  const itemsPerPage = 8;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredClass, setFilteredClass] = useState<ClassData[]>([]);
+  const [showFilter, setShowFilter] = useState(false);
+  const [filterCourse, setFilterCourse] = useState("");
+  const [filterFromDate, setFilterFromDate] = useState("");
+  const [filterToDate, setFilterToDate] = useState("");
+  const [filterFromTime, setFilterFromTime] = useState("");
+  const [filterToTime, setFilterToTime] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const studentId = localStorage.getItem("StudentPortalId")
-const token =
-    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+        const studentId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentPortalId")
+            : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentAuthToken")
+            : null;
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }          if (!studentId || !token) {
-          console.log('Missing studentId or authToken');
+        if (!studentId || !token) {
+          console.log("Missing studentId or authToken");
           return;
-        }        if (!studentId || !token) {
-          console.log("Missing studentId or authToken")
-          return
         }
 
-        const response = await axios.get<ApiResponse>("https://api.blackstoneinfomaticstech.com/classShedule/students", {
-          params: { studentId },
-        headers: { "Content-Type": "application/json",
-               'Authorization': `Bearer ${token}`,
-           },
-        })
-        const classes = response.data.classSchedule
+        const response = await axios.get<ApiResponse>(
+          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          {
+            params: { studentId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        const now = new Date()
-        const upcoming = classes.filter((cls) => {
-          const classDate = new Date(cls.startDate)
-          const [startHours, startMinutes] = cls.startTime[0].split(":").map(Number)
-          classDate.setHours(startHours, startMinutes, 0, 0)
-          return now < classDate
-        })
+        const classes = response.data.classSchedule;
+        const now = new Date();
 
-        const completed = classes.filter((cls) => new Date(cls.startDate) <= now)
+        const upcoming = classes
+          .filter((cls) => {
+            const classDate = new Date(cls.startDate);
+            const [startHours, startMinutes] = cls.startTime[0]?.split(":") || [
+              0, 0,
+            ];
+            classDate.setHours(+startHours, +startMinutes, 0, 0);
+            return (
+              now < classDate &&
+              (cls.scheduleStatus === "Scheduled" ||
+                cls.scheduleStatus === "Rescheduled")
+            );
+          })
+          .sort(
+            (a, b) =>
+              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          );
 
-        setUpcomingClasses(upcoming)
-        setCompletedClasses(completed)
+        const completed = classes
+          .filter((cls) => cls.scheduleStatus === "Completed")
+          .sort(
+            (a, b) =>
+              new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+          );
+        setUpcomingClasses(upcoming);
+        setCompletedClasses(completed);
       } catch (error) {
-        console.error("Error fetching class data:", error)
+        console.error("Error fetching class data:", error);
       }
+    };
+
+    fetchClasses();
+  }, []);
+
+  const filteredClasses =
+    activeTab === "Scheduled" ? upcomingClasses : completedClasses;
+  const displayedClasses = filteredClass.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  useEffect(() => {
+    const query = searchQuery.toLowerCase();
+
+    const filtered = filteredClasses.filter((cls) => {
+      const teacherName = cls.teacher?.teacherName?.toLowerCase() ?? "";
+      const courseName = cls.course?.courseName?.toLowerCase() ?? "";
+      const classDate = new Date(cls.startDate);
+      const classTime = cls.startTime[0] ?? "";
+      const status = cls.scheduleStatus;
+
+      const matchesSearch = teacherName.includes(query);
+      const matchesCourse = filterCourse
+        ? courseName === filterCourse.toLowerCase()
+        : true;
+      const matchesStatus = filterStatus ? status === filterStatus : true;
+      const matchesDate =
+        (!filterFromDate || classDate >= new Date(filterFromDate)) &&
+        (!filterToDate || classDate <= new Date(filterToDate));
+      const matchesTime =
+        (!filterFromTime || classTime >= filterFromTime) &&
+        (!filterToTime || classTime <= filterToTime);
+
+      return (
+        matchesSearch &&
+        matchesCourse &&
+        matchesStatus &&
+        matchesDate &&
+        matchesTime
+      );
+    });
+
+    setFilteredClass(filtered);
+    setCurrentPage(1);
+  }, [
+    searchQuery,
+    filteredClasses,
+    filterCourse,
+    filterFromDate,
+    filterToDate,
+    filterFromTime,
+    filterToTime,
+    filterStatus,
+  ]);
+
+  const getStatusClass = (status: string) => {
+    if (status === "Scheduled" || status === "Completed") {
+      return "bg-[#ECFDF3] text-[#377E36] dark:bg-[#408d4033]";
+    } else {
+      return "bg-gray-200 text-gray-600 dark:bg-[#DEDEDE33] dark:text-[#bbbdbc]";
     }
-    fetchClasses()
-  }, [])
-
-  const sortClasses = (classes: ClassData[]) => {
-    return classes.sort((a, b) => {
-      if (sortOrder === "asc") {
-        return a[sortKey as keyof ClassData] > b[sortKey as keyof ClassData] ? 1 : -1
-      }
-      return a[sortKey as keyof ClassData] < b[sortKey as keyof ClassData] ? 1 : -1
-    })
-  }
-
-  const filteredClasses = activeTab === "Upcoming" ? sortClasses(upcomingClasses) : sortClasses(completedClasses)
-  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage)
-  const displayedClasses = filteredClasses.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const handleTabChange = (tab: "Upcoming" | "Completed") => {
-    setActiveTab(tab)
-    setCurrentPage(1)
-  }
+  };
 
   const handlePopupToggle = (classId: string) => {
-    setPopupVisible(popupVisible === classId ? null : classId)
-  }
+    setPopupVisible(popupVisible === classId ? null : classId);
+  };
 
   const handleReschedule = (classId: string) => {
-    router.push(`/student/ui/Reschedule?classId=${classId}`)
-  }
+    router.push(`/student/ui/Reschedule?classId=${classId}`);
+  };
 
   const handleCancel = (classId: string) => {
-    console.log(`Cancel clicked for classId: ${classId}`)
-    setPopupVisible(null)
-  }
+    console.log(`Cancel clicked for classId: ${classId}`);
+    setPopupVisible(null);
+  };
 
-  const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date)
-  }
-
-  const handleSort = (key: SortableKeys): void => {
-    const order = sortOrder === "asc" ? "desc" : "asc"
-    setSortOrder(order)
-    setSortKey(key)
-  }
-
-  const handleUpgradePlan = () => {
-    setPopupVisible(null)
-    console.log("User prompted to switch to a higher plan.")
-  }
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredClass.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredClass.length / itemsPerPage);
 
   return (
     <BaseLayout2>
-      <style>
-        {`
-          .custom-datepicker {
-            width: 80px;
-            text-align: center;
-            border: 2px solid #1C3557;
-            border-radius: 8px;
-            padding: 5px;
-            background-color: #f0f8ff;
-          }
-
-          .react-datepicker {
-            border-radius: 8px;
-            background-color: white;
-          }
-
-          .react-datepicker__header {
-            background-color: #1C3557;
-            color: white !important;
-          }
-          .react-datepicker__header .react-datepicker__current-month,
-          .react-datepicker__header .react-datepicker__day-name {
-            color: white !important;
-          }
-
-          .react-datepicker__day {
-            color: #1C3557 !important;
-          }
-        `}
-      </style>
-
-      <div className="p-4 mx-auto w-[1250px] pr-12 pl-4">
+      <div className="mx-auto max-w-screen-2xl px-2 sm:px-4 lg:px-6">
+        <SupervisorHeader currentSection="Scheduled Meetings" />
         <MyClass />
-        <div className="p-4">
-          <h2 className="text-2xl font-semibold text-gray-800 p-2">Scheduled Classes</h2>
+        {/* Tabs */}
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 py-4">
+          {["Scheduled", "Completed"].map((tab) => (
+            <button
+              key={tab}
+              className={`relative text-xs sm:text-sm md:text-base font-medium transition ${
+                activeTab === tab
+                  ? "text-[#576CBC] font-semibold"
+                  : "text-[#010E30] dark:text-white"
+              }`}
+              onClick={() => setActiveTab(tab as "Scheduled" | "Completed")}
+            >
+              {tab} (
+              {tab === "Scheduled"
+                ? upcomingClasses.length
+                : completedClasses.length}
+              )
+              {activeTab === tab && (
+                <span className="absolute left-0 -bottom-1 w-full h-[2px] rounded-full bg-[#576CBC]" />
+              )}
+            </button>
+          ))}
+        </div>
 
-          <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[450px] flex flex-col justify-between">
-            <div>
-              <div className="flex">
+        {/* Table Header & Filters */}
+        <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg overflow-x-auto scrollbar-none">
+          <div className="flex flex-col md:flex-row items-start md:items-center px-4 relative gap-4 md:gap-0">
+            <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 justify-start px-4">
+              <Search className="w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by Teacher name"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
+              />
+            </div>
+            <button
+              onClick={() => setShowFilter(true)}
+              className="flex-1 flex items-center gap-2 text-sm text-gray-400 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
+            >
+              <MdTune className="w-5 h-5" />
+              <span>Filter</span>
+            </button>
+            <div className="flex-1 flex items-center text-sm  px-4 text-gray-500 justify-start">
+              <span>
+                Showing {displayedClasses.length} of {filteredClasses.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto scrollbar-none">
+            <table className="w-full table-auto border-collapse text-[13px] sm:text-sm">
+              <thead>
+                <tr>
+                  {[
+                    "Class ID",
+                    "Teacher Name",
+                    "Course",
+                    "Date",
+                    "Time",
+                    "Status",
+                    "Action",
+                  ].map((col) => (
+                    <th
+                      key={col}
+                      className="px-4 py-3.5 text-center font-medium border border-[#4C6993] bg-[#4C6993] text-white dark:bg-[#6087C0]"
+                    >
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-6 text-sm">
+                      No classes found.
+                    </td>
+                  </tr>
+                ) : (
+                  currentItems.map((cls, index) => (
+                    <tr
+                      key={cls._id}
+                      className={`${
+                        index % 2 === 0
+                          ? "bg-white dark:bg-[#2C2C2C]"
+                          : "bg-[#F8F8F8] dark:bg-[#303030]"
+                      }`}
+                    >
+                      <td className="px-4 py-3 text-center break-words">
+                        <span className="text-xs">{cls._id}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center text-[#576CBC] text-xs sm:text-sm">
+                        {cls.teacher?.teacherName || "N/A"}
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {cls.course.courseName}
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {new Date(cls.startDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "2-digit",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {cls.startTime[0]} - {cls.endTime[0]}
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        <span
+                          className={`px-3 py-1 rounded-sm font-semibold inline-block text-xs ${getStatusClass(
+                            cls.scheduleStatus
+                          )}`}
+                        >
+                          {cls.scheduleStatus}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center relative">
+                        {activeTab === "Scheduled" &&
+                        (cls.scheduleStatus === "Scheduled" ||
+                          cls.scheduleStatus === "Rescheduled") ? (
+                          <>
+                            {popupVisible === cls._id && (
+                              <div className="absolute right-0 z-50 w-40 bottom-2 bg-white border rounded-sm  dark:bg-[#2C2C2C]">
+                                <button
+                                  onClick={() => handleReschedule(cls._id)}
+                                  className="block w-full px-4 py-2 text-center text-xs text-gray-700 dark:text-[#ECFDF3] hover:bg-gray-100 dark:hover:bg-gray-600"
+                                >
+                                  Request Reschedule
+                                </button>
+                                <div className="w-full h-px bg-[#D4D4D4] mx-auto" />
+                                <button
+                                  onClick={() => handleCancel(cls._id)}
+                                  className="block w-full px-4 py-2 text-center text-xs text-gray-700 dark:text-[#ECFDF3] hover:bg-gray-100 dark:hover:bg-gray-600"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
+                            <button
+                              onClick={() => handlePopupToggle(cls._id)}
+                              className="inline-flex justify-center p-1"
+                            >
+                              <MoreVertical className="w-4 h-4 text-slate-900 dark:text-white" />
+                            </button>
+                          </>
+                        ) : (
+                          activeTab === "Completed" && (
+                            <div className="flex justify-center">
+                              <MoreVertical className="w-4 h-4 text-slate-900 dark:text-white" />
+                            </div>
+                          )
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+        {showFilter && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="bg-white dark:bg-[#1E1E1E] w-full max-w-sm rounded-xl shadow-xl p-6 relative space-y-5 mx-3 sm:mx-0">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold text-[#010E30] dark:text-white">
+                  Filter by
+                </h3>
                 <button
-                  onClick={() => handleTabChange("Upcoming")}
-                  className={`py-3 px-2 ml-5 ${
-                    activeTab === "Upcoming"
-                      ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold"
-                      : "text-gray-500"
-                  } focus:outline-none text-[13px]`}
+                  className="text-red-500 hover:text-gray-700 dark:hover:text-white text-sm"
+                  onClick={() => setShowFilter(false)}
                 >
-                  Upcoming ({upcomingClasses.length})
-                </button>
-                <button
-                  onClick={() => handleTabChange("Completed")}
-                  className={`py-3 px-6 ${
-                    activeTab === "Completed"
-                      ? "text-[#1C3557] border-b-2 border-[#1C3557] font-semibold"
-                      : "text-gray-500"
-                  } focus:outline-none text-[13px]`}
-                >
-                  Completed ({completedClasses.length})
+                  ✕
                 </button>
               </div>
-              <div className="flex justify-end px-[50px] h-6">
-                <div className="flex items-center border border-[#1C3557] rounded-md overflow-hidden">
-                  <div className="px-3 py-2 flex items-center">
-                    <FaCalendarAlt className="text-[#1C3557] text-sm" />
-                  </div>
-                  <DatePicker
-                    selected={selectedDate}
-                    onChange={handleDateChange}
-                    dateFormat="MMMM d, yyyy"
-                    className="w-20 text-[10px] text-gray-600 focus:outline-none"
-                    placeholderText="ddmmyy"
+
+              {/* Course */}
+              <div>
+                <label
+                  htmlFor="jhvch"
+                  className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                >
+                  Course
+                </label>
+                <select
+                  value={filterCourse}
+                  onChange={(e) => setFilterCourse(e.target.value)}
+                  className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-sm bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-white"
+                >
+                  <option value="">Select Course</option>
+                  <option value="Quran">Quran</option>
+                  <option value="Arabic">Arabic</option>
+                  <option value="Islamic">Islamic</option>
+                </select>
+              </div>
+
+              {/* Date Range */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label
+                    htmlFor="iiu"
+                    className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                  >
+                    From Date
+                  </label>
+                  <input
+                    type="date"
+                    value={filterFromDate}
+                    onChange={(e) => setFilterFromDate(e.target.value)}
+                    className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-xs bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-[#FFFFFFCC]/80"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label
+                    htmlFor="hcvccv"
+                    className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                  >
+                    To Date
+                  </label>
+                  <input
+                    type="date"
+                    value={filterToDate}
+                    onChange={(e) => setFilterToDate(e.target.value)}
+                    className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-xs bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-[#FFFFFFCC]/80"
                   />
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="table-auto w-full">
-                  <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
-                    <tr>
-                      <th className="px-6 py-3 text-center">
-                        Class ID <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("classID")} />
-                      </th>
-                      <th className="px-6 py-3 text-center">
-                        Teacher Name{" "}
-                        <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("teacherName")} />
-                      </th>
-                      <th className="px-6 py-3 text-center">
-                        time <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("startDate")} />
-                      </th>
-                      <th className="px-6 py-3 text-center">
-                        Start Date{" "}
-                        <FaSort className="inline ml-2 cursor-pointer" onClick={() => handleSort("startDate")} />
-                      </th>
-                      <th className="px-6 py-3 text-center">Scheduled</th>
-
-                      {activeTab === "Completed" && <th className="px-6 py-3 text-center">Status</th>}
-                      {activeTab === "Upcoming" && <th className="px-6 py-3 text-center"></th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayedClasses.map((item) => (
-                      <tr
-                        key={item._id}
-                        className="text-[12px] font-medium mt-2"
-                        style={{ backgroundColor: "rgba(230, 233, 237, 0.22)" }}
-                      >
-                        <td className="px-6 py-3 text-center">{item._id}</td>
-                        <td className="px-6 py-3 text-center">{item.teacher.teacherName}</td>
-                        <td className="px-6 py-3 text-center">{`${item.startTime[0]} - ${item.endTime[0]}`}</td>
-                        <td className="px-6 py-3 text-center">{new Date(item.startDate).toLocaleDateString()}</td>
-                        <td className="px-6 py-3 text-center">{item.classStatus}</td>
-                        
-                        {activeTab === "Completed" && (
-                          <td className="px-6 py-2 text-center">
-                            <div className="px-2 py-2 text-[#223857] rounded-lg border-[1px] border-[#95b690] bg-[#D0FECA] text-[10px]">
-                              {item.status}
-                            </div>
-                          </td>
-                        )}
-                        {activeTab === "Upcoming" && (
-                          <td className="relative px-6 py-3 text-center">
-                            <BsThreeDots className="cursor-pointer" onClick={() => handlePopupToggle(item._id)} />
-                            {popupVisible === item._id && (
-                              <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-                                {isPremiumUser ? (
-                                  <>
-                                    <button
-                                      className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-100"
-                                      onClick={() => handleReschedule(item._id)}
-                                    >
-                                      Reschedule
-                                    </button>
-                                    <button
-                                      className="w-full px-4 py-3 text-left text-sm text-red-500 hover:bg-gray-100"
-                                      onClick={() => handleCancel(item._id)}
-                                    >
-                                      Cancel
-                                    </button>
-                                  </>
-                                ) : (
-                                  <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-                                    <div className="bg-[#fff5f3] p-10 rounded shadow border border-[#F4B0A1] flex">
-                                      <p className="text-[#27303A] text-lg font">
-                                        Switch to a higher plan for extended benefits...
-                                      </p>
-                                      <button
-                                        className="bg-[#1C3557] text-white px-4 py-2 rounded text-center ml-10"
-                                        onClick={handleUpgradePlan}
-                                      >
-                                        OK
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-end items-center px-6 py-3">
-                <div className="flex space-x-2">
-                  {Array.from({ length: totalPages }).map((_, index) => {
-                    const page = index + 1
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`w-5 h-5 text-[13px] flex items-center justify-center rounded ${
-                          page === currentPage ? "bg-[#1C3557] text-white" : "text-[#1C3557] border border-[#1C3557]"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )
-                  })}
+              {/* Time Range */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label
+                    htmlFor="uycuycf"
+                    className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                  >
+                    From Time
+                  </label>
+                  <input
+                    type="time"
+                    value={filterFromTime}
+                    onChange={(e) => setFilterFromTime(e.target.value)}
+                    className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-sm bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-[#FFFFFFCC]/80"
+                  />
                 </div>
+                <div className="flex-1">
+                  <label
+                    htmlFor="hvv"
+                    className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                  >
+                    To Time
+                  </label>
+                  <input
+                    type="time"
+                    value={filterToTime}
+                    onChange={(e) => setFilterToTime(e.target.value)}
+                    className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-sm bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-[#FFFFFFCC]/80"
+                  />
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label
+                  htmlFor="hvvjh"
+                  className="text-sm text-[#010E30] dark:text-gray-300 mb-1 block"
+                >
+                  Status
+                </label>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full border border-gray-300 dark:border-[#444] px-3 py-2 rounded-md text-sm bg-white dark:bg-[#2D2D2D] text-[#010E30CC]/80 dark:text-[#FFFFFFCC]/80"
+                >
+                  <option value="">Select Status</option>
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Rescheduled">Rescheduled</option>
+                </select>
+              </div>
+              {/* Buttons */}
+              <div className="flex gap-7 pt-2 justify-center ">
+                <button
+                  onClick={() => {
+                    setFilterCourse("");
+                    setFilterFromDate("");
+                    setFilterToDate("");
+                    setFilterFromTime("");
+                    setFilterToTime("");
+                    setFilterStatus("");
+                    setShowFilter(false);
+                  }}
+                  className="px-4 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition "
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => setShowFilter(false)}
+                  className="px-5 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700 transition"
+                >
+                  Show {filteredClass.length} results
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </BaseLayout2>
-  )
-}
+  );
+};
 
-export default Classes
-
+export default Classes;

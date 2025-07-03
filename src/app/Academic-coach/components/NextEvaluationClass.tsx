@@ -2,7 +2,7 @@
 
 import { FaUserAlt } from "react-icons/fa";
 import { AiOutlineClockCircle } from "react-icons/ai";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 
 interface AcademicCoach {
@@ -32,16 +32,17 @@ interface UpcomingClass {
 
 const NextEvaluationClass = () => {
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [classData, setClassData] = useState<UpcomingClass | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [todaysClasses, setTodaysClasses] = useState<UpcomingClass[]>([]);
+  const [currentClassIndex, setCurrentClassIndex] = useState(0);
+  // const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isTimeUp, setIsTimeUp] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Fetch all today's classes
   useEffect(() => {
     const fetchNextEvaluationClass = async () => {
       try {
         const academicId = localStorage.getItem("AcademicCoachPortalId");
-        console.log("academicId>>", academicId);
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("AcademicCoachAuthToken")
@@ -68,21 +69,26 @@ const NextEvaluationClass = () => {
           throw new Error("Invalid data format from API");
         }
 
-        const upcomingClass = response.data
+        const now = new Date();
+        const todayClasses = response.data
           .filter((item: UpcomingClass) => {
             const classStartDate = new Date(item.scheduledStartDate);
-            const now = new Date();
-            return classStartDate > now;
+            return (
+              classStartDate.getDate() === now.getDate() &&
+              classStartDate.getMonth() === now.getMonth() &&
+              classStartDate.getFullYear() === now.getFullYear() &&
+              classStartDate > now // Only future classes for today
+            );
           })
           .sort((a: UpcomingClass, b: UpcomingClass) => {
             return (
               new Date(a.scheduledStartDate).getTime() -
               new Date(b.scheduledStartDate).getTime()
             );
-          })
-          .slice(0, 1)[0];
+          });
 
-        setClassData(upcomingClass ?? null);
+        setTodaysClasses(todayClasses);
+        setCurrentClassIndex(0);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -90,36 +96,54 @@ const NextEvaluationClass = () => {
           setError("An unexpected error occurred");
         }
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
 
     fetchNextEvaluationClass();
   }, []);
 
+  // Timer logic for the current class
   useEffect(() => {
-    if (classData?.scheduledStartDate) {
-      const interval = setInterval(() => {
-        const now = new Date();
-        const classStartDate = new Date(classData.scheduledStartDate);
-        const remainingTime = classStartDate.getTime() - now.getTime();
-
-        if (remainingTime <= 0) {
-          clearInterval(interval);
-          setTime({ hours: 0, minutes: 0, seconds: 0 });
-          setIsTimeUp(true);
-        } else {
-          const hours = Math.floor(remainingTime / 1000 / 60 / 60);
-          const minutes = Math.floor((remainingTime / 1000 / 60) % 60);
-          const seconds = Math.floor((remainingTime / 1000) % 60);
-          setTime({ hours, minutes, seconds });
-          setIsTimeUp(false);
-        }
-      }, 1000);
-
-      return () => clearInterval(interval);
+    if (todaysClasses.length === 0 || currentClassIndex >= todaysClasses.length) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
     }
-  }, [classData]);
+    const classData = todaysClasses[currentClassIndex];
+    if (!classData?.scheduledStartDate || !classData?.scheduledEndDate) return;
+
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      const now = new Date();
+      const classStartDate = new Date(classData.scheduledStartDate);
+      const classEndDate = new Date(classData.scheduledEndDate);
+
+      if (now >= classEndDate) {
+        // Move to next class if available
+        if (currentClassIndex + 1 < todaysClasses.length) {
+          setCurrentClassIndex((idx) => idx + 1);
+        } else {
+          // No more classes today
+          if (intervalRef.current) clearInterval(intervalRef.current);
+        }
+        setTime({ hours: 0, minutes: 0, seconds: 0 });
+      } else if (now < classStartDate) {
+        // Before class starts, show countdown
+        const remainingTime = classStartDate.getTime() - now.getTime();
+        const hours = Math.floor(remainingTime / 1000 / 60 / 60);
+        const minutes = Math.floor((remainingTime / 1000 / 60) % 60);
+        const seconds = Math.floor((remainingTime / 1000) % 60);
+        setTime({ hours, minutes, seconds });
+      } else {
+        // During class time, show 0:0:0 to indicate class is live
+        setTime({ hours: 0, minutes: 0, seconds: 0 });
+      }
+    }, 1000);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [todaysClasses, currentClassIndex]);
 
   const handleStartClass = (meetingLink: string | undefined) => {
     if (meetingLink) {
@@ -141,12 +165,30 @@ const NextEvaluationClass = () => {
     }.${year}`;
   };
 
+  const classData = todaysClasses[currentClassIndex];
+  const now = new Date();
+  const classStartDate = classData ? new Date(classData.scheduledStartDate) : null;
+  const classEndDate = classData ? new Date(classData.scheduledEndDate) : null;
+  const isBeforeClass = classStartDate ? now < classStartDate : false;
+  const isDuringClass = classStartDate && classEndDate ? now >= classStartDate && now < classEndDate : false;
   const progress =
     ((time.hours * 3600 + time.minutes * 60 + time.seconds) / (5 * 60 * 60)) *
     100;
 
+  // if (loading) {
+  //   return <div className="text-center text-gray-500">Loading...</div>;
+  // }
+
   if (error) {
     return <div className="text-center text-red-500">Error: {error}</div>;
+  }
+
+  if (!classData) {
+    return (
+      <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-center text-white p-6">
+        <span>No more classes for today.</span>
+      </div>
+    );
   }
 
   return (
@@ -172,7 +214,41 @@ const NextEvaluationClass = () => {
         )}
       </div>
       <div className="flex items-center space-x-2 px-14">
-        {isTimeUp ? (
+        {isBeforeClass ? (
+          <>
+            <p className="text-[13px] font-medium">Starts in</p>
+            <div className="relative flex items-center justify-center p-10">
+              <svg className="absolute w-14 h-20" viewBox="0 0 36 36">
+                <path
+                  className="circle-bg"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth="2"
+                />
+                <path
+                  className="circle"
+                  strokeDasharray={`${progress}, 100`}
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="#295CA0"
+                  strokeWidth="3"
+                />
+              </svg>
+              <div className="relative flex items-center justify-center w-2 rounded-full bg-[#234878] text-center">
+                <div className="absolute flex items-center justify-center w-10 h-10 rounded-full bg-white">
+                  <div className="text-[#234878]">
+                    <p className="text-[4px] font-bold">SESSION 01</p>
+                    <p className="text-[8px] font-extrabold text-[#223857]">
+                      {formatTime(time.hours)}:{formatTime(time.minutes)}:
+                      {formatTime(time.seconds)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : isDuringClass ? (
           <>
             <button
               onClick={() => handleStartClass(classData?.student.meetingLink)}
@@ -202,41 +278,7 @@ const NextEvaluationClass = () => {
         `}
             </style>
           </>
-        ) : (
-          <>
-            <p className="text-[13px] font-medium">Starts in</p>
-            <div className="relative flex items-center justify-center p-10">
-              <svg className="absolute w-14 h-20" viewBox="0 0 36 36">
-                <path
-                  className="circle-bg"
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="#fff"
-                  strokeWidth="2"
-                />
-                <path
-                  className="circle"
-                  strokeDasharray={`${progress}, 100`}
-                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="#295CA0"
-                  strokeWidth="3"
-                />
-              </svg>
-              <div className="relative flex items-center justify-center w-2 rounded-full bg-[#234878] text-center">
-                <div className="absolute flex items-center justify-center w-10 h-10 rounded-full bg-white">
-                  <div className="text-[#234878]">
-                    <p className="text-[4px] font-bold">SESSION 13</p>
-                    <p className="text-[8px] font-extrabold text-[#223857]">
-                      {formatTime(time.hours)}:{formatTime(time.minutes)}:
-                      {formatTime(time.seconds)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        ) : null}
       </div>
     </div>
   );
