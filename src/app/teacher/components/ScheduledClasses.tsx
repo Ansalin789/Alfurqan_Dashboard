@@ -321,11 +321,11 @@ const ScheduledClasses = () => {
                       {item._id}
                     </td>
                     <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
-                      {item.student.studentFirstName}{" "}
+                      {item.student.studentFirstName}
                       {item.student.studentLastName}
                     </td>
                     <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
-                      {item.course.courseName}{" "}
+                      {item.course?.courseName ?? "N/A"}
                     </td>
                     <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
                       {new Date(item.startDate).toLocaleDateString("en-US", {
@@ -410,7 +410,7 @@ const ScheduledClasses = () => {
       <Modal
         isOpen={isFilterModalOpen}
         onRequestClose={() => setIsFilterModalOpen(false)}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white w-[650px] "
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white  dark:bg-[#343434] w-[650px] "
         overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
       >
         <div>
@@ -462,7 +462,11 @@ const ScheduledClasses = () => {
               </label>
               <input
                 type="date"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border rounded-lg text-sm 
+               text-black dark:text-white 
+               bg-white dark:bg-[#343434] 
+               border-gray-300 dark:border-[#5C5C5C]
+               [&::-webkit-calendar-picker-indicator]:dark:invert"
                 value={filters.fromDate}
                 onChange={(e) =>
                   setFilters({ ...filters, fromDate: e.target.value })
@@ -476,7 +480,11 @@ const ScheduledClasses = () => {
               </label>
               <input
                 type="date"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border rounded-lg text-sm 
+               text-black dark:text-white 
+               bg-white dark:bg-[#343434] 
+               border-gray-300 dark:border-[#5C5C5C]
+               [&::-webkit-calendar-picker-indicator]:dark:invert"
                 value={filters.toDate}
                 onChange={(e) =>
                   setFilters({ ...filters, toDate: e.target.value })
