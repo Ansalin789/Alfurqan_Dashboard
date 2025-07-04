@@ -128,8 +128,14 @@ const NextClass = () => {
 
     const fetchNextClass = async () => {
       try {
-        const studentId = localStorage.getItem("StudentPortalId");
-        const token = localStorage.getItem("StudentAuthToken");
+       const studentId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentPortalId")
+            : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentAuthToken")
+            : null;
         if (!studentId || !token) return;
 
         const response = await axios.get<ApiResponse>(
@@ -173,7 +179,6 @@ const NextClass = () => {
         setTimeRemaining(-1);
         setIsCountdownFinished(true);
       } else {
-        // After class ends
         setIsCountdownFinished(false);
         setTimeRemaining(-1);
         fetchNextClass();
@@ -191,7 +196,7 @@ const NextClass = () => {
       <div className="flex flex-col gap-2 w-full sm:w-auto">
         <p className="text-sm sm:text-base md:text-lg font-semibold">Your Next Class Starts In</p>
 
-        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:text-sm md:text-base">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:text-sm md:text-sm">
           <span className="flex items-center gap-1">
             <FaUser className="text-white/90 text-base sm:text-sm" />
             {classData?.student?.studentFirstName ?? "Unknown"}

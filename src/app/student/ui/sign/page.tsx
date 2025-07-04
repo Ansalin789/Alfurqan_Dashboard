@@ -47,10 +47,11 @@ const SignIn: React.FC = () => {
         username,
         password,
       });
-
+console.log(response.data);
       // Handle successful login response
       if (response.status === 200) {
         return response.data;
+  
       }
 
       throw new Error("Unexpected error occurred");
@@ -74,9 +75,7 @@ const SignIn: React.FC = () => {
       localStorage.setItem("StudentAuthToken", accessToken);
       localStorage.setItem("StudentPortalId", _id);
       localStorage.setItem("StudentPortalName", username);
-      const authToken = localStorage.getItem("StudentAuthToken");
-      console.log(accessToken);
-      console.log(authToken);
+      localStorage.setItem("StudentPackage",data.student.package);
       if (role?.includes("Student")) {
         router.push("/student/ui/dashboard");
         alert("Login successful as Student");
@@ -148,8 +147,7 @@ const SignIn: React.FC = () => {
         localStorage.setItem("StudentAuthToken", result.data.accessToken);
         localStorage.setItem("StudentPortalId", result.data.id);
         localStorage.setItem("StudentPortalName", result.data.username);
-        const authToken = localStorage.getItem("StudentAuthToken");
-        console.log(authToken);
+        localStorage.setItem("StudentPackage",result.data.student.package);
         router.push("/student/ui/dashboard"); // Redirect to dashboard
       } else {
         setError("Email not found"); // Display appropriate error message
@@ -265,7 +263,7 @@ const SignIn: React.FC = () => {
                     <input
                       type="text"
                       placeholder="Username"
-                      className="w-full px-2 text-[12px] py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                      className="w-full px-2 text-[12px] py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200 dark:text-black"
                       value={username1}
                       onChange={(e) => setUsername1(e.target.value)}
                       required
@@ -275,7 +273,7 @@ const SignIn: React.FC = () => {
                     <input
                       type={showPassword ? "text" : "password"}
                       placeholder="Password"
-                      className="w-full px-2 text-[12px] py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                      className="w-full px-2 text-[12px] py-1 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200 dark:text-black"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required

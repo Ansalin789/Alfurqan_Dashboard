@@ -5,11 +5,13 @@ import { useState, useEffect } from "react";
 import { CalendarX2, Clock } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import moment from "moment";
-import { useSearchParams } from "next/navigation";
 import BaseLayout from "@/components/BaseLayout";
 import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
+import { useSearchParams } from "next/navigation";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface ClassScheduleResponse {
   totalCount: number;
@@ -65,15 +67,13 @@ const TeachersSchedule = () => {
   const [activeView, setActiveView] = useState<"monthly" | "weekly" | "daily">(
     "monthly"
   );
+  const seacrh = useSearchParams();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [meetings, setMeetings] = useState<ClassSchedule[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [success, setSucces] = useState(false);
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
-
-  const Search = useSearchParams();
-  const teacherId = Search.get("_id");
   const [rescheduleDate, setRescheduleDate] = useState("");
 
   const [formData, setFormData] = useState({
@@ -113,11 +113,15 @@ const TeachersSchedule = () => {
       bg: "bg-[#5362e4]/10",
     },
   };
+  useEffect(() => {
+    toast.info("Please select a new date and time for rescheduling your class");
+  }, []);
 
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
-         const studentId =
+        const classId = seacrh.get("classId");
+        const studentId =
           typeof window !== "undefined"
             ? localStorage.getItem("StudentPortalId")
             : null;
@@ -155,22 +159,28 @@ const TeachersSchedule = () => {
               new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
           );
           setMeetings(sortedMeetings);
+          const matchedMeeting = sortedMeetings.find((m) => m._id === classId);
+          const fallbackDate = new Date();
+          const selectedMeetingDate = matchedMeeting
+            ? new Date(matchedMeeting.startDate)
+            : fallbackDate;
 
-          // Initialize with today's date
-          const today = new Date();
-          setSelectedDate(today);
-
-          // Set form data with today's date as default
-          const todayFormatted = moment(today).format("YYYY-MM-DD");
+          const formattedDate =
+            moment(selectedMeetingDate).format("YYYY-MM-DD");
+          setSelectedDate(selectedMeetingDate);
           setFormData({
-            date: todayFormatted,
-            fromTime: moment().format("HH:mm"),
-            toTime: moment().add(1, "hour").format("HH:mm"),
+            date: formattedDate,
+            fromTime:
+              matchedMeeting?.startTime?.[0] ?? moment().format("HH:mm"),
+            toTime:
+              matchedMeeting?.endTime?.[0] ??
+              moment().add(1, "hour").format("HH:mm"),
             comment: "",
-            meetingId: "",
+            meetingId: matchedMeeting?._id ?? "",
             applyToAll: false,
           });
-          setRescheduleDate(todayFormatted);
+
+          setRescheduleDate(formattedDate);
         }
       } catch (error) {
         console.error("Error fetching meetings:", error);
@@ -178,7 +188,7 @@ const TeachersSchedule = () => {
     };
 
     fetchMeetings();
-  }, [teacherId]);
+  }, []);
   const handlePrev = () => {
     if (activeView === "monthly") {
       setCurrentDate(moment(currentDate).subtract(1, "month").toDate());
@@ -297,7 +307,10 @@ const TeachersSchedule = () => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("TeacherAuthToken");
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("StudentAuthToken")
+          : null;
       if (!token) {
         throw new Error("No auth token found");
       }
@@ -444,160 +457,156 @@ const TeachersSchedule = () => {
     };
 
     return (
-      <div className="space-y-2 sm:space-y-3 md:space-y-4">
-        <div className="h-[calc(100vh-220px)] xs:h-[400px] sm:h-[450px] md:h-[500px] lg:h-[540px] overflow-y-auto scrollbar-none">
-          {/* Week range header */}
-          <div className="flex items-center justify-between mb-2 sm:mb-3 md:mb-4">
-            <h3 className="text-xs xs:text-sm sm:text-[15px] md:text-[16px] font-semibold text-gray-800 dark:text-white">
-              {moment(startOfWeek).format("MMM D")} -{" "}
-              {moment(endOfWeek).format("MMM D, YYYY")}
-            </h3>
-          </div>
+      <div className="w-full max-w-screen-lg mx-auto px-2 sm:px-4 md:px-6">
+        <div className="space-y-3 sm:space-y-4 md:space-y-5">
+          {/* Scrollable weekly list container */}
+          <div className="h-[calc(100vh-220px)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-[#555] pr-1">
+            {/* Week Header */}
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-white">
+                {moment(startOfWeek).format("MMM D")} -{" "}
+                {moment(endOfWeek).format("MMM D, YYYY")}
+              </h3>
+            </div>
 
-          <div className="space-y-1 sm:space-y-2">
-            {[
-              "Sunday",
-              "Monday",
-              "Tuesday",
-              "Wednesday",
-              "Thursday",
-              "Friday",
-              "Saturday",
-            ].map((day) => {
-              const dayMeetings = meetingsByDay[day] || [];
-              const isSelected = selectedDay === day;
-              const dayDate = moment(currentDate).day(day).toDate();
-              const isPast = isPastDate(dayDate);
-              const isToday = moment().isSame(dayDate, "day");
+            {/* Weekday buttons and meetings */}
+            <div className="space-y-2 sm:space-y-3">
+              {[
+                "Sunday",
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+              ].map((day) => {
+                const dayMeetings = meetingsByDay[day] || [];
+                const isSelected = selectedDay === day;
+                const dayDate = moment(currentDate).day(day).toDate();
+                const isPast = isPastDate(dayDate);
+                const isToday = moment().isSame(dayDate, "day");
 
-              return (
-                <div key={day} className="flex flex-col">
-                  {/* Day header button */}
-                  <button
-                    onClick={() => handleDayClick(day)}
-                    className={`
-                    w-full p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer 
-                    transition-all duration-200 flex items-center justify-between
+                return (
+                  <div key={day} className="flex flex-col">
+                    {/* Day Header Button */}
+                    <button
+                      onClick={() => handleDayClick(day)}
+                      className={`
+                    w-full p-2 sm:p-3 md:p-4 rounded-xl transition-all flex items-center justify-between
                     ${
                       isSelected
-                        ? "dark:bg-[#414141] bg-[#f7f7f7]"
+                        ? "bg-[#f7f7f7] dark:bg-[#414141]"
                         : dayMeetings.length > 0
-                        ? "dark:bg-[#414141]/90 bg-[#f7f7f7] hover:shadow-md"
+                        ? "hover:shadow-md bg-[#f7f7f7] dark:bg-[#414141]/90"
                         : "bg-[#f7f7f7] dark:bg-[#414141]/80"
                     }
                     ${isPast ? "opacity-70" : ""}
                     ${isToday ? "border-l-4 border-[#576cbc]" : ""}
                   `}
-                  >
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <div
-                        className={`text-xs sm:text-sm font-medium ${
-                          isSelected
-                            ? "dark:text-white text-black"
-                            : isToday
-                            ? "text-[#576cbc] dark:text-[#7a94e8]"
-                            : "text-gray-800 dark:text-gray-300"
-                        }`}
-                      >
-                        {day.substring(0, 3)}
-                      </div>
-                      <div>
+                    >
+                      <div className="flex items-center gap-3">
                         <div
-                          className={`text-xs sm:text-sm font-semibold ${
+                          className={`text-xs sm:text-sm font-medium ${
                             isSelected
-                              ? "dark:text-white text-black"
-                              : "text-gray-800 dark:text-white"
+                              ? "text-black dark:text-white"
+                              : isToday
+                              ? "text-[#576cbc] dark:text-[#7a94e8]"
+                              : "text-gray-800 dark:text-gray-300"
                           }`}
                         >
-                          {day}
+                          {day.substring(0, 3)}
                         </div>
-                        <div
-                          className={`text-[9px] sm:text-[10px] ${
-                            isSelected
-                              ? "text-white/80"
-                              : "text-gray-500 dark:text-gray-400"
-                          }`}
-                        >
-                          {moment(dayDate).format("MMM D")}
-                        </div>
-                      </div>
-                    </div>
-
-                    {dayMeetings.length > 0 && (
-                      <div
-                        className={`
-                      text-[9px] sm:text-[10px] px-2 sm:px-3 py-1 rounded-md sm:rounded-lg
-                      ${
-                        isSelected
-                          ? "dark:bg-[#555555] dark:text-white bg-[#eae9e9] text-black"
-                          : "dark:bg-[#555555]/80 dark:text-white/90 bg-[#eae9e9] text-black/90"
-                      }
-                    `}
-                      >
-                        {dayMeetings.length}{" "}
-                        {dayMeetings.length === 1 ? "Meeting" : "Meetings"}
-                      </div>
-                    )}
-                  </button>
-
-                  {/* Day meetings list */}
-                  {isSelected && dayMeetings.length > 0 && (
-                    <div className="w-full mt-1 sm:mt-2 space-y-1 sm:space-y-2 pl-3 sm:pl-4">
-                      {dayMeetings.map((meeting, idx) => {
-                        const colors = getMeetingTypeColor(
-                          meeting.course.courseName
-                        );
-                        return (
+                        <div>
                           <div
-                            key={idx}
-                            className={`
-                            p-2 sm:p-3 rounded-md sm:rounded-lg relative
-                            ${colors.bg} dark:bg-[#414141] bg-[#f7f7f7]
-                            transition-all duration-150 hover:shadow-sm
-                          `}
+                            className={`text-xs sm:text-sm font-semibold ${
+                              isSelected
+                                ? "text-black dark:text-white"
+                                : "text-gray-800 dark:text-white"
+                            }`}
                           >
-                            <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 h-5 sm:h-6 md:h-7 rounded-lg dark:bg-[#555555] bg-[#eae9e9]"></div>
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <div
-                                  className={`text-xs sm:text-sm font-semibold ${colors.text}`}
-                                >
-                                  {meeting.course.courseName} Class
+                            {day}
+                          </div>
+                          <div
+                            className={`text-[10px] ${
+                              isSelected
+                                ? "text-white/80"
+                                : "text-gray-500 dark:text-gray-400"
+                            }`}
+                          >
+                            {moment(dayDate).format("MMM D")}
+                          </div>
+                        </div>
+                      </div>
+
+                      {dayMeetings.length > 0 && (
+                        <div
+                          className={`text-[10px] px-2 py-1 rounded-lg ${
+                            isSelected
+                              ? "bg-[#eae9e9] text-black dark:bg-[#555] dark:text-white"
+                              : "bg-[#eae9e9] text-black/90 dark:bg-[#555]/80 dark:text-white/90"
+                          }`}
+                        >
+                          {dayMeetings.length}{" "}
+                          {dayMeetings.length === 1 ? "Meeting" : "Meetings"}
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Day Meeting Cards */}
+                    {isSelected && dayMeetings.length > 0 && (
+                      <div className="w-full mt-2 pl-3 sm:pl-4 space-y-2">
+                        {dayMeetings.map((meeting, idx) => {
+                          const colors = getMeetingTypeColor(
+                            meeting.course.courseName
+                          );
+                          return (
+                            <div
+                              key={idx}
+                              className={`
+                            relative p-3 sm:p-4 rounded-lg transition-all hover:shadow-sm
+                            ${colors.bg} dark:bg-[#414141] bg-[#f7f7f7]
+                          `}
+                            >
+                              <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-6 rounded-lg dark:bg-[#555555] bg-[#eae9e9]" />
+
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <div
+                                    className={`text-sm font-semibold ${colors.text}`}
+                                  >
+                                    {meeting.course.courseName} Class
+                                  </div>
+                                  <div className="text-[10px] text-gray-600 dark:text-gray-300 mt-1">
+                                    {meeting.student.studentFirstName}{" "}
+                                    {meeting.student.studentLastName}
+                                  </div>
                                 </div>
-                                <div className="text-[9px] sm:text-[10px] text-gray-600 dark:text-gray-300 mt-0.5">
-                                  {meeting.student.studentFirstName}{" "}
-                                  {meeting.student.studentLastName}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1 sm:gap-2">
-                                <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                                  <Clock
-                                    size={10}
-                                    className="w-2.5 h-2.5 sm:w-3 sm:h-3"
-                                  />
+
+                                <div className="flex items-center gap-2 text-[10px] text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                                  <Clock size={12} className="w-3 h-3" />
                                   {meeting.startTime?.[0] || "--:--"} -{" "}
                                   {meeting.endTime?.[0] || "--:--"}
+                                  {meeting.classLink && (
+                                    <a
+                                      href={meeting.classLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="ml-2 text-blue-500 dark:text-blue-400 hover:underline text-[9px]"
+                                    >
+                                      Join
+                                    </a>
+                                  )}
                                 </div>
-                                {meeting.classLink && (
-                                  <a
-                                    href={meeting.classLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[8px] sm:text-[9px] text-blue-500 dark:text-blue-400 hover:underline ml-1"
-                                  >
-                                    Join
-                                  </a>
-                                )}
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -605,56 +614,53 @@ const TeachersSchedule = () => {
   };
 
   const DailyView = () => {
-    // Update daily view when currentDate changes
-    useEffect(() => {
-      handleDateClick(currentDate);
-    }, [currentDate]);
-
-    const dayMeetings = getMeetingsForDate(currentDate);
-    const isPast = isPastDate(currentDate);
+    if (!selectedDate) return;
+    const dayMeetings = getMeetingsForDate(selectedDate);
+    const isPast = isPastDate(selectedDate);
 
     return (
-      <div className="space-y-2 sm:space-y-3 md:space-y-4">
-        <div className="h-[calc(100vh-220px)] xs:h-[400px] sm:h-[450px] md:h-[500px] lg:h-[600px] overflow-y-auto scrollbar-none">
-          {/* Date header with better responsive sizing */}
-          <div className="mb-2 sm:mb-3 md:mb-4">
-            <h3 className="text-xs xs:text-sm sm:text-[15px] md:text-[16px] font-semibold text-gray-800 dark:text-white">
-              {moment(currentDate).format("dddd, MMMM D, YYYY")}
+      <div className="w-full max-w-screen-lg mx-auto px-2 sm:px-4 md:px-6 space-y-3 sm:space-y-4 md:space-y-5">
+        {/* Scrollable Container */}
+        <div className="h-[calc(100vh-220px)] sm:h-[450px] md:h-[500px] lg:h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-[#555] pr-1">
+          {/* Header */}
+          <div className="mb-3 sm:mb-4">
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-white">
+              {moment(selectedDate).format("dddd, MMMM D, YYYY")}
             </h3>
           </div>
 
+          {/* Meeting List */}
           {dayMeetings.length > 0 ? (
-            <div className="space-y-1 sm:space-y-2">
+            <div className="space-y-2 sm:space-y-3">
               {dayMeetings.map((meeting) => {
                 const colors = getMeetingTypeColor(meeting.course.courseName);
                 return (
                   <div
                     key={meeting._id}
                     className={`
-                    p-2 sm:p-3 md:p-4 mb-1 sm:mb-2 rounded-lg sm:rounded-xl
-                    dark:bg-[#414141] bg-gray-100
-                    ${isPast ? "opacity-70" : ""}
-                    transition-colors duration-150 hover:bg-gray-200 dark:hover:bg-[#505050]
-                  `}
+                  p-3 sm:p-4 rounded-xl transition-colors
+                  dark:bg-[#414141] bg-gray-100
+                  ${isPast ? "opacity-70" : ""}
+                  hover:bg-gray-200 dark:hover:bg-[#505050]
+                `}
                   >
-                    <div className="flex justify-between items-start gap-2">
-                      <div
-                        className={`text-xs sm:text-sm font-semibold ${colors.text}`}
-                      >
+                    <div className="flex justify-between items-start gap-3">
+                      {/* Course Name */}
+                      <div className={`text-sm font-semibold ${colors.text}`}>
                         {meeting.course.courseName} Class
                       </div>
-                      <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                        <Clock
-                          size={10}
-                          className="w-2.5 h-2.5 sm:w-3 sm:h-3"
-                        />
+
+                      {/* Time */}
+                      <div className="flex items-center gap-2 text-[10px] text-gray-600 dark:text-gray-300">
+                        <Clock size={12} className="w-3 h-3" />
                         {meeting.startTime?.[0] || "--:--"} -{" "}
                         {meeting.endTime?.[0] || "--:--"}
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center mt-1">
-                      <div className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400">
+                    {/* Student & Join Button */}
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="text-[10px] text-gray-500 dark:text-gray-400">
                         {meeting.student.studentFirstName}{" "}
                         {meeting.student.studentLastName}
                       </div>
@@ -663,7 +669,7 @@ const TeachersSchedule = () => {
                           href={meeting.classLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[8px] sm:text-[9px] text-blue-500 dark:text-blue-400 hover:underline"
+                          className="text-[9px] text-blue-500 dark:text-blue-400 hover:underline"
                         >
                           Join Class
                         </a>
@@ -674,6 +680,7 @@ const TeachersSchedule = () => {
               })}
             </div>
           ) : (
+            // No meetings UI
             <div className="flex flex-col items-center justify-center h-[70%] text-gray-500 dark:text-gray-400">
               <CalendarX2 size={24} className="mb-2 text-gray-400" />
               <p className="text-xs sm:text-sm">
@@ -694,9 +701,9 @@ const TeachersSchedule = () => {
     const totalDays = [...emptyCells, ...days];
 
     return (
-      <div className="space-y-2 sm:space-y-3 md:space-y-4">
-        {/* Day headers - more compact on mobile */}
-        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 md:gap-2 text-center text-[10px] xs:text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300 mb-1 sm:mb-2 dark:bg-[#414141] bg-gray-100 rounded-lg sm:rounded-xl p-1 sm:p-2 md:p-3">
+      <div className="w-full max-w-screen-lg mx-auto px-2 sm:px-4 md:px-4 space-y-3 sm:space-y-4">
+        {/* Day Headers */}
+        <div className="grid grid-cols-7 gap-1 text-center text-[10px] sm:text-xs md:text-sm font-medium text-gray-500 dark:text-gray-300 bg-gray-100 dark:bg-[#414141] rounded-lg sm:rounded-xl p-1 sm:p-2 md:p-3">
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
             <div key={day} className="truncate">
               {day}
@@ -704,14 +711,14 @@ const TeachersSchedule = () => {
           ))}
         </div>
 
-        {/* Calendar grid - adjusted heights and spacing */}
-        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 md:gap-2 text-[10px] xs:text-xs sm:text-sm h-[280px] xs:h-[320px] sm:h-[350px] md:h-[400px] lg:h-[455px] overflow-auto scrollbar-none">
-          {totalDays.map((day, i: number) => {
+        {/* Calendar Grid */}
+        <div className="grid grid-cols-7 gap-1 text-[10px] sm:text-xs md:text-sm overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-[#555] h-[320px] sm:h-[380px] md:h-[440px] lg:h-[500px]">
+          {totalDays.map((day, i) => {
             if (day === null) {
               return (
                 <div
                   key={i}
-                  className="min-h-[35px] xs:min-h-[40px] sm:min-h-[50px] md:min-h-[60px] lg:min-h-[80px] bg-transparent"
+                  className="min-h-[40px] sm:min-h-[50px] md:min-h-[60px] lg:min-h-[80px] bg-transparent"
                 />
               );
             }
@@ -726,11 +733,13 @@ const TeachersSchedule = () => {
             const colors = hasMeetings
               ? getMeetingTypeColor(dayMeetings[0].course.courseName)
               : null;
+
             const isSelected =
               selectedDate &&
               date.getDate() === selectedDate.getDate() &&
               date.getMonth() === selectedDate.getMonth() &&
               date.getFullYear() === selectedDate.getFullYear();
+
             const isPast = isPastDate(date);
             const isTodayFlag = isToday(day);
 
@@ -738,42 +747,37 @@ const TeachersSchedule = () => {
               <button
                 key={i}
                 onClick={() => handleDateClick(date)}
-                className={`
-                min-h-[35px] xs:min-h-[40px] sm:min-h-[50px] md:min-h-[60px] lg:min-h-[80px]
-                rounded-lg sm:rounded-xl flex flex-col items-center justify-start
-                p-0.5 sm:p-1 cursor-pointer transition-colors duration-150
-                ${
-                  hasMeetings
-                    ? `${colors?.border} ${colors?.text} ${colors?.bg} border`
-                    : isTodayFlag
-                    ? "bg-[#27176518] dark:bg-[#4b8cc918]"
-                    : "bg-gray-100 dark:bg-[#414141] text-gray-500 dark:text-gray-300"
-                }
-                ${
-                  isSelected
-                    ? "ring-1 sm:ring-2 ring-[#576cbc] dark:ring-[#7a94e8]"
-                    : ""
-                }
-                ${isPast ? "opacity-50" : ""}
-                ${isTodayFlag ? "font-bold" : ""}
-              `}
                 disabled={isPast}
+                className={`
+              min-h-[40px] sm:min-h-[50px] md:min-h-[60px] lg:min-h-[80px]
+              flex flex-col items-center justify-start p-1 rounded-lg sm:rounded-xl
+              transition duration-150 ease-in-out cursor-pointer
+              ${
+                hasMeetings
+                  ? `${colors?.border} ${colors?.text} ${colors?.bg} border`
+                  : isTodayFlag
+                  ? "bg-[#27176518] dark:bg-[#4b8cc918]"
+                  : "bg-gray-100 dark:bg-[#414141] text-gray-500 dark:text-gray-300"
+              }
+              ${isSelected ? "ring-2 ring-[#576cbc] dark:ring-[#7a94e8]" : ""}
+              ${isPast ? "opacity-50 cursor-not-allowed" : ""}
+              ${isTodayFlag ? "font-bold" : ""}
+            `}
               >
                 <div
-                  className={`
-                font-medium text-[10px] xs:text-xs sm:text-sm
-                ${isTodayFlag ? "text-[#4b8cc9] dark:text-[#7a94e8]" : ""}
-              `}
+                  className={`font-medium text-[10px] sm:text-xs ${
+                    isTodayFlag ? "text-[#4b8cc9] dark:text-[#7a94e8]" : ""
+                  }`}
                 >
                   {day}
                 </div>
 
                 {hasMeetings && (
-                  <div className="w-full overflow-hidden mt-0.5">
-                    <div className="text-[8px] xs:text-[9px] sm:text-[10px] truncate px-0.5">
+                  <div className="w-full mt-0.5 overflow-hidden px-0.5">
+                    <div className="truncate text-[8px] sm:text-[9px] font-medium">
                       {dayMeetings[0]?.course?.courseName ?? "No Course"}
                     </div>
-                    <div className="text-[7px] xs:text-[8px] sm:text-[9px] truncate px-0.5">
+                    <div className="truncate text-[7px] sm:text-[8px] text-gray-600 dark:text-gray-400">
                       {dayMeetings[0]?.startTime?.[0] ?? "--:--"} -{" "}
                       {dayMeetings[0]?.endTime?.[0] ?? "--:--"}
                     </div>
@@ -794,161 +798,153 @@ const TeachersSchedule = () => {
         showBackButton={true}
         showBackPath="schedule"
       />
-      <div className="p-2">
-        <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[calc(100vh-150px)]">
-          {/* Left Side - Calendar View */}
-          <div className="w-full lg:w-2/3 p-2 sm:p-4 md:p-6 bg-white dark:bg-[#343434] shadow-md rounded-xl">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
-              {/* Tabs (left aligned) */}
-              <div className="flex space-x-2 sm:space-x-4 text-xs sm:text-sm font-medium">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveView(tab)}
-                    className={`capitalize ${
-                      activeView === tab
-                        ? "text-[#576cbc] border-b-2 border-[#576cbc]"
-                        : "text-gray-400 hover:text-[#576cbc]"
-                    } pb-1 transition-colors duration-200`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-
-              {/* Date Controls (right aligned) */}
-              <div className="flex items-center gap-1 sm:gap-2 self-end sm:self-auto">
+      <ToastContainer position="top-center" theme="dark" autoClose={3000} />
+      <div className="mx-auto flex flex-col lg:flex-row gap-4 overflow-hidden min-h-[calc(100vh-150px)] px-2 sm:px-4 md:px-6">
+        {/* Left Section - Calendar View */}
+        <div className="w-full lg:w-2/3 bg-white dark:bg-[#343434] shadow-md rounded-xl p-3 sm:p-4 md:p-5">
+          {/* Header: Tabs + Navigation */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            {/* Tabs */}
+            <div className="flex space-x-2 sm:space-x-4 text-xs sm:text-sm font-medium">
+              {tabs.map((tab) => (
                 <button
-                  onClick={handlePrev}
-                  className="py-[2px] px-3 rounded-md bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
+                  key={tab}
+                  onClick={() => setActiveView(tab)}
+                  className={`capitalize pb-1 transition-colors duration-200 ${
+                    activeView === tab
+                      ? "text-[#576cbc] border-b-2 border-[#576cbc]"
+                      : "text-gray-400 hover:text-[#576cbc]"
+                  }`}
                 >
-                  &lt;
+                  {tab}
                 </button>
-                <h2 className="text-xs sm:text-sm md:text-base font-semibold whitespace-nowrap">
-                  {getFormattedLabel()}
-                </h2>
-                <button
-                  onClick={handleNext}
-                  className="py-[2px] px-3 rounded-md bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] transition-colors"
-                >
-                  &gt;
-                </button>
-              </div>
+              ))}
             </div>
 
-            {activeView === "monthly" && <MonthlyView />}
-            {activeView === "weekly" && <WeeklyView />}
-            {activeView === "daily" && <DailyView />}
+            {/* Navigation Controls */}
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <button
+                onClick={handlePrev}
+                className="px-3 py-[2px] bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] rounded-md transition"
+              >
+                &lt;
+              </button>
+              <h2 className="text-xs sm:text-sm md:text-base font-semibold whitespace-nowrap">
+                {getFormattedLabel()}
+              </h2>
+              <button
+                onClick={handleNext}
+                className="px-3 py-[2px] bg-gray-100 dark:bg-[#414141] hover:bg-gray-200 dark:hover:bg-[#505050] rounded-md transition"
+              >
+                &gt;
+              </button>
+            </div>
           </div>
 
-          {/* Right Side - Form */}
-          <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[300px] lg:min-h-[unset]">
-            <div className="p-3 sm:p-4 md:p-5 lg:p-6">
-              <div className="mb-3 sm:mb-4 md:mb-5 lg:mb-6">
-                <h3 className="text-sm sm:text-base font-semibold text-gray-800 dark:text-white">
-                  Re-Schedule
-                </h3>
+          {/* View Renderer */}
+          {activeView === "monthly" && <MonthlyView />}
+          {activeView === "weekly" && <WeeklyView />}
+          {activeView === "daily" && <DailyView />}
+        </div>
+
+        {/* Right Section - Re-Schedule Form */}
+        <div className="w-full lg:w-1/3 bg-white dark:bg-[#343434] shadow-md rounded-xl flex flex-col min-h-[300px]">
+          {/* Form Body */}
+          <div className="p-3 sm:p-4 md:p-5 lg:p-6 space-y-4">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-800 dark:text-white mb-2">
+              Re-Schedule
+            </h3>
+
+            {/* Date Picker */}
+            <div>
+              <label
+                htmlFor="vuycuc"
+                className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Date
+              </label>
+              <input
+                type="date"
+                value={rescheduleDate}
+                onChange={(e) => setRescheduleDate(e.target.value)}
+                min={moment().format("YYYY-MM-DD")}
+                className="w-full px-3 h-[36px] sm:h-[40px] md:h-[42px] rounded-md border border-gray-300 dark:border-none bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Time Fields */}
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <div>
+                <label
+                  htmlFor="yuyvuy"
+                  className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  From Time
+                </label>
+                <input
+                  type="time"
+                  value={formData.fromTime}
+                  onChange={(e) =>
+                    handleInputChange("fromTime", e.target.value)
+                  }
+                  className="w-full px-3 h-[36px] sm:h-[40px] md:h-[42px] rounded-md border border-gray-300 dark:border-none bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
               </div>
-
-              <div className="space-y-2 sm:space-y-3 md:space-y-4">
-                <div>
-                  <label
-                    htmlFor="gcuyc"
-                    className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={rescheduleDate}
-                    onChange={(e) => {
-                      const date = e.target.value;
-                      setRescheduleDate(date);
-                    }}
-                    min={moment().format("YYYY-MM-DD")}
-                    className="w-full h-[36px] sm:h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                  <div>
-                    <label
-                      htmlFor="gcuyc"
-                      className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                    >
-                      From Time
-                    </label>
-                    <input
-                      type="time"
-                      value={formData.fromTime}
-                      onChange={(e) =>
-                        handleInputChange("fromTime", e.target.value)
-                      }
-                      className="w-full h-[36px] sm:h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="gcuyc"
-                      className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                    >
-                      To Time
-                    </label>
-                    <input
-                      type="time"
-                      value={formData.toTime}
-                      onChange={(e) =>
-                        handleInputChange("toTime", e.target.value)
-                      }
-                      className="w-full h-[36px] sm:h-[38px] md:h-[42px] px-3 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="gcuyc"
-                    className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >
-                    Reason for Re-Schedule
-                  </label>
-                  <textarea
-                    value={formData.comment}
-                    onChange={(e) =>
-                      handleInputChange("comment", e.target.value)
-                    }
-                    rows={3}
-                    className="w-full h-[80px] sm:h-[90px] md:h-[110px] px-3 py-2 border border-gray-300 dark:border-none rounded-md bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none"
-                  />
-                </div>
+              <div>
+                <label
+                  htmlFor="ycuycu"
+                  className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  To Time
+                </label>
+                <input
+                  type="time"
+                  value={formData.toTime}
+                  onChange={(e) => handleInputChange("toTime", e.target.value)}
+                  className="w-full px-3 h-[36px] sm:h-[40px] md:h-[42px] rounded-md border border-gray-300 dark:border-none bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
               </div>
             </div>
 
-            <div className="flex-1"></div>
+            {/* Reason TextArea */}
+            <div>
+              <label
+                htmlFor="vycv"
+                className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Reason for Re-Schedule
+              </label>
+              <textarea
+                value={formData.comment}
+                onChange={(e) => handleInputChange("comment", e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 h-[80px] sm:h-[90px] md:h-[110px] rounded-md border border-gray-300 dark:border-none bg-white dark:bg-[#414141] text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+              />
+            </div>
+          </div>
 
-            <div className="p-3 sm:p-4 md:p-5 lg:p-6">
-              <hr className="w-full border-t-[1px] border-[#dbdada] dark:border-[#dbdada] mb-3 sm:mb-4" />
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  onClick={handleFormSubmit}
-                  className="px-2 py-1 sm:px-3 sm:py-1 bg-[#576CBC] text-white rounded hover:bg-[#4459A9] text-sm sm:text-base"
-                >
-                  Submit
-                </button>
-              </div>
+          {/* Submit Button */}
+          <div className="mt-auto p-3 sm:p-4 md:p-5 lg:p-6">
+            <hr className="border-t border-[#dbdada] mb-4" />
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                onClick={handleFormSubmit}
+                className="bg-[#576CBC] hover:bg-[#4459A9] text-white px-3 py-1.5 rounded text-sm sm:text-base"
+              >
+                Submit
+              </button>
             </div>
           </div>
         </div>
-        {success && (
-          <SuccessPopup
-            onClose={() => setSucces(false)}
-            title="Leave Request"
-          />
-        )}
-        {failed && (
-          <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
-        )}
       </div>
+
+      {success && (
+        <SuccessPopup onClose={() => setSucces(false)} title="Leave Request" />
+      )}
+      {failed && (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+      )}
     </BaseLayout>
   );
 };
