@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { CountryDropdown } from "react-country-region-selector";
 import ISO6391 from "iso-639-1";
 
 import TimezoneSelect from "react-timezone-select";
+import { getSocket } from "@/app/utils/socket";
+import { Currency } from "lucide-react";
 
 // Define the return type of the getAllUsers function
 
@@ -1172,7 +1174,11 @@ const Step6 = ({
     times: TimeSlot[];
     isSelected: boolean;
   }
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [teachers, setTeachers] = useState<TeacherList[]>([]);
+  interface TeacherList{
+    teacherId : string;
+    name : string;
+  }
   interface Teacher {
     _id: string;
     userName: string;
@@ -1188,42 +1194,27 @@ const Step6 = ({
     createdDate: string; // Creation timestamp
     lastUpdatedDate: string; // Last update timestamp
   }
-  useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-         const token =
-    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
-
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-        const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER",{
-            headers:{
-              "Authorization": `Bearer ${token}`,
-            }
-          });
-        const data = await response.json();
-
-        console.log("Fetched data:", data);
-
-        // Access `users` array in the response
-        if (data && Array.isArray(data.users)) {
-          setTeachers(data.users);
-        } else {
-          console.error("Unexpected API response structure:", data);
-        }
-      } catch (error) {
-        console.error("Error fetching teachers:", error);
-      }
-    };
-    fetchTeachers();
-  }, []);
+  type WeeklySlotMap = {
+  [day: string]: { from: string; to: string }[];
+};
+  
   const weeklyHourLimit = updatedStudentData.selectedHours; // Example: Change this based on requirement
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const isGroupClass = updatedStudentData.classType === "GROUPCLASS";
+  const buildWeeklySlots = () => {
+  const map: WeeklySlotMap = {};
+  schedule.forEach((item) => {
+    if (item.isSelected && item.times.length > 0) {
+      map[item.day] = item.times.map((t) => ({
+        from: t.startTime,
+        to: t.endTime,
+      }));
+    }
+  });
+  return map;
+};
+
   const calculateTotalHours = () => {
     let totalHours = 0;
 
@@ -1282,12 +1273,14 @@ const Step6 = ({
 
   const updatedStudentDatas = {
     ...updatedStudentData,
+    joiningDate : startDate,
+    weeklySlots : buildWeeklySlots(),
     teacher: isGroupClass
       ? { teacherId: '', teacherName: '', teacherEmail: '' }
       : {
-          teacherId: selectedTeacher?.userId ?? "",
-          teacherName: selectedTeacher?.userName ?? "",
-          teacherEmail: selectedTeacher?.email ?? "",
+          teacherId: selectedTeacher?.teacherId ?? "",
+          teacherName: selectedTeacher?.name ?? "",
+          teacherEmail:  "demoteacher@gmail.com",
         },
     classDay: isGroupClass
       ? []
@@ -1329,8 +1322,8 @@ const Step6 = ({
     times: TimeSlot[];
     isSelected: boolean;
   }
-  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
-
+  const [selectedTeacher, setSelectedTeacher] = useState<TeacherList | null>(null);
+const [startDate, setStartDate] = useState("");
   const [schedule, setSchedule] = useState<ScheduleItem[]>(
     [
       "Monday",
@@ -1346,6 +1339,42 @@ const Step6 = ({
       isSelected: false,
     }))
   );
+  const scheduleHash = useMemo(() => {
+  return JSON.stringify({ startDate, schedule });
+}, [startDate, schedule]);
+
+ useEffect(() => {
+  const academicId = typeof window !== "undefined"
+    ? localStorage.getItem("AcademicCoachPortalId")
+    : null;
+  if (!academicId) return;
+
+  const hasSelection = schedule.some(
+    (item) => item.isSelected && item.times.length > 0
+  );
+  if (!hasSelection || !startDate) return;
+
+  const socket = getSocket(academicId);
+  console.log("📤 Sending availableTeachersListRequest");
+
+  socket.emit("availableTeachersListRequest", {
+    requestId: academicId,
+    startDate,
+    WeeklySlots: buildWeeklySlots(),
+  });
+
+  const handleResponse = (data: TeacherList[]) => {
+    console.log("📥 Teacher list received:", data);
+    setTeachers(data);
+  };
+
+  socket.on("availableTeachersListResponse", handleResponse);
+
+  return () => {
+    socket.off("availableTeachersListResponse", handleResponse);
+  };
+}, [scheduleHash]);
+
   const handleAddTimeSlot = (index: number) => {
     const totalHours = calculateTotalHours();
 
@@ -1409,9 +1438,28 @@ const Step6 = ({
       </div>
      <div className={`relative z-10 w-full max-w-4xl ${updatedStudentData.classType === 'GROUPCLASS' ? 'pointer-events-none opacity-30' : ''}`}>
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
-          <h2 className="text-[18px] font-medium mb-4 text-white">
-            Schedule Classes
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+  <h2 className="text-[18px] font-medium text-white">
+    Schedule Classes
+  </h2>
+
+  <div className="flex items-center gap-2">
+    <label
+      htmlFor="ugcuc"
+      className="font-medium text-white text-sm"
+    >
+      Join Date:
+    </label>
+    <input
+      type="date"
+      id="ugcuc"
+      className="border rounded text-sm px-1 bg-white/5 border-[#4f5154] text-[#c9c7c7]"
+      value={startDate}
+      onChange={(e) => setStartDate(e.target.value)}
+    />
+  </div>
+
+    </div>
           <div className="grid grid-cols-3 grid-rows-3 gap-2">
             {/* Schedule Selection */}
             {schedule.map((item, index) => (
@@ -1489,24 +1537,24 @@ const Step6 = ({
               <div className="w-40 min-h-16 flex flex-col justify-center">
                 <label
                   htmlFor="select-teacher"
-                  className="block font-medium text-white text-center p-2 text-xs"
+                  className="block font-medium text-white text-center p-2 text-sm dark:text-white"
                 >
                   Select Teacher
                 </label>
                 <select
-                  className="form-select w-full text-xs text-[#797878] border-[#4f5154] bg-white/5 p-1 rounded-lg"
+                  className="form-select w-full text-xs text-[#c1c1c1] border-[#4f5154] bg-white/5 p-1 rounded-lg dark:text-black dark:bg-white/5"
                   disabled={isGroupClass}
                   onChange={(e) => {
                     const selected = teachers.find(
-                      (teacher) => teacher.userId === e.target.value
+                      (teacher) => teacher.teacherId === e.target.value
                     );
                     setSelectedTeacher(selected || null);
                   }}
                 >
                   <option value="">Select a Teacher</option>
                   {teachers.map((teacher) => (
-                    <option key={teacher.userId} value={teacher.userId}>
-                      {teacher.userName}
+                    <option key={teacher.teacherId} value={teacher.teacherId}>
+                      {teacher.teacherName}
                     </option>
                   ))}
                 </select>
@@ -2081,8 +2129,12 @@ classEndDate.setDate(classEndDate.getDate() + 28);
         classDay: updatedStudentDatass.classDay,
         startTime: updatedStudentDatass.startTime,
         endTime: updatedStudentDatass.endTime,
+        joiningDate:updatedStudentDatass.joiningDate,
+        amount:"",
+        currency:"",
         planTotalPrice: updatedStudentDatass.planTotalPrice,
         classType:updatedStudentDatass.classType,
+        weeklySlots:updatedStudentDatass.weeklySlots,
         classStartDate:startDate,
         classEndDate: classEndDate,
         classStartTime: updatedStudentDatass.preferredFromTime,
@@ -2116,7 +2168,7 @@ classEndDate.setDate(classEndDate.getDate() + 28);
     console.error("❌ AdminAuthToken not found");
     return;
   }
-      const response = await fetch(`https://api.blackstoneinfomaticstech.com/evaluation`, {
+      const response = await fetch(`http://localhost:5001/evaluation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
