@@ -10,6 +10,111 @@ import Modal from "react-modal";
 import AcademicHeader from "@/app/Academic-coach/components/academicHeader";
 import { PieChart, Pie, Cell } from "recharts";
 import TeacherHeader from "../../components/TeacherHeader";
+import axios from "axios";
+import { BsThreeDotsVertical } from "react-icons/bs";
+
+export interface AssignmentItem {
+  assignmentId?: string;
+  assignmentType: string;
+  status: string;
+  assignmentName: string;
+  title: string;
+}
+
+export interface StudentCoreInfo {
+  studentId: string;
+  name: string;
+}
+
+export interface EvaluationStudentInfo {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  studentGender: string;
+  studentPhone: number;
+  studentCity: string;
+  studentCountry: string;
+  studentCountryCode: string;
+  learningInterest: string;
+  numberOfStudents: number;
+  preferredTeacher: string;
+  preferredFromTime: string;
+  preferredToTime: string;
+  timeZone: string;
+  referralSource: string;
+  preferredDate: string;
+  evaluationStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+}
+
+export interface EvaluationTeacherInfo {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+export interface EvaluationSubscriptionInfo {
+  subscriptionName: string;
+}
+
+export interface StudentEvaluationDetails {
+  student: EvaluationStudentInfo;
+  teacher: EvaluationTeacherInfo;
+  subscription: EvaluationSubscriptionInfo;
+  _id: string;
+  academicCoachId: string;
+  classType: string;
+  classDay: string[];
+  startTime: string[];
+  endTime: string[];
+  isLanguageLevel: boolean;
+  languageLevel: string;
+  isReadingLevel: boolean;
+  readingLevel: string;
+  isGrammarLevel: boolean;
+  grammarLevel: string;
+  hours: number;
+  planTotalPrice: number;
+  classStartDate: string;
+  classEndDate: string;
+  classStartTime: string;
+  classEndTime: string;
+  accomplishmentTime: string;
+  studentRate: number;
+  gardianName: string;
+  gardianEmail: string;
+  gardianPhone: string;
+  gardianCity: string;
+  gardianCountry: string;
+  gardianTimeZone: string;
+  gardianLanguage: string;
+  assignedTeacher: string;
+  studentStatus: string;
+  classStatus: string;
+  comments: string;
+  trialClassStatus: string;
+  invoiceStatus: string;
+  paymentLink: string;
+  paymentStatus: string;
+  teacherStatus: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  expectedFinishingDate: number;
+  assignedTeacherId: string;
+  assignedTeacherEmail: string;
+  __v: number;
+}
+
+export interface StudentWithAssignments extends StudentCoreInfo {
+  studentDetails: StudentEvaluationDetails;
+  assignment: AssignmentItem[];
+}
 
 interface StudentDetails {
   studentDetails: {
@@ -207,7 +312,6 @@ const Card = ({ title, value, description }: CardProps) => (
 
 const ManageStudentView = () => {
   const itemsPerPage = 5;
-  const router = useRouter();
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   const [data, setData] = useState<StudentDetails | null>(null);
@@ -215,11 +319,9 @@ const ManageStudentView = () => {
   const [completedClasses, setCompletedClasses] = useState<ClassSchedule[]>([]);
   const [paginatedData, setPaginatedData] = useState<ClassSchedule[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<"pending" | "completed">(
-    "pending"
-  );
+
   const searchParams = useSearchParams();
-const studentId = searchParams.get("studentId");
+  const studentId = searchParams.get("studentId");
   const dropdownRef = useRef<HTMLTableCellElement | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
@@ -233,6 +335,108 @@ const studentId = searchParams.get("studentId");
   const pendingPercentage = Math.round(
     (pendingAssignments / totalAssignments) * 100
   );
+  const [regularStudents, setRegularStudents] = useState<
+    StudentWithAssignments[]
+  >([]);
+  const [groupStudents, setGroupStudents] = useState<StudentWithAssignments[]>(
+    []
+  );
+  const [selectedStudentAssignments, setSelectedStudentAssignments] = useState<
+    StudentWithAssignments[]
+  >([]);
+
+  const [regularCount, setRegularCount] = useState<number>(0);
+  const [groupCount, setGroupCount] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<"Regular" | "Group">("Regular");
+
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [openModalId, setOpenModalId] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const teacherId = localStorage.getItem("TeacherPortalId");
+        const token = localStorage.getItem("TeacherAuthToken");
+
+        if (!token || !teacherId || !studentId) {
+          console.warn("Missing teacherId, token, or studentId");
+          return;
+        }
+
+        const res = await axios.get<StudentWithAssignments[]>(
+          "http://localhost:5001/classShedule/teacher/list/",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            params: { teacherId },
+          }
+        );
+
+        // ✅ Filter only for selected student
+        const filteredAssignments = res.data.filter(
+          (item) => item.studentId === studentId
+        );
+
+        console.log("Filtered Assignments:", filteredAssignments);
+
+        setSelectedStudentAssignments(filteredAssignments);
+
+        // ✅ You can now split into REGULAR and GROUP if needed
+        const regular = filteredAssignments.filter(
+          (student) =>
+            student.studentDetails?.classType?.toUpperCase() === "REGULARCLASS"
+        );
+
+        const group = filteredAssignments.filter(
+          (student) =>
+            student.studentDetails?.classType?.toUpperCase() === "GROUPCLASS"
+        );
+
+        setRegularStudents(regular);
+        setGroupStudents(group);
+        setRegularCount(regular.length);
+        setGroupCount(group.length);
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+      }
+    };
+
+    fetchData();
+  }, [studentId]);
+
+  const studentsToDisplay =
+    activeTab === "Regular" ? regularStudents : groupStudents;
+
+  // const toggleDropdown = (id: string) => {
+  //   setOpenDropdownId((prev) => (prev === id ? null : id));
+  // };
+  const router = useRouter(); // Add this
+
+  const handleViewProfile = (studentId: string) => {
+    router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
+  };
+
+  const handleClick = () => {
+    console.log("Create Assignment clicked");
+    // Add assignment creation logic
+  };
+
+  const getStatusStyle = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case "COMPLETED":
+        return "bg-green-100 text-green-700";
+      case "NOTCOMPLETED":
+        return "bg-yellow-100 text-yellow-700";
+      case "NOTASSIGNED":
+        return "bg-red-100 text-red-700";
+      case "ASSIGNED":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
 
   const cards = [
     {
@@ -275,78 +479,6 @@ const studentId = searchParams.get("studentId");
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = paginatedData.slice(indexOfFirstItem, indexOfLastItem);
 
-  const dataToShow =
-    activeTab === "pending" ? scheduledClasses : completedClasses;
-
-  // Calculate total pages once, outside useEffect
-  const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
-
-  //search
-
-  const handleSearch = (query: string) => {
-    setSearchText(query);
-    const queryLower = query.toLowerCase();
-
-    const filtered = dataToShow.filter((item) => {
-      const studentFullName = `${item.student?.studentFirstName || ""} ${
-        item.student?.studentLastName || ""
-      }`;
-      const course = item.package || "";
-      const date = new Date(item.startDate).toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      });
-
-      const time = `${item.startTime?.[0] || ""} - ${item.endTime?.[0] || ""}`;
-      const status = item.scheduleStatus || "";
-      const classType = "Group Class"; // static in your code
-
-      const combinedText =
-        `${studentFullName} ${course} ${date} ${time} ${status} ${classType}`.toLowerCase();
-
-      return combinedText.includes(queryLower);
-    });
-
-    setPaginatedData(filtered.slice(0, itemsPerPage));
-    setCurrentPage(1);
-  };
-
-  useEffect(() => {
-    let filtered = dataToShow;
-
-    if (searchText.trim() !== "") {
-      const queryLower = searchText.toLowerCase();
-      filtered = dataToShow.filter((item) => {
-        const studentFullName = `${item.student?.studentFirstName || ""} ${
-          item.student?.studentLastName || ""
-        }`;
-        const course = item.package || "";
-        const date = new Date(item.startDate).toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        });
-        const time = `${item.startTime?.[0] || ""} - ${
-          item.endTime?.[0] || ""
-        }`;
-        const status = item.scheduleStatus || "";
-        const classType = "Group Class";
-
-        const combinedText =
-          `${studentFullName} ${course} ${date} ${time} ${status} ${classType}`.toLowerCase();
-        return combinedText.includes(queryLower);
-      });
-    }
-
-    const paginated = filtered.slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage
-    );
-
-    setPaginatedData(paginated);
-  }, [dataToShow, currentPage, searchText]);
-
   // Optional: reset page to 1 when tab changes
   useEffect(() => {
     setCurrentPage(1);
@@ -364,7 +496,7 @@ const studentId = searchParams.get("studentId");
         console.error("❌ Academicoach not found");
         return;
       }
-    
+
       const res = await fetch(
         `https://api.blackstoneinfomaticstech.com/alstudents/${studentId}`,
         {
@@ -382,366 +514,10 @@ const studentId = searchParams.get("studentId");
 
   //Classschedule against the studentId
 
-  useEffect(() => {
-    const studentId =
-       localStorage.getItem("studentManageID");
-
-    const fetchClassSchedule = async () => {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("TeacherAuthToken")
-          : null;
-
-      if (!token) {
-        console.error("❌ AdminAuthToken not found");
-        return;
-      }
-
-      if (!studentId) {
-        console.warn("No studentId found in query params or localStorage");
-        return;
-      }
-
-      console.log("Fetching class schedule for studentId:", studentId);
-
-      try {
-        const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/classShedule/students?studentId=${studentId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!res.ok) {
-          console.error("Server responded with status:", res.status);
-          return;
-        }
-
-        const data = await res.json();
-        console.log("Fetched data from API:", data);
-
-        const allSchedules: ClassSchedule[] = data.classSchedule;
-
-        setScheduledClasses(
-          allSchedules.filter(
-            (c) =>
-              c.scheduleStatus === "Scheduled" ||
-              c.scheduleStatus === "Rescheduled"
-          )
-        );
-
-        setCompletedClasses(
-          allSchedules.filter((c) => c.scheduleStatus === "Completed")
-        );
-      } catch (err) {
-        console.error("Failed to fetch class schedule", err);
-      }
-    };
-
-    fetchClassSchedule();
-  }, [searchParams]);
-
-  const toggleDropdown = (index: number) => {
-    setActiveDropdown(activeDropdown === index ? null : index);
-  };
-
-  const handleReschedule = (_id: string) => {
-    console.log("Navigating to reschedule page");
-    router.push(`studentreschedule?id=${_id}`);
-
-    setTimeout(() => {
-      setActiveDropdown(null);
-    }, 100);
-  };
-  const FilterModal = ({
-    isOpen,
-    onClose,
-    onApplyFilters,
-    users,
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-    onApplyFilters: (filters: {
-      studentName: string;
-      course: string;
-      Date: string;
-      Time: string;
-      classType: string;
-      status: string;
-    }) => void;
-    users: ClassSchedule[];
-  }) => {
-    const [filters, setFilters] = useState({
-      studentName: "",
-      course: "",
-      Date: "",
-      Time: "",
-      classType: "",
-      status: "",
-    });
-
-    const handleApply = () => {
-      onApplyFilters(filters);
-      onClose();
-    };
-
-    const handleReset = () => {
-      setFilters({
-        studentName: "",
-        course: "",
-        Date: "",
-        Time: "",
-        classType: "",
-        status: "",
-      });
-    };
-
-    return (
-      <Modal
-        isOpen={isOpen}
-        onRequestClose={onClose}
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  p-8 rounded-lg  w-[500px]"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
-      >
-        <div className="fixed inset-0 bg-opacity-40 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-[320px] relative dark:bg-[#252525]">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-sm font-semibold text-gray-800 dark:text-white">
-                Filter by
-              </h2>
-              <button
-                onClick={onClose}
-                className="text-gray-400 text-xl absolute top-4 right-4"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {/* Student Name */}
-              <div>
-                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
-                  Student Name
-                </label>
-                <input
-                  type="text"
-                  value={filters.studentName}
-                  onChange={(e) =>
-                    setFilters({ ...filters, studentName: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-                />
-              </div>
-
-              {/* Course */}
-              <div>
-                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
-                  Course
-                </label>
-                <select
-                  value={filters.course}
-                  onChange={(e) =>
-                    setFilters({ ...filters, course: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-                >
-                  <option value="">Select Course</option>
-                  <option value="QURAN">Quran</option>
-                  <option value="ARABIC">Arabic</option>
-                  <option value="ISLAMIC STUDIES">Islamic Studies</option>
-                </select>
-              </div>
-
-              {/* Date */}
-              <div>
-                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={filters.Date}
-                  onChange={(e) =>
-                    setFilters({ ...filters, Date: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-                />
-              </div>
-
-              {/* Time */}
-              <div>
-                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
-                  Time
-                </label>
-                <input
-                  type="time"
-                  value={filters.Time}
-                  onChange={(e) =>
-                    setFilters({ ...filters, Time: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-                />
-              </div>
-
-              {/* Class Type */}
-              <div>
-                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
-                  Class Type
-                </label>
-                <select
-                  value={filters.classType}
-                  onChange={(e) =>
-                    setFilters({ ...filters, classType: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-                >
-                  <option value="">Select Class Type</option>
-                  <option value="REGULAR">Regular Class</option>
-                  <option value="GROUP">Group Class</option>
-                  <option value="TRAIL">Trail Class</option>
-                </select>
-              </div>
-
-              {/* Status */}
-              <div>
-                <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
-                  Status
-                </label>
-                <select
-                  value={filters.status}
-                  onChange={(e) =>
-                    setFilters({ ...filters, status: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:border-[#5C5C5C] dark:text-white"
-                >
-                  <option value="">Select Status</option>
-                  <option value="SCHEDULED">Scheduled</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="RESCHEDULED">Rescheduled</option>
-                </select>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex justify-between items-center pt-4 ">
-                <button
-                  onClick={handleReset}
-                  className="w-[45%] py-2 border border-[#576CBC] text-[#576CBC] rounded-md text-sm font-medium hover:bg-blue-50"
-                >
-                  Reset
-                </button>
-                <button
-                  onClick={handleApply}
-                  className="w-[50%] py-2 bg-[#576CBC] text-white rounded-md text-sm font-medium"
-                >
-                  Show{" "}
-                  {
-                    (activeTab === "pending"
-                      ? scheduledClasses
-                      : completedClasses
-                    ).filter((user) => {
-                      return (
-                        (!filters.studentName ||
-                          `${user.student?.studentFirstName ?? ""} ${
-                            user.student?.studentLastName ?? ""
-                          }`
-                            .toLowerCase()
-                            .includes(filters.studentName.toLowerCase())) &&
-                        (!filters.course ||
-                          user.course.courseName?.toLowerCase() ===
-                            filters.course.toLowerCase()) &&
-                        (!filters.Date ||
-                          new Date(user.startDate).toLocaleDateString() ===
-                            new Date(filters.Date).toLocaleDateString()) &&
-                        (!filters.Time ||
-                          (user.startTime &&
-                            user.startTime.includes(filters.Time))) &&
-                        (!filters.classType ||
-                          user.sessionClassType?.toLowerCase() ===
-                            filters.classType.toLowerCase()) &&
-                        (!filters.status ||
-                          user.scheduleStatus?.toLowerCase() ===
-                            filters.status.toLowerCase())
-                      );
-                    }).length
-                  }{" "}
-                  results
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Modal>
-    );
-  };
-
-  // Add filter handling function
-  const handleApplyFilters = (filters: {
-    studentName: string;
-    course: string;
-    Date: string;
-    Time: string;
-    classType: string;
-    status: string;
-  }) => {
-    const formatDate = (date: Date | string) =>
-      new Date(date).toISOString().split("T")[0]; // 'yyyy-mm-dd'
-
-    let filtered =
-      activeTab === "pending" ? [...scheduledClasses] : [...completedClasses];
-
-    if (filters.studentName) {
-      filtered = filtered.filter((user) =>
-        `${user.student?.studentFirstName ?? ""} ${
-          user.student?.studentLastName ?? ""
-        }`
-          .toLowerCase()
-          .includes(filters.studentName.toLowerCase())
-      );
-    }
-
-    if (filters.Date) {
-      filtered = filtered.filter(
-        (user) => formatDate(user.startDate) === filters.Date
-      );
-    }
-
-    if (filters.status) {
-      filtered = filtered.filter(
-        (user) =>
-          user.scheduleStatus?.toLowerCase() === filters.status.toLowerCase()
-      );
-    }
-
-    if (filters.Time) {
-      filtered = filtered.filter((user) =>
-        user.startTime.includes(filters.Time)
-      );
-    }
-
-    if (filters.course) {
-      filtered = filtered.filter(
-        (user) =>
-          user.course.courseName?.toLowerCase() === filters.course.toLowerCase()
-      );
-    }
-
-    if (filters.classType) {
-      filtered = filtered.filter(
-        (user) =>
-          user.sessionClassType?.toLowerCase() ===
-          filters.classType.toLowerCase()
-      );
-    }
-
-    setPaginatedData(filtered);
-    setCurrentPage(1); // Reset to first page
-  };
   return (
     <BaseLayout>
       <div>
-               <TeacherHeader currentSection="Assignments" />
-       
+        <TeacherHeader currentSection="Assignments" />
 
         {/* Top section */}
         <div className="grid grid-cols-2 lg:flex-row  gap-6 mb-6">
@@ -861,42 +637,6 @@ const studentId = searchParams.get("studentId");
 
         {/* Tabs and Table Section */}
 
-        <div className="flex space-x-6  px-4 py-2 rounded-md w-full">
-          <button
-            className={`relative text-[14px] transition font-medium ${
-              activeTab === "pending"
-                ? "text-[#576CBC] font-semibold"
-                : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-            }`}
-            onClick={() => {
-              setActiveTab("pending");
-              setCurrentPage(1);
-            }}
-          >
-            Pending ({scheduledClasses.length})
-            {activeTab === "pending" && (
-              <span className="absolute left-0 ml-5 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC] dark:text-[#576CBC]" />
-            )}
-          </button>
-
-          <button
-            className={`relative text-[14px] transition font-medium ${
-              activeTab === "completed"
-                ? "text-[#576CBC] font-semibold"
-                : "text-[#0A0A12] dark:text-[#fff] opacity-80"
-            }`}
-            onClick={() => {
-              setActiveTab("completed");
-              setCurrentPage(1);
-            }}
-          >
-            Completed ({completedClasses.length})
-            {activeTab === "completed" && (
-              <span className="absolute left-0 ml-3 -bottom-1 w-[60px] h-[3px] rounded-full bg-[#576CBC]" />
-            )}
-          </button>
-        </div>
-
         <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
           <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
             <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -906,7 +646,7 @@ const studentId = searchParams.get("studentId");
                 placeholder="Search by keyword"
                 className="bg-transparent outline-none text-[15px] w-52 py-3 "
                 value={searchText}
-                onChange={(e) => handleSearch(e.target.value)}
+                // onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
 
@@ -927,155 +667,253 @@ const studentId = searchParams.get("studentId");
           </div>
 
           {/* Table */}
-          <table
-            className="table-auto xw-full"
-            style={{ width: "100%", tableLayout: "fixed" }}
-          >
-            <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-              <tr className="font-medium">
-                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                  Student Name
-                </th>
-                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                  Course
-                </th>
-                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                  Date
-                </th>
-                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                  Time
-                </th>
-                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                  Class Type
-                </th>
-                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                  Status
-                </th>
-                <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
-                  Action
-                </th>
+          <table className="table-fixed w-full">
+            <thead className="text-[12px] bg-[#4C6993] text-white">
+              <tr>
+                {[
+                  "Student ID",
+                  "Student Name",
+                  "Assignment ID",
+                  "Level",
+                  "Course",
+                  "Assignment Name",
+                  "Assigned Date",
+                  "Due Date",
+                  "Status",
+                  "Action",
+                ].map((header, idx) => (
+                  <th
+                    key={idx}
+                    className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                  >
+                    {header}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="bg-white  dark:bg-[#343434] dark:divide-gray-600">
-              {paginatedData.map((item, index) => (
-                <tr
-                  key={item._id}
-                  className={`text-[12px] h-[50px] ${
-                    index % 2 === 0
-                      ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                      : "bg-[#F8F8F8] dark:bg-[#303030]"
-                  }`}
-                >
-                  <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left">
-                    {item.student.studentFirstName}{" "}
-                    {item.student.studentLastName}
-                  </td>
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    {item.course.courseName}
-                  </td>
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    {new Date(item.startDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "2-digit",
-                      year: "numeric",
-                    })}
-                  </td>
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                      {item.startTime?.[0]?.replace(/ AM| PM/, "") || "--:--"} -{" "}
-                      {item.endTime?.[0]?.replace(/ AM| PM/, "") || "--:--"}
-                    </td>
-                  </td>
+            <tbody>
+              {studentsToDisplay.map((student, studentIndex) => {
+                const studentInfo = student.studentDetails?.student;
+                const studentDetails = student.studentDetails;
 
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left"></td>
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                    <span
-                      className={`font-semibold px-3 py-1 rounded-md text-[10px] ${
-                        item.scheduleStatus === "Scheduled"
-                          ? "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] px-[18px]"
-                          : item.scheduleStatus === "Rescheduled"
-                          ? "bg-[#E4E4E4] text-[#000] dark:bg-[#555] dark:text-[#fff]"
-                          : "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36]"
+                return student.assignment.map((assignmentItem, assignIndex) => {
+                  const dropdownId = `${student.studentId}-${assignmentItem.assignmentName}-${assignIndex}`;
+
+                  return (
+                    <tr
+                      key={`${student.studentId}-${assignIndex}`}
+                      className={`text-[10px] ${
+                        studentIndex % 2 === 0
+                          ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                          : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      {item.scheduleStatus}
-                    </span>
-                  </td>
-                  <td className="py-1 text-center relative" ref={dropdownRef}>
-                    <button
-                      onClick={
-                        item.scheduleStatus === "Scheduled"
-                          ? () => toggleDropdown(index)
-                          : undefined
-                      }
-                      className={`${
-                        item.scheduleStatus === "Scheduled"
-                          ? "cursor-pointer"
-                          : "cursor-default"
-                      }`}
-                    >
-                      <MoreVertical
-                        className={`w-4 h-4 mr-12 ${
-                          item.scheduleStatus === "Scheduled"
-                            ? "text-slate-600 dark:text-[#FDFDFD]"
-                            : "text-gray-500 dark:text-gray-200 opacity-50"
-                        }`}
-                      />
-                    </button>
-
-                    {/* Only show dropdown if status is Scheduled and activeDropdown is set */}
-                    {item.scheduleStatus === "Pending" &&
-                      activeDropdown === index && (
-                        <div
-                          ref={dropdownRef}
-                          className="absolute w-full right-0 mt-2  bg-white rounded-md shadow-lg z-50 border dark:border-[#5c5c5c] dark:bg-[#343434]"
+                      <td className="px-3 py-3 break-words">
+                        {student?.studentId}
+                      </td>
+                      <td className="px-3 py-3 text-[#3D8FDE] font-medium break-words">
+                        {studentInfo?.studentFirstName}{" "}
+                        {studentInfo?.studentLastName}
+                      </td>
+                      <td className="px-3 py-3 break-words">
+                        {assignmentItem.assignmentId || "-"}
+                      </td>
+                      <td className="px-3 py-3 break-words">
+                        {studentDetails?.languageLevel || "-"}
+                      </td>
+                      <td className="px-3 py-3 break-words">
+                             {studentDetails?.student?.learningInterest}
+                      </td>
+                      <td className="px-3 py-3 break-words">
+                              {assignmentItem.title}
+                        </td>
+                      <td className="px-3 py-3 break-words">
+                        {new Date(
+                          studentDetails?.classStartDate
+                        ).toLocaleDateString()}
+                      </td>
+                      <td className="px-3 py-3 break-words">
+                        {new Date(
+                          studentDetails?.classEndDate
+                        ).toLocaleDateString()}
+                      </td>
+                      <td className="px-3 py-3 break-words">
+                        <span
+                          className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
+                            assignmentItem.status
+                          )}`}
                         >
-                          <div className="py-1">
-                            <button
-                              className={`w-full text-left px-4 py-2 text-[12px] ${
-                                studentListWrite
-                                  ? "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444]"
-                                  : "text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#444] cursor-not-allowed"
-                              }`}
-                              onClick={
-                                studentListWrite
-                                  ? () => handleReschedule(item._id)
-                                  : undefined
-                              }
-                              disabled={!studentListWrite}
-                            >
-                              View Questions Form
-                            </button>
-                            <button
-                              onClick={() => setActiveDropdown(null)}
-                              className="w-full text-left px-4 py-2 text-red-600"
-                            >
-                              Cancel
-                            </button>
+                          {assignmentItem.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-center relative">
+                        <button
+                          className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
+                          onClick={() =>
+                            setOpenDropdownId(
+                              openDropdownId === dropdownId ? null : dropdownId
+                            )
+                          }
+                        >
+                          <BsThreeDotsVertical />
+                        </button>
+
+                        {openDropdownId === dropdownId &&
+                          assignmentItem.status?.toUpperCase() ===
+                            "NOT ASSIGNED" && (
+                            <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
+                              {(() => {
+                                const status =
+                                  assignmentItem.status?.toUpperCase();
+                                if (
+                                  [
+                                    "COMPLETED",
+                                    "NOT COMPLETED",
+                                    "ASSIGNED",
+                                  ].includes(status)
+                                ) {
+                                  return (
+                                    <>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                                        onClick={() =>
+                                          handleViewProfile(student.studentId)
+                                        }
+                                      >
+                                        View Profile
+                                      </button>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                        onClick={() => setOpenDropdownId(null)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </>
+                                  );
+                                } else if (status === "NOT ASSIGNED") {
+                                  return (
+                                    <>
+                                      <button className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]">
+                                        Assign
+                                      </button>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                        onClick={() =>
+                                          setOpenModalId(dropdownId)
+                                        }
+                                      >
+                                        New Assignment
+                                      </button>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                        onClick={() => setOpenDropdownId(null)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </>
+                                  );
+                                } else {
+                                  return (
+                                    <button
+                                      className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                      onClick={() => setOpenDropdownId(null)}
+                                    >
+                                      Cancel
+                                    </button>
+                                  );
+                                }
+                              })()}
+                            </div>
+                          )}
+
+                        {/* Assignment Modal */}
+                        {openModalId === dropdownId && (
+                          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                            <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
+                              <div>
+                                <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">
+                                  Assign
+                                </h2>
+                                <div className="mb-4">
+                                  <label className="text-sm block mb-1 dark:text-[#fff]">
+                                    Title
+                                  </label>
+                                  <input
+                                    type="text"
+                                    placeholder="Enter title"
+                                    className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                  />
+                                </div>
+                                <div className="flex gap-4 mb-4">
+                                  <div className="flex-1">
+                                    <label className="text-sm block mb-1 dark:text-[#fff]">
+                                      Assigned Date
+                                    </label>
+                                    <input
+                                      type="date"
+                                      className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                    />
+                                  </div>
+                                  <div className="flex-1">
+                                    <label className="text-sm block mb-1 dark:text-[#fff]">
+                                      Due Date
+                                    </label>
+                                    <input
+                                      type="date"
+                                      className="w-full border rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="mb-4">
+                                  <label className="text-sm block mb-1 dark:text-[#fff]">
+                                    Comment
+                                  </label>
+                                  <textarea
+                                    placeholder="Write your comment here..."
+                                    className="w-full border rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                  ></textarea>
+                                </div>
+                              </div>
+                              <div className="flex justify-end gap-3">
+                                <button
+                                  className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
+                                  onClick={() => setOpenModalId(null)}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
+                                  onClick={handleClick}
+                                >
+                                  Create Assignment
+                                </button>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                  </td>
-                </tr>
-              ))}
+                        )}
+                      </td>
+                    </tr>
+                  );
+                });
+              })}
             </tbody>
           </table>
         </div>
 
-        <Pagination
+        {/* <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
-        />
+        /> */}
       </div>
 
       {/*filterform  */}
-      <FilterModal
+      {/* <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         onApplyFilters={handleApplyFilters}
-        users={activeTab === "pending" ? scheduledClasses : completedClasses}
-      />
+        // users={activeTab === "regular" ? scheduledClasses : completedClasses}
+      /> */}
     </BaseLayout>
   );
 };
