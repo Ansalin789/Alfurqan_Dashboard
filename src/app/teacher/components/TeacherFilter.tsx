@@ -310,24 +310,24 @@ const TeacherFilter = () => {
  <div className="mt-2">
             <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
               <div className="flex justify-between items-center px-4 py-0">
-                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                <Search className="w-3 h-3 text-gray-400 dark:text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search by keyword"
-                  className="bg-transparent outline-none text-[15px] w-52 py-3"
+                  className="bg-transparent outline-none text-[12px] ml-1 w-52 py-3"
                   value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
                 />
               </div>
               <div
             onClick={() => setShowMeetingFilterModal(true)}
-                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
               >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
-              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-                <span className="text-left -ml-60">
+              <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                <span className="text-center -ml-60">
             Showing {currentItems.length} of {filteredMeetings.length}
                 </span>
               </div>
@@ -367,7 +367,7 @@ const TeacherFilter = () => {
                     })}
                   </td>
                   <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">{item.startTime}</td>
-                  <td className="px-3 py-2">
+                  {/* <td className="px-3 py-2">
   {activeTab === "upcoming" &&
     isStartMeetingNow(item.selectedDate, item.startTime, item.endTime) &&
     item.meetingStatus !== "Completed" ? (
@@ -381,8 +381,9 @@ const TeacherFilter = () => {
     <span className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getMeetingStatusClass(item.meetingStatus)}`}>
       {item.meetingStatus}
     </span>
-  )}
-</td>
+  )
+  }
+</td> */}
                   <td className="px-3 py-2">
                     <div className="relative">
                       <button
