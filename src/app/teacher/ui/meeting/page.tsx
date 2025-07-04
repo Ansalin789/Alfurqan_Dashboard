@@ -180,89 +180,89 @@ useEffect(() => {
     };
 }, []);
 
-useEffect(() => {
-  const fetchMeetings = async () => {
-    try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("TeacherAuthToken")
-          : null;
+// useEffect(() => {
+//   const fetchMeetings = async () => {
+//     try {
+//       const token =
+//         typeof window !== "undefined"
+//           ? localStorage.getItem("TeacherAuthToken")
+//           : null;
 
-      if (!token) {
-        console.error("❌ TeacherAuthToken not found");
-        return;
-      }
+//       if (!token) {
+//         console.error("❌ TeacherAuthToken not found");
+//         return;
+//       }
 
-      const response = await axios.get(
-        "http://localhost:5001/teacherMeetinglist",
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+//       const response = await axios.get(
+//         "http://localhost:5001/teacherMeetinglist",
+//         {
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${token}`,
+//           },
+//         }
+//       );
 
-      console.log("🌐 Full API Response:", response.data);
+//       console.log("🌐 Full API Response:", response.data);
 
-      if (
-        !response.data?.students ||
-        !Array.isArray(response.data.students)
-      ) {
-        console.error("🚨 Students array missing or not an array:", response.data);
-        return;
-      }
+//       if (
+//         !response.data?.students ||
+//         !Array.isArray(response.data.students)
+//       ) {
+//         console.error("🚨 Students array missing or not an array:", response.data);
+//         return;
+//       }
 
-      const allMeetings: Meeting[] = response.data.students;
+//       const allMeetings: Meeting[] = response.data.students;
 
-      console.log("✅ Extracted Meetings:", allMeetings);
+//       console.log("✅ Extracted Meetings:", allMeetings);
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Normalize for comparison
+//       const today = new Date();
+//       today.setHours(0, 0, 0, 0); // Normalize for comparison
 
-      const upcomingMeetings = allMeetings
-        .filter((meeting) => {
-          if (!meeting.selectedDate || !meeting.meetingStatus) return false;
+//       const upcomingMeetings = allMeetings
+//         .filter((meeting) => {
+//           if (!meeting.selectedDate || !meeting.meetingStatus) return false;
 
-          const meetingDate = new Date(meeting.selectedDate);
-          return (
-            (meeting.meetingStatus === "Scheduled" ||
-              meeting.meetingStatus === "Rescheduled") &&
-            meetingDate >= today
-          );
-        })
-        .sort(
-          (a, b) =>
-            new Date(a.selectedDate).getTime() -
-            new Date(b.selectedDate).getTime()
-        );
+//           const meetingDate = new Date(meeting.selectedDate);
+//           return (
+//             (meeting.meetingStatus === "Scheduled" ||
+//               meeting.meetingStatus === "Rescheduled") &&
+//             meetingDate >= today
+//           );
+//         })
+//         .sort(
+//           (a, b) =>
+//             new Date(a.selectedDate).getTime() -
+//             new Date(b.selectedDate).getTime()
+//         );
 
-      const completedMeetings = allMeetings.filter(
-        (meeting) => meeting.meetingStatus === "Completed"
-      );
+//       const completedMeetings = allMeetings.filter(
+//         (meeting) => meeting.meetingStatus === "Completed"
+//       );
 
-  const teachersMap: Record<string, any[]> = {};
-      allMeetings.forEach((meeting) => {
-        if (meeting.teacher && Array.isArray(meeting.teacher)) {
-          teachersMap[meeting.meetingId] = meeting.teacher;
-        }
-      });
+//   const teachersMap: Record<string, any[]> = {};
+//       allMeetings.forEach((meeting) => {
+//         if (meeting.teacher && Array.isArray(meeting.teacher)) {
+//           teachersMap[meeting.meetingId] = meeting.teacher;
+//         }
+//       });
 
-      // Set state after fetching
-      setUpcomingClasses(upcomingMeetings);
-      setCompletedData(completedMeetings);
-      setTeachersByMeetingId(teachersMap);
+//       // Set state after fetching
+//       setUpcomingClasses(upcomingMeetings);
+//       setCompletedData(completedMeetings);
+//       setTeachersByMeetingId(teachersMap);
 
 
-      console.log("✅ Upcoming Meetings Set to State:", upcomingMeetings);
-      console.log("✅ Completed Meetings Set to State:", completedMeetings);
-    } catch (error) {
-      console.error("🚨 Error fetching meetings:", error);
-    }
-  };
+//       console.log("✅ Upcoming Meetings Set to State:", upcomingMeetings);
+//       console.log("✅ Completed Meetings Set to State:", completedMeetings);
+//     } catch (error) {
+//       console.error("🚨 Error fetching meetings:", error);
+//     }
+//   };
 
-  fetchMeetings();
-}, []);
+//   fetchMeetings();
+// }, []);
 
   interface Teacher {
     teacherId: string;

@@ -2,9 +2,9 @@
 
 import { FaUserAlt } from "react-icons/fa";
 import { AiOutlineClockCircle } from "react-icons/ai";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import axios from "axios";
-
+import { useRouter } from "next/navigation";
 // Interfaces based on your API response
 interface Teacher {
   teacherId: string;
@@ -39,6 +39,7 @@ interface StudentMeeting {
 }
 
 const NextMeetingSchedule = () => {
+  const router = useRouter();
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [classData, setClassData] = useState<StudentMeeting | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,23 +74,26 @@ const NextMeetingSchedule = () => {
         const meetingList: StudentMeeting[] = res.data.students;
 
         const now = new Date();
-        const upcoming = meetingList
-          .filter((m) => {
-            if (!m.startTime || !m.selectedDate) return false;
-            const meetingStart = new Date(m.selectedDate);
-            const [startHour, startMinute] = m.startTime.split(":").map(Number);
-            meetingStart.setHours(startHour, startMinute, 0, 0);
-            return meetingStart > now;
-          })
-          .sort((a, b) => {
-            const aStart = new Date(a.selectedDate);
-            const bStart = new Date(b.selectedDate);
-            const [aHour, aMinute] = a.startTime.split(":").map(Number);
-            const [bHour, bMinute] = b.startTime.split(":").map(Number);
-            aStart.setHours(aHour, aMinute, 0, 0);
-            bStart.setHours(bHour, bMinute, 0, 0);
-            return aStart.getTime() - bStart.getTime();
-          })[0] || null;
+       const upcoming = meetingList
+  .filter((m) => {
+    if (!m.startTime || !m.selectedDate) return false;
+    const [startHour, startMinute] = m.startTime.split(":").map(Number);
+    const meetingDateTime = new Date(m.selectedDate);
+    meetingDateTime.setHours(startHour, startMinute, 0, 0);
+    return meetingDateTime > now;
+  })
+  .sort((a, b) => {
+    const [aHour, aMinute] = a.startTime.split(":").map(Number);
+    const aDateTime = new Date(a.selectedDate);
+    aDateTime.setHours(aHour, aMinute, 0, 0);
+
+    const [bHour, bMinute] = b.startTime.split(":").map(Number);
+    const bDateTime = new Date(b.selectedDate);
+    bDateTime.setHours(bHour, bMinute, 0, 0);
+
+    return aDateTime.getTime() - bDateTime.getTime();
+  })[0] || null;
+
 
         setClassData(upcoming);
         setLoading(false);
@@ -130,7 +134,8 @@ const NextMeetingSchedule = () => {
   }, [classData]);
 
   const handleStartClass = () => {
-    alert("No meeting link provided in API response.");
+    router.push(`/teacher/livemeeting/${classData?.meetingId}`);
+    // router.push(`/teacher/livemeeting/${classData?.meetingId}`);
   };
 
   const formatTime = (time: number) => (time < 10 ? `0${time}` : time);
@@ -225,7 +230,7 @@ const NextMeetingSchedule = () => {
                 animation: "moveGradient 5s ease infinite",
               }}
             >
-              Start Now
+              Join Now
             </button>
             <style>
               {`

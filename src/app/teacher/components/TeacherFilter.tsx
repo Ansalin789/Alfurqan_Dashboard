@@ -110,12 +110,27 @@ const TeacherFilter = () => {
         const meetings = response.data.students;
         const now = new Date();
 
-        const upcoming = meetings.filter((m) =>
-          m.meetingStatus === "Scheduled" || m.meetingStatus === "Rescheduled"
+        // Helper to get end time as Date
+        const getEndDate = (meeting) => {
+          const date = new Date(meeting.selectedDate);
+          const [endH, endM] = meeting.endTime.split(":").map(Number);
+          date.setHours(endH, endM, 0, 0);
+          return date;
+        };
+
+        // Only show as upcoming if end time is in the future and not completed
+        const upcoming = meetings.filter(
+          (m) =>
+            (m.meetingStatus === "Scheduled" || m.meetingStatus === "Rescheduled") &&
+            getEndDate(m) > now
         );
 
-        const completed = meetings.filter((m) =>
-          m.meetingStatus === "Completed"
+        // Show as completed if status is completed or end time is in the past
+        const completed = meetings.filter(
+          (m) =>
+            m.meetingStatus === "Completed" ||
+            ((m.meetingStatus === "Scheduled" || m.meetingStatus === "Rescheduled") &&
+              getEndDate(m) <= now)
         );
 
         setUpcomingClasses(upcoming);
@@ -366,10 +381,9 @@ const TeacherFilter = () => {
     isStartMeetingNow(item.selectedDate, item.startTime, item.endTime) &&
     item.meetingStatus !== "Completed" ? (
     <button
-      className="text-[10px] font-semibold px-3 py-1 rounded-lg bg-[#576cbc] text-white"
-      onClick={() => router.push(`/teacher/ui/meetingvideocall?id=${item._id}`)}
+      className="text-[10px] font-semibold px-5 py-1 rounded-lg bg-[#576cbc] text-white" aria-readonly
     >
-      Start Meeting
+      Ongoing...
     </button>
   ) : (
     <span className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getMeetingStatusClass(item.meetingStatus)}`}>
