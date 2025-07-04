@@ -110,19 +110,13 @@ const TeacherFilter = () => {
         const meetings = response.data.students;
         const now = new Date();
 
-        const upcoming = meetings.filter((m) => {
-          const meetingDate = new Date(m.selectedDate);
-          const [h, min] = (m.startTime || "00:00").split(":").map(Number);
-          meetingDate.setHours(h, min, 0, 0);
-          return now < meetingDate;
-        });
+        const upcoming = meetings.filter((m) =>
+          m.meetingStatus === "Scheduled" || m.meetingStatus === "Rescheduled"
+        );
 
-        const completed = meetings.filter((m) => {
-          const meetingDate = new Date(m.selectedDate);
-          const [h, min] = (m.startTime || "00:00").split(":").map(Number);
-          meetingDate.setHours(h, min, 0, 0);
-          return now >= meetingDate;
-        });
+        const completed = meetings.filter((m) =>
+          m.meetingStatus === "Completed"
+        );
 
         setUpcomingClasses(upcoming);
         setCompletedData(completed);
@@ -367,7 +361,7 @@ const TeacherFilter = () => {
                     })}
                   </td>
                   <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">{item.startTime}</td>
-                  {/* <td className="px-3 py-2">
+                  <td className="px-3 py-2">
   {activeTab === "upcoming" &&
     isStartMeetingNow(item.selectedDate, item.startTime, item.endTime) &&
     item.meetingStatus !== "Completed" ? (
@@ -383,7 +377,7 @@ const TeacherFilter = () => {
     </span>
   )
   }
-</td> */}
+</td>
                   <td className="px-3 py-2">
                     <div className="relative">
                       <button

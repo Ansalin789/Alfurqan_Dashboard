@@ -2,14 +2,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import BaseLayout2 from "@/components/BaseLayout2";
 import { BiSolidSkipNextCircle } from "react-icons/bi";
 import {
-  IoPlaySkipBackCircle,
-  IoMicCircleSharp,
-  IoStopCircleSharp,
+  IoPlaySkipBackCircle
 } from "react-icons/io5";
-import { FaStar, FaImages } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
 import BaseLayout from "@/components/BaseLayout";
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 
@@ -115,20 +112,21 @@ const QuizPage = () => {
         answer: "4",
       },
       {
-        question: "The sky is blue.", // True or False
+        question: "The sky is blue.", 
         options: ["True", "False"],
         correctAnswer: "True",
         answer: "True",
       },
       {
-        question: "Listen to the audio and type what you hear.", // Listen & write
-        audioUrl: "/assets/audio/sample.mp3", // Use a sample audio file in public/assets/audio/
+        question: "Listen to the audio and type what you hear.", 
+        audioUrl: "/assets/audio/sample.mp3", 
         correctAnswer: "hello world",
         answer: "hello world",
         placeholder: "Type what you hear...",
       },
     ]);
   }, [assignmentId, type]);
+  
   const handleStartRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
