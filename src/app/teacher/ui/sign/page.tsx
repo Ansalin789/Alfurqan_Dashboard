@@ -57,9 +57,10 @@ export interface StudentModules {
 
 export interface TeacherModules {
   dashboard: RoleModuleAccess;
-  liveclasses: RoleModuleAccess;
-  scheduledclasses: RoleModuleAccess;
-  assignments: RoleModuleAccess;
+  meeting: RoleModuleAccess;
+  schedule: RoleModuleAccess;
+  liveclass: RoleModuleAccess;
+  assignment: RoleModuleAccess;
   messages: RoleModuleAccess;
   analytics: RoleModuleAccess;
   support: {
@@ -119,7 +120,6 @@ const searchParams = useSearchParams();
   const [emailNotExist, setEmailNotExist] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [username, setUsername] = useState("");
-  const [userId, setUserId] = useState("");
 
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -170,13 +170,13 @@ const searchParams = useSearchParams();
   };
 
   const fetchrolebasedaccesscontrol = async (
-    userId: string,
+    id: string,
     token: string,
     role?: string
   ) => {
     try {
       const response = await axios.get<AccessApiResponse>(
-        `https://api.blackstoneinfomaticstech.com/update-access/${userId}`,
+        `https://api.blackstoneinfomaticstech.com/update-access/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -202,11 +202,11 @@ const searchParams = useSearchParams();
           );
 
           console.log(
-            "Stored only academicmodules after overriding admin flag"
+            "Stored only teachermodules after overriding admin flag"
           );
         } else {
           console.warn(
-            "User is not an Academic Coach. Ignoring academicmodules."
+            "User is not an  Teacher. Ignoring teachermodules."
           );
         }
       } else {
@@ -227,15 +227,15 @@ const searchParams = useSearchParams();
     setError(""); // Clear previous errors
     try {
       const data = await signIn(username, password);
-      const { accessToken, role, userId, userName } = data;
+      const { accessToken, role, _id, userName } = data;
       if (!role?.includes("TEACHER")) {
         setLoginError("Only Teacher are allowed to log in.");
         return;
       }
       localStorage.setItem("TeacherAuthToken", accessToken);
-      localStorage.setItem("TeacherPortalId", userId);
+      localStorage.setItem("TeacherPortalId", _id);
       localStorage.setItem("TeacherPortalName", userName);
-      await fetchrolebasedaccesscontrol(userId, accessToken, role);
+      await fetchrolebasedaccesscontrol(_id, accessToken, role);
       const authToken = localStorage.getItem("TeacherAuthToken");
       console.log(accessToken);
       console.log(authToken);
