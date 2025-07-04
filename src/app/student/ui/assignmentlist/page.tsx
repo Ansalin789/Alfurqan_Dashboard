@@ -271,7 +271,6 @@ const StudentList = () => {
                       "Assigned Date",
                       "Due Date",
                       "Status",
-                      "Action",
                     ].map((header, idx) => (
                       <th
                         key={idx}
@@ -350,69 +349,6 @@ const StudentList = () => {
                           >
                             {assignmentInfo?.classStatus}
                           </span>
-                        </td>
-                           <td className="px-4 py-2 text-center relative text-[11px]">
-                          <button
-                            className={`text-gray-500 hover:text-gray-700 dark:text-[#ffff] ${
-                              isNotAssigned || isCompleted ? "opacity-40 cursor-not-allowed" : ""
-                            }`}
-                            onClick={() => {
-                              if (!isNotAssigned && !isCompleted) toggleDropdown(student.assigmentId);
-                            }}
-                            disabled={isNotAssigned || isCompleted}
-                          >
-                            <BsThreeDotsVertical />
-                          </button>
-                          {openDropdownId === student.assigmentId && isAssigned && (
-                            <div className="absolute right-0 w-40 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                onClick={() => {
-                                  setOpenDropdownId(null);
-                                  router.push(`/student/ui/startassignment?studentId=${studentInfo?.studentId}`);
-                                }}
-                              >
-                                Start Assignment
-                              </button>
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                onClick={() => {
-                                  setOpenDropdownId(null);
-                                  router.push(`/student/ui/assignmentlist?studentId=${studentInfo?.studentId}`);
-                                }}
-                              >
-                                View List
-                              </button>
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
-                                onClick={() => setOpenDropdownId(null)}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          )}
-                          {openDropdownId === student.assigmentId && isCompleted && (
-                            <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434] opacity-40 pointer-events-none">
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                disabled
-                              >
-                                Start Assignment
-                              </button>
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                disabled
-                              >
-                                View List
-                              </button>
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
-                                disabled
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          )}
                         </td>
                       </tr>
                     );

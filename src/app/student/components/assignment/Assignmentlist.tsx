@@ -39,7 +39,7 @@ interface StudentDetails {
 }
 
 interface Assignment {
-  studentId: string;
+  assigmentId: string;
   name: string;
   studentDetails: StudentDetails;
 }
@@ -48,7 +48,7 @@ const StudentList = () => {
   // Hardcoded data for assignments
   const hardcodedAssignments: Assignment[] = [
     {
-      studentId: "S001",
+      assigmentId: "STD001",
       name: "Assignment 1",
       studentDetails: {
         _id: "1",
@@ -75,7 +75,7 @@ const StudentList = () => {
       },
     },
     {
-      studentId: "S002",
+      assigmentId: "STD002",
       name: "Assignment 2",
       studentDetails: {
         _id: "2",
@@ -101,8 +101,8 @@ const StudentList = () => {
         languageLevel: "Intermediate",
       },
     },
-     {
-      studentId: "S003",
+    {
+      assigmentId: "STD003",
       name: "Assignment 3",
       studentDetails: {
         _id: "3",
@@ -134,7 +134,9 @@ const StudentList = () => {
   const [groupStudents, setGroupStudents] = useState<Assignment[]>([]);
   const [regularCount, setRegularCount] = useState<number>(0);
   const [groupCount, setGroupCount] = useState<number>(0);
-  const [activeTab, setActiveTab] = useState<"Pending" | "Completed">("Pending");
+  const [activeTab, setActiveTab] = useState<"Pending" | "Completed">(
+    "Pending"
+  );
 
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -142,10 +144,12 @@ const StudentList = () => {
   useEffect(() => {
     // Filter assignments by classStatus for tabs
     const pending = hardcodedAssignments.filter(
-      (student) => student.studentDetails?.classStatus?.toUpperCase() !== "COMPLETED"
+      (student) =>
+        student.studentDetails?.classStatus?.toUpperCase() !== "COMPLETED"
     );
     const completed = hardcodedAssignments.filter(
-      (student) => student.studentDetails?.classStatus?.toUpperCase() === "COMPLETED"
+      (student) =>
+        student.studentDetails?.classStatus?.toUpperCase() === "COMPLETED"
     );
     setRegularStudents(pending);
     setGroupStudents(completed);
@@ -271,7 +275,8 @@ const StudentList = () => {
                   const status = assignmentInfo?.classStatus?.toUpperCase();
                   const isNotAssigned = status === "NOTASSIGNED";
                   const isCompleted = status === "COMPLETED";
-                  const isAssigned = status === "ASSIGNED" || status === "INPROGRESS";
+                  const isAssigned =
+                    status === "ASSIGNED" || status === "INPROGRESS";
 
                   return (
                     <tr
@@ -283,7 +288,7 @@ const StudentList = () => {
                       }`}
                     >
                       <td className="px-3 py-3 break-words text-[11px]">
-                        {studentInfo?.studentId}
+                        {student.assigmentId}
                       </td>
                       <td className="px-3 py-3 text-[#3D8FDE] font-medium break-words text-[11px]">
                         {studentInfo?.studentFirstName}{" "}
@@ -296,33 +301,30 @@ const StudentList = () => {
                       <td className="px-3 py-3 break-words text-[11px]">
                         {assignmentInfo?.languageLevel || "-"}
                       </td>
-                      <td className="px-3 py-3 break-word text-[11px]" >
-                        {studentInfo?.studentId}
-                      </td>
+                      <td className="px-3 py-3 break-words text-[11px]">
+                          {student.name}
+                        </td>
                       <td className="px-3 py-3 break-words text-[11px]">
                         {assignmentInfo?.classType}
                       </td>
 
                       <td className="px-3 py-3 break-words text-[11px]">
-                       
-                          {new Date(assignmentInfo.classStartDate).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "2-digit",
-                                year: "numeric",
-                              }
-                            )}
+                        {new Date(
+                          assignmentInfo.classStartDate
+                        ).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "2-digit",
+                          year: "numeric",
+                        })}
                       </td>
                       <td className="px-3 py-3 break-words text-[11px]">
-                             {new Date(assignmentInfo.classEndDate).toLocaleDateString(
-                              "en-US",
-                              {
-                                month: "short",
-                                day: "2-digit",
-                                year: "numeric",
-                              }
-                            )}
+                        {new Date(
+                          assignmentInfo.classEndDate
+                        ).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "2-digit",
+                          year: "numeric",
+                        })}
                       </td>
                       <td className="px-3 py-3 break-words text-[11px]">
                         <span
@@ -336,65 +338,74 @@ const StudentList = () => {
                       <td className="px-4 py-2 text-center relative text-[11px]">
                         <button
                           className={`text-gray-500 hover:text-gray-700 dark:text-[#ffff] ${
-                            isNotAssigned || isCompleted ? "opacity-40 cursor-not-allowed" : ""
+                            isNotAssigned || isCompleted
+                              ? "opacity-40 cursor-not-allowed"
+                              : ""
                           }`}
                           onClick={() => {
-                            if (!isNotAssigned && !isCompleted) toggleDropdown(student.studentId);
+                            if (!isNotAssigned && !isCompleted)
+                              toggleDropdown(student.assigmentId);
                           }}
                           disabled={isNotAssigned || isCompleted}
                         >
                           <BsThreeDotsVertical />
                         </button>
-                        {openDropdownId === student.studentId && isAssigned && (
-                          <div className="absolute right-0 w-40 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
-                            <button
-                              className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                              onClick={() => {
-                                setOpenDropdownId(null);
-                                router.push(`/student/ui/startassignment?studentId=${student.studentId}`);
-                              }}
-                            >
-                              Start Assignment
-                            </button>
-                            <button
-                              className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                              onClick={() => {
-                                setOpenDropdownId(null);
-                                router.push(`/student/ui/assignmentlist?studentId=${student.studentId}`);
-                              }}
-                            >
-                              View List
-                            </button>
-                            <button
-                              className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
-                              onClick={() => setOpenDropdownId(null)}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        )}
-                        {openDropdownId === student.studentId && isCompleted && (
-                          <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434] opacity-40 pointer-events-none">
-                            <button
-                              className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                              disabled
-                            >
-                              Start Assignment
-                            </button>
-                            <button
-                              className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                              disabled
-                            >
-                              View List
-                            </button>
-                            <button
-                              className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
-                              disabled
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        )}
+                        {openDropdownId === student.assigmentId &&
+                          isAssigned && (
+                            <div className="absolute right-0 w-40 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
+                                onClick={() => {
+                                  setOpenDropdownId(null);
+                                  router.push(
+                                    `/student/ui/startassignment?assignmentId=${student.assigmentId}`
+                                  );
+                                }}
+                              >
+                                Start Assignment
+                              </button>
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
+                                onClick={() => {
+                                  setOpenDropdownId(null);
+                                     router.push(
+                                    `/student/ui/assignmentlist?assignmentId=${student.assigmentId}`
+                                  );
+                                }}
+                              >
+                                View List
+                              </button>
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
+                                onClick={() => setOpenDropdownId(null)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        {openDropdownId === student.assigmentId &&
+                          isCompleted && (
+                            <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434] opacity-40 pointer-events-none">
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
+                                disabled
+                              >
+                                Start Assignment
+                              </button>
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
+                                disabled
+                              >
+                                View List
+                              </button>
+                              <button
+                                className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
+                                disabled
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
                       </td>
                     </tr>
                   );
@@ -404,18 +415,15 @@ const StudentList = () => {
           </div>
 
           <div className="flex justify-end">
-              <button
-                className=" mt-4 text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-4 py-1 text-sm font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
-                onClick={() => {
-                  
-                    router.push("/student/ui/allassignment");
-                 
-                }}
-              >
-                View All
-              </button>
-            </div>
-
+            <button
+              className=" mt-4 text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-4 py-1 text-sm font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
+              onClick={() => {
+                router.push("/student/ui/allassignment");
+              }}
+            >
+              View All
+            </button>
+          </div>
         </div>
       </div>
     </div>
