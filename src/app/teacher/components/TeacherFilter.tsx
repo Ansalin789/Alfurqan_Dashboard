@@ -57,6 +57,8 @@ const TeacherFilter = () => {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+    const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  
 
   const [activeTab, setActiveTab] = useState("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
@@ -111,7 +113,7 @@ const TeacherFilter = () => {
         const now = new Date();
 
         // Helper to get end time as Date
-        const getEndDate = (meeting) => {
+        const getEndDate = (meeting: Meeting) => {
           const date = new Date(meeting.selectedDate);
           const [endH, endM] = meeting.endTime.split(":").map(Number);
           date.setHours(endH, endM, 0, 0);
@@ -121,16 +123,13 @@ const TeacherFilter = () => {
         // Only show as upcoming if end time is in the future and not completed
         const upcoming = meetings.filter(
           (m) =>
-            (m.meetingStatus === "Scheduled" || m.meetingStatus === "Rescheduled") &&
-            getEndDate(m) > now
+          ["Scheduled", "Rescheduled"].includes(m.meetingStatus)
         );
 
         // Show as completed if status is completed or end time is in the past
         const completed = meetings.filter(
           (m) =>
-            m.meetingStatus === "Completed" ||
-            ((m.meetingStatus === "Scheduled" || m.meetingStatus === "Rescheduled") &&
-              getEndDate(m) <= now)
+            m.meetingStatus === "Completed"
         );
 
         setUpcomingClasses(upcoming);
@@ -375,67 +374,63 @@ const TeacherFilter = () => {
                       year: "numeric",
                     })}
                   </td>
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">{item.startTime}</td>
-                  <td className="px-3 py-2">
-  {activeTab === "upcoming" &&
-    isStartMeetingNow(item.selectedDate, item.startTime, item.endTime) &&
-    item.meetingStatus !== "Completed" ? (
-    <button
-      className="text-[10px] font-semibold px-5 py-1 rounded-lg bg-[#576cbc] text-white" aria-readonly
-    >
-      Ongoing...
-    </button>
-  ) : (
-    <span className={`text-[10px] font-semibold px-3 py-1 rounded-lg ${getMeetingStatusClass(item.meetingStatus)}`}>
-      {item.meetingStatus}
-    </span>
-  )
-  }
-</td>
-                  <td className="px-3 py-2">
-                    <div className="relative">
-                      <button
-                        onClick={() => {
-                          if (item.meetingStatus === "Scheduled") {
-                            setIsDetailsModalOpen(true);
-                            setSelectedItemId(item._id);
-                          } else if (item.meetingStatus === "Completed") {
-                            handleViewDetails(item._id);
-                          }
-                        }}
-                        className="p-2 rounded-md"
+                  <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+                      {item.startTime}
+                    </td>
+                  <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
+                      <span
+                        className={`px-2 text-[10px] text-center py-[3px] rounded-md ${
+                          item.meetingStatus === "Scheduled"
+                            ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
+                            : item.meetingStatus === "Rescheduled"
+                            ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
+                            : ""
+                        }`}
                       >
-                        {item.meetingStatus === "Scheduled" || item.meetingStatus === "Rescheduled" ? (
-                          <MoreVertical className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
-                        ) : (
-                          <FaEye className="w-4 h-4 text-slate-600 dark:text-[#FDFDFD]" />
-                        )}
-                      </button>
-
-                      {isDetailsModalOpen && selectedItemId === item._id && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-10">
-                          <button
-                            onClick={() => {
-                              setIsRescheduleModalOpen(true);
-                              setIsDetailsModalOpen(false);
-                            }}
-                            className="block w-full px-4 py-2 text-left text-[12px] text-slate-600"
-                          >
-                            Request Reschedule
-                          </button>
-                          <button
-                            onClick={() => {
-                              setIsDetailsModalOpen(false);
-                              setSelectedItemId(null);
-                            }}
-                            className="block w-full px-4 py-2 text-left text-[12px] text-red-600 hover:bg-gray-50"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
+                        {(item.meetingStatus || "UNKNOWN").toUpperCase()}
+                      </span>
+                    </td>
+                <td className="px-3 py-2 relative ">
+                                     {item.meetingStatus === "Scheduled" ||
+                                     item.meetingStatus === "Rescheduled" ? (
+                                       <div className="relative inline-block text-left">
+                                         <button
+                                           onClick={() =>
+                                             setOpenDropdownId(
+                                               openDropdownId === item._id ? null : item._id
+                                             )
+                                           }
+                                           className="p-2 rounded-md"
+                                         >
+                                           <MoreVertical className="w-4 h-4 text-slate-600 dark:text-white" />
+                                         </button>
+               
+                                         {openDropdownId === item._id && (
+                                           <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg ring-1 ring-black ring-opacity-5">
+                                             <div className="py-1 text-sm text-gray-700 dark:text-white">
+                                               <button
+                                                 onClick={() => {
+                                                   setIsRescheduleModalOpen(true);
+                                                   setIsDetailsModalOpen(false);
+                                                 }}
+                                                 className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#404040]"
+                                               >
+                                                 Reschedule
+                                               </button>
+                                               <button
+                                                 onClick={() => setOpenDropdownId(null)}
+                                                 className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-[#404040]"
+                                               >
+                                                 Cancel
+                                               </button>
+                                             </div>
+                                           </div>
+                                         )}
+                                       </div>
+                                     ) : (
+                                       <FaEye className="w-4 h-4 text-slate-600 dark:text-white" />
+                                     )}
+                                   </td>
                 </tr>
               ))
             )}

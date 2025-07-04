@@ -43,7 +43,6 @@ interface Invoice {
   invoiceStatus: "Paid" | "Pending";
 }
 
-
 interface IMessageResponse {
   status: string;
   message: string;
@@ -79,7 +78,7 @@ interface IMessagesend {
 const Message = () => {
   const [teachers, setTeachers] = useState<IUser[]>([]);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
-  
+
   const [academicCoaches, setAcademicCoaches] = useState<IUser[]>([]);
   const [activeTab, setActiveTab] = useState<"teachers" | "academicCoaches">(
     "teachers"
@@ -193,6 +192,20 @@ const Message = () => {
       });
     }
   }, [messages]);
+
+  useEffect(() => {
+  const savedUser = localStorage.getItem("SelectedUser");
+  if (savedUser) {
+    setSelectedUser(JSON.parse(savedUser));
+  }
+}, []);
+
+useEffect(() => {
+  if (selectedUser) {
+    localStorage.setItem("SelectedUser", JSON.stringify(selectedUser));
+  }
+}, [selectedUser]);
+
 
   useEffect(() => {
     if (!socketRef.current) {
@@ -331,7 +344,7 @@ const Message = () => {
               <div>
                 <div className="flex">
                   <h3 className="text-sm font-semibold text-[#374557]">
-                      {studentName}
+                    {studentName}
                   </h3>
                   <button className="ml-[1px] text-gray-500">
                     <Bell size={16} className="text-white" />
@@ -545,9 +558,15 @@ const Message = () => {
                       className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none"
                       value={messageText}
                       onChange={(e) => setMessageText(e.target.value)}
-                      onKeyPress={(e) =>
-                        e.key === "Enter" && handleSendMessage()
-                      }
+                      onKeyDown={(e) => {
+                        if (
+                          e.key === "Enter" &&
+                          selectedUser &&
+                          messageText.trim()
+                        ) {
+                          handleSendMessage();
+                        }
+                      }}
                     />
                     <motion.button
                       type="button"

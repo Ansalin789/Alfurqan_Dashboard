@@ -107,31 +107,48 @@ const NextMeetingSchedule = () => {
     fetchMeeting();
   }, []);
 
-  useEffect(() => {
-    if (!classData || !classData.startTime || !classData.selectedDate) return;
+useEffect(() => {
+  if (!classData || !classData.endTime || !classData.selectedDate || classData.meetingStatus === "Completed") return;
 
-    const meetingStart = new Date(classData.selectedDate);
-    const [startHour, startMinute] = classData.startTime.split(":").map(Number);
-    meetingStart.setHours(startHour, startMinute, 0, 0);
+  const checkMeetingEnd = async () => {
+    const now = new Date();
+    const [endHour, endMinute] = classData.endTime.split(":").map(Number);
+    const meetingEnd = new Date(classData.selectedDate);
+    meetingEnd.setHours(endHour, endMinute, 0, 0);
 
-    const updateTimer = () => {
-      const now = new Date();
-      const diff = meetingStart.getTime() - now.getTime();
-      if (diff <= 0) {
-        setTime({ hours: 0, minutes: 0, seconds: 0 });
-        setIsTimeUp(true);
-        return;
+    if (now > meetingEnd) {
+      try {
+        const token = localStorage.getItem("TeacherAuthToken");
+        if (!token) {
+          console.error("❌ No auth token found");
+          return;
+        }
+
+        await axios.put(
+          `http://localhost:5001/updateTeacherMeeting/${classData.meetingId}`,
+          { meetingStatus: "Completed" },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("✅ Meeting status updated to Completed");
+        setClassData((prev) => prev ? { ...prev, meetingStatus: "Completed" } : null);
+      } catch (err) {
+        console.error("❌ Failed to update meeting status", err);
       }
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setTime({ hours, minutes, seconds });
-    };
+    }
+  };
 
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
-  }, [classData]);
+  const interval = setInterval(checkMeetingEnd, 60 * 1000); // Check every 1 min
+  checkMeetingEnd(); // Run immediately too
+
+  return () => clearInterval(interval);
+}, [classData]);
+
 
   const handleStartClass = () => {
     router.push(`/teacher/livemeeting/${classData?.meetingId}`);
