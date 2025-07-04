@@ -227,15 +227,15 @@ const searchParams = useSearchParams();
     setError(""); // Clear previous errors
     try {
       const data = await signIn(username, password);
-      const { accessToken, role, _id, userName } = data;
+      const { accessToken, role, userId, userName } = data;
       if (!role?.includes("TEACHER")) {
         setLoginError("Only Teacher are allowed to log in.");
         return;
       }
       localStorage.setItem("TeacherAuthToken", accessToken);
-      localStorage.setItem("TeacherPortalId", _id);
+      localStorage.setItem("TeacherPortalId", userId);
       localStorage.setItem("TeacherPortalName", userName);
-      await fetchrolebasedaccesscontrol(_id, accessToken, role);
+      await fetchrolebasedaccesscontrol(userId, accessToken, role);
       const authToken = localStorage.getItem("TeacherAuthToken");
       console.log(accessToken);
       console.log(authToken);
