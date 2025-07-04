@@ -81,15 +81,15 @@ const NewAssignment = () => {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const title = searchParams.get("title") || "";
-    const assignedDate = searchParams.get("assignedDate") || "";
-    const dueDate = searchParams.get("dueDate") || "";
-    const comment = searchParams.get("comment") || "";
-    const studentId = searchParams.get("studentId") || "";
-    const studentName = searchParams.get("studentName") || "";
-    const sessionClassType = searchParams.get("sessionClassType") || "";
-    const assignedTeacher = searchParams.get("assignedTeacher") || "";
-    const assignedTeacherId = searchParams.get("assignedTeacherId") || "";
+    const title = searchParams?.get("title") || "";
+    const assignedDate = searchParams?.get("assignedDate") || "";
+    const dueDate = searchParams?.get("dueDate") || "";
+    const comment = searchParams?.get("comment") || "";
+    const studentId = searchParams?.get("studentId") || "";
+    const studentName = searchParams?.get("studentName") || "";
+    const sessionClassType = searchParams?.get("sessionClassType") || "";
+    const assignedTeacher = searchParams?.get("assignedTeacher") || "";
+    const assignedTeacherId = searchParams?.get("assignedTeacherId") || "";
 
     console.log("🔍 Query Params:");
     console.log("title:", title);
@@ -150,97 +150,103 @@ const NewAssignment = () => {
     "choose"
   ); // or "truefalse"
   const [noOptions, setNoOptions] = useState(false);
+  const [answerText, setAnswerText] = useState("");
 
- // Update the handleAddAssignment function
-const handleAddAssignment = () => {
-  if (!assignmentName.trim() || !typedQuestion.trim()) {
-    alert("⚠️ Please fill in both Assignment Name and Question.");
-    return;
-  }
-
-  // For choose type with options
-  if (questionType === "choose" && hasOptions && !noOptions) {
-    const missingOptions = Object.entries(options)
-      .filter(([_, val]) => val.text.trim() === "")
-      .map(([key]) => key.toUpperCase());
-
-    if (missingOptions.length > 0) {
-      alert(`⚠️ Please fill all options. Missing: ${missingOptions.join(", ")}`);
+  // Update the handleAddAssignment function
+  const handleAddAssignment = () => {
+    if (!assignmentName.trim() || !typedQuestion.trim()) {
+      alert("⚠️ Please fill in both Assignment Name and Question.");
       return;
     }
 
-    if (!selectedAnswer) {
-      alert("⚠️ Please select the correct answer for this 'choose' question.");
-      return;
+    // For choose type with options
+    if (questionType === "choose" && hasOptions && !noOptions) {
+      const missingOptions = Object.entries(options)
+        .filter(([_, val]) => val.text.trim() === "")
+        .map(([key]) => key.toUpperCase());
+
+      if (missingOptions.length > 0) {
+        alert(`⚠️ Please fill all options. Missing: ${missingOptions.join(", ")}`);
+        return;
+      }
+
+      if (!selectedAnswer) {
+        alert("⚠️ Please select the correct answer for this 'choose' question.");
+        return;
+      }
     }
-  }
     // Validate true/false answer is selected
-  if (questionType === "truefalse" && trueFalseAnswer === null) {
-    alert("⚠️ Please select True or False for this question.");
-    return;
-  }
-
-  // For types without options (image identification, reading, writing)
-  if (['image identification', 'reading', 'writing'].includes(assignmentType)) {
-    if (!typedQuestion.trim()) {
-      alert("⚠️ Please provide the question text.");
+    if (questionType === "truefalse" && trueFalseAnswer === null) {
+      alert("⚠️ Please select True or False for this question.");
       return;
     }
-    // No options validation needed for these types
-  }
-  
-  const newAssignment: Assignment = {
-    questionName: questionName.trim(),
-    name: assignmentName.trim(),
-    type: assignmentType,
-    question: typedQuestion.trim(),
-    questionType: questionType,
-    // Only include options for choose type with hasOptions true
-    options: questionType === "choose" && hasOptions && !noOptions ? {
-      optionOne: options.a.text,
-      optionTwo: options.b.text,
-      optionThree: options.c.text,
-      optionFour: options.d.text,
-    } : undefined,
-    correctAnswer: "",
-    // For non-choose types or when hasOptions is false, use typedQuestion as answerValidation
-     answerValidation: questionType === "choose" 
-      ? selectedAnswer 
-      : String(trueFalseAnswer),
-    audioURL: uploadedFileType?.startsWith("audio/") && uploadedFileURL
-      ? uploadedFileURL
-      : undefined,
-    audioName: uploadedFileType?.startsWith("audio/") && uploadedFileName
-      ? uploadedFileName
-      : undefined,
-    imageURL: uploadedFileType?.startsWith("image/") && uploadedFileURL
-      ? uploadedFileURL
-      : undefined,
-    imageName: uploadedFileType?.startsWith("image/") && uploadedFileName
-      ? uploadedFileName
-      : undefined,
+
+    // For types without options (image identification, reading, writing)
+    if (['image identification', 'reading', 'writing'].includes(assignmentType)) {
+      if (!typedQuestion.trim()) {
+        alert("⚠️ Please provide the question text.");
+        return;
+      }
+      // No options validation needed for these types
+    }
+    
+    const newAssignment: Assignment = {
+      questionName: questionName.trim(),
+      name: assignmentName.trim(),
+      type: assignmentType,
+      question: typedQuestion.trim(),
+      questionType: questionType,
+      // Only include options for choose type with hasOptions true
+      options: questionType === "choose" && hasOptions && !noOptions ? {
+        optionOne: options.a.text,
+        optionTwo: options.b.text,
+        optionThree: options.c.text,
+        optionFour: options.d.text,
+      } : undefined,
+      correctAnswer: "",
+      answerValidation:
+        ["writing", "reading", "image identification"].includes(assignmentType) && questionType === "choose"
+          ? answerText.trim()
+          : ["writing", "reading", "image identification"].includes(assignmentType)
+          ? typedQuestion.trim()
+          : questionType === "choose"
+          ? selectedAnswer
+          : String(trueFalseAnswer),
+      audioURL: uploadedFileType?.startsWith("audio/") && uploadedFileURL
+        ? uploadedFileURL
+        : undefined,
+      audioName: uploadedFileType?.startsWith("audio/") && uploadedFileName
+        ? uploadedFileName
+        : undefined,
+      imageURL: uploadedFileType?.startsWith("image/") && uploadedFileURL
+        ? uploadedFileURL
+        : undefined,
+      imageName: uploadedFileType?.startsWith("image/") && uploadedFileName
+        ? uploadedFileName
+        : undefined,
+    };
+
+    setAssignments((prev) => [...prev, newAssignment]);
+    alert("✅ Assignment added successfully!");
+
+    // Reset form
+    setAssignmentName("");
+    setTypedQuestion("");
+    setQuestionName("");
+    setOptions({
+      a: { text: "", isCorrect: false },
+      b: { text: "", isCorrect: false },
+      c: { text: "", isCorrect: false },
+      d: { text: "", isCorrect: false },
+    });
+    setSelectedAnswer("");
+    setTrueFalseAnswer(null);
+    setUploadedFileURL(null);
+    setUploadedFileName(null);
+    setUploadedFileType(null);
+    setAnswerText("");
   };
-
-  setAssignments((prev) => [...prev, newAssignment]);
-  alert("✅ Assignment added successfully!");
-
-  // Reset form
-  setAssignmentName("");
-  setTypedQuestion("");
-  setQuestionName("");
-  setOptions({
-    a: { text: "", isCorrect: false },
-    b: { text: "", isCorrect: false },
-    c: { text: "", isCorrect: false },
-    d: { text: "", isCorrect: false },
-  });
-  setSelectedAnswer("");
-  setTrueFalseAnswer(null);
-  setUploadedFileURL(null);
-  setUploadedFileName(null);
-  setUploadedFileType(null);
-};
- const startRecording = async () => {
+  const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
     mediaRecorderRef.current = mediaRecorder;
@@ -370,6 +376,16 @@ const submitAssignment = async () => {
     formData.append(`assignments[${index}][question]`, item.question);
     formData.append(`assignments[${index}][hasOptions]`, hasOptions.toString());
 
+    // Set chooseType and trueorfalseType based on questionType
+    formData.append(
+      `assignments[${index}][chooseType]`,
+      (item.questionType === "choose").toString()
+    );
+    formData.append(
+      `assignments[${index}][trueorfalseType]`,
+      (item.questionType === "truefalse").toString()
+    );
+
     // Handle options
     if (
       item.type === "quiz" &&
@@ -469,6 +485,16 @@ const submitAssignment = async () => {
     setChooseType(chooseTypeRaw === "true");
   }, []);
 
+  // When assignmentType changes, reset chooseType if not quiz
+  useEffect(() => {
+    if (assignmentType !== "quiz") {
+      setChooseType(false);
+    } else {
+      // Keep chooseType in sync with questionType
+      setChooseType(questionType === "choose");
+    }
+  }, [assignmentType, questionType]);
+
   const handleOptionChange = (optionId: OptionKey, newText: string) => {
     setOptions((prev) => {
       const updated = {
@@ -550,39 +576,40 @@ const submitAssignment = async () => {
             <label className="block text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
               Answer Type
             </label>
-            <div className="flex items-center gap-6 text-sm text-[#010E30]">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={questionType === "choose"}
-                  onChange={() =>
-                    setQuestionType(
-                      questionType === "choose" ? "truefalse" : "choose"
-                    )
-                  }
-                  className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
-                />
-                <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
-                  Choose
-                </span>
-              </label>
+            {/* Only show answer type options for quiz */}
+            {!(assignmentType === "writing" || assignmentType === "reading" || assignmentType === "image identification") && (
+              <div className="flex items-center gap-6 text-sm text-[#010E30]">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={questionType === "choose"}
+                    onChange={() => {
+                      setQuestionType("choose");
+                      if (assignmentType === "quiz") setChooseType(true);
+                    }}
+                    className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
+                  />
+                  <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
+                    Choose
+                  </span>
+                </label>
 
-              <label className="flex items-center gap-2 dark:text-[#fff]">
-                <input
-                  className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
-                  type="checkbox"
-                  checked={questionType === "truefalse"}
-                  onChange={() =>
-                    setQuestionType(
-                      questionType === "truefalse" ? "choose" : "truefalse"
-                    )
-                  }
-                />
-                <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff] ">
-                  True or False
-                </span>
-              </label>
-            </div>
+                <label className="flex items-center gap-2 dark:text-[#fff]">
+                  <input
+                    className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
+                    type="checkbox"
+                    checked={questionType === "truefalse"}
+                    onChange={() => {
+                      setQuestionType("truefalse");
+                      if (assignmentType === "quiz") setChooseType(false);
+                    }}
+                  />
+                  <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff] ">
+                    True or False
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="mb-4">
@@ -704,101 +731,91 @@ const submitAssignment = async () => {
               )}
           </div>
 
-          {questionType === "choose" && (
-  <div className="mb-2">
-    <label className="flex items-center gap-2 mb-4 text-sm text-[#010E30] dark:text-[#fff] dark:border-[#343434]">
-      <input
-        type="checkbox"
-        checked={noOptions}
-        onChange={() => {
-          setNoOptions(!noOptions);
-          // Reset selected answer when toggling noOptions
-          if (!noOptions) {
-            setSelectedAnswer("");
-            setOptions({
-              a: { text: "", isCorrect: false },
-              b: { text: "", isCorrect: false },
-              c: { text: "", isCorrect: false },
-              d: { text: "", isCorrect: false },
-            });
-          }
-        }}
-        className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
-        disabled={!hasOptions}
-      />
-      <span>No Options</span>
-    </label>
+          {/* Only show choose/truefalse options if not writing/reading/image identification */}
+          {questionType === "choose" && (assignmentType === "writing" || assignmentType === "reading" || assignmentType === "image identification") && (
+            <div className="mb-4">
+              <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff] ">
+                Type the Answer
+              </label>
+              <textarea
+                placeholder="Type the answer"
+                rows={3}
+                value={answerText}
+                onChange={(e) => setAnswerText(e.target.value)}
+                className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff] "
+              />
+            </div>
+          )}
+          {questionType === "choose" && assignmentType === "quiz" && (
+            <div className="mb-2">
+              {/* Render Options Inputs only for quiz */}
+              <div className="space-y-2">
+                {Object.entries(options).map(([key, value]) => (
+                  <div key={key} className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="correctOption"
+                      checked={value.isCorrect}
+                      onChange={() => {
+                        handleAnswerChange(key as OptionKey);
+                        setSelectedAnswer(value.text); // Set the answer text as validation
+                      }}
+                      className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
+                    />
+                    <input
+                      type="text"
+                      value={value.text}
+                      placeholder={`Option ${key.toUpperCase()}`}
+                      onChange={(e) => {
+                        handleOptionChange(key as OptionKey, e.target.value);
+                        // Update selected answer if this option was the correct one
+                        if (options[key as OptionKey].isCorrect) {
+                          setSelectedAnswer(e.target.value);
+                        }
+                      }}
+                      className="flex-1 p-2 text-sm border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-    {/* Render Options Inputs only if hasOptions is true and noOptions is false */}
-    {hasOptions && !noOptions && (
-      <div className="space-y-2">
-        {Object.entries(options).map(([key, value]) => (
-          <div key={key} className="flex items-center gap-3">
-            <input
-              type="radio"
-              name="correctOption"
-              checked={value.isCorrect}
-              onChange={() => {
-                handleAnswerChange(key as OptionKey);
-                setSelectedAnswer(value.text); // Set the answer text as validation
-              }}
-              className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
-            />
-            <input
-              type="text"
-              value={value.text}
-              placeholder={`Option ${key.toUpperCase()}`}
-              onChange={(e) => {
-                handleOptionChange(key as OptionKey, e.target.value);
-                // Update selected answer if this option was the correct one
-                if (options[key as OptionKey].isCorrect) {
-                  setSelectedAnswer(e.target.value);
-                }
-              }}
-              className="flex-1 p-2 text-sm border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-            />
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-)}
-
-{questionType === "truefalse" && (
-  <div className="mb-4">
-    <p className="text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
-      Select the correct answer
-    </p>
-    <div className="flex flex-col gap-2">
-      <label className="flex items-center gap-2 text-sm dark:text-[#fff] cursor-pointer">
-        <input
-          type="radio"
-          name="truefalse"
-          checked={trueFalseAnswer === true}
-          onChange={() => {
-            setTrueFalseAnswer(true);
-            setSelectedAnswer("true"); // Set answer validation
-          }}
-          className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
-        />
-        <span>True</span>
-      </label>
-      <label className="flex items-center gap-2 text-sm dark:text-[#fff] cursor-pointer">
-        <input
-          type="radio"
-          name="truefalse"
-          checked={trueFalseAnswer === false}
-          onChange={() => {
-            setTrueFalseAnswer(false);
-            setSelectedAnswer("false"); // Set answer validation
-          }}
-          className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
-        />
-        <span>False</span>
-      </label>
-    </div>
-  </div>
-)}
+          {questionType === "truefalse" && !(assignmentType === "writing" || assignmentType === "reading" || assignmentType === "image identification") && (
+            <div className="mb-4">
+              <p className="text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
+                Select the correct answer
+              </p>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 text-sm dark:text-[#fff] cursor-pointer">
+                  <input
+                    type="radio"
+                    name="truefalse"
+                    checked={trueFalseAnswer === true}
+                    onChange={() => {
+                      setTrueFalseAnswer(true);
+                      setSelectedAnswer("true"); // Set answer validation
+                    }}
+                    className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
+                  />
+                  <span>True</span>
+                </label>
+                <label className="flex items-center gap-2 text-sm dark:text-[#fff] cursor-pointer">
+                  <input
+                    type="radio"
+                    name="truefalse"
+                    checked={trueFalseAnswer === false}
+                    onChange={() => {
+                      setTrueFalseAnswer(false);
+                      setSelectedAnswer("false"); // Set answer validation
+                    }}
+                    className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
+                  />
+                  <span>False</span>
+                </label>
+              </div>
+            </div>
+          )}
 
           
         </div>
