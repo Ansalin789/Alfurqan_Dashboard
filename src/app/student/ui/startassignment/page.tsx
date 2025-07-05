@@ -9,6 +9,7 @@ import {
 import { FaStar } from "react-icons/fa";
 import BaseLayout from "@/components/BaseLayout";
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
+import BaseLayout1 from "@/components/BaseLayout1";
 
 type QuizData = {
   question: string;
@@ -260,27 +261,64 @@ const QuizPage = () => {
 
   const renderQuizContent = () => {
     const q = currentQuestion;
-    // Listen & write
+  
+    // Listen & Write
     if (q?.audioUrl) {
       return (
-        <div className="text-center">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">
-            {q.question}
-          </h2>
-          <audio controls className="w-full max-w-sm mx-auto mb-4">
-            <source src={q.audioUrl} type="audio/mpeg" />
-            Your browser does not support the audio element.
-          </audio>
-          <input
-            type="text"
-            className="border rounded px-4 py-2 w-1/2 mx-auto"
-            placeholder={q.placeholder || "Type your answer..."}
-            value={writtenAnswer}
-            onChange={(e) => setWrittenAnswer(e.target.value)}
-          />
+        <div className="flex justify-center items-center w-full">
+          <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
+            {/* Question Number */}
+            <h2 className="text-2xl font-bold text-[#223857] mb-4 text-center dark:text-[#fff] dark:opacity-80">
+              Question {currentQuestionIndex + 1} / {quizData.length}
+            </h2>
+          <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-4 flex flex-col items-center mx-auto min-h-[400px] justify-center">
+            
+            {/* Question Text */}
+            <h2 className="text-[14px] font-medium text-gray-800 mb-14 text-center dark:text-[#fff] dark:opacity-90">
+              {q.question}
+            </h2>
+            <audio 
+              controls 
+              className="w-full max-w-sm mx-auto mb-6 dark:invert dark:hue-rotate-180"
+            >
+              <source src={q.audioUrl} type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
+            <input
+              type="text"
+              className="border rounded px-4 py-3 w-[300px] mx-auto mb-6 dark:bg-[#343434] dark:border-[#404040] dark:text-white dark:placeholder-gray-400"
+              placeholder={q.placeholder || "Type what you hear..."}
+              value={writtenAnswer}
+              onChange={(e) => setWrittenAnswer(e.target.value)}
+            />
+            
+            </div>
+            <div className="flex w-full justify-between mt-4">
+              <button
+                onClick={handleBackClick}
+                disabled={currentQuestionIndex === 0}
+                className={`px-6 py-2 rounded-md font-semibold ${
+                  currentQuestionIndex === 0
+                    ? 'bg-[#e1e4f3] dark:bg-[#252628] border border-[#c2cae7] dark:border-[#303538] dark:text-[#303538] text-[#c2cae7] cursor-not-allowed'
+                    : 'bg-gray-200 dark:bg-[#252628] text-gray-700 dark:text-[#818790] hover:bg-gray-300 dark:hover:bg-[#303538]'
+                }`}
+              >
+                Previous
+              </button>
+              <button
+                onClick={handleNextClick}
+                disabled={!writtenAnswer.trim()}
+                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+          
         </div>
       );
     }
+  
     // True or False
     if (
       q?.options &&
@@ -289,56 +327,132 @@ const QuizPage = () => {
       q.options.includes("False")
     ) {
       return (
-        <div className="text-center">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">
-            {q.question}
-          </h2>
-          <div className="flex justify-center gap-4">
-            {q.options.map((option) => (
+        <div className="flex justify-center items-center w-full">
+          <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
+            {/* Question Number */}
+            <h2 className="text-2xl font-bold text-[#223857] dark:text-[#fff] dark:opacity-80 mb-4 text-center">
+              Question {currentQuestionIndex + 1} / {quizData.length}
+            </h2>
+          <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-6 flex flex-col items-center mx-auto min-h-[400px] justify-center">
+            
+            {/* Question Text */}
+            <p className="text-lg font-semibold text-gray-800 mb-4 mt-5 text-center dark:text-[#fff] dark:opacity-90">
+              {q.question}
+            </p>
+            {/* Options */}
+            <div className="w-full flex flex-col gap-4 mb-8 items-center justify-center flex-1">
+              {q.options.map((option, index) => (
+                <button
+                  key={option}
+                  onClick={() => handleOptionClick(option)}
+                  className={`w-[300px] px-6 py-3 rounded-lg border border-[#babecc] text-lg font-medium flex items-center justify-center transition-all
+                    ${
+                      selectedOption === option
+                        ? 'bg-[#377e36] text-white border-none'
+                        : 'bg-[#f3f4fb] dark:bg-[#343434] text-gray-800 dark:text-[#818790] hover:bg-gray-100'
+                    }`}
+                >
+                  <span className="font-bold mr-3">
+                    {String.fromCharCode(97 + index) + ")"}
+                  </span>
+                  {option}
+                </button>
+              ))}
+            </div>
+            
+            </div>
+            <div className="flex w-full justify-between mt-4">
               <button
-                key={option}
-                onClick={() => handleOptionClick(option)}
-                className={`px-6 py-2 rounded-lg text-center text-gray-800 shadow-lg transition-all mx-2 mb-3 ${
-                  selectedOption === option
-                    ? "bg-[#223857] text-white"
-                    : "bg-white hover:bg-gray-100"
+                onClick={handleBackClick}
+                disabled={currentQuestionIndex === 0}
+                className={`px-6 py-2 rounded-md font-semibold ${
+                  currentQuestionIndex === 0
+                    ? 'bg-[#e1e4f3] border border-[#c2cae7] text-[#c2cae7] cursor-not-allowed'
+                    : ' hover:bg-gray-300 bg-[#e1e4f3] dark:bg-[#252628] border border-[#c2cae7] dark:border-[#303538] dark:text-[#303538] text-[#c2cae7]'
                 }`}
               >
-                {option}
+                Previous
               </button>
-            ))}
+              <button
+                onClick={handleNextClick}
+                disabled={!selectedOption}
+                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+              >
+                Next
+              </button>
+            </div>
           </div>
+          
         </div>
       );
     }
-    // Choose the answer (multiple choice)
+  
+    // Multiple Choice
     if (q?.options && q.options.length > 2) {
       return (
-        <div className="text-center">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">
-            {q.question}
-          </h2>
-          <div className="space-y-4 grid">
-            {q.options.map((option) => (
+        <div className="flex justify-center items-center w-full">
+          <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
+            {/* Question Number */}
+            <h2 className="text-2xl font-bold text-[#223857] dark:text-[#fff] dark:opacity-80 mb-4 text-center">
+              Question {currentQuestionIndex + 1} / {quizData.length}
+            </h2>
+          <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-6 flex flex-col items-center mx-auto min-h-[400px] justify-center">
+            
+            {/* Question Text */}
+            <p className="text-lg font-semibold text-gray-800 dark:text-[#fff] dark:opacity-90 mb-8 text-center">
+              {q.question}
+            </p>
+            {/* Options */}
+            <div className="w-full flex flex-col gap-4 mb-8 items-center justify-center flex-1">
+              {q.options.map((option, index) => (
+                <button
+                  key={option}
+                  onClick={() => handleOptionClick(option)}
+                  className={`w-[300px] px-6 py-3 rounded-lg border border-[#babecc] text-lg font-medium flex items-center justify-center transition-all
+                    ${
+                      selectedOption === option
+                        ? 'bg-[#377e36] text-white border-none'
+                        : 'bg-[#f3f4fb] dark:bg-[#343434] text-gray-800 dark:text-[#818790] hover:bg-gray-100'
+                    }`}
+                >
+                  <span className="font-bold mr-3">
+                    {String.fromCharCode(97 + index) + ")"}
+                  </span>
+                  {option}
+                </button>
+              ))}
+            </div>
+            
+            </div>
+            <div className="flex w-full justify-between mt-4">
               <button
-                key={option}
-                onClick={() => handleOptionClick(option)}
-                className={`w-1/2 px-4 py-2 rounded-lg text-center text-gray-800 shadow-lg transition-all mx-auto mb-3 ${
-                  selectedOption === option
-                    ? "bg-[#223857] text-white"
-                    : "bg-white hover:bg-gray-100"
+                onClick={handleBackClick}
+                disabled={currentQuestionIndex === 0}
+                className={`px-6 py-2 rounded-md font-semibold ${
+                  currentQuestionIndex === 0
+                    ? 'bg-[#e1e4f3] dark:bg-[#252628] border border-[#c2cae7] dark:border-[#303538] dark:text-[#303538] text-[#c2cae7] cursor-not-allowed'
+                    : 'bg-gray-200  text-gray-700 hover:bg-gray-300 '
                 }`}
               >
-                {option}
+                Previous
               </button>
-            ))}
+              <button
+                onClick={handleNextClick}
+                disabled={!selectedOption}
+                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+              >
+                Next
+              </button>
+            </div>
           </div>
+          
         </div>
       );
     }
-    // Default fallback
+  
     return <div className="text-center">No question available</div>;
   };
+  
 
   return (
     <BaseLayout>
@@ -401,12 +515,12 @@ const QuizPage = () => {
                 </div>
               </div>
             ) : (
-              <div className="items-center justify-center align-middle -ml-72 p-10">
+              <div className="items-center justify-center align-middle">
                 {isLoading ? (
                   <p>Loading quiz data...</p>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between gap-10 mt-20 w-[600px] ml-60">
+                    {/* <div className="flex items-center justify-between gap-10 mt-20 w-[600px] ml-60">
                       {currentQuestionIndex > 0 && (
                         <button onClick={handleBackClick}>
                           <IoPlaySkipBackCircle className="text-2xl" />
@@ -415,15 +529,10 @@ const QuizPage = () => {
                       <h2 className="text-sm font-medium text-gray-500">
                         Question {currentQuestionIndex + 1}
                       </h2>
-                      <button onClick={handleNextClick}>
-                        <BiSolidSkipNextCircle className="text-2xl" />
-                      </button>
-                    </div>
+                    </div> */}
 
                     <div className="items-center justify-between align-middle">
-                      <div className="bg-white w-full rounded-xl shadow-xl p-10">
                         {renderQuizContent()}
-                      </div>
                     </div>
                   </>
                 )}
