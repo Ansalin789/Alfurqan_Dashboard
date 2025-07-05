@@ -227,7 +227,7 @@ const searchParams = useSearchParams();
     setError(""); // Clear previous errors
     try {
       const data = await signIn(username, password);
-      const { accessToken, role, userId, userName } = data;
+      const { accessToken, role, userId, userName ,_id } = data;
       if (!role?.includes("TEACHER")) {
         setLoginError("Only Teacher are allowed to log in.");
         return;
@@ -235,10 +235,15 @@ const searchParams = useSearchParams();
       localStorage.setItem("TeacherAuthToken", accessToken);
       localStorage.setItem("TeacherPortalId", userId);
       localStorage.setItem("TeacherPortalName", userName);
-      await fetchrolebasedaccesscontrol(userId, accessToken, role);
+      localStorage.setItem("TeacherId", _id);
+
+      
+      await fetchrolebasedaccesscontrol(_id, accessToken, role);
       const authToken = localStorage.getItem("TeacherAuthToken");
       console.log(accessToken);
       console.log(authToken);
+      console.log(userId);
+      console.log(_id);
       if (role?.includes("TEACHER")) {
         router.push("/teacher/ui/dashboard");
         alert("Login successful as Teacher");
