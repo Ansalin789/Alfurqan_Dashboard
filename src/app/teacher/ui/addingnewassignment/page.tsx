@@ -56,14 +56,39 @@ interface Assignment {
     optionThree: string;
     optionFour: string;
   };
-  questionName?: string; // ✅ make optional if user might skip it
-
-  correctAnswer: string; // already used for `answer`
+  questionName?: string;
+  correctAnswer: string;
   answerValidation: string;
-  audioURL?: string;
-  audioName?: string;
-  imageURL?: string;
-  imageName?: string;
+  
+  // Audio fields
+  audioURL?: string;      // For preview URL
+  audioName?: string;     // Original filename
+  audioFile?: File;       // Actual File object
+  
+  // Image fields
+  imageURL?: string;      // For preview URL
+  imageName?: string;     // Original filename
+  imageFile?: File;       // Actual File object
+  
+  // Generic upload field (matches your backend)
+  uploadFile?: {
+    name: string;         // Original filename
+    type: string;         // MIME type
+    url: string;          // Object URL for preview
+    file?: File;          // Actual File object
+  };
+  
+  // Additional fields from your backend
+  assignmentStatus?: string;
+  status?: string;
+  createdDate?: string;
+  dueDate?: string;
+  studentId?: string;
+  studentName?: string;
+  sessionClassType?: string;
+  assignedTeacher?: string;
+  assignedTeacherId?: string;
+  title?: string;
 }
 
 const NewAssignment = () => {
@@ -158,7 +183,29 @@ const NewAssignment = () => {
       alert("⚠️ Please fill in both Assignment Name and Question.");
       return;
     }
-
+    // Special validation for reading/writing
+  if ((assignmentType === "reading" || assignmentType === "writing") && !answerText.trim()) {
+    alert(`⚠️ Please provide ${assignmentType === "reading" ? "reading content" : "writing prompt"}.`);
+    return;
+  }
+     // Special validation for image identification
+  if (assignmentType === "image identification") {
+    if (!uploadedFileURL || !uploadedFileType?.startsWith("image/")) {
+      alert("⚠️ Please upload an image for image identification.");
+      return;
+    }
+     const hasOptionsFilled = Object.values(options).some(opt => opt.text.trim() !== "");
+    if (!hasOptionsFilled) {
+      alert("Please provide at least one option for the image");
+      return;
+    }
+    if (!selectedAnswer) {
+      alert("⚠️ Please select the correct answer for this image.");
+      return;
+    }
+  }
+  // Skip options validation for reading/writing types
+    if (!['reading', 'writing'].includes(assignmentType)) {
     // For choose type with options
     if (questionType === "choose" && hasOptions && !noOptions) {
       const missingOptions = Object.entries(options)
@@ -180,9 +227,9 @@ const NewAssignment = () => {
       alert("⚠️ Please select True or False for this question.");
       return;
     }
-
+  }
     // For types without options (image identification, reading, writing)
-    if (['image identification', 'reading', 'writing'].includes(assignmentType)) {
+    if (['reading', 'writing'].includes(assignmentType)) {
       if (!typedQuestion.trim()) {
         alert("⚠️ Please provide the question text.");
         return;
@@ -191,39 +238,29 @@ const NewAssignment = () => {
     }
     
     const newAssignment: Assignment = {
+      
       questionName: questionName.trim(),
       name: assignmentName.trim(),
       type: assignmentType,
       question: typedQuestion.trim(),
       questionType: questionType,
-      // Only include options for choose type with hasOptions true
-      options: questionType === "choose" && hasOptions && !noOptions ? {
-        optionOne: options.a.text,
-        optionTwo: options.b.text,
-        optionThree: options.c.text,
-        optionFour: options.d.text,
-      } : undefined,
+      // Include options for image identification or choose type
+    options: (assignmentType === "image identification" || 
+             (questionType === "choose" && hasOptions && !noOptions)) ? {
+      optionOne: options.a.text,
+      optionTwo: options.b.text,
+      optionThree: options.c.text,
+      optionFour: options.d.text,
+    } : undefined,
       correctAnswer: "",
-      answerValidation:
-        ["writing", "reading", "image identification"].includes(assignmentType) && questionType === "choose"
-          ? answerText.trim()
-          : ["writing", "reading", "image identification"].includes(assignmentType)
-          ? typedQuestion.trim()
-          : questionType === "choose"
-          ? selectedAnswer
-          : String(trueFalseAnswer),
-      audioURL: uploadedFileType?.startsWith("audio/") && uploadedFileURL
-        ? uploadedFileURL
-        : undefined,
-      audioName: uploadedFileType?.startsWith("audio/") && uploadedFileName
-        ? uploadedFileName
-        : undefined,
-      imageURL: uploadedFileType?.startsWith("image/") && uploadedFileURL
-        ? uploadedFileURL
-        : undefined,
-      imageName: uploadedFileType?.startsWith("image/") && uploadedFileName
-        ? uploadedFileName
-        : undefined,
+  answerValidation: ['reading', 'writing'].includes(assignmentType) 
+  ? typedQuestion // For reading/writing
+  : selectedAnswer, // For all other types (choose, truefalse, image identification)
+         uploadFile: uploadedFileURL ? {
+      name: uploadedFileName || "uploaded_file",
+      type: uploadedFileType || "application/octet-stream",
+      url: uploadedFileURL
+    } : undefined,
     };
 
     setAssignments((prev) => [...prev, newAssignment]);
@@ -242,10 +279,16 @@ const NewAssignment = () => {
     setSelectedAnswer("");
     setTrueFalseAnswer(null);
     setUploadedFileURL(null);
+  
     setUploadedFileName(null);
     setUploadedFileType(null);
     setAnswerText("");
   };
+  useEffect(() => {
+  // Reset answer text when assignment type changes
+  setAnswerText("");
+  setSelectedAnswer("");
+}, [assignmentType]);
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
@@ -277,61 +320,36 @@ const NewAssignment = () => {
     setIsRecording(false);
   };
 
+// In the component, update the handleFileUpload to handle images separately:
 const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
   if (!file) return;
 
-  // Validate file type
-  const validTypes = [
-    'audio/*',
-    'image/*',
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  ];
-
-  if (!validTypes.some(type => {
-    if (type.endsWith('/*')) {
-      return file.type.startsWith(type.split('/*')[0]);
-    }
-    return file.type === type;
-  })) {
-    alert('Please upload a valid file type (audio, image, PDF, Word, Excel)');
-    return;
-  }
-
-  // Validate file size (10MB max)
-  const maxSize = 10 * 1024 * 1024; // 10MB
-  if (file.size > maxSize) {
-    alert('File size exceeds 10MB limit');
+  // Validate file type based on assignment type
+  if (assignmentType === "image identification" && !file.type.startsWith("image/")) {
+    alert('Please upload an image file for image identification');
     return;
   }
 
   setIsUploading(true);
   
   try {
-    // Clean up previous file URL if exists
-    if (uploadedFileURL) {
-      URL.revokeObjectURL(uploadedFileURL);
-    }
-    if (audioURL) {
-      URL.revokeObjectURL(audioURL);
-    }
+    // Clean up previous URLs
+    if (uploadedFileURL) URL.revokeObjectURL(uploadedFileURL);
+    if (audioURL) URL.revokeObjectURL(audioURL);
 
     const url = URL.createObjectURL(file);
     setUploadedFileName(file.name);
     setUploadedFileType(file.type);
     setUploadedFileURL(url);
 
+    // Set audio URL only for audio files
     if (file.type.startsWith("audio/")) {
       setAudioURL(url);
     } else {
       setAudioURL(null);
     }
 
-    // Reset file input to allow re-uploading same file
     e.target.value = '';
   } catch (error) {
     console.error("File upload error:", error);
@@ -340,6 +358,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsUploading(false);
   }
 };
+
 
   const handleDeleteFile = () => {
     setAudioURL(null);
@@ -375,7 +394,22 @@ const submitAssignment = async () => {
     formData.append(`assignments[${index}][title]`, title);
     formData.append(`assignments[${index}][question]`, item.question);
     formData.append(`assignments[${index}][hasOptions]`, hasOptions.toString());
+    if (item.imageURL && item.imageName) {
+      const imageBlob = await fetch(item.imageURL).then((res) => res.blob());
+      formData.append(
+        `assignments[${index}][imageFile]`,
+        imageBlob,
+        item.imageName
+      );
+    }
 
+    // Handle options for image identification
+    if (item.type === "image identification" && item.options) {
+      formData.append(
+        `assignments[${index}][options]`,
+        JSON.stringify(item.options)
+      );
+    }
     // Set chooseType and trueorfalseType based on questionType
     formData.append(
       `assignments[${index}][chooseType]`,
@@ -577,7 +611,7 @@ const submitAssignment = async () => {
               Answer Type
             </label>
             {/* Only show answer type options for quiz */}
-            {!(assignmentType === "writing" || assignmentType === "reading" || assignmentType === "image identification") && (
+            {!(assignmentType === "writing" || assignmentType === "reading") && (
               <div className="flex items-center gap-6 text-sm text-[#010E30]">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -653,19 +687,19 @@ const submitAssignment = async () => {
                     }`}
                   />
                 </button>
-                <label
-                  className="p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer dark:border-[#343434] dark:text-[#fff]"
-                  title="Upload File"
-                >
-                  <input
-                    type="file"
-                    accept="audio/*,image/*,.pdf,.doc,.docx,.xls,.xlsx"
-                    className="hidden dark:bg-[#343434]"
-                    onChange={handleFileUpload}
-                    disabled={isUploading}
-                  />
-                  <FaUpload className="text-xl text-gray-700" />
-                </label>
+                 {/* File upload button - shown when no file is uploaded */}
+  {!uploadedFileURL && (
+    <label className="p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
+      <input
+        type="file"
+        accept={assignmentType === "image identification" ? "image/*" : "audio/*,image/*"}
+        className="hidden"
+        onChange={handleFileUpload}
+        disabled={isUploading}
+      />
+      <FaUpload className="text-xl text-gray-700" />
+    </label>
+  )}
               </div>
             )}
 
@@ -706,29 +740,25 @@ const submitAssignment = async () => {
                 </div>
               )}
 
-            {uploadedFileURL &&
-              uploadedFileType &&
-              !uploadedFileType.startsWith("audio/") &&
-              !isUploading && (
-                <div className="flex items-center gap-3 mt-1 dark:bg-[#3B3B3B] rounded-lg px-4 py-2 dark:text-[#fff]">
-                  <a
-                    href={uploadedFileURL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-700 underline break-all dark:text-[#fff]"
-                  >
-                    {uploadedFileName}
-                  </a>
-                  <button
-                    type="button"
-                    className="p-2 rounded-full border border-gray-300 dark:border-[#343434] dark:text-[#fff]"
-                    title="Delete File"
-                    onClick={handleDeleteFile}
-                  >
-                    <FaTrash className="text-lg text-red-300" />
-                  </button>
-                </div>
-              )}
+            {uploadedFileURL && uploadedFileType?.startsWith("image/") && (
+    <div className="mt-4 flex items-center gap-3 bg-gray-100 rounded-lg p-3">
+      <img
+        src={uploadedFileURL}
+        alt="Uploaded preview"
+        className="max-h-40 max-w-full object-contain"
+      />
+      <div>
+        <span className="text-sm break-all">{uploadedFileName}</span>
+        <button
+          type="button"
+          className="mt-2 p-1 bg-red-100 hover:bg-red-200 rounded-full"
+          onClick={handleDeleteFile}
+        >
+          <FaTrash className="text-red-600" />
+        </button>
+      </div>
+    </div>
+  )}
           </div>
 
           {/* Only show choose/truefalse options if not writing/reading/image identification */}
@@ -746,40 +776,42 @@ const submitAssignment = async () => {
               />
             </div>
           )}
-          {questionType === "choose" && assignmentType === "quiz" && (
-            <div className="mb-2">
-              {/* Render Options Inputs only for quiz */}
-              <div className="space-y-2">
-                {Object.entries(options).map(([key, value]) => (
-                  <div key={key} className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="correctOption"
-                      checked={value.isCorrect}
-                      onChange={() => {
-                        handleAnswerChange(key as OptionKey);
-                        setSelectedAnswer(value.text); // Set the answer text as validation
-                      }}
-                      className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
-                    />
-                    <input
-                      type="text"
-                      value={value.text}
-                      placeholder={`Option ${key.toUpperCase()}`}
-                      onChange={(e) => {
-                        handleOptionChange(key as OptionKey, e.target.value);
-                        // Update selected answer if this option was the correct one
-                        if (options[key as OptionKey].isCorrect) {
-                          setSelectedAnswer(e.target.value);
-                        }
-                      }}
-                      className="flex-1 p-2 text-sm border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        {(assignmentType === "image identification" || 
+    (questionType === "choose" && assignmentType === "quiz")) && (
+    <div className="mb-4">
+      <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+        Options (Select the correct answer)
+      </label>
+      <div className="space-y-2">
+        {Object.entries(options).map(([key, value]) => (
+          <div key={key} className="flex items-center gap-3">
+            <input
+              type="radio"
+              name="correctOption"
+              checked={value.isCorrect}
+              onChange={() => {
+                handleAnswerChange(key as OptionKey);
+                setSelectedAnswer(value.text);
+              }}
+              className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
+            />
+            <input
+              type="text"
+              value={value.text}
+              placeholder={`Option ${key.toUpperCase()}`}
+              onChange={(e) => {
+                handleOptionChange(key as OptionKey, e.target.value);
+                if (options[key as OptionKey].isCorrect) {
+                  setSelectedAnswer(e.target.value);
+                }
+              }}
+              className="flex-1 p-2 text-sm border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
 
           {questionType === "truefalse" && !(assignmentType === "writing" || assignmentType === "reading" || assignmentType === "image identification") && (
             <div className="mb-4">
@@ -817,7 +849,28 @@ const submitAssignment = async () => {
             </div>
           )}
 
-          
+          {/* Answer Validation Section */}
+{(assignmentType === "reading" || assignmentType === "writing") && (
+  <div className="mb-4">
+    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+      {assignmentType === "reading" ? "Reading Content" : "Writing Prompt"}
+    </label>
+    <textarea
+      placeholder={
+        assignmentType === "reading" 
+          ? "Enter the reading passage" 
+          : "Enter the writing prompt"
+      }
+      rows={4}
+      value={answerText}
+      onChange={(e) => {
+        setAnswerText(e.target.value);
+        setSelectedAnswer(e.target.value); // This will be used as answerValidation
+      }}
+      className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+    />
+  </div>
+)}
         </div>
         {/* Right Panel */}
           <div className="flex flex-col justify-between w-full md:w-1/2 bg-white rounded-2xl p-6 shadow-md dark:bg-[#3B3B3B] dark:border dark:border-[#484f5b]">
@@ -881,7 +934,16 @@ const submitAssignment = async () => {
                       </div>
                     </div>
                   )}
-
+    {(item.type === "reading" || item.type === "writing") && (
+      <div className="mt-4">
+        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+          {item.type === "reading" ? "Reading Content" : "Writing Prompt"}
+        </label>
+        <div className="p-3 bg-gray-100 dark:bg-[#343434] rounded-lg">
+          <p className="whitespace-pre-wrap dark:text-[#fff]">{item.answerValidation}</p>
+        </div>
+      </div>
+    )}
                   {/* Audio Display */}
                   {item.audioURL && (
                     <div className="mt-4">
