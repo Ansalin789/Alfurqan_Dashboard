@@ -234,7 +234,7 @@ const TeacherFilter = () => {
       case "Rescheduled":
         return "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white";
       case "Completed":
-        return "bg-[#ECFDF3] text-[#377E36]";
+        return "bg-[#F0FDF4] text-[#377E36]";
       default:
         return "bg-gray-200 text-gray-700";
     }

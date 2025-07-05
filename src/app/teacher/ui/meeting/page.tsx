@@ -128,45 +128,7 @@ const Meeting = () => {
 
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
 
-  // useEffect(() => {
-  //   const token =
-  //     typeof window !== "undefined"
-  //       ? localStorage.getItem("SupervisorAuthToken")
-  //       : null;
 
-  //   if (!token) {
-  //     console.error("❌ AdminAuthToken not found");
-  //     return;
-  //   }
-  //   axios
-  //     .get<{ totalCount: number; applicants: ApiResponse[] }>(
-  //       "https://api.blackstoneinfomaticstech.com/applicants",
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     )
-  //     .then((response) => {
-  //       console.log("API Response:", response.data); // ✅ Debugging step
-
-  //       if (Array.isArray(response.data.applicants)) {
-  //         const mappedTeachers = response.data.applicants.map((applicant) => ({
-  //           id: applicant._id, // Use actual teacher ID
-  //           name: `${applicant.candidateFirstName} ${applicant.candidateLastName}`,
-  //           subject: applicant.positionApplied?.toLowerCase() || "unknown", // Prevents crashes if null
-  //           email: applicant.candidateEmail || "no-email@example.com", // Use actual email
-  //         }));
-  //         setTeachers(mappedTeachers);
-  //         console.log("Mapped Teachers:", mappedTeachers);
-  //       } else {
-  //         console.error("Unexpected API response format:", response.data);
-  //       }
-  //     })
-  //     .catch((error) => console.error("Error fetching teachers:", error));
-  // }, []);
- 
 useEffect(() => {
     const id = typeof window !== "undefined" ? localStorage.getItem("TeacherPortalID") : null;
     const socket = getSocket(id ?? '');
@@ -180,90 +142,6 @@ useEffect(() => {
     };
 }, []);
 
-// useEffect(() => {
-//   const fetchMeetings = async () => {
-//     try {
-//       const token =
-//         typeof window !== "undefined"
-//           ? localStorage.getItem("TeacherAuthToken")
-//           : null;
-
-//       if (!token) {
-//         console.error("❌ TeacherAuthToken not found");
-//         return;
-//       }
-
-//       const response = await axios.get(
-//         "http://localhost:5001/teacherMeetinglist",
-//         {
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-
-//       console.log("🌐 Full API Response:", response.data);
-
-//       if (
-//         !response.data?.students ||
-//         !Array.isArray(response.data.students)
-//       ) {
-//         console.error("🚨 Students array missing or not an array:", response.data);
-//         return;
-//       }
-
-//       const allMeetings: Meeting[] = response.data.students;
-
-//       console.log("✅ Extracted Meetings:", allMeetings);
-
-//       const today = new Date();
-//       today.setHours(0, 0, 0, 0); // Normalize for comparison
-
-//       const upcomingMeetings = allMeetings
-//         .filter((meeting) => {
-//           if (!meeting.selectedDate || !meeting.meetingStatus) return false;
-
-//           const meetingDate = new Date(meeting.selectedDate);
-//           return (
-//             (meeting.meetingStatus === "Scheduled" ||
-//               meeting.meetingStatus === "Rescheduled") &&
-//             meetingDate >= today
-//           );
-//         })
-//         .sort(
-//           (a, b) =>
-//             new Date(a.selectedDate).getTime() -
-//             new Date(b.selectedDate).getTime()
-//         );
-
-//       const completedMeetings = allMeetings.filter(
-//         (meeting) => meeting.meetingStatus === "Completed"
-//       );
-
-//   const teachersMap: Record<string, any[]> = {};
-//       allMeetings.forEach((meeting) => {
-//         if (meeting.teacher && Array.isArray(meeting.teacher)) {
-//           teachersMap[meeting.meetingId] = meeting.teacher;
-//         }
-//       });
-
-//       // Set state after fetching
-//       setUpcomingClasses(upcomingMeetings);
-//       setCompletedData(completedMeetings);
-//       setTeachersByMeetingId(teachersMap);
-
-
-//       console.log("✅ Upcoming Meetings Set to State:", upcomingMeetings);
-//       console.log("✅ Completed Meetings Set to State:", completedMeetings);
-//     } catch (error) {
-//       console.error("🚨 Error fetching meetings:", error);
-//     }
-//   };
-
-//   fetchMeetings();
-// }, []);
-
   interface Teacher {
     teacherId: string;
     teacherName: string;
@@ -274,51 +152,6 @@ useEffect(() => {
  type TeachersByMeetingId = Record<string, Teacher[]>;
   const [teachersByMeetingId, setTeachersByMeetingId] =
     useState<TeachersByMeetingId>({});
-
-  // const filterMeetingsBySearch = (
-  //   meetings: Meeting[],
-  //   searchLower: string = searchText.toLowerCase()
-  // ): Meeting[] => {
-  //   return meetings.filter((meeting: Meeting) => {
-  //     // Search in meeting name
-  //     const nameMatch: boolean = meeting.meetingName.toLowerCase().includes(searchLower);
-
-  //     // Search in attendee (teacher name)
-  //     const attendeeMatch: boolean = meeting.teacher?.teacherName
-  //       ? meeting.teacher.teacherName.toLowerCase().includes(searchLower)
-  //       : false;
-
-  //     // Search in date
-  //     const dateMatch: boolean = new Date(meeting.selectedDate)
-  //       .toLocaleDateString("en-US", {
-  //         month: "short",
-  //         day: "2-digit",
-  //         year: "numeric",
-  //       })
-  //       .toLowerCase()
-  //       .includes(searchLower);
-
-  //     const timingMatch: boolean = !!meeting.startTime && meeting.startTime.toLowerCase().includes(searchLower);
-    
-  //     const statusMatch: boolean = meeting.meetingStatus.toLowerCase().includes(searchLower);
-
-  //     return nameMatch || attendeeMatch || dateMatch || timingMatch || statusMatch;
-  //   });
-  // };
-
-  // const dataToShow = filterMeetingsBySearch(
-  //   activeTab === "upcoming" ? upcomingClasses || [] : completedData || []
-  // );
-
-  // const indexOfLastItem = currentPage * itemsPerPage;
-  // const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  // const currentItems = dataToShow.slice(indexOfFirstItem, indexOfLastItem);
-  // const totalPages = Math.ceil(dataToShow.length / itemsPerPage);
-
-  // const filteredApplicants =
-  // const startIndex = (currentPage - 1) * itemsPerPage;
-  // const endIndex = startIndex + itemsPerPage;
-  // const currentApplicants = currentItems.slice(startIndex, endIndex);
 
   const handleRescheduleSubmit = async () => {
     if (
@@ -382,79 +215,10 @@ console.log("Reschedule Time:", rescheduleTime);
       alert("Could not update meeting. Please try again.");
     }
 
-//     try {
-//       const token = localStorage.getItem("TeacherAuthToken");
-//       const response = await axios.put(
-//         `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${selectedItemId}`,
-//         {
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${token}`,
-//           },
-//           body: JSON.stringify({
-//             selectedDate: rescheduleDate,
-//             startTime: rescheduleTime,
-//             description: rescheduleReason,
-//             meetingStatus: "Re-Scheduled",
-//           }),
-//         }
-//       );
-// console.log("Reschedule Date:", rescheduleDate);
-// console.log("Reschedule Time:", rescheduleTime);
-
-//       const result = response.data;
-
-//       if (response.status !== 200) {
-//         throw new Error(result.message || "Failed to update meeting");
-//       }
-
-//       // Update frontend UI
-//       setUpcomingClasses((prevClasses) =>
-//         prevClasses.map((item) =>
-//           item._id === selectedItemId
-//             ? {
-//                 ...item,
-//                 meetingStatus: "Rescheduled" as Meeting["meetingStatus"],
-//               }
-//             : item
-//         )
-//       );
-
-//       setSuccess(true);
-
-//       setTimeout(() => {
-//         setShowSuccess(false);
-//         setIsRescheduleModalOpen(false);
-//         setRescheduleReason("");
-//       }, 2000);
-//     } catch (error) {
-//       console.error("Error during rescheduling:", error);
-//       alert("Could not update meeting. Please try again.");
-//     }
   };
 
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
-  // const getMeetingStatusClass = (status: string) => {
-  //   switch (status) {
-  //     case "Scheduled":
-  //       return "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[18px]";
-  //     case "Rescheduled":
-  //       return "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white";
-  //     default:
-  //       return "text-[#377E36] bg-[#ECFDF3]";
-  //   }
-  // };
-
-  // const handleViewDetails = (meetingId: string) => {
-  //   const meeting = completedData.find((m) => m._id === meetingId);
-  //   if (meeting) {
-  //     setSelectedMeetingDetails(meeting);
-  //     setIsMeetingDetailsModalOpen(true);
-  //   } else {
-  //     console.error("Meeting not found for ID:", meetingId);
-  //   }
-  // };
 
   const isStartMeetingNow = (
     selectedDate: string,
@@ -481,46 +245,6 @@ console.log("Reschedule Time:", rescheduleTime);
     return now >= start && now <= end;
   };
 
-  // const handleFilter = async () => {
-  //   setShowModal(false);
-
-  //   const token = localStorage.getItem("TeacherAuthToken");
-
-  //   const params: any = {};
-  //   if (fromDate) params["dateRange.from"] = fromDate;
-  //   if (toDate) params["dateRange.to"] = toDate;
-  //   if (timing) params["startTime"] = timing;
-  //   if (status) params["meetingStatus"] = status;
-
-  //   console.log("📤 Sending filter params:", params);
-
-  //   // try {
-  //   //   const response = await axios.get(
-  //   //     "http://localhost:5001/teacherMeetinglist", // Use your backend URL here
-  //   //     {
-  //   //       headers: {
-  //   //         Authorization: `Bearer ${token}`,
-  //   //         "Content-Type": "application/json",
-  //   //       },
-  //   //       params,
-  //   //     }
-  //   //   );
-
-  //   //   console.log("✅ Response:", response.data);
-
-  //   //   // You can split meetings into upcoming/completed based on your logic
-  //   //   const meetings: Meeting[] = response.data.meetings || [];
-
-  //   //   setUpcomingClasses(
-  //   //     meetings.filter((m: Meeting) => m.meetingStatus !== "Completed")
-  //   //   );
-  //   //   setCompletedData(
-  //   //     meetings.filter((m: Meeting) => m.meetingStatus === "Completed")
-  //   //   );
-  //   // } catch (error) {
-  //   //   console.error("❌ Error fetching filtered meetings:", error);
-  //   // }
-  // };
 
 return (
   <BaseLayout>
