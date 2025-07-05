@@ -108,50 +108,41 @@ const NextMeetingSchedule = () => {
   }, []);
 
 useEffect(() => {
-  if (!classData || !classData.endTime || !classData.selectedDate || classData.meetingStatus === "Completed") return;
+  if (!classData || !classData.startTime || !classData.selectedDate) return;
 
-  const checkMeetingEnd = async () => {
+  const [startHour, startMinute] = classData.startTime.split(":").map(Number);
+  const meetingDateTime = new Date(classData.selectedDate);
+  meetingDateTime.setHours(startHour, startMinute, 0, 0);
+
+  const updateTimeLeft = () => {
     const now = new Date();
-    const [endHour, endMinute] = classData.endTime.split(":").map(Number);
-    const meetingEnd = new Date(classData.selectedDate);
-    meetingEnd.setHours(endHour, endMinute, 0, 0);
+    const diff = meetingDateTime.getTime() - now.getTime();
 
-    if (now > meetingEnd) {
-      try {
-        const token = localStorage.getItem("TeacherAuthToken");
-        if (!token) {
-          console.error("❌ No auth token found");
-          return;
-        }
-
-        await axios.put(
-          `http://localhost:5001/updateTeacherMeeting/${classData.meetingId}`,
-          { meetingStatus: "Completed" },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        console.log("✅ Meeting status updated to Completed");
-        setClassData((prev) => prev ? { ...prev, meetingStatus: "Completed" } : null);
-      } catch (err) {
-        console.error("❌ Failed to update meeting status", err);
-      }
+    if (diff <= 0) {
+      setIsTimeUp(true);
+      setTime({ hours: 0, minutes: 0, seconds: 0 });
+      return;
     }
+
+    const totalSeconds = Math.floor(diff / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    setTime({ hours, minutes, seconds });
   };
 
-  const interval = setInterval(checkMeetingEnd, 60 * 1000); // Check every 1 min
-  checkMeetingEnd(); // Run immediately too
+  updateTimeLeft(); // Run once immediately
+
+  const interval = setInterval(updateTimeLeft, 1000);
 
   return () => clearInterval(interval);
 }, [classData]);
 
 
+
   const handleStartClass = () => {
-    router.push(`/teacher/livemeeting/${classData?.meetingId}`);
+router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
     // router.push(`/teacher/livemeeting/${classData?.meetingId}`);
   };
 
