@@ -108,6 +108,8 @@ export interface StudentEvaluationDetails {
 
 export interface StudentWithAssignments extends StudentCoreInfo {
   studentDetails: StudentEvaluationDetails;
+  classType: string;
+  groupClassId: string;
   assignment: AssignmentItem[];
 }
 
@@ -164,8 +166,10 @@ const Page = () => {
             student.studentDetails?.classType?.toUpperCase() === "GROUPCLASS"
         );
 
+        const uniqueGroupIds = new Set(group.map(student => student.groupClassId || 'no-group'));
+        setGroupCount(uniqueGroupIds.size);
+
         setRegularCount(regular.length);
-        setGroupCount(group.length);
       } catch (error) {
         console.error("Error fetching assignments:", error);
       }

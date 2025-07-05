@@ -238,14 +238,6 @@ const GroupStudents = () => {
     <div className="md:p-0 mx-auto w-full">
       <div className="flex flex-col h-full w-full justify-between">
         <div className="flex flex-col">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-4 md:space-y-0">
-            <div className="flex flex-wrap gap-4 font-semibold">
-              <h2 className="text-[#576CBC] border-b-2 text-[16px] border-[#576CBC]">
-                Group Students ({Object.keys(groupedStudents).length} Groups)
-              </h2>
-            </div>
-          </div>
 
           {/* Search + Filter */}
           <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg">
@@ -324,11 +316,11 @@ const GroupStudents = () => {
                             View List ({students.length} students)
                           </button>
                           {expandedGroupId === groupId && (
-                            <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[200px]">
+                            <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[100px]">
                               {students.map((student, idx) => {
                                 const studentData = student.studentDetails?.student;
                                 return (
-                                  <div key={student.studentId} className="text-[11px] py-1 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                                  <div key={student.studentId} className="text-[9px] py-1 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
                                     {studentData?.studentFirstName} {studentData?.studentLastName}
                                   </div>
                                 );
