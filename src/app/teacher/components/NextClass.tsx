@@ -72,7 +72,10 @@ const NextScheduledClass = () => {
           return { ...item, classStart: startDate, classEnd: endDate };
         })
         .filter((item: ClassData) => item.classEnd! > now)
-        .sort((a: ClassData, b: ClassData) => a.classStart!.getTime() - b.classStart!.getTime())[0];
+        .sort(
+          (a: ClassData, b: ClassData) =>
+            a.classStart!.getTime() - b.classStart!.getTime()
+        )[0];
 
       setClassData(upcoming ?? null);
     } catch (error) {
@@ -117,6 +120,29 @@ const NextScheduledClass = () => {
   useEffect(() => {
     fetchClassData();
   }, []);
+  useEffect(() => {
+    if (!classData || !classData.classStart) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const distance = classData.classStart!.getTime() - now.getTime();
+
+      if (distance <= 0) {
+        setTime({ hours: 0, minutes: 0, seconds: 0 });
+        setIsClassOngoing(true); // Optional: immediately set class ongoing
+        clearInterval(interval);
+        return;
+      }
+
+      const hours = Math.floor(distance / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      setTime({ hours, minutes, seconds });
+    }, 1000); // update every second
+
+    return () => clearInterval(interval);
+  }, [classData]);
 
   useEffect(() => {
     const interval = setInterval(async () => {

@@ -78,7 +78,7 @@ const ScheduledClasses = () => {
     toDate: "",
   });
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const [upcomingClasses, setUpcomingClasses] = useState<ClassData[]>([]);
   const [completedData, setCompletedData] = useState<ClassData[]>([]);
 
