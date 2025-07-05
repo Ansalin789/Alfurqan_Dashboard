@@ -1,21 +1,69 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
+import axios from "axios";
 
 function Assignment() {
-  // Hardcoded values
-  const totalAssignments = 8;
-  const completedAssignments = 6;
-  const pendingAssignments = totalAssignments - completedAssignments;
+  const [assignmentData, setAssignmentData] = useState({
+    totalAssigned: 0,
+    totalCompleted: 0,
+    totalPending: 0,
+  });
 
-  const completionPercentage = Math.round((completedAssignments / totalAssignments) * 100);
-  const pendingPercentage = Math.round((pendingAssignments / totalAssignments) * 100);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAssignmentData = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentAuthToken")
+            : null;
+        const studentId = localStorage.getItem("StudentPortalId");
+
+        if (!token || !studentId) {
+          console.error("Missing token or teacher ID");
+          return;
+        }
+
+        const response = await axios.get(
+          `http://localhost:5001/assignments/cardcount?studentId=${studentId}`
+        );
+
+        // Log the full API response for debugging
+        console.log("API response:", response);
+
+        if (response.data.status === "success") {
+          // Bind the response data to state
+          setAssignmentData(response.data.data);
+        } else {
+          console.error("Failed to fetch data:", response.data.message);
+        }
+      } catch (error) {
+        console.error("API error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssignmentData();
+  }, []);
+
+  const { totalAssigned, totalCompleted, totalPending } = assignmentData;
+
+  const completionPercentage = totalAssigned
+    ? Math.round((totalCompleted / totalAssigned) * 100)
+    : 0;
+
+  const pendingPercentage = totalAssigned
+    ? Math.round((totalPending / totalAssigned) * 100)
+    : 0;
 
   const cards = [
     {
       title: "Total Assignment Assigned",
-      count: totalAssignments,
+      count: totalAssigned,
       percentage: 100,
       ringColor: "#88A2CF",
       bgColor: "#CDD5E2",
@@ -23,7 +71,7 @@ function Assignment() {
     },
     {
       title: "Total Assignment Completed",
-      count: completedAssignments,
+      count: totalCompleted,
       percentage: completionPercentage,
       ringColor: "#88CF9B",
       bgColor: "#CDD5E2",
@@ -34,7 +82,7 @@ function Assignment() {
     },
     {
       title: "Total Assignment Pending",
-      count: pendingAssignments,
+      count: totalPending,
       percentage: pendingPercentage,
       ringColor: "#D58484",
       bgColor: "#CDD5E2",
@@ -45,24 +93,29 @@ function Assignment() {
     },
   ];
 
+  if (loading) {
+    return <div className="text-center py-10">Loading assignment data...</div>;
+  }
+
   return (
     <div className="md:p-0 mx-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((item, idx) => {
           const bgClass =
             idx === 0
               ? "bg-gradient-to-b from-white to-[#F6FCFF] dark:from-[#343434] dark:to-[#343434]"
               : idx === 1
-              ? "bg-gradient-to-b from-white to-[#F6FFFF]  dark:from-[#343434] dark:to-[#343434]"
-              : "bg-gradient-to-b from-white to-[#F8F6FF]  dark:from-[#343434] dark:to-[#343434]";
+              ? "bg-gradient-to-b from-white to-[#F6FFFF] dark:from-[#343434] dark:to-[#343434]"
+              : "bg-gradient-to-b from-white to-[#F8F6FF] dark:from-[#343434] dark:to-[#343434]";
 
           return (
             <div
               key={idx}
-              className={`p-4 rounded-xl shadow-md w-full ${bgClass}   transition transform hover:scale-[1.02] `}
+              className={`p-4 rounded-xl shadow-md w-full ${bgClass} transition transform hover:scale-[1.02]`}
             >
               <h3 className="text-[#010E30] text-[14px] font-medium mb-2 leading-5 dark:text-[#ffff]">
-                {item.title.split(" ").slice(0, 3).join(" ")} <br /> {item.title.split(" ").slice(3).join(" ")}
+                {item.title.split(" ").slice(0, 3).join(" ")} <br />
+                {item.title.split(" ").slice(3).join(" ")}
               </h3>
               <div className="flex items-center justify-between">
                 <span className="text-[28px] text-[#010E30] font-semibold dark:text-[#ffff]">
