@@ -339,8 +339,8 @@ const GroupStudents = () => {
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">
-                          <span className="py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] bg-gray-100 text-gray-600">
-                            No Assignment
+                          <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle("NOT ASSIGNED")}`}>
+                            Not Assigned
                           </span>
                         </td>
                         <td className="px-4 py-2 text-center relative">
@@ -418,7 +418,7 @@ const GroupStudents = () => {
                   );
 
                   return uniqueAssignments.map((assignmentItem, assignIndex) => {
-                    const dropdownId = `${groupId}-${assignmentItem.assignmentName}-${assignIndex}`;
+                    const modalId = `${groupId}-${assignmentItem.assignmentName}-${assignIndex}`;
 
                     return (
                       <tr
@@ -468,12 +468,8 @@ const GroupStudents = () => {
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">
-                          <span
-                            className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
-                              assignmentItem.status
-                            )}`}
-                          >
-                            {assignmentItem.status}
+                          <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(assignmentItem?.status || "Not Assigned")}`}>
+                            {assignmentItem?.status || "Not Assigned"}
                           </span>
                         </td>
                         <td className="px-4 py-2 text-center relative">
@@ -481,20 +477,18 @@ const GroupStudents = () => {
                             className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
                             onClick={() =>
                               setOpenDropdownId(
-                                openDropdownId === dropdownId ? null : dropdownId
+                                openDropdownId === modalId ? null : modalId
                               )
                             }
                           >
                             <BsThreeDotsVertical />
                           </button>
 
-                          {openDropdownId === dropdownId && (
+                          {openDropdownId === modalId && (
                             <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
                               {(() => {
                                 const status = assignmentItem.status?.toUpperCase();
-                                if (
-                                  ["COMPLETED", "NOT COMPLETED", "ASSIGNED"].includes(status)
-                                ) {
+                                if (["COMPLETED", "NOT COMPLETED", "ASSIGNED"].includes(status)) {
                                   return (
                                     <>
                                       <button
@@ -514,8 +508,11 @@ const GroupStudents = () => {
                                 } else if (status === "NOT ASSIGNED") {
                                   return (
                                     <>
-                                      <button className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]">
-                                        Assign
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                                        onClick={() => handleViewProfile(firstStudent.studentId)}
+                                      >
+                                        View Profile
                                       </button>
                                       <button
                                         className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
@@ -527,8 +524,7 @@ const GroupStudents = () => {
                                           setSessionClassType(studentDetails?.classType ?? "GROUPCLASS");
                                           setAssignedTeacher(studentDetails?.assignedTeacherEmail ?? "");
                                           setAssignedTeacherId(studentDetails?.teacher?.teacherId ?? "");
-                                          setOpenModalId(dropdownId);
-                                        }}
+                                          setOpenModalId(modalId);                                        }}
                                       >
                                         New Assignment
                                       </button>
@@ -555,7 +551,7 @@ const GroupStudents = () => {
                           )}
 
                           {/* Assignment Modal */}
-                          {openModalId === dropdownId && (
+                          {openModalId === modalId && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                               <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
                                 <div>

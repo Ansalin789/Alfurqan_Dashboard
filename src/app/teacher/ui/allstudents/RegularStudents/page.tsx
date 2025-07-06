@@ -286,11 +286,14 @@ const RegularStudents = () => {
                   const studentInfo = student.studentDetails?.student;
                   const studentDetails = student.studentDetails;
 
+                  // Define modalId for both cases
+                  const modalIdNoAssignment = `${student.studentId}-no-assignment`;
+
                   // If no assignments, show one row with empty assignment data
                   if (student.assignment.length === 0) {
                     return (
                       <tr
-                        key={`${student.studentId}-no-assignment`}
+                        key={modalIdNoAssignment}
                         className={`text-[12px] border-b border-gray-300 dark:border-gray-600 ${
                           studentIndex % 2 === 0
                             ? "bg-white dark:bg-[#2C2C2C]"
@@ -313,8 +316,8 @@ const RegularStudents = () => {
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">
-                          <span className="py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] bg-gray-100 text-gray-600">
-                            No Assignment
+                          <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle("NOT ASSIGNED")}`}>
+                            Not Assigned
                           </span>
                         </td>
                         <td className="px-4 py-2 text-center relative">
@@ -322,20 +325,18 @@ const RegularStudents = () => {
                             className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
                             onClick={() =>
                               setOpenDropdownId(
-                                openDropdownId === `${student.studentId}-no-assignment` ? null : `${student.studentId}-no-assignment`
+                                openDropdownId === modalIdNoAssignment ? null : modalIdNoAssignment
                               )
                             }
                           >
                             <BsThreeDotsVertical />
                           </button>
 
-                          {openDropdownId === `${student.studentId}-no-assignment` && (
+                          {openDropdownId === modalIdNoAssignment && (
                             <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
                               <button
                                 className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
-                                onClick={() =>
-                                  handleViewProfile(student.studentId)
-                                }
+                                onClick={() => handleViewProfile(student.studentId)}
                               >
                                 View Profile
                               </button>
@@ -344,20 +345,12 @@ const RegularStudents = () => {
                                 onClick={() => {
                                   setStudentId(student.studentId);
                                   setStudentName(
-                                    `${studentInfo?.studentFirstName ?? ""} ${
-                                      studentInfo?.studentLastName ?? ""
-                                    }`
+                                    `${studentInfo?.studentFirstName ?? ""} ${studentInfo?.studentLastName ?? ""}`
                                   );
-                                  setSessionClassType(
-                                    studentDetails?.classType ?? "REGULARCLASS"
-                                  );
-                                  setAssignedTeacher(
-                                    studentDetails?.assignedTeacherEmail ?? ""
-                                  );
-                                  setAssignedTeacherId(
-                                    studentDetails?.teacher?.teacherId ?? ""
-                                  );
-                                  setOpenModalId(`${student.studentId}-no-assignment`);
+                                  setSessionClassType(studentDetails?.classType ?? "REGULARCLASS");
+                                  setAssignedTeacher(studentDetails?.assignedTeacherEmail ?? "");
+                                  setAssignedTeacherId(studentDetails?.teacher?.teacherId ?? "");
+                                  setOpenModalId(modalIdNoAssignment);
                                 }}
                               >
                                 New Assignment
@@ -370,159 +363,9 @@ const RegularStudents = () => {
                               </button>
                             </div>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  }
 
-                  // Ensure unique assignments per student
-                  const uniqueAssignmentsMap = new Map<string, AssignmentItem>();
-                  student.assignment.forEach((item) => {
-                    const id =
-                      item.assignmentId ||
-                      `${item.assignmentName}-${item.title}`;
-                    if (!uniqueAssignmentsMap.has(id)) {
-                      uniqueAssignmentsMap.set(id, item);
-                    }
-                  });
-                  const uniqueAssignments = Array.from(
-                    uniqueAssignmentsMap.values()
-                  );
-
-                  return uniqueAssignments.map((assignmentItem, assignIndex) => {
-                    const dropdownId = `${student.studentId}-${assignmentItem.assignmentName}-${assignIndex}`;
-
-                    return (
-                      <tr
-                        key={`${student.studentId}-${assignIndex}`}
-                        className={`text-[12px] border-b border-gray-300 dark:border-gray-600 ${
-                          studentIndex % 2 === 0
-                            ? "bg-white dark:bg-[#2C2C2C]"
-                            : "bg-[#F8F8F8] dark:bg-[#303030]"
-                        }`}
-                      >
-                        <td className="px-3 py-2 break-words">
-                          {student?.studentId}
-                        </td>
-                        <td className="px-3 py-2 text-[#3D8FDE] font-medium break-words">
-                          {studentInfo?.studentFirstName}{" "}
-                          {studentInfo?.studentLastName}
-                        </td>
-                        <td className="px-3 py-2 break-words">
-                          {assignmentItem.assignmentId || "-"}
-                        </td>
-                        <td className="px-3 py-2 break-words">
-                          {studentDetails?.student?.learningInterest || "-"}
-                        </td>
-                        <td className="px-3 py-2 break-words">
-                          {studentDetails?.student?.learningInterest}
-                        </td>
-                        <td className="px-3 py-2 break-words">
-                          {assignmentItem.title}
-                        </td>
-                        <td className="px-3 py-2 break-words">-</td>
-                        <td className="px-3 py-2 break-words">-</td>
-                        <td className="px-3 py-2 break-words">
-                          <span
-                            className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
-                              assignmentItem.status
-                            )}`}
-                          >
-                            {assignmentItem.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 text-center relative">
-                          <button
-                            className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
-                            onClick={() =>
-                              setOpenDropdownId(
-                                openDropdownId === dropdownId ? null : dropdownId
-                              )
-                            }
-                          >
-                            <BsThreeDotsVertical />
-                          </button>
-
-                          {openDropdownId === dropdownId && (
-                            <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
-                              {(() => {
-                                const status = assignmentItem.status?.toUpperCase();
-                                if (
-                                  ["COMPLETED", "NOT COMPLETED", "ASSIGNED"].includes(
-                                    status
-                                  )
-                                ) {
-                                  return (
-                                    <>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
-                                        onClick={() =>
-                                          handleViewProfile(student.studentId)
-                                        }
-                                      >
-                                        View Profile
-                                      </button>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                        onClick={() => setOpenDropdownId(null)}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </>
-                                  );
-                                } else if (status === "NOT ASSIGNED") {
-                                  return (
-                                    <>
-                                      <button className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]">
-                                        Assign
-                                      </button>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                        onClick={() => {
-                                          setStudentId(student.studentId);
-                                          setStudentName(
-                                            `${studentInfo?.studentFirstName ?? ""} ${
-                                              studentInfo?.studentLastName ?? ""
-                                            }`
-                                          );
-                                          setSessionClassType(
-                                            studentDetails?.classType ?? "REGULARCLASS"
-                                          );
-                                          setAssignedTeacher(
-                                            studentDetails?.assignedTeacherEmail ?? ""
-                                          );
-                                          setAssignedTeacherId(
-                                            studentDetails?.teacher?.teacherId ?? ""
-                                          );
-                                          setOpenModalId(dropdownId);
-                                        }}
-                                      >
-                                        New Assignment
-                                      </button>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                        onClick={() => setOpenDropdownId(null)}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </>
-                                  );
-                                } else {
-                                  return (
-                                    <button
-                                      className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                      onClick={() => setOpenDropdownId(null)}
-                                    >
-                                      Cancel
-                                    </button>
-                                  );
-                                }
-                              })()}
-                            </div>
-                          )}
-
-                          {/* Assignment Modal */}
-                          {openModalId === dropdownId && (
+                          {/* Assignment Modal for students with no assignments */}
+                          {openModalId === modalIdNoAssignment && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                               <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
                                 <div>
@@ -594,9 +437,160 @@ const RegularStudents = () => {
                               </div>
                             </div>
                           )}
+                        </td>
+                      </tr>
+                    );
+                  }
 
-                          {/* Assignment Modal for students with no assignments */}
-                          {openModalId === `${student.studentId}-no-assignment` && (
+                  // Ensure unique assignments per student
+                  const uniqueAssignmentsMap = new Map<string, AssignmentItem>();
+                  student.assignment.forEach((item) => {
+                    const id =
+                      item.assignmentId ||
+                      `${item.assignmentName}-${item.title}`;
+                    if (!uniqueAssignmentsMap.has(id)) {
+                      uniqueAssignmentsMap.set(id, item);
+                    }
+                  });
+                  const uniqueAssignments = Array.from(
+                    uniqueAssignmentsMap.values()
+                  );
+
+                  return uniqueAssignments.map((assignmentItem, assignIndex) => {
+                    const modalId = `${student.studentId}-${assignmentItem.assignmentName}-${assignIndex}`;
+
+                    return (
+                      <tr
+                        key={`${student.studentId}-${assignIndex}`}
+                        className={`text-[12px] border-b border-gray-300 dark:border-gray-600 ${
+                          studentIndex % 2 === 0
+                            ? "bg-white dark:bg-[#2C2C2C]"
+                            : "bg-[#F8F8F8] dark:bg-[#303030]"
+                        }`}
+                      >
+                        <td className="px-3 py-2 break-words">
+                          {student?.studentId}
+                        </td>
+                        <td className="px-3 py-2 text-[#3D8FDE] font-medium break-words">
+                          {studentInfo?.studentFirstName}{" "}
+                          {studentInfo?.studentLastName}
+                        </td>
+                        <td className="px-3 py-2 break-words">
+                          {assignmentItem.assignmentId || "-"}
+                        </td>
+                        <td className="px-3 py-2 break-words">
+                          {studentDetails?.student?.learningInterest || "-"}
+                        </td>
+                        <td className="px-3 py-2 break-words">
+                          {studentDetails?.student?.learningInterest}
+                        </td>
+                        <td className="px-3 py-2 break-words">
+                          {assignmentItem.title}
+                        </td>
+                        <td className="px-3 py-2 break-words">-</td>
+                        <td className="px-3 py-2 break-words">-</td>
+                        <td className="px-3 py-2 break-words">
+                          <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(assignmentItem?.status || "Not Assigned")}`}>
+                            {assignmentItem?.status || "Not Assigned"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-center relative">
+                          <button
+                            className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
+                            onClick={() =>
+                              setOpenDropdownId(
+                                openDropdownId === modalId ? null : modalId
+                              )
+                            }
+                          >
+                            <BsThreeDotsVertical />
+                          </button>
+
+                          {openDropdownId === modalId && (
+                            <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
+                              {(() => {
+                                const status = assignmentItem.status?.toUpperCase();
+                                if (
+                                  ["COMPLETED", "NOT COMPLETED", "ASSIGNED"].includes(
+                                    status
+                                  )
+                                ) {
+                                  return (
+                                    <>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                                        onClick={() =>
+                                          handleViewProfile(student.studentId)
+                                        }
+                                      >
+                                        View Profile
+                                      </button>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                        onClick={() => setOpenDropdownId(null)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </>
+                                  );
+                                } else if (status === "NOT ASSIGNED") {
+                                  return (
+                                    <>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                                        onClick={() =>
+                                          handleViewProfile(student.studentId)
+                                        }
+                                      >
+                                        View Profile
+                                      </button>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                        onClick={() => {
+                                          setStudentId(student.studentId);
+                                          setStudentName(
+                                            `${studentInfo?.studentFirstName ?? ""} ${
+                                              studentInfo?.studentLastName ?? ""
+                                            }`
+                                          );
+                                          setSessionClassType(
+                                            studentDetails?.classType ?? "REGULARCLASS"
+                                          );
+                                          setAssignedTeacher(
+                                            studentDetails?.assignedTeacherEmail ?? ""
+                                          );
+                                          setAssignedTeacherId(
+                                            studentDetails?.teacher?.teacherId ?? ""
+                                          );
+                                          setOpenModalId(modalId);
+                                        }}
+                                      >
+                                        New Assignment
+                                      </button>
+                                      <button
+                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                        onClick={() => setOpenDropdownId(null)}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </>
+                                  );
+                                } else {
+                                  return (
+                                    <button
+                                      className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                      onClick={() => setOpenDropdownId(null)}
+                                    >
+                                      Cancel
+                                    </button>
+                                  );
+                                }
+                              })()}
+                            </div>
+                          )}
+
+                          {/* Assignment Modal */}
+                          {openModalId === modalId && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                               <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
                                 <div>
