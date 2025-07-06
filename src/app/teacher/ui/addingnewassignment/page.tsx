@@ -59,26 +59,19 @@ interface Assignment {
   questionName?: string;
   correctAnswer: string;
   answerValidation: string;
-  
+
   // Audio fields
-  audioURL?: string;      // For preview URL
-  audioName?: string;     // Original filename
-  audioFile?: File;       // Actual File object
-  
+  audioURL?: string; // For preview URL
+  audioName?: string; // Original filename
+
   // Image fields
-  imageURL?: string;      // For preview URL
-  imageName?: string;     // Original filename
-  imageFile?: File;       // Actual File object
-  
-  // Generic upload field (matches your backend)
-  uploadFile?: {
-    name: string;         // Original filename
-    type: string;         // MIME type
-    url: string;          // Object URL for preview
-    file?: File;          // Actual File object
-  };
-  
-  // Additional fields from your backend
+  imageURL?: string; // For preview URL
+  imageName?: string; // Original filename
+  imageFile?: File; // Actual File object
+   uploadFile?: ArrayBuffer;  // For binary data
+  uploadFileBase64?: string; // Alternative for Base64
+  audioFile?: ArrayBuffer;
+  audioFileBase64?: string;
   assignmentStatus?: string;
   status?: string;
   createdDate?: string;
@@ -177,6 +170,29 @@ const NewAssignment = () => {
   const [noOptions, setNoOptions] = useState(false);
   const [answerText, setAnswerText] = useState("");
 
+// Utility function to convert File/Blob to Buffer
+const fileToBuffer = async (file: File): Promise<Buffer> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result) {
+        const arrayBuffer = reader.result as ArrayBuffer;
+        const buffer = Buffer.from(new Uint8Array(arrayBuffer));
+        resolve(buffer);
+      } else {
+        reject(new Error("File reading failed"));
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+};
+
+// Alternative if you're not using Node.js Buffer in frontend
+const fileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
+  return file.arrayBuffer();
+};
+
   // Update the handleAddAssignment function
   const handleAddAssignment = () => {
     if (!assignmentName.trim() || !typedQuestion.trim()) {
@@ -184,85 +200,100 @@ const NewAssignment = () => {
       return;
     }
     // Special validation for reading/writing
-  if ((assignmentType === "reading" || assignmentType === "writing") && !answerText.trim()) {
-    alert(`⚠️ Please provide ${assignmentType === "reading" ? "reading content" : "writing prompt"}.`);
-    return;
-  }
-     // Special validation for image identification
-  if (assignmentType === "image identification") {
-    if (!uploadedFileURL || !uploadedFileType?.startsWith("image/")) {
-      alert("⚠️ Please upload an image for image identification.");
+    if (
+      (assignmentType === "reading" || assignmentType === "writing") &&
+      !answerText.trim()
+    ) {
+      alert(
+        `⚠️ Please provide ${
+          assignmentType === "reading" ? "reading content" : "writing prompt"
+        }.`
+      );
       return;
     }
-     const hasOptionsFilled = Object.values(options).some(opt => opt.text.trim() !== "");
-    if (!hasOptionsFilled) {
-      alert("Please provide at least one option for the image");
-      return;
-    }
-    if (!selectedAnswer) {
-      alert("⚠️ Please select the correct answer for this image.");
-      return;
-    }
-  }
-  // Skip options validation for reading/writing types
-    if (!['reading', 'writing'].includes(assignmentType)) {
-    // For choose type with options
-    if (questionType === "choose" && hasOptions && !noOptions) {
-      const missingOptions = Object.entries(options)
-        .filter(([_, val]) => val.text.trim() === "")
-        .map(([key]) => key.toUpperCase());
-
-      if (missingOptions.length > 0) {
-        alert(`⚠️ Please fill all options. Missing: ${missingOptions.join(", ")}`);
+    // Special validation for image identification
+    if (assignmentType === "image identification") {
+      if (!uploadedFileURL || !uploadedFileType?.startsWith("image/")) {
+        alert("⚠️ Please upload an image for image identification.");
         return;
       }
-
+      const hasOptionsFilled = Object.values(options).some(
+        (opt) => opt.text.trim() !== ""
+      );
+      if (!hasOptionsFilled) {
+        alert("Please provide at least one option for the image");
+        return;
+      }
       if (!selectedAnswer) {
-        alert("⚠️ Please select the correct answer for this 'choose' question.");
+        alert("⚠️ Please select the correct answer for this image.");
         return;
       }
     }
-    // Validate true/false answer is selected
-    if (questionType === "truefalse" && trueFalseAnswer === null) {
-      alert("⚠️ Please select True or False for this question.");
-      return;
+    // Skip options validation for reading/writing types
+    if (!["reading", "writing"].includes(assignmentType)) {
+      // For choose type with options
+      if (questionType === "choose" && hasOptions && !noOptions) {
+        const missingOptions = Object.entries(options)
+          .filter(([_, val]) => val.text.trim() === "")
+          .map(([key]) => key.toUpperCase());
+
+        if (missingOptions.length > 0) {
+          alert(
+            `⚠️ Please fill all options. Missing: ${missingOptions.join(", ")}`
+          );
+          return;
+        }
+
+        if (!selectedAnswer) {
+          alert(
+            "⚠️ Please select the correct answer for this 'choose' question."
+          );
+          return;
+        }
+      }
+      // Validate true/false answer is selected
+      if (questionType === "truefalse" && trueFalseAnswer === null) {
+        alert("⚠️ Please select True or False for this question.");
+        return;
+      }
     }
-  }
     // For types without options (image identification, reading, writing)
-    if (['reading', 'writing'].includes(assignmentType)) {
+    if (["reading", "writing"].includes(assignmentType)) {
       if (!typedQuestion.trim()) {
         alert("⚠️ Please provide the question text.");
         return;
       }
       // No options validation needed for these types
     }
-    
+
     const newAssignment: Assignment = {
-      
       questionName: questionName.trim(),
       name: assignmentName.trim(),
       type: assignmentType,
       question: typedQuestion.trim(),
       questionType: questionType,
       // Include options for image identification or choose type
-    options: (assignmentType === "image identification" || 
-             (questionType === "choose" && hasOptions && !noOptions)) ? {
-      optionOne: options.a.text,
-      optionTwo: options.b.text,
-      optionThree: options.c.text,
-      optionFour: options.d.text,
-    } : undefined,
+      options:
+        assignmentType === "image identification" ||
+        (questionType === "choose" && hasOptions && !noOptions)
+          ? {
+              optionOne: options.a.text,
+              optionTwo: options.b.text,
+              optionThree: options.c.text,
+              optionFour: options.d.text,
+            }
+          : undefined,
       correctAnswer: "",
-  answerValidation: ['reading', 'writing'].includes(assignmentType) 
-  ? typedQuestion // For reading/writing
-  : selectedAnswer, // For all other types (choose, truefalse, image identification)
-         uploadFile: uploadedFileURL ? {
-      name: uploadedFileName || "uploaded_file",
-      type: uploadedFileType || "application/octet-stream",
-      url: uploadedFileURL
-    } : undefined,
+      answerValidation: ["reading", "writing"].includes(assignmentType)
+        ? typedQuestion // For reading/writing
+        : selectedAnswer, // For all other types (choose, truefalse, image identification)
+   audioFile: audioFileBuffer || undefined,
+    uploadFile: uploadedFileBuffer || undefined,
     };
-
+ console.log(' New assignment created with:', {
+    hasUploadFile: !!uploadedFileBuffer,
+    hasAudioFile: !!audioFileBuffer
+  });
     setAssignments((prev) => [...prev, newAssignment]);
     alert("✅ Assignment added successfully!");
 
@@ -279,16 +310,17 @@ const NewAssignment = () => {
     setSelectedAnswer("");
     setTrueFalseAnswer(null);
     setUploadedFileURL(null);
-  
+
     setUploadedFileName(null);
     setUploadedFileType(null);
     setAnswerText("");
+
   };
   useEffect(() => {
-  // Reset answer text when assignment type changes
-  setAnswerText("");
-  setSelectedAnswer("");
-}, [assignmentType]);
+    // Reset answer text when assignment type changes
+    setAnswerText("");
+    setSelectedAnswer("");
+  }, [assignmentType]);
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const mediaRecorder = new MediaRecorder(stream);
@@ -320,35 +352,44 @@ const NewAssignment = () => {
     setIsRecording(false);
   };
 
-// In the component, update the handleFileUpload to handle images separately:
+  // In the component, update the handleFileUpload to handle images separately:
 const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
   if (!file) return;
-
-  // Validate file type based on assignment type
-  if (assignmentType === "image identification" && !file.type.startsWith("image/")) {
-    alert('Please upload an image file for image identification');
-    return;
-  }
 
   setIsUploading(true);
   
   try {
     // Clean up previous URLs
-    if (uploadedFileURL) URL.revokeObjectURL(uploadedFileURL);
-    if (audioURL) URL.revokeObjectURL(audioURL);
+  
 
+    // Create preview URL
     const url = URL.createObjectURL(file);
+    
+    // Convert file to buffer
+    const buffer = await file.arrayBuffer();
+    
+    // Update state
     setUploadedFileName(file.name);
     setUploadedFileType(file.type);
     setUploadedFileURL(url);
+    setUploadedFileBuffer(buffer); // Store the ArrayBuffer
 
-    // Set audio URL only for audio files
+    // Handle audio files separately
     if (file.type.startsWith("audio/")) {
       setAudioURL(url);
+      setAudioFileBuffer(buffer);
     } else {
       setAudioURL(null);
+      setAudioFileBuffer(null);
     }
+
+    console.log('📁 File processed:', {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      bufferLength: buffer.byteLength
+    });
 
     e.target.value = '';
   } catch (error) {
@@ -359,6 +400,20 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
   }
 };
 
+// Add these state variables
+const [uploadedFileBuffer, setUploadedFileBuffer] = useState<ArrayBuffer | null>(null);
+const [audioFileBuffer, setAudioFileBuffer] = useState<ArrayBuffer | null>(null);
+
+
+// File to Base64 converter function
+const convertToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
 
   const handleDeleteFile = () => {
     setAudioURL(null);
@@ -367,152 +422,177 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadedFileType(null);
   };
 
-// Update the submitAssignment function
-const submitAssignment = async () => {
-  const formData = new FormData();
+  // Update the submitAssignment function
+  const submitAssignment = async () => {
+    const formData = new FormData();
+   console.log("📤 Starting assignment submission...");
+    console.log("👤 Student ID:", studentId);
+    console.log("📝 Assignment count:", assignments.length);
+    formData.append("studentId", studentId);
+    formData.append("studentName", studentName);
+    formData.append("sessionClassType", sessionClassType);
+    formData.append("assignedTeacher", assignedTeacher);
+    formData.append("assignedTeacherId", assignedTeacherId);
 
-  formData.append("studentId", studentId);
-  formData.append("studentName", studentName);
-  formData.append("sessionClassType", sessionClassType);
-  formData.append("assignedTeacher", assignedTeacher);
-  formData.append("assignedTeacherId", assignedTeacherId);
-
-  for (let index = 0; index < assignments.length; index++) {
-    const item = assignments[index];
-
-    formData.append(`assignments[${index}][assignmentName]`, item.name);
-    formData.append(
-      `assignments[${index}][assignmentType]`,
-      JSON.stringify({ type: item.type })
-    );
-    formData.append(
-      `assignments[${index}][questionName]`,
-      item.questionName || `Q-${index + 1}`
-    );
-    formData.append(`assignments[${index}][questionType]`, item.questionType);
-    formData.append(`assignments[${index}][typeofQuestion]`, item.questionType);
-    formData.append(`assignments[${index}][title]`, title);
-    formData.append(`assignments[${index}][question]`, item.question);
-    formData.append(`assignments[${index}][hasOptions]`, hasOptions.toString());
-    if (item.imageURL && item.imageName) {
-      const imageBlob = await fetch(item.imageURL).then((res) => res.blob());
+    for (let index = 0; index < assignments.length; index++) {
+      const item = assignments[index];
+  
+      console.log(`\n📄 Processing assignment ${index + 1}: ${item.name}`);
+      console.log("🖼️ Assignment type:", item.type);
+      formData.append(`assignments[${index}][assignmentName]`, item.name);
       formData.append(
-        `assignments[${index}][imageFile]`,
-        imageBlob,
-        item.imageName
+        `assignments[${index}][assignmentType]`,
+        JSON.stringify({ type: item.type })
       );
-    }
-
-    // Handle options for image identification
-    if (item.type === "image identification" && item.options) {
       formData.append(
-        `assignments[${index}][options]`,
-        JSON.stringify(item.options)
+        `assignments[${index}][questionName]`,
+        item.questionName || `Q-${index + 1}`
       );
-    }
-    // Set chooseType and trueorfalseType based on questionType
-    formData.append(
-      `assignments[${index}][chooseType]`,
-      (item.questionType === "choose").toString()
-    );
-    formData.append(
-      `assignments[${index}][trueorfalseType]`,
-      (item.questionType === "truefalse").toString()
-    );
-
-    // Handle options
-    if (
-      item.type === "quiz" &&
-      item.questionType === "choose" &&
-      hasOptions &&
-      !noOptions
-    ) {
-      const optionsPayload = item.options || {
-        optionOne: "",
-        optionTwo: "",
-        optionThree: "",
-        optionFour: "",
-      };
+      formData.append(`assignments[${index}][questionType]`, item.questionType);
       formData.append(
-        `assignments[${index}][options]`,
-        JSON.stringify(optionsPayload)
+        `assignments[${index}][typeofQuestion]`,
+        item.questionType
       );
-    }
+      formData.append(`assignments[${index}][title]`, title);
+      formData.append(`assignments[${index}][question]`, item.question);
+      formData.append(
+        `assignments[${index}][hasOptions]`,
+        hasOptions.toString()
+      );
+      // if (item.imageURL && item.imageName) {
+      //   const imageBlob = await fetch(item.imageURL).then((res) => res.blob());
+      //   formData.append(
+      //     `assignments[${index}][imageFile]`,
+      //     imageBlob,
+      //     item.imageName
+      //   );
+      // }
 
-    // ✅ Proper answerValidation handling
-    let answerValidationValue = "";
+      // Handle options for image identification
+      if (item.type === "image identification" && item.options) {
+        formData.append(
+          `assignments[${index}][options]`,
+          JSON.stringify(item.options)
+        );
+      }
+      // Set chooseType and trueorfalseType based on questionType
+      formData.append(
+        `assignments[${index}][chooseType]`,
+        (item.questionType === "choose").toString()
+      );
+      formData.append(
+        `assignments[${index}][trueorfalseType]`,
+        (item.questionType === "truefalse").toString()
+      );
 
-    if (["image identification", "reading", "writing"].includes(item.type)) {
-      answerValidationValue = item.question;
-    } else if (item.questionType === "truefalse") {
-      answerValidationValue = String(item.answerValidation);
-    } else if (Array.isArray(item.answerValidation)) {
-      answerValidationValue = item.answerValidation.join(","); // or JSON.stringify(...) if your backend expects array
-    } else {
-      answerValidationValue = item.answerValidation || "";
-    }
+      // Handle options
+      if (
+        item.type === "quiz" &&
+        item.questionType === "choose" &&
+        hasOptions &&
+        !noOptions
+      ) {
+        const optionsPayload = item.options || {
+          optionOne: "",
+          optionTwo: "",
+          optionThree: "",
+          optionFour: "",
+        };
+        formData.append(
+          `assignments[${index}][options]`,
+          JSON.stringify(optionsPayload)
+        );
+      }
 
-    formData.append(
-      `assignments[${index}][answerValidation]`,
-      answerValidationValue
-    );
+      // ✅ Proper answerValidation handling
+      let answerValidationValue = "";
 
-    formData.append(`assignments[${index}][answer]`, "");
-    formData.append(`assignments[${index}][createdDate]`, assignedDate);
-    formData.append(`assignments[${index}][dueDate]`, dueDate);
-    formData.append(`assignments[${index}][createdBy]`, assignedTeacher);
-    formData.append(`assignments[${index}][updatedBy]`, assignedTeacher);
-    formData.append(`assignments[${index}][status]`, "Active");
-    formData.append(
-      `assignments[${index}][assignmentStatus]`,
-      "Not Assigned"
-    );
+      if (["image identification", "reading", "writing"].includes(item.type)) {
+        answerValidationValue = item.question;
+      } else if (item.questionType === "truefalse") {
+        answerValidationValue = String(item.answerValidation);
+      } else if (Array.isArray(item.answerValidation)) {
+        answerValidationValue = item.answerValidation.join(","); // or JSON.stringify(...) if your backend expects array
+      } else {
+        answerValidationValue = item.answerValidation || "";
+      }
 
-    // File uploads
-    if (item.audioURL && item.audioName) {
-      const audioBlob = await fetch(item.audioURL).then((res) => res.blob());
+      formData.append(
+        `assignments[${index}][answerValidation]`,
+        answerValidationValue
+      );
+
+      formData.append(`assignments[${index}][answer]`, "");
+      formData.append(`assignments[${index}][createdDate]`, assignedDate);
+      formData.append(`assignments[${index}][dueDate]`, dueDate);
+      formData.append(`assignments[${index}][createdBy]`, assignedTeacher);
+      formData.append(`assignments[${index}][updatedBy]`, assignedTeacher);
+      formData.append(`assignments[${index}][status]`, "Active");
+      formData.append(
+        `assignments[${index}][assignmentStatus]`,
+        "Assigned"
+      );
+
+if (item.uploadFile ) {
+  const blob = new Blob(
+    [item.uploadFile]
+  );
+
+  formData.append(
+    `assignments[${index}][uploadFile]`,
+    blob,
+   item.imageName
+  );
+
+  console.log('📤 Added upload file buffer:', item.uploadFile.byteLength, 'bytes');
+}
+
+
+    if (item.audioFile) {
+      const blob = new Blob([item.audioFile], { type: 'audio/mpeg' });
       formData.append(
         `assignments[${index}][audioFile]`,
-        audioBlob,
-        item.audioName
+        blob,
+        item.audioName || 'audio_file.mp3'
       );
-    }
-
-    if (item.imageURL && item.imageName) {
-      const imageBlob = await fetch(item.imageURL).then((res) => res.blob());
-      formData.append(
-        `assignments[${index}][uploadFile]`,
-        imageBlob,
-        item.imageName
-      );
+      console.log('🎵 Added audio file buffer:', item.audioFile.byteLength, 'bytes');
     }
   }
 
-  try {
-    const res = await fetch("http://localhost:5001/assignments", {
+  // Debug: Log formData contents
+  console.log('📦 FormData contents:');
+  for (const [key, value] of Array.from(formData.entries())) {
+    console.log(key, value instanceof Blob ? 
+      `Blob (${value.size} bytes, ${value.type})` : 
+      value);
+  }
+
+ try {
+    const response = await fetch("http://localhost:5001/assignments", {
       method: "POST",
-      body: formData,
+      body: formData, // ✅ Use FormData directly
+
+      // headers: {
+      //   "Content-Type": "application/json",
+      // },
+      // body: JSON.stringify({
+      //   // ... other data ...
+      //   assignments: assignments.map(assignment => ({
+      //     ...assignment,
+      //     // Convert buffers to the format your backend expects
+      //     audioFile: assignment.audioFile ? Buffer.from(assignment.audioFile) : undefined,
+      //     uploadFile: assignment.uploadFile ? Buffer.from(assignment.uploadFile) : undefined
+      //   }))
+      // }),
     });
 
-    if (!res.ok) throw new Error("Failed to create assignments");
-    const data = await res.json();
-    console.log("✅ Assignments submitted:", data);
-
-    setAssignments((prev) =>
-      prev.map((item) => ({
-        ...item,
-        assignmentStatus: "Assigned",
-      }))
-    );
-    alert("Assignment submitted successfully!");
-  } catch (err) {
-    console.error("❌ Submission error:", err);
-    alert("Error submitting assignment");
+    if (!response.ok) throw new Error("Submission failed");
+    const result = await response.json();
+    console.log("Submission successful:", result);
+  } catch (error) {
+    console.error("Error submitting:", error);
   }
 };
-
-
-
 
   useEffect(() => {
     const chooseTypeRaw = localStorage.getItem("chooseType");
@@ -611,7 +691,9 @@ const submitAssignment = async () => {
               Answer Type
             </label>
             {/* Only show answer type options for quiz */}
-            {!(assignmentType === "writing" || assignmentType === "reading") && (
+            {!(
+              assignmentType === "writing" || assignmentType === "reading"
+            ) && (
               <div className="flex items-center gap-6 text-sm text-[#010E30]">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -687,19 +769,23 @@ const submitAssignment = async () => {
                     }`}
                   />
                 </button>
-                 {/* File upload button - shown when no file is uploaded */}
-  {!uploadedFileURL && (
-    <label className="p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
-      <input
-        type="file"
-        accept={assignmentType === "image identification" ? "image/*" : "audio/*,image/*"}
-        className="hidden"
-        onChange={handleFileUpload}
-        disabled={isUploading}
-      />
-      <FaUpload className="text-xl text-gray-700" />
-    </label>
-  )}
+                {/* File upload button - shown when no file is uploaded */}
+                {!uploadedFileURL && (
+                  <label className="p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
+                    <input
+                      type="file"
+                      accept={
+                        assignmentType === "image identification"
+                          ? "image/*"
+                          : "audio/*,image/*"
+                      }
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      disabled={isUploading}
+                    />
+                    <FaUpload className="text-xl text-gray-700" />
+                  </label>
+                )}
               </div>
             )}
 
@@ -741,243 +827,257 @@ const submitAssignment = async () => {
               )}
 
             {uploadedFileURL && uploadedFileType?.startsWith("image/") && (
-    <div className="mt-4 flex items-center gap-3 bg-gray-100 rounded-lg p-3">
-      <img
-        src={uploadedFileURL}
-        alt="Uploaded preview"
-        className="max-h-40 max-w-full object-contain"
-      />
-      <div>
-        <span className="text-sm break-all">{uploadedFileName}</span>
-        <button
-          type="button"
-          className="mt-2 p-1 bg-red-100 hover:bg-red-200 rounded-full"
-          onClick={handleDeleteFile}
-        >
-          <FaTrash className="text-red-600" />
-        </button>
-      </div>
-    </div>
-  )}
+              <div className="mt-4 flex items-center gap-3 bg-gray-100 rounded-lg p-3">
+                <img
+                  src={uploadedFileURL}
+                  alt="Uploaded preview"
+                  className="max-h-40 max-w-full object-contain"
+                />
+                <div>
+                  <span className="text-sm break-all">{uploadedFileName}</span>
+                  <button
+                    type="button"
+                    className="mt-2 p-1 bg-red-100 hover:bg-red-200 rounded-full"
+                    onClick={handleDeleteFile}
+                  >
+                    <FaTrash className="text-red-600" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Only show choose/truefalse options if not writing/reading/image identification */}
-          {questionType === "choose" && (assignmentType === "writing" || assignmentType === "reading" || assignmentType === "image identification") && (
+          {questionType === "choose" &&
+            (assignmentType === "writing" ||
+              assignmentType === "reading" ||
+              assignmentType === "image identification") && (
+              <div className="mb-4">
+                <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff] ">
+                  Type the Answer
+                </label>
+                <textarea
+                  placeholder="Type the answer"
+                  rows={3}
+                  value={answerText}
+                  onChange={(e) => setAnswerText(e.target.value)}
+                  className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff] "
+                />
+              </div>
+            )}
+          {(assignmentType === "image identification" ||
+            (questionType === "choose" && assignmentType === "quiz")) && (
             <div className="mb-4">
-              <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff] ">
-                Type the Answer
+              <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                Options (Select the correct answer)
               </label>
-              <textarea
-                placeholder="Type the answer"
-                rows={3}
-                value={answerText}
-                onChange={(e) => setAnswerText(e.target.value)}
-                className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff] "
-              />
-            </div>
-          )}
-        {(assignmentType === "image identification" || 
-    (questionType === "choose" && assignmentType === "quiz")) && (
-    <div className="mb-4">
-      <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-        Options (Select the correct answer)
-      </label>
-      <div className="space-y-2">
-        {Object.entries(options).map(([key, value]) => (
-          <div key={key} className="flex items-center gap-3">
-            <input
-              type="radio"
-              name="correctOption"
-              checked={value.isCorrect}
-              onChange={() => {
-                handleAnswerChange(key as OptionKey);
-                setSelectedAnswer(value.text);
-              }}
-              className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
-            />
-            <input
-              type="text"
-              value={value.text}
-              placeholder={`Option ${key.toUpperCase()}`}
-              onChange={(e) => {
-                handleOptionChange(key as OptionKey, e.target.value);
-                if (options[key as OptionKey].isCorrect) {
-                  setSelectedAnswer(e.target.value);
-                }
-              }}
-              className="flex-1 p-2 text-sm border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  )}
-
-          {questionType === "truefalse" && !(assignmentType === "writing" || assignmentType === "reading" || assignmentType === "image identification") && (
-            <div className="mb-4">
-              <p className="text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
-                Select the correct answer
-              </p>
-              <div className="flex flex-col gap-2">
-                <label className="flex items-center gap-2 text-sm dark:text-[#fff] cursor-pointer">
-                  <input
-                    type="radio"
-                    name="truefalse"
-                    checked={trueFalseAnswer === true}
-                    onChange={() => {
-                      setTrueFalseAnswer(true);
-                      setSelectedAnswer("true"); // Set answer validation
-                    }}
-                    className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
-                  />
-                  <span>True</span>
-                </label>
-                <label className="flex items-center gap-2 text-sm dark:text-[#fff] cursor-pointer">
-                  <input
-                    type="radio"
-                    name="truefalse"
-                    checked={trueFalseAnswer === false}
-                    onChange={() => {
-                      setTrueFalseAnswer(false);
-                      setSelectedAnswer("false"); // Set answer validation
-                    }}
-                    className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
-                  />
-                  <span>False</span>
-                </label>
+              <div className="space-y-2">
+                {Object.entries(options).map(([key, value]) => (
+                  <div key={key} className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="correctOption"
+                      checked={value.isCorrect}
+                      onChange={() => {
+                        handleAnswerChange(key as OptionKey);
+                        setSelectedAnswer(value.text);
+                      }}
+                      className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
+                    />
+                    <input
+                      type="text"
+                      value={value.text}
+                      placeholder={`Option ${key.toUpperCase()}`}
+                      onChange={(e) => {
+                        handleOptionChange(key as OptionKey, e.target.value);
+                        if (options[key as OptionKey].isCorrect) {
+                          setSelectedAnswer(e.target.value);
+                        }
+                      }}
+                      className="flex-1 p-2 text-sm border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
+          {questionType === "truefalse" &&
+            !(
+              assignmentType === "writing" ||
+              assignmentType === "reading" ||
+              assignmentType === "image identification"
+            ) && (
+              <div className="mb-4">
+                <p className="text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
+                  Select the correct answer
+                </p>
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center gap-2 text-sm dark:text-[#fff] cursor-pointer">
+                    <input
+                      type="radio"
+                      name="truefalse"
+                      checked={trueFalseAnswer === true}
+                      onChange={() => {
+                        setTrueFalseAnswer(true);
+                        setSelectedAnswer("true"); // Set answer validation
+                      }}
+                      className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
+                    />
+                    <span>True</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-sm dark:text-[#fff] cursor-pointer">
+                    <input
+                      type="radio"
+                      name="truefalse"
+                      checked={trueFalseAnswer === false}
+                      onChange={() => {
+                        setTrueFalseAnswer(false);
+                        setSelectedAnswer("false"); // Set answer validation
+                      }}
+                      className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
+                    />
+                    <span>False</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
           {/* Answer Validation Section */}
-{(assignmentType === "reading" || assignmentType === "writing") && (
-  <div className="mb-4">
-    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-      {assignmentType === "reading" ? "Reading Content" : "Writing Prompt"}
-    </label>
-    <textarea
-      placeholder={
-        assignmentType === "reading" 
-          ? "Enter the reading passage" 
-          : "Enter the writing prompt"
-      }
-      rows={4}
-      value={answerText}
-      onChange={(e) => {
-        setAnswerText(e.target.value);
-        setSelectedAnswer(e.target.value); // This will be used as answerValidation
-      }}
-      className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-    />
-  </div>
-)}
+          {(assignmentType === "reading" || assignmentType === "writing") && (
+            <div className="mb-4">
+              <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                {assignmentType === "reading"
+                  ? "Reading Content"
+                  : "Writing Prompt"}
+              </label>
+              <textarea
+                placeholder={
+                  assignmentType === "reading"
+                    ? "Enter the reading passage"
+                    : "Enter the writing prompt"
+                }
+                rows={4}
+                value={answerText}
+                onChange={(e) => {
+                  setAnswerText(e.target.value);
+                  setSelectedAnswer(e.target.value); // This will be used as answerValidation
+                }}
+                className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+              />
+            </div>
+          )}
         </div>
         {/* Right Panel */}
-          <div className="flex flex-col justify-between w-full md:w-1/2 bg-white rounded-2xl p-6 shadow-md dark:bg-[#3B3B3B] dark:border dark:border-[#484f5b]">
-            <div>
-              <h2 className="text-lg font-medium text-[#010E30] mb-6 dark:text-[#fff]">
-                List of Assignment
-              </h2>
-              {assignments.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="mb-6 p-4 border rounded-lg dark:border-[#484f5b]"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-[1fr_120px] gap-4">
-                    {/* Question Section */}
-                    <div>
-                      <div className="flex items-center mb-2">
-                        <span className="w-6 text-sm text-[#010E30] dark:text-[#fff]">
-                          {idx + 1}.
-                        </span>
-                        <label className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
-                          Question
-                        </label>
-                      </div>
-                      <textarea
-                        value={item.question}
-                        disabled
-                        rows={2}
-                        className="w-full p-3 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-                      />
-                    </div>
-
-                    {/* Assignment Type */}
-                    <div>
-                      <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                        Type
+        <div className="flex flex-col justify-between w-full md:w-1/2 bg-white rounded-2xl p-6 shadow-md dark:bg-[#3B3B3B] dark:border dark:border-[#484f5b]">
+          <div>
+            <h2 className="text-lg font-medium text-[#010E30] mb-6 dark:text-[#fff]">
+              List of Assignment
+            </h2>
+            {assignments.map((item, idx) => (
+              <div
+                key={idx}
+                className="mb-6 p-4 border rounded-lg dark:border-[#484f5b]"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_120px] gap-4">
+                  {/* Question Section */}
+                  <div>
+                    <div className="flex items-center mb-2">
+                      <span className="w-6 text-sm text-[#010E30] dark:text-[#fff]">
+                        {idx + 1}.
+                      </span>
+                      <label className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
+                        Question
                       </label>
-                      <input
-                        type="text"
-                        value={item.type}
-                        disabled
-                        className="w-full p-3 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-                      />
                     </div>
+                    <textarea
+                      value={item.question}
+                      disabled
+                      rows={2}
+                      className="w-full p-3 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+                    />
                   </div>
 
-                  {/* Image Display */}
-                  {item.type === "Image Identification" && item.imageURL && (
-                    <div className="mt-4">
-                      <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                        Uploaded Image
-                      </label>
-                      <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
-                        <img
-                          src={item.imageURL}
-                          alt={item.imageName || "Question image"}
-                          className="max-h-32 object-contain "
-                        />
-                        <span className="text-xs break-all dark:text-[#fff] dark:bg-[#343434]">
-                          {item.imageName}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-    {(item.type === "reading" || item.type === "writing") && (
-      <div className="mt-4">
-        <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-          {item.type === "reading" ? "Reading Content" : "Writing Prompt"}
-        </label>
-        <div className="p-3 bg-gray-100 dark:bg-[#343434] rounded-lg">
-          <p className="whitespace-pre-wrap dark:text-[#fff]">{item.answerValidation}</p>
-        </div>
-      </div>
-    )}
-                  {/* Audio Display */}
-                  {item.audioURL && (
-                    <div className="mt-4">
-                      <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                        Uploaded Audio
-                      </label>
-                      <div className="flex items-center gap-3 mt-1 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2 shadow dark:text-[#fff]">
-                        <audio
-                          controls
-                          src={item.audioURL}
-                          className="flex-1 min-w-0"
-                        />
-                        <span className="text-xs break-all dark:text-[#fff]">
-                          {item.audioName}
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                  {/* Assignment Type */}
+                  <div>
+                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                      Type
+                    </label>
+                    <input
+                      type="text"
+                      value={item.type}
+                      disabled
+                      className="w-full p-3 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+                    />
+                  </div>
                 </div>
-              ))}
-            </div>
 
-            <div className="flex justify-end gap-4 mt-6">
-              <button className="border border-gray-300 text-[12px] px-4 py-[6px] rounded-xl text-gray-700 hover:bg-gray-100 dark:border-[#343434] dark:text-[#fff] dark:bg-[#343434]">
-                Cancel
-              </button>
-              <button
-                className="bg-[#576CBC] text-white text-[12px] px-4 py-[6px] rounded-xl hover:bg-[#43599e]"
-                onClick={submitAssignment}
-              >
-                Assign
-              </button>
-            </div>
+                {/* Image Display */}
+                {item.type === "image identification" && item.imageURL && (
+                  <div className="mt-4">
+                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                      Uploaded Image
+                    </label>
+                    <div className="flex items-center gap-3 bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+                      <img
+                        src={item.imageURL}
+                        alt={item.imageName || "Question image"}
+                        className="max-h-32 object-contain "
+                      />
+                      <span className="text-xs break-all dark:text-[#fff] dark:bg-[#343434]">
+                        {item.imageName}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {(item.type === "reading" || item.type === "writing") && (
+                  <div className="mt-4">
+                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                      {item.type === "reading"
+                        ? "Reading Content"
+                        : "Writing Prompt"}
+                    </label>
+                    <div className="p-3 bg-gray-100 dark:bg-[#343434] rounded-lg">
+                      <p className="whitespace-pre-wrap dark:text-[#fff]">
+                        {item.answerValidation}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {/* Audio Display */}
+                {item.audioURL && (
+                  <div className="mt-4">
+                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                      Uploaded Audio
+                    </label>
+                    <div className="flex items-center gap-3 mt-1 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2 shadow dark:text-[#fff]">
+                      <audio
+                        controls
+                        src={item.audioURL}
+                        className="flex-1 min-w-0"
+                      />
+                      <span className="text-xs break-all dark:text-[#fff]">
+                        {item.audioName}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
+
+          <div className="flex justify-end gap-4 mt-6">
+            <button className="border border-gray-300 text-[12px] px-4 py-[6px] rounded-xl text-gray-700 hover:bg-gray-100 dark:border-[#343434] dark:text-[#fff] dark:bg-[#343434]">
+              Cancel
+            </button>
+            <button
+              className="bg-[#576CBC] text-white text-[12px] px-4 py-[6px] rounded-xl hover:bg-[#43599e]"
+              onClick={submitAssignment}
+            >
+              Assign
+            </button>
+          </div>
+        </div>
       </div>
     </BaseLayout>
   );

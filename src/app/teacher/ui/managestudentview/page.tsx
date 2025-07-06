@@ -329,12 +329,7 @@ const ManageStudentView = () => {
   const totalAssignments = 8;
   const completedAssignments = 6;
   const pendingAssignments = totalAssignments - completedAssignments;
-  const completionPercentage = Math.round(
-    (completedAssignments / totalAssignments) * 100
-  );
-  const pendingPercentage = Math.round(
-    (pendingAssignments / totalAssignments) * 100
-  );
+
   const [regularStudents, setRegularStudents] = useState<
     StudentWithAssignments[]
   >([]);
@@ -437,11 +432,64 @@ const ManageStudentView = () => {
         return "bg-gray-100 text-gray-600";
     }
   };
+  const [assignmentData, setAssignmentData] = useState({
+    totalAssigned: 0,
+    totalCompleted: 0,
+    totalPending: 0,
+  });
 
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAssignmentData = async () => {
+      try {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentAuthToken")
+            : null;
+        const studentId = localStorage.getItem("StudentPortalId");
+
+        if (!token || !studentId) {
+          console.error("Missing token or teacher ID");
+          return;
+        }
+
+        const response = await axios.get(
+          `http://localhost:5001/assignments/cardcount?studentId=${studentId}`
+        );
+
+        // Log the full API response for debugging
+        console.log("API response:", response);
+
+        if (response.data.status === "success") {
+          // Bind the response data to state
+          setAssignmentData(response.data.data);
+        } else {
+          console.error("Failed to fetch data:", response.data.message);
+        }
+      } catch (error) {
+        console.error("API error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssignmentData();
+  }, []);
+
+  const { totalAssigned, totalCompleted, totalPending } = assignmentData;
+
+  const completionPercentage = totalAssigned
+    ? Math.round((totalCompleted / totalAssigned) * 100)
+    : 0;
+
+  const pendingPercentage = totalAssigned
+    ? Math.round((totalPending / totalAssigned) * 100)
+    : 0;
   const cards = [
     {
       title: "Total Assignment\nAssigned",
-      count: totalAssignments,
+      count: totalAssigned,
       percentage: 100,
       ringColor: "#88A2CF",
       bgColor: "#CDD5E2",
@@ -449,7 +497,7 @@ const ManageStudentView = () => {
     },
     {
       title: "Total Assignment\nCompleted",
-      count: completedAssignments,
+      count: totalCompleted,
       percentage: completionPercentage,
       ringColor: "#88CF9B",
       bgColor: "#CDD5E2",
