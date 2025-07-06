@@ -45,6 +45,7 @@ const NextMeetingSchedule = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
+const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
 
   useEffect(() => {
     const fetchMeeting = async () => {
@@ -74,13 +75,20 @@ const NextMeetingSchedule = () => {
         const meetingList: StudentMeeting[] = res.data.students;
 
         const now = new Date();
-       const upcoming = meetingList
+    const upcoming = meetingList
   .filter((m) => {
-    if (!m.startTime || !m.selectedDate) return false;
+    if (!m.startTime || !m.endTime || !m.selectedDate) return false;
+
     const [startHour, startMinute] = m.startTime.split(":").map(Number);
-    const meetingDateTime = new Date(m.selectedDate);
-    meetingDateTime.setHours(startHour, startMinute, 0, 0);
-    return meetingDateTime > now;
+    const [endHour, endMinute] = m.endTime.split(":").map(Number);
+
+    const startDateTime = new Date(m.selectedDate);
+    startDateTime.setHours(startHour, startMinute, 0, 0);
+
+    const endDateTime = new Date(m.selectedDate);
+    endDateTime.setHours(endHour, endMinute, 0, 0);
+
+    return endDateTime > now; // We include meetings not ended yet
   })
   .sort((a, b) => {
     const [aHour, aMinute] = a.startTime.split(":").map(Number);
@@ -93,7 +101,6 @@ const NextMeetingSchedule = () => {
 
     return aDateTime.getTime() - bDateTime.getTime();
   })[0] || null;
-
 
         setClassData(upcoming);
         setLoading(false);
@@ -108,32 +115,46 @@ const NextMeetingSchedule = () => {
   }, []);
 
 useEffect(() => {
-  if (!classData || !classData.startTime || !classData.selectedDate) return;
+  if (!classData || !classData.startTime || !classData.endTime || !classData.selectedDate) return;
 
   const [startHour, startMinute] = classData.startTime.split(":").map(Number);
-  const meetingDateTime = new Date(classData.selectedDate);
-  meetingDateTime.setHours(startHour, startMinute, 0, 0);
+  const [endHour, endMinute] = classData.endTime.split(":").map(Number);
+
+  const meetingStart = new Date(classData.selectedDate);
+  meetingStart.setHours(startHour, startMinute, 0, 0);
+
+  const meetingEnd = new Date(classData.selectedDate);
+  meetingEnd.setHours(endHour, endMinute, 0, 0);
 
   const updateTimeLeft = () => {
     const now = new Date();
-    const diff = meetingDateTime.getTime() - now.getTime();
 
-    if (diff <= 0) {
+    if (now < meetingStart) {
+      // Before start time
+      setIsTimeUp(false);
+      setIsMeetingOngoing(false);
+
+      const diff = meetingStart.getTime() - now.getTime();
+      const totalSeconds = Math.floor(diff / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      setTime({ hours, minutes, seconds });
+    } else if (now >= meetingStart && now <= meetingEnd) {
+      // During meeting
       setIsTimeUp(true);
+      setIsMeetingOngoing(true);
       setTime({ hours: 0, minutes: 0, seconds: 0 });
-      return;
+    } else {
+      // After end time
+      setIsTimeUp(false);
+      setIsMeetingOngoing(false);
+      setClassData(null); // Hide meeting details
     }
-
-    const totalSeconds = Math.floor(diff / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    setTime({ hours, minutes, seconds });
   };
 
-  updateTimeLeft(); // Run once immediately
-
+  updateTimeLeft();
   const interval = setInterval(updateTimeLeft, 1000);
 
   return () => clearInterval(interval);
@@ -164,14 +185,14 @@ router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
 
   if (loading) {
     return (
-      <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white p-6 min-h-[100px]">
+      <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white p-3 min-h-[60px]">
         <div className="flex-1 space-y-4">
-          <div className="h-3 bg-blue-200 rounded w-1/3 animate-pulse"></div>
-          <div className="h-3 bg-blue-200 rounded w-1/4 animate-pulse"></div>
-          <div className="h-3 bg-blue-200 rounded w-1/2 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/3 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/4 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/2 animate-pulse"></div>
         </div>
         <div className="flex items-center space-x-2 px-14">
-          <div className="w-16 h-16 bg-blue-300 rounded-full animate-pulse"></div>
+          <div className="w-16 h-14 bg-blue-300 rounded-full animate-pulse"></div>
         </div>
       </div>
     );
