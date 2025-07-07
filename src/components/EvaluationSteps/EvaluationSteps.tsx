@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { CountryDropdown } from "react-country-region-selector";
@@ -8,7 +8,6 @@ import ISO6391 from "iso-639-1";
 
 import TimezoneSelect from "react-timezone-select";
 import { getSocket } from "@/app/utils/socket";
-import { Currency } from "lucide-react";
 
 // Define the return type of the getAllUsers function
 
@@ -209,20 +208,24 @@ const Step2: React.FC<{
     const fetchStudentData = async () => {
       try {
         setLoading(true);
-         const token =
-    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("AcademicCoachAuthToken")
+            : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
+        if (!token) {
+          console.error("❌ AdminAuthToken not found");
+          return;
+        }
         const response = await fetch(
-          `https://api.blackstoneinfomaticstech.com/studentlist/${studentId}`,{
-            headers:{
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
-          } );
+          `https://api.blackstoneinfomaticstech.com/studentlist/${studentId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         console.log("response>>>", response);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -791,7 +794,7 @@ const Step5 = ({
 
   // First, add state to track which plan's total is being calculated
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-   const [classType, setClassType] = useState<string | null>(null);
+  const [classType, setClassType] = useState<string | null>(null);
 
   const handleSelect = (type: string) => {
     setClassType(type.toUpperCase());
@@ -1089,24 +1092,26 @@ const Step5 = ({
             </div>
           </div>
           <div className="mb-2 mt-2">
-      <h2 className="text-base font-light text-white/90 mb-3">Class Type :</h2>
-      <div className="flex gap-3">
-        {["REGULARCLASS", "GROUPCLASS"].map((type) => (
-          <button
-            key={type}
-            onClick={() => handleSelect(type)}
-            className={`px-3 py-1 rounded-md text-sm font-light uppercase transition-colors duration-200
-              ${classType === type
-                ? "bg-white text-black"
-                : "bg-white/10 text-white hover:bg-white/20"}`}
-          >
-            {type}
-          </button>
-        ))}
-      </div>
-    </div>
-
-
+            <h2 className="text-base font-light text-white/90 mb-3">
+              Class Type :
+            </h2>
+            <div className="flex gap-3">
+              {["REGULARCLASS", "GROUPCLASS"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => handleSelect(type)}
+                  className={`px-3 py-1 rounded-md text-sm font-light uppercase transition-colors duration-200
+              ${
+                classType === type
+                  ? "bg-white text-black"
+                  : "bg-white/10 text-white hover:bg-white/20"
+              }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Navigation Buttons - Add this at the bottom of the main content div */}
@@ -1175,9 +1180,9 @@ const Step6 = ({
     isSelected: boolean;
   }
   const [teachers, setTeachers] = useState<TeacherList[]>([]);
-  interface TeacherList{
-    teacherId : string;
-    name : string;
+  interface TeacherList {
+    teacherId: string;
+    name: string;
   }
   interface Teacher {
     _id: string;
@@ -1195,25 +1200,25 @@ const Step6 = ({
     lastUpdatedDate: string; // Last update timestamp
   }
   type WeeklySlotMap = {
-  [day: string]: { from: string; to: string }[];
-};
-  
+    [day: string]: { from: string; to: string }[];
+  };
+
   const weeklyHourLimit = updatedStudentData.selectedHours; // Example: Change this based on requirement
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const isGroupClass = updatedStudentData.classType === "GROUPCLASS";
   const buildWeeklySlots = () => {
-  const map: WeeklySlotMap = {};
-  schedule.forEach((item) => {
-    if (item.isSelected && item.times.length > 0) {
-      map[item.day] = item.times.map((t) => ({
-        from: t.startTime,
-        to: t.endTime,
-      }));
-    }
-  });
-  return map;
-};
+    const map: WeeklySlotMap = {};
+    schedule.forEach((item) => {
+      if (item.isSelected && item.times.length > 0) {
+        map[item.day] = item.times.map((t) => ({
+          from: t.startTime,
+          to: t.endTime,
+        }));
+      }
+    });
+    return map;
+  };
 
   const calculateTotalHours = () => {
     let totalHours = 0;
@@ -1261,56 +1266,56 @@ const Step6 = ({
     showRemainingHoursPopup();
   };
   const handleNextStep = () => {
-  const totalHours = calculateTotalHours();
+    const totalHours = calculateTotalHours();
 
-  if (!isGroupClass && totalHours > weeklyHourLimit) {
-    setPopupMessage(
-      `You've exceeded the weekly hour limit! You can select only ${weeklyHourLimit} hours.`
-    );
-    setShowPopup(true);
-    return;
-  }
+    if (!isGroupClass && totalHours > weeklyHourLimit) {
+      setPopupMessage(
+        `You've exceeded the weekly hour limit! You can select only ${weeklyHourLimit} hours.`
+      );
+      setShowPopup(true);
+      return;
+    }
 
-  const updatedStudentDatas = {
-    ...updatedStudentData,
-    joiningDate : startDate,
-    weeklySlots : buildWeeklySlots(),
-    teacher: isGroupClass
-      ? { teacherId: '', teacherName: '', teacherEmail: '' }
-      : {
-          teacherId: selectedTeacher?.teacherId ?? "",
-          teacherName: selectedTeacher?.name ?? "",
-          teacherEmail:  "demoteacher@gmail.com",
-        },
-    classDay: isGroupClass
-      ? []
-      : schedule
-          .filter((item) => item.isSelected)
-          .map((item) => ({ label: item.day, value: item.day })),
-    startTime: isGroupClass
-      ? []
-      : schedule
-          .filter((item) => item.isSelected)
-          .flatMap((item) =>
-            item.times.map((time) => ({
-              label: time.startTime,
-              value: time.startTime,
-            }))
-          ),
-    endTime: isGroupClass
-      ? []
-      : schedule
-          .filter((item) => item.isSelected)
-          .flatMap((item) =>
-            item.times.map((time) => ({
-              label: time.endTime,
-              value: time.endTime,
-            }))
-          ),
+    const updatedStudentDatas = {
+      ...updatedStudentData,
+      joiningDate: startDate,
+      weeklySlots: buildWeeklySlots(),
+      teacher: isGroupClass
+        ? { teacherId: "", teacherName: "", teacherEmail: "" }
+        : {
+            teacherId: selectedTeacher?.teacherId ?? "",
+            teacherName: selectedTeacher?.name ?? "",
+            teacherEmail: "demoteacher@gmail.com",
+          },
+      classDay: isGroupClass
+        ? []
+        : schedule
+            .filter((item) => item.isSelected)
+            .map((item) => ({ label: item.day, value: item.day })),
+      startTime: isGroupClass
+        ? []
+        : schedule
+            .filter((item) => item.isSelected)
+            .flatMap((item) =>
+              item.times.map((time) => ({
+                label: time.startTime,
+                value: time.startTime,
+              }))
+            ),
+      endTime: isGroupClass
+        ? []
+        : schedule
+            .filter((item) => item.isSelected)
+            .flatMap((item) =>
+              item.times.map((time) => ({
+                label: time.endTime,
+                value: time.endTime,
+              }))
+            ),
+    };
+
+    nextStep(updatedStudentDatas);
   };
-
-  nextStep(updatedStudentDatas);
-};
 
   interface TimeSlot {
     startTime: string;
@@ -1322,8 +1327,10 @@ const Step6 = ({
     times: TimeSlot[];
     isSelected: boolean;
   }
-  const [selectedTeacher, setSelectedTeacher] = useState<TeacherList | null>(null);
-const [startDate, setStartDate] = useState("");
+  const [selectedTeacher, setSelectedTeacher] = useState<TeacherList | null>(
+    null
+  );
+  const [startDate, setStartDate] = useState("");
   const [schedule, setSchedule] = useState<ScheduleItem[]>(
     [
       "Monday",
@@ -1340,40 +1347,41 @@ const [startDate, setStartDate] = useState("");
     }))
   );
   const scheduleHash = useMemo(() => {
-  return JSON.stringify({ startDate, schedule });
-}, [startDate, schedule]);
+    return JSON.stringify({ startDate, schedule });
+  }, [startDate, schedule]);
 
- useEffect(() => {
-  const academicId = typeof window !== "undefined"
-    ? localStorage.getItem("AcademicCoachPortalId")
-    : null;
-  if (!academicId) return;
+  useEffect(() => {
+    const academicId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
+    if (!academicId) return;
 
-  const hasSelection = schedule.some(
-    (item) => item.isSelected && item.times.length > 0
-  );
-  if (!hasSelection || !startDate) return;
+    const hasSelection = schedule.some(
+      (item) => item.isSelected && item.times.length > 0
+    );
+    if (!hasSelection || !startDate) return;
 
-  const socket = getSocket(academicId);
-  console.log("📤 Sending availableTeachersListRequest");
+    const socket = getSocket(academicId);
+    console.log("📤 Sending availableTeachersListRequest");
 
-  socket.emit("availableTeachersListRequest", {
-    requestId: academicId,
-    startDate,
-    WeeklySlots: buildWeeklySlots(),
-  });
+    socket.emit("availableTeachersListRequest", {
+      requestId: academicId,
+      startDate,
+      WeeklySlots: buildWeeklySlots(),
+    });
 
-  const handleResponse = (data: TeacherList[]) => {
-    console.log("📥 Teacher list received:", data);
-    setTeachers(data);
-  };
+    const handleResponse = (data: TeacherList[]) => {
+      console.log("📥 Teacher list received:", data);
+      setTeachers(data);
+    };
 
-  socket.on("availableTeachersListResponse", handleResponse);
+    socket.on("availableTeachersListResponse", handleResponse);
 
-  return () => {
-    socket.off("availableTeachersListResponse", handleResponse);
-  };
-}, [scheduleHash]);
+    return () => {
+      socket.off("availableTeachersListResponse", handleResponse);
+    };
+  }, [scheduleHash]);
 
   const handleAddTimeSlot = (index: number) => {
     const totalHours = calculateTotalHours();
@@ -1436,30 +1444,32 @@ const [startDate, setStartDate] = useState("");
           {updatedStudentData.firstName} &nbsp; {updatedStudentData.lastName}
         </div>
       </div>
-     <div className={`relative z-10 w-full max-w-4xl ${updatedStudentData.classType === 'GROUPCLASS' ? 'pointer-events-none opacity-30' : ''}`}>
+      <div
+        className={`relative z-10 w-full max-w-4xl ${
+          updatedStudentData.classType === "GROUPCLASS"
+            ? "pointer-events-none opacity-30"
+            : ""
+        }`}
+      >
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
           <div className="flex items-center justify-between mb-4">
-  <h2 className="text-[18px] font-medium text-white">
-    Schedule Classes
-  </h2>
+            <h2 className="text-[18px] font-medium text-white">
+              Schedule Classes
+            </h2>
 
-  <div className="flex items-center gap-2">
-    <label
-      htmlFor="ugcuc"
-      className="font-medium text-white text-sm"
-    >
-      Join Date:
-    </label>
-    <input
-      type="date"
-      id="ugcuc"
-      className="border rounded text-sm px-1 bg-white/5 border-[#4f5154] text-[#c9c7c7]"
-      value={startDate}
-      onChange={(e) => setStartDate(e.target.value)}
-    />
-  </div>
-
-    </div>
+            <div className="flex items-center gap-2">
+              <label htmlFor="ugcuc" className="font-medium text-white text-sm">
+                Join Date:
+              </label>
+              <input
+                type="date"
+                id="ugcuc"
+                className="border rounded text-sm px-1 bg-white/5 border-[#4f5154] text-[#c9c7c7]"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+          </div>
           <div className="grid grid-cols-3 grid-rows-3 gap-2">
             {/* Schedule Selection */}
             {schedule.map((item, index) => (
@@ -1476,7 +1486,7 @@ const [startDate, setStartDate] = useState("");
                     type="checkbox"
                     className="w-3 h-3 bg-white/5"
                     checked={item.isSelected}
-                     disabled={isGroupClass}
+                    disabled={isGroupClass}
                     onChange={() => handleClassSelection(index)}
                   />
                 </div>
@@ -1542,7 +1552,7 @@ const [startDate, setStartDate] = useState("");
                   Select Teacher
                 </label>
                 <select
-                  className="form-select w-full text-xs text-[#c1c1c1] border-[#4f5154] bg-white/5 p-1 rounded-lg dark:text-black dark:bg-white/5"
+                  className="form-select w-full text-xs  text-black border-[#4f5154] bg-white/5 p-1 rounded-lg dark:text-[#c1c1c1] dark:bg-white/5"
                   disabled={isGroupClass}
                   onChange={(e) => {
                     const selected = teachers.find(
@@ -1554,7 +1564,7 @@ const [startDate, setStartDate] = useState("");
                   <option value="">Select a Teacher</option>
                   {teachers.map((teacher) => (
                     <option key={teacher.teacherId} value={teacher.teacherId}>
-                      {teacher.teacherName}
+                      {teacher.name}
                     </option>
                   ))}
                 </select>
@@ -2083,8 +2093,8 @@ const Step9 = ({
   const handleSubmit = async () => {
     try {
       const startDate = new Date(updatedStudentDatass.startDate);
-const classEndDate = new Date(startDate);
-classEndDate.setDate(classEndDate.getDate() + 28);
+      const classEndDate = new Date(startDate);
+      classEndDate.setDate(classEndDate.getDate() + 28);
       console.log(">>>", updatedStudentDatass.academicCoach.academicCoachId);
       const submitData = {
         academicCoachId: updatedStudentDatass.academicCoach.academicCoachId,
@@ -2093,7 +2103,7 @@ classEndDate.setDate(classEndDate.getDate() + 28);
           studentFirstName: updatedStudentDatass.firstName,
           studentLastName: updatedStudentDatass.lastName,
           studentEmail: updatedStudentDatass.email,
-          studentGender:updatedStudentDatass.gender,
+          studentGender: updatedStudentDatass.gender,
           studentPhone: updatedStudentDatass.phoneNumber,
           studentCity: updatedStudentDatass.city ?? "N/A",
           studentCountry: updatedStudentDatass.country,
@@ -2106,7 +2116,7 @@ classEndDate.setDate(classEndDate.getDate() + 28);
           timeZone: updatedStudentDatass.timeZone,
           referralSource: updatedStudentDatass.referralSource,
           preferredDate: updatedStudentDatass.startDate,
-          evaluationStatus:  classStatus,
+          evaluationStatus: classStatus,
           status: updatedStudentDatass.status,
           createdDate: updatedStudentDatass.createdDate,
           createdBy: updatedStudentDatass.createdBy,
@@ -2129,13 +2139,13 @@ classEndDate.setDate(classEndDate.getDate() + 28);
         classDay: updatedStudentDatass.classDay,
         startTime: updatedStudentDatass.startTime,
         endTime: updatedStudentDatass.endTime,
-        joiningDate:updatedStudentDatass.joiningDate,
-        amount:"",
-        currency:"",
+        joiningDate: updatedStudentDatass.joiningDate,
+        amount: "",
+        currency: "",
         planTotalPrice: updatedStudentDatass.planTotalPrice,
-        classType:updatedStudentDatass.classType,
-        weeklySlots:updatedStudentDatass.weeklySlots,
-        classStartDate:startDate,
+        classType: updatedStudentDatass.classType,
+        weeklySlots: updatedStudentDatass.weeklySlots,
+        classStartDate: startDate,
         classEndDate: classEndDate,
         classStartTime: updatedStudentDatass.preferredFromTime,
         classEndTime: updatedStudentDatass.preferredToTime,
@@ -2161,18 +2171,20 @@ classEndDate.setDate(classEndDate.getDate() + 28);
       };
       console.log("Payload being sent:", JSON.stringify(submitData, null, 2));
       // Make POST request to your API
-       const token =
-    typeof window !== "undefined" ? localStorage.getItem("AcademicCoachAuthToken") : null;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AcademicCoachAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
       const response = await fetch(`http://localhost:5001/evaluation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(submitData),
       });

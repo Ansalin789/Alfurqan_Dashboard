@@ -2,14 +2,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { BiSolidSkipNextCircle } from "react-icons/bi";
-import {
-  IoPlaySkipBackCircle
-} from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
 import BaseLayout from "@/components/BaseLayout";
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
-import BaseLayout1 from "@/components/BaseLayout1";
 
 type QuizData = {
   question: string;
@@ -24,71 +19,61 @@ type QuizData = {
   matches?: string[];
 };
 
-interface Assignment {
+interface AssignmentType {
   _id: string;
-  assignmentName: string;
-  assignmentType: string;
-  assignedTeacher: string;
-  assignedDate: string; // ISO date string
-  dueDate: string; // ISO date string
-  createdBy: string;
-  createdDate: string; // ISO date string
-  updatedBy?: string;
-  updatedDate?: string; // ISO date string
   studentId: string;
-  status: string; // e.g., "Assigned"
-  level: string;
-  question: string;
-  hasOptions: boolean;
-  chooseType: boolean;
-  trueorfalseType: boolean;
-  options?: string[]; // Only if `hasOptions: true`
-  correctAnswer?: string; // Only if `hasOptions: true`
+  studentName: string;
+  sessionClassType?: string;
+  assignmentName: string;
+  questionName?: string;
+  questionType?: string;
+  typeofQuestion?: string;
+  title: string;
+  assignedTeacher?: string;
+  assignedTeacherId?: string;
+  assignmentId: string;
+  assignmentType?: {
+    type?: string;
+    name?: string;
+    chooseType?: boolean;
+    trueorfalseType?: boolean;
+  };
+  chooseType?: boolean;
+  trueorfalseType?: boolean;
+  question?: string;
+  hasOptions?: boolean;
+  options?: {
+    optionOne?: string;
+    optionTwo?: string;
+    optionThree?: string;
+    optionFour?: string;
+  };
+  status?: string;
+  createdDate?: string;
+  createdBy?: string;
+  updatedDate?: string;
+  updatedBy?: string;
+  level?: string;
+  courses?: string;
+  assignedDate?: string;
+  dueDate?: string;
   answer?: string;
   answerValidation?: string;
-  audioFile?: string; // Base64 or URL
-  uploadFile?: string; // Base64 or URL (for images)
-  passage?: string;
-  words?: string[];
-  matches?: string[];
-  courses?: string;
+  assignmentStatus?: string;
+  __v?: number;
 }
 
 const QuizPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const type = searchParams ? searchParams.get("type") : null;
-  const assignmentId = searchParams ? searchParams.get("id") : null;
-  // Mock assignment and quiz data for UI only
-  const mockAssignment: Assignment = {
-    _id: assignmentId || "1",
-    assignmentName: "Sample Assignment",
-    assignmentType: type || "Quiz",
-    assignedTeacher: "Teacher Name",
-    assignedDate: new Date().toISOString(),
-    dueDate: new Date().toISOString(),
-    createdBy: "System",
-    createdDate: new Date().toISOString(),
-    studentId: "S001",
-    status: "Assigned",
-    level: "Beginner",
-    question: "What is 2 + 2?",
-    hasOptions: true,
-    chooseType: true,
-    trueorfalseType: false,
-    options: ["2", "3", "4", "5"],
-    correctAnswer: "4",
-    answer: "4",
-    answerValidation: "",
-    audioFile: "",
-    uploadFile: "",
-    passage: "This is a sample passage for reading.",
-    words: ["sample", "passage"],
-    matches: [],
-    courses: "Math",
-  };
+  const assignmentId = searchParams ? searchParams.get("assignmentId") : null;
+
   const [quizData, setQuizData] = useState<QuizData[]>([]);
-  const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [assignment, setAssignment] = useState<AssignmentType | null>(null);
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -104,29 +89,21 @@ const QuizPage = () => {
 
   // Set mock data on mount
   useEffect(() => {
-    setAssignment(mockAssignment);
-    setQuizData([
-      {
-        question: "What is 2 + 2?", // Choose the answer
-        options: ["2", "3", "4", "5"],
-        correctAnswer: "4",
-        answer: "4",
-      },
-      {
-        question: "The sky is blue.", 
-        options: ["True", "False"],
-        correctAnswer: "True",
-        answer: "True",
-      },
-      {
-        question: "Listen to the audio and type what you hear.", 
-        audioUrl: "/assets/audio/sample.mp3", 
-        correctAnswer: "hello world",
-        answer: "hello world",
-        placeholder: "Type what you hear...",
-      },
-    ]);
-  }, [assignmentId, type]);
+    setLoading(true);
+    setError(null);
+    fetch(`http://localhost:5001/assignments?assignmentId=${assignmentId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('API Response:', data); // Log the API response
+        setAssignment(data.data?.[0] || null); // Set the first assignment as main assignment
+        setQuizData(data.data || []); // Set all questions as quizData
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError("Failed to fetch assignments");
+        setLoading(false);
+      });
+  }, [assignmentId]);
   
   const handleStartRecording = async () => {
     try {
@@ -165,36 +142,36 @@ const QuizPage = () => {
     if (file) setSelectedFile(file);
   };
 
-  const handleNextClick = async () => {
-    // Check if the selected option matches the correct answer
-    if (
-      assignment?.assignmentType === "Quiz" &&
-      selectedOption === assignment.answer
-    ) {
-      setScore((prev) => prev + 1);
-    }
+  // const handleNextClick = async () => {
+  //   // Check if the selected option matches the correct answer
+  //   if (
+  //     assignment?.assignmentType === "Quiz" &&
+  //     selectedOption === assignment.answer
+  //   ) {
+  //     setScore((prev) => prev + 1);
+  //   }
 
-    // Add this block for writing questions
-    if (
-      assignment?.assignmentType === "Writing" &&
-      currentQuestion?.correctAnswer
-    ) {
-      const writingScore = calculateWritingScore(
-        writtenAnswer,
-        currentQuestion.correctAnswer
-      );
-      setScore((prev) => prev + writingScore);
-    }
+  //   // Add this block for writing questions
+  //   if (
+  //     assignment?.assignmentType === "Writing" &&
+  //     currentQuestion?.correctAnswer
+  //   ) {
+  //     const writingScore = calculateWritingScore(
+  //       writtenAnswer,
+  //       currentQuestion.correctAnswer
+  //     );
+  //     setScore((prev) => prev + writingScore);
+  //   }
 
-    // Move to the next question or submit the quiz
-    if (currentQuestionIndex < quizData.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-    } else {
-      setIsQuizCompleted(true);
-    }
+  //   // Move to the next question or submit the quiz
+  //   if (currentQuestionIndex < quizData.length - 1) {
+  //     setCurrentQuestionIndex((prev) => prev + 1);
+  //   } else {
+  //     setIsQuizCompleted(true);
+  //   }
 
-    // Reset state after the user has selected an option
-  };
+  //   // Reset state after the user has selected an option
+  // };
 
   const handleBackClick = () => {
     if (currentQuestionIndex > 0) {
@@ -306,7 +283,7 @@ const QuizPage = () => {
                 Previous
               </button>
               <button
-                onClick={handleNextClick}
+                // onClick={handleNextClick}
                 disabled={!writtenAnswer.trim()}
                 className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
               >
@@ -374,7 +351,7 @@ const QuizPage = () => {
                 Previous
               </button>
               <button
-                onClick={handleNextClick}
+                // onClick={handleNextClick}
                 disabled={!selectedOption}
                 className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
               >
@@ -437,7 +414,7 @@ const QuizPage = () => {
                 Previous
               </button>
               <button
-                onClick={handleNextClick}
+                // onClick={handleNextClick}
                 disabled={!selectedOption}
                 className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
               >
