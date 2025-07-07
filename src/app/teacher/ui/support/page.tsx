@@ -2,12 +2,12 @@ import BaseLayout from "@/components/BaseLayout";
 import React from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { MdOutlineArrowOutward } from "react-icons/md";
-import SupervisorHeader from "../../../supervisor/components/supervisorHeader";
+import TeacherHeader from "../../components/TeacherHeader";
 
 const Support = () => {
   return (
     <BaseLayout>
-    <SupervisorHeader currentSection="Support"/>
+    <TeacherHeader currentSection="Support"/>
       <div className="p-4 mx-auto">
         <div className="flex gap-x-5 w-auto">
           <div className="bg-[#7689BD] shadow-lg rounded-xl p-4 h-[616px] w-[340px]">

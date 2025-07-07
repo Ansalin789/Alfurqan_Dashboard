@@ -37,6 +37,32 @@ export default function TeacherHeader({ currentSection, showBackButton = false, 
   const [activeTab, setActiveTab] = useState<"Seen" | "Unseen">("Unseen");
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [dashboardWrite, setDashboardWrite] = useState(false); // For Notifications
+
+  const [leaveWrite, setLeaveWrite] = useState(false); // For Leave Request
+  const [addWrite, setAddWrite] = useState(false); // For Add New Student
+
+  useEffect(() => {
+    const roleAccessRaw = localStorage.getItem("TeacherRolePermission");
+    if (roleAccessRaw) {
+      try {
+        const roleAccess = JSON.parse(roleAccessRaw);
+        const modules = roleAccess?.teachermodules || roleAccess;
+  
+        console.log("✅ Modules being used:", modules);
+        console.log("🔐 Dashboard write:", modules?.dashboard?.write);
+        console.log("🔐 Leave write:", modules?.leave);
+
+        setDashboardWrite(modules?.dashboard?.write ?? false);
+        setLeaveWrite(modules?.leave ?? modules?.dashboard?.write ?? false);
+        setAddWrite(modules?.meeting?.write ?? false);
+      } catch (error) {
+        console.error("❌ Invalid AcademicRolePermission JSON", error);
+      }
+    }
+  }, []);
+
+
   // Fetch old notifications
    const userId =
         typeof window !== "undefined"
@@ -171,6 +197,7 @@ const renderButton = () => {
       <button
         onClick={() => setShowLeaveForm(true)}
         className="bg-[#576CBC] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
+        disabled = {!leaveWrite}
       >
         Request for Leave
       </button>
@@ -184,6 +211,7 @@ const renderButton = () => {
       <button
         onClick={() => setAddMeetings(true)}
         className="bg-[#576CBC] hover:bg-[#5a65d1] text-white text-sm px-4 py-2 rounded-lg"
+        disabled = {!addWrite}
       >
         Add Meeting
       </button>
@@ -306,6 +334,7 @@ const renderButton = () => {
                         handleNotificationClick(notification._id);
                       }
                     }}
+                    disabled={!dashboardWrite}
                     className={`w-full text-left p-2   flex items-start gap-3 transition-all duration-200 border-b border-[#D9D9D9]  ${
                       notification.notificationStatus === "Seen"
                         ? "bg-white/20 text-gray-900 hover:bg-white/50 dark:bg-[#252525]"

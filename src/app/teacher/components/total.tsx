@@ -3,117 +3,130 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import axios from 'axios';
+import { getSocket } from '@/app/utils/socket';
 
-interface ApiResponse {
-  totalclasses?: number;
-  totalClasses?: number;
-  totalstudents?: number;
-  totalStudents?: number;
-  totalhours?: number;
-  totalHours?: number;
-  totalearnings?: number;
-  totalEarnings?: number;
+interface TeacherDashboardStats {
+  totalclasses: number;
+  totalstudents: number;
+  totalhours: number;
+  totalearnings: number;
 }
 
-const safeNumber = (value: any): number =>
-  typeof value === 'number' && !isNaN(value) ? value : 0;
+const safeNumber = (value: unknown): number => {
+  const num = Number(value);
+  return isNaN(num) ? 0 : num;
+};
 
-const formatValue = (value: number, isCurrency = false) =>
-  isCurrency ? `$ ${value > 0 ? value : '0'}` : value > 0 ? value : '0';
-
-const getIconContainer = (src: string, alt: string, bg: string) => (
-  <div className={`${bg} p-3 rounded-full flex items-center justify-center`}>
-    <div className="rounded-full">
-      <Image src={src} alt={alt} width={40} height={40} />
-    </div>
-  </div>
-);
+const formatValue = (value: number, isCurrency = false, suffix = ''): string => {
+  if (isCurrency) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  }
+  return `${value}${suffix}`;
+};
 
 const Total = () => {
-  const [data, setData] = useState({
+  const [stats, setStats] = useState<TeacherDashboardStats>({
     totalclasses: 0,
     totalstudents: 0,
     totalhours: 0,
     totalearnings: 0,
   });
+
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  const fetchData = async () => {
+    const teacherId = localStorage.getItem('TeacherPortalId');
+    const token = localStorage.getItem('TeacherAuthToken');
+
+    if (!teacherId || !token) {
+      setError('Please login as a teacher first');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get<TeacherDashboardStats>(
+        'http://localhost:5001/dashboard/teacher/counts',
+        {
+          params: { teacher: teacherId },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setStats({
+        totalclasses: safeNumber(response.data.totalclasses),
+        totalstudents: safeNumber(response.data.totalstudents),
+        totalhours: parseFloat(safeNumber(response.data.totalhours).toFixed(1)),
+        totalearnings: safeNumber(response.data.totalearnings),
+      });
+    } catch (err) {
+      setError('Failed to load teacher statistics');
+      console.error('API Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
-    const fetchData = async () => {
-      const teacherId = localStorage.getItem('TeacherPortalId');
-      const token = localStorage.getItem('TeacherAuthToken');
+    fetchData();
+  }, []);
 
-      if (!teacherId || !token) {
-        setLoading(false);
-        return;
-      }
+  // 🔁 Real-time socket update
+  useEffect(() => {
+    const teacherId = localStorage.getItem('TeacherPortalId');
+    if (!teacherId) return;
 
-      try {
-        const response = await axios.get<ApiResponse>(
-          'https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts',
-          {
-            params: { teacherId },
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    const socket = getSocket(teacherId);
 
-        const res = response.data;
-
-        setData({
-          totalclasses: safeNumber(res.totalclasses ?? res.totalClasses),
-          totalstudents: safeNumber(res.totalstudents ?? res.totalStudents),
-          totalhours: safeNumber(res.totalhours ?? res.totalHours),
-          totalearnings: safeNumber(res.totalearnings ?? res.totalEarnings),
-        });
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
+    const handleLiveStats = (data: TeacherDashboardStats) => {
+      setStats({
+        totalclasses: safeNumber(data.totalclasses),
+        totalstudents: safeNumber(data.totalstudents),
+        totalhours: parseFloat(safeNumber(data.totalhours).toFixed(1)),
+        totalearnings: safeNumber(data.totalearnings),
+      });
     };
 
-    fetchData();
+    socket.on('teacherDashboardCard', handleLiveStats);
+
+    return () => {
+      socket.off('teacherDashboardCard', handleLiveStats);
+    };
   }, []);
 
   const cards = [
     {
       title: 'Total Classes',
-      count: formatValue(data.totalclasses),
-      icon: getIconContainer(
-        '/assets/images/tc1.svg',
-        'Total Classes',
-        'bg-[#e3efff] dark:bg-[#3e4e50]'
-      ),
+      count: formatValue(stats.totalclasses),
+      icon: '/assets/images/tc1.svg',
+      bg: 'bg-[#e3efff] dark:bg-[#3e4e50]',
     },
     {
       title: 'Total Students',
-      count: formatValue(data.totalstudents),
-      icon: getIconContainer(
-        '/assets/images/tc2.svg',
-        'Total Students',
-        'bg-[#ede5ff] dark:bg-[#3f3e50]'
-      ),
+      count: formatValue(stats.totalstudents),
+      icon: '/assets/images/tc2.svg',
+      bg: 'bg-[#ede5ff] dark:bg-[#3f3e50]',
     },
     {
       title: 'Total Hours',
-      count: formatValue(data.totalhours),
-      icon: getIconContainer(
-        '/assets/images/tc3.svg',
-        'Total Hours',
-        'bg-[#ffe9e9] dark:bg-[#503e3e]'
-      ),
+      count: formatValue(stats.totalhours, false, ' hrs'),
+      icon: '/assets/images/tc3.svg',
+      bg: 'bg-[#ffe9e9] dark:bg-[#503e3e]',
     },
     {
       title: 'Total Earnings',
-      count: formatValue(data.totalearnings, true),
-      icon: getIconContainer(
-        '/assets/images/tc4.svg',
-        'Total Earnings',
-        'bg-[#fff5d4] dark:bg-[#504d3e]'
-      ),
+      count: formatValue(stats.totalearnings, true),
+      icon: '/assets/images/tc4.svg',
+      bg: 'bg-[#fff5d4] dark:bg-[#504d3e]',
     },
   ];
 
@@ -121,11 +134,22 @@ const Total = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            className="h-[110px] bg-gray-200 dark:bg-[#404040] rounded-2xl animate-pulse"
-          />
+          <div key={i} className="h-[110px] bg-gray-200 dark:bg-[#404040] rounded-2xl animate-pulse" />
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-100 text-red-800 rounded-lg">
+        {error}
+        <button
+          onClick={fetchData}
+          className="ml-4 px-3 py-1 bg-red-600 text-white rounded"
+        >
+          Retry
+        </button>
       </div>
     );
   }
@@ -139,18 +163,21 @@ const Total = () => {
         >
           <div>
             <p className="text-[14px] font-medium text-black dark:text-white">
-              {card.title.split(' ').map((word, idx, arr) => (
-                <React.Fragment key={idx}>
-                  {word}
-                  {idx < arr.length - 1 && <br />}
-                </React.Fragment>
-              ))}
+              {card.title}
             </p>
             <p className="text-[28px] font-semibold text-black dark:text-white">
               {card.count}
             </p>
           </div>
-          {card.icon}
+          <div className={`${card.bg} p-3 rounded-full flex items-center justify-center`}>
+            <Image
+              src={card.icon}
+              alt={card.title}
+              width={40}
+              height={40}
+              className="object-contain"
+            />
+          </div>
         </div>
       ))}
     </div>

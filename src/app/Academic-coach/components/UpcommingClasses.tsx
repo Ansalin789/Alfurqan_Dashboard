@@ -52,7 +52,6 @@ const UpcomingClasses: React.FC = () => {
         const response = await axios.get(
           `https://api.blackstoneinfomaticstech.com/dashboard/ac/upcomingclass`,
           {
-            method: "GET",
             params: { academicCoachId: academicId },
             headers: {
               "Content-Type": "application/json",

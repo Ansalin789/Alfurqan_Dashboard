@@ -5,7 +5,6 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { useSearchParams } from "next/navigation";
 import BaseLayout from "@/components/BaseLayout";
-import TeacherHeader from "../../components/TeacherHeader";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -73,10 +72,10 @@ const [redirectTo, setRedirectTo] = useState<string | null>(null);
   useEffect(() => {
     const fetchMeetingData = async () => {
       try {
-        const teacherId = localStorage.getItem("TeacherPortalId");
-        const token = localStorage.getItem("TeacherAuthToken");
+        const teacherId = localStorage.getItem("StudentPortalId");
+        const token = localStorage.getItem("StudentAuthToken");
         if (!teacherId || !token) {
-          console.error("Missing teacher ID or auth token");
+          console.error("Missing Student ID or auth token");
           return;
         }
 
@@ -184,7 +183,7 @@ const handleEndCall = async () => {
     console.log("Meeting schedule updated");
 
     // ✅ Instead of router.push directly
-    setRedirectTo("/teacher/ui/meeting");
+    setRedirectTo("/Student/ui/meeting");
   } catch (error) {
     console.error("Failed to update meeting schedule:", error);
   }
@@ -194,7 +193,7 @@ const handleEndCall = async () => {
 
   return (
     <BaseLayout>
-      <TeacherHeader currentSection="Live Meeting" />
+      {/* <TeacherHeader currentSection="Live Meeting" /> */}
       <div className="flex h-screen">
         <div className="flex flex-col w-full min-h-screen px-4 sm:px-6 md:px-8">
           <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl mx-auto py-0">

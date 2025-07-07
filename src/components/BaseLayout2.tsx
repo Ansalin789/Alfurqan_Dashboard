@@ -46,7 +46,7 @@ export default function BaseLayout2({ children }: Props) {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 overflow-auto py-2 px-4 scrollbar-none">
+        <div className="flex-1 overflow-auto py-2 px-4 scrollbar-none bg-[#E4E7F4] dark:bg-[#242424]">
           {children}
         </div>
       </div>

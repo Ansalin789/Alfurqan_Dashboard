@@ -15,8 +15,31 @@ type Props = {
   readonly currentSection: string;
   readonly showBackButton?: boolean;
   readonly showBackPath?: string;
-  readonly students?: string[];
+  readonly students?: Student[];
 };
+export interface Student {
+  _id: string;
+  teacherName: string;
+  sessionClassType: string;
+  username: string;
+  password: string;
+  role: string;
+  status: string;
+  createdDate: string | number | Date;
+  createdBy: string;
+  updatedDate: string | number | Date;
+  __v: number;
+  student: {
+    studentId: string;
+    studentEmail: string;
+    studentPhone: string | number;
+    course: string;
+    package: string;
+    city: string;
+    country: string;
+    gender: string;
+  };
+}
 type NotificationType = {
   _id: string;
   senderName: string;
@@ -164,7 +187,6 @@ useEffect(() => {
       console.error("❌ Failed to mark as seen:", error);
     }
   };
-
   // Real-time notifications with Socket.IO
   useEffect(() => {
     const socket = getSocket(userId ?? "");
@@ -312,7 +334,7 @@ if (currentSection === ("Dashboard") ){
       {showAssignGroupClass && (
         <AddGroupAssignClass
           onClose={() => setAssignGroupClass(false)}
-          students={[]}
+          students={students}
         />
       )}
       {showNotification && (

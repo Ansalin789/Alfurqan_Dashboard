@@ -16,9 +16,9 @@ import SuccessPopup from "../../../supervisor/components/successPopup";
 import FailedPopup from "../../../supervisor/components/failedPopup";
 import { setTime } from "react-datepicker/dist/date_utils";
 import { getSocket } from "@/app/utils/socket";
-import TeacherHeader from "../../components/TeacherHeader";
-import NextMeetingSchedule from "../../components/NextMeetingSchedule";
-import TeacherFilter from "../../components/TeacherFilter";
+import TeacherHeader from "@/app/teacher/components/TeacherHeader";
+import NextMeetingSchedule from "../../components/meetings/NextMeetingScheduke";
+import ScheduledMeetings from "../../components/meetings/ScheduledMeetings";
 
 // Interface for Teacher (as object)
 interface Teacher {
@@ -29,7 +29,7 @@ interface Teacher {
 
 // Interface for Student (Participant)
 interface Participant {
-  studentId: string; 
+  studentId: string;
   studentName: string;
   studentEmail: string;
 }
@@ -128,28 +128,29 @@ const Meeting = () => {
 
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
 
-
-useEffect(() => {
-    const id = typeof window !== "undefined" ? localStorage.getItem("TeacherPortalID") : null;
-    const socket = getSocket(id ?? '');
+  useEffect(() => {
+    const id =
+      typeof window !== "undefined"
+        ? localStorage.getItem("TeacherPortalID")
+        : null;
+    const socket = getSocket(id ?? "");
     const handleList = (data: { data: Meeting }) => {
-        console.log("📩 Received WebSocket Data:", data);
-        setUpcomingClasses(pre => [...pre, data.data]);
+      console.log("📩 Received WebSocket Data:", data);
+      setUpcomingClasses((pre) => [...pre, data.data]);
     };
-    socket.on('addmeeting', handleList);
+    socket.on("addmeeting", handleList);
     return () => {
-        socket.off('addmeeting', handleList);
+      socket.off("addmeeting", handleList);
     };
-}, []);
+  }, []);
 
   interface Teacher {
     teacherId: string;
     teacherName: string;
     teacherEmail: string;
   }
-  // Remove duplicate Teacher interface and teachersByMeetingId state, not needed since teacher is a single object
 
- type TeachersByMeetingId = Record<string, Teacher[]>;
+  type TeachersByMeetingId = Record<string, Teacher[]>;
   const [teachersByMeetingId, setTeachersByMeetingId] =
     useState<TeachersByMeetingId>({});
 
@@ -163,8 +164,8 @@ useEffect(() => {
       alert("Please fill all fields");
       return;
     }
-    
- try {
+
+    try {
       const token = localStorage.getItem("TeacherAuthToken"); // or use context/auth provider
       const response = await fetch(
         `http://localhost:5001/updateTeacherMeeting/${selectedItemId}`,
@@ -182,8 +183,8 @@ useEffect(() => {
           }),
         }
       );
-console.log("Reschedule Date:", rescheduleDate);
-console.log("Reschedule Time:", rescheduleTime);
+      console.log("Reschedule Date:", rescheduleDate);
+      console.log("Reschedule Time:", rescheduleTime);
 
       const result = await response.json();
 
@@ -214,11 +215,9 @@ console.log("Reschedule Time:", rescheduleTime);
       console.error("Error during rescheduling:", error);
       alert("Could not update meeting. Please try again.");
     }
-
   };
 
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-
 
   const isStartMeetingNow = (
     selectedDate: string,
@@ -226,7 +225,11 @@ console.log("Reschedule Time:", rescheduleTime);
     endTime: string | undefined
   ): boolean => {
     if (!startTime || !endTime) {
-      console.warn("Missing startTime or endTime for meeting:", { selectedDate, startTime, endTime });
+      console.warn("Missing startTime or endTime for meeting:", {
+        selectedDate,
+        startTime,
+        endTime,
+      });
       return false;
     }
 
@@ -245,13 +248,12 @@ console.log("Reschedule Time:", rescheduleTime);
     return now >= start && now <= end;
   };
 
-
-return (
-  <BaseLayout>
-    <TeacherHeader currentSection="Scheduled Meeting"/>
-    <NextMeetingSchedule />
-    {/* Tabs */}
- <TeacherFilter />
+  return (
+    <BaseLayout>
+      <TeacherHeader currentSection="Scheduled Meeting" />
+      <NextMeetingSchedule />
+      {/* Tabs */}
+      <ScheduledMeetings/>
     </BaseLayout>
   );
 };
@@ -260,4 +262,3 @@ export default Meeting;
 function setTeachersByMeetingId(teachersMap: any) {
   throw new Error("Function not implemented.");
 }
-

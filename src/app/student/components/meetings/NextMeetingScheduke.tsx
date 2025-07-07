@@ -47,20 +47,19 @@ const NextMeetingSchedule = () => {
   const [isTimeUp, setIsTimeUp] = useState(false);
 const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
 
-
   useEffect(() => {
     const fetchMeeting = async () => {
       setLoading(true);
       setError(null);
       try {
-        const teacherId = localStorage.getItem("TeacherPortalId");
+        const teacherId = localStorage.getItem("StudentPortalId");
         const token =
           typeof window !== "undefined"
-            ? localStorage.getItem("TeacherAuthToken")
+            ? localStorage.getItem("StudentAuthToken")
             : null;
 
         if (!token) {
-          console.error("❌ Teacher AuthToken not found");
+          console.error("❌ Student AuthToken not found");
           setLoading(false);
           return;
         }
@@ -115,7 +114,6 @@ const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
     fetchMeeting();
   }, []);
 
-  
 useEffect(() => {
   if (!classData || !classData.startTime || !classData.endTime || !classData.selectedDate) return;
 
@@ -164,7 +162,6 @@ useEffect(() => {
 
 
 
-
   const handleStartClass = () => {
 router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
     // router.push(`/teacher/livemeeting/${classData?.meetingId}`);
@@ -188,14 +185,14 @@ router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
 
   if (loading) {
     return (
-      <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white p-6 min-h-[100px]">
+      <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white p-3 min-h-[60px]">
         <div className="flex-1 space-y-4">
-          <div className="h-3 bg-blue-200 rounded w-1/3 animate-pulse"></div>
-          <div className="h-3 bg-blue-200 rounded w-1/4 animate-pulse"></div>
-          <div className="h-3 bg-blue-200 rounded w-1/2 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/3 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/4 animate-pulse"></div>
+          <div className="h-2 bg-blue-200 rounded w-1/2 animate-pulse"></div>
         </div>
         <div className="flex items-center space-x-2 px-14">
-          <div className="w-16 h-16 bg-blue-300 rounded-full animate-pulse"></div>
+          <div className="w-16 h-14 bg-blue-300 rounded-full animate-pulse"></div>
         </div>
       </div>
     );
@@ -251,7 +248,7 @@ router.push(`/teacher/ui/livemeeting?id=${classData?._id}`);
         )} */}
       </div>
       <div className="flex items-center space-x-2 px-14">
-        {isMeetingOngoing  ? (
+        {isTimeUp ? (
           <>
             <button
               onClick={handleStartClass}

@@ -61,9 +61,10 @@ interface EmployeeAccessData {
     teacher: boolean;
     teachermodules: {
       dashboard: boolean;
-      liveclasses: boolean;
-      scheduledclasses: boolean;
-      assignments: boolean;
+      meeting: boolean;
+      schedule: boolean;
+      liveclass: boolean;
+      assignment: boolean;
       messages: boolean;
       analytics: boolean;
       support: boolean;
@@ -112,10 +113,11 @@ const TeacherModuleAccess = () => {
 
   const modules = [
     'Dashboard',
-    'LiveClasses',
-    'scheduledclasses',
-    'Assignments',
-    'Messages',
+    'Meeting',
+    'Schedule',
+    'Liveclass',
+    'Assignment',
+    'Message',
     'Analytics',
     'Support',
   ];
@@ -147,7 +149,7 @@ useEffect(() => {
     }, [employeeId]);
     const fetchEmployeeData = async (token: string) => {
       try {
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        const res = await fetch(`http://localhost:5001/update-access/${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -246,7 +248,7 @@ useEffect(() => {
     return;
   }
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
+        `http://localhost:5001/update-access/${employeeId}`,
         { roleAccess },
         {
           headers:{

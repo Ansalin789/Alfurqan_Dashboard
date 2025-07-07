@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import "react-datepicker/dist/react-datepicker.css";
 import MyClass from "./MyClass";
 import axios from "axios";
-import { MoreVertical, Search } from "lucide-react";
+import { MoreVertical, Search, TimerReset } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
+import moment from "moment";
 
 interface Student {
   studentId: string;
@@ -55,13 +56,6 @@ interface ApiResponse {
   classSchedule: ClassData[];
 }
 
-type SortableKeys =
-  | "classID"
-  | "teacherName"
-  | "package"
-  | "startDate"
-  | "status";
-
 const Classes = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"Scheduled" | "Completed">(
@@ -81,7 +75,7 @@ const Classes = () => {
   const [filterFromTime, setFilterFromTime] = useState("");
   const [filterToTime, setFilterToTime] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-
+  const [showLateReschedulePopup, setShowLateReschedulePopup] = useState(false);
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -210,8 +204,41 @@ const Classes = () => {
     setPopupVisible(popupVisible === classId ? null : classId);
   };
 
-  const handleReschedule = (classId: string) => {
-    router.push(`/student/ui/Reschedule?classId=${classId}`);
+  const handleReschedule = (
+    classId: string,
+    course: string,
+    startTime: string,
+    startDate: string
+  ) => {
+    const studentpackage =
+      typeof window !== "undefined"
+        ? localStorage.getItem("StudentPackage")
+        : null;
+
+    const now = moment(); // current time
+    const classDateTime = moment(
+      `${startDate} ${startTime}`,
+      "YYYY-MM-DD HH:mm"
+    );
+
+    const diffInMinutes = classDateTime.diff(now, "minutes");
+
+    if (diffInMinutes < 240) {
+      setShowLateReschedulePopup(true);
+      setTimeout(() => {
+        setShowLateReschedulePopup(false);
+      }, 3000);
+
+      return;
+    }
+
+    if (studentpackage === "Pro") {
+      router.push(
+        `/student/ui/Proreschedule?classId=${classId}&course=${course}`
+      );
+    } else {
+      router.push(`/student/ui/Reschedule?classId=${classId}`);
+    }
   };
 
   const handleCancel = (classId: string) => {
@@ -350,13 +377,19 @@ const Classes = () => {
                       </td>
                       <td className="px-4 py-3 text-center relative">
                         {activeTab === "Scheduled" &&
-                        (cls.scheduleStatus === "Scheduled" ||
-                          cls.scheduleStatus === "Rescheduled") ? (
+                        cls.scheduleStatus === "Scheduled" ? (
                           <>
                             {popupVisible === cls._id && (
                               <div className="absolute right-0 z-50 w-40 bottom-2 bg-white border rounded-sm  dark:bg-[#2C2C2C]">
                                 <button
-                                  onClick={() => handleReschedule(cls._id)}
+                                  onClick={() =>
+                                    handleReschedule(
+                                      cls._id,
+                                      cls.course.courseName,
+                                      cls.startTime[0],
+                                      cls.startDate
+                                    )
+                                  }
                                   className="block w-full px-4 py-2 text-center text-xs text-gray-700 dark:text-[#ECFDF3] hover:bg-gray-100 dark:hover:bg-gray-600"
                                 >
                                   Request Reschedule
@@ -378,11 +411,12 @@ const Classes = () => {
                             </button>
                           </>
                         ) : (
-                          activeTab === "Completed" && (
+                          activeTab === "Completed" ||
+                          (cls.scheduleStatus === "Rescheduled" && (
                             <div className="flex justify-center">
                               <MoreVertical className="w-4 h-4 text-slate-900 dark:text-white" />
                             </div>
-                          )
+                          ))
                         )}
                       </td>
                     </tr>
@@ -399,6 +433,30 @@ const Classes = () => {
           totalPages={totalPages}
           onPageChange={setCurrentPage}
         />
+
+        {showLateReschedulePopup && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+            <div className="bg-white dark:bg-[#1D1D1D] rounded-xl shadow-lg p-6 w-[90%] max-w-sm text-center">
+              <div className="flex justify-center mb-4">
+                <TimerReset className="w-10 h-10 text-orange-600" />
+              </div>
+              <h2 className="text-lg font-semibold text-[#010E30] dark:text-white mb-4">
+                Rescheduling not allowed
+              </h2>
+              <p className="text-[#010E30]/70 mb-4 text-sm sm:text-sm dark:text-white">
+                You can only reschedule a class at least 4 hours before it
+                starts.
+              </p>
+              <div className="w-32 h-1 bg-orange-500 my-4 rounded-full mx-auto"></div>
+              <button
+                onClick={() => setShowLateReschedulePopup(false)}
+                className="px-5 py-2 text-sm sm:text-base bg-[#576CBC] text-white rounded-lg w-full hover:bg-[#4659a3] transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
         {showFilter && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
             <div className="bg-white dark:bg-[#1E1E1E] w-full max-w-sm rounded-xl shadow-xl p-6 relative space-y-5 mx-3 sm:mx-0">

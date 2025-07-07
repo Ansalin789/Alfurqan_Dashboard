@@ -1,241 +1,325 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 import axios, { AxiosError } from "axios";
+import { getSocket } from "@/app/utils/socket";
+import dayjs from "dayjs";
 
-const daysOfWeek = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
-
-type TimeSlot = {
-  fromHour: string;
-  fromMinute: string;
-  toHour: string;
-  toMinute: string;
-};
-interface Teacher {
+export interface Student {
   _id: string;
-  userName: string;
-  email: string;
+  teacherName: string;
+  sessionClassType: string;
+  username: string;
   password: string;
-  role: string[]; // Array of roles, e.g., "TEACHER"
-  profileImage: string | null; // Could be a URL or null
-  status: string; // Active/Inactive status
-  createdBy: string; // Who created the record
-  lastUpdatedBy: string; // Who last updated the record
-  userId: string; // Unique ID for the user
-  lastLoginDate: string; // Last login timestamp
-  createdDate: string; // Creation timestamp
-  lastUpdatedDate: string; // Last update timestamp
+  role: string;
+  status: string;
+  createdDate: string | number | Date;
+  createdBy: string;
+  updatedDate: string | number | Date;
+  __v: number;
+  student: {
+    studentId: string;
+    studentEmail: string;
+    studentPhone: string | number;
+    course: string;
+    package: string;
+    city: string;
+    country: string;
+    gender: string;
+  };
 }
-type Student = {
+export interface StudentInfo {
   studentId: string;
   studentName: string;
-  studentEmail:string;
-  package:string;
-  course:string;
-  totolHours:string;
-};
+  studentEmail: string;
+}
+
+export interface TeacherInfo {
+  teacherId: string;
+  teacherName: string;
+  teacherEmail: string;
+}
+
+export interface TimeOption {
+  value: string;
+  label: string;
+}
+
+export interface DayOption {
+  value: string;
+  label: string;
+}
+
+export interface ScheduleData {
+  students: StudentInfo[];
+  teacher: TeacherInfo;
+  package: string;
+  preferedTeacher: string;
+  sessionClassType: string;
+  sessionStarttime: string;
+  sessionsEndtime: string;
+  totalHourse: string;
+  startDate: string;
+  endDate: string;
+  classDay: DayOption[];
+  startTime: TimeOption[];
+  endTime: TimeOption[];
+  scheduleStatus: string;
+  studentAttendee: string;
+  teacherAttendee: string;
+}
 
 type Props = {
   readonly onClose: () => void;
-  students : Student[];
+  students: Student[];
+};
+interface TeacherList {
+  teacherId: string;
+  teacherName: string;
+}
+interface TimeSlots {
+  startTime: string;
+  endTime: string;
+}
+
+interface ScheduleItem {
+  day: string;
+  times: TimeSlots[];
+  isSelected: boolean;
+}
+type WeeklySlotMap = {
+  [day: string]: { from: string; to: string }[];
 };
 
-export default function AddGroupAssignClass({ onClose , students }: Readonly<Props>) {
-  const [selectedDays, setSelectedDays] = useState<Record<string, TimeSlot[]>>(
-    {}
+export default function AddGroupAssignClass({
+  onClose,
+  students,
+}: Readonly<Props>) {
+  const [teachers, setTeachers] = useState<TeacherList[]>([]);
+  const [selectedTeacher, setSelectedTeacher] = useState<TeacherList | null>(
+    null
   );
-  const [tempSlots, setTempSlots] = useState<Record<string, TimeSlot>>({});
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [studentInfos, setStudentInfos] = useState<StudentInfo[]>([]);
   const [success, setSuccess] = useState(false);
-    const [failed, setFailed] = useState(false);
-    const [failedMessage, setFailedMessage] = useState("");
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
   useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("AcademicCoachAuthToken")
-            : null;
+    console.log(JSON.stringify(students));
+  }, [students]);
 
-        if (!token) {
-          console.error("❌ AdminAuthToken not found");
-          return;
-        }
-        const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const data = await response.json();
-
-        console.log("Fetched data:", data);
-
-        // Access `users` array in the response
-        if (data && Array.isArray(data.users)) {
-          setTeachers(data.users);
-        } else {
-          console.error("Unexpected API response structure:", data);
-        }
-      } catch (error) {
-        console.error("Error fetching teachers:", error);
+  const [startDate, setStartDate] = useState("");
+  const [schedule, setSchedule] = useState<ScheduleItem[]>(
+    [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ].map((day) => ({
+      day,
+      times: [],
+      isSelected: false,
+    }))
+  );
+  const scheduleHash = useMemo(() => {
+    return JSON.stringify({ startDate, schedule });
+  }, [startDate, schedule]);
+  const buildWeeklySlots = () => {
+    const map: WeeklySlotMap = {};
+    schedule.forEach((item) => {
+      if (item.isSelected && item.times.length > 0) {
+        map[item.day] = item.times.map((t) => ({
+          from: t.startTime,
+          to: t.endTime,
+        }));
       }
-    };
-    fetchTeachers();
-  }, []);
-
- const handleDayToggle = (day: string) => {
-  setSelectedDays((prev) => {
-    const newState = { ...prev };
-
-    if (newState[day]) {
-      delete newState[day]; // Safely remove key instead of setting to undefined
-    } else {
-      newState[day] = [];
-    }
-
-    return newState;
-  });
-};
-
-
-  const handleTimeChange = (
-    day: string,
-    field: keyof TimeSlot,
-    value: string
-  ) => {
-    setTempSlots((prev) => ({
-      ...prev,
-      [day]: {
-        ...prev[day],
-        [field]: value,
-      },
+    });
+    return map;
+  };
+  useEffect(() => {
+    const mapped = students.map((stu) => ({
+      studentId: stu._id,
+      studentName: stu.username,
+      studentEmail: stu.student.studentEmail,
     }));
+    setStudentInfos(mapped);
+  }, [students]);
+  useEffect(() => {
+    const academicId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
+    if (!academicId) return;
+
+    const hasSelection = schedule.some(
+      (item) => item.isSelected && item.times.length > 0
+    );
+    if (!hasSelection || !startDate) return;
+
+    const socket = getSocket(academicId);
+    console.log("📤 Sending availableTeachersListRequest");
+
+    socket.emit("availableTeachersListRequest", {
+      requestId: academicId,
+      startDate,
+      WeeklySlots: buildWeeklySlots(),
+    });
+
+    const handleResponse = (data: TeacherList[]) => {
+      console.log("📥 Teacher list received:", data);
+      setTeachers(data);
+    };
+
+    socket.on("availableTeachersListResponse", handleResponse);
+
+    return () => {
+      socket.off("availableTeachersListResponse", handleResponse);
+    };
+  }, [scheduleHash]);
+  const handleClassSelection = (index: number) => {
+    const updatedSchedule = [...schedule];
+    updatedSchedule[index].isSelected = !updatedSchedule[index].isSelected;
+    setSchedule(updatedSchedule);
+  };
+  const handleAddTimeSlot = (index: number) => {
+    const updatedSchedule = [...schedule];
+    if (updatedSchedule[index].times.length > 0) {
+      const lastSlot =
+        updatedSchedule[index].times[updatedSchedule[index].times.length - 1];
+      if (!lastSlot.startTime || !lastSlot.endTime) {
+        alert("⚠️ Please fill the last time slot before adding a new one.");
+        return;
+      }
+    }
+    updatedSchedule[index].times.push({ startTime: "09:00", endTime: "09:30" });
+
+    setSchedule(updatedSchedule);
+  };
+  const handleRemoveTimeSlot = (dayIndex: number, timeIndex: number) => {
+    const updatedSchedule = [...schedule];
+    updatedSchedule[dayIndex].times.splice(timeIndex, 1);
+    setSchedule(updatedSchedule);
   };
 
-  const addTimeSlot = (day: string) => {
-    const slot = tempSlots[day];
-    if (!slot?.fromHour || !slot?.toHour) return;
-
-    setSelectedDays((prev) => ({
-      ...prev,
-      [day]: [...(prev[day] || []), slot],
-    }));
-
-    setTempSlots((prev) => ({
-      ...prev,
-      [day]: { fromHour: "", fromMinute: "", toHour: "", toMinute: "" },
-    }));
+  const handleTimeChange = (
+    dayIndex: number,
+    timeIndex: number,
+    field: "startTime" | "endTime",
+    value: string
+  ) => {
+    const updatedSchedule = [...schedule];
+    updatedSchedule[dayIndex].times[timeIndex][field] = value;
+    setSchedule(updatedSchedule);
   };
 
   const hours = Array.from({ length: 24 }, (_, i) =>
     String(i).padStart(2, "0")
   );
-  const minutes = ["00", "15", "30", "45"];
-  const generateStructuredTimeData = () => {
-    const classDay: { label: string; value: string }[] = [];
-    const startTime: { label: string; value: string }[] = [];
-    const endTime: { label: string; value: string }[] = [];
+  const minutes = ["00", "30"];
 
-    for (const day in selectedDays) {
-      const slots = selectedDays[day];
-    if (slots?.length) {
-        slots.forEach((slot) => {
-          const from = `${slot.fromHour}:${slot.fromMinute}`;
-          const to = `${slot.toHour}:${slot.toMinute}`;
-
-          classDay.push({ label: day, value: day });
-          startTime.push({ label: from, value: from });
-          endTime.push({ label: to, value: to });
-        });
-      }
+  const handleSubmit = async () => {
+    console.log(startDate);
+    console.log(selectedTeacher);
+    console.log(studentInfos);
+    if (!startDate || !selectedTeacher?.teacherId || !studentInfos) {
+      alert("Please fill all required fields!");
+      return;
     }
-
-    return { classDay, startTime, endTime };
-  };
-   const handleSubmit = async () => {
-      const createdDate = new Date().toISOString();
-       const timeData = generateStructuredTimeData();
-       if (
-        !timeData ||
-        !selectedTeacher ||
-        students
-      ) {
-        alert("Please fill all required fields!");
+    const formattedStartDate = dayjs(startDate).format("YYYY-MM-DD");
+    const formattedEndDate = dayjs(startDate)
+      .add(28, "day")
+      .format("YYYY-MM-DD");
+    const requestData: ScheduleData = {
+      students: studentInfos,
+      teacher: {
+        teacherId: selectedTeacher?.teacherId ?? "",
+        teacherName: selectedTeacher?.teacherName ?? "",
+        teacherEmail: "",
+      },
+      package: "",
+      preferedTeacher: selectedTeacher?.teacherName ?? "",
+      sessionClassType: "GROUPCLASS",
+      sessionStarttime: "",
+      sessionsEndtime: "",
+      totalHourse: "",
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+      classDay: schedule
+        .filter((item) => item.isSelected)
+        .map((item) => ({ label: item.day, value: item.day })),
+      startTime: schedule
+        .filter((item) => item.isSelected)
+        .flatMap((item) =>
+          item.times.map((time) => ({
+            label: time.startTime,
+            value: time.startTime,
+          }))
+        ),
+      endTime: schedule
+        .filter((item) => item.isSelected)
+        .flatMap((item) =>
+          item.times.map((time) => ({
+            label: time.endTime,
+            value: time.endTime,
+          }))
+        ),
+      scheduleStatus: "Scheduled",
+      studentAttendee: "Absent",
+      teacherAttendee: "Absent",
+    };
+    console.log("payload", requestData);
+    try {
+      const token = localStorage.getItem("AcademicCoachAuthToken");
+      if (!token) {
+        console.error("❌ AcademicCoachAuthToken not found");
         return;
       }
-      const requestData = {
-        timeData,
-        selectedTeacher,
-        students,
-        classStatus: "Scheduled",
-        student: teachers,
-        status: "Active",
-        createdDate,
-        createdBy: localStorage.getItem("AcademicCoachPortalName"),
-      };
-  
-      try {
-        const token = localStorage.getItem("AcademicCoachAuthToken");
-        if (!token) {
-          console.error("❌ AcademicCoachAuthToken not found");
-          return;
+
+      const response = await axios.post(
+        " http://localhost:5001/groupclassschedule/bulkcreate",
+        requestData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-  
-        const response = await axios.post(
-          "https://api.blackstoneinfomaticstech.com/addMeeting",
-          requestData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-  
-        if ([200, 201, 400].includes(response.status)) {
-          setSuccess(true);
-          setTimeout(() => {
-           setTeachers([]);
-           setTempSlots({});
-           setSelectedDays({});
-          }, 2000);
-        }
-      } catch (err) {
-        const error = err as AxiosError;
-        const status = error.response?.status;
-        if (Number(status === 400)) {
-          console.log("please >");
-          setFailedMessage("Please check the form inputs.");
-          setFailed(true);
-        } else if (status === 401) {
-          setFailedMessage("Please login again.");
-          setFailed(true);
-        } else if (status === 403) {
-          setFailedMessage("You don't have permission to perform this action.");
-          setFailed(true);
-        } else if (status === 500) {
-          setFailedMessage("Server error");
-          setFailed(true);
-        } else {
-          setFailed(true);
-          console.error(`Unexpected error: ${status}`);
-        }
+      );
+
+      if ([200, 201].includes(response.status)) {
+        setSuccess(true);
+        setTimeout(() => {
+          setTeachers([]);
+          setSchedule([]);
+        }, 2000);
       }
-    };
+    } catch (err) {
+      const error = err as AxiosError;
+      const status = error.response?.status;
+      if (Number(status === 400)) {
+        const message =
+          (error.response?.data as any)?.message ?? "Please check the form inputs.";
+        setFailedMessage(message);
+        setFailed(true);
+      } else if (status === 401) {
+        setFailedMessage("Please login again.");
+        setFailed(true);
+      } else if (status === 403) {
+        setFailedMessage("You don't have permission to perform this action.");
+        setFailed(true);
+      } else if (status === 500) {
+        setFailedMessage("Server error");
+        setFailed(true);
+      } else {
+        setFailed(true);
+        console.error(`Unexpected error: ${status}`);
+      }
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
@@ -246,106 +330,144 @@ export default function AddGroupAssignClass({ onClose , students }: Readonly<Pro
         <h1 className="text-sm font-medium text-[#010E30] dark:text-white mb-3">
           Schedule Classes
         </h1>
-
-        {daysOfWeek.map((day) => (
-          <div key={day} className="mb-4 border rounded-md px-3 py-2">
+        <label
+          htmlFor="ugcuc"
+          className="text-[14px] text-[#010E30] dark:text-white mb-3"
+        >
+          Join Date:
+        </label>
+        <input
+          type="date"
+          id="ugcuc"
+          className="w-full border text-xs rounded px-3 py-2 dark:bg-[#2A2A2A] dark:text-white mb-2"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        {schedule.map((item, dayIndex) => (
+          <div key={item.day} className="mb-4 border rounded-md px-3 py-2">
             <div className="flex items-center justify-between mb-2">
               <label className="text-[14px] text-[#010E30CC] dark:text-white">
-                {day}
+                {item.day}
               </label>
               <input
                 type="checkbox"
-                checked={!!selectedDays[day]}
-                onChange={() => handleDayToggle(day)}
+                checked={item.isSelected}
+                onChange={() => handleClassSelection(dayIndex)}
               />
             </div>
 
-            {selectedDays[day] && (
+            {item.isSelected && (
               <>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex gap-1 w-full">
-                    <select
-                      value={tempSlots[day]?.fromHour || ""}
-                      onChange={(e) =>
-                        handleTimeChange(day, "fromHour", e.target.value)
-                      }
-                      className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
+                {item.times.map((time, timeIndex) => (
+                  <div
+                    key={timeIndex}
+                    className="flex items-center justify-between gap-2 mb-2"
+                  >
+                    <div className="flex gap-1 w-full">
+                      {/* From Time - HH */}
+                      <select
+                        value={time.startTime.split(":")[0]}
+                        onChange={(e) =>
+                          handleTimeChange(
+                            dayIndex,
+                            timeIndex,
+                            "startTime",
+                            `${e.target.value}:${time.startTime.split(":")[1]}`
+                          )
+                        }
+                        className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
+                      >
+                        {hours.map((h) => (
+                          <option key={h}>{h}</option>
+                        ))}
+                      </select>
+
+                      {/* From Time - MM */}
+                      <span className="text-[#293453] pt-1 dark:text-white">
+                        :
+                      </span>
+                      <select
+                        value={time.startTime.split(":")[1]}
+                        onChange={(e) =>
+                          handleTimeChange(
+                            dayIndex,
+                            timeIndex,
+                            "startTime",
+                            `${time.startTime.split(":")[0]}:${e.target.value}`
+                          )
+                        }
+                        className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
+                      >
+                        {minutes.map((m) => (
+                          <option key={m}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Separator */}
+                    <span className="text-[#293453] dark:text-white">-</span>
+
+                    <div className="flex gap-1 w-full">
+                      {/* To Time - HH */}
+                      <select
+                        value={time.endTime.split(":")[0]}
+                        onChange={(e) =>
+                          handleTimeChange(
+                            dayIndex,
+                            timeIndex,
+                            "endTime",
+                            `${e.target.value}:${time.endTime.split(":")[1]}`
+                          )
+                        }
+                        className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
+                      >
+                        <option value="">HH</option>
+                        {hours.map((h) => (
+                          <option key={h}>{h}</option>
+                        ))}
+                      </select>
+
+                      {/* To Time - MM */}
+                      <span className="text-[#293453] pt-1 dark:text-white">
+                        :
+                      </span>
+                      <select
+                        value={time.endTime.split(":")[1]}
+                        onChange={(e) =>
+                          handleTimeChange(
+                            dayIndex,
+                            timeIndex,
+                            "endTime",
+                            `${time.endTime.split(":")[0]}:${e.target.value}`
+                          )
+                        }
+                        className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
+                      >
+                        <option value="">MM</option>
+                        {minutes.map((m) => (
+                          <option key={m}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTimeSlot(dayIndex, timeIndex)}
+                      className="ml-2 text-red-500 hover:text-red-700 text-[8px]"
+                      title="Remove this time slot"
                     >
-                      <option className="text-xs scrollbar-none" value="">
-                        HH
-                      </option>
-                      {hours.map((h) => (
-                        <option key={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-[#293453] pt-1 dark:text-white">
-                      :
-                    </span>
-                    <select
-                      value={tempSlots[day]?.fromMinute || ""}
-                      onChange={(e) =>
-                        handleTimeChange(day, "fromMinute", e.target.value)
-                      }
-                      className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
-                    >
-                      <option className="text-xs scrollbar-none" value="">
-                        MM
-                      </option>
-                      {minutes.map((m) => (
-                        <option key={m}>{m}</option>
-                      ))}
-                    </select>
+                      ❌
+                    </button>
                   </div>
-                  <span className="text-[#293453] dark:text-white">-</span>
-                  <div className="flex gap-1 w-full">
-                    <select
-                      value={tempSlots[day]?.toHour || ""}
-                      onChange={(e) =>
-                        handleTimeChange(day, "toHour", e.target.value)
-                      }
-                      className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
-                    >
-                      <option className="text-xs scrollbar-none" value="">
-                        HH
-                      </option>
-                      {hours.map((h) => (
-                        <option key={h}>{h}</option>
-                      ))}
-                    </select>
-                    <span className="text-[#293453] pt-1 dark:text-white">
-                      :
-                    </span>
-                    <select
-                      value={tempSlots[day]?.toMinute || ""}
-                      onChange={(e) =>
-                        handleTimeChange(day, "toMinute", e.target.value)
-                      }
-                      className="w-full border rounded px-2 py-1 dark:bg-[#2A2A2A] dark:text-white"
-                    >
-                      <option className="text-xs scrollbar-none" value="">
-                        MM
-                      </option>
-                      {minutes.map((m) => (
-                        <option key={m}>{m}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                ))}
 
                 <button
                   type="button"
-                  onClick={() => addTimeSlot(day)}
+                  onClick={() => handleAddTimeSlot(dayIndex)}
                   className="w-full bg-[#576CBC] text-white py-1 rounded text-sm"
                 >
                   Add
                 </button>
-
-                {selectedDays[day]?.map((slot, index ) => (
-                  <div key={index} className="text-xs text-[#576CBC] mt-1">
-                    {slot.fromHour}:{slot.fromMinute} - {slot.toHour}:
-                    {slot.toMinute}
-                  </div>
-                ))}
               </>
             )}
           </div>
@@ -359,10 +481,10 @@ export default function AddGroupAssignClass({ onClose , students }: Readonly<Pro
             Select Teacher
           </label>
           <select
-            value={selectedTeacher?.userId ?? ""}
+            value={selectedTeacher?.teacherId ?? ""}
             onChange={(e) => {
               const selected = teachers.find(
-                (teacher) => teacher.userId === e.target.value
+                (teacher) => teacher.teacherId === e.target.value
               );
               setSelectedTeacher(selected || null);
             }}
@@ -371,11 +493,11 @@ export default function AddGroupAssignClass({ onClose , students }: Readonly<Pro
             <option value="">Select a Teacher</option>
             {teachers.map((teacher) => (
               <option
-                key={teacher.userId}
-                value={teacher.userId}
+                key={teacher.teacherId}
+                value={teacher.teacherId}
                 className="text-[#010E30] text-xs dark:text-white bg-white dark:bg-[#343434]"
               >
-                {teacher.userName}
+                {teacher.teacherName}
               </option>
             ))}
           </select>
@@ -390,23 +512,23 @@ export default function AddGroupAssignClass({ onClose , students }: Readonly<Pro
             Cancel
           </button>
           <button
-            type="submit"
-             onSubmit={(e) => {
-               e.preventDefault();
-               handleSubmit();
-            }}
+            type="button"
+            onClick={handleSubmit}
             className="px-3 py-1 bg-[#576CBC] text-white  rounded hover:bg-[#4459A9]"
           >
             Submit
           </button>
         </div>
       </form>
-       {success && (
-              <SuccessPopup onClose={() => setSuccess(false)} title="Group Class Added Successfully" />
-            )}
-            {failed && (
-              <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
-            )}
+      {success && (
+        <SuccessPopup
+          onClose={() => setSuccess(false)}
+          title="Group Class Added Successfully"
+        />
+      )}
+      {failed && (
+        <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+      )}
     </div>
   );
 }

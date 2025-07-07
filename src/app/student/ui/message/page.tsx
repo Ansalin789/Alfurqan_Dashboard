@@ -9,7 +9,6 @@ import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { Bell } from "lucide-react";
-
 // Define your interfaces
 interface IMessage {
   _id: string;
@@ -28,6 +27,20 @@ interface IMessage {
 interface IMessageData {
   _id: string;
   messages: IMessage[];
+}
+interface Invoice {
+  student: {
+    studentId: string;
+    studentName: string;
+    studentEmail: string;
+    studentPhone: number;
+  };
+  _id: string;
+  courseName: string;
+  amount: number;
+  status: string;
+  createdDate: string;
+  invoiceStatus: "Paid" | "Pending";
 }
 
 interface IMessageResponse {
@@ -64,10 +77,12 @@ interface IMessagesend {
 
 const Message = () => {
   const [teachers, setTeachers] = useState<IUser[]>([]);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
+
   const [academicCoaches, setAcademicCoaches] = useState<IUser[]>([]);
-  const [activeTab, setActiveTab] = useState<
-    "teachers" | "academicCoaches"
-  >("teachers");
+  const [activeTab, setActiveTab] = useState<"teachers" | "academicCoaches">(
+    "teachers"
+  );
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [messageText, setMessageText] = useState("");
@@ -75,36 +90,54 @@ const Message = () => {
   const [messageCount, setMessageCount] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<any>(null);
+
   let userId: string | null = null;
+  let studentName: string = "";
+  let studentEmail: string = "";
 
   if (typeof window !== "undefined") {
-    userId = localStorage.getItem('StudentPortalId');
+    userId = localStorage.getItem("StudentPortalId");
+    studentName = localStorage.getItem("StudentName") || "Student";
+    studentEmail =
+      localStorage.getItem("StudentEmail") || "student@blackstone.com";
   }
-  const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
-    try {
-       const token =
-    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-  }  
+  const fetchUsersByRole = async (): Promise<IUser[]> => {
+    try {
+      const token = localStorage.getItem("StudentAuthToken");
+      if (!token) {
+        console.error("❌ StudentAuthToken not found");
+        return [];
+      }
+
       const response = await axios.get<{ users: IUser[] }>(
         "https://api.blackstoneinfomaticstech.com/users",
         {
-          params: { role },
-            headers: { "Content-Type": "application/json",
-               'Authorization': `Bearer ${token}`,
-           },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       return response.data.users;
     } catch (err) {
-      console.error(`❌ Failed to fetch users for role ${role}:`, err);
+      console.error(`❌ Failed to fetch users:`, err);
       return [];
     }
   };
 
-  // Filter users based on search query
+  const fetchAllUsers = async () => {
+    const allUsers = await fetchUsersByRole();
+    const teachers = allUsers.filter((u) =>
+      u.role.map((r) => r.toLowerCase()).includes("teacher")
+    );
+    const coaches = allUsers.filter((u) =>
+      u.role.map((r) => r.toLowerCase()).includes("academiccoach")
+    );
+    setTeachers(teachers);
+    setAcademicCoaches(coaches);
+  };
+
   const filteredUsers = (
     activeTab === "teachers" ? teachers : academicCoaches
   ).filter(
@@ -113,55 +146,67 @@ const Message = () => {
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Handle message selection
   const handleUserClick = (user: IUser) => {
     setSelectedUser(user);
-    // Load messages for this user
-    setMessages([]); // Clear previous messages
-    fetchMessages(user._id); // Fetch new messages from the API
+    setMessages([]);
+    fetchMessages(user._id);
   };
 
-  // Fetch messages from API
   const fetchMessages = async (receiverId: string) => {
     try {
-         const token =
-    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+      const token = localStorage.getItem("StudentAuthToken");
+      if (!token) return;
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }  
       const { data } = await axios.get<IMessageResponse>(
         `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`,
         {
-          headers: { "Content-Type": "application/json",
-               'Authorization': `Bearer ${token}`,
-           },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+
       const fetchedMessages = data?.data?.[0]?.messages ?? [];
 
-    // Filter by senderId and receiverId
-    const filteredMessages = fetchedMessages.filter(
-      (msg) => msg.senderId === userId && msg.receiverId === receiverId
-    );
+      const filteredMessages = fetchedMessages.filter(
+        (msg) =>
+          (msg.senderId === userId && msg.receiverId === receiverId) ||
+          (msg.senderId === receiverId && msg.receiverId === userId)
+      );
 
-    setMessages(filteredMessages); 
-
-      // Count unread messages
+      setMessages(filteredMessages);
       const unreadCount = fetchedMessages.filter((m) => !m.isRead).length;
-      setMessageCount(unreadCount); // Update the unread message count
+      setMessageCount(unreadCount);
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
   };
+
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    const container = document.querySelector(".chat-scroll-container");
+    if (container && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
     }
   }, [messages]);
 
-  // Initialize socket connection
+  useEffect(() => {
+  const savedUser = localStorage.getItem("SelectedUser");
+  if (savedUser) {
+    setSelectedUser(JSON.parse(savedUser));
+  }
+}, []);
+
+useEffect(() => {
+  if (selectedUser) {
+    localStorage.setItem("SelectedUser", JSON.stringify(selectedUser));
+  }
+}, [selectedUser]);
+
+
   useEffect(() => {
     if (!socketRef.current) {
       socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
@@ -170,7 +215,6 @@ const Message = () => {
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
-        
       });
 
       socketRef.current.on("connect", () => {
@@ -187,49 +231,37 @@ const Message = () => {
       });
     }
 
-    // Handle incoming messages
     const handleNewMessage = (newMessage: IMessage) => {
       console.log("Received new message:", newMessage);
       setMessages((prev) => [newMessage, ...prev]);
-      // Only increment count if message is unread
       if (!newMessage.isRead) {
         setMessageCount((prev) => prev + 1);
       }
     };
 
     socketRef.current.on("newmessage", handleNewMessage);
-    const fetchAllUsers = async () => {
-      const [sup, coaches] = await Promise.all([
-        fetchUsersByRole("TEACHER"),
-        fetchUsersByRole("ACADEMICCOACH"),
-      ]);
-      setTeachers(sup);
-      setAcademicCoaches(coaches);
-    };
 
     fetchAllUsers();
-    // Cleanup: remove only the message listener
+
     return () => {
       socketRef.current?.off("newmessage", handleNewMessage);
     };
   }, [userId]);
 
-  // Handle sending messages
   const handleSendMessage = async () => {
     if (!selectedUser || !messageText.trim()) return;
 
-    // Create the message object in IMessagesend format
     const newMessage: IMessagesend = {
       messages: messageText,
       senderId: userId ?? "",
-      senderName: "academicCoaches",
+      senderName: studentName,
       receiverId: selectedUser._id,
-      receiverName: `${selectedUser.userName}`,
+      receiverName: selectedUser.userName,
       createdDate: new Date(),
       notificationStatus: "Unseen",
       isRead: false,
       status: "Active",
-      senderEmail: "Blackstone@gmail.com",
+      senderEmail: studentEmail,
       receiverEmail: selectedUser.email,
       createdBy: "System",
       updatedDate: new Date(),
@@ -237,43 +269,37 @@ const Message = () => {
     };
 
     try {
-   const token =
-    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+      const token = localStorage.getItem("StudentAuthToken");
+      if (!token) return;
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }        const response = await axios.post(
+      const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/realtimemessage",
         newMessage,
         {
           headers: {
             "Content-Type": "application/json",
-            "Authorization":`Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      // Check if the message was successfully posted
       if (response.data.status === "success") {
-        // Convert IMessagesend to IMessage before updating state
         const convertedMessage: IMessage = {
-          _id: Date.now().toString(), // Generate a unique _id
+          _id: Date.now().toString(),
           messages: newMessage.messages,
           senderId: newMessage.senderId,
           senderName: newMessage.senderName,
           receiverId: newMessage.receiverId,
           receiverName: newMessage.receiverName,
-          createdDate: newMessage.createdDate.toISOString(), // Ensure date is in string format
+          createdDate: newMessage.createdDate.toISOString(),
           time: new Date().toLocaleTimeString(),
           notificationStatus: newMessage.notificationStatus,
           isRead: newMessage.isRead,
           status: newMessage.status,
         };
 
-        // Update messages state with the new message
         setMessages((prev) => [convertedMessage, ...prev]);
-        setMessageText(""); // Clear the message input
+        setMessageText("");
       } else {
         console.error("Error posting message:", response.data.message);
       }
@@ -283,7 +309,7 @@ const Message = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case "online":
         return "bg-green-500";
       case "offline":
@@ -317,11 +343,10 @@ const Message = () => {
               </motion.div>
               <div>
                 <div className="flex">
-                <h3 className="text-sm font-semibold text-[#374557]">
-                  Academic Coach{" "}
-                  
-                </h3>
-                <button className="ml-[1px] text-gray-500">
+                  <h3 className="text-sm font-semibold text-[#374557]">
+                    {studentName}
+                  </h3>
+                  <button className="ml-[1px] text-gray-500">
                     <Bell size={16} className="text-white" />
                     {messageCount > 0 && (
                       <span className=" -mt-7 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
@@ -330,9 +355,6 @@ const Message = () => {
                     )}
                   </button>
                 </div>
-                
-
-                <p className="text-xs text-gray-400">academic coach</p>
               </div>
             </div>
 
@@ -381,18 +403,18 @@ const Message = () => {
             <div className="mt-2 overflow-y-auto flex-1">
               <AnimatePresence>
                 {filteredUsers.map((user) => (
-                  <motion.button
-                    key={user._id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                  <motion.div
+                    role="button"
+                    onClick={() => handleUserClick(user)}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      handleUserClick(user)
+                    }
                     className={`flex items-center border-b-2 justify-between w-full p-2 rounded cursor-pointer ${
                       selectedUser?._id === user._id
                         ? "bg-blue-100 text-blue-600"
                         : "hover:bg-gray-50"
                     }`}
-                    onClick={() => handleUserClick(user)}
                   >
                     <div className="flex space-x-2 items-center">
                       <div className="relative">
@@ -422,7 +444,7 @@ const Message = () => {
                     <span className="text-[9px] text-gray-400">
                       {user.lastSeen}
                     </span>
-                  </motion.button>
+                  </motion.div>
                 ))}
               </AnimatePresence>
             </div>
@@ -472,14 +494,11 @@ const Message = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 p-3 overflow-y-auto scrollbar-none bg-gray-50 flex flex-col">
-                  {" "}
-                  {/* Added flex-col-reverse */}
-                  <AnimatePresence>
-                    {[...messages].reverse().map(
-                      (
-                        msg // Reverse the messages array
-                      ) => (
+                <div className="relative flex-1 h-[calc(85vh-100px)]">
+                  {/* Adjust as needed */}
+                  <div className="absolute inset-0 overflow-y-auto p-3 flex flex-col-reverse bg-gray-50 chat-scroll-container">
+                    <AnimatePresence>
+                      {[...messages].reverse().map((msg) => (
                         <motion.div
                           key={msg._id}
                           initial={{ opacity: 0, y: 10 }}
@@ -518,10 +537,10 @@ const Message = () => {
                             </div>
                           </motion.div>
                         </motion.div>
-                      )
-                    )}
-                  </AnimatePresence>
-                  <div ref={messagesEndRef} />
+                      ))}
+                    </AnimatePresence>
+                    <div ref={messagesEndRef} />
+                  </div>
                 </div>
 
                 <motion.div
@@ -539,11 +558,18 @@ const Message = () => {
                       className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none"
                       value={messageText}
                       onChange={(e) => setMessageText(e.target.value)}
-                      onKeyPress={(e) =>
-                        e.key === "Enter" && handleSendMessage()
-                      }
+                      onKeyDown={(e) => {
+                        if (
+                          e.key === "Enter" &&
+                          selectedUser &&
+                          messageText.trim()
+                        ) {
+                          handleSendMessage();
+                        }
+                      }}
                     />
                     <motion.button
+                      type="button"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={handleSendMessage}

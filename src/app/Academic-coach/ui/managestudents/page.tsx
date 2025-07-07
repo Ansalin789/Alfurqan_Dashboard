@@ -41,6 +41,7 @@ interface Users {
 }
 const ManageStudents = () => {
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const [studentData, setStudentData] = useState<Users>({
@@ -113,16 +114,33 @@ const ManageStudents = () => {
   },[]);
 
   const toggleSelect = (index: number) => {
-    setSelectedRows((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
+    const student = studentsToRender[index];
+    if (student.sessionClassType === "REGULAR") return; // Prevent selection for REGULAR class type
+    setSelectedRows((prev) => {
+      let newSelectedRows;
+      if (prev.includes(index)) {
+        newSelectedRows = prev.filter((i) => i !== index);
+      } else {
+        newSelectedRows = [...prev, index];
+      }
+      // Update selectedStudents array
+      const newSelectedStudents = newSelectedRows.map((i) => studentsToRender[i]);
+      setSelectedStudents(newSelectedStudents);
+      return newSelectedRows;
+    });
   };
 
   const toggleSelectAll = () => {
-    if (selectedRows.length === studentData.students.length) {
+    // Only select students that are not REGULAR
+    const selectableIndices = studentsToRender
+      .map((student, idx) => (student.sessionClassType !== "REGULAR" ? idx : null))
+      .filter((idx) => idx !== null) as number[];
+    if (selectedRows.length === selectableIndices.length) {
       setSelectedRows([]);
+      setSelectedStudents([]);
     } else {
-      setSelectedRows(studentData.students.map((_, idx) => idx));
+      setSelectedRows(selectableIndices);
+      setSelectedStudents(selectableIndices.map((i) => studentsToRender[i]));
     }
   };
 
@@ -252,7 +270,7 @@ const ManageStudents = () => {
               <div className="space-y-4">
                 {/* Student Name */}
                 <div>
-                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  <label htmlFor="studentname" className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                     Student Name
                   </label>
                   <input
@@ -267,7 +285,7 @@ const ManageStudents = () => {
   
                 {/* Course */}
                 <div>
-              <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+              <label htmlFor="studentId" className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                 Student ID
               </label>
               <input
@@ -282,7 +300,7 @@ const ManageStudents = () => {
   
                 {/* Date */}
                 <div>
-                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  <label htmlFor="date" className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                     Date
                   </label>
                   <input
@@ -297,7 +315,7 @@ const ManageStudents = () => {
   
                 {/* Time */}
                 <div>
-                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  <label htmlFor="Time" className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                     Time
                   </label>
                   <input
@@ -312,7 +330,7 @@ const ManageStudents = () => {
   
                 {/* Class Type */}
                 <div>
-                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  <label htmlFor="classtype" className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                     Class Type
                   </label>
                   <select
@@ -331,7 +349,7 @@ const ManageStudents = () => {
   
                 {/* Status */}
                 <div>
-                  <label className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
+                  <label htmlFor="stauts" className="text-sm font-medium mb-1 block dark:text-[#D6D6D6]">
                     Status
                   </label>
                   <select
@@ -438,7 +456,7 @@ const ManageStudents = () => {
   return (
     <BaseLayout1>
       <div>
-        <AcademicHeader currentSection="Student List" />
+        <AcademicHeader currentSection="Student List" students={selectedStudents} />
         <div className="md:p-0 mx-auto">
           <div className="h-full w-full flex flex-col justify-between">
             <div className="p-0 justify-between flex flex-col">
@@ -538,6 +556,7 @@ const ManageStudents = () => {
                             onChange={() =>
                               toggleSelect(index + indexOfFirstItem)
                             }
+                            disabled={item.sessionClassType === "REGULAR"}
                           />
                         </td>
                         <td className="px-3 py-2">{item.student.studentId}</td>

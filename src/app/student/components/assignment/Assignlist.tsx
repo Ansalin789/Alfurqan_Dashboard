@@ -1,154 +1,166 @@
 "use client";
+
+import React, { useEffect, useState } from "react";
+import { PieChart, Pie, Cell } from "recharts";
 import axios from "axios";
-import React, {  useEffect, useState } from "react";
-interface Assignment {
-  _id: string;
-  studentId: string;
-  assignmentName: string;
-  assignedTeacher: string;
-  assignmentType: string;
-  chooseType: boolean;
-  trueorfalseType: boolean;
-  question: string;
-  hasOptions: boolean;
-  audioFile: string;
-  uploadFile: string;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
-  level: string;
-  courses: string;
-  assignedDate: string;
-  dueDate: string;
-  __v: number;
-}
 
-function  AssignList(){
+function Assignment() {
+  const [assignmentData, setAssignmentData] = useState({
+    totalAssigned: 0,
+    totalCompleted: 0,
+    totalPending: 0,
+  });
 
-    const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAssignments = async () => {
-      const storedStudentId = localStorage.getItem('StudentPortalId');
-      
+    const fetchAssignmentData = async () => {
       try {
-              const token =
-    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentAuthToken")
+            : null;
+        const studentId = localStorage.getItem("StudentPortalId");
 
-  if (!token) {
-    console.error("❌ StudentAuthToken not found");
-    return;
-  }
-        const response = await axios.get("https://api.blackstoneinfomaticstech.com/allAssignment", {
-           headers: { "Content-Type": "application/json",
-               'Authorization': `Bearer ${token}`,
-           },
-        });
+        if (!token || !studentId) {
+          console.error("Missing token or teacher ID");
+          return;
+        }
 
-        const filteredAssignments = response.data.assignments.filter(
-          (assignment: Assignment) => assignment.studentId === storedStudentId
+        const response = await axios.get(
+          `http://localhost:5001/assignments/cardcount?studentId=${studentId}`
         );
 
-        setAssignments(filteredAssignments);
-        console.log(filteredAssignments);
+        // Log the full API response for debugging
+        console.log("API response:", response);
+
+        if (response.data.status === "success") {
+          // Bind the response data to state
+          setAssignmentData(response.data.data);
+        } else {
+          console.error("Failed to fetch data:", response.data.message);
+        }
       } catch (error) {
-        console.error("Error fetching assignments:", error);
+        console.error("API error:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchAssignments();
+    fetchAssignmentData();
   }, []);
-  const totalAssignments = assignments.length;
-  const completedAssignments = assignments.filter(
-    (assignment:Assignment) => assignment.status === "completed"
-  ).length;
-  const pendingAssignments = totalAssignments - completedAssignments;
-    const cards = [
-      {
-        id: "card1",
-        name: "Total Assignment Assigned",
-        value: totalAssignments,
-        count: totalAssignments,
-        icon: "📋",
-        color: "#FEC64F",
-      },
-      {
-        id: "card2",
-        name: "Total Assignment Completed",
-        value: completedAssignments ,
-        count: completedAssignments ,
-        icon: "📄",
-        color: "#00D9B0",
-      },
-      {
-        id: "card3",
-        name: "Total Assignment Pending",
-        value: pendingAssignments,
-        count: pendingAssignments,
-        icon: "⏳",
-        color: "#FC6B57",
-      },
-    ];
-    return (
-      <div className="p-4 w-[1250px] mx-auto">
-        <h2 className="text-2xl font-semibold text-gray-800 p-2 -ml-4">
-          Current Status
-        </h2>
-        <div className="flex justify-center gap-6 p-4 -ml-14">
-          {cards.map((c) => (
-            <div
-              key={c.id}
-              className="w-[330px] h-[150px] bg-white rounded-lg shadow-md flex items-center p-4"
-            >
-              {/* Circular Progress */}
-              <div className="mr-6 flex justify-center items-center relative">
-                <svg
-                  className="w-[100px] h-[90px] transform rotate-[-90deg]"
-                  viewBox="0 0 36 36"
-                >
-                  {/* Background Circle */}
-                  <path
-                    className="text-gray-300"
-                    d="M18 2.0845
-                      a 15.9155 15.9155 0 0 1 0 31.831
-                      a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4" /* Background circle thickness */
-                  ></path>
-                  {/* Progress Circle */}
-                  <path
-                    d="M18 2.0845
-                      a 15.9155 15.9155 0 0 1 0 31.831
-                      a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke={c.color}
-                    strokeWidth="4.5" /* Progress circle thickness */
-                    strokeDasharray={`${c.value}, 100`}
-                  ></path>
-                </svg>
-                {/* Percentage Value */}
-                <div className="absolute text-[14px] font-bold text-gray-800">
-                  {c.value}%
-                </div>
-              </div>
-              {/* Text and Icon */}
-              <div>
-                <p className="text-gray-800 text-[14px] font-semibold mb-2">
-                  {c.name}
-                </p>
-                <p className="text-gray-600 text-[12px] font-medium flex items-center gap-2">
-                  {c.count} <span className="text-2xl">{c.icon}</span>
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+
+  const { totalAssigned, totalCompleted, totalPending } = assignmentData;
+
+  const completionPercentage = totalAssigned
+    ? Math.round((totalCompleted / totalAssigned) * 100)
+    : 0;
+
+  const pendingPercentage = totalAssigned
+    ? Math.round((totalPending / totalAssigned) * 100)
+    : 0;
+
+  const cards = [
+    {
+      title: "Total Assignment Assigned",
+      count: totalAssigned,
+      percentage: 100,
+      ringColor: "#88A2CF",
+      bgColor: "#CDD5E2",
+      pieData: [{ value: 100 }],
+    },
+    {
+      title: "Total Assignment Completed",
+      count: totalCompleted,
+      percentage: completionPercentage,
+      ringColor: "#88CF9B",
+      bgColor: "#CDD5E2",
+      pieData: [
+        { value: completionPercentage },
+        { value: 100 - completionPercentage },
+      ],
+    },
+    {
+      title: "Total Assignment Pending",
+      count: totalPending,
+      percentage: pendingPercentage,
+      ringColor: "#D58484",
+      bgColor: "#CDD5E2",
+      pieData: [
+        { value: pendingPercentage },
+        { value: 100 - pendingPercentage },
+      ],
+    },
+  ];
+
+  if (loading) {
+    return <div className="text-center py-10">Loading assignment data...</div>;
   }
 
+  return (
+    <div className="md:p-0 mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {cards.map((item, idx) => {
+          const bgClass =
+            idx === 0
+              ? "bg-gradient-to-b from-white to-[#F6FCFF] dark:from-[#343434] dark:to-[#343434]"
+              : idx === 1
+              ? "bg-gradient-to-b from-white to-[#F6FFFF] dark:from-[#343434] dark:to-[#343434]"
+              : "bg-gradient-to-b from-white to-[#F8F6FF] dark:from-[#343434] dark:to-[#343434]";
 
-export default AssignList;
+          return (
+            <div
+              key={idx}
+              className={`p-4 rounded-xl shadow-md w-full ${bgClass} transition transform hover:scale-[1.02]`}
+            >
+              <h3 className="text-[#010E30] text-[14px] font-medium mb-2 leading-5 dark:text-[#ffff]">
+                {item.title.split(" ").slice(0, 3).join(" ")} <br />
+                {item.title.split(" ").slice(3).join(" ")}
+              </h3>
+              <div className="flex items-center justify-between">
+                <span className="text-[28px] text-[#010E30] font-semibold dark:text-[#ffff]">
+                  {item.count}
+                </span>
+                <div className="relative w-[80px] h-[80px]">
+                  <PieChart width={80} height={80}>
+                    <Pie
+                      data={[{ value: 100 }]}
+                      dataKey="value"
+                      innerRadius={28}
+                      outerRadius={36}
+                      startAngle={90}
+                      endAngle={-270}
+                      isAnimationActive={false}
+                      stroke="none"
+                    >
+                      <Cell fill={item.bgColor} />
+                    </Pie>
+                    <Pie
+                      data={item.pieData}
+                      dataKey="value"
+                      innerRadius={26}
+                      outerRadius={40}
+                      startAngle={90}
+                      endAngle={-270}
+                      cornerRadius={2}
+                      isAnimationActive={false}
+                      stroke="none"
+                    >
+                      <Cell fill={item.ringColor} />
+                      <Cell fill="transparent" />
+                    </Pie>
+                  </PieChart>
+                  <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#333] dark:text-[#ffff]">
+                    {item.percentage}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export default Assignment;
