@@ -6,7 +6,7 @@ import axios from "axios";
 import RegularStudents from "../ui/allstudents/RegularStudents/page";
 import GroupStudents from "../ui/allstudents/GroupStudents/page";
 import TeacherHeader from "./TeacherHeader";
-import { Link } from "lucide-react";
+import Link from "next/link";
 
 // Import the interfaces
 export interface AssignmentItem {
@@ -182,7 +182,6 @@ const Page = () => {
 
   return (
       <div>
-        <TeacherHeader currentSection="Assignments" />
         <div className="flex space-x-6 px-4 py-2 rounded-md relative">
           <button
             onClick={() => setActiveTab("regular")}

@@ -19,6 +19,9 @@ export interface AssignmentItem {
   status: string;
   assignmentName: string;
   title: string;
+  assignedDate: string;
+  dueDate: string;
+  assignmentStatus: string;
 }
 
 export interface StudentCoreInfo {
@@ -294,6 +297,14 @@ export interface Assignment {
   sessionClassType?: string;
   __v: number;
 }
+const formatDate = (dateStr: string | undefined): string => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  const day = date.getDate(); // e.g., 7
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // e.g., 06
+  const year = date.getFullYear(); // e.g., 2025
+  return `${day}-${month}-${year}`;
+};
 type CardProps = {
   title: string;
   value: string | number;
@@ -419,19 +430,22 @@ const ManageStudentView = () => {
   };
 
   const getStatusStyle = (status: string) => {
-    switch (status?.toUpperCase()) {
-      case "COMPLETED":
+    switch (status) {
+      case "Completed":
         return "bg-green-100 text-green-700";
-      case "NOTCOMPLETED":
+      case "Not Completed":
         return "bg-yellow-100 text-yellow-700";
-      case "NOTASSIGNED":
+      case "Not Assigned":
         return "bg-red-100 text-red-700";
-      case "ASSIGNED":
+      case "Assigned":
         return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-blue-100 text-blue-700";
       default:
         return "bg-gray-100 text-gray-600";
     }
   };
+
   const [assignmentData, setAssignmentData] = useState({
     totalAssigned: 0,
     totalCompleted: 0,
@@ -445,9 +459,8 @@ const ManageStudentView = () => {
       try {
         const token =
           typeof window !== "undefined"
-            ? localStorage.getItem("StudentAuthToken")
+            ? localStorage.getItem("TeacherAuthToken")
             : null;
-        const studentId = localStorage.getItem("StudentPortalId");
 
         if (!token || !studentId) {
           console.error("Missing token or teacher ID");
@@ -539,7 +552,6 @@ const ManageStudentView = () => {
         typeof window !== "undefined"
           ? localStorage.getItem("TeacherAuthToken")
           : null;
-
       if (!token) {
         console.error("❌ Academicoach not found");
         return;
@@ -770,20 +782,16 @@ const ManageStudentView = () => {
                         {studentDetails?.languageLevel || "-"}
                       </td>
                       <td className="px-3 py-3 break-words">
-                             {studentDetails?.student?.learningInterest}
+                        {studentDetails?.student?.learningInterest}
                       </td>
                       <td className="px-3 py-3 break-words">
-                              {assignmentItem.title}
-                        </td>
-                      <td className="px-3 py-3 break-words">
-                        {new Date(
-                          studentDetails?.classStartDate
-                        ).toLocaleDateString()}
+                        {assignmentItem.title}
                       </td>
                       <td className="px-3 py-3 break-words">
-                        {new Date(
-                          studentDetails?.classEndDate
-                        ).toLocaleDateString()}
+                        {formatDate(assignmentItem?.assignedDate)}
+                      </td>
+                      <td className="px-3 py-3 break-words">
+                        {formatDate(assignmentItem?.dueDate)}
                       </td>
                       <td className="px-3 py-3 break-words">
                         <span
@@ -791,7 +799,9 @@ const ManageStudentView = () => {
                             assignmentItem.status
                           )}`}
                         >
-                          {assignmentItem.status}
+                          {assignmentItem?.assignmentStatus ||
+                            assignmentItem?.status ||
+                            "Not Assigned"}{" "}
                         </span>
                       </td>
                       <td className="px-4 py-2 text-center relative">
@@ -806,137 +816,22 @@ const ManageStudentView = () => {
                           <BsThreeDotsVertical />
                         </button>
 
-                        {openDropdownId === dropdownId &&
-                          assignmentItem.status?.toUpperCase() ===
-                            "NOT ASSIGNED" && (
-                            <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
-                              {(() => {
-                                const status =
-                                  assignmentItem.status?.toUpperCase();
-                                if (
-                                  [
-                                    "COMPLETED",
-                                    "NOT COMPLETED",
-                                    "ASSIGNED",
-                                  ].includes(status)
-                                ) {
-                                  return (
-                                    <>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
-                                        onClick={() =>
-                                          handleViewProfile(student.studentId)
-                                        }
-                                      >
-                                        View Profile
-                                      </button>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                        onClick={() => setOpenDropdownId(null)}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </>
-                                  );
-                                } else if (status === "NOT ASSIGNED") {
-                                  return (
-                                    <>
-                                      <button className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]">
-                                        Assign
-                                      </button>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                        onClick={() =>
-                                          setOpenModalId(dropdownId)
-                                        }
-                                      >
-                                        New Assignment
-                                      </button>
-                                      <button
-                                        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                        onClick={() => setOpenDropdownId(null)}
-                                      >
-                                        Cancel
-                                      </button>
-                                    </>
-                                  );
-                                } else {
-                                  return (
-                                    <button
-                                      className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                                      onClick={() => setOpenDropdownId(null)}
-                                    >
-                                      Cancel
-                                    </button>
-                                  );
-                                }
-                              })()}
-                            </div>
-                          )}
-
-                        {/* Assignment Modal */}
-                        {openModalId === dropdownId && (
-                          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                            <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
-                              <div>
-                                <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">
-                                  Assign
-                                </h2>
-                                <div className="mb-4">
-                                  <label className="text-sm block mb-1 dark:text-[#fff]">
-                                    Title
-                                  </label>
-                                  <input
-                                    type="text"
-                                    placeholder="Enter title"
-                                    className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
-                                  />
-                                </div>
-                                <div className="flex gap-4 mb-4">
-                                  <div className="flex-1">
-                                    <label className="text-sm block mb-1 dark:text-[#fff]">
-                                      Assigned Date
-                                    </label>
-                                    <input
-                                      type="date"
-                                      className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
-                                    />
-                                  </div>
-                                  <div className="flex-1">
-                                    <label className="text-sm block mb-1 dark:text-[#fff]">
-                                      Due Date
-                                    </label>
-                                    <input
-                                      type="date"
-                                      className="w-full border rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="mb-4">
-                                  <label className="text-sm block mb-1 dark:text-[#fff]">
-                                    Comment
-                                  </label>
-                                  <textarea
-                                    placeholder="Write your comment here..."
-                                    className="w-full border rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
-                                  ></textarea>
-                                </div>
-                              </div>
-                              <div className="flex justify-end gap-3">
-                                <button
-                                  className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
-                                  onClick={() => setOpenModalId(null)}
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                  onClick={handleClick}
-                                >
-                                  Create Assignment
-                                </button>
-                              </div>
-                            </div>
+                        {openDropdownId === dropdownId && (
+                          <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
+                            <button
+                              className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                              onClick={() =>
+                                handleViewProfile(student.studentId)
+                              }
+                            >
+                              View Question Form
+                            </button>
+                            <button
+                              className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                              onClick={() => setOpenDropdownId(null)}
+                            >
+                              Cancel
+                            </button>
                           </div>
                         )}
                       </td>

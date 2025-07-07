@@ -15,6 +15,8 @@ export interface AssignmentItem {
   assignmentName: string;
   title: string;
   assignmentStatus?: string;
+    assignedDate: string;
+  dueDate: string;
 }
 
 export interface StudentCoreInfo {
@@ -544,8 +546,8 @@ const GroupStudents = () => {
                         <td className="px-3 py-2 break-words">
                           {studentDetails?.student?.learningInterest || "-"}
                         </td>
-                        <td className="px-3 py-2 break-words">-</td>
-                        <td className="px-3 py-2 break-words">-</td>
+                        <td className="px-3 py-2 break-words">{assignmentItem?.assignedDate}</td>
+                        <td className="px-3 py-2 break-words">{assignmentItem?.dueDate}</td>
                         <td className="px-3 py-2 break-words">
                           <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(assignmentItem?.assignmentStatus || assignmentItem?.status)}`}>
                             {assignmentItem?.assignmentStatus || assignmentItem?.status || "Not Assigned"}
