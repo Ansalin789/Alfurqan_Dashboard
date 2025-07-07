@@ -1,53 +1,118 @@
 "use client";
 
-import React from "react";
+import { useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
+type AssignmentStats = {
+  total: number;
+  assigned: number;
+  completed: number;
+  pending: number;
+  overdue: number;
+};
 
+type StudentPerformance = {
+  completionRate: number;
+  accuracy: number;
+};
+
+type StudentAssignmentData = {
+  studentId: string;
+  studentName: string;
+  assignments: AssignmentStats;
+  performance: StudentPerformance;
+};
+
+type TeacherAssignmentsResponse = {
+  teacherId: string;
+  teacherName: string;
+  totalStudents: number;
+  assignments: AssignmentStats;
+  students: StudentAssignmentData[];
+};
 function Assignment() {
-  // Hardcoded values
-  const totalAssignments = 8;
-  const completedAssignments = 6;
-  const pendingAssignments = totalAssignments - completedAssignments;
+  const [data, setData] = useState<TeacherAssignmentsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+const searchParams = useSearchParams();
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+        const teacherId = localStorage.getItem("TeacherPortalId") ?? "";
+      console.log("teacherId:", teacherId);
+        const token = localStorage.getItem("TeacherAuthToken") ?? "";
 
-  const completionPercentage = Math.round((completedAssignments / totalAssignments) * 100);
-  const pendingPercentage = Math.round((pendingAssignments / totalAssignments) * 100);
+      if (!teacherId) {
+        throw new Error('Teacher ID is required in query parameters');
+      }
+
+      const response = await fetch(
+        `http://localhost:5001/assignments/teacher/cardcount?teacherId=${teacherId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      setData(result.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [searchParams]); // Add searchParams to dependency array
+
+  
+
+  if (loading) return <div className="text-center py-8">Loading...</div>;
+  if (error) return <div className="text-center py-8 text-red-500">Error: {error}</div>;
+  if (!data) return <div className="text-center py-8">No data available</div>;
 
   const cards = [
     {
       title: "Total Assignment Assigned",
-      count: totalAssignments,
-      percentage: 100,
+      count: data.assignments.assigned,
+      percentage: Math.round((data.assignments.assigned / data.assignments.total) * 100),
       ringColor: "#7DB5CB",
       bgColor: "#CDD5E2",
       pieData: [{ value: 100 }],
     },
     {
       title: "Total Assignment Completed",
-      count: completedAssignments,
-      percentage: completionPercentage,
+      count: data.assignments.completed,
+      percentage: Math.round((data.assignments.completed / data.assignments.total) * 100),
       ringColor: "#88CF9B",
       bgColor: "#CDD5E2",
       pieData: [
-        { value: completionPercentage },
-        { value: 100 - completionPercentage },
+        { value: Math.round((data.assignments.completed / data.assignments.total) * 100) },
+        { value: 100 - Math.round((data.assignments.completed / data.assignments.total) * 100) },
       ],
     },
     {
       title: "Total Assignment Pending",
-      count: pendingAssignments,
-      percentage: pendingPercentage,
+      count: data.assignments.pending,
+      percentage: Math.round((data.assignments.pending / data.assignments.total) * 100),
       ringColor: "#FC6B57",
       bgColor: "#CDD5E2",
       pieData: [
-        { value: pendingPercentage },
-        { value: 100 - pendingPercentage },
+        { value: Math.round((data.assignments.pending / data.assignments.total) * 100) },
+        { value: 100 - Math.round((data.assignments.pending / data.assignments.total) * 100) },
       ],
     },
   ];
 
   return (
     <div className="md:p-0 mx-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((item, idx) => {
           const bgClass =
             idx === 0
@@ -59,7 +124,7 @@ function Assignment() {
           return (
             <div
               key={idx}
-              className={`p-4 rounded-xl shadow-md w-full ${bgClass}   transition transform hover:scale-[1.02] `}
+              className={`p-4 rounded-xl shadow-md w-full ${bgClass} transition transform hover:scale-[1.02]`}
             >
               <h3 className="text-[#010E30] text-[14px] font-medium mb-2 leading-5 dark:text-[#ffff]">
                 {item.title.split(" ").slice(0, 3).join(" ")} <br /> {item.title.split(" ").slice(3).join(" ")}
