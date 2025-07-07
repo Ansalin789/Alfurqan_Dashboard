@@ -6,6 +6,7 @@ import axios from "axios";
 import RegularStudents from "../ui/allstudents/RegularStudents/page";
 import GroupStudents from "../ui/allstudents/GroupStudents/page";
 import TeacherHeader from "./TeacherHeader";
+import { Link } from "lucide-react";
 
 // Import the interfaces
 export interface AssignmentItem {
@@ -213,7 +214,18 @@ const Page = () => {
           {activeTab === "regular" && <RegularStudents />}
           {activeTab === "group" && <GroupStudents />}
         </div>
+
+        <div className="mt-4 text-right">
+            <Link
+              href="/teacher/ui/allstudents"
+              className="text-[#576CBC] text-[10px] border border-[#576CBC] px-3 py-1 rounded-md bg-white"
+            >
+              View All
+            </Link>
+          </div>
+        
       </div>
+      
     
   );
 };

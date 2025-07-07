@@ -13,6 +13,7 @@ export interface AssignmentItem {
   status: string;
   assignmentName: string;
   title: string;
+  assignmentStatus :string;
 }
 
 export interface StudentCoreInfo {
@@ -203,15 +204,17 @@ const RegularStudents = () => {
   }, []);
 
   const getStatusStyle = (status: string) => {
-    switch (status?.toUpperCase()) {
-      case "COMPLETED":
+    switch (status) {
+      case "Completed":
         return "bg-green-100 text-green-700";
-      case "NOT COMPLETED":
+      case "Not Completed":
         return "bg-yellow-100 text-yellow-700";
-      case "NOT ASSIGNED":
+      case "Not Assigned":
         return "bg-red-100 text-red-700";
-      case "ASSIGNED":
+      case "Assigned":
         return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-blue-100 text-blue-700";
       default:
         return "bg-gray-100 text-gray-600";
     }
@@ -316,7 +319,7 @@ const RegularStudents = () => {
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">
-                          <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle("NOT ASSIGNED")}`}>
+                          <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle("Not Assigned")}`}>
                             Not Assigned
                           </span>
                         </td>
@@ -338,7 +341,7 @@ const RegularStudents = () => {
                                 className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                 onClick={() => handleViewProfile(student.studentId)}
                               >
-                                View Profile
+                                Assign
                               </button>
                               <button
                                 className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
@@ -490,8 +493,8 @@ const RegularStudents = () => {
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">
-                          <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(assignmentItem?.status || "Not Assigned")}`}>
-                            {assignmentItem?.status || "Not Assigned"}
+                          <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(assignmentItem?.assignmentStatus || assignmentItem?.status)}`}>
+                            {assignmentItem?.assignmentStatus || assignmentItem?.status || "Not Assigned"}
                           </span>
                         </td>
                         <td className="px-4 py-2 text-center relative">
@@ -509,19 +512,17 @@ const RegularStudents = () => {
                           {openDropdownId === modalId && (
                             <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
                               {(() => {
-                                const status = assignmentItem.status?.toUpperCase();
+                                const status = assignmentItem.assignmentStatus || assignmentItem.status;
                                 if (
-                                  ["COMPLETED", "NOT COMPLETED", "ASSIGNED"].includes(
-                                    status
-                                  )
+                                  status === "Completed" ||
+                                  status === "Not Completed" ||
+                                  status === "Assigned"
                                 ) {
                                   return (
                                     <>
                                       <button
                                         className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
-                                        onClick={() =>
-                                          handleViewProfile(student.studentId)
-                                        }
+                                        onClick={() => handleViewProfile(student.studentId)}
                                       >
                                         View Profile
                                       </button>
@@ -533,16 +534,14 @@ const RegularStudents = () => {
                                       </button>
                                     </>
                                   );
-                                } else if (status === "NOT ASSIGNED") {
+                                } else if (status === "Not Assigned") {
                                   return (
                                     <>
                                       <button
                                         className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
-                                        onClick={() =>
-                                          handleViewProfile(student.studentId)
-                                        }
+                                        onClick={() => handleViewProfile(student.studentId)}
                                       >
-                                        View Profile
+                                        Assign
                                       </button>
                                       <button
                                         className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
