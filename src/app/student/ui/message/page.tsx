@@ -28,6 +28,12 @@ interface IMessageData {
   _id: string;
   messages: IMessage[];
 }
+
+interface IMessageResponse {
+  status: string;
+  message: string;
+  data: IMessageData[];
+}
 interface Invoice {
   student: {
     studentId: string;
@@ -41,12 +47,6 @@ interface Invoice {
   status: string;
   createdDate: string;
   invoiceStatus: "Paid" | "Pending";
-}
-
-interface IMessageResponse {
-  status: string;
-  message: string;
-  data: IMessageData[];
 }
 
 interface IUser {
@@ -80,11 +80,12 @@ const Message = () => {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
 
   const [academicCoaches, setAcademicCoaches] = useState<IUser[]>([]);
-  const [activeTab, setActiveTab] = useState<"teachers" | "academicCoaches">(
-    "teachers"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "teachers" | "academicCoaches" | "all"
+  >("all");
+
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
-  const [messages, setMessages] = useState<IMessage[]>([]);
+  const [messages, setMessages] = useState<IMessageData[]>([]);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [messageCount, setMessageCount] = useState<number>(0);
@@ -92,6 +93,10 @@ const Message = () => {
   const socketRef = useRef<any>(null);
 
   let userId: string | null = null;
+  const userName =
+    typeof window !== "undefined"
+      ? localStorage.getItem("StudentPortalName")
+      : null;
   let studentName: string = "";
   let studentEmail: string = "";
 
@@ -102,9 +107,13 @@ const Message = () => {
       localStorage.getItem("StudentEmail") || "student@blackstone.com";
   }
 
-  const fetchUsersByRole = async (): Promise<IUser[]> => {
+  const fetchUsersByRole = async (role: string): Promise<IUser[]> => {
     try {
-      const token = localStorage.getItem("StudentAuthToken");
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("StudentAuthToken")
+          : null;
+
       if (!token) {
         console.error("❌ StudentAuthToken not found");
         return [];
@@ -119,28 +128,29 @@ const Message = () => {
           },
         }
       );
-      return response.data.users;
+
+      // 🔥 Client-side filtering here
+      const allUsers = response.data.users;
+      const filtered = allUsers.filter((user) =>
+        user.role.some(
+          (r) => r.toLowerCase().replace(/_/g, " ") === role.toLowerCase()
+        )
+      );
+      return filtered;
     } catch (err) {
       console.error(`❌ Failed to fetch users:`, err);
       return [];
     }
   };
 
-  const fetchAllUsers = async () => {
-    const allUsers = await fetchUsersByRole();
-    const teachers = allUsers.filter((u) =>
-      u.role.map((r) => r.toLowerCase()).includes("teacher")
-    );
-    const coaches = allUsers.filter((u) =>
-      u.role.map((r) => r.toLowerCase()).includes("academiccoach")
-    );
-    setTeachers(teachers);
-    setAcademicCoaches(coaches);
-  };
+  const combinedUsers =
+    activeTab === "all"
+      ? [...teachers, ...academicCoaches]
+      : activeTab === "teachers"
+      ? teachers
+      : academicCoaches;
 
-  const filteredUsers = (
-    activeTab === "teachers" ? teachers : academicCoaches
-  ).filter(
+  const filteredUsers = combinedUsers.filter(
     (user) =>
       user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
@@ -154,11 +164,18 @@ const Message = () => {
 
   const fetchMessages = async (receiverId: string) => {
     try {
-      const token = localStorage.getItem("StudentAuthToken");
-      if (!token) return;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("StudentAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ StudentAuthToken not found");
+        return;
+      }
 
       const { data } = await axios.get<IMessageResponse>(
-        `https://api.blackstoneinfomaticstech.com/realtimemessage/${receiverId}`,
+        `https://api.blackstoneinfomaticstech.com/realtimemessage/${userId}/${receiverId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -167,17 +184,14 @@ const Message = () => {
         }
       );
 
-      const fetchedMessages = data?.data?.[0]?.messages ?? [];
+      const fetchedMessages = data?.data;
+      setMessages(fetchedMessages); // for rendering
 
-      const filteredMessages = fetchedMessages.filter(
-        (msg) =>
-          (msg.senderId === userId && msg.receiverId === receiverId) ||
-          (msg.senderId === receiverId && msg.receiverId === userId)
-      );
-
-      setMessages(filteredMessages);
-      const unreadCount = fetchedMessages.filter((m) => !m.isRead).length;
+      // Count unread messages in all groups
+      const allMessages = fetchedMessages.flatMap((group) => group.messages);
+      const unreadCount = allMessages.filter((m) => !m.isRead).length;
       setMessageCount(unreadCount);
+      // Update the unread message count
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
@@ -192,20 +206,24 @@ const Message = () => {
       });
     }
   }, [messages]);
-
   useEffect(() => {
-  const savedUser = localStorage.getItem("SelectedUser");
-  if (savedUser) {
-    setSelectedUser(JSON.parse(savedUser));
-  }
-}, []);
-
-useEffect(() => {
-  if (selectedUser) {
-    localStorage.setItem("SelectedUser", JSON.stringify(selectedUser));
-  }
-}, [selectedUser]);
-
+    const fetchUsers = async () => {
+      if (activeTab === "teachers" && teachers.length === 0) {
+        const result = await fetchUsersByRole("TEACHER");
+        setTeachers(result);
+      } else if (
+        activeTab === "academicCoaches" &&
+        academicCoaches.length === 0
+      ) {
+        const result = await fetchUsersByRole("ACADEMICCOACH");
+        setAcademicCoaches(result);
+      }
+    };
+    fetchUsers();
+  }, [activeTab]);
+  useEffect(() => {
+    setSelectedUser(null); // clear selected user on tab change
+  }, [activeTab]);
 
   useEffect(() => {
     if (!socketRef.current) {
@@ -230,23 +248,96 @@ useEffect(() => {
         console.error("Connection error:", err);
       });
     }
-
     const handleNewMessage = (newMessage: IMessage) => {
       console.log("Received new message:", newMessage);
-      setMessages((prev) => [newMessage, ...prev]);
-      if (!newMessage.isRead) {
+
+      // Check if message is relevant to current chat or should increment count
+      const isForCurrentChat =
+        (newMessage.senderId === userId &&
+          newMessage.receiverId === selectedUser?._id) ||
+        (newMessage.senderId === selectedUser?._id &&
+          newMessage.receiverId === userId);
+      console.log(userId);
+      console.log(selectedUser?._id);
+      // Always update message count for unread messages
+      if (newMessage.receiverId === userId && !newMessage.isRead) {
         setMessageCount((prev) => prev + 1);
+      }
+
+      // Only update messages if it's for the current chat
+      if (isForCurrentChat) {
+        setMessages((prev) => {
+          const dateKey = new Date(newMessage.createdDate)
+            .toISOString()
+            .split("T")[0];
+          console.log("enter");
+          // Find if we already have messages for this date
+          const existingGroupIndex = prev.findIndex(
+            (group) => group._id === dateKey
+          );
+
+          // Create a new state array
+          const newState = [...prev];
+
+          if (existingGroupIndex !== -1) {
+            // Add to existing date group - append to maintain chronological order
+            newState[existingGroupIndex] = {
+              ...newState[existingGroupIndex],
+              messages: [...newState[existingGroupIndex].messages, newMessage],
+            };
+          } else {
+            // Create new date group at the beginning (since we're using flex-col-reverse)
+            newState.unshift({
+              _id: dateKey,
+              messages: [newMessage],
+            });
+          }
+
+          return newState;
+        });
+
+        // Scroll to bottom after new message
+        setTimeout(() => {
+          if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 100);
       }
     };
 
     socketRef.current.on("newmessage", handleNewMessage);
 
-    fetchAllUsers();
-
     return () => {
       socketRef.current?.off("newmessage", handleNewMessage);
     };
-  }, [userId]);
+  }, [userId, selectedUser]);
+  const formatDateLabel = (dateString: string): string => {
+    const inputDate = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const sameDay = (d1: Date, d2: Date) =>
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate();
+
+    if (sameDay(inputDate, today)) return "Today";
+    if (sameDay(inputDate, yesterday)) return "Yesterday";
+    return inputDate.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }; // Replace your current groupedMessages logic with:
+  const groupedMessages = messages
+    .flatMap((group) => group.messages)
+    .reduce((acc, msg) => {
+      const dateKey = new Date(msg.createdDate).toDateString();
+      if (!acc[dateKey]) acc[dateKey] = [];
+      acc[dateKey].push(msg);
+      return acc;
+    }, {} as Record<string, IMessage[]>);
 
   const handleSendMessage = async () => {
     if (!selectedUser || !messageText.trim()) return;
@@ -269,9 +360,16 @@ useEffect(() => {
     };
 
     try {
-      const token = localStorage.getItem("StudentAuthToken");
-      if (!token) return;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("StudentAuthToken")
+          : null;
 
+      if (!token) {
+        console.error("❌ StudentAuthToken not found");
+        return;
+      }
+      // Send the new message to the backend API
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/realtimemessage",
         newMessage,
@@ -298,7 +396,36 @@ useEffect(() => {
           status: newMessage.status,
         };
 
-        setMessages((prev) => [convertedMessage, ...prev]);
+        setMessages((prev) => {
+          const dateKey = new Date(convertedMessage.createdDate)
+            .toISOString()
+            .split("T")[0];
+          const existingGroupIndex = prev.findIndex(
+            (group) => group._id === dateKey
+          );
+
+          if (existingGroupIndex !== -1) {
+            // Append to existing group
+            const updated = [...prev];
+            updated[existingGroupIndex] = {
+              ...updated[existingGroupIndex],
+              messages: [
+                ...updated[existingGroupIndex].messages,
+                convertedMessage,
+              ], // Append to end
+            };
+            return updated;
+          } else {
+            // Add new group at the end
+            return [
+              ...prev,
+              {
+                _id: dateKey,
+                messages: [convertedMessage],
+              },
+            ];
+          }
+        });
         setMessageText("");
       } else {
         console.error("Error posting message:", response.data.message);
@@ -337,14 +464,14 @@ useEffect(() => {
               <motion.div whileHover={{ scale: 1.05 }}>
                 <img
                   src="/assets/images/account.png"
-                  alt="academicCoaches"
+                  alt="Student Avatar"
                   className="w-12 h-12 rounded-lg border border-[#dbdbdb]"
                 />
               </motion.div>
               <div>
                 <div className="flex">
                   <h3 className="text-sm font-semibold text-[#374557]">
-                    {studentName}
+                    {userName}
                   </h3>
                   <button className="ml-[1px] text-gray-500">
                     <Bell size={16} className="text-white" />
@@ -355,6 +482,10 @@ useEffect(() => {
                     )}
                   </button>
                 </div>
+
+                <p className="text-[12px] text-[#010e30a7] font-semibold dark:text-[#fff] dark:opacity-[60%]">
+                  {/* {IUser.role} */}
+                </p>
               </div>
             </div>
 
@@ -377,6 +508,16 @@ useEffect(() => {
 
             {/* Tabs */}
             <div className="flex border-b">
+              <button
+                className={`px-2 py-1.5 text-[13px] ${
+                  activeTab === "all"
+                    ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium"
+                    : "text-[#777777] dark:text-[#7C7C7C] font-normal"
+                }`}
+                onClick={() => setActiveTab("all")}
+              >
+                All
+              </button>
               <button
                 className={`px-3 py-1.5 text-xs font-medium ${
                   activeTab === "teachers"
@@ -403,40 +544,40 @@ useEffect(() => {
             <div className="mt-2 overflow-y-auto flex-1">
               <AnimatePresence>
                 {filteredUsers.map((user) => (
-                  <motion.div
-                    role="button"
-                    onClick={() => handleUserClick(user)}
-                    onKeyDown={(e) =>
-                      (e.key === "Enter" || e.key === " ") &&
-                      handleUserClick(user)
-                    }
-                    className={`flex items-center border-b-2 justify-between w-full p-2 rounded cursor-pointer ${
+                  <motion.button
+                    key={user._id}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex items-center border-b-2 dark:border-b-[#504c4c]  justify-between w-full p-2  cursor-pointer ${
                       selectedUser?._id === user._id
-                        ? "bg-blue-100 text-blue-600"
-                        : "hover:bg-gray-50"
+                        ? "bg-[#f0efef] dark:bg-[#3c3c3c] rounded"
+                        : "hover:bg-[#f0efef] dark:hover:bg-[#3c3c3c] hover:rounded"
                     }`}
+                    onClick={() => handleUserClick(user)}
                   >
                     <div className="flex space-x-2 items-center">
                       <div className="relative">
                         <motion.div
                           whileHover={{ scale: 1.05 }}
-                          className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center"
+                          className="w-9 h-9 bg-[#D0D0D0] dark:bg-[#D0D0D0] rounded-lg flex items-center justify-center"
                         >
-                          <span className="text-gray-600 text-xs">
+                          <span className="text-[#959595] dark:text-[#959595] font-medium text-[14px]">
                             {user.userName.charAt(0)}
                           </span>
                         </motion.div>
                         <div
-                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border bg-green-600 ${getStatusColor(
                             user.status ?? "offline"
                           )}`}
                         ></div>
                       </div>
                       <div className="text-left">
-                        <h5 className="font-medium text-xs text-[#374557]">
+                        <h5 className="font-medium  text-[11px] text-[#010E30] dark:text-[#fff]">
                           {user.userName}
                         </h5>
-                        <p className="text-[10px] text-gray-400 truncate max-w-[180px]">
+                        <p className="text-[10px] text-gray-500 dark:text-[#fff] dark:text-opacity-[60%] truncate max-w-[180px]">
                           {user.email}
                         </p>
                       </div>
@@ -444,7 +585,7 @@ useEffect(() => {
                     <span className="text-[9px] text-gray-400">
                       {user.lastSeen}
                     </span>
-                  </motion.div>
+                  </motion.button>
                 ))}
               </AnimatePresence>
             </div>
@@ -471,21 +612,16 @@ useEffect(() => {
                         </span>
                       </div>
                       <div
-                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
+                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white bg-green-500 ${getStatusColor(
                           selectedUser.status ?? "offline"
                         )}`}
                       ></div>
                     </motion.div>
                     <div>
-                      <h3 className="text-xs font-semibold">
+                      <h3 className="text-xs font-medium">
                         {selectedUser.userName}
                       </h3>
                       <div className="flex items-center">
-                        <span
-                          className={`inline-block w-2 h-2 rounded-full mr-1 ${getStatusColor(
-                            selectedUser.status ?? "offline"
-                          )}`}
-                        ></span>
                         <p className="text-[10px] text-gray-400 capitalize">
                           {selectedUser.status} • {selectedUser.role}
                         </p>
@@ -496,48 +632,65 @@ useEffect(() => {
 
                 <div className="relative flex-1 h-[calc(85vh-100px)]">
                   {/* Adjust as needed */}
-                  <div className="absolute inset-0 overflow-y-auto p-3 flex flex-col-reverse bg-gray-50 chat-scroll-container">
+                  <div className="absolute inset-0 overflow-y-auto p-3 flex flex-col bg-gray-50 chat-scroll-container">
                     <AnimatePresence>
-                      {[...messages].reverse().map((msg) => (
-                        <motion.div
-                          key={msg._id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className={`flex flex-col mb-3 ${
-                            msg.senderId === userId
-                              ? "items-end"
-                              : "items-start"
-                          }`}
-                        >
-                          <motion.div
-                            whileHover={{ scale: 1.01 }}
-                            className={`p-2 rounded-lg max-w-[80%] shadow-sm ${
-                              msg.senderId === userId
-                                ? "bg-[#223857] text-white shadow-lg rounded-tr-none"
-                                : "bg-white shadow-lg rounded-tl-none"
-                            }`}
-                          >
-                            <p className="text-xs">{msg.messages}</p>
-                            <div className="flex items-center justify-end mt-1 space-x-1">
-                              <span className="text-[9px] opacity-70">
-                                {new Date(msg.createdDate).toLocaleTimeString(
-                                  [],
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
-                              </span>
-                              {msg.senderId === userId && (
-                                <span className="text-[9px]">
-                                  {msg.isRead ? "✓✓" : "✓"}
-                                </span>
-                              )}
+                      {Object.entries(groupedMessages)
+                        .sort(
+                          (a, b) =>
+                            new Date(a[0]).getTime() - new Date(b[0]).getTime()
+                        )
+                        .map(([date, msgs]) => (
+                          <div key={date}>
+                            <div className="text-center text-gray-500  text-xs my-2 font-medium">
+                              {formatDateLabel(date)}
                             </div>
-                          </motion.div>
-                        </motion.div>
-                      ))}
+                            {msgs
+                              .toSorted(
+                                (a, b) =>
+                                  new Date(a.createdDate).getTime() -
+                                  new Date(b.createdDate).getTime()
+                              )
+                              .map((msg) => (
+                                <motion.div
+                                  key={msg._id}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className={`flex flex-col mb-3 ${
+                                    msg.senderId === userId
+                                      ? "items-end"
+                                      : "items-start"
+                                  }`}
+                                >
+                                  <motion.div
+                                    whileHover={{ scale: 1.01 }}
+                                    className={`p-2 rounded-lg max-w-[80%] ${
+                                      msg.senderId === userId
+                                        ? "bg-[#576CBC] text-[#fff]  rounded-lg"
+                                        : "bg-[#F1F1F1] rounded-lg dark:bg-[#2c2c2c]"
+                                    }`}
+                                  >
+                                    <p className="text-xs">{msg.messages}</p>
+                                    <div className="flex items-center justify-end mt-1 space-x-1">
+                                      <span className="text-[9px] opacity-70">
+                                        {new Date(
+                                          msg.createdDate
+                                        ).toLocaleTimeString([], {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })}
+                                      </span>
+                                      {msg.senderId === userId && (
+                                        <span className="text-[9px]">
+                                          {msg.isRead ? "✓✓" : "✓"}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </motion.div>
+                                </motion.div>
+                              ))}
+                          </div>
+                        ))}
                     </AnimatePresence>
                     <div ref={messagesEndRef} />
                   </div>
