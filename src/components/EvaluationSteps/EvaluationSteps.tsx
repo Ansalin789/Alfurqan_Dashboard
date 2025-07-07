@@ -2092,7 +2092,7 @@ const Step9 = ({
   // Function to handle form submission
   const handleSubmit = async () => {
     try {
-      const startDate = new Date(updatedStudentDatass.startDate);
+      const startDate = new Date(updatedStudentDatass.joiningDate);
       const classEndDate = new Date(startDate);
       classEndDate.setDate(classEndDate.getDate() + 28);
       console.log(">>>", updatedStudentDatass.academicCoach.academicCoachId);
