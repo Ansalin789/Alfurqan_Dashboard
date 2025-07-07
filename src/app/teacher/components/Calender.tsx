@@ -12,6 +12,9 @@ interface ClassEvent {
   package: string;
   startDate: string;
   endDate: string;
+  startTime: string[];
+  endTime: string[];
+  sessionClassType: string; // Using the correct field from your backend
   teacher: {
     teacherId: string;
     teacherName: string;
@@ -24,14 +27,8 @@ interface ApiResponse {
   classSchedule: ClassEvent[];
 }
 
-interface CalendarEvent {
-  title: string;
-  start: Date;
-  end: Date;
-}
-
 const Calender: React.FC = () => {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [classEvents, setClassEvents] = useState<ClassEvent[]>([]);
   const [value, setValue] = useState<Date>(new Date());
   const router = useRouter();
 
@@ -57,14 +54,8 @@ const Calender: React.FC = () => {
           }
         );
 
-        const mappedEvents: CalendarEvent[] = response.data.classSchedule.map((item) => ({
-          title: `${item.package} - ${item.teacher.teacherName}`,
-          start: new Date(item.startDate),
-          end: new Date(item.endDate),
-        }));
-
-        setEvents(mappedEvents);
-        console.log('📅 Teacher Schedule Events:', mappedEvents);
+        setClassEvents(response.data.classSchedule);
+        console.log('📅 Teacher Schedule Events:', response.data.classSchedule);
       } catch (error) {
         console.error('❌ Error fetching teacher schedule:', error);
       }
@@ -74,8 +65,8 @@ const Calender: React.FC = () => {
   }, []);
 
   const isMeetingDate = (date: Date): boolean => {
-    return events.some((event) => {
-      const eventStart = new Date(event.start);
+    return classEvents.some((event) => {
+      const eventStart = new Date(event.startDate);
       return (
         eventStart.getFullYear() === date.getFullYear() &&
         eventStart.getMonth() === date.getMonth() &&

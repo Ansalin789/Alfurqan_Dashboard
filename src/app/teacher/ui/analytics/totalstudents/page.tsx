@@ -30,26 +30,22 @@ const Totalstudents = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-
-  const teacherId = localStorage.getItem("TeacherPortalId");
-console.log("Teacher ID used in API:", teacherId);
-
-
-
+const teacherId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("TeacherPortalId") 
+      : null;
 
 useEffect(() => {
   const fetchStudents = async () => {
     try {
-       const teacherId =  typeof window !== "undefined"
-      ? localStorage.getItem("TeacherPortalId")
-      : null; 
-
-      const token = localStorage.getItem("TeacherAuthToken");
-
-      if (!teacherId || !token) {
-        console.error("Missing teacherId or token in localStorage");
-        return;
-      }
+     const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherAuthToken") 
+            : null;
+        const teacherId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherPortalId") 
+            : null;
 
       const response = await axios.get<SimpleStudent[]>(
         "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
