@@ -122,9 +122,9 @@ const StudentsCard: React.FC = () => {
       </div>
 
       {/* Optional Name from LocalStorage */}
-      <div className="mt-3 text-center text-xs text-[#010E30] dark:text-white font-medium">
+      {/* <div className="mt-3 text-center text-xs text-[#010E30] dark:text-white font-medium">
         {localStorage.getItem("TeacherPortalName")}
-      </div>
+      </div> */}
     </div>
   );
 };
