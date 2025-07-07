@@ -35,45 +35,42 @@ const Totalstudents = () => {
 console.log("Teacher ID used in API:", teacherId);
 
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const teacherId = localStorage.getItem("TeacherPortalId");
 
-        if (!teacherId) {
-          console.error("No teacher ID found in localStorage.");
-          return;
-        }
 
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("TeacherAuthToken")
-            : null;
+useEffect(() => {
+  const fetchStudents = async () => {
+    try {
+       const teacherId =  typeof window !== "undefined"
+      ? localStorage.getItem("TeacherPortalId")
+      : null; 
 
-        if (!token) {
-          console.error("❌ TeacherAuthToken not found");
-          return;
-        }
+      const token = localStorage.getItem("TeacherAuthToken");
 
-        const response = await axios.get<SimpleStudent[]>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
-          {
-            params: { teacherId },
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        setStudents(response.data);
-      } catch (error) {
-        console.error("Error fetching students:", error);
+      if (!teacherId || !token) {
+        console.error("Missing teacherId or token in localStorage");
+        return;
       }
-    };
 
-    fetchStudents();
-  }, []);
+      const response = await axios.get<SimpleStudent[]>(
+        "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list",
+        {
+          params: { teacherId },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setStudents(response.data);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    }
+  };
+
+  fetchStudents();
+}, []);
+
 
   const filteredData = students.filter((student) =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
