@@ -15,6 +15,8 @@ export interface AssignmentItem {
   assignmentName: string;
   title: string;
   assignmentStatus?: string;
+    assignedDate: string;
+  dueDate: string;
 }
 
 export interface StudentCoreInfo {
@@ -300,9 +302,11 @@ const GroupStudents = () => {
 
                   // If no assignments, show one row with empty assignment data
                   if (firstStudent.assignment.length === 0) {
+                    // Define modalId for no-assignment case
+                    const modalIdNoAssignment = `${groupId}-no-assignment`;
                     return (
                       <tr
-                        key={`${groupId}-no-assignment`}
+                        key={modalIdNoAssignment}
                         className={`text-[12px] border-b border-gray-300 dark:border-gray-600 ${
                           groupIndex % 2 === 0
                             ? "bg-white dark:bg-[#2C2C2C]"
@@ -351,14 +355,14 @@ const GroupStudents = () => {
                             className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
                             onClick={() =>
                               setOpenDropdownId(
-                                openDropdownId === `${groupId}-no-assignment` ? null : `${groupId}-no-assignment`
+                                openDropdownId === modalIdNoAssignment ? null : modalIdNoAssignment
                               )
                             }
                           >
                             <BsThreeDotsVertical />
                           </button>
 
-                          {openDropdownId === `${groupId}-no-assignment` && (
+                          {openDropdownId === modalIdNoAssignment && (
                             <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
                               <button
                                 className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
@@ -386,7 +390,7 @@ const GroupStudents = () => {
                                   setAssignedTeacherId(
                                     studentDetails?.teacher?.teacherId ?? ""
                                   );
-                                  setOpenModalId(`${groupId}-no-assignment`);
+                                  setOpenModalId(modalIdNoAssignment);
                                 }}
                               >
                                 New Assignment
@@ -397,6 +401,80 @@ const GroupStudents = () => {
                               >
                                 Cancel
                               </button>
+                            </div>
+                          )}
+
+                          {/* Assignment Modal for students with no assignments */}
+                          {openModalId === modalIdNoAssignment && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                              <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
+                                <div>
+                                  <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">
+                                    Assign
+                                  </h2>
+                                  <div className="mb-4">
+                                    <label className="text-sm block mb-1 dark:text-[#fff]">
+                                      Title
+                                    </label>
+                                    <input
+                                      type="text"
+                                      placeholder="Enter title"
+                                      value={title}
+                                      onChange={(e) => setTitle(e.target.value)}
+                                      className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                    />
+                                  </div>
+                                  <div className="flex gap-4 mb-4">
+                                    <div className="flex-1">
+                                      <label className="text-sm block mb-1 dark:text-[#fff]">
+                                        Assigned Date
+                                      </label>
+                                      <input
+                                        type="date"
+                                        className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                        value={assignedDate}
+                                        onChange={(e) => setAssignedDate(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="flex-1">
+                                      <label className="text-sm block mb-1 dark:text-[#fff]">
+                                        Due Date
+                                      </label>
+                                      <input
+                                        type="date"
+                                        className="w-full border rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                        value={dueDate}
+                                        onChange={(e) => setDueDate(e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="mb-4">
+                                    <label className="text-sm block mb-1 dark:text-[#fff]">
+                                      Comment
+                                    </label>
+                                    <textarea
+                                      placeholder="Write your comment here..."
+                                      value={comment}
+                                      onChange={(e) => setComment(e.target.value)}
+                                      className="w-full border rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                    ></textarea>
+                                  </div>
+                                </div>
+                                <div className="flex justify-end gap-3">
+                                  <button
+                                    className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
+                                    onClick={() => setOpenModalId(null)}
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
+                                    onClick={() => handleClick()}
+                                  >
+                                    Create Assignment
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           )}
                         </td>
@@ -468,8 +546,8 @@ const GroupStudents = () => {
                         <td className="px-3 py-2 break-words">
                           {studentDetails?.student?.learningInterest || "-"}
                         </td>
-                        <td className="px-3 py-2 break-words">-</td>
-                        <td className="px-3 py-2 break-words">-</td>
+                        <td className="px-3 py-2 break-words">{assignmentItem?.assignedDate}</td>
+                        <td className="px-3 py-2 break-words">{assignmentItem?.dueDate}</td>
                         <td className="px-3 py-2 break-words">
                           <span className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(assignmentItem?.assignmentStatus || assignmentItem?.status)}`}>
                             {assignmentItem?.assignmentStatus || assignmentItem?.status || "Not Assigned"}
@@ -560,80 +638,6 @@ const GroupStudents = () => {
 
                           {/* Assignment Modal */}
                           {openModalId === modalId && (
-                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                              <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
-                                <div>
-                                  <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">
-                                    Assign
-                                  </h2>
-                                  <div className="mb-4">
-                                    <label className="text-sm block mb-1 dark:text-[#fff]">
-                                      Title
-                                    </label>
-                                    <input
-                                      type="text"
-                                      placeholder="Enter title"
-                                      value={title}
-                                      onChange={(e) => setTitle(e.target.value)}
-                                      className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
-                                    />
-                                  </div>
-                                  <div className="flex gap-4 mb-4">
-                                    <div className="flex-1">
-                                      <label className="text-sm block mb-1 dark:text-[#fff]">
-                                        Assigned Date
-                                      </label>
-                                      <input
-                                        type="date"
-                                        className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
-                                        value={assignedDate}
-                                        onChange={(e) => setAssignedDate(e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="flex-1">
-                                      <label className="text-sm block mb-1 dark:text-[#fff]">
-                                        Due Date
-                                      </label>
-                                      <input
-                                        type="date"
-                                        className="w-full border rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
-                                        value={dueDate}
-                                        onChange={(e) => setDueDate(e.target.value)}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="mb-4">
-                                    <label className="text-sm block mb-1 dark:text-[#fff]">
-                                      Comment
-                                    </label>
-                                    <textarea
-                                      placeholder="Write your comment here..."
-                                      value={comment}
-                                      onChange={(e) => setComment(e.target.value)}
-                                      className="w-full border rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
-                                    ></textarea>
-                                  </div>
-                                </div>
-                                <div className="flex justify-end gap-3">
-                                  <button
-                                    className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
-                                    onClick={() => setOpenModalId(null)}
-                                  >
-                                    Cancel
-                                  </button>
-                                  <button
-                                    className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                    onClick={() => handleClick()}
-                                  >
-                                    Create Assignment
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Assignment Modal for students with no assignments */}
-                          {openModalId === `${groupId}-no-assignment` && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                               <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
                                 <div>

@@ -11,6 +11,7 @@ import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import moment from "moment";
+import { getSocket } from "@/app/utils/socket";
 
 interface Student {
   studentId: string;
@@ -139,6 +140,26 @@ const Classes = () => {
     };
 
     fetchClasses();
+  }, []);
+  useEffect(() => {
+    const userId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("StudentPortalId")
+        : null;
+    if (!userId) return;
+    const socket = getSocket(userId);
+    const handleUpcoming = (data: ClassData) => {
+      console.log("Update student");
+      setUpcomingClasses((prev) =>
+        prev.map((app) =>
+          app._id.toString() === data._id.toString() ? data : app
+        )
+      );
+    };
+    socket.on("academicStudentReSchedule", handleUpcoming);
+    return () => {
+      socket.off("academicStudentReSchedule", handleUpcoming);
+    };
   }, []);
 
   const filteredClasses =
