@@ -217,8 +217,9 @@ const NewAssignment = () => {
       return;
     }
     // Special validation for image identification
-    if (assignmentType === "image identification") {
-      if (!uploadedFileURL || !uploadedFileType?.startsWith("image/")) {
+    if (assignmentType === "image identification" || assignmentType === "word match") {
+      if (assignmentType === "image identification" &&
+        (!uploadedFileURL || !uploadedFileType?.startsWith("image/"))) {
         alert("⚠️ Please upload an image for image identification.");
         return;
       }
@@ -234,6 +235,11 @@ const NewAssignment = () => {
         return;
       }
     }
+    // Skip true/false validation for non-quiz types
+  if (assignmentType === "quiz" && questionType === "truefalse" && trueFalseAnswer === null) {
+    alert("⚠️ Please select True or False for this question.");
+    return;
+  }
     // Skip options validation for reading/writing types
     if (!["reading", "writing"].includes(assignmentType)) {
       // For choose type with options
@@ -280,6 +286,8 @@ const NewAssignment = () => {
       // Include options for image identification or choose type
       options:
         assignmentType === "image identification" ||
+          assignmentType === "word match" ||
+
           (questionType === "choose" && hasOptions && !noOptions)
           ? {
             optionOne: options.a.text,
@@ -697,6 +705,8 @@ const NewAssignment = () => {
                 <option value="image identification">
                   image identification
                 </option>
+                <option value="word match">word match</option> {/* Add this line */}
+
               </select>
             </div>
           </div>
@@ -705,26 +715,28 @@ const NewAssignment = () => {
             <label className="block text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
               Answer Type
             </label>
-            {/* Only show answer type options for quiz */}
-            {!(
-              assignmentType === "writing" || assignmentType === "reading"
-            ) && (
-                <div className="flex items-center gap-6 text-sm text-[#010E30]">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={questionType === "choose"}
-                      onChange={() => {
-                        setQuestionType("choose");
-                        if (assignmentType === "quiz") setChooseType(true);
-                      }}
-                      className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
-                    />
-                    <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
-                      Choose
-                    </span>
-                  </label>
+            {/* Hide for reading/writing */}
+            {!(assignmentType === "writing" || assignmentType === "reading") && (
+              <div className="flex items-center gap-6 text-sm text-[#010E30]">
+                {/* Always show Choose option */}
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={true}
+                    disabled={assignmentType === "word match" || assignmentType === "image identification"}
+                    onChange={() => {
+                      setQuestionType("choose");
+                      if (assignmentType === "quiz") setChooseType(true);
+                    }}
+                    className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
+                  />
+                  <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
+                    Choose
+                  </span>
+                </label>
 
+                {/* Only show True/False for quiz */}
+                {assignmentType === "quiz" && (
                   <label className="flex items-center gap-2 dark:text-[#fff]">
                     <input
                       className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
@@ -735,12 +747,13 @@ const NewAssignment = () => {
                         if (assignmentType === "quiz") setChooseType(false);
                       }}
                     />
-                    <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff] ">
+                    <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
                       True or False
                     </span>
                   </label>
-                </div>
-              )}
+                )}
+              </div>
+            )}
           </div>
 
           <div className="mb-4">
@@ -879,6 +892,7 @@ const NewAssignment = () => {
               </div>
             )}
           {(assignmentType === "image identification" ||
+            assignmentType === "word match" ||
             (questionType === "choose" && assignmentType === "quiz")) && (
               <div className="mb-4">
                 <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
@@ -1043,6 +1057,54 @@ const NewAssignment = () => {
                     </div>
                   </div>
                 )}
+
+                {item.type === "word match" && item.audioURL && (
+                  <div className="mt-4">
+                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                      Uploaded Audio
+                    </label>
+                    <div className="flex items-center gap-3 mt-1 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2 shadow">
+                      <audio
+                        controls
+                        src={item.audioURL}
+                        className="flex-1 min-w-0"
+                      />
+                      <span className="text-xs break-all dark:text-[#fff]">
+                        {item.audioName}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {(item.type === "image identification" || item.type === "word match") && item.options && (
+                  <div className="mt-4">
+                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                      Options
+                    </label>
+                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+                      {Object.entries({
+                        a: item.options.optionOne,
+                        b: item.options.optionTwo,
+                        c: item.options.optionThree,
+                        d: item.options.optionFour,
+                      }).map(
+                        ([key, value]) =>
+                          value && (
+                            <div key={key} className="mb-2 last:mb-0 flex items-center">
+                              <span className="font-medium dark:text-[#fff] mr-2">
+                                {key.toUpperCase()}:
+                              </span>
+                              <span className="dark:text-[#fff] flex-grow">{value}</span>
+                              {item.answerValidation === value && (
+                                <span className="ml-2 text-green-600">✓ Correct</span>
+                              )}
+                            </div>
+                          )
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {(item.type === "reading" || item.type === "writing") && (
                   <div className="mt-4">
                     <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
