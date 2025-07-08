@@ -977,22 +977,45 @@ const GroupStudents = () => {
                                   const status =
                                     assignmentItem.assignmentStatus ||
                                     assignmentItem.status;
-                                  if (
-                                    status === "Completed" ||
-                                    status === "Not Completed" ||
-                                    status === "Assigned"
-                                  ) {
+                                  if (status === "Completed") {
                                     return (
                                       <>
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(
-                                              firstStudent.studentId
-                                            )
+                                            handleViewProfile(firstStudent.studentId)
                                           }
                                         >
                                           View Profile
+                                        </button>
+                                        <button
+                                          className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                          onClick={() => {
+                                            setStudentId(firstStudent.studentId);
+                                            setStudentName(
+                                              `${studentInfo?.studentFirstName ?? ""} ${studentInfo?.studentLastName ?? ""}`
+                                            );
+                                            setSessionClassType(
+                                              studentDetails?.classType ?? "GROUPCLASS"
+                                            );
+                                            setAssignedTeacher(
+                                              studentDetails?.assignedTeacherEmail ?? ""
+                                            );
+                                            setAssignedTeacherId(
+                                              studentDetails?.teacher?.teacherId ?? ""
+                                            );
+                                            setOpenModalId(modalId);
+                                          }}
+                                        >
+                                          New Assignment
+                                        </button>
+                                        <button
+                                          className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                                          onClick={() =>
+                                            handleViewProfile(firstStudent.studentId)
+                                          }
+                                        >
+                                          Assign
                                         </button>
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
@@ -1004,18 +1027,19 @@ const GroupStudents = () => {
                                         </button>
                                       </>
                                     );
-                                  } else if (status === "Not Assigned") {
+                                  } else if (
+                                    status === "Not Completed" ||
+                                    status === "Assigned"
+                                  ) {
                                     return (
                                       <>
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(
-                                              firstStudent.studentId
-                                            )
+                                            handleViewProfile(firstStudent.studentId)
                                           }
                                         >
-                                          Assign
+                                          View Profile
                                         </button>
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"

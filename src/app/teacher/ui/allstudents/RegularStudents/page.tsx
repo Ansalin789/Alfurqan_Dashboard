@@ -139,7 +139,7 @@ const RegularStudents = () => {
   const [assignedDate, setAssignedDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [comment, setComment] = useState("");
-      const itemsPerPage = 10;
+  const itemsPerPage = 10;
 
   const formatDate = (dateStr: string | undefined): string => {
     if (!dateStr) return "-";
@@ -561,11 +561,14 @@ const RegularStudents = () => {
               )}
               <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                 <span className="text-left -ml-60">
- Showing {
-      isFiltered ? filteredStudents.length : 
-      searchQuery ? filteredUsers.length : 
-      regularStudents.length
-    } of {regularStudents.length}                </span>
+                  Showing{" "}
+                  {isFiltered
+                    ? filteredStudents.length
+                    : searchQuery
+                    ? filteredUsers.length
+                    : regularStudents.length}{" "}
+                  of {regularStudents.length}{" "}
+                </span>
               </div>
             </div>
 
@@ -867,8 +870,66 @@ const RegularStudents = () => {
                                   const status =
                                     assignmentItem.assignmentStatus ||
                                     assignmentItem.status;
-                                  if (
-                                    status === "Completed" ||
+                                  if (status === "Completed") {
+                                    return (
+                                      <>
+                                        <button
+                                          className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                                          onClick={() =>
+                                            handleViewProfile(student.studentId)
+                                          }
+                                        >
+                                          View Profile
+                                        </button>
+                                        <button
+                                          className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                          onClick={() => {
+                                            setStudentId(student.studentId);
+                                            setStudentName(
+                                              `${
+                                                studentInfo?.studentFirstName ??
+                                                ""
+                                              } ${
+                                                studentInfo?.studentLastName ??
+                                                ""
+                                              }`
+                                            );
+                                            setSessionClassType(
+                                              studentDetails?.classType ??
+                                                "REGULARCLASS"
+                                            );
+                                            setAssignedTeacher(
+                                              studentDetails?.assignedTeacherEmail ??
+                                                ""
+                                            );
+                                            setAssignedTeacherId(
+                                              studentDetails?.teacher
+                                                ?.teacherId ?? ""
+                                            );
+                                            setOpenModalId(modalId);
+                                          }}
+                                        >
+                                          New Assignment
+                                        </button>
+                                        <button
+                                          className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                                          onClick={() =>
+                                            handleViewProfile(student.studentId)
+                                          }
+                                        >
+                                          Assign
+                                        </button>
+                                        <button
+                                          className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                                          onClick={() =>
+                                            setOpenDropdownId(null)
+                                          }
+                                        >
+                                          Cancel
+                                        </button>
+                                      </>
+                                    );
+                                  } else if (
                                     status === "Not Completed" ||
                                     status === "Assigned"
                                   ) {
@@ -1047,11 +1108,11 @@ const RegularStudents = () => {
               </tbody>
             </table>
           </div>
-           <Pagination
-                  currentPage={currentPage}
-                  totalPages={Math.ceil(regularStudents.length / itemsPerPage)}
-                  onPageChange={setCurrentPage}
-                />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(regularStudents.length / itemsPerPage)}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </div>
