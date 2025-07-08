@@ -8,6 +8,7 @@ import ISO6391 from "iso-639-1";
 
 import TimezoneSelect from "react-timezone-select";
 import { getSocket } from "@/app/utils/socket";
+import { newDate } from "react-datepicker/dist/date_utils";
 
 // Define the return type of the getAllUsers function
 
@@ -1182,7 +1183,7 @@ const Step6 = ({
   const [teachers, setTeachers] = useState<TeacherList[]>([]);
   interface TeacherList {
     teacherId: string;
-    name: string;
+    teacherName: string;
   }
   interface Teacher {
     _id: string;
@@ -1278,13 +1279,13 @@ const Step6 = ({
 
     const updatedStudentDatas = {
       ...updatedStudentData,
-      joiningDate: startDate,
+     joiningDate : isGroupClass ? new Date() : startDate,
       weeklySlots: buildWeeklySlots(),
       teacher: isGroupClass
         ? { teacherId: "", teacherName: "", teacherEmail: "" }
         : {
             teacherId: selectedTeacher?.teacherId ?? "",
-            teacherName: selectedTeacher?.name ?? "",
+            teacherName: selectedTeacher?.teacherName ?? "",
             teacherEmail: "demoteacher@gmail.com",
           },
       classDay: isGroupClass
@@ -1564,7 +1565,7 @@ const Step6 = ({
                   <option value="">Select a Teacher</option>
                   {teachers.map((teacher) => (
                     <option key={teacher.teacherId} value={teacher.teacherId}>
-                      {teacher.name}
+                      {teacher.teacherName}
                     </option>
                   ))}
                 </select>

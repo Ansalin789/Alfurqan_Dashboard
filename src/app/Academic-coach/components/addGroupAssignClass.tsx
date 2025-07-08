@@ -61,6 +61,7 @@ export interface ScheduleData {
   sessionStarttime: string;
   sessionsEndtime: string;
   totalHourse: string;
+  weeklySlots:WeeklySlotMap; 
   startDate: string;
   endDate: string;
   classDay: DayOption[];
@@ -248,6 +249,7 @@ export default function AddGroupAssignClass({
       totalHourse: "",
       startDate: formattedStartDate,
       endDate: formattedEndDate,
+      weeklySlots: buildWeeklySlots(),
       classDay: schedule
         .filter((item) => item.isSelected)
         .map((item) => ({ label: item.day, value: item.day })),
