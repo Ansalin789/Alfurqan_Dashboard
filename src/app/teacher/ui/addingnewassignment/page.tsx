@@ -808,11 +808,7 @@ const NewAssignment = () => {
                   <label className="p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
                     <input
                       type="file"
-                      accept={
-                        assignmentType === "image identification"
-                          ? "image/*"
-                          : "audio/*,image/*"
-                      }
+                      accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.txt"  // Common file types
                       className="hidden"
                       onChange={handleFileUpload}
                       disabled={isUploading}
