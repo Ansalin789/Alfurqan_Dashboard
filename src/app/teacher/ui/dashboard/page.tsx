@@ -29,7 +29,7 @@ export default function Academic() {
     <BaseLayout>
       <TeacherHeader currentSection="Dashboard" />
 
-      <div className="flex flex-col lg:flex-row gap-4 bg-[#E4E7F4] dark:bg-[#252525] px-2 py-4 min-h-screen">
+      <div className="flex flex-col lg:flex-row gap-4 bg-[#E4E7F4] dark:bg-[#252525]   min-h-screen">
         {/* Main Content */}
         <div className="flex-1 flex flex-col gap-4 w-full">
           {/* Summary Cards */}

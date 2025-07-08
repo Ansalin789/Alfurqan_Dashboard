@@ -151,7 +151,7 @@ const response = await axios.get("http://127.0.0.1:5001/dashboard/teacher/counts
     },
     {
       title: "Total Hours",
-      count: formatValue(stats.totalhours, false, " hrs"),
+      count: formatValue(stats.totalhours, false, ),
       icon: "/assets/images/tc3.svg",
       bg: "bg-[#ffe9e9] dark:bg-[#503e3e]",
     },
