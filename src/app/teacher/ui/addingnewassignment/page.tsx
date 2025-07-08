@@ -61,7 +61,7 @@ interface Assignment {
   questionName?: string;
   correctAnswer: string;
   answerValidation: string;
-
+ answerText?: string; // For reading/writing
   // Audio fields
   audioURL?: string; // For preview URL
   audioName?: string; // Original filename
@@ -236,10 +236,10 @@ const NewAssignment = () => {
       }
     }
     // Skip true/false validation for non-quiz types
-  if (assignmentType === "quiz" && questionType === "truefalse" && trueFalseAnswer === null) {
-    alert("⚠️ Please select True or False for this question.");
-    return;
-  }
+    if (assignmentType === "quiz" && questionType === "truefalse" && trueFalseAnswer === null) {
+      alert("⚠️ Please select True or False for this question.");
+      return;
+    }
     // Skip options validation for reading/writing types
     if (!["reading", "writing"].includes(assignmentType)) {
       // For choose type with options
@@ -303,6 +303,9 @@ const NewAssignment = () => {
         : questionType === "truefalse"
           ? String(trueFalseAnswer) // For true/false questions
           : selectedAnswer, // For all other types (choose, image identification)
+        answerText: ["reading", "writing"].includes(assignmentType) 
+      ? answerText // Explicitly store answerText for these types
+      : undefined,
       audioFile: audioFileBuffer || undefined,
       uploadFile: uploadedFileBuffer || undefined,
     };
@@ -523,9 +526,14 @@ const NewAssignment = () => {
       // ✅ Proper answerValidation handling
       let answerValidationValue = "";
 
-      if (["image identification", "reading", "writing"].includes(item.type)) {
-        answerValidationValue = item.question;
-      } else if (item.questionType === "truefalse") {
+      if(item.type === "reading" || item.type === "writing") {
+        answerValidationValue = item.answerText || ""; // Use answerText for reading/writing
+      }
+      else if (item.type === "image identification" || item.type === "word match") {
+        // For image/word match, use the selected answer (value from radio button)
+        answerValidationValue = item.answerValidation || selectedAnswer;
+      }
+      else if (item.questionType === "truefalse") {
         answerValidationValue = String(item.answerValidation);
       } else if (Array.isArray(item.answerValidation)) {
         answerValidationValue = item.answerValidation.join(","); // or JSON.stringify(...) if your backend expects array
@@ -783,7 +791,7 @@ const NewAssignment = () => {
             />
             {!audioURL && !uploadedFileURL && (
               <div className="absolute bottom-2 right-2 flex gap-2 dark:text-[#fff]">
-                <button
+                {/* <button
                   type="button"
                   className={`p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center dark:border-[#343434] dark:text-[#fff] ${isRecording ? "bg-red-200" : ""
                     }`}
@@ -794,7 +802,7 @@ const NewAssignment = () => {
                     className={`text-xl ${isRecording ? "text-red-600" : "text-gray-700"
                       }`}
                   />
-                </button>
+                </button> */}
                 {/* File upload button - shown when no file is uploaded */}
                 {!uploadedFileURL && (
                   <label className="p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
@@ -876,8 +884,7 @@ const NewAssignment = () => {
           {/* Only show choose/truefalse options if not writing/reading/image identification */}
           {questionType === "choose" &&
             (assignmentType === "writing" ||
-              assignmentType === "reading" ||
-              assignmentType === "image identification") && (
+              assignmentType === "reading" ) && (
               <div className="mb-4">
                 <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff] ">
                   Type the Answer
