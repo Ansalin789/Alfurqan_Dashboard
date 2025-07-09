@@ -1,13 +1,13 @@
-import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import BaseLayout2 from "@/components/BaseLayout2";
 import React from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { MdOutlineArrowOutward } from "react-icons/md";
+import StudentHeader from "../../components/StudentHeader";
 
 const Support = () => {
   return (
     <BaseLayout2>
-    <TeacherHeader currentSection="Support"/>
+    <StudentHeader currentSection="Support"/>
       <div className="p-4 mx-auto">
         <div className="flex gap-x-5 w-auto">
           <div className="bg-[#7689BD] shadow-lg rounded-xl p-4 h-[616px] w-[340px]">
