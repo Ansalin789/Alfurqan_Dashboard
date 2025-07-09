@@ -1,16 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { CountryDropdown } from "react-country-region-selector";
 import ISO6391 from "iso-639-1";
-
+import {
+  CalendarDays,
+  Clock3,
+  Trash2,
+  PlusCircle,
+  CheckCircle,
+} from "lucide-react";
 import TimezoneSelect from "react-timezone-select";
 import { getSocket } from "@/app/utils/socket";
-import { newDate } from "react-datepicker/dist/date_utils";
-
-// Define the return type of the getAllUsers function
+import moment from "moment";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface AcademicCoach {
   academicCoachId: string; // Assuming it's a string or number
@@ -1190,23 +1196,55 @@ const Step6 = ({
     userName: string;
     email: string;
     password: string;
-    role: string[]; // Array of roles, e.g., "TEACHER"
-    profileImage: string | null; // Could be a URL or null
-    status: string; // Active/Inactive status
-    createdBy: string; // Who created the record
-    lastUpdatedBy: string; // Who last updated the record
-    userId: string; // Unique ID for the user
-    lastLoginDate: string; // Last login timestamp
-    createdDate: string; // Creation timestamp
-    lastUpdatedDate: string; // Last update timestamp
+    role: string[];
+    profileImage: string | null;
+    status: string;
+    createdBy: string;
+    lastUpdatedBy: string;
+    userId: string;
+    lastLoginDate: string;
+    createdDate: string;
+    lastUpdatedDate: string;
   }
   type WeeklySlotMap = {
     [day: string]: { from: string; to: string }[];
   };
+  interface TimeSlot {
+    startTime: string;
+    endTime: string;
+  }
 
-  const weeklyHourLimit = updatedStudentData.selectedHours; // Example: Change this based on requirement
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupMessage, setPopupMessage] = useState("");
+  interface ScheduleItem {
+    day: string;
+    times: TimeSlot[];
+    isSelected: boolean;
+  }
+  const [selectedTeacher, setSelectedTeacher] = useState<TeacherList | null>(
+    null
+  );
+  const [startDate, setStartDate] = useState("");
+  const [trailStartDate, setTrailStartDate] = useState("");
+  const [fromTime, setFromTime] = useState("");
+  const [toTime, setToTime] = useState("");
+  const [fromHour, setFromHour] = useState("");
+  const [fromMinute, setFromMinute] = useState("");
+  const [suggestedSlots, setSuggestedSlots] = useState<WeeklySlotMap>({});
+  const [schedule, setSchedule] = useState<ScheduleItem[]>(
+    [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ].map((day) => ({
+      day,
+      times: [],
+      isSelected: false,
+    }))
+  );
+  const weeklyHourLimit = updatedStudentData.selectedHours;
   const isGroupClass = updatedStudentData.classType === "GROUPCLASS";
   const buildWeeklySlots = () => {
     const map: WeeklySlotMap = {};
@@ -1227,7 +1265,6 @@ const Step6 = ({
     schedule.forEach((item) => {
       if (item.isSelected) {
         item.times.forEach((time) => {
-          // Ignore empty time slots to prevent NaN
           if (time.startTime && time.endTime) {
             const start = new Date(`2023-01-01T${time.startTime}`);
             const end = new Date(`2023-01-01T${time.endTime}`);
@@ -1244,42 +1281,29 @@ const Step6 = ({
     const totalHours = calculateTotalHours();
     const remainingHours = weeklyHourLimit - totalHours;
 
-    if (remainingHours < 0) {
-      setPopupMessage(
-        `❌ You've exceeded the weekly limit! Max allowed: ${weeklyHourLimit} hours.`
-      );
+    if (remainingHours === 0) {
+      toast.warning(" You've reached your weekly hour limit.", {
+        className:
+          "w-[340px] px-4 py-3 text-sm rounded-lg shadow bg-yellow-600 text-white",
+      });
     } else {
-      setPopupMessage(
-        `✅ You have ${remainingHours.toFixed(2)} hours remaining this week.`
+      toast.info(
+        `You have ${remainingHours.toFixed(2)} hours remaining this week.`,
+        {
+          className:
+            "w-[340px] px-4 py-3 text-sm rounded-lg shadow bg-blue-600 text-white",
+        }
       );
     }
-
-    setShowPopup(true);
-
-    // Auto-hide popup after 3 seconds
-    setTimeout(() => setShowPopup(false), 3000);
   };
-  const handleClassSelection = (index: number) => {
-    const updatedSchedule = [...schedule];
-    updatedSchedule[index].isSelected = !updatedSchedule[index].isSelected;
-    setSchedule(updatedSchedule);
 
-    showRemainingHoursPopup();
-  };
   const handleNextStep = () => {
-    const totalHours = calculateTotalHours();
-
-    if (!isGroupClass && totalHours > weeklyHourLimit) {
-      setPopupMessage(
-        `You've exceeded the weekly hour limit! You can select only ${weeklyHourLimit} hours.`
-      );
-      setShowPopup(true);
-      return;
-    }
-
     const updatedStudentDatas = {
       ...updatedStudentData,
-     joiningDate : isGroupClass ? new Date() : startDate,
+      joiningDate: isGroupClass ? new Date() : startDate,
+      preferredTrialDate: trailStartDate,
+      preferredTrialFromTime: fromTime,
+      preferredTrialToTime: toTime,
       weeklySlots: buildWeeklySlots(),
       teacher: isGroupClass
         ? { teacherId: "", teacherName: "", teacherEmail: "" }
@@ -1318,98 +1342,127 @@ const Step6 = ({
     nextStep(updatedStudentDatas);
   };
 
-  interface TimeSlot {
-    startTime: string;
-    endTime: string;
-  }
+  useEffect(() => {
+    if (!trailStartDate || !fromTime) return;
+    const calculatedToTime = moment(fromTime, "HH:mm")
+      .add(30, "minutes")
+      .format("HH:mm");
+    setToTime(calculatedToTime);
+    const academicId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AcademicCoachPortalId")
+        : null;
+    if (!academicId || !trailStartDate) return;
+    const socket = getSocket(academicId);
+    console.log("📤 Sending academicTrailClassTeacherListRequest");
+    console.log("📤 Sending with payload:", {
+      startDate: trailStartDate,
+      from: fromTime,
+      to: calculatedToTime,
+    });
+    socket.emit("academicTrailClassTeacherListRequest", {
+      requestId: academicId,
+      startDate: trailStartDate,
+      from: fromTime,
+      to: calculatedToTime,
+    });
 
-  interface ScheduleItem {
-    day: string;
-    times: TimeSlot[];
-    isSelected: boolean;
-  }
-  const [selectedTeacher, setSelectedTeacher] = useState<TeacherList | null>(
-    null
-  );
-  const [startDate, setStartDate] = useState("");
-  const [schedule, setSchedule] = useState<ScheduleItem[]>(
-    [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday",
-    ].map((day) => ({
-      day,
-      times: [], // Array of start and end times
-      isSelected: false,
-    }))
-  );
-  const scheduleHash = useMemo(() => {
-    return JSON.stringify({ startDate, schedule });
-  }, [startDate, schedule]);
+    const handleResponse = (data: Record<string, string>) => {
+      const teacherArray = Object.entries(data).map(
+        ([teacherId, teacherName]) => ({
+          teacherId,
+          teacherName,
+        })
+      );
+      setTeachers(teacherArray);
+    };
 
+    socket.on("academicTrailClassTeacherListResponse", handleResponse);
+    return () => {
+      socket.off("academicTrailClassTeacherListResponse", handleResponse);
+    };
+  }, [trailStartDate, fromTime]);
   useEffect(() => {
     const academicId =
       typeof window !== "undefined"
         ? localStorage.getItem("AcademicCoachPortalId")
         : null;
-    if (!academicId) return;
-
-    const hasSelection = schedule.some(
-      (item) => item.isSelected && item.times.length > 0
-    );
-    if (!hasSelection || !startDate) return;
-
+    if (!academicId || !startDate) return;
     const socket = getSocket(academicId);
-    console.log("📤 Sending availableTeachersListRequest");
-
-    socket.emit("availableTeachersListRequest", {
+    console.log("📤 Sending academicTeacherWeeklySlotsListRequest");
+    socket.emit("academicTeacherWeeklySlotsListRequest", {
       requestId: academicId,
-      startDate,
-      WeeklySlots: buildWeeklySlots(),
+      startDate: startDate,
+      teacherId: selectedTeacher?.teacherId,
     });
 
-    const handleResponse = (data: TeacherList[]) => {
-      console.log("📥 Teacher list received:", data);
-      setTeachers(data);
+    const handleResponse = (data: WeeklySlotMap) => {
+      console.log("weekyl", data);
+      setSuggestedSlots(data);
     };
 
-    socket.on("availableTeachersListResponse", handleResponse);
-
+    socket.on("academicTeacherWeeklySlotsListResponse", handleResponse);
     return () => {
-      socket.off("availableTeachersListResponse", handleResponse);
+      socket.off("academicTeacherWeeklySlotsListResponse", handleResponse);
     };
-  }, [scheduleHash]);
+  }, [startDate, selectedTeacher]);
 
-  const handleAddTimeSlot = (index: number) => {
-    const totalHours = calculateTotalHours();
+  const normalizeTime = (time: string) => time.slice(0, 5);
 
-    // Check if adding another slot exceeds the limit
-    if (totalHours >= weeklyHourLimit) {
-      alert(`⚠️ You've reached your weekly limit of ${weeklyHourLimit} hours.`);
+  const handleAddSuggestedSlot = (day: string, from: string, to: string) => {
+    if (calculateTotalHours() >= weeklyHourLimit) {
+      toast.warning(" You've reached your weekly hour limit.");
+      return;
+    }
+    const index = schedule.findIndex((item) => item.day === day);
+    if (index === -1) return;
+
+    const updated = [...schedule];
+    const times = updated[index].times;
+
+    const isDuplicate = times.some(
+      (t) =>
+        normalizeTime(t.startTime) === normalizeTime(from) &&
+        normalizeTime(t.endTime) === normalizeTime(to)
+    );
+
+    if (isDuplicate) {
+      alert("⛔ Already added.");
       return;
     }
 
-    const updatedSchedule = [...schedule];
+    updated[index].isSelected = true;
+    updated[index].times.push({
+      startTime: normalizeTime(from),
+      endTime: normalizeTime(to),
+    });
 
-    // Ensure last added time slot is filled before adding a new one
-    if (updatedSchedule[index].times.length > 0) {
-      const lastSlot =
-        updatedSchedule[index].times[updatedSchedule[index].times.length - 1];
-      if (!lastSlot.startTime || !lastSlot.endTime) {
-        alert("⚠️ Please fill the last time slot before adding a new one.");
-        return;
-      }
+    updated[index].times.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+    setSchedule(updated);
+    showRemainingHoursPopup();
+  };
+
+  const handleRemoveSlot = (day: string, from: string, to: string) => {
+    const index = schedule.findIndex((item) => item.day === day);
+    if (index === -1) return;
+
+    const updated = [...schedule];
+
+    updated[index].times = updated[index].times.filter(
+      (t) =>
+        !(
+          normalizeTime(t.startTime) === normalizeTime(from) &&
+          normalizeTime(t.endTime) === normalizeTime(to)
+        )
+    );
+
+    if (updated[index].times.length === 0) {
+      updated[index].isSelected = false;
     }
 
-    // Add a default time slot (Example: 08:00 - 09:00)
-    updatedSchedule[index].times.push({ startTime: "09:00", endTime: "09:30" });
-
-    setSchedule(updatedSchedule);
-    showRemainingHoursPopup(); // Show remaining hours after adding
+    setSchedule(updated);
+    showRemainingHoursPopup();
   };
 
   const handleTimeChange = (
@@ -1422,9 +1475,17 @@ const Step6 = ({
     updatedSchedule[dayIndex].times[timeIndex][field] = value;
     setSchedule(updatedSchedule);
   };
+  const handleTimeChange1 = (hour: any, minute: any) => {
+    setFromHour(hour);
+    setFromMinute(minute);
+
+    if (hour && minute) {
+      setFromTime(`${hour}:${minute}`);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center justify-center p-10 relative overflow-hidden scrollbar-none">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[url('/assets/images/grid.svg')] opacity-10"></div>
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10"></div>
@@ -1445,15 +1506,95 @@ const Step6 = ({
           {updatedStudentData.firstName} &nbsp; {updatedStudentData.lastName}
         </div>
       </div>
-      <div
-        className={`relative z-10 w-full max-w-4xl ${
-          updatedStudentData.classType === "GROUPCLASS"
-            ? "pointer-events-none opacity-30"
-            : ""
-        }`}
-      >
+      <div className={`relative z-10 w-full max-w-4xl `}>
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center  mb-5">
+            <h2 className="text-[18px] font-medium text-white">Trail Class</h2>
+          </div>
+          <div className="flex flex-wrap gap-4 justify-between items-center">
+            <div className="flex items-center gap-2">
+              <label htmlFor="ugcuc" className="font-medium text-white text-sm">
+                Date:
+              </label>
+              <input
+                type="date"
+                id="ugcuc"
+                className="border rounded text-sm px-1 bg-white/5 border-[#4f5154] text-[#c9c7c7]"
+                value={trailStartDate}
+                onChange={(e) => setTrailStartDate(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="fromTime"
+                className="font-medium text-white text-sm"
+              >
+                From:
+              </label>
+
+              {/* Hours Dropdown */}
+              <select
+                value={fromHour}
+                onChange={(e) => handleTimeChange1(e.target.value, fromMinute)}
+                size={1}
+                style={{
+                  scrollbarWidth: "none",
+                  overflow: "hidden",
+                  WebkitOverflowScrolling: "touch",
+                }}
+                className="h-8 w-16 text-sm px-2 rounded border border-[#4f5154] bg-white/5 text-black appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-[#1c1c1c] dark:text-white"
+              >
+                <option value="">HH</option>
+                {Array.from({ length: 24 }, (_, i) => (
+                  <option key={i} value={i.toString().padStart(2, "0")}>
+                    {i.toString().padStart(2, "0")}
+                  </option>
+                ))}
+              </select>
+
+              {/* Minutes Dropdown */}
+              <select
+                value={fromMinute}
+                onChange={(e) => handleTimeChange1(fromHour, e.target.value)}
+                className="h-8 w-16 text-sm px-2 rounded border border-[#4f5154] bg-white/5 text-black appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-[#1c1c1c] dark:text-white"
+              >
+                <option value="">MM</option>
+                <option value="00">00</option>
+                <option value="30">30</option>
+              </select>
+            </div>
+
+            {/* Teacher Dropdown */}
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="teacher"
+                className="font-medium text-white text-sm"
+              >
+                Teacher:
+              </label>
+              <select
+                className="form-select w-full text-xs  text-black border-[#4f5154] bg-white/5 p-1 rounded-lg dark:text-[#c1c1c1] dark:bg-white/5"
+                onChange={(e) => {
+                  const selected = teachers.find(
+                    (teacher) => teacher.teacherId === e.target.value
+                  );
+                  setSelectedTeacher(selected || null);
+                }}
+              >
+                <option value="">Select a Teacher</option>
+                {teachers.length === 0 ? (
+                  <option disabled>🔍 Searching...</option>
+                ) : (
+                  teachers.map((teacher) => (
+                    <option key={teacher.teacherId} value={teacher.teacherId}>
+                      {teacher.teacherName}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+          </div>
+          <div className="flex items-center justify-between my-5">
             <h2 className="text-[18px] font-medium text-white">
               Schedule Classes
             </h2>
@@ -1467,43 +1608,42 @@ const Step6 = ({
                 id="ugcuc"
                 className="border rounded text-sm px-1 bg-white/5 border-[#4f5154] text-[#c9c7c7]"
                 value={startDate}
+                disabled={isGroupClass}
                 onChange={(e) => setStartDate(e.target.value)}
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 grid-rows-3 gap-2">
-            {/* Schedule Selection */}
+          <div
+            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ${
+              updatedStudentData.classType === "GROUPCLASS"
+                ? "pointer-events-none opacity-30"
+                : ""
+            }`}
+          >
             {schedule.map((item, index) => (
               <div
                 key={item.day}
-                className="flex flex-col justify-between p-1 border rounded-lg border-[#4f5154] bg-white/5 w-50 min-h-16"
+                className="flex flex-col justify-between bg-white/10 border border-[#2c3444] rounded-2xl p-4 shadow-lg transition-transform hover:scale-[1.01] duration-200"
               >
-                {/* Day Name + Checkbox */}
-                <div className="flex items-center justify-between p-2">
-                  <label className="font-medium text-white text-xs">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-2 text-white font-semibold text-sm tracking-wide">
+                    <CalendarDays size={18} className="text-blue-400" />
                     {item.day}
-                  </label>
-                  <input
-                    type="checkbox"
-                    className="w-3 h-3 bg-white/5"
-                    checked={item.isSelected}
-                    disabled={isGroupClass}
-                    onChange={() => handleClassSelection(index)}
-                  />
+                  </div>
                 </div>
 
-                {/* Time Slots (Shown Only If Day is Selected) */}
-                {item.isSelected && (
-                  <div className="mt-1 flex flex-col gap-1 overflow-y-auto max-h-24 scrollbar-hidden scroll-smooth">
+                {/* Added Slots */}
+                {item.times.length > 0 && (
+                  <div className="flex flex-col gap-2 mb-3 max-h-28 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                     {item.times.map((time, timeIndex) => (
                       <div
-                        key={time.startTime}
-                        className="flex items-center space-x-1 text-xs"
+                        key={`${time.startTime}-${timeIndex}`}
+                        className="flex items-center gap-2 bg-[#2a3142] px-3 py-2 rounded-xl"
                       >
                         <input
                           type="time"
                           value={time.startTime}
-                          disabled={isGroupClass}
                           onChange={(e) =>
                             handleTimeChange(
                               index,
@@ -1512,13 +1652,12 @@ const Step6 = ({
                               e.target.value
                             )
                           }
-                          className="form-input p-1 border border-[#4f5154] rounded-md bg-[#333B53] text-white w-16 h-5 text-[9px] text-center"
+                          className="bg-[#12161f] border border-gray-600 text-white text-xs rounded-lg px-1 py-1 w-15 focus:ring-2 focus:ring-blue-500"
                         />
-                        <span className=" text-white">-</span>
+                        <span className="text-white text-xs">⏤</span>
                         <input
                           type="time"
                           value={time.endTime}
-                          disabled={isGroupClass}
                           onChange={(e) =>
                             handleTimeChange(
                               index,
@@ -1527,58 +1666,83 @@ const Step6 = ({
                               e.target.value
                             )
                           }
-                          className="form-input p-1 border border-[#4f5154] rounded-md bg-[#333B53] text-white w-16 h-5 text-[9px] text-center"
+                          className="bg-[#12161f] border border-gray-600 text-white text-xs rounded-lg px-1 py-1 w-15 focus:ring-2 focus:ring-blue-500"
                         />
+
+                        {/* Remove Button */}
+                        <button
+                          onClick={() =>
+                            handleRemoveSlot(
+                              item.day,
+                              time.startTime,
+                              time.endTime
+                            )
+                          }
+                          className="ml-auto text-xs px-2 py-1 rounded-lg bg-red-500 hover:bg-red-600 text-white flex items-center gap-1"
+                          title="Remove slot"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     ))}
-                    <button
-                      onClick={() => handleAddTimeSlot(index)}
-                      disabled={isGroupClass}
-                      className="mt-1 px-2 py-0.5 bg-[#1C2640] text-white rounded-md text-xs"
-                    >
-                      + Add
-                    </button>
+                  </div>
+                )}
+
+                {/* Suggested Slots */}
+                {suggestedSlots[item.day] && (
+                  <div className="flex flex-col gap-2 max-h-32 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    {suggestedSlots[item.day].map((slot, i) => {
+                      const isAlready = item.times.some(
+                        (t) =>
+                          normalizeTime(t.startTime) ===
+                            normalizeTime(slot.from) &&
+                          normalizeTime(t.endTime) === normalizeTime(slot.to)
+                      );
+
+                      return (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between bg-[#242b38] px-3 py-2 rounded-xl"
+                        >
+                          <div className="flex items-center gap-1 text-white text-xs">
+                            <Clock3 size={14} className="text-blue-400" />
+                            {slot.from} - {slot.to}
+                          </div>
+                          <button
+                            disabled={isAlready}
+                            onClick={() =>
+                              handleAddSuggestedSlot(
+                                item.day,
+                                slot.from,
+                                slot.to
+                              )
+                            }
+                            className={`flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-lg transition-all ${
+                              isAlready
+                                ? "bg-gray-600 text-white cursor-not-allowed"
+                                : "bg-[#576CBC] hover:bg-[#4459A9] text-white"
+                            }`}
+                          >
+                            {isAlready ? (
+                              <>
+                                <CheckCircle size={14} /> Added
+                              </>
+                            ) : (
+                              <>
+                                <PlusCircle size={14} /> Add
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
             ))}
-
-            {/* Teacher Selection */}
-            <div className="col-span-3 flex justify-center">
-              <div className="w-40 min-h-16 flex flex-col justify-center">
-                <label
-                  htmlFor="select-teacher"
-                  className="block font-medium text-white text-center p-2 text-sm dark:text-white"
-                >
-                  Select Teacher
-                </label>
-                <select
-                  className="form-select w-full text-xs  text-black border-[#4f5154] bg-white/5 p-1 rounded-lg dark:text-[#c1c1c1] dark:bg-white/5"
-                  disabled={isGroupClass}
-                  onChange={(e) => {
-                    const selected = teachers.find(
-                      (teacher) => teacher.teacherId === e.target.value
-                    );
-                    setSelectedTeacher(selected || null);
-                  }}
-                >
-                  <option value="">Select a Teacher</option>
-                  {teachers.map((teacher) => (
-                    <option key={teacher.teacherId} value={teacher.teacherId}>
-                      {teacher.teacherName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
           </div>
         </div>
       </div>
-      {showPopup && (
-        <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg transition-opacity duration-500">
-          {popupMessage}
-        </div>
-      )}
 
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-4xl mt-4">
@@ -2150,6 +2314,9 @@ const Step9 = ({
         classEndDate: classEndDate,
         classStartTime: updatedStudentDatass.preferredFromTime,
         classEndTime: updatedStudentDatass.preferredToTime,
+        preferredTrialDate: updatedStudentDatass.preferredTrialDate,
+        preferredTrialFromTime: updatedStudentDatass.preferredTrialFromTime,
+        preferredTrialToTime: updatedStudentDatass.preferredTrialToTime,
         accomplishmentTime: updatedStudentDatass.accomplishmentTime.toString(),
         studentRate: updatedStudentDatass.studentRate,
         expectedFinishingDate: updatedStudentDatass.expectedFinishingDate,
@@ -2447,6 +2614,16 @@ const EvaluationSteps: React.FC<{ userId: string }> = ({ userId }) => {
           updatedStudentDatass={updatedStudentDatass}
         />
       )}
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="dark"
+      />
     </>
   );
 };

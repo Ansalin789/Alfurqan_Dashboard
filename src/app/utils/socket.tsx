@@ -5,7 +5,7 @@ let socket: Socket | null = null;
 
 export const getSocket = (userId: string): Socket => {
   if (!socket) {
-    socket = io('https://api.blackstoneinfomaticstech.com', {
+    socket = io('http://localhost:5001', {
       transports: ['websocket'],
       withCredentials: true,
       reconnection: true,
@@ -25,6 +25,10 @@ export const getSocket = (userId: string): Socket => {
     socket.on('connect_error', (err: any) => {
       console.error('❌ Socket connection error:', err);
     });
+  }
+  
+   if (socket.connected && userId) {
+    socket.emit('subscribe', userId);
   }
 
   return socket;
