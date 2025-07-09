@@ -1,115 +1,17 @@
 "use client";
 
-import React from "react";
+import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
-import BaseLayout3 from "../../../../components/BaseLayout3";
+import BaseLayout2 from "../../../../components/BaseLayout2";
 import NextScheduledClass from "@/app/student/components/NextScheduledClass";
 import ApplicationChart from "../../components/Growth";
+import axios from "axios";
 import Subject from "../../components/SubjectCard";
-// import StudentProfile from "../../components/studentProfile/page";
+import CourseOverview from "../../components/CourseOverview";
+import UpcomingTable from "../../components/UpcomingTable";
+import StudentProfile from "../../components/StudentProfile";
+import StudentHeader from "../../components/StudentHeader";
 
-
-const CourseOverview = () => {
-    const dashboardCounts = {
-      totalApplication: 3,
-      shortlistedPercentage: 63,
-      rejectedPercentage: 28,
-      rejected: "20 Hr",
-    };
-  
-    const data = [
-      {
-        title: "Level",
-        value: dashboardCounts.totalApplication,
-        percentage: 100,
-        ringColor: "#7DB5CB",
-        bgColor: "#E7EFF2",
-      },
-      {
-        title: "Attendance",
-        value: `${dashboardCounts.shortlistedPercentage}%`,
-        percentage: dashboardCounts.shortlistedPercentage,
-        ringColor: "#9AD7D6",
-        bgColor: "#E7EFF2",
-      },
-      {
-        title: "Total Classes",
-        value: `${dashboardCounts.rejectedPercentage}%`,
-        percentage: dashboardCounts.rejectedPercentage,
-        ringColor: "#8B93D2",
-        bgColor: "#E7EFF2",
-      },
-      {
-        title: "Duration",
-        value: dashboardCounts.rejected,
-        percentage: 80, // Example value
-        ringColor: "#B690D5",
-        bgColor: "#E7EFF2",
-      },
-    ];
-  
-    return (
-      <div>
-        <h5 className="text-[16px] font-semibold text-[#010E30] dark:text-white mb-4">
-          Course Overview <span className="text-[#6786FB]">(Quran)</span>
-        </h5>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {data.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-4 rounded-xl shadow-lg w-full bg-gradient-to-b from-white to-[#F9FAFB] dark:from-[#343434] dark:to-[#2A2A2A]"
-            >
-              <h3 className="text-[#010E30] dark:text-white text-[14px] font-medium mb-2">
-                {item.title}
-              </h3>
-              <div className="flex justify-center">
-              <div className="relative w-[80px] h-[80px]">
-  <PieChart width={80} height={80}>
-    {/* Background ring */}
-    <Pie
-      data={[{ value: 100 }]}
-      dataKey="value"
-      innerRadius={26}
-      outerRadius={35}
-      startAngle={90}
-      endAngle={-270}
-      stroke="none"
-      isAnimationActive={false}
-    >
-      <Cell fill={item.bgColor} />
-    </Pie>
-    {/* Active progress */}
-    <Pie
-      data={[
-        { value: item.percentage },
-        { value: 100 - item.percentage },
-      ]}
-      dataKey="value"
-      innerRadius={24}
-      outerRadius={40}
-      startAngle={90}
-      endAngle={-270}
-      cornerRadius={2}
-      stroke="none"
-      isAnimationActive={false}
-    >
-      <Cell fill={item.ringColor} />
-      <Cell fill="transparent" />
-    </Pie>
-  </PieChart>
-  {/* Inner value text */}
-  <div className="absolute inset-0 flex items-center justify-center text-[14px] font-semibold text-[#010E30] dark:text-white">
-    {item.value}
-  </div>
-</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-  
 const Dashboard = () => {
 
     const rows = [
@@ -141,7 +43,9 @@ const Dashboard = () => {
       ];
 
   return (
-    <BaseLayout3>
+    <BaseLayout2>
+    <StudentHeader currentSection="Dashboard"/>
+
       <div className="flex flex-row gap-4 p-0 min-h-screen">
         {/* Main Content */}
         <div className="flex-1 flex flex-col gap-4">
@@ -167,53 +71,13 @@ const Dashboard = () => {
           </div>
 
           {/* Applications Table */}
-          <div className="bg-white rounded-xl shadow-lg dark:bg-[#343434]">
-            {/* Table wrapper: horizontal scroll */}
-            <div className="overflow-x-auto scrollbar-none h-full">
-              {/* Vertical scroll with fixed height */}
-              <div className="overflow-y-auto h-[338px] rounded-xl scrollbar-none">
-                <table className="min-w-full text-xs border-collapse table-fixed px-4">
-                  {/* Table Head sticky */}
-                  <thead className=" text-[12px] bg-[#4C6993] text-white dark:bg-[#44699d]">
-                    <tr>
-                      {[
-                        "Class ID",
-                        "Teacher Name",
-                        "Course",
-                        "Date",
-                        "Time",
-                        "Status",
-                      ].map((col) => (
-                        <th
-                          key={col}
-                          className="py-4 px-2 font-semibold border border-[#466993] dark:border-[#466993]"
-                        >
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-
-                  {/* Table Body */}
-                  <tbody>
-       
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-              <span className="text-left -ml-60 ">
-                {/* Showing {applicants.length} of {totalApplications} */}
-              </span>
-            </div>
-          </div>
-
+                  <UpcomingTable />
         </div>
         
         {/* Sidebar */}
         <div className="w-[310px] flex flex-col gap-4">
   {/* student profile */}
-  <div className="rounded-xl shadow-lg bg-white h-[280px] dark:bg-[#343434] p-4 relative">
+  {/* <div className="rounded-xl shadow-lg bg-white h-[280px] dark:bg-[#343434] p-4 relative">
     <h3 className="text-[#010E30] font-semibold text-[16px] mb-2 dark:text-white">Student Profile</h3>
 
     <img
@@ -233,8 +97,8 @@ const Dashboard = () => {
       <span className="text-gray-300 text-lg">★</span>
     </div>
 
-  </div>
-
+  </div> */}
+<StudentProfile />
 
   {/* Payment Item */}
 
@@ -346,7 +210,7 @@ const Dashboard = () => {
 
 </div>
 </div>
-    </BaseLayout3>
+    </BaseLayout2>
   );
 };
 

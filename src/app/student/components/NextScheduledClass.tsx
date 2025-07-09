@@ -39,77 +39,102 @@ interface ClassData {
   lastUpdatedDate: string;
 }
 
+interface ApiResponse {
+  totalCount: number;
+  classSchedule: ClassData[];
+}
+
 const NextScheduledClass = () => {
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
-//   useEffect(() => {
-//     const fetchClassData = async () => {
-//       try {
-//         const teacherId =
-//           typeof window !== "undefined"
-//             ? localStorage.getItem("TeacherPortalId")
-//             : null;
-//         const token =
-//           typeof window !== "undefined"
-//             ? localStorage.getItem("TeacherAuthToken")
-//             : null;
+  const filterUpcomingClass = (response: ApiResponse): ClassData | null => {
+    const now = new Date();
 
-//         if (!teacherId || !token) return;
+    const upcomingClasses = response.classSchedule.filter((cls) => {
+      const classDate = new Date(cls.startDate);
+      const [startHours, startMinutes] = cls.startTime[0].split(":").map(Number);
+      const [endHours, endMinutes] = cls.endTime[0].split(":").map(Number);
 
-//         const response = await axios.get(
-//           "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
-//           {
-//             params: { teacherId },
-//             headers: { Authorization: `Bearer ${token}` },
-//           }
-//         );
+      classDate.setHours(startHours, startMinutes, 0, 0);
+      const classEndTime = new Date(classDate);
+      classEndTime.setHours(endHours, endMinutes, 0, 0);
 
-//         const now = new Date();
+      return now < classEndTime;
+    });
 
-//         const upcoming = response.data.classSchedule
-//           .map((item: ClassData) => {
-//             const classDate = new Date(item.startDate);
-//             const [h, m] = item.startTime[0]?.split(":").map(Number) || [0, 0];
-//             classDate.setHours(h, m, 0, 0);
-//             return { ...item, classStart: classDate };
-//           })
-//           .filter((item: any) => {
-//             const end = new Date(item.startDate);
-//             const [eh, em] = item.endTime[0]?.split(":").map(Number) || [0, 0];
-//             end.setHours(eh, em, 0, 0);
-//             return now < end;
-//           })
-//           .sort((a: any, b: any) => a.classStart - b.classStart)[0];
+    upcomingClasses.sort((a, b) => {
+      const dateA = new Date(a.startDate);
+      const dateB = new Date(b.startDate);
+      const [hoursA, minutesA] = a.startTime[0].split(":").map(Number);
+      const [hoursB, minutesB] = b.startTime[0].split(":").map(Number);
+      dateA.setHours(hoursA, minutesA, 0, 0);
+      dateB.setHours(hoursB, minutesB, 0, 0);
+      return dateA.getTime() - dateB.getTime();
+    });
 
-//         setClassData(upcoming ?? null);
-//       } catch (error) {
-//         console.error("Failed to fetch scheduled class:", error);
-//       }
-//     };
+    return upcomingClasses.length > 0 ? upcomingClasses[0] : null;
+  };
 
-//     fetchClassData();
-//   }, []);
+  useEffect(() => {
+    const fetchClassData = async () => {
+      try {
+        const studentId = localStorage.getItem("StudentPortalId");
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("StudentAuthToken")
+            : null;
 
-//   useEffect(() => {
-//     if (!classData) return;
+        if (!studentId || !token) {
+          console.log("Missing studentId or authToken");
+          return;
+        }
 
-//     const classStart = new Date(classData.startDate);
-//     const [h, m] = classData.startTime[0]?.split(":").map(Number) || [0, 0];
-//     classStart.setHours(h, m, 0, 0);
+        const response = await axios.get<ApiResponse>(
+          "https://api.blackstoneinfomaticstech.com/classShedule/students",
+          {
+            params: { studentId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-//     const interval = setInterval(() => {
-//       const now = new Date();
-//       const remaining = classStart.getTime() - now.getTime();
+        const filtered = filterUpcomingClass(response.data);
+        setClassData(filtered);
+      } catch (error) {
+        console.error("Failed to fetch scheduled class:", error);
+      }
+    };
 
-//       const hours = Math.floor(Math.max(0, remaining) / 1000 / 60 / 60);
-//       const minutes = Math.floor((Math.max(0, remaining) / 1000 / 60) % 60);
-//       const seconds = Math.floor((Math.max(0, remaining) / 1000) % 60);
-//       setTime({ hours, minutes, seconds });
-//     }, 1000);
+    fetchClassData();
+  }, []);
 
-//     return () => clearInterval(interval);
-//   }, [classData]);
+  useEffect(() => {
+    if (!classData) return;
+
+    const updateRemainingTime = () => {
+      const now = new Date();
+      const classDate = new Date(classData.startDate);
+      const [startHours, startMinutes] = classData.startTime[0]
+        .split(":")
+        .map(Number);
+      classDate.setHours(startHours, startMinutes, 0, 0);
+
+      const timeToStart = classDate.getTime() - now.getTime();
+
+      const hours = Math.floor(Math.max(0, timeToStart) / 1000 / 60 / 60);
+      const minutes = Math.floor((Math.max(0, timeToStart) / 1000 / 60) % 60);
+      const seconds = Math.floor((Math.max(0, timeToStart) / 1000) % 60);
+
+      setTime({ hours, minutes, seconds });
+    };
+
+    updateRemainingTime();
+    const interval = setInterval(updateRemainingTime, 1000);
+    return () => clearInterval(interval);
+  }, [classData]);
 
   const formatTime = (num: number) => (num < 10 ? `0${num}` : num);
 
@@ -120,7 +145,14 @@ const NextScheduledClass = () => {
   return (
     <div className="bg-[#71a1db] rounded-xl shadow flex items-center justify-between text-white">
       <div className="items-center p-2 px-8">
-        <h3 className="text-[13px] font-medium pt-3">Your Next Scheduled Class</h3>
+      <h3 className="text-[13px] font-medium pt-3">
+  Your Next Scheduled Class (
+  <span className="inline-flex items-center gap-1">
+    <FaUser className="w-[10px] h-[10px]" />
+    {classData?.teacher?.teacherName}
+  </span>
+  )
+</h3>
         <div className="flex items-center space-x-8 py-2">
           <div className="flex items-center space-x-2">
             <FaUser className="w-[10px]" />
@@ -158,8 +190,7 @@ const NextScheduledClass = () => {
               <div className="text-[#234878]">
                 <p className="text-[4px] font-bold">SESSION</p>
                 <p className="text-[8px] font-extrabold text-[#223857]">
-                  {formatTime(time.hours)}:{formatTime(time.minutes)}:
-                  {formatTime(time.seconds)}
+                  {formatTime(time.hours)}:{formatTime(time.minutes)}:{formatTime(time.seconds)}
                 </p>
               </div>
             </div>
