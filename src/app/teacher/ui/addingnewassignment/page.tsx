@@ -236,12 +236,14 @@ const NewAssignment = () => {
       }
     }
     // Skip true/false validation for non-quiz types
-    if (assignmentType === "quiz" && questionType === "truefalse" && trueFalseAnswer === null) {
-      alert("⚠️ Please select True or False for this question.");
-      return;
+    if (!["reading", "writing", "image identification", "word match"].includes(assignmentType)) {
+      if (questionType === "truefalse" && trueFalseAnswer === null) {
+        alert("⚠️ Please select True or False for this question.");
+        return;
+      }
     }
-    // Skip options validation for reading/writing types
-    if (!["reading", "writing"].includes(assignmentType)) {
+    // Skip options validation for reading/writing/image identification/word match types
+    if (!["reading", "writing", "image identification", "word match"].includes(assignmentType)) {
       // For choose type with options
       if (questionType === "choose" && hasOptions && !noOptions) {
         const missingOptions = Object.entries(options)
@@ -329,10 +331,12 @@ const NewAssignment = () => {
     setSelectedAnswer("");
     setTrueFalseAnswer(null);
     setUploadedFileURL(null);
-
     setUploadedFileName(null);
     setUploadedFileType(null);
     setAnswerText("");
+    setAudioURL(null);
+    setAudioFileBuffer(null);
+    setUploadedFileBuffer(null);
 
   };
   useEffect(() => {
@@ -488,7 +492,10 @@ const NewAssignment = () => {
       // }
 
       // Handle options for image identification
-      if (item.type === "image identification" && item.options) {
+      if (
+        (item.type === "image identification" || item.type === "word match") &&
+        item.options
+      ) {
         formData.append(
           `assignments[${index}][options]`,
           JSON.stringify(item.options)
@@ -649,7 +656,7 @@ const NewAssignment = () => {
         },
       };
 
-      alert(`📝 Option ${optionId.toUpperCase()} updated to: ${newText}`);
+      // alert(`📝 Option ${optionId.toUpperCase()} updated to: ${newText}`);
       console.log("📦 Updated options object:", updated); // log to console
       return updated;
     });
@@ -936,7 +943,8 @@ const NewAssignment = () => {
             !(
               assignmentType === "writing" ||
               assignmentType === "reading" ||
-              assignmentType === "image identification"
+              assignmentType === "image identification" ||
+              assignmentType === "word match"
             ) && (
               <div className="mb-4">
                 <p className="text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
