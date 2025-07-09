@@ -124,25 +124,26 @@ const ScheduledClasses = () => {
     };
     fetchClasses();
   }, []);
-  useEffect(()=>{
+  useEffect(() => {
     const userId =
-        typeof window !== "undefined"
+      typeof window !== "undefined"
         ? localStorage.getItem("TeacherPortalId")
         : null;
-      if(!userId) return;  
-      const socket = getSocket(userId);
- const handleUpcoming =(data: ClassData)=>{
-    console.log("Update student" );
-    setUpcomingClasses((prev) => 
-      prev.map((app)=> 
-      app._id.toString() === data._id.toString() ? data : app
-    ) );
-   }
-       socket.on ('academicStudentReSchedule',handleUpcoming);
-      return () =>{
-        socket.off('academicStudentReSchedule', handleUpcoming);
-      }
-  },[]);
+    if (!userId) return;
+    const socket = getSocket(userId);
+    const handleUpcoming = (data: ClassData) => {
+      console.log("Update student");
+      setUpcomingClasses((prev) =>
+        prev.map((app) =>
+          app._id.toString() === data._id.toString() ? data : app
+        )
+      );
+    };
+    socket.on("academicStudentReSchedule", handleUpcoming);
+    return () => {
+      socket.off("academicStudentReSchedule", handleUpcoming);
+    };
+  }, []);
   const handleRescheduleRedirect = (id: string) => {
     alert(`Reschedule for ${id}`);
     setOpenDropdownId(null);
@@ -159,20 +160,35 @@ const ScheduledClasses = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+    const lowerQuery = query.toLowerCase();
+
     const filtered = dataToShow.filter((item) => {
-      const fullName =
-        `${item.student.studentFirstName} ${item.student.studentLastName}`.toLowerCase();
-      return (
-        item._id.toLowerCase().includes(query.toLowerCase()) ||
-        fullName.includes(query.toLowerCase()) ||
-        item.student.studentEmail
-          ?.toLowerCase()
-          .includes(query.toLowerCase()) ||
-        item.student.course?.toLowerCase().includes(query.toLowerCase()) ||
-        item.scheduleStatus?.toLowerCase().includes(query.toLowerCase()) ||
-        item.teacher.teacherName?.toLowerCase().includes(query.toLowerCase())
-      );
+      const combinedFields = [
+        item._id,
+        item.student?.studentFirstName,
+        item.student?.studentLastName,
+        item.student?.studentEmail,
+        item.student?.course,
+        item.student?.classStatus,
+        item.student?.city,
+        item.student?.country,
+        item.course?.courseName,
+        item.teacher?.teacherName,
+        item.scheduleStatus,
+        item.package,
+        item.preferedTeacher,
+        item.status,
+        item.startDate,
+        item.endDate,
+        ...(item.startTime || []),
+        ...(item.endTime || []),
+      ]
+        .map((v) => (v ? String(v).toLowerCase() : ""))
+        .join(" ");
+
+      return combinedFields.includes(lowerQuery);
     });
+
     setFilteredClasses(filtered);
     setCurrentPage(1);
   };
@@ -341,7 +357,7 @@ const ScheduledClasses = () => {
                       {item._id}
                     </td>
                     <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
-                      {item.student.studentFirstName}
+                      {item.student.studentFirstName}{" "}
                       {item.student.studentLastName}
                     </td>
                     <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">

@@ -96,12 +96,15 @@ const NextTrailSession = () => {
   }, []);
 
   useEffect(() => {
-    if (!selectedTrial?.scheduledStartDate) return;
+    if (!selectedTrial?.scheduledStartDate || !selectedTrial?.scheduledFrom) return;
+
+    const classStart = new Date(selectedTrial.scheduledStartDate);
+    const [h, m] = selectedTrial.scheduledFrom.split(":").map(Number);
+    classStart.setHours(h, m, 0, 0);
 
     const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const target = new Date(selectedTrial.scheduledStartDate).getTime();
-      const diff = target - now;
+      const now = new Date();
+      const diff = classStart.getTime() - now.getTime();
 
       if (diff <= 0) {
         clearInterval(interval);
@@ -114,6 +117,7 @@ const NextTrailSession = () => {
         setTime({ hours, minutes, seconds });
       }
     }, 1000);
+
     return () => clearInterval(interval);
   }, [selectedTrial]);
 
@@ -152,22 +156,17 @@ const NextTrailSession = () => {
 
       <div className="flex items-center space-x-4">
         {isTimeUp ? (
-          (() => {
-            console.log("Join Meeting shown at:", new Date().toLocaleString());
-            return (
-              <button
-                onClick={() => handleStartClass(selectedTrial?.meetingLink)}
-                className="relative text-white px-4 py-2 rounded-full text-sm font-medium"
-                style={{
-                  backgroundColor: "#1C3456",
-                  backgroundSize: "400% 400%",
-                  animation: "moveGradient 5s ease infinite",
-                }}
-              >
-                Join Meeting
-              </button>
-            );
-          })()
+          <button
+            onClick={() => handleStartClass(selectedTrial?.meetingLink)}
+            className="relative text-white px-4 py-2 rounded-full text-sm font-medium"
+            style={{
+              backgroundColor: "#1C3456",
+              backgroundSize: "400% 400%",
+              animation: "moveGradient 5s ease infinite",
+            }}
+          >
+            Join Meeting
+          </button>
         ) : (
           <>
             <p className="text-[16px] font-semibold whitespace-nowrap">
