@@ -16,8 +16,9 @@ type QuizData = {
   placeholder?: string;
   passage?: string;
   imageUrl?: string;
-  imageUrl1?: string;
+  uploadFile?: string;
   audioUrl?: string;
+  audioFile?: string;
   correctAnswer?: string;
   words?: string[];
   matches?: string[];
@@ -56,39 +57,65 @@ interface Assignment {
   type?: string;
 }
 
+// Add API response interfaces
+interface AssignmentApiResponse {
+  status: string;
+  count: number;
+  data: AssignmentApiItem[];
+}
+
+interface AssignmentApiItem {
+  _id: string;
+  studentId: string;
+  studentName: string;
+  sessionClassType: string;
+  assignmentName: string;
+  questionName: string;
+  questionType: string;
+  typeofQuestion: string;
+  title: string;
+  assignedTeacher: string;
+  assignedTeacherId: string;
+  assignmentId: string;
+  assignmentType: {
+    type: string;
+    name: string;
+  };
+  chooseType: boolean;
+  trueorfalseType: boolean;
+  question: string;
+  hasOptions: boolean;
+  options: {
+    optionOne: string;
+    optionTwo: string;
+    optionThree: string;
+    optionFour: string;
+  };
+  audioFile?: string;
+  uploadFile?: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  updatedBy: string;
+  level: string;
+  courses: string;
+  assignedDate: string;
+  dueDate: string;
+  answer: string;
+  answerValidation: string;
+  assignmentStatus: string;
+  score: number;
+  rating: string;
+  __v: number;
+}
+
 const QuizPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const type = searchParams ? searchParams.get("type") : null;
-  const assignmentId = searchParams ? searchParams.get("id") : null;
+  const assignmentId = searchParams ? searchParams.get("assignmentId") : null;
   // Mock assignment and quiz data for UI only
-  const mockAssignment: Assignment = {
-    _id: assignmentId || "1",
-    assignmentName: "Sample Assignment",
-    assignmentType: type || "Quiz",
-    assignedTeacher: "Teacher Name",
-    assignedDate: new Date().toISOString(),
-    dueDate: new Date().toISOString(),
-    createdBy: "System",
-    createdDate: new Date().toISOString(),
-    studentId: "S001",
-    status: "Assigned",
-    level: "Beginner",
-    question: "What is 2 + 2?",
-    hasOptions: true,
-    chooseType: true,
-    trueorfalseType: false,
-    options: ["2", "3", "4", "5"],
-    correctAnswer: "4",
-    answer: "4",
-    answerValidation: "",
-    audioFile: "",
-    uploadFile: "",
-    passage: "This is a sample passage for reading.",
-    words: ["sample", "passage"],
-    matches: [],
-    courses: "Math",
-  };
   const [quizData, setQuizData] = useState<QuizData[]>([]);
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -119,60 +146,115 @@ const QuizPage = () => {
   const sentenceBuilderAudioRef = useRef<HTMLAudioElement | null>(null);
   const handlePlaySentenceAudio = () => {
     if (sentenceBuilderAudioRef.current) {
+      // Debug log for audio URL
+      if (currentQuestion && currentQuestion.audioUrl) {
+        console.log('Playing audio URL:', currentQuestion.audioUrl);
+      }
       sentenceBuilderAudioRef.current.currentTime = 0;
       sentenceBuilderAudioRef.current.play();
     }
   };
 
-  // Set mock data on mount
+  // Set quiz data from API on mount
   useEffect(() => {
-    setAssignment(mockAssignment);
-    setQuizData([
-      {
-        question: "What is 2 + 2?", // Choose the answer
-        options: ["2", "3", "4", "5"],
-        correctAnswer: "4",
-        answer: "4",
-      },
-      {
-        question: "The sky is blue.",
-        options: ["True", "False"],
-        correctAnswer: "True",
-        answer: "True",
-      },
-      {
-        question: "Listen to the audio and type what you hear.",
-        audioUrl: "/assets/audio/sample.mp3",
-        correctAnswer: "hello world",
-        answer: "hello world",
-        placeholder: "Type what you hear...",
-      },
-      // 4th question: Sentence builder
-      {
-        question: "Write this in English",
-        audioUrl: "/assets/audio/Ending.mp3",
-        words: ["Ending", "Terrific", "The", "water", "am", "is"], // shuffled
-        correctAnswer: "The Ending is Terrific",
-        type: "sentence-builder",
-      },
-      // 5th question: Speaking
-      {
-        question: "Speak to the World",
-        description: "Say the following word: hi",
-        imageUrl: "/assets/images/q5.svg",
-        words: ["hi"],
-        type: "speaking",
-      },
-      // 6th question: Identify the animal
-      {
-        question: "Identify the animal",
-        imageUrl1: "/assets/images/alstudent.jpg",
-        options: ["a) ا (Alif)", "b) ق (Qaf)", "c) ن (Noon)", "d) ر (Ra)"],
-        correctAnswer: "c) ن (Noon)",
-        type: "identify-animal",
-      },
-    ]);
-  }, [assignmentId, type]);
+    const fetchAssignments = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `http://localhost:5001/assignments?assignmentId=${assignmentId}`
+        );
+        const data: AssignmentApiResponse = await res.json();
+
+        // Transform API data to QuizData[]
+        const quizItems: QuizData[] = data.data.map((item) => {
+          // Convert options object to array if present
+          let options: string[] | undefined = undefined;
+          if (item.hasOptions && item.options) {
+            options = [
+              item.options.optionOne,
+              item.options.optionTwo,
+              item.options.optionThree,
+              item.options.optionFour,
+            ].filter(Boolean); // Remove empty strings
+          }
+
+          // Determine type for rendering
+          let type = item.assignmentType?.type?.toLowerCase();
+          // Always normalize to 'word-match' for any variant containing "word match"
+          if (type && type.replace(/[-_]/g, "").includes("word match")) type = "word-match";
+          else if (type && type.replace(/[-_\s]/g, "").includes("wordmatch")) type = "word-match";
+          else if (type === "image identification" || type === "image-identification") type = "image-identification";
+          else if (type === "writing") type = "writing";
+          else if (type === "reading") type = "speaking";
+          else if (type === "quiz") type = item.chooseType ? "quiz" : (item.trueorfalseType ? "quiz" : "quiz");
+          else if (!type) type = "unknown";
+
+          // Audio as base64 data URL
+          let audioUrl: string | undefined = undefined;
+          // Only set audioUrl for non-word-match types
+          if (type !== "word-match" && item.audioFile && item.audioFile.length > 10 && item.audioFile !== "null") {
+            audioUrl = `data:audio/wav;base64,${item.audioFile}`;
+          }
+
+          // Image as uploadFile (if present)
+          let uploadFile: string | undefined = undefined;
+          if (item.uploadFile && item.uploadFile.length > 5 && item.uploadFile !== "null") {
+            uploadFile = item.uploadFile.startsWith('http')
+              ? item.uploadFile
+              : `http://localhost:5001${item.uploadFile}`;
+          }
+
+          // Ensure words array for word-match type
+          let words: string[] | undefined = undefined;
+          if (type === "word-match") {
+            if (
+              item.options &&
+              (
+                item.options.optionOne ||
+                item.options.optionTwo ||
+                item.options.optionThree ||
+                item.options.optionFour
+              )
+            ) {
+              words = [
+                item.options.optionOne,
+                item.options.optionTwo,
+                item.options.optionThree,
+                item.options.optionFour,
+              ].filter(Boolean);
+            } else if (item.answerValidation && item.answerValidation !== "null") {
+              words = item.answerValidation.split(" ");
+            } else if (item.question) {
+              words = item.question.split(" ");
+            }
+          }
+
+          // Always return a valid QuizData object
+          return {
+            question: item.question || "",
+            options,
+            audioUrl,
+            uploadFile,
+            correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
+            type: type || "unknown",
+            words,
+            audioFile: item.audioFile,
+            // Add more fields as needed
+          };
+        });
+        console.log('quizData after mapping:', quizItems);
+        setQuizData(quizItems);
+        setIsLoading(false);
+      } catch (error) {
+        setIsLoading(false);
+        alert("Failed to load assignments");
+      }
+    };
+
+    if (assignmentId) {
+      fetchAssignments();
+    }
+  }, [assignmentId]);
 
   const handleStartRecording = async () => {
     try {
@@ -230,26 +312,33 @@ const QuizPage = () => {
 
   const handleCheck = () => {
     if (
-      currentQuestion?.type === "sentence-builder" &&
+      currentQuestion?.type === "word-match" &&
       currentQuestion?.correctAnswer
     ) {
-      const userSentence = selectedWords.join(" ").trim().toLowerCase();
-      const correctSentence = currentQuestion.correctAnswer
-        .trim()
-        .toLowerCase();
+      const correct = currentQuestion.correctAnswer.trim().toLowerCase();
       setIsChecked(true);
-      if (userSentence === correctSentence) {
-        setIsCorrect(true);
-        setScore((prev) => prev + 1);
+      if (selectedWords.length === 1) {
+        // Single word answer
+        if (selectedWords[0].trim().toLowerCase() === correct) {
+          setIsCorrect(true);
+          setScore((prev) => prev + 1);
+        } else {
+          setIsCorrect(false);
+        }
       } else {
-        setIsCorrect(false);
+        // Phrase answer
+        const userSentence = selectedWords.join(" ").trim().toLowerCase();
+        if (userSentence === correct) {
+          setIsCorrect(true);
+          setScore((prev) => prev + 1);
+        } else {
+          setIsCorrect(false);
+        }
       }
     }
   };
 
   const handleNextClick = async () => {
-    // Only allow next if checked for sentence-builder
-    if (currentQuestion?.type === "sentence-builder" && !isChecked) return;
     // Check if the selected option matches the correct answer
     if (
       assignment?.assignmentType === "Quiz" &&
@@ -272,7 +361,7 @@ const QuizPage = () => {
 
     // Sentence builder scoring
     if (
-      currentQuestion?.type === "sentence-builder" &&
+      currentQuestion?.type === "word-match" &&
       currentQuestion?.correctAnswer
     ) {
       const userSentence = selectedWords.join(" ").trim().toLowerCase();
@@ -419,9 +508,12 @@ const QuizPage = () => {
 
   const renderQuizContent = () => {
     const q = currentQuestion;
+    console.log('quizData:', quizData);
+    console.log('currentQuestionIndex:', currentQuestionIndex);
+    console.log('currentQuestion:', q);
 
-    // Sentence Builder (Reorder Words)
-    if (q?.words && q.words.length > 0 && q.type === "sentence-builder") {
+    // Sentence Builder (Reorder Words) - always prioritize word-match type
+    if (q?.type === "word-match" && q.words && q.words.length > 0) {
       return (
         <div className="flex justify-center items-center w-full">
           <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
@@ -474,8 +566,9 @@ const QuizPage = () => {
                     {/* Hidden audio element for playback */}
                     <audio
                       ref={sentenceBuilderAudioRef}
-                      src={q.audioUrl}
+                      src={q.audioFile && q.audioFile.length > 10 && q.audioFile !== "null" ? `data:audio/wav;base64,${q.audioFile}` : undefined}
                       preload="auto"
+                      onError={() => alert('Audio failed to play. Please check the audio format or backend data.')}
                     />
                   </div>
                   {/* Bubble tail - left middle */}
@@ -639,7 +732,6 @@ const QuizPage = () => {
               </button>
               <button
                 onClick={handleNextClick}
-                disabled={!isChecked}
                 className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
               >
                 Next
@@ -650,8 +742,8 @@ const QuizPage = () => {
       );
     }
 
-    // Listen & Write
-    if (q?.audioUrl) {
+    // Listen & Write (only if not writing)
+    if (q?.audioUrl && q?.type !== "writing") {
       return (
         <div className="flex justify-center items-center w-full">
           <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
@@ -706,7 +798,8 @@ const QuizPage = () => {
 
     // True or False
     if (
-      q?.options &&
+      q?.type === "quiz" &&
+      q.options &&
       q.options.length === 2 &&
       q.options.includes("True") &&
       q.options.includes("False")
@@ -770,7 +863,7 @@ const QuizPage = () => {
     }
 
     // Multiple Choice
-    if (q?.options && q.options.length > 2) {
+    if (q?.type === "quiz" && q.options && q.options.length > 2) {
       return (
         <div className="flex justify-center items-center w-full">
           <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
@@ -1022,7 +1115,8 @@ const QuizPage = () => {
     }
 
     // Identify the animal question
-    if (q?.type === "identify-animal") {
+    if (q?.type === "image-identification") {
+      console.log('Image Identification Image src:', q.uploadFile);
       return (
         <div className="flex justify-center items-center w-full">
           <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
@@ -1031,20 +1125,22 @@ const QuizPage = () => {
             </h2>
             <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-8 flex flex-row items-center mx-auto min-h-[400px] justify-center gap-8">
               {/* Left: Question and image */}
-              <div className="flex flex-col items-start flex-1">
+              <div className="flex flex-col items-start flex-1 px-56">
                 <h3 className="text-xl font-bold text-[#223857] mb-4">
                   {q.question}
                 </h3>
+                <div className="flex-shrink-0">
+                 <img
+                   src={q.uploadFile}
+                   alt="Character"
+                   width={160}
+                   height={160}
+                   style={{ objectFit: 'cover', background: '#fff', borderRadius: '8px' }}
+                   onError={(e) => { e.currentTarget.src = 'https://via.placeholder.com/160?text=No+Image'; }}
+                 />
+                </div>
               </div>
-              <div className="flex-shrink-0">
-                <img
-                  src={q.imageUrl1}
-                  alt="Character"
-                  width={50}
-                  height={50}
-                  className="w-40 h-40 object-contain"
-                />
-              </div>
+              
               {/* Right: Options */}
               <div className="flex flex-col gap-6 flex-1 min-w-[300px]">
                 {q.options &&
@@ -1080,10 +1176,9 @@ const QuizPage = () => {
               </button>
               <button
                 onClick={handleNextClick}
-                disabled={!selectedOption}
                 className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
               >
-                Submit
+                Next
               </button>
             </div>
           </div>
@@ -1091,7 +1186,8 @@ const QuizPage = () => {
       );
     }
 
-    return <div className="text-center">No question available</div>;
+    // Fallback for unknown or unsupported types
+    return <div className="text-center">Question type not supported yet</div>;
   };
 
   return (
