@@ -219,6 +219,16 @@ const NextScheduledClass = () => {
           <div className="flex items-center space-x-2">
             <AiOutlineClockCircle className="w-[10px]" />
             <p className="text-[13px]">{classData.startTime[0]}</p>
+          </div>{" "}
+          <div className="flex items-center space-x-2">
+            <FaUser className="w-[10px]" />
+            <p className="text-[13px]">
+              {new Date(classData.startDate).toLocaleDateString(undefined, {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
           </div>
         </div>
       </div>
