@@ -1305,9 +1305,7 @@ const Step6 = ({
       preferredTrialFromTime: fromTime,
       preferredTrialToTime: toTime,
       weeklySlots: buildWeeklySlots(),
-      teacher: isGroupClass
-        ? { teacherId: "", teacherName: "", teacherEmail: "" }
-        : {
+      teacher:{
             teacherId: selectedTeacher?.teacherId ?? "",
             teacherName: selectedTeacher?.teacherName ?? "",
             teacherEmail: "demoteacher@gmail.com",
