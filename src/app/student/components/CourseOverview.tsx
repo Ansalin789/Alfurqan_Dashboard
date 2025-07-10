@@ -28,11 +28,12 @@ const [dashboardCounts, setDashboardCounts] = useState({
         }
 
         const studentId = localStorage.getItem("StudentPortalId");
+        const courseName = localStorage.getItem("StudentCourseName");
 
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
+          "http://localhost:5001/dashboard/student/counts",
           {
-            params: { studentId },
+            params: { studentId, courseName },
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -40,7 +41,14 @@ const [dashboardCounts, setDashboardCounts] = useState({
           }
         );
 
-        setDashboardCounts(response.data);
+        console.log("API Response:", response.data);
+        setDashboardCounts({
+          totalLevel: Number(response.data.totalLevel) || 0,
+          totalAttendance: Number(response.data.totalAttendance) || 0,
+          totalClasses: Number(response.data.totalClasses) || 0,
+          presentCount: 0, // Not provided in response
+          totalDuration: String(response.data.totalDuration) || "0",
+        });
       } catch (error) {
         console.error("Error fetching dashboard counts:", error);
       }

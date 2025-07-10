@@ -74,6 +74,7 @@ console.log(response.data);
       const { accessToken, role, _id, username } = data;
       localStorage.setItem("StudentAuthToken", accessToken);
       localStorage.setItem("StudentPortalId", _id);
+      localStorage.setItem("StudentcourseName", data.student.course);
       localStorage.setItem("StudentPortalName", username);
       localStorage.setItem("StudentPackage",data.student.package);
       if (role?.includes("Student")) {
