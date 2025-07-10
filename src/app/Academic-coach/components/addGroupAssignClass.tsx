@@ -60,7 +60,7 @@ export interface ScheduleData {
   sessionClassType: string;
   sessionStarttime: string;
   sessionsEndtime: string;
-  totalHourse: string;
+  totalHourse: number;
   weeklySlots:WeeklySlotMap; 
   startDate: string;
   endDate: string;
@@ -246,7 +246,7 @@ export default function AddGroupAssignClass({
       sessionClassType: "GROUPCLASS",
       sessionStarttime: "",
       sessionsEndtime: "",
-      totalHourse: "",
+      totalHourse: 0,
       startDate: formattedStartDate,
       endDate: formattedEndDate,
       weeklySlots: buildWeeklySlots(),
@@ -270,8 +270,8 @@ export default function AddGroupAssignClass({
           }))
         ),
       scheduleStatus: "Scheduled",
-      studentAttendee: "Absent",
-      teacherAttendee: "Absent",
+      studentAttendee: "absent",
+      teacherAttendee: "absent",
     };
     console.log("payload", requestData);
     try {
@@ -297,6 +297,7 @@ export default function AddGroupAssignClass({
         setTimeout(() => {
           setTeachers([]);
           setSchedule([]);
+          onClose();
         }, 2000);
       }
     } catch (err) {
