@@ -167,54 +167,67 @@ const QuizPage = () => {
 
         // Transform API data to QuizData[]
         const quizItems: QuizData[] = data.data.map((item) => {
-          // Convert options object to array if present
-          let options: string[] | undefined = undefined;
-          if (item.hasOptions && item.options) {
-            options = [
-              item.options.optionOne,
-              item.options.optionTwo,
-              item.options.optionThree,
-              item.options.optionFour,
-            ].filter(Boolean); // Remove empty strings
-          }
-
-          // Determine type for rendering
           let type = item.assignmentType?.type?.toLowerCase();
-          // Always normalize to 'word-match' for any variant containing "word match"
-          if (type && type.replace(/[-_]/g, "").includes("word match")) type = "word-match";
-          else if (type && type.replace(/[-_\s]/g, "").includes("wordmatch")) type = "word-match";
-          else if (type === "image identification" || type === "image-identification") type = "image-identification";
-          else if (type === "writing") type = "writing";
-          else if (type === "reading") type = "speaking";
-          else if (type === "quiz") type = item.chooseType ? "quiz" : (item.trueorfalseType ? "quiz" : "quiz");
-          else if (!type) type = "unknown";
+          let options: string[] | undefined = undefined;
 
-          // Audio as base64 data URL
-          let audioUrl: string | undefined = undefined;
-          // Only set audioUrl for non-word-match types
-          if (type !== "word-match" && item.audioFile && item.audioFile.length > 10 && item.audioFile !== "null") {
-            audioUrl = `data:audio/wav;base64,${item.audioFile}`;
+          // Quiz type logic
+          if (type === "quiz") {
+            if (item.chooseType) {
+              type = "quiz-choose";
+              options = [
+                item.options.optionOne,
+                item.options.optionTwo,
+                item.options.optionThree,
+                item.options.optionFour,
+              ].filter(Boolean);
+            } else if (item.trueorfalseType) {
+              type = "quiz-truefalse";
+              options = ["True", "False"];
+            }
           }
 
-          // Image as uploadFile (if present)
-          let uploadFile: string | undefined = undefined;
-          if (item.uploadFile && item.uploadFile.length > 5 && item.uploadFile !== "null") {
-            uploadFile = item.uploadFile.startsWith('http')
-              ? item.uploadFile
-              : `http://localhost:5001${item.uploadFile}`;
+          // Writing
+          if (type === "writing") {
+            return {
+              question: item.question,
+              audioUrl:
+                item.audioFile && item.audioFile.length > 10 && item.audioFile !== "null"
+                  ? `data:audio/wav;base64,${item.audioFile}`
+                  : undefined,
+              correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
+              type: "writing",
+            };
           }
 
-          // Ensure words array for word-match type
-          let words: string[] | undefined = undefined;
-          if (type === "word-match") {
+          // Reading
+          if (type === "reading") {
+            return {
+              question: item.question,
+              correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
+              type: "reading",
+            };
+          }
+
+          // Quiz Choose/TrueFalse
+          if (type === "quiz-choose" || type === "quiz-truefalse") {
+            return {
+              question: item.question,
+              options,
+              correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
+              type,
+            };
+          }
+
+          // Word-match
+          if (type && (type.replace(/[-_]/g, "").includes("word match") || type.replace(/[-_\s]/g, "").includes("wordmatch"))) {
+            type = "word-match";
+            let words: string[] | undefined = undefined;
             if (
               item.options &&
-              (
-                item.options.optionOne ||
+              (item.options.optionOne ||
                 item.options.optionTwo ||
                 item.options.optionThree ||
-                item.options.optionFour
-              )
+                item.options.optionFour)
             ) {
               words = [
                 item.options.optionOne,
@@ -227,22 +240,41 @@ const QuizPage = () => {
             } else if (item.question) {
               words = item.question.split(" ");
             }
+            return {
+              question: item.question || "",
+              words,
+              correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
+              type: "word-match",
+              audioFile: item.audioFile,
+            };
           }
 
-          // Always return a valid QuizData object
-          return {
-            question: item.question || "",
-            options,
-            audioUrl,
-            uploadFile,
-            correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
-            type: type || "unknown",
-            words,
-            audioFile: item.audioFile,
-            // Add more fields as needed
-          };
+          // Image identification
+          if (type === "image identification" || type === "image-identification") {
+            let uploadFile: string | undefined = undefined;
+            if (item.uploadFile && item.uploadFile.length > 5 && item.uploadFile !== "null") {
+              uploadFile = item.uploadFile.startsWith('http')
+                ? item.uploadFile
+                : `http://localhost:5001${item.uploadFile}`;
+            }
+            options = [
+              item.options.optionOne,
+              item.options.optionTwo,
+              item.options.optionThree,
+              item.options.optionFour,
+            ].filter(Boolean);
+            return {
+              question: item.question || "",
+              options,
+              uploadFile,
+              correctAnswer: item.answerValidation !== "null" ? item.answerValidation : undefined,
+              type: "image-identification",
+            };
+          }
+
+          // fallback
+          return { question: item.question || "", type: type || "unknown" };
         });
-        console.log('quizData after mapping:', quizItems);
         setQuizData(quizItems);
         setIsLoading(false);
       } catch (error) {
@@ -785,7 +817,6 @@ const QuizPage = () => {
               </button>
               <button
                 onClick={handleNextClick}
-                disabled={!writtenAnswer.trim()}
                 className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
               >
                 Next
@@ -796,105 +827,61 @@ const QuizPage = () => {
       );
     }
 
-    // True or False
-    if (
-      q?.type === "quiz" &&
-      q.options &&
-      q.options.length === 2 &&
-      q.options.includes("True") &&
-      q.options.includes("False")
-    ) {
+    // Reading
+    if (q?.type === "reading") {
       return (
         <div className="flex justify-center items-center w-full">
           <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
-            {/* Question Number */}
-            <h2 className="text-2xl font-bold text-[#223857] dark:text-[#fff] dark:opacity-80 mb-4 text-center">
+            <h2 className="text-2xl font-bold text-[#223857] mb-2 text-center dark:text-[#fff] dark:opacity-80">
               Question {currentQuestionIndex + 1} / {quizData.length}
             </h2>
-            <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-6 flex flex-col items-center mx-auto min-h-[400px] justify-center">
-              {/* Question Text */}
-              <p className="text-lg font-semibold text-gray-800 mb-4 mt-5 text-center dark:text-[#fff] dark:opacity-90">
+            <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-4 flex flex-col items-center mx-auto min-h-[400px] justify-center">
+              <h2 className="text-[16px] font-medium text-gray-800 mb-4 text-center dark:text-[#fff] dark:opacity-90">
                 {q.question}
-              </p>
-              {/* Options */}
-              <div className="w-full flex flex-col gap-4 mb-8 items-center justify-center flex-1">
-                {q.options.map((option, index) => (
-                  <button
-                    key={option}
-                    onClick={() => handleOptionClick(option)}
-                    className={`w-[300px] px-6 py-3 rounded-lg border border-[#babecc] text-lg font-medium flex items-center justify-center transition-all
-                    ${
-                      selectedOption === option
-                        ? "bg-[#377e36] text-white border-none"
-                        : "bg-[#f3f4fb] dark:bg-[#343434] text-gray-800 dark:text-[#818790] hover:bg-gray-100"
+              </h2>
+              <div className="flex flex-col items-center mb-4">
+                <button
+                  onClick={isSpeaking ? handleStopSpeaking : handleStartSpeaking}
+                  className={`px-6 py-2 rounded-md font-semibold ${
+                    isSpeaking
+                      ? "bg-blue-400 text-white"
+                      : "bg-blue-200 text-blue-900"
+                  } mb-2`}
+                >
+                  {isSpeaking ? "Stop Recording" : "Start Recording"}
+                </button>
+                <div className="text-center text-gray-600 mb-2 min-h-[32px]">
+                  {recordedText}
+                </div>
+                <button
+                  onClick={() => {
+                    setIsSpeechChecked(true);
+                    const user = recordedText.trim().toLowerCase();
+                    const correct = (q.correctAnswer || "").trim().toLowerCase();
+                    setIsSpeechCorrect(user === correct);
+                    if (user === correct) setScore((prev) => prev + 1);
+                  }}
+                  className="px-6 py-2 rounded-md font-semibold bg-[#377e36] text-white hover:bg-green-700"
+                  disabled={!recordedText || isSpeechChecked}
+                >
+                  Check
+                </button>
+                {isSpeechChecked && (
+                  <div
+                    className={`flex items-center gap-2 mt-2 px-6 py-4 rounded-md w-full max-w-md mx-auto font-semibold text-lg ${
+                      isSpeechCorrect
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
                     }`}
+                    style={{
+                      border: isSpeechCorrect
+                        ? "1.5px solid #22c55e"
+                        : "1.5px solid #ef4444",
+                    }}
                   >
-                    <span className="font-bold mr-3">
-                      {String.fromCharCode(97 + index) + ")"}
-                    </span>
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex w-full justify-between mt-4">
-              <button
-                onClick={handleBackClick}
-                disabled={currentQuestionIndex === 0}
-                className={`px-6 py-2 rounded-md font-semibold ${
-                  currentQuestionIndex === 0
-                    ? "bg-[#e1e4f3] border border-[#c2cae7] text-[#c2cae7] cursor-not-allowed"
-                    : " hover:bg-gray-300 bg-[#e1e4f3] dark:bg-[#252628] border border-[#c2cae7] dark:border-[#303538] dark:text-[#303538] text-[#c2cae7]"
-                }`}
-              >
-                Previous
-              </button>
-              <button
-                onClick={handleNextClick}
-                disabled={!selectedOption}
-                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Multiple Choice
-    if (q?.type === "quiz" && q.options && q.options.length > 2) {
-      return (
-        <div className="flex justify-center items-center w-full">
-          <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
-            {/* Question Number */}
-            <h2 className="text-2xl font-bold text-[#223857] dark:text-[#fff] dark:opacity-80 mb-4 text-center">
-              Question {currentQuestionIndex + 1} / {quizData.length}
-            </h2>
-            <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-6 flex flex-col items-center mx-auto min-h-[400px] justify-center">
-              {/* Question Text */}
-              <p className="text-lg font-semibold text-gray-800 dark:text-[#fff] dark:opacity-90 mb-8 text-center">
-                {q.question}
-              </p>
-              {/* Options */}
-              <div className="w-full flex flex-col gap-4 mb-8 items-center justify-center flex-1">
-                {q.options.map((option, index) => (
-                  <button
-                    key={option}
-                    onClick={() => handleOptionClick(option)}
-                    className={`w-[300px] px-6 py-3 rounded-lg border border-[#babecc] text-lg font-medium flex items-center justify-center transition-all
-                    ${
-                      selectedOption === option
-                        ? "bg-[#377e36] text-white border-none"
-                        : "bg-[#f3f4fb] dark:bg-[#343434] text-gray-800 dark:text-[#818790] hover:bg-gray-100"
-                    }`}
-                  >
-                    <span className="font-bold mr-3">
-                      {String.fromCharCode(97 + index) + ")"}
-                    </span>
-                    {option}
-                  </button>
-                ))}
+                    {isSpeechCorrect ? "Correct!" : "Try again!"}
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex w-full justify-between mt-4">
@@ -904,14 +891,13 @@ const QuizPage = () => {
                 className={`px-6 py-2 rounded-md font-semibold ${
                   currentQuestionIndex === 0
                     ? "bg-[#e1e4f3] dark:bg-[#252628] border border-[#c2cae7] dark:border-[#303538] dark:text-[#303538] text-[#c2cae7] cursor-not-allowed"
-                    : "bg-gray-200  text-gray-700 hover:bg-gray-300 "
+                    : "bg-gray-200 dark:bg-[#252628] text-gray-700 dark:text-[#818790] hover:bg-gray-300 dark:hover:bg-[#303538]"
                 }`}
               >
                 Previous
               </button>
               <button
                 onClick={handleNextClick}
-                disabled={!selectedOption}
                 className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
               >
                 Next
@@ -922,172 +908,35 @@ const QuizPage = () => {
       );
     }
 
-    // Speaking Question
-    if (q?.type === "speaking") {
+    // Writing Question
+    if (q?.type === "writing") {
       return (
         <div className="flex justify-center items-center w-full">
           <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
             <h2 className="text-2xl font-bold text-[#223857] mb-2 text-center dark:text-[#fff] dark:opacity-80">
               Question {currentQuestionIndex + 1} / {quizData.length}
             </h2>
-            <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-8 flex flex-row items-center mx-auto min-h-[400px] justify-center gap-8">
-              {/* Character image */}
-              <div className="flex-shrink-0">
-                <img
-                  src={q.imageUrl}
-                  alt="Character"
-                  className="w-40 h-40 object-contain"
-                />
-              </div>
-              {/* Title and description */}
-              <div>
-                <div className="flex flex-col flex-1 max-w-[400px]">
-                  <h3 className="text-xl font-bold text-[#223857] mb-2">
-                    {q.question}
-                  </h3>
-                  <p className="text-gray-700 text-base mb-4">
-                    {q.description}
-                  </p>
-                </div>
-                {/* Record controls */}
-                <div className="flex flex-row items-center justify-center gap-12 mt-8 mb-4">
-                  {/* Reset */}
-                  <button
-                    onClick={handleResetSpeaking}
-                    className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 text-xl"
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M4 4v5h.582M19.418 19A9 9 0 1 1 21 12" />
-                      <path d="M4 4v5h.582" />
-                    </svg>
-                  </button>
-                  {/* Record button */}
-                  <button
-                    onClick={
-                      isSpeaking ? handleStopSpeaking : handleStartSpeaking
-                    }
-                    className={`w-24 h-24 flex items-center justify-center rounded-full border-4 ${
-                      isSpeaking ? "border-blue-400" : "border-blue-200"
-                    } bg-white shadow-lg relative`}
-                  >
-                    <span
-                      className={`absolute w-24 h-24 rounded-full ${
-                        isSpeaking
-                          ? "animate-pulse border-4 border-blue-300"
-                          : ""
-                      }`}
-                    ></span>
-                    <svg
-                      width="48"
-                      height="48"
-                      fill="#5c6bc0"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M12 14a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v4a3 3 0 0 0 3 3zm5-3a1 1 0 0 0-2 0v1a5 5 0 0 1-10 0v-1a1 1 0 0 0-2 0v1a7 7 0 0 0 6 6.92V21a1 1 0 0 0 2 0v-2.08A7 7 0 0 0 19 12v-1z" />
-                    </svg>
-                  </button>
-                  {/* Cancel */}
-                  <button
-                    onClick={handleStopSpeaking}
-                    className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 text-xl"
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
-                  </button>
-
-                  
-                </div>
-                {/* Recognized text preview */}
-                <div className="text-center text-gray-600 mb-4 min-h-[32px]">
-                    {recordedText}
-                  </div>
-                  {/* Submit button */}
-                  <div className="ml-6">
-                  <button
-                    onClick={handleCheckSpeaking}
-                    className="w-48 py-3 ml-6 rounded-md bg-[#5c6bc0] text-white font-semibold text-lg mb-4"
-                    disabled={!recordedText || isSpeechChecked}
-                  >
-                    Submit
-                  </button>
-                  {/* Feedback animation */}
-                  {isSpeechChecked && (
-                    <div className="flex items-center justify-center mt-4">
-                      {isSpeechCorrect ? (
-                        <span className="flex items-center text-green-600 text-2xl font-bold gap-2">
-                          <svg
-                            width="36"
-                            height="36"
-                            fill="#22c55e"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              fill="#22c55e"
-                              opacity="0.15"
-                            />
-                            <path
-                              d="M9.5 13.5l2 2 4-4"
-                              stroke="#22c55e"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              fill="none"
-                            />
-                          </svg>
-                          Correct!
-                        </span>
-                      ) : (
-                        <span className="flex items-center text-red-600 text-2xl font-bold gap-2">
-                          <svg
-                            width="36"
-                            height="36"
-                            fill="#ef4444"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              fill="#ef4444"
-                              opacity="0.15"
-                            />
-                            <path
-                              d="M15 9l-6 6M9 9l6 6"
-                              stroke="#ef4444"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              fill="none"
-                            />
-                          </svg>
-                          Try again!
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  </div>
-                  
-              </div>
+            <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-4 flex flex-col items-center mx-auto min-h-[400px] justify-center">
+              <h2 className="text-[16px] font-medium text-gray-800 mb-4 text-center dark:text-[#fff] dark:opacity-90">
+                {q.question}
+              </h2>
+              {q.audioUrl && (
+                <audio
+                  controls
+                  className="w-full max-w-sm mx-auto mb-6 dark:invert dark:hue-rotate-180"
+                >
+                  <source src={q.audioUrl} type="audio/wav" />
+                  Your browser does not support the audio element.
+                </audio>
+              )}
+              <textarea
+                className="border border-[#babecc] rounded-xl px-4 py-3 w-[600px] h-[150px] mx-auto mb-6 bg-[#f4f5fb] dark:bg-[#343434] dark:border-[#fff] dark:border-opacity-40 dark:text-white dark:placeholder-gray-400"
+                placeholder={q.placeholder || "Type what you hear..."}
+                value={writtenAnswer}
+                onChange={(e) => setWrittenAnswer(e.target.value)}
+                disabled={isChecked}
+              />
             </div>
-
             {/* Navigation */}
             <div className="flex w-full justify-between mt-4">
               <button
@@ -1103,7 +952,6 @@ const QuizPage = () => {
               </button>
               <button
                 onClick={handleNextClick}
-                disabled={!isSpeechChecked}
                 className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
               >
                 Next
@@ -1169,6 +1017,172 @@ const QuizPage = () => {
                 className={`px-6 py-2 rounded-md font-semibold ${
                   currentQuestionIndex === 0
                     ? "bg-[#e1e4f3] dark:bg-[#252628] border border-[#c2cae7] dark:border-[#303538] dark:text-[#303538] text-[#c2cae7]"
+                    : "bg-gray-200 dark:bg-[#252628] text-gray-700 dark:text-[#818790] hover:bg-gray-300 dark:hover:bg-[#303538]"
+                }`}
+              >
+                Previous
+              </button>
+              <button
+                onClick={handleNextClick}
+                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Quiz True/False
+    if (q?.type === "quiz-truefalse") {
+      return (
+        <div className="flex justify-center items-center w-full">
+          <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
+            <h2 className="text-2xl font-bold text-[#223857] dark:text-[#fff] dark:opacity-80 mb-4 text-center">
+              Question {currentQuestionIndex + 1} / {quizData.length}
+            </h2>
+            <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-6 flex flex-col items-center mx-auto min-h-[400px] justify-center">
+              <p className="text-lg font-semibold text-gray-800 dark:text-[#fff] dark:opacity-90 mb-8 text-center">
+                {q.question}
+              </p>
+              <div className="w-full flex flex-col gap-4 mb-8 items-center justify-center flex-1">
+                {["True", "False"].map((option, index) => (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      setSelectedOption(option);
+                      setIsChecked(true);
+                      const correct = (q.correctAnswer || "").trim().toLowerCase();
+                      setIsCorrect(option.toLowerCase() === correct);
+                      if (option.toLowerCase() === correct) setScore((prev) => prev + 1);
+                    }}
+                    className={`w-[300px] px-6 py-3 rounded-lg border border-[#babecc] text-lg font-medium flex items-center justify-center transition-all
+                    ${
+                      selectedOption === option
+                        ? isChecked
+                          ? isCorrect
+                            ? "bg-[#377e36] text-white border-none"
+                            : "bg-red-500 text-white border-none"
+                          : "bg-[#377e36] text-white border-none"
+                        : "bg-[#f3f4fb] dark:bg-[#343434] text-gray-800 dark:text-[#818790] hover:bg-gray-100"
+                    }`}
+                  >
+                    <span className="font-bold mr-3">
+                      {String.fromCharCode(97 + index) + ")"}
+                    </span>
+                    {option}
+                  </button>
+                ))}
+              </div>
+              {/* Feedback box */}
+              {isChecked && (
+                <div
+                  className={`flex items-center gap-2 mb-6 px-6 py-4 rounded-md w-full max-w-md mx-auto font-semibold text-lg ${
+                    isCorrect
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                  style={{
+                    border: isCorrect
+                      ? "1.5px solid #22c55e"
+                      : "1.5px solid #ef4444",
+                  }}
+                >
+                  {isCorrect ? "Correct Answer" : "Wrong Answer"}
+                </div>
+              )}
+            </div>
+            <div className="flex w-full justify-between mt-4">
+              <button
+                onClick={handleBackClick}
+                disabled={currentQuestionIndex === 0}
+                className={`px-6 py-2 rounded-md font-semibold ${
+                  currentQuestionIndex === 0
+                    ? "bg-[#e1e4f3] border border-[#c2cae7] text-[#c2cae7] cursor-not-allowed"
+                    : " hover:bg-gray-300 bg-[#e1e4f3] dark:bg-[#252628] border border-[#c2cae7] dark:border-[#303538] dark:text-[#303538] text-[#c2cae7]"
+                }`}
+              >
+                Previous
+              </button>
+              <button
+                onClick={handleNextClick}
+                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Quiz Choose
+    if (q?.type === "quiz-choose" && q.options) {
+      return (
+        <div className="flex justify-center items-center w-full">
+          <div className="w-full max-w-full p-16 px-40 flex flex-col items-center mx-auto">
+            <h2 className="text-2xl font-bold text-[#223857] dark:text-[#fff] dark:opacity-80 mb-4 text-center">
+              Question {currentQuestionIndex + 1} / {quizData.length}
+            </h2>
+            <div className="w-full max-w-full bg-[#f4f5fb] dark:bg-[#343434] rounded-xl p-6 flex flex-col items-center mx-auto min-h-[400px] justify-center">
+              <p className="text-lg font-semibold text-gray-800 dark:text-[#fff] dark:opacity-90 mb-8 text-center">
+                {q.question}
+              </p>
+              <div className="w-full flex flex-col gap-4 mb-8 items-center justify-center flex-1">
+                {q.options.map((option, index) => (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      setSelectedOption(option);
+                      setIsChecked(true);
+                      const correct = (q.correctAnswer || "").trim().toLowerCase();
+                      setIsCorrect(option.trim().toLowerCase() === correct);
+                      if (option.trim().toLowerCase() === correct) setScore((prev) => prev + 1);
+                    }}
+                    className={`w-[300px] px-6 py-3 rounded-lg border border-[#babecc] text-lg font-medium flex items-center justify-center transition-all
+                    ${
+                      selectedOption === option
+                        ? isChecked
+                          ? isCorrect
+                            ? "bg-[#377e36] text-white border-none"
+                            : "bg-red-500 text-white border-none"
+                          : "bg-[#377e36] text-white border-none"
+                        : "bg-[#f3f4fb] dark:bg-[#343434] text-gray-800 dark:text-[#818790] hover:bg-gray-100"
+                    }`}
+                  >
+                    <span className="font-bold mr-3">
+                      {String.fromCharCode(97 + index) + ")"}
+                    </span>
+                    {option}
+                  </button>
+                ))}
+              </div>
+              {/* Feedback box */}
+              {isChecked && (
+                <div
+                  className={`flex items-center gap-2 mb-6 px-6 py-4 rounded-md w-full max-w-md mx-auto font-semibold text-lg ${
+                    isCorrect
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                  style={{
+                    border: isCorrect
+                      ? "1.5px solid #22c55e"
+                      : "1.5px solid #ef4444",
+                  }}
+                >
+                  {isCorrect ? "Correct Answer" : "Wrong Answer"}
+                </div>
+              )}
+            </div>
+            <div className="flex w-full justify-between mt-4">
+              <button
+                onClick={handleBackClick}
+                disabled={currentQuestionIndex === 0}
+                className={`px-6 py-2 rounded-md font-semibold ${
+                  currentQuestionIndex === 0
+                    ? "bg-[#e1e4f3] dark:bg-[#252628] border border-[#c2cae7] dark:border-[#303538] dark:text-[#303538] text-[#c2cae7] cursor-not-allowed"
                     : "bg-gray-200 dark:bg-[#252628] text-gray-700 dark:text-[#818790] hover:bg-gray-300 dark:hover:bg-[#303538]"
                 }`}
               >
