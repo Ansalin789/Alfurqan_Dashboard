@@ -1,17 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import React, { useState, useRef, useEffect } from "react";
+import { MdTune } from "react-icons/md";
+import { MoreVertical, Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Pagination from "@/components/Pagination";
+import Modal from "react-modal";
+import StudentHeader from "../../components/StudentHeader";
+
+
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import BaseLayout2 from "@/components/BaseLayout2";
 import { FaUsers } from "react-icons/fa6";
-import { LuListTodo } from "react-icons/lu";
-import { MdAutoStories } from "react-icons/md";
-import { FaMedal, FaArrowCircleUp } from "react-icons/fa";
 import axios from "axios";
 
 interface Student {
+  course: string;
   studentId: string;
   studentEmail: string;
   studentPhone: number;
@@ -32,16 +37,39 @@ interface StudentRecord {
   __v: number;
   classScheduleCount: number;
 }
+interface StudentDashboardCounts {
+  totalLevel: number;
+  totalAttendance: number;
+  totalClasses: number;
+  totalDuration: number;
+}
 
 interface ApiResponse {
   totalCount: number;
   students: StudentRecord[];
 }
 
+type CardProps = {
+  title: string;
+  value: string | number;
+  description: string;
+};
+
+const Card = ({ title, value, description }: CardProps) => (
+  <div className="bg-[#7689BD] rounded-lg shadow-md p-4">
+    <div className="text-[20px] text-[#fff] font font-semibold mb-4">
+      {title}
+    </div>
+    <div className="text-[14px] text-[#fff] font-semibold ">{value}</div>
+    <div className="text-[12px] text-[#fff] ">{description}</div>
+  </div>
+);
+
 const StudentProfile = () => {
   const router = useRouter();
 
-  const [studentData, setStudentData] = useState<StudentRecord>();
+  const [studentRecord, setStudentRecord] = useState<StudentRecord>();
+  const [studentData, setStudentData] = useState<StudentData>();
   interface StudentData {
     _id: string;
     username: string;
@@ -96,7 +124,18 @@ const token =
           );
 
           if (filteredStudent) {
-            setStudentData(filteredStudent);
+            // Ensure the filteredStudent matches the StudentData type
+            setStudentData({
+              ...filteredStudent,
+              student: {
+                studentId: filteredStudent.student.studentId,
+                studentEmail: filteredStudent.student.studentEmail,
+                studentPhone: filteredStudent.student.studentPhone,
+                gender: filteredStudent.student.gender,
+                package: filteredStudent.student.package,
+                course: filteredStudent.student.course ?? "", // fallback if course is missing
+              },
+            });
             console.log("Filtered Student Data:", filteredStudent);
           } else {
             console.warn(
@@ -112,172 +151,137 @@ const token =
       fetchData();
     }
   }, []);
+
+  // Add state for dashboard stats
+  const [dashboardStats, setDashboardStats] = useState<StudentDashboardCounts | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Fetch dashboard stats
+    const fetchStats = async () => {
+      try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+        const studentId = localStorage.getItem("StudentPortalId");
+        if (!token || !studentId) {
+          setStatsError("Missing student ID or token");
+          setStatsLoading(false);
+          return;
+        }
+        const response = await axios.get<StudentDashboardCounts>(
+          "http://localhost:5001/dashboard/student/counts",
+          {
+            params: { studentId },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setDashboardStats(response.data);
+      } catch (err) {
+        setStatsError("Failed to load stats");
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
   return (
     <BaseLayout2>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mx-auto">
-        {/* Left Section - Student Info */}
-        <div className="md:col-span-1 md:mx-auto">
-          <h1 className="text-2xl font-semibold text-gray-800 p-4">
-            My Profile
-          </h1>
+      <div>
+        <StudentHeader
+          currentSection="Profile"
+          showBackButton={true}
+          showBackPath="dashboard"
+        />
 
-          <div className="flex flex-col md:flex-row pt-4 mt-2">
-            {/* Back Button */}
-            <div className="p-2">
-              <IoArrowBackCircleSharp
-                className="text-[25px] bg-[#fff] rounded-full text-[#012a4a] cursor-pointer"
-                onClick={() => router.push("/student/ui/dashboard")}
+        {/* Top section */}
+        <div className="flex flex-col lg:flex-row gap-6 mb-6">
+          {/* Profile Card */}
+          <div className="w-[560px] h-[246px] bg-[#54638C] rounded-lg text-white p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:items-start">
+            {/* Profile Image + Name */}
+            <div className="flex flex-col items-center sm:pr-6 sm:border-r border-white/30">
+              <img
+                src="/assets/images/alstudent.jpg"
+                alt="profile"
+                className="w-[150px] h-[150px] rounded-full object-cover"
               />
+              <h2 className="text-center text-[18px] font-semibold mt-3">
+              {studentData?.username ?? ""}
+              </h2>
+              <p className="text-[12px] text-[#C9C9C9] mt-2">
+              {studentData?.student?.studentEmail}
+              </p>
             </div>
 
-            {/* Profile Card */}
-            <div className="flex flex-col items-center bg-[#fff] shadow-lg rounded-2xl md:w-[350px] h-[600px]">
-              <div className="bg-[#012a4a] align-middle p-6 w-full h-1/4 rounded-t-2xl">
-                {/* Profile Image */}
-                <div className="justify-center">
-                  <Image
-                    src="/assets/images/student-profile1.png"
-                    alt="Profile"
-                    className="rounded-full mx-auto w-24 h-24 mb-4 mt-[73px]"
-                    width={150}
-                    height={150}
-                  />
+            {/* Personal Info */}
+            <div className="pt-8 sm:pl-6 w-full">
+              <h3 className="text-[16px] font-semibold mb-3">Personal Info</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Contact</span>
+                  <span className="text-[#DADADACC] text-[12px]">
+                  {studentData?.student?.studentPhone}
+                  </span>
                 </div>
-
-                {/* Name & Role */}
-                <div className="justify-center text-center border-b-2 border-black pb-2">
-                  <h2 className="text-2xl font-semibold mb-2">
-                    {studentData?.username ?? ""}
-                  </h2>
-                  <p className="text-[#012A4A] mb-4">Student</p>
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Level</span>
+                  <span className="text-[#DADADACC] text-[12px]">
+                  {dashboardStats?dashboardStats.totalLevel : "N/A"}</span>
                 </div>
-
-                {/* Personal Info */}
-                <div className="text-left w-full p-2 pt-6">
-                  <h3 className="font-semibold mb-2">Personal Info</h3>
-                  <p className="text-gray-800 text-[14px] mt-4">
-                    <span className="font-semibold text-[14px]">
-                      Full Name:{" "}
-                    </span>
-                    {studentData?.username ?? ""}
-                  </p>
-                  <p className="text-gray-800 text-[14px] mt-3">
-                    <span className="font-semibold text-[14px]">Email: </span>
-                    {studentData?.student?.studentEmail}
-                  </p>
-                  <p className="text-gray-800 text-[14px] mt-3">
-                    <span className="font-semibold text-[14px]">
-                      Phone Number:{" "}
-                    </span>
-                    {studentData?.student?.studentPhone}
-                  </p>
-                  {/* <p className="text-gray-800 text-[14px] mt-3 hidden">
-            <span className="font-semibold text-[14px]">Level: </span>{studentData?.student?.level ?? "N/A"}
-          </p> */}
-                  <p className="text-gray-800 text-[14px] mt-3">
-                    <span className="font-semibold text-[14px]">Package: </span>
-                    {studentData?.student?.package}
-                  </p>
-
-                  {/* Upgrade Button */}
-                  <p className="p-2 flex justify-center items-center mt-10 bg-[#012a4a] rounded-2xl text-white">
-                    Upgrade Your Package{" "}
-                    <FaArrowCircleUp className="ml-2 mt-1" />
-                  </p>
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Package</span>
+                  <span className="text-[#DADADACC] text-[12px]">
+                    {studentData && studentData.student && studentData.student.package ? studentData.student.package : "-"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white text-[14px]">Course</span>
+                  <span className="text-[#DADADACC] text-[12px]">
+                  {studentData?.student?.course}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Performance Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+            <Card
+              title="Performance"
+              value="72%"
+              description="60% increase than Last Month"
+            />
+            <Card
+              title="Package"
+              value={studentData && studentData.student && studentData.student.package ? studentData.student.package : "-"}
+              description="Upgraded package"
+            />
+            <Card
+              title="Level"
+              value={dashboardStats ? dashboardStats.totalLevel : "-"}
+              description="Level of the Student"
+            />
+            <Card
+              title="Total Attendance"
+              value={dashboardStats ? dashboardStats.totalAttendance : "-"}
+              description="Your total attendance"
+            />
+          </div>
         </div>
 
-        {/* Right Section - Statistics and Assignment List */}
-        <div className="md:col-span-3">
-          <button
-            className="ml-[900px] flex flex-1 cursor-pointer rounded-md mt-1 bg-black p-4 px-4 py-2 text-[#fff] text-[11px]"
-            onClick={() => router.push("/student/ui/sign")}
-          >
-            Logout
-          </button>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 mx-auto w-full md:w-[800px]">
-              <div className="flex flex-wrap justify-center gap-6 p-2 mt-[9px] ml-40">
-                <div className="w-[200px] h-[150px] bg-white rounded-2xl shadow-md flex items-center p-4 border border-[#012A4A]">
-                  <div className="mr-6 flex justify-center items-center relative">
-                    <div className="bg-blue-100 rounded-full p-2">
-                      <FaUsers className="text-[#4ABDE8]" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[24px] font-bold text-gray-800">
-                      97%
-                    </div>
-                    <p className="text-gray-800 text-[16px] font-semibold mb-2">
-                      Attendance
-                    </p>
-                  </div>
-                </div>
-                <div className="w-[200px] h-[150px] bg-white rounded-2xl shadow-md flex items-center p-4 border border-[#012A4A]">
-                  {/* Circular Progress */}
-                  <div className="mr-6 flex justify-center items-center relative">
-                    <div className="bg-[#CFCEFF] rounded-full p-2">
-                      <LuListTodo className="text-[#8785FF]" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[24px] font-bold text-gray-800">
-                      {studentData?.student?.package}
-                    </div>
-                    <p className="text-gray-800 text-[16px] font-semibold mb-2">
-                      Package
-                    </p>
-                  </div>
-                </div>
-                <div className="w-[200px] h-[150px] bg-white rounded-2xl shadow-md flex items-center p-4 border border-[#012A4A]">
-                  {/* Circular Progress */}
-                  <div className="mr-6 flex justify-center items-center relative">
-                    <div className="bg-[#FAE27C] rounded-full p-2">
-                      <MdAutoStories className="text-[#FFAE41]" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[24px] font-bold text-gray-800">
-                      64%
-                    </div>
-                    <p className="text-gray-800 text-[16px] font-semibold mb-2">
-                      Performance
-                    </p>
-                  </div>
-                </div>
-                <div className="w-[200px] h-[150px] bg-white rounded-2xl shadow-md flex items-center p-4 border border-[#012A4A]">
-                  {/* Circular Progress */}
-                  <div className="mr-6 flex justify-center items-center relative">
-                    <div className="bg-[#FFDBF7] rounded-full p-2">
-                      <FaMedal className="text-[#FF88E5]" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[24px] font-bold text-gray-800">
-                      245
-                    </div>
-                    <p className="text-gray-800 text-[16px] font-semibold mb-2">
-                      Reward Points
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Assignment List */}
-            <div className="mt-[380px] -ml-[250px] mx-auto ">
-              <div className="w-[500px] mx-auto p-3 rounded-lg shadow-md bg-white border border-black">
-                <h2 className="text-[14px] font-bold text-orange-600 px-4">
+        <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
+              <div className="mx-auto p-3">
+                <h2 className="text-[18px] font-semibold text-black px-4">
                   Terms and Conditions
                 </h2>
                 <h3 className="text-[13px] font-semibold mt-2 px-4">
                   Your Agreement
                 </h3>
-                <div className="mt-2 p-4 bg-gray-50 rounded-md max-h-[180px] overflow-y-auto border scrollbar-thin">
+                <div className="mt-2 p-4 bg-gray-50 rounded-md max-h-[300px] overflow-y-auto  scrollbar-thin">
                   <p className="text-[10px] text-gray-600">
                     Last Revised: December 16, 2013
                   </p>
@@ -319,34 +323,11 @@ const token =
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
-          <div className="ml-[770px] -mt-[150px]">
-            <img
-              src="/assets/images/refera.png"
-              alt=""
-              width={250}
-              height={250}
-              className="w-20"
-            />
-            <img
-              src="/assets/images/refera1.png"
-              alt=""
-              width={150}
-              height={150}
-              className="w-20"
-            />
-            <p className="text-[13px] font-semibold">
-              Ready to get more hours ?
-            </p>
-            <p className="text-[11px] text-gray-600">
-              Invite your friends now and unlock extra space for everyone!
-            </p>
-          </div>
+            </div>  
         </div>
-      </div>
     </BaseLayout2>
   );
 };
 
 export default StudentProfile;
+
