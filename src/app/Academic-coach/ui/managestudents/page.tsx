@@ -556,7 +556,8 @@ const ManageStudents = () => {
                             onChange={() =>
                               toggleSelect(index + indexOfFirstItem)
                             }
-                            disabled={item.sessionClassType === "REGULAR"}
+                            disabled={item.sessionClassType === "REGULARCLASS"}
+                            className={item.sessionClassType === "REGULARCLASS" ? "cursor-not-allowed" : ""}
                           />
                         </td>
                         <td className="px-3 py-2">{item.student.studentId}</td>
