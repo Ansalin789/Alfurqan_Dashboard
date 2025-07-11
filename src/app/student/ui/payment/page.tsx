@@ -7,6 +7,9 @@ import {
   CardElement,
   useElements,
   useStripe,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
 } from "@stripe/react-stripe-js";
 import BaseLayout2 from "@/components/BaseLayout2";
 import axios from "axios";
@@ -83,8 +86,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
 
     if (!stripe || !elements) return;
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    if (!cardNumberElement) {
       setMessage("Card details are required.");
       setLoading(false);
       return;
@@ -93,7 +96,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     const { error, paymentIntent } = await stripe.confirmCardPayment(
       clientSecret,
       {
-        payment_method: { card: cardElement },
+        payment_method: { card: cardNumberElement },
       }
     );
 
@@ -119,19 +122,37 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-md mx-auto p-6 border border-gray-300 rounded-lg shadow-lg bg-white flex flex-col gap-4"
+      className="w-full max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-[#343434]"
     >
-      <div className="p-3 border border-gray-300 rounded focus-within:border-blue-500 bg-gray-50 transition-colors">
-        <CardElement />
+      <div className="">
+      <div className="mb-4 ">
+        <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">Card Number</label>
+        <div className="border rounded-md px-3 py-2 flex items-center bg-white dark:bg-[#3C3C3C]">
+          <CardNumberElement className="w-full dark:text-[#ffffff]" />
+        </div>
+      </div>
+      <div className="flex gap-4 mb-4">
+        <div className="flex-1">
+          <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">Expiry</label>
+          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
+            <CardExpiryElement className="w-full dark:text-[#ffffff]" />
+          </div>
+        </div>
+        <div className="flex-1">
+          <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">CVC</label>
+          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
+            <CardCvcElement className="w-full dark:text-[#ffffff]" />
+          </div>
+        </div>
       </div>
 
       <button
         type="submit"
         disabled={!stripe || loading}
-        className={`w-full py-2 px-4 rounded text-white font-bold transition-colors ${
+        className={`w-full py-2 px-4 rounded-lg text-white font-bold transition-colors text-[13px] ${
           !stripe || loading
             ? "bg-gray-400 cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+            : "cursor-pointer bg-[#2D6AE0] hover:bg-[#1B4FA0]"
         }`}
       >
         {loading ? "Processing..." : "Pay"}
@@ -140,17 +161,25 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       {message && (
         <p className="text-center text-sm text-gray-700">{message}</p>
       )}
+      </div>
     </form>
   );
 };
 
 const Invoice = () => {
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); // Payment modal
+  const [showFilterModal, setShowFilterModal] = useState(false); // Filter modal
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [clientSecret, setClientSecret] = useState("");
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
+  // Add missing filter states
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [positionApplied, setPositionApplied] = useState("Pending");
+  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
+  const [searchText, setSearchText] = useState("");
 
   // Calculate total price based on selected invoice
   const calculateTotalPrice = () => {
@@ -212,6 +241,7 @@ const Invoice = () => {
     }
 
     setShowModal(true);
+    setShowFilterModal(false); // <-- Add this line
     const evaluationid = selectedInvoice._id;
     const totalprice = totalPrice;
 
@@ -284,11 +314,66 @@ const Invoice = () => {
     return `${day}-${month}-${year}`;
   }
 
+  function toDateString(date: string) {
+    return new Date(date).toISOString().slice(0, 10);
+  }
+
   const getInvoiceDue = (invoice: Invoice) => {
     const paid =
       invoice.payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
     return Number(invoice.amount) - paid;
   };
+
+  const openFilterModal = () => {
+    setShowFilterModal(true);
+    setShowModal(false); // <-- Add this line
+  };
+
+  // Filtering logic
+  const handleFilter = () => {
+    let filtered = invoices;
+    if (fromDate) {
+      filtered = filtered.filter(inv => toDateString(inv.createdDate) >= fromDate);
+    }
+    if (toDate) {
+      filtered = filtered.filter(inv => toDateString(inv.createdDate) <= toDate);
+    }
+    if (positionApplied) {
+      filtered = filtered.filter(inv => inv.invoiceStatus === positionApplied);
+    }
+    if (searchText.trim() !== "") {
+      const lower = searchText.toLowerCase();
+      filtered = filtered.filter(inv =>
+        inv.courseName.toLowerCase().includes(lower) ||
+        inv._id.toLowerCase().includes(lower) ||
+        toDateString(inv.createdDate).includes(lower) ||
+        formatDateDMY(inv.createdDate).includes(lower) ||
+        inv.invoiceStatus.toLowerCase().includes(lower)
+      );
+    }
+    setFilteredInvoices(filtered);
+    setShowFilterModal(false);
+  };
+
+  // Optionally, filter by searchText live (not just on filter submit)
+  useEffect(() => {
+    if (searchText.trim() === "" || searchText.trim() === ".") {
+      setFilteredInvoices([]);
+      return;
+    }
+    let filtered = invoices;
+    if (searchText.trim() !== "" && searchText.trim() !== ".") {
+      const lower = searchText.toLowerCase();
+      filtered = filtered.filter(inv =>
+        inv.courseName.toLowerCase().includes(lower) ||
+        inv._id.toLowerCase().includes(lower) ||
+        toDateString(inv.createdDate).includes(lower) ||
+        formatDateDMY(inv.createdDate).includes(lower) ||
+        inv.invoiceStatus.toLowerCase().includes(lower)
+      );
+    }
+    setFilteredInvoices(filtered);
+  }, [searchText, invoices]);
 
   return (
     <BaseLayout2>
@@ -536,27 +621,27 @@ const Invoice = () => {
                       type="text"
                       placeholder="Search"
                       className="bg-transparent outline-none text-[15px] w-52 py-3"
-                      // value={searchText}
-                      // onChange={(e) => setSearchText(e.target.value)}
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
                     />
                   </div>
 
                   <div
                     className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                    onClick={() => setShowModal(true)}
+                    onClick={() => setShowFilterModal(true)}
                   >
                     {/* <BsFilterLeft /> */}
                     <MdTune className="w-4 h-4" />
                     <span>Filter</span>
                   </div>
                   {/* Modal */}
-                  {showModal && (
+                  {showFilterModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
                       <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
                         {/* Close Icon */}
                         <button
                           className="absolute top-2 right-3 text-gray-400 text-xl"
-                          onClick={() => setShowModal(false)}
+                          onClick={() => setShowFilterModal(false)}
                         >
                           &times;
                         </button>
@@ -575,16 +660,14 @@ const Invoice = () => {
                             <input
                               type="date"
                               className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                              // value={exp.fromDate}
-                              // value={fromDate}
-                              // onChange={(e) => setFromDate(e.target.value)}
+                              value={fromDate}
+                              onChange={(e) => setFromDate(e.target.value)}
                             />
                             <input
                               type="date"
                               className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
-                              // value={exp.toDate}
-                              // value={toDate}
-                              // onChange={(e) => setToDate(e.target.value)}
+                              value={toDate}
+                              onChange={(e) => setToDate(e.target.value)}
                             />
                           </div>
                         </div>
@@ -595,55 +678,33 @@ const Invoice = () => {
                             htmlFor="position"
                             className="block text-sm font-medium mb-1"
                           >
-                            Position Applied
+                            Status
                           </label>
                           <select
                             className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
-                            // value={positionApplied}
-                            // onChange={(e) =>
-                            //   setPositionApplied(e.target.value)
-                            // }
+                            value={positionApplied}
+                            onChange={(e) =>
+                              setPositionApplied(e.target.value)
+                            }
                           >
-                            <option>Islamic Teacher</option>
-                            <option>Quran Teacher</option>
-                            <option>Arabic Teacher</option>
+                            <option>Pending</option>
+                            <option>Paid</option>
                           </select>
                         </div>
 
-                        {/* Status */}
-                        <div className="mb-6">
-                          <label
-                            htmlFor="status"
-                            className="block text-sm font-medium mb-1"
-                          >
-                            Application Status
-                          </label>
-                          <select
-                            className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
-                            // value={applicationStatus}
-                            // onChange={(e) =>
-                            //   setApplicationStatus(e.target.value)
-                            // }
-                          >
-                            <option>Shortlisted</option>
-                            <option>Rejected</option>
-                            <option>Waiting</option>
-                            <option>Approved</option>
-                            <option>NewApplication</option>
-                          </select>
-                        </div>
+                        
 
                         {/* Buttons */}
                         <div className="flex justify-end gap-3">
                           <button
-                            onClick={() => setShowModal(false)}
+                            onClick={() => setShowFilterModal(false)}
                             className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
                           >
                             Cancel
                           </button>
                           <button
                             className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
-                            // onClick={handleFilter}
+                            onClick={handleFilter}
                           >
                             Submit
                           </button>
@@ -653,8 +714,7 @@ const Invoice = () => {
                   )}
                   <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                     <span className="text-left -ml-60 ">
-                      {/* Showing {currentApplicants.length} of{" "}
-                    {applicants.length} */}
+                      Showing {(filteredInvoices.length > 0 ? filteredInvoices.length : invoices.length)} of {invoices.length}
                     </span>
                   </div>
                 </div>
@@ -689,7 +749,7 @@ const Invoice = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {invoices.map((invoice, index) => (
+                    {(filteredInvoices.length > 0 ? filteredInvoices : invoices).map((invoice, index) => (
                       <React.Fragment key={invoice._id || index}>
                         <tr
                           onClick={() => {
@@ -716,7 +776,7 @@ const Invoice = () => {
                             {invoice.amount}{" "}
                           </td>
                           <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
-                            24.7.2025
+                            24-7-2025
                           </td>
                           <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
                             <span
@@ -726,7 +786,7 @@ const Invoice = () => {
                                   : invoice.invoiceStatus === "Pending"
                                   ? "bg-[#FDF6EC] text-[#F0AD4E] border border-orange-600"
                                   : "bg-gray-100 text-gray-600 border border-gray-400") +
-                                " py-0.5 px-1  rounded-md text-[10px] min-w-[70px] inline-block text-center"
+                                " py-0.5 px-1  rounded-lg text-[10px] min-w-[70px] inline-block text-center"
                               }
                             >
                               {invoice.invoiceStatus}
@@ -804,7 +864,16 @@ const Invoice = () => {
           {/* Modal for Payment Form */}
           {showModal && clientSecret && clientSecret.includes("_secret_") && (
             <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
-              <div className="bg-white p-4 rounded-lg shadow-lg w-96">
+              <div className="bg-white p-4 rounded-lg shadow-lg w-[600px] relative dark:bg-[#343434]">
+                {/* X Close Icon */}
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
+                  aria-label="Close payment modal"
+                  type="button"
+                >
+                  ×
+                </button>
                 <h2 className="text-lg font-bold mb-4">
                   Complete Your Payment
                 </h2>
@@ -818,12 +887,7 @@ const Invoice = () => {
                     currency="usd"
                   />
                 </Elements>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg"
-                >
-                  Close
-                </button>
+                {/* Close button removed as requested */}
               </div>
             </div>
           )}
