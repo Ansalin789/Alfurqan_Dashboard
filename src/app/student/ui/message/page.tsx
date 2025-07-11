@@ -9,6 +9,7 @@ import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { Bell } from "lucide-react";
+import StudentHeader from "../../components/StudentHeader";
 // Define your interfaces
 interface IMessage {
   _id: string;
@@ -450,8 +451,8 @@ const Message = () => {
 
   return (
     <BaseLayout2>
+    <StudentHeader currentSection="Message"/>
       <div className="py-3 px-5">
-        <h1 className="text-[20px] mt-3 font-semibold mb-3">Messages</h1>
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
           {/* Left Panel */}
           <motion.div
