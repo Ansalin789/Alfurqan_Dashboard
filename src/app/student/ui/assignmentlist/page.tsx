@@ -7,6 +7,8 @@ import {  useSearchParams } from "next/navigation";
 import BaseLayout from "@/components/BaseLayout";
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import Pagination from "@/components/Pagination";
+import BaseLayout2 from "@/components/BaseLayout2";
+import StudentHeader from "../../components/StudentHeader";
 
 interface AssignmentType {
   _id: string;
@@ -97,8 +99,8 @@ const StudentList = () => {
   };
 
   return (
-    <BaseLayout>
-      <TeacherHeader currentSection="Assignments" />
+    <BaseLayout2>
+      <StudentHeader currentSection="Assignments" />
       <div className="md:p-0 mx-auto w-full">
         <div className="flex flex-col h-full w-full justify-between">
           <div className="flex flex-col">
@@ -218,7 +220,7 @@ const StudentList = () => {
           </div>
         </div>
       </div>
-    </BaseLayout>
+    </BaseLayout2>
   );
 };
 

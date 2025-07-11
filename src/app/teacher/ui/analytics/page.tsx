@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Filter, Search, X } from "lucide-react";
+import { CloudSun, Filter, Search, X } from "lucide-react";
 import Image from "next/image";
 
 import BaseLayout from "@/components/BaseLayout";
@@ -9,6 +9,7 @@ import axios from "axios";
 import TeacherHeader from "../../components/TeacherHeader";
 import { MdTune } from "react-icons/md";
 import Modal from "react-modal";
+import { clearScreenDown } from "node:readline";
 
 interface Student {
   studentId: string;
@@ -60,14 +61,17 @@ interface SimpleStudent {
     student: {
       learningInterest?: string;
       languageLevel?: string;
+      createdDate?: string;
+      status?: string;
+      level?:string;
     };
     course: {
       courseName: string;
     };
     studentRate?: string;
     classType?: string;
-    classStartDate?: string;
-    status?: string;
+   
+  
   };
 }
 
@@ -277,7 +281,7 @@ function Analytics() {
         const name = item.name?.toLowerCase() || "";
         const course = item.studentDetails?.course?.courseName?.toLowerCase() || "";
         const classType = item.studentDetails?.classType?.toLowerCase() || "";
-        const status = item.studentDetails?.status?.toLowerCase() || "";
+        const status = item.studentDetails?.student.status?.toLowerCase() || "";
         const studentId = item.studentId?.toLowerCase() || "";
 
         return (
@@ -341,7 +345,7 @@ function Analytics() {
         const from = new Date(filters.fromDate);
         const to = new Date(filters.toDate);
         filtered = filtered.filter((item) => {
-          const dateStr = item.studentDetails.classStartDate;
+          const dateStr = item.studentDetails.student.createdDate;
           if (!dateStr) return false;
           const date = new Date(dateStr);
           return date >= from && date <= to;
@@ -441,7 +445,7 @@ function Analytics() {
         const from = new Date(filters.fromDate);
         const to = new Date(filters.toDate);
         filtered = filtered.filter((item) => {
-          const dateStr = item.studentDetails.classStartDate;
+          const dateStr = item.studentDetails.student.createdDate;
           if (!dateStr) return false;
           const date = new Date(dateStr);
           return date >= from && date <= to;
@@ -456,7 +460,7 @@ function Analytics() {
           const course =
             item.studentDetails?.course?.courseName?.toLowerCase() || "";
           const classType = item.studentDetails?.classType?.toLowerCase() || "";
-          const status = item.studentDetails?.status?.toLowerCase() || "";
+          const status = item.studentDetails?.student.status?.toLowerCase() || "";
           const studentId = item.studentId?.toLowerCase() || "";
 
           return (
@@ -679,9 +683,9 @@ function Analytics() {
 
                         <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                           {
-                            schedule.studentDetails.classStartDate
+                             schedule.studentDetails.student?.createdDate
                               ? new Date(
-                                  schedule.studentDetails.classStartDate
+                                schedule.studentDetails.student?.createdDate
                                 ).toLocaleDateString("en-US", {
                                   month: "short",
                                   day: "2-digit",
@@ -691,12 +695,12 @@ function Analytics() {
                           }
                         </td>
 
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                          1
+                        <td className="px-3 py-2 pl-6 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                          {schedule.studentDetails.student.level}
                         </td>
-                        <td className="px-4 py-3 overflow-hidden text-ellipsis whitespace-nowrap">
-                          <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] border border-[#299350] rounded-lg text-[11px]">
-                            {schedule.studentDetails.status}
+                        <td className="px-4 py-3 overflow-hidden text-ellipsis whitespace-nowrap ">
+                          <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] rounded-lg text-[11px] ">
+                            {schedule.studentDetails.student.status}
                           </span>
                         </td>
                       </tr>
@@ -758,8 +762,8 @@ function Analytics() {
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {cls.sessionClassType}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {cls.totalHourse}
+                          <td className="px-3 py-2 pl-4 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                            30 min
                           </td>
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {new Date(cls.startDate).toLocaleDateString(
@@ -774,17 +778,19 @@ function Analytics() {
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {cls.startTime}
                           </td>
-                          <td className="px-4 py-3 overflow-hidden text-ellipsis whitespace-nowrap">
-                            <span
-                              className={`text-[10px] font-semibold px-5 py-1 rounded-lg ${
-                                cls.scheduleStatus === "Scheduled"
-                                  ? "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[24px]"
-                                  : "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white"
-                              }`}
-                            >
-                              {cls.scheduleStatus}
-                            </span>
-                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap align-middle">
+  <span
+    className={`text-[10px] font-semibold py-1 px-2 rounded-lg inline-block w-[120px] text-center leading-tight break-words ${
+      cls.scheduleStatus === "Scheduled"
+        ? "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36]"
+        : cls.scheduleStatus === "Request Reschedule"
+        ? "text-[#6B4F00] bg-[#FDF6EC] dark:bg-[#4F4300] dark:text-[#FFC107]"
+        : "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white"
+    }`}
+  >
+    {cls.scheduleStatus}
+  </span>
+</td>
                         </tr>
                       ))}
                   </tbody>
@@ -851,8 +857,8 @@ function Analytics() {
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {earning.sessionClassType}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {earning.totalHourse}
+                          <td className="px-3 py-2 pl-4 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                            30 min
                           </td>
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {new Date(earning.startDate).toLocaleDateString(
@@ -868,19 +874,24 @@ function Analytics() {
                             {earning.startTime}
                           </td>
                           <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                            {earning.amount}
+                            {earning.amount ? earning.amount : 0}
                           </td>
-                          <td className="px-4 py-3 overflow-hidden text-ellipsis whitespace-nowrap">
-                            <span
-                              className={`text-[10px] font-semibold px-5 py-1 rounded-lg ${
-                                earning.scheduleStatus === "Scheduled"
-                                  ? "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36] px-[23px]"
-                                  : "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white"
-                              }`}
-                            >
-                              {earning.scheduleStatus}
-                            </span>
-                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap pr-10">
+  <span
+    className={`text-[10px] font-semibold py-1 px-1 rounded-lg inline-block w-[120px] text-center leading-tight break-words ${
+      earning.scheduleStatus === "Scheduled"
+        ? "text-[#377E36] bg-[#ECFDF3] dark:bg-[#323E31] dark:text-[#377E36]"
+        : earning.scheduleStatus === "Request Reschedule"
+        ? "text-[#6B4F00] bg-[#FDF6EC] dark:bg-[#4F4300] dark:text-[#FFC107]"
+        : "text-[#343E59] bg-[#E4E4E4] dark:bg-[#4F4F4F] dark:text-white"
+    }`}
+  >
+    {earning.scheduleStatus}
+  </span>
+</td>
+
+
+
                         </tr>
                       ))}
                   </tbody>
@@ -931,13 +942,13 @@ function Analytics() {
                     Course Name
                   </label>
                   <select
-                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
                     value={filters.courseName}
                     onChange={(e) =>
                       setFilters({ ...filters, courseName: e.target.value })
                     }
                   >
-                    <option value="">Select Course</option>
+                    <option value="" className="text-gray-400 opacity-60">Select Course</option>
                     {courseNames.map((course) => (
                       <option key={course} value={course}>
                         {course}
@@ -952,13 +963,13 @@ function Analytics() {
                     Student Name
                   </label>
                   <select
-                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
                     value={filters.studentName}
                     onChange={(e) =>
                       setFilters({ ...filters, studentName: e.target.value })
                     }
                   >
-                    <option value="">Select Student</option>
+                    <option value="" className="text-gray-400 opacity-60">Select Student</option>
                     {studentNames.map((name) => (
                       <option key={name} value={name}>
                         {name}
@@ -973,13 +984,13 @@ function Analytics() {
                     Class Type
                   </label>
                   <select
-                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                    className="w-full px-3 py-2 border rounded text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] text-gray-400"
                     value={filters.classType}
                     onChange={(e) =>
                       setFilters({ ...filters, classType: e.target.value })
                     }
                   >
-                    <option value="">Select ClassType</option>
+                    <option value="" className="text-gray-400 opacity-60">Select ClassType</option>
                     {classTypes.map((classType) => (
                       <option key={classType} value={classType}>
                         {classType}
@@ -990,7 +1001,6 @@ function Analytics() {
 
                 {/* Time */}
                 <div className="mb-4">
-                  {/* Timing */}
                   <label
                     htmlFor="timimg"
                     className="block text-sm text-gray-700 mb-1 dark:text-white"
@@ -1003,7 +1013,8 @@ function Analytics() {
                       setFilters({ ...filters, time: e.target.value })
                     }
                     type="time"
-                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full mb-4 border border-gray-300 dark:bg-[#343434] dark:text-white rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400 placeholder:opacity-60"
+                    placeholder="Select Time"
                   />
                 </div>
 
@@ -1015,19 +1026,21 @@ function Analytics() {
                   <div className="flex gap-2">
                     <input
                       type="date"
-                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] placeholder:text-gray-400 placeholder:opacity-80"
                       value={filters.fromDate}
                       onChange={(e) =>
                         setFilters({ ...filters, fromDate: e.target.value })
                       }
+                      placeholder="From"
                     />
                     <input
                       type="date"
-                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                      className="w-1/2 px-3 py-2 border rounded text-xs dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C] placeholder:text-gray-600 "
                       value={filters.toDate}
                       onChange={(e) =>
                         setFilters({ ...filters, toDate: e.target.value })
                       }
+                      placeholder="To"
                     />
                   </div>
                 </div>

@@ -93,9 +93,7 @@ function Assignment() {
     },
   ];
 
-  if (loading) {
-    return <div className="text-center py-10">Loading assignment data...</div>;
-  }
+
 
   return (
     <div className="md:p-0 mx-auto">
