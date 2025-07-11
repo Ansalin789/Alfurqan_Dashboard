@@ -405,9 +405,10 @@ const RegularStudents = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+              <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+              onClick={() => setShowFilterModal(true)}>
                 <MdTune className="w-4 h-4" />
-                <span onClick={() => setShowFilterModal(true)}>Filter</span>
+                <span >Filter</span>
               </div>
               {showFilterModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
@@ -577,22 +578,22 @@ const RegularStudents = () => {
               <thead className="text-[12px] bg-[#4C6993] text-white">
                 <tr>
                   {[
-                    "Student ID",
-                    "Student Name",
-                    "Assignment ID",
-                    "Level",
-                    "Course",
-                    "Assignment Name",
-                    "Assigned Date",
-                    "Due Date",
-                    "Status",
-                    "Action",
+                    { label: "Student ID", width: "w-[15%]" },
+                    { label: "Student Name", width: "w-[12%]" },
+                    { label: "Assignment ID", width: "w-[14%]" },
+                    { label: "Level", width: "w-[6%]" },
+                    { label: "Course", width: "w-[10%]" },
+                    { label: "Assignment Name", width: "w-[15%]" },
+                    { label: "Assign Date", width: "w-[10%]" },
+                    { label: "Due Date", width: "w-[11%]" },
+                    { label: "Status", width: "w-[12%]" },
+                    { label: "Action", width: "w-[8%]" },
                   ].map((header, idx) => (
                     <th
-                      key={idx}
-                      className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                      key={header.label}
+                      className={`px-2 py-1 border border-[#4C6993] text-left text-wrap break-words ${header.width}`}
                     >
-                      {header}
+                      {header.label}
                     </th>
                   ))}
                 </tr>

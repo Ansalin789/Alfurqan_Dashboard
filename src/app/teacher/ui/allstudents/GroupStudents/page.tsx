@@ -635,22 +635,22 @@ const GroupStudents = () => {
               <thead className="text-[12px] bg-[#4C6993] text-white">
                 <tr>
                   {[
-                    "Assignment ID",
-                    "Student List",
-                    "Group ID",
-                    "Assignment Name",
-                    "Course",
-                    "Level",
-                    "Assigned Date",
-                    "Due Date",
-                    "Status",
-                    "Action",
-                  ].map((header, idx) => (
+                    { label: "Student ID", width: "w-[15%]" },
+                    { label: "Student Name", width: "w-[12%]" },
+                    { label: "Assignment ID", width: "w-[15%]" },
+                    { label: "Level", width: "w-[6%]" },
+                    { label: "Course", width: "w-[10%]" },
+                    { label: "Assignment Name", width: "w-[15%]" },
+                    { label: "Assign Date", width: "w-[11%]" },
+                    { label: "Due Date", width: "w-[11%]" },
+                    { label: "Status", width: "w-[12%]" },
+                    { label: "Action", width: "w-[8%]" },
+                  ].map((header) => (
                     <th
-                      key={idx}
-                      className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                      key={header.label}
+                      className={`px-2 py-1 border border-[#4C6993] text-left text-wrap break-words ${header.width}`}
                     >
-                      {header}
+                      {header.label}
                     </th>
                   ))}
                 </tr>
@@ -947,16 +947,17 @@ const GroupStudents = () => {
                           <td className="px-3 py-2 break-words">
                             {assignmentItem?.dueDate}
                           </td>
-                          <td className="px-3 py-2 break-words">
+                          <td className={`px-3 py-2 break-words ${
+  (assignmentItem?.assignmentStatus || assignmentItem?.status) === 'Completed'
+    ? 'bg-green-100 text-green-700'
+    : (assignmentItem?.assignmentStatus || assignmentItem?.status) === 'Pending'
+    ? 'bg-orange-100 text-orange-700'
+    : ''
+}`}>
                             <span
-                              className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
-                                assignmentItem?.assignmentStatus ||
-                                  assignmentItem?.status
-                              )}`}
+                              className={`py-1 px-2 rounded-md text-[10px] flex items-center justify-center min-w-[80px]`}
                             >
-                              {assignmentItem?.assignmentStatus ||
-                                assignmentItem?.status ||
-                                "Not Assigned"}
+                              {assignmentItem?.assignmentStatus || assignmentItem?.status || 'Not Assigned'}
                             </span>
                           </td>
                           <td className="px-4 py-2 text-center relative">

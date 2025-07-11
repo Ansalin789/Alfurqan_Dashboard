@@ -1153,7 +1153,9 @@ const NewAssignment = () => {
           </div>
 
           <div className="flex justify-end gap-4 mt-6">
-            <button className="border border-gray-300 text-[12px] px-4 py-[6px] rounded-xl text-gray-700 hover:bg-gray-100 dark:border-[#343434] dark:text-[#fff] dark:bg-[#343434]">
+            <button className="border border-gray-300 text-[12px] px-4 py-[6px] rounded-xl text-gray-700 hover:bg-gray-100 dark:border-[#343434] dark:text-[#fff] dark:bg-[#343434]"
+              onClick={() => setAssignments([])}
+            >
               Cancel
             </button>
             <button
