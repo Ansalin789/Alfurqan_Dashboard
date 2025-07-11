@@ -207,21 +207,36 @@ const Message = () => {
       });
     }
   }, [messages]);
+
+  // useEffect(() => {
+  //   const fetchUsers = async () => {
+  //     if (activeTab === "teachers" && teachers.length === 0) {
+  //       const result = await fetchUsersByRole("TEACHER");
+  //       setTeachers(result);
+  //     } else if (
+  //       activeTab === "academicCoaches" &&
+  //       academicCoaches.length === 0
+  //     ) {
+  //       const result = await fetchUsersByRole("ACADEMICCOACH");
+  //       setAcademicCoaches(result);
+  //     }
+  //   };
+  //   fetchUsers();
+  // }, [activeTab]);
   useEffect(() => {
     const fetchUsers = async () => {
-      if (activeTab === "teachers" && teachers.length === 0) {
+      if (teachers.length === 0) {
         const result = await fetchUsersByRole("TEACHER");
         setTeachers(result);
-      } else if (
-        activeTab === "academicCoaches" &&
-        academicCoaches.length === 0
-      ) {
+      }
+      if (academicCoaches.length === 0) {
         const result = await fetchUsersByRole("ACADEMICCOACH");
         setAcademicCoaches(result);
       }
     };
     fetchUsers();
   }, [activeTab]);
+
   useEffect(() => {
     setSelectedUser(null); // clear selected user on tab change
   }, [activeTab]);
@@ -451,7 +466,7 @@ const Message = () => {
 
   return (
     <BaseLayout2>
-    <StudentHeader currentSection="Message"/>
+      <StudentHeader currentSection="Message" />
       <div className="py-3 px-5">
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
           {/* Left Panel */}
