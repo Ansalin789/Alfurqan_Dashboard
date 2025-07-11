@@ -40,6 +40,7 @@ interface Invoice {
   _id: string;
   courseName: string;
   amount: number;
+  paymentDate:number;
   status: string;
   createdDate: string;
   createdBy: string;
@@ -103,13 +104,20 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     if (error) {
       setMessage(error.message ?? "Payment failed.");
     } else if (paymentIntent?.status === "succeeded") {
+    
+      // Now send this to your backend if needed
       await axios.post(
-        "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
+        "http://localhost:5001/student/create-payment-intent",
         {
           amount,
           currency,
           invoiceId,
-          paymentIntentResponse: paymentIntent,
+          paymentIntentResponse:paymentIntent,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -245,20 +253,32 @@ const Invoice = () => {
     const evaluationid = selectedInvoice._id;
     const totalprice = totalPrice;
 
+    // Debug: Log values before making the request
+    console.log("[DEBUG] totalprice:", totalprice);
+    console.log("[DEBUG] evaluationid:", evaluationid);
+
+    // Set paymentDate to current date/time in ISO format
+    const paymentDate = new Date().toISOString();
+
     try {
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
+        "http://localhost:5001/student/create-payment-intent",
         {
           amount: totalprice * 100,
           currency: "usd",
           invoiceId: evaluationid,
-          paymentIntentResponse: "",
+          paymentIntentResponse:"",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      console.log("Stripe Response:", response.data); // Debugging
+      console.log("[DEBUG] Stripe Response:", response.data); // Debugging
       const clientSecret = response?.data?.clientSecret;
-      console.log("Stripe Response:", response?.data);
+      console.log("[DEBUG] Stripe clientSecret:", clientSecret);
 
       if (clientSecret?.includes("_secret_")) {
         setClientSecret(clientSecret);
@@ -267,9 +287,14 @@ const Invoice = () => {
         alert("Error: Invalid payment session. Please try again.");
         setShowModal(false);
       }
-    } catch (error) {
-      console.error("Error fetching payment intent:", error);
-      alert("Payment initialization failed. Please try again later.");
+    } catch (error: any) {
+      if (error && error.response && error.response.data) {
+        console.error("[DEBUG] Error response data:", error.response.data);
+        alert("Backend error: " + JSON.stringify(error.response.data));
+      } else {
+        console.error("[DEBUG] Unknown error:", error);
+        alert("Unknown error occurred. Check console for details.");
+      }
       setShowModal(false);
     }
   };
@@ -774,10 +799,9 @@ const Invoice = () => {
                           </td>
                           <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
                             {invoice.amount}{" "}
-                          </td>
+                           </td>
                           <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
-                            24-7-2025
-                          </td>
+                          {invoice.paymentDate ? formatDateDMY(new Date(invoice.paymentDate).toISOString()) : ""}</td>
                           <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
                             <span
                               className={
