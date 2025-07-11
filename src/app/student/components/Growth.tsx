@@ -4,51 +4,29 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const Growth: React.FC = () => {
-  const [monthlyHours, setMonthlyHours] = useState<number[]>(Array(12).fill(0));
+  const [monthlyLevels, setMonthlyLevels] = useState<number[]>(Array(12).fill(0));
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('TeacherAuthToken') : null;
-        const teacherId = localStorage.getItem('TeacherPortalId');
+        const token = typeof window !== 'undefined' ? localStorage.getItem('StudentAuthToken') : null;
+        const studentId = localStorage.getItem('StudentPortalId');
 
-        if (!token || !teacherId) {
-          console.error('Missing authentication token or teacher ID.');
+        if (!token || !studentId) {
+          console.error('Missing authentication token or student ID.');
           return;
         }
 
-        const response = await axios.get('https://api.blackstoneinfomaticstech.com/classShedule', {
+        const response = await axios.get('https://api.blackstoneinfomaticstech.com/dashboard/student/counts', {
+          params: { studentId },
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
         });
 
-        const filteredData = response.data.students.filter(
-          (item: any) => item.teacher.teacherId === teacherId
-        );
-
-        const monthlyData = Array(12).fill(0);
-
-        filteredData.forEach((schedule: any) => {
-          if (!schedule.startDate || !schedule.startTime || !schedule.endTime) return;
-
-          const startDate = new Date(schedule.startDate);
-          const monthIndex = startDate.getMonth();
-
-          schedule.classDay.forEach((_: any, index: number) => {
-            if (!schedule.startTime[index] || !schedule.endTime[index]) return;
-
-            const startHour = parseInt(schedule.startTime[index].split(':')[0], 10);
-            const endHour = parseInt(schedule.endTime[index].split(':')[0], 10);
-
-            if (isNaN(startHour) || isNaN(endHour)) return;
-
-            monthlyData[monthIndex] += Math.max(0, endHour - startHour);
-          });
-        });
-
-        setMonthlyHours(monthlyData);
+        const totalLevel = Number(response.data.totalLevel) || 0;
+        setMonthlyLevels(Array(12).fill(totalLevel));
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -60,9 +38,9 @@ const Growth: React.FC = () => {
   const width = 1000;
   const height = 160;
   const padding = 20;
-  const max = Math.max(...monthlyHours, 1);
+  const max = Math.max(...monthlyLevels, 1);
 
-  const points = monthlyHours.map((val, i) => {
+  const points = monthlyLevels.map((val, i) => {
     const x = (i / 11) * width;
     const y = height - (val / max) * (height - padding);
     return { x, y };
@@ -103,7 +81,7 @@ const Growth: React.FC = () => {
       <div className="flex">
         {/* Y-Axis */}
         <div className="flex flex-col justify-between text-xs text-slate-400 dark:text-gray-400 mr-3 h-[160px] pt-2 pb-4">
-          {['50', '40', '30', '20', '10', '0'].map((label, i) => (
+          {['5', '4', '3', '2', '1'].map((label, i) => (
             <div key={i} className="h-[26px] flex items-center justify-end pr-1">
               <span className="block leading-none">L{label}</span>
             </div>

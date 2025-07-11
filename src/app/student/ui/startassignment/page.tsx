@@ -634,7 +634,7 @@ const QuizPage = () => {
         return;
       }
       const response = await axios.put(
-        `http://localhost:5001/assignments/bulk?assignmentId=${assignmentId}`,
+        `https://api.blackstoneinfomaticstech.com/assignments/bulk?assignmentId=${assignmentId}`,
         formData,
         {
           headers: {
@@ -703,7 +703,7 @@ const QuizPage = () => {
         return;
       }
       const res = await fetch(
-        `http://localhost:5001/assignments/bulk?assignmentId=${assignmentId}`,
+        `https://api.blackstoneinfomaticstech.com/assignments/bulk?assignmentId=${assignmentId}`,
         {
           method: "PUT",
           headers: {

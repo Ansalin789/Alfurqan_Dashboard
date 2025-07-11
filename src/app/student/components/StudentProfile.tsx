@@ -58,7 +58,7 @@ const StudentProfile = () => {
         }
 
         const response = await axios.get(
-          "http://localhost:5001/studentinvoiceById",
+          "https://api.blackstoneinfomaticstech.com/studentinvoiceById",
           {
             params: { studentId },
             headers: {
@@ -116,7 +116,7 @@ const StudentProfile = () => {
         const courseName = localStorage.getItem("StudentCourseName");
 
         const response = await axios.get(
-          "http://localhost:5001/dashboard/student/counts",
+          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
           {
             params: { studentId, courseName },
             headers: {
