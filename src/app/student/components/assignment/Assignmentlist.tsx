@@ -57,6 +57,7 @@ const StudentList = () => {
   const [activeTab, setActiveTab] = useState<"Pending" | "Completed">("Pending");
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const router = useRouter();
+  const [backendScore, setBackendScore] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchAssignments = async () => {

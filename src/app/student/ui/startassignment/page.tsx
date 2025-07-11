@@ -221,6 +221,29 @@ const AudioWavePlayer = ({ audioUrl }: { audioUrl: string }) => {
   );
 };
 
+const calculateStarRating = (score: number, maxScore: number) => {
+  const starCount = 5;
+  const filledStars = Math.round((score / (maxScore || 1)) * starCount);
+  return Array.from({ length: starCount }, (_, i) =>
+    <FaStar key={i} className={i < filledStars ? 'text-[#faab3c]' : 'text-gray-200'} />
+  );
+};
+
+const handleBackClick = (currentQuestionIndex: number, setCurrentQuestionIndex: (cb: (prev: number) => number) => void, setSelectedOption: (v: any) => void, setWrittenAnswer: (v: string) => void) => {
+  if (currentQuestionIndex > 0) {
+    setCurrentQuestionIndex((prev) => prev - 1);
+    setSelectedOption(null);
+    setWrittenAnswer("");
+  }
+};
+
+const resetState = (setSelectedOption: (v: any) => void, setWrittenAnswer: (v: string) => void, setSelectedFile: (v: any) => void, setAudioUrl: (v: any) => void) => {
+  setSelectedOption(null);
+  setWrittenAnswer("");
+  setSelectedFile(null);
+  setAudioUrl(null);
+};
+
 const QuizPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -484,6 +507,7 @@ const QuizPage = () => {
   const [userAnswers, setUserAnswers] = useState<{ [id: string]: string }>({});
   const [answerResults, setAnswerResults] = useState<{ [id: string]: { userAnswer: string, correctAnswer: string, isCorrect: boolean } }>({});
   const [totalScore, setTotalScore] = useState<number>(0);
+  const [backendScore, setBackendScore] = useState<number | null>(null);
   // For multiple choice, true/false, image identification, update userAnswers on option click
   const handleOptionClick = (option: string) => {
     let answerToStore = option;
@@ -627,6 +651,13 @@ const QuizPage = () => {
 
   // Update handleNextClick to call updateAssignment
   const handleNextClick = async () => {
+    // If current question is reading, store recordedText as answer
+    if (currentQuestion?.type === "reading" && currentQuestion._id) {
+      setUserAnswers((prev) => ({
+        ...prev,
+        [currentQuestion._id]: recordedText.trim(),
+      }));
+    }
     // Move to the next question or submit the quiz
     if (currentQuestionIndex < quizData.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -645,15 +676,15 @@ const QuizPage = () => {
     const answersArray = quizData.map((q) => {
       let userAnswer = userAnswers[q._id] || "";
       let correctAnswer = q.correctAnswer || "";
-      // For true/false and reading, always lowercase
-      if (q.type === "quiz-truefalse" || q.type === "reading") {
-        userAnswer = userAnswer.trim().toLowerCase();
-        correctAnswer = correctAnswer.trim().toLowerCase();
+      // For reading, use the recorded text as is (from userAnswers or recordedText)
+      if (q.type === "reading") {
+        userAnswer = userAnswers[q._id] || recordedText || "";
       }
-      const isCorrect = userAnswer === correctAnswer;
+      // Local validation for score (word-for-word, case-insensitive)
+      const isCorrect = wordsMatchCaseInsensitive(userAnswer, correctAnswer);
       return {
         _id: q._id,
-        answer: userAnswer,
+        answer: isCorrect ? correctAnswer : userAnswer, // send answerValidation if correct
         isCorrect,
         updatedBy: "Student",
         updatedDate: new Date().toISOString(),
@@ -683,7 +714,9 @@ const QuizPage = () => {
         }
       );
       const data = await res.json();
-      // Optionally handle response, show feedback, etc.
+      if (typeof data.totalScore === 'number') {
+        setBackendScore(data.totalScore);
+      }
       setIsQuizCompleted(true);
       setIsSubmitted(true);
     } catch (err) {
@@ -691,57 +724,60 @@ const QuizPage = () => {
     }
   };
 
-  const handleBackClick = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1);
-      setSelectedOption(null);
-      setWrittenAnswer("");
-    }
+  // Helper: word-for-word, case-insensitive match
+  function wordsMatchCaseInsensitive(a: string, b: string) {
+    const aWords = (a || '').trim().toLowerCase().split(/\s+/);
+    const bWords = (b || '').trim().toLowerCase().split(/\s+/);
+    if (aWords.length !== bWords.length) return false;
+    return aWords.every((word, idx) => word === bWords[idx]);
+  }
+
+  // --- WRITING SECTION: Use word-for-word, case-insensitive match for score ---
+  const isWritingCorrect = (writtenAnswer: string, correctAnswer: string) => {
+    return wordsMatchCaseInsensitive(writtenAnswer, correctAnswer);
   };
 
-  const resetState = () => {
-    setSelectedOption(null);
-    setWrittenAnswer("");
-    setSelectedFile(null);
-    setAudioUrl(null);
+  // --- READING SECTION: Use word-for-word, case-insensitive match for score ---
+  const isReadingCorrect = (recordedText: string, correctAnswer: string) => {
+    return wordsMatchCaseInsensitive(recordedText, correctAnswer);
   };
 
-  // Replace the old calculateStarRating with a proportional version
-  const calculateStarRating = (score: number, maxScore: number) => {
+  // Level calculation based on score and total questions
+  const getLevel = (score: number, total: number) => {
+    if (total === 0) return "N/A";
+    if (score === total) return "Advanced";
+    const percent = (score / total) * 100;
+    if (percent >= 90) return "Advanced";
+    if (percent >= 70) return "Intermediate";
+    return "Beginner";
+  };
+
+  // Star rating calculation (proportional)
+  const calculateStarRating = (score: number, total: number) => {
     const starCount = 5;
-    const filledStars = Math.round((score / (maxScore || 1)) * starCount);
+    if (total > 0 && score === total) {
+      // All correct, always 5 stars
+      return Array.from({ length: starCount }, (_, i) =>
+        <FaStar key={i} className='text-[#faab3c]' />
+      );
+    }
+    const filledStars = Math.round((score / (total || 1)) * starCount);
     return Array.from({ length: starCount }, (_, i) =>
       <FaStar key={i} className={i < filledStars ? 'text-[#faab3c]' : 'text-gray-200'} />
     );
   };
 
-  const calculateWritingScore = (
-    writtenAnswer: string,
-    correctAnswer: string
-  ) => {
-    const sanitizedWrittenAnswer = writtenAnswer.trim().toLowerCase();
-    const sanitizedCorrectAnswer = correctAnswer.trim().toLowerCase();
+  useEffect(() => {
+    let correct = 0;
+    quizData.forEach(q => {
+      const userAnswer = (userAnswers[q._id] || '').trim().toLowerCase();
+      const correctAnswer = (q.correctAnswer || '').trim().toLowerCase();
+      if (wordsMatchCaseInsensitive(userAnswer, correctAnswer)) correct += 1;
+    });
+    setTotalScore(correct);
+  }, [userAnswers, quizData]);
 
-    if (sanitizedWrittenAnswer === sanitizedCorrectAnswer) {
-      return 3;
-    }
-
-    const writtenWords = sanitizedWrittenAnswer.split(/\s+/);
-    const correctWords = sanitizedCorrectAnswer.split(/\s+/);
-
-    const matchedWords = writtenWords.filter((word) =>
-      correctWords.includes(word)
-    ).length;
-    const accuracy = matchedWords / correctWords.length;
-
-    if (accuracy >= 0.5) {
-      return 1.5;
-    }
-
-    return 0;
-  };
-
-  const stars = calculateStarRating(score, quizData.length);
+  const stars = calculateStarRating(totalScore, quizData.length);
 
   const [recordedText, setRecordedText] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -783,7 +819,7 @@ const QuizPage = () => {
     setIsSpeechChecked(false);
     setIsSpeechCorrect(null);
   };
-  // Reading section: set recognized text as answer and validate case-insensitively
+  // --- READING SECTION: Validate with lowercase ---
   const handleCheckSpeaking = () => {
     if (currentQuestion?.type === "reading") {
       setIsSpeechChecked(true);
@@ -793,7 +829,7 @@ const QuizPage = () => {
       if (currentQuestion && currentQuestion._id) {
         setUserAnswers((prev) => ({
           ...prev,
-          [currentQuestion._id]: user // store as lowercase
+          [currentQuestion._id]: recordedText.trim(), // store as entered
         }));
       }
       if (user === correct) setScore((prev) => prev + 1);
@@ -1024,7 +1060,7 @@ const QuizPage = () => {
             {/* Navigation */}
             <div className="flex w-full justify-between mt-4">
               <button
-                onClick={handleBackClick}
+                onClick={() => handleBackClick(currentQuestionIndex, setCurrentQuestionIndex, setSelectedOption, setWrittenAnswer)}
                 disabled={currentQuestionIndex === 0}
                 className={`px-6 py-2 rounded-md font-semibold ${
                   currentQuestionIndex === 0
@@ -1094,7 +1130,7 @@ const QuizPage = () => {
             </div>
             <div className="flex w-full justify-between mt-4">
               <button
-                onClick={handleBackClick}
+                onClick={() => handleBackClick(currentQuestionIndex, setCurrentQuestionIndex, setSelectedOption, setWrittenAnswer)}
                 disabled={currentQuestionIndex === 0}
                 className={`px-6 py-2 rounded-md font-semibold ${
                   currentQuestionIndex === 0
@@ -1272,22 +1308,7 @@ const QuizPage = () => {
                 <div className="text-center text-gray-600 dark:text-gray-300 min-h-[30px]">
                   {recordedText}
                 </div>
-                <button
-                  onClick={() => {
-                    setIsSpeechChecked(true);
-                    const user = recordedText.trim().toLowerCase();
-                    const correct = (q.correctAnswer || "")
-                      .trim()
-                      .toLowerCase();
-                    setIsSpeechCorrect(user === correct);
-                    if (user === correct) setScore((prev) => prev + 1);
-                  }}
-                  className="px-6 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all cursor-pointer"
-                  disabled={!recordedText || isSpeechChecked}
-                >
-                  Submit
-                </button>
-                {/* {isSpeechChecked && (
+                {isSpeechChecked && (
                   <div
                     className={`flex items-center gap-2 mt-2 px-6 py-4 rounded-md w-full max-w-md mx-auto font-semibold text-lg ${
                       isSpeechCorrect
@@ -1302,13 +1323,13 @@ const QuizPage = () => {
                   >
                     {isSpeechCorrect ? "Correct!" : "Try again!"}
                   </div>
-                )} */}
+                )}
               </div>
             </div>
 
             <div className="flex w-full justify-between mt-4">
               <button
-                onClick={handleBackClick}
+                onClick={() => handleBackClick(currentQuestionIndex, setCurrentQuestionIndex, setSelectedOption, setWrittenAnswer)}
                 disabled={currentQuestionIndex === 0}
                 className={`px-6 py-2 rounded-md font-semibold ${
                   currentQuestionIndex === 0
@@ -1372,7 +1393,7 @@ const QuizPage = () => {
             {/* Navigation */}
             <div className="flex w-full justify-between mt-4">
               <button
-                onClick={handleBackClick}
+                onClick={() => handleBackClick(currentQuestionIndex, setCurrentQuestionIndex, setSelectedOption, setWrittenAnswer)}
                 disabled={currentQuestionIndex === 0}
                 className={`px-6 py-2 rounded-md font-semibold ${
                   currentQuestionIndex === 0
@@ -1467,7 +1488,7 @@ const QuizPage = () => {
             {/* Navigation */}
             <div className="flex w-full justify-between mt-4">
               <button
-                onClick={handleBackClick}
+                onClick={() => handleBackClick(currentQuestionIndex, setCurrentQuestionIndex, setSelectedOption, setWrittenAnswer)}
                 disabled={currentQuestionIndex === 0}
                 className={`px-6 py-2 rounded-md font-semibold ${
                   currentQuestionIndex === 0
@@ -1556,7 +1577,7 @@ const QuizPage = () => {
             </div>
             <div className="flex w-full justify-between mt-4">
               <button
-                onClick={handleBackClick}
+                onClick={() => handleBackClick(currentQuestionIndex, setCurrentQuestionIndex, setSelectedOption, setWrittenAnswer)}
                 disabled={currentQuestionIndex === 0}
                 className={`px-6 py-2 rounded-md font-semibold ${
                   currentQuestionIndex === 0
@@ -1651,7 +1672,7 @@ const QuizPage = () => {
             </div>
             <div className="flex w-full justify-between mt-4">
               <button
-                onClick={handleBackClick}
+                onClick={() => handleBackClick(currentQuestionIndex, setCurrentQuestionIndex, setSelectedOption, setWrittenAnswer)}
                 disabled={currentQuestionIndex === 0}
                 className={`px-6 py-2 rounded-md font-semibold ${
                   currentQuestionIndex === 0
@@ -1710,15 +1731,16 @@ const QuizPage = () => {
                   </div>
                   {/* Heading */}
                   <h2 className="text-2xl font-bold text-[#223857] mb-2 text-center">Nice Work</h2>
+                  {/* Level */}
+                  <div className="text-lg font-semibold text-[#223857] mb-2">
+                    Level: {getLevel((backendScore ?? totalScore), quizData.length)}
+                  </div>
                   {/* Stars */}
                   <div className="flex gap-1 mb-2 justify-center">
-                    {calculateStarRating(totalScore, quizData.length)}
+                    {calculateStarRating((backendScore ?? totalScore), quizData.length)}
                   </div>
-                  {/* Score */}
-                  <div className="text-lg font-semibold text-[#223857] mb-8">
-                    Score {typeof totalScore === "number" ? totalScore : score}/{quizData.length}
-                  </div>
-                  {/* Submit button */}
+                  {/* No raw score shown */}
+                  {/* Submit/Close button logic remains unchanged */}
                   {!isSubmitted ? (
                     <button
                       className="w-full py-3 rounded-xl bg-[#576cbc] text-white font-semibold text-lg shadow-md hover:bg-[#4059ad] transition"
