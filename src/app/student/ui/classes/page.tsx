@@ -253,7 +253,7 @@ const Classes = () => {
       return;
     }
 
-    if (studentpackage === "Pro") {
+    if (studentpackage === "Pro" || studentpackage === "Elite") {
       router.push(
         `/student/ui/Proreschedule?classId=${classId}&course=${course}`
       );
