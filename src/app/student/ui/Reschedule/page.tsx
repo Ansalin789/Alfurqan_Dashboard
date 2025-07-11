@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { CalendarX2, Clock } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import moment from "moment";
-import BaseLayout from "@/components/BaseLayout";
+import BaseLayout2 from "@/components/BaseLayout2";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -749,7 +749,7 @@ const date = new Date(year, month, dayNum);
   };
 
   return (
-    <BaseLayout>
+    <BaseLayout2>
       <StudentHeader
         currentSection="Re-Schedule Class"
         showBackButton={true}
@@ -902,7 +902,7 @@ const date = new Date(year, month, dayNum);
       {failed && (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
       )}
-    </BaseLayout>
+    </BaseLayout2>
   );
 };
 

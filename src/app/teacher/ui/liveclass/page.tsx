@@ -379,7 +379,7 @@ export default function LiveClass() {
 
   return (
     <BaseLayout>
-      <TeacherHeader currentSection="Trail class" />
+      <TeacherHeader currentSection="Live Class" />
       <div className="flex h-screen">
         <div className="flex flex-col w-full min-h-screen px-4 sm:px-6 md:px-8">
           {/* Page Content */}
