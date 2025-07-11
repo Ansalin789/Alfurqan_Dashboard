@@ -9,8 +9,12 @@ import BaseLayout from "@/components/BaseLayout";
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import BaseLayout1 from "@/components/BaseLayout1";
 import WaveSurfer from "wavesurfer.js";
+import StudentHeader from "../../components/StudentHeader";
+import BaseLayout2 from "@/components/BaseLayout2";
+import axios from 'axios';
 
 type QuizData = {
+  _id: string;
   question: string;
   options?: string[];
   answer?: string;
@@ -236,6 +240,7 @@ const QuizPage = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isQuizCompleted, setIsQuizCompleted] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const currentQuestion = quizData[currentQuestionIndex];
   // State for sentence builder question
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
@@ -296,6 +301,7 @@ const QuizPage = () => {
           // Writing
           if (type === "writing") {
             return {
+              _id: item._id, // <-- this is critical!
               question: item.question,
               audioUrl:
                 item.audioFile &&
@@ -314,6 +320,7 @@ const QuizPage = () => {
           // Reading
           if (type === "reading") {
             return {
+              _id: item._id, // <-- this is critical!
               question: item.question,
               correctAnswer:
                 item.answerValidation !== "null"
@@ -326,6 +333,7 @@ const QuizPage = () => {
           // Quiz Choose/TrueFalse
           if (type === "quiz-choose" || type === "quiz-truefalse") {
             return {
+              _id: item._id, // <-- this is critical!
               question: item.question,
               options,
               correctAnswer:
@@ -366,6 +374,7 @@ const QuizPage = () => {
               words = item.question.split(" ");
             }
             return {
+              _id: item._id, // <-- this is critical!
               question: item.question || "",
               words,
               correctAnswer:
@@ -399,6 +408,7 @@ const QuizPage = () => {
               item.options.optionFour,
             ].filter(Boolean);
             return {
+              _id: item._id, // <-- this is critical!
               question: item.question || "",
               options,
               uploadFile,
@@ -411,9 +421,25 @@ const QuizPage = () => {
           }
 
           // fallback
-          return { question: item.question || "", type: type || "unknown" };
+          return { _id: item._id, question: item.question || "", type: type || "unknown" };
         });
         setQuizData(quizItems);
+        if (data.data && data.data.length > 0) {
+          // Map assignmentType to string for Assignment type
+          const first = data.data[0];
+          setAssignment({
+            ...first,
+            assignmentType: typeof first.assignmentType === 'object' && first.assignmentType !== null ? first.assignmentType.type : (first.assignmentType || ''),
+            options: first.options
+              ? [
+                  first.options.optionOne,
+                  first.options.optionTwo,
+                  first.options.optionThree,
+                  first.options.optionFour,
+                ].filter(Boolean)
+              : [],
+          });
+        }
         setIsLoading(false);
       } catch (error) {
         setIsLoading(false);
@@ -454,8 +480,35 @@ const QuizPage = () => {
     mediaRecorderRef.current?.stop();
     setIsRecording(false);
   };
+  // Add after useState for score
+  const [userAnswers, setUserAnswers] = useState<{ [id: string]: string }>({});
+  const [answerResults, setAnswerResults] = useState<{ [id: string]: { userAnswer: string, correctAnswer: string, isCorrect: boolean } }>({});
+  const [totalScore, setTotalScore] = useState<number>(0);
+  // For multiple choice, true/false, image identification, update userAnswers on option click
   const handleOptionClick = (option: string) => {
-    setSelectedOption(option);
+    let answerToStore = option;
+    // For true/false, always capitalize first letter
+    if (currentQuestion?.type === "quiz-truefalse") {
+      answerToStore = option.charAt(0).toUpperCase() + option.slice(1).toLowerCase();
+    }
+    setSelectedOption(answerToStore);
+    if (currentQuestion && currentQuestion._id) {
+      setUserAnswers((prev) => {
+        const updated = { ...prev, [currentQuestion._id]: answerToStore };
+        console.log('Updated userAnswers (option):', updated);
+        return updated;
+      });
+    }
+    // Local validation (optional)
+    if (
+      currentQuestion.correctAnswer &&
+      answerToStore.trim().toLowerCase() === currentQuestion.correctAnswer.trim().toLowerCase()
+    ) {
+      setIsCorrect(true);
+    } else {
+      setIsCorrect(false);
+    }
+    setIsChecked(true);
   };
 
   const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -483,15 +536,20 @@ const QuizPage = () => {
   const handleCheck = () => {
     if (
       currentQuestion?.type === "word-match" &&
-      currentQuestion?.correctAnswer
+      currentQuestion?.correctAnswer &&
+      currentQuestion._id
     ) {
       const correct = currentQuestion.correctAnswer.trim().toLowerCase();
+      setUserAnswers((prev) => {
+        const updated = { ...prev, [currentQuestion._id]: selectedWords.join(" ") };
+        console.log('Updated userAnswers (word-match):', updated);
+        return updated;
+      });
       setIsChecked(true);
       if (selectedWords.length === 1) {
         // Single word answer
         if (selectedWords[0].trim().toLowerCase() === correct) {
           setIsCorrect(true);
-          setScore((prev) => prev + 1);
         } else {
           setIsCorrect(false);
         }
@@ -500,7 +558,6 @@ const QuizPage = () => {
         const userSentence = selectedWords.join(" ").trim().toLowerCase();
         if (userSentence === correct) {
           setIsCorrect(true);
-          setScore((prev) => prev + 1);
         } else {
           setIsCorrect(false);
         }
@@ -508,41 +565,68 @@ const QuizPage = () => {
     }
   };
 
-  const handleNextClick = async () => {
-    // Check if the selected option matches the correct answer
-    if (
-      assignment?.assignmentType === "Quiz" &&
-      selectedOption === assignment.answer
-    ) {
-      setScore((prev) => prev + 1);
+  // Move update logic to a reusable function
+  const updateAssignment = async () => {
+    if (!assignment) return;
+
+    const formData = new FormData();
+
+    // Always set the answer field to what the user selected/entered
+    let answerValue = "";
+    if (assignment.assignmentType === "Quiz" || assignment.assignmentType === "quiz-choose" || assignment.assignmentType === "quiz-truefalse" || assignment.assignmentType === "image-identification") {
+      answerValue = selectedOption ?? "";
+    } else if (assignment.assignmentType === "Writing" || assignment.assignmentType === "writing") {
+      answerValue = writtenAnswer;
+    } else if (assignment.assignmentType === "word-match") {
+      answerValue = selectedWords.join(" ");
+    }
+    formData.append("answer", answerValue);
+
+    // Append other fields as needed
+    formData.append("studentId", assignment.studentId ?? "");
+    formData.append("assignmentName", assignment.assignmentName ?? "");
+    formData.append("assignedTeacher", assignment.assignedTeacher ?? "");
+    formData.append("assignmentType", assignment.assignmentType ?? "");
+    formData.append("status", "completed");
+    formData.append("updatedBy", "Student");
+    formData.append("updatedDate", new Date().toISOString());
+
+    // Append file if selected
+    if (selectedFile) {
+      formData.append("uploadFile", selectedFile);
+    }
+    // Append audio if recorded
+    if (typeof audioUrl === 'string' && audioUrl) {
+      try {
+        const audioBlob = await fetch(audioUrl).then(r => r.blob());
+        formData.append('audioFile', audioBlob, 'audio.wav');
+      } catch (e) {}
     }
 
-    // Add this block for writing questions
-    if (
-      assignment?.assignmentType === "Writing" &&
-      currentQuestion?.correctAnswer
-    ) {
-      const writingScore = calculateWritingScore(
-        writtenAnswer,
-        currentQuestion.correctAnswer
-      );
-      setScore((prev) => prev + writingScore);
-    }
-
-    // Sentence builder scoring
-    if (
-      currentQuestion?.type === "word-match" &&
-      currentQuestion?.correctAnswer
-    ) {
-      const userSentence = selectedWords.join(" ").trim().toLowerCase();
-      const correctSentence = currentQuestion.correctAnswer
-        .trim()
-        .toLowerCase();
-      if (userSentence === correctSentence) {
-        setScore((prev) => prev + 1);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+      if (!token) {
+        console.error("❌ StudentAuthToken not found");
+        return;
       }
+      const response = await axios.put(
+        `http://localhost:5001/assignments/bulk?assignmentId=${assignmentId}`,
+        formData,
+        {
+          headers: {
+            // DO NOT set Content-Type here!
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      console.log('Update response:', response);
+    } catch (error) {
+      console.error('Submission failed:', error);
     }
+  };
 
+  // Update handleNextClick to call updateAssignment
+  const handleNextClick = async () => {
     // Move to the next question or submit the quiz
     if (currentQuestionIndex < quizData.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -555,16 +639,64 @@ const QuizPage = () => {
     setIsCorrect(null);
   };
 
+  // Add submitAnswers function to send all answers at once
+  const submitAnswers = async () => {
+    console.log('userAnswers at submit:', userAnswers);
+    const answersArray = quizData.map((q) => {
+      let userAnswer = userAnswers[q._id] || "";
+      let correctAnswer = q.correctAnswer || "";
+      // For true/false and reading, always lowercase
+      if (q.type === "quiz-truefalse" || q.type === "reading") {
+        userAnswer = userAnswer.trim().toLowerCase();
+        correctAnswer = correctAnswer.trim().toLowerCase();
+      }
+      const isCorrect = userAnswer === correctAnswer;
+      return {
+        _id: q._id,
+        answer: userAnswer,
+        isCorrect,
+        updatedBy: "Student",
+        updatedDate: new Date().toISOString(),
+      };
+    });
+
+    if (answersArray.length === 0) {
+      alert("You must answer at least one question before submitting.");
+      return;
+    }
+
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+      if (!token) {
+        alert("StudentAuthToken not found");
+        return;
+      }
+      const res = await fetch(
+        `http://localhost:5001/assignments/bulk?assignmentId=${assignmentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify(answersArray),
+        }
+      );
+      const data = await res.json();
+      // Optionally handle response, show feedback, etc.
+      setIsQuizCompleted(true);
+      setIsSubmitted(true);
+    } catch (err) {
+      alert("Failed to submit answers");
+    }
+  };
+
   const handleBackClick = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prev) => prev - 1);
       setSelectedOption(null);
       setWrittenAnswer("");
     }
-  };
-  const handleSubmitClick = () => {
-    setIsQuizCompleted(false);
-    resetState();
   };
 
   const resetState = () => {
@@ -574,20 +706,13 @@ const QuizPage = () => {
     setAudioUrl(null);
   };
 
-  const calculateStarRating = (score: number) => {
-    if (score === 1)
-      return [
-        <FaStar key="full-1" />,
-        <FaStar key="full-2" />,
-        <FaStar key="full-3" />,
-      ];
-    return [
-      <FaStar key="empty-1" className="text-gray-200" />,
-      <FaStar key="empty-2" className="text-gray-200" />,
-      <FaStar key="empty-3" className="text-gray-200" />,
-      <FaStar key="empty-4" className="text-gray-200" />,
-      <FaStar key="empty-5" className="text-gray-200" />,
-    ];
+  // Replace the old calculateStarRating with a proportional version
+  const calculateStarRating = (score: number, maxScore: number) => {
+    const starCount = 5;
+    const filledStars = Math.round((score / (maxScore || 1)) * starCount);
+    return Array.from({ length: starCount }, (_, i) =>
+      <FaStar key={i} className={i < filledStars ? 'text-[#faab3c]' : 'text-gray-200'} />
+    );
   };
 
   const calculateWritingScore = (
@@ -616,7 +741,7 @@ const QuizPage = () => {
     return 0;
   };
 
-  const stars = calculateStarRating(score);
+  const stars = calculateStarRating(score, quizData.length);
 
   const [recordedText, setRecordedText] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -658,20 +783,20 @@ const QuizPage = () => {
     setIsSpeechChecked(false);
     setIsSpeechCorrect(null);
   };
+  // Reading section: set recognized text as answer and validate case-insensitively
   const handleCheckSpeaking = () => {
-    if (currentQuestion?.type === "speaking" && currentQuestion?.words) {
+    if (currentQuestion?.type === "reading") {
       setIsSpeechChecked(true);
       const user = recordedText.trim().toLowerCase();
-      const requiredWords = currentQuestion.words.map((w) => w.toLowerCase());
-      const allWordsPresent = requiredWords.every((word) =>
-        user.includes(word)
-      );
-      if (allWordsPresent) {
-        setIsSpeechCorrect(true);
-        setScore((prev) => prev + 1);
-      } else {
-        setIsSpeechCorrect(false);
+      const correct = (currentQuestion.correctAnswer || "").trim().toLowerCase();
+      setIsSpeechCorrect(user === correct);
+      if (currentQuestion && currentQuestion._id) {
+        setUserAnswers((prev) => ({
+          ...prev,
+          [currentQuestion._id]: user // store as lowercase
+        }));
       }
+      if (user === correct) setScore((prev) => prev + 1);
     }
   };
 
@@ -726,7 +851,7 @@ const QuizPage = () => {
                         fill="white"
                         viewBox="0 0 24 24"
                       >
-                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.74 2.5-2.26 2.5-4.02z" />
+                        <path d="M3 9v6h4l5 5V5L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.74 2.5-2.26 2.5-4.02z" />
                       </svg>
                     </button>
                     <span className="align-middle text-[12px]">
@@ -909,12 +1034,21 @@ const QuizPage = () => {
               >
                 Previous
               </button>
-              <button
-                onClick={handleNextClick}
-                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
-              >
-                Next
-              </button>
+              {currentQuestionIndex < quizData.length - 1 ? (
+                <button
+                  onClick={handleNextClick}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={submitAnswers}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Submit
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -946,7 +1080,16 @@ const QuizPage = () => {
                 className="text-[8px] border border-[#babecc] rounded-xl px-4 py-3 w-[600px] h-[150px] mx-auto mb-6 bg-[#f4f5fb] dark:bg-[#343434] dark:border-[#fff] dark:border-opacity-40 dark:text-white dark:placeholder-gray-400"
                 placeholder={q.placeholder || "Type what you hear..."}
                 value={writtenAnswer}
-                onChange={(e) => setWrittenAnswer(e.target.value)}
+                onChange={(e) => {
+                  setWrittenAnswer(e.target.value);
+                  if (currentQuestion && currentQuestion._id) {
+                    setUserAnswers((prev) => {
+                      const updated = { ...prev, [currentQuestion._id]: e.target.value };
+                      console.log('Updated userAnswers (written):', updated);
+                      return updated;
+                    });
+                  }
+                }}
               />
             </div>
             <div className="flex w-full justify-between mt-4">
@@ -961,12 +1104,21 @@ const QuizPage = () => {
               >
                 Previous
               </button>
-              <button
-                onClick={handleNextClick}
-                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
-              >
-                Next
-              </button>
+              {currentQuestionIndex < quizData.length - 1 ? (
+                <button
+                  onClick={handleNextClick}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={submitAnswers}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Submit
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1166,12 +1318,21 @@ const QuizPage = () => {
               >
                 Previous
               </button>
-              <button
-                onClick={handleNextClick}
-                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
-              >
-                Next
-              </button>
+              {currentQuestionIndex < quizData.length - 1 ? (
+                <button
+                  onClick={handleNextClick}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={submitAnswers}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Submit
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1195,7 +1356,16 @@ const QuizPage = () => {
                 className="border border-[#babecc] rounded-xl px-4 py-3 w-[600px] h-[150px] mx-auto mb-6 bg-[#f4f5fb] dark:bg-[#343434] dark:border-[#fff] dark:border-opacity-40 dark:text-white dark:placeholder-gray-400"
                 placeholder={q.placeholder || "Type what you hear..."}
                 value={writtenAnswer}
-                onChange={(e) => setWrittenAnswer(e.target.value)}
+                onChange={(e) => {
+                  setWrittenAnswer(e.target.value);
+                  if (currentQuestion && currentQuestion._id) {
+                    setUserAnswers((prev) => {
+                      const updated = { ...prev, [currentQuestion._id]: e.target.value };
+                      console.log('Updated userAnswers (written):', updated);
+                      return updated;
+                    });
+                  }
+                }}
                 disabled={isChecked}
               />
             </div>
@@ -1212,12 +1382,21 @@ const QuizPage = () => {
               >
                 Previous
               </button>
-              <button
-                onClick={handleNextClick}
-                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
-              >
-                Next
-              </button>
+              {currentQuestionIndex < quizData.length - 1 ? (
+                <button
+                  onClick={handleNextClick}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={submitAnswers}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Submit
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1298,12 +1477,21 @@ const QuizPage = () => {
               >
                 Previous
               </button>
-              <button
-                onClick={handleNextClick}
-                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
-              >
-                Next
-              </button>
+              {currentQuestionIndex < quizData.length - 1 ? (
+                <button
+                  onClick={handleNextClick}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={submitAnswers}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Submit
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1326,10 +1514,7 @@ const QuizPage = () => {
                 {["True", "False"].map((option, index) => (
                   <button
                     key={option}
-                    onClick={() => {
-                      setSelectedOption(option);
-                      // Do NOT set isChecked or isCorrect here
-                    }}
+                    onClick={() => handleOptionClick(option)}
                     className={`w-[300px] px-6 py-3 rounded-lg border border-[#babecc] text-lg font-medium flex items-center justify-center transition-all
                     ${
                       selectedOption === option
@@ -1351,20 +1536,6 @@ const QuizPage = () => {
                   </button>
                 ))}
               </div>
-              {/* Submit button */}
-              {/* <button
-                onClick={() => {
-                  if (!selectedOption) return;
-                  setIsChecked(true);
-                  const correct = (q.correctAnswer || "").trim().toLowerCase();
-                  setIsCorrect(selectedOption.toLowerCase() === correct);
-                  if (selectedOption.toLowerCase() === correct) setScore((prev) => prev + 1);
-                }}
-                className="px-6 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all mb-4"
-                disabled={!selectedOption || isChecked}
-              >
-                Submit
-              </button> */}
               {/* Feedback box */}
               {isChecked && (
                 <div
@@ -1395,12 +1566,21 @@ const QuizPage = () => {
               >
                 Previous
               </button>
-              <button
-                onClick={handleNextClick}
-                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
-              >
-                Next
-              </button>
+              {currentQuestionIndex < quizData.length - 1 ? (
+                <button
+                  onClick={handleNextClick}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={submitAnswers}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Submit
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1423,10 +1603,7 @@ const QuizPage = () => {
                 {q.options.map((option, index) => (
                   <button
                     key={option}
-                    onClick={() => {
-                      setSelectedOption(option);
-                      // Do NOT set isChecked or isCorrect here
-                    }}
+                    onClick={() => handleOptionClick(option)}
                     className={`w-[300px] px-6 py-3 rounded-lg border border-[#babecc] text-lg font-medium flex items-center justify-center transition-all
                     ${
                       selectedOption === option
@@ -1454,20 +1631,6 @@ const QuizPage = () => {
                   </button>
                 ))}
               </div>
-              {/* Submit button */}
-              {/* <button
-                onClick={() => {
-                  if (!selectedOption) return;
-                  setIsChecked(true);
-                  const correct = (q.correctAnswer || "").trim().toLowerCase();
-                  setIsCorrect(selectedOption.trim().toLowerCase() === correct);
-                  if (selectedOption.trim().toLowerCase() === correct) setScore((prev) => prev + 1);
-                }}
-                className="px-6 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all mb-4"
-                disabled={!selectedOption || isChecked}
-              >
-                Submit
-              </button> */}
               {/* Feedback box */}
               {isChecked && (
                 <div
@@ -1498,12 +1661,21 @@ const QuizPage = () => {
               >
                 Previous
               </button>
-              <button
-                onClick={handleNextClick}
-                className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
-              >
-                Next
-              </button>
+              {currentQuestionIndex < quizData.length - 1 ? (
+                <button
+                  onClick={handleNextClick}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  onClick={submitAnswers}
+                  className="px-10 py-2 rounded-md font-semibold bg-[#576cbc] text-white hover:bg-[#223857] transition-all"
+                >
+                  Submit
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1514,9 +1686,12 @@ const QuizPage = () => {
     return <div className="text-center">Question type not supported yet</div>;
   };
 
+  // Helper to ensure no null is passed to FormData
+  const safeString = (val: any): string => (val === null || val === undefined ? '' : `${val}`);
+
   return (
-    <BaseLayout>
-      <TeacherHeader currentSection="Assignments" />
+    <BaseLayout2>
+      <StudentHeader currentSection="Assignments" />
 
       <div className="md:p-0 mx-auto w-full">
         <div className="flex flex-col h-full w-full justify-between">
@@ -1537,21 +1712,28 @@ const QuizPage = () => {
                   <h2 className="text-2xl font-bold text-[#223857] mb-2 text-center">Nice Work</h2>
                   {/* Stars */}
                   <div className="flex gap-1 mb-2 justify-center">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} width="28" height="28" radius={20} viewBox="0 0 24 24" fill="#faab3c">
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                      </svg>
-                    ))}
+                    {calculateStarRating(totalScore, quizData.length)}
                   </div>
                   {/* Score */}
-                  <div className="text-lg font-semibold text-[#223857] mb-8">Score {score}/{quizData.length}</div>
+                  <div className="text-lg font-semibold text-[#223857] mb-8">
+                    Score {typeof totalScore === "number" ? totalScore : score}/{quizData.length}
+                  </div>
                   {/* Submit button */}
-                  <button
-                    className="w-full py-3 rounded-xl bg-[#576cbc] text-white font-semibold text-lg shadow-md hover:bg-[#4059ad] transition"
-                    onClick={handleSubmitClick}
-                  >
-                    Submit
-                  </button>
+                  {!isSubmitted ? (
+                    <button
+                      className="w-full py-3 rounded-xl bg-[#576cbc] text-white font-semibold text-lg shadow-md hover:bg-[#4059ad] transition"
+                      onClick={submitAnswers}
+                    >
+                      Submit
+                    </button>
+                  ) : (
+                    <button
+                      className="w-full py-3 rounded-xl bg-[#576cbc] text-white font-semibold text-lg shadow-md hover:bg-[#4059ad] transition"
+                      onClick={() => router.push('/student/ui/assignment')}
+                    >
+                      Close
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -1581,7 +1763,7 @@ const QuizPage = () => {
           </div>
         </div>
       </div>
-    </BaseLayout>
+    </BaseLayout2>
   );
 };
 

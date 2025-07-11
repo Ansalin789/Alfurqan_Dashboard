@@ -162,14 +162,6 @@ const StudentList = () => {
             </div>
           </div>
           {(() => {
-            if (loading) {
-              return <div className="p-4 text-center">Loading assignments...</div>;
-            }
-
-            if (error) {
-              return <div className="p-4 text-center text-red-500">{error}</div>;
-            }
-
             return (
               <table className="table-fixed w-full">
                 <thead className="text-[13px] bg-[#4C6993] text-white">
