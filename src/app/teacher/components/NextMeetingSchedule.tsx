@@ -65,7 +65,7 @@ const [isMeetingOngoing, setIsMeetingOngoing] = useState(false);
           return;
         }
 
-        const res = await axios.get("http://localhost:5001/teacherMeetinglist", {
+        const res = await axios.get("https://api.blackstoneinfomaticstech.com/teacherMeetinglist", {
           params: { teacherId },
           headers: {
             "Content-Type": "application/json",

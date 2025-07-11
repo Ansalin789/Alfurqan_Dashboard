@@ -118,7 +118,7 @@ const Classes = () => {
             return (
               now < classDate &&
               (cls.scheduleStatus === "Scheduled" ||
-                cls.scheduleStatus === "Rescheduled")
+                cls.scheduleStatus === "Rescheduled" || cls.scheduleStatus === "RequestReschedule")
             );
           })
           .sort(

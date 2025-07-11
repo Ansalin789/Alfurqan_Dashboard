@@ -99,7 +99,7 @@ const TeacherFilter = () => {
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingResponse>(
-          `http://localhost:5001/teacherMeetinglist`,
+          `https://api.blackstoneinfomaticstech.com/teacherMeetinglist`,
           {
             params: { teacherId },
             headers: {

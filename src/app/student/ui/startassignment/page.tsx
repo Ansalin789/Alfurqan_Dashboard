@@ -268,7 +268,7 @@ const QuizPage = () => {
       setIsLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:5001/assignments?assignmentId=${assignmentId}`
+          `https://api.blackstoneinfomaticstech.com/assignments?assignmentId=${assignmentId}`
         );
         const data: AssignmentApiResponse = await res.json();
 
@@ -390,7 +390,7 @@ const QuizPage = () => {
             ) {
               uploadFile = item.uploadFile.startsWith("http")
                 ? item.uploadFile
-                : `http://localhost:5001${item.uploadFile}`;
+                : `https://api.blackstoneinfomaticstech.com${item.uploadFile}`;
             }
             options = [
               item.options.optionOne,

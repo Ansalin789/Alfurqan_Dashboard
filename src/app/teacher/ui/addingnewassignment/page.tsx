@@ -599,7 +599,7 @@ const NewAssignment = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5001/assignments", {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/assignments", {
         method: "POST",
         body: formData, // ✅ Use FormData directly
 

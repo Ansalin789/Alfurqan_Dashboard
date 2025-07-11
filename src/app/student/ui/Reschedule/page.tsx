@@ -9,7 +9,7 @@ import BaseLayout from "@/components/BaseLayout";
 import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -75,7 +75,7 @@ const TeachersSchedule = () => {
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
   const [rescheduleDate, setRescheduleDate] = useState("");
-
+ const router = useRouter();
   const [formData, setFormData] = useState({
     date: moment().format("YYYY-MM-DD"),
     fromTime: moment().format("HH:mm"),
@@ -211,13 +211,13 @@ const TeachersSchedule = () => {
 
   const getFormattedLabel = () => {
     if (activeView === "monthly") {
-      return moment(currentDate).format("MMMM YYYY");
+      return moment(selectedDate).format("MMMM YYYY");
     } else if (activeView === "weekly") {
-      const start = moment(currentDate).startOf("week");
-      const end = moment(currentDate).endOf("week");
+      const start = moment(selectedDate).startOf("week");
+      const end = moment(selectedDate).endOf("week");
       return `${start.format("MMM D")} - ${end.format("MMM D, YYYY")}`;
     } else {
-      return moment(currentDate).format("dddd, MMMM D, YYYY");
+      return moment(selectedDate).format("dddd, MMMM D, YYYY");
     }
   };
 
@@ -307,57 +307,22 @@ const TeachersSchedule = () => {
     e.preventDefault();
 
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("StudentAuthToken")
-          : null;
+      const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
       if (!token) {
-        throw new Error("No auth token found");
+        setFailedMessage("Please login !");
       }
-      if (!formData.meetingId) {
-        throw new Error("No meeting ID provided");
-      }
-      const meetingToReschedule = meetings.find(
-        (m) => m._id === formData.meetingId
-      );
-      if (!meetingToReschedule) {
-        throw new Error("Meeting not found");
-      }
-
-      const formattedStartDate = moment(rescheduleDate).format("YYYY-MM-DD");
-      const formattedEndDate = moment(rescheduleDate).format("YYYY-MM-DD");
-      const classDayName = moment(rescheduleDate).format("dddd");
-
+      const classId = seacrh.get("classId");
       const payload = {
-        _id: meetingToReschedule._id,
-        teacher: meetingToReschedule.teacher,
-        student: meetingToReschedule.student,
-        classDay: [{ value: classDayName, label: classDayName }],
-        classLink: meetingToReschedule.classLink,
-        course: meetingToReschedule.course,
-        package: meetingToReschedule.package,
-        sessionClassType:
-          meetingToReschedule.sessionClassType || "REGULARCLASS",
-        sessionStarttime: "",
-        sessionsEndtime: "",
-        startTime: [{ value: formData.fromTime, label: formData.fromTime }],
-        endTime: [{ value: formData.toTime, label: formData.toTime }],
-        totalHourse: "",
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
-        scheduleStatus: "Reschedule",
-        studentAttendee: "absent",
-        teacherAttendee: "absent",
-        status: "Active",
+        _id: classId,
+        requestDate: formData.date,
+        fromTime: formData.fromTime,
+        toTime: formData.toTime,
+        requestedBy: "student",
         comment: formData.comment || "",
-        createdBy: meetingToReschedule.createdBy || "teacher",
-        createdDate:
-          meetingToReschedule.createdDate || new Date().toISOString(),
-        lastUpdatedDate: new Date().toISOString(),
       };
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/requestReshedule`,
         payload,
         {
           headers: {
@@ -368,18 +333,10 @@ const TeachersSchedule = () => {
       );
       if ([200, 201].includes(response.status)) {
         setSucces(true);
+        setTimeout(()=>{
+          router.push(`student/ui/classes`)
+        },3000);
       }
-
-      const refreshResponse = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${meetingToReschedule.teacher.teacherId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setMeetings(
-        refreshResponse.data?.classSchedule ??
-          refreshResponse.data?.students ??
-          []
-      );
     } catch (err) {
       const error = err as AxiosError;
 
@@ -412,8 +369,8 @@ const TeachersSchedule = () => {
   };
   const WeeklyView = () => {
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
-    const startOfWeek = moment(currentDate).startOf("week").toDate();
-    const endOfWeek = moment(currentDate).endOf("week").toDate();
+    const startOfWeek = moment(selectedDate).startOf("week").toDate();
+    const endOfWeek = moment(selectedDate).endOf("week").toDate();
 
     const weekMeetings = meetings.filter((meeting) => {
       const meetingDate = new Date(meeting.startDate);
@@ -448,7 +405,7 @@ const TeachersSchedule = () => {
           "Friday",
           "Saturday",
         ].indexOf(day);
-        const date = moment(currentDate)
+        const date = moment(selectedDate)
           .startOf("week")
           .add(dayIndex, "days")
           .toDate();
@@ -693,8 +650,8 @@ const TeachersSchedule = () => {
     );
   };
   const MonthlyView = () => {
-    const daysInMonth = getDaysInMonth(currentDate);
-    const firstDayOfMonth = getFirstDayOfMonth(currentDate);
+    const daysInMonth = getDaysInMonth(selectedDate ?? new Date() );
+    const firstDayOfMonth = getFirstDayOfMonth(selectedDate ?? new Date());
 
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     const emptyCells = Array.from({ length: firstDayOfMonth }, () => null);
@@ -723,11 +680,11 @@ const TeachersSchedule = () => {
               );
             }
 
-            const date = new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              day
-            );
+            const year = selectedDate?.getFullYear() ?? new Date().getFullYear();
+const month = selectedDate?.getMonth() ?? new Date().getMonth();
+const dayNum = day ?? new Date().getDate(); 
+
+const date = new Date(year, month, dayNum);
             const dayMeetings = getMeetingsForDate(date);
             const hasMeetings = dayMeetings.length > 0;
             const colors = hasMeetings
@@ -940,7 +897,7 @@ const TeachersSchedule = () => {
       </div>
 
       {success && (
-        <SuccessPopup onClose={() => setSucces(false)} title="Leave Request" />
+        <SuccessPopup onClose={() => setSucces(false)} title="Request" />
       )}
       {failed && (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />

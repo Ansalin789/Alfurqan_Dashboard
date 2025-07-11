@@ -169,7 +169,7 @@ const token =
           return;
         }
         const response = await axios.get<StudentDashboardCounts>(
-          "http://localhost:5001/dashboard/student/counts",
+          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
           {
             params: { studentId },
             headers: {

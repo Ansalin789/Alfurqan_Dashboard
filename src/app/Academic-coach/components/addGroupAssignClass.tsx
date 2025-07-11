@@ -282,7 +282,7 @@ export default function AddGroupAssignClass({
       }
 
       const response = await axios.post(
-        " http://localhost:5001/groupclassschedule/bulkcreate",
+        " https://api.blackstoneinfomaticstech.com/groupclassschedule/bulkcreate",
         requestData,
         {
           headers: {

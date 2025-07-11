@@ -54,7 +54,7 @@ const StudentProfile = () => {
               return;
             }
       
-            const response = await axios.get("http://localhost:5001/studentinvoiceById", {
+            const response = await axios.get("https://api.blackstoneinfomaticstech.com/studentinvoiceById", {
               params: { studentId },
               headers: {
                 "Content-Type": "application/json",

@@ -47,7 +47,7 @@ useEffect(() => {
       }
 
       const response = await fetch(
-        `http://localhost:5001/assignments/teacher/cardcount?teacherId=${teacherId}`,
+        `https://api.blackstoneinfomaticstech.com/assignments/teacher/cardcount?teacherId=${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

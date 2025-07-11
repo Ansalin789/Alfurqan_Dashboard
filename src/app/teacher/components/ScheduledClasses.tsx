@@ -147,7 +147,7 @@ const ScheduledClasses = () => {
   const handleRescheduleRedirect = (id: string) => {
     alert(`Reschedule for ${id}`);
     setOpenDropdownId(null);
-    router.push(`/teacher/ui/teacherreschedule`);
+    router.push(`/teacher/ui/teacherreschedule?classId=${id}`);
   };
   const dataToShow: ClassData[] =
     activeTab === "upcoming" ? upcomingClasses : completedData;

@@ -31,7 +31,7 @@ const [dashboardCounts, setDashboardCounts] = useState({
         const courseName = localStorage.getItem("StudentCourseName");
 
         const response = await axios.get(
-          "http://localhost:5001/dashboard/student/counts",
+          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
           {
             params: { studentId, courseName },
             headers: {

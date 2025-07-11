@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { CalendarX2, Clock } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import moment from "moment";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import BaseLayout from "@/components/BaseLayout";
 import TeacherHeader from "../../components/TeacherHeader";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
@@ -71,9 +71,9 @@ const TeachersSchedule = () => {
   const [success, setSucces] = useState(false);
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
-
+  const router = useRouter();
   const Search = useSearchParams();
-  const teacherId = Search.get("_id");
+  const teacherId = Search.get("classId");
   const [rescheduleDate, setRescheduleDate] = useState("");
 
   const [formData, setFormData] = useState({
@@ -117,6 +117,11 @@ const TeachersSchedule = () => {
   useEffect(() => {
     const fetchMeetings = async () => {
       try {
+         const classId = Search.get("classId");
+         const teacherId =
+          typeof window !== "undefined"
+            ? localStorage.getItem("TeacherPortalId")
+            : null;
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("TeacherAuthToken")
@@ -127,8 +132,9 @@ const TeachersSchedule = () => {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=685155890c2b24d70a12e620`,
+          "https://api.blackstoneinfomaticstech.com/classShedule/teacher",
           {
+            params: { teacherId },
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -144,28 +150,34 @@ const TeachersSchedule = () => {
         }
 
         if (scheduleData.length > 0) {
-          const sortedMeetings = scheduleData.toSorted(
-            (a: ClassSchedule, b: ClassSchedule) =>
-              new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-          );
-          setMeetings(sortedMeetings);
-
-          // Initialize with today's date
-          const today = new Date();
-          setSelectedDate(today);
-
-          // Set form data with today's date as default
-          const todayFormatted = moment(today).format("YYYY-MM-DD");
-          setFormData({
-            date: todayFormatted,
-            fromTime: moment().format("HH:mm"),
-            toTime: moment().add(1, "hour").format("HH:mm"),
-            comment: "",
-            meetingId: "",
-            applyToAll: false,
-          });
-          setRescheduleDate(todayFormatted);
-        }
+                 const sortedMeetings = scheduleData.toSorted(
+                   (a: ClassSchedule, b: ClassSchedule) =>
+                     new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+                 );
+                 setMeetings(sortedMeetings);
+                 const matchedMeeting = sortedMeetings.find((m) => m._id === classId);
+                 const fallbackDate = new Date();
+                 const selectedMeetingDate = matchedMeeting
+                   ? new Date(matchedMeeting.startDate)
+                   : fallbackDate;
+       
+                 const formattedDate =
+                   moment(selectedMeetingDate).format("YYYY-MM-DD");
+                 setSelectedDate(selectedMeetingDate);
+                 setFormData({
+                   date: formattedDate,
+                   fromTime:
+                     matchedMeeting?.startTime?.[0] ?? moment().format("HH:mm"),
+                   toTime:
+                     matchedMeeting?.endTime?.[0] ??
+                     moment().add(1, "hour").format("HH:mm"),
+                   comment: "",
+                   meetingId: matchedMeeting?._id ?? "",
+                   applyToAll: false,
+                 });
+       
+                 setRescheduleDate(formattedDate);
+               }
       } catch (error) {
         console.error("Error fetching meetings:", error);
       }
@@ -195,13 +207,13 @@ const TeachersSchedule = () => {
 
   const getFormattedLabel = () => {
     if (activeView === "monthly") {
-      return moment(currentDate).format("MMMM YYYY");
+      return moment(selectedDate).format("MMMM YYYY");
     } else if (activeView === "weekly") {
-      const start = moment(currentDate).startOf("week");
-      const end = moment(currentDate).endOf("week");
+      const start = moment(selectedDate).startOf("week");
+      const end = moment(selectedDate).endOf("week");
       return `${start.format("MMM D")} - ${end.format("MMM D, YYYY")}`;
     } else {
-      return moment(currentDate).format("dddd, MMMM D, YYYY");
+      return moment(selectedDate).format("dddd, MMMM D, YYYY");
     }
   };
 
@@ -287,58 +299,26 @@ const TeachersSchedule = () => {
     setRescheduleDate(dateFormatted);
   };
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
+   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("TeacherAuthToken");
+      const token = typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
       if (!token) {
-        throw new Error("No auth token found");
+        setFailedMessage("Please login !");
       }
-      if (!formData.meetingId) {
-        throw new Error("No meeting ID provided");
-      }
-      const meetingToReschedule = meetings.find(
-        (m) => m._id === formData.meetingId
-      );
-      if (!meetingToReschedule) {
-        throw new Error("Meeting not found");
-      }
-
-      const formattedStartDate = moment(rescheduleDate).format("YYYY-MM-DD");
-      const formattedEndDate = moment(rescheduleDate).format("YYYY-MM-DD");
-      const classDayName = moment(rescheduleDate).format("dddd");
-
+      const classId = Search.get("classId");
       const payload = {
-        _id: meetingToReschedule._id,
-        teacher: meetingToReschedule.teacher,
-        student: meetingToReschedule.student,
-        classDay: [{ value: classDayName, label: classDayName }],
-        classLink: meetingToReschedule.classLink,
-        course: meetingToReschedule.course,
-        package: meetingToReschedule.package,
-        sessionClassType:
-          meetingToReschedule.sessionClassType || "REGULARCLASS",
-        sessionStarttime: "",
-        sessionsEndtime: "",
-        startTime: [{ value: formData.fromTime, label: formData.fromTime }],
-        endTime: [{ value: formData.toTime, label: formData.toTime }],
-        totalHourse: "",
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
-        scheduleStatus: "Reschedule",
-        studentAttendee: "absent",
-        teacherAttendee: "absent",
-        status: "Active",
+        _id: classId,
+        requestDate: formData.date,
+        fromTime: formData.fromTime,
+        toTime: formData.toTime,
+        requestedBy: "teacher",
         comment: formData.comment || "",
-        createdBy: meetingToReschedule.createdBy || "teacher",
-        createdDate:
-          meetingToReschedule.createdDate || new Date().toISOString(),
-        lastUpdatedDate: new Date().toISOString(),
       };
 
       const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/teacherreschedule/${meetingToReschedule._id}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/requestReshedule`,
         payload,
         {
           headers: {
@@ -347,20 +327,12 @@ const TeachersSchedule = () => {
           },
         }
       );
-      if ([200, 201].includes(response.status)) {
+       if ([200, 201].includes(response.status)) {
         setSucces(true);
+        setTimeout(()=>{
+          router.push(`/teacher/ui/schedule`)
+        },3000);
       }
-
-      const refreshResponse = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/classShedule?teacherId=${meetingToReschedule.teacher.teacherId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setMeetings(
-        refreshResponse.data?.classSchedule ??
-          refreshResponse.data?.students ??
-          []
-      );
     } catch (err) {
       const error = err as AxiosError;
 
@@ -392,394 +364,385 @@ const TeachersSchedule = () => {
     }));
   };
   const WeeklyView = () => {
-    const [selectedDay, setSelectedDay] = useState<string | null>(null);
-    const startOfWeek = moment(currentDate).startOf("week").toDate();
-    const endOfWeek = moment(currentDate).endOf("week").toDate();
-
-    const weekMeetings = meetings.filter((meeting) => {
-      const meetingDate = new Date(meeting.startDate);
-      return meetingDate >= startOfWeek && meetingDate <= endOfWeek;
-    });
-
-    const meetingsByDay = weekMeetings.reduce((acc, meeting) => {
-      const day = moment(meeting.startDate).format("dddd");
-      if (!acc[day]) {
-        acc[day] = [];
-      }
-      acc[day].push(meeting);
-      return acc;
-    }, {} as Record<string, ClassSchedule[]>);
-
-    const handleDayClick = (day: string) => {
-      setSelectedDay(selectedDay === day ? null : day);
-      const dayMeeting = weekMeetings.find(
-        (m) => moment(m.startDate).format("dddd") === day
-      );
-
-      if (dayMeeting) {
-        const date = new Date(dayMeeting.startDate);
-        handleDateClick(date);
-      } else {
-        const dayIndex = [
-          "Sunday",
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-        ].indexOf(day);
-        const date = moment(currentDate)
-          .startOf("week")
-          .add(dayIndex, "days")
-          .toDate();
-        handleDateClick(date);
-      }
-    };
-
-    return (
-      <div className="space-y-2 sm:space-y-3 md:space-y-4">
-        <div className="h-[calc(100vh-220px)] xs:h-[400px] sm:h-[450px] md:h-[500px] lg:h-[540px] overflow-y-auto scrollbar-none">
-          {/* Week range header */}
-          <div className="flex items-center justify-between mb-2 sm:mb-3 md:mb-4">
-            <h3 className="text-xs xs:text-sm sm:text-[15px] md:text-[16px] font-semibold text-gray-800 dark:text-white">
-              {moment(startOfWeek).format("MMM D")} -{" "}
-              {moment(endOfWeek).format("MMM D, YYYY")}
-            </h3>
-          </div>
-
-          <div className="space-y-1 sm:space-y-2">
-            {[
-              "Sunday",
-              "Monday",
-              "Tuesday",
-              "Wednesday",
-              "Thursday",
-              "Friday",
-              "Saturday",
-            ].map((day) => {
-              const dayMeetings = meetingsByDay[day] || [];
-              const isSelected = selectedDay === day;
-              const dayDate = moment(currentDate).day(day).toDate();
-              const isPast = isPastDate(dayDate);
-              const isToday = moment().isSame(dayDate, "day");
-
-              return (
-                <div key={day} className="flex flex-col">
-                  {/* Day header button */}
-                  <button
-                    onClick={() => handleDayClick(day)}
-                    className={`
-                    w-full p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl cursor-pointer 
-                    transition-all duration-200 flex items-center justify-between
-                    ${
-                      isSelected
-                        ? "dark:bg-[#414141] bg-[#f7f7f7]"
-                        : dayMeetings.length > 0
-                        ? "dark:bg-[#414141]/90 bg-[#f7f7f7] hover:shadow-md"
-                        : "bg-[#f7f7f7] dark:bg-[#414141]/80"
-                    }
-                    ${isPast ? "opacity-70" : ""}
-                    ${isToday ? "border-l-4 border-[#576cbc]" : ""}
-                  `}
-                  >
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <div
-                        className={`text-xs sm:text-sm font-medium ${
-                          isSelected
-                            ? "dark:text-white text-black"
-                            : isToday
-                            ? "text-[#576cbc] dark:text-[#7a94e8]"
-                            : "text-gray-800 dark:text-gray-300"
-                        }`}
-                      >
-                        {day.substring(0, 3)}
-                      </div>
-                      <div>
-                        <div
-                          className={`text-xs sm:text-sm font-semibold ${
-                            isSelected
-                              ? "dark:text-white text-black"
-                              : "text-gray-800 dark:text-white"
-                          }`}
-                        >
-                          {day}
-                        </div>
-                        <div
-                          className={`text-[9px] sm:text-[10px] ${
-                            isSelected
-                              ? "text-white/80"
-                              : "text-gray-500 dark:text-gray-400"
-                          }`}
-                        >
-                          {moment(dayDate).format("MMM D")}
-                        </div>
-                      </div>
-                    </div>
-
-                    {dayMeetings.length > 0 && (
-                      <div
-                        className={`
-                      text-[9px] sm:text-[10px] px-2 sm:px-3 py-1 rounded-md sm:rounded-lg
-                      ${
-                        isSelected
-                          ? "dark:bg-[#555555] dark:text-white bg-[#eae9e9] text-black"
-                          : "dark:bg-[#555555]/80 dark:text-white/90 bg-[#eae9e9] text-black/90"
-                      }
-                    `}
-                      >
-                        {dayMeetings.length}{" "}
-                        {dayMeetings.length === 1 ? "Meeting" : "Meetings"}
-                      </div>
-                    )}
-                  </button>
-
-                  {/* Day meetings list */}
-                  {isSelected && dayMeetings.length > 0 && (
-                    <div className="w-full mt-1 sm:mt-2 space-y-1 sm:space-y-2 pl-3 sm:pl-4">
-                      {dayMeetings.map((meeting, idx) => {
-                        const colors = getMeetingTypeColor(
-                          meeting.course.courseName
-                        );
-                        return (
-                          <div
-                            key={idx}
-                            className={`
-                            p-2 sm:p-3 rounded-md sm:rounded-lg relative
-                            ${colors.bg} dark:bg-[#414141] bg-[#f7f7f7]
-                            transition-all duration-150 hover:shadow-sm
-                          `}
-                          >
-                            <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 h-5 sm:h-6 md:h-7 rounded-lg dark:bg-[#555555] bg-[#eae9e9]"></div>
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <div
-                                  className={`text-xs sm:text-sm font-semibold ${colors.text}`}
-                                >
-                                  {meeting.course.courseName} Class
-                                </div>
-                                <div className="text-[9px] sm:text-[10px] text-gray-600 dark:text-gray-300 mt-0.5">
-                                  {meeting.student.studentFirstName}{" "}
-                                  {meeting.student.studentLastName}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1 sm:gap-2">
-                                <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                                  <Clock
-                                    size={10}
-                                    className="w-2.5 h-2.5 sm:w-3 sm:h-3"
-                                  />
-                                  {meeting.startTime?.[0] || "--:--"} -{" "}
-                                  {meeting.endTime?.[0] || "--:--"}
-                                </div>
-                                {meeting.classLink && (
-                                  <a
-                                    href={meeting.classLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[8px] sm:text-[9px] text-blue-500 dark:text-blue-400 hover:underline ml-1"
-                                  >
-                                    Join
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const DailyView = () => {
-    // Update daily view when currentDate changes
-    useEffect(() => {
-      handleDateClick(currentDate);
-    }, [currentDate]);
-
-    const dayMeetings = getMeetingsForDate(currentDate);
-    const isPast = isPastDate(currentDate);
-
-    return (
-      <div className="space-y-2 sm:space-y-3 md:space-y-4">
-        <div className="h-[calc(100vh-220px)] xs:h-[400px] sm:h-[450px] md:h-[500px] lg:h-[600px] overflow-y-auto scrollbar-none">
-          {/* Date header with better responsive sizing */}
-          <div className="mb-2 sm:mb-3 md:mb-4">
-            <h3 className="text-xs xs:text-sm sm:text-[15px] md:text-[16px] font-semibold text-gray-800 dark:text-white">
-              {moment(currentDate).format("dddd, MMMM D, YYYY")}
-            </h3>
-          </div>
-
-          {dayMeetings.length > 0 ? (
-            <div className="space-y-1 sm:space-y-2">
-              {dayMeetings.map((meeting) => {
-                const colors = getMeetingTypeColor(meeting.course.courseName);
-                return (
-                  <div
-                    key={meeting._id}
-                    className={`
-                    p-2 sm:p-3 md:p-4 mb-1 sm:mb-2 rounded-lg sm:rounded-xl
-                    dark:bg-[#414141] bg-gray-100
-                    ${isPast ? "opacity-70" : ""}
-                    transition-colors duration-150 hover:bg-gray-200 dark:hover:bg-[#505050]
-                  `}
-                  >
-                    <div className="flex justify-between items-start gap-2">
-                      <div
-                        className={`text-xs sm:text-sm font-semibold ${colors.text}`}
-                      >
-                        {meeting.course.courseName} Class
-                      </div>
-                      <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                        <Clock
-                          size={10}
-                          className="w-2.5 h-2.5 sm:w-3 sm:h-3"
-                        />
-                        {meeting.startTime?.[0] || "--:--"} -{" "}
-                        {meeting.endTime?.[0] || "--:--"}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center mt-1">
-                      <div className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400">
-                        {meeting.student.studentFirstName}{" "}
-                        {meeting.student.studentLastName}
-                      </div>
-                      {meeting.classLink && (
-                        <a
-                          href={meeting.classLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[8px] sm:text-[9px] text-blue-500 dark:text-blue-400 hover:underline"
-                        >
-                          Join Class
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-[70%] text-gray-500 dark:text-gray-400">
-              <CalendarX2 size={24} className="mb-2 text-gray-400" />
-              <p className="text-xs sm:text-sm">
-                No meetings scheduled for this day
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-  const MonthlyView = () => {
-    const daysInMonth = getDaysInMonth(currentDate);
-    const firstDayOfMonth = getFirstDayOfMonth(currentDate);
-
-    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    const emptyCells = Array.from({ length: firstDayOfMonth }, () => null);
-    const totalDays = [...emptyCells, ...days];
-
-    return (
-      <div className="space-y-2 sm:space-y-3 md:space-y-4">
-        {/* Day headers - more compact on mobile */}
-        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 md:gap-2 text-center text-[10px] xs:text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300 mb-1 sm:mb-2 dark:bg-[#414141] bg-gray-100 rounded-lg sm:rounded-xl p-1 sm:p-2 md:p-3">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-            <div key={day} className="truncate">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar grid - adjusted heights and spacing */}
-        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 md:gap-2 text-[10px] xs:text-xs sm:text-sm h-[280px] xs:h-[320px] sm:h-[350px] md:h-[400px] lg:h-[455px] overflow-auto scrollbar-none">
-          {totalDays.map((day, i: number) => {
-            if (day === null) {
-              return (
-                <div
-                  key={i}
-                  className="min-h-[35px] xs:min-h-[40px] sm:min-h-[50px] md:min-h-[60px] lg:min-h-[80px] bg-transparent"
-                />
-              );
-            }
-
-            const date = new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              day
-            );
-            const dayMeetings = getMeetingsForDate(date);
-            const hasMeetings = dayMeetings.length > 0;
-            const colors = hasMeetings
-              ? getMeetingTypeColor(dayMeetings[0].course.courseName)
-              : null;
-            const isSelected =
-              selectedDate &&
-              date.getDate() === selectedDate.getDate() &&
-              date.getMonth() === selectedDate.getMonth() &&
-              date.getFullYear() === selectedDate.getFullYear();
-            const isPast = isPastDate(date);
-            const isTodayFlag = isToday(day);
-
-            return (
-              <button
-                key={i}
-                onClick={() => handleDateClick(date)}
-                className={`
-                min-h-[35px] xs:min-h-[40px] sm:min-h-[50px] md:min-h-[60px] lg:min-h-[80px]
-                rounded-lg sm:rounded-xl flex flex-col items-center justify-start
-                p-0.5 sm:p-1 cursor-pointer transition-colors duration-150
-                ${
-                  hasMeetings
-                    ? `${colors?.border} ${colors?.text} ${colors?.bg} border`
-                    : isTodayFlag
-                    ? "bg-[#27176518] dark:bg-[#4b8cc918]"
-                    : "bg-gray-100 dark:bg-[#414141] text-gray-500 dark:text-gray-300"
-                }
-                ${
-                  isSelected
-                    ? "ring-1 sm:ring-2 ring-[#576cbc] dark:ring-[#7a94e8]"
-                    : ""
-                }
-                ${isPast ? "opacity-50" : ""}
-                ${isTodayFlag ? "font-bold" : ""}
-              `}
-                disabled={isPast}
-              >
-                <div
-                  className={`
-                font-medium text-[10px] xs:text-xs sm:text-sm
-                ${isTodayFlag ? "text-[#4b8cc9] dark:text-[#7a94e8]" : ""}
-              `}
-                >
-                  {day}
-                </div>
-
-                {hasMeetings && (
-                  <div className="w-full overflow-hidden mt-0.5">
-                    <div className="text-[8px] xs:text-[9px] sm:text-[10px] truncate px-0.5">
-                      {dayMeetings[0]?.course?.courseName ?? "No Course"}
-                    </div>
-                    <div className="text-[7px] xs:text-[8px] sm:text-[9px] truncate px-0.5">
-                      {dayMeetings[0]?.startTime?.[0] ?? "--:--"} -{" "}
-                      {dayMeetings[0]?.endTime?.[0] ?? "--:--"}
-                    </div>
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
+     const [selectedDay, setSelectedDay] = useState<string | null>(null);
+     const startOfWeek = moment(selectedDate).startOf("week").toDate();
+     const endOfWeek = moment(selectedDate).endOf("week").toDate();
+ 
+     const weekMeetings = meetings.filter((meeting) => {
+       const meetingDate = new Date(meeting.startDate);
+       return meetingDate >= startOfWeek && meetingDate <= endOfWeek;
+     });
+ 
+     const meetingsByDay = weekMeetings.reduce((acc, meeting) => {
+       const day = moment(meeting.startDate).format("dddd");
+       if (!acc[day]) {
+         acc[day] = [];
+       }
+       acc[day].push(meeting);
+       return acc;
+     }, {} as Record<string, ClassSchedule[]>);
+ 
+     const handleDayClick = (day: string) => {
+       setSelectedDay(selectedDay === day ? null : day);
+       const dayMeeting = weekMeetings.find(
+         (m) => moment(m.startDate).format("dddd") === day
+       );
+ 
+       if (dayMeeting) {
+         const date = new Date(dayMeeting.startDate);
+         handleDateClick(date);
+       } else {
+         const dayIndex = [
+           "Sunday",
+           "Monday",
+           "Tuesday",
+           "Wednesday",
+           "Thursday",
+           "Friday",
+           "Saturday",
+         ].indexOf(day);
+         const date = moment(selectedDate)
+           .startOf("week")
+           .add(dayIndex, "days")
+           .toDate();
+         handleDateClick(date);
+       }
+     };
+ 
+     return (
+       <div className="w-full max-w-screen-lg mx-auto px-2 sm:px-4 md:px-6">
+         <div className="space-y-3 sm:space-y-4 md:space-y-5">
+           {/* Scrollable weekly list container */}
+           <div className="h-[calc(100vh-220px)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-[#555] pr-1">
+             {/* Week Header */}
+             <div className="flex items-center justify-between mb-3 sm:mb-4">
+               <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-white">
+                 {moment(startOfWeek).format("MMM D")} -{" "}
+                 {moment(endOfWeek).format("MMM D, YYYY")}
+               </h3>
+             </div>
+ 
+             {/* Weekday buttons and meetings */}
+             <div className="space-y-2 sm:space-y-3">
+               {[
+                 "Sunday",
+                 "Monday",
+                 "Tuesday",
+                 "Wednesday",
+                 "Thursday",
+                 "Friday",
+                 "Saturday",
+               ].map((day) => {
+                 const dayMeetings = meetingsByDay[day] || [];
+                 const isSelected = selectedDay === day;
+                 const dayDate = moment(currentDate).day(day).toDate();
+                 const isPast = isPastDate(dayDate);
+                 const isToday = moment().isSame(dayDate, "day");
+ 
+                 return (
+                   <div key={day} className="flex flex-col">
+                     {/* Day Header Button */}
+                     <button
+                       onClick={() => handleDayClick(day)}
+                       className={`
+                     w-full p-2 sm:p-3 md:p-4 rounded-xl transition-all flex items-center justify-between
+                     ${
+                       isSelected
+                         ? "bg-[#f7f7f7] dark:bg-[#414141]"
+                         : dayMeetings.length > 0
+                         ? "hover:shadow-md bg-[#f7f7f7] dark:bg-[#414141]/90"
+                         : "bg-[#f7f7f7] dark:bg-[#414141]/80"
+                     }
+                     ${isPast ? "opacity-70" : ""}
+                     ${isToday ? "border-l-4 border-[#576cbc]" : ""}
+                   `}
+                     >
+                       <div className="flex items-center gap-3">
+                         <div
+                           className={`text-xs sm:text-sm font-medium ${
+                             isSelected
+                               ? "text-black dark:text-white"
+                               : isToday
+                               ? "text-[#576cbc] dark:text-[#7a94e8]"
+                               : "text-gray-800 dark:text-gray-300"
+                           }`}
+                         >
+                           {day.substring(0, 3)}
+                         </div>
+                         <div>
+                           <div
+                             className={`text-xs sm:text-sm font-semibold ${
+                               isSelected
+                                 ? "text-black dark:text-white"
+                                 : "text-gray-800 dark:text-white"
+                             }`}
+                           >
+                             {day}
+                           </div>
+                           <div
+                             className={`text-[10px] ${
+                               isSelected
+                                 ? "text-white/80"
+                                 : "text-gray-500 dark:text-gray-400"
+                             }`}
+                           >
+                             {moment(dayDate).format("MMM D")}
+                           </div>
+                         </div>
+                       </div>
+ 
+                       {dayMeetings.length > 0 && (
+                         <div
+                           className={`text-[10px] px-2 py-1 rounded-lg ${
+                             isSelected
+                               ? "bg-[#eae9e9] text-black dark:bg-[#555] dark:text-white"
+                               : "bg-[#eae9e9] text-black/90 dark:bg-[#555]/80 dark:text-white/90"
+                           }`}
+                         >
+                           {dayMeetings.length}{" "}
+                           {dayMeetings.length === 1 ? "Meeting" : "Meetings"}
+                         </div>
+                       )}
+                     </button>
+ 
+                     {/* Day Meeting Cards */}
+                     {isSelected && dayMeetings.length > 0 && (
+                       <div className="w-full mt-2 pl-3 sm:pl-4 space-y-2">
+                         {dayMeetings.map((meeting, idx) => {
+                           const colors = getMeetingTypeColor(
+                             meeting.course.courseName
+                           );
+                           return (
+                             <div
+                               key={idx}
+                               className={`
+                             relative p-3 sm:p-4 rounded-lg transition-all hover:shadow-sm
+                             ${colors.bg} dark:bg-[#414141] bg-[#f7f7f7]
+                           `}
+                             >
+                               <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-6 rounded-lg dark:bg-[#555555] bg-[#eae9e9]" />
+ 
+                               <div className="flex justify-between items-start">
+                                 <div>
+                                   <div
+                                     className={`text-sm font-semibold ${colors.text}`}
+                                   >
+                                     {meeting.course.courseName} Class
+                                   </div>
+                                   <div className="text-[10px] text-gray-600 dark:text-gray-300 mt-1">
+                                     {meeting.student.studentFirstName}{" "}
+                                     {meeting.student.studentLastName}
+                                   </div>
+                                 </div>
+ 
+                                 <div className="flex items-center gap-2 text-[10px] text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                                   <Clock size={12} className="w-3 h-3" />
+                                   {meeting.startTime?.[0] || "--:--"} -{" "}
+                                   {meeting.endTime?.[0] || "--:--"}
+                                   {meeting.classLink && (
+                                     <a
+                                       href={meeting.classLink}
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       className="ml-2 text-blue-500 dark:text-blue-400 hover:underline text-[9px]"
+                                     >
+                                       Join
+                                     </a>
+                                   )}
+                                 </div>
+                               </div>
+                             </div>
+                           );
+                         })}
+                       </div>
+                     )}
+                   </div>
+                 );
+               })}
+             </div>
+           </div>
+         </div>
+       </div>
+     );
+   };
+ 
+   const DailyView = () => {
+     if (!selectedDate) return;
+     const dayMeetings = getMeetingsForDate(selectedDate);
+     const isPast = isPastDate(selectedDate);
+ 
+     return (
+       <div className="w-full max-w-screen-lg mx-auto px-2 sm:px-4 md:px-6 space-y-3 sm:space-y-4 md:space-y-5">
+         {/* Scrollable Container */}
+         <div className="h-[calc(100vh-220px)] sm:h-[450px] md:h-[500px] lg:h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-[#555] pr-1">
+           {/* Header */}
+           <div className="mb-3 sm:mb-4">
+             <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 dark:text-white">
+               {moment(selectedDate).format("dddd, MMMM D, YYYY")}
+             </h3>
+           </div>
+ 
+           {/* Meeting List */}
+           {dayMeetings.length > 0 ? (
+             <div className="space-y-2 sm:space-y-3">
+               {dayMeetings.map((meeting) => {
+                 const colors = getMeetingTypeColor(meeting.course.courseName);
+                 return (
+                   <div
+                     key={meeting._id}
+                     className={`
+                   p-3 sm:p-4 rounded-xl transition-colors
+                   dark:bg-[#414141] bg-gray-100
+                   ${isPast ? "opacity-70" : ""}
+                   hover:bg-gray-200 dark:hover:bg-[#505050]
+                 `}
+                   >
+                     <div className="flex justify-between items-start gap-3">
+                       {/* Course Name */}
+                       <div className={`text-sm font-semibold ${colors.text}`}>
+                         {meeting.course.courseName} Class
+                       </div>
+ 
+                       {/* Time */}
+                       <div className="flex items-center gap-2 text-[10px] text-gray-600 dark:text-gray-300">
+                         <Clock size={12} className="w-3 h-3" />
+                         {meeting.startTime?.[0] || "--:--"} -{" "}
+                         {meeting.endTime?.[0] || "--:--"}
+                       </div>
+                     </div>
+ 
+                     {/* Student & Join Button */}
+                     <div className="flex justify-between items-center mt-2">
+                       <div className="text-[10px] text-gray-500 dark:text-gray-400">
+                         {meeting.student.studentFirstName}{" "}
+                         {meeting.student.studentLastName}
+                       </div>
+                       {meeting.classLink && (
+                         <a
+                           href={meeting.classLink}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="text-[9px] text-blue-500 dark:text-blue-400 hover:underline"
+                         >
+                           Join Class
+                         </a>
+                       )}
+                     </div>
+                   </div>
+                 );
+               })}
+             </div>
+           ) : (
+             // No meetings UI
+             <div className="flex flex-col items-center justify-center h-[70%] text-gray-500 dark:text-gray-400">
+               <CalendarX2 size={24} className="mb-2 text-gray-400" />
+               <p className="text-xs sm:text-sm">
+                 No meetings scheduled for this day
+               </p>
+             </div>
+           )}
+         </div>
+       </div>
+     );
+   };
+   const MonthlyView = () => {
+     const daysInMonth = getDaysInMonth(selectedDate ?? new Date() );
+     const firstDayOfMonth = getFirstDayOfMonth(selectedDate ?? new Date());
+ 
+     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+     const emptyCells = Array.from({ length: firstDayOfMonth }, () => null);
+     const totalDays = [...emptyCells, ...days];
+ 
+     return (
+       <div className="w-full max-w-screen-lg mx-auto px-2 sm:px-4 md:px-4 space-y-3 sm:space-y-4">
+         {/* Day Headers */}
+         <div className="grid grid-cols-7 gap-1 text-center text-[10px] sm:text-xs md:text-sm font-medium text-gray-500 dark:text-gray-300 bg-gray-100 dark:bg-[#414141] rounded-lg sm:rounded-xl p-1 sm:p-2 md:p-3">
+           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+             <div key={day} className="truncate">
+               {day}
+             </div>
+           ))}
+         </div>
+ 
+         {/* Calendar Grid */}
+         <div className="grid grid-cols-7 gap-1 text-[10px] sm:text-xs md:text-sm overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-[#555] h-[320px] sm:h-[380px] md:h-[440px] lg:h-[500px]">
+           {totalDays.map((day, i) => {
+             if (day === null) {
+               return (
+                 <div
+                   key={i}
+                   className="min-h-[40px] sm:min-h-[50px] md:min-h-[60px] lg:min-h-[80px] bg-transparent"
+                 />
+               );
+             }
+ 
+             const year = selectedDate?.getFullYear() ?? new Date().getFullYear();
+ const month = selectedDate?.getMonth() ?? new Date().getMonth();
+ const dayNum = day ?? new Date().getDate(); 
+ 
+ const date = new Date(year, month, dayNum);
+             const dayMeetings = getMeetingsForDate(date);
+             const hasMeetings = dayMeetings.length > 0;
+             const colors = hasMeetings
+               ? getMeetingTypeColor(dayMeetings[0].course.courseName)
+               : null;
+ 
+             const isSelected =
+               selectedDate &&
+               date.getDate() === selectedDate.getDate() &&
+               date.getMonth() === selectedDate.getMonth() &&
+               date.getFullYear() === selectedDate.getFullYear();
+ 
+             const isPast = isPastDate(date);
+             const isTodayFlag = isToday(day);
+ 
+             return (
+               <button
+                 key={i}
+                 onClick={() => handleDateClick(date)}
+                 disabled={isPast}
+                 className={`
+               min-h-[40px] sm:min-h-[50px] md:min-h-[60px] lg:min-h-[80px]
+               flex flex-col items-center justify-start p-1 rounded-lg sm:rounded-xl
+               transition duration-150 ease-in-out cursor-pointer
+               ${
+                 hasMeetings
+                   ? `${colors?.border} ${colors?.text} ${colors?.bg} border`
+                   : isTodayFlag
+                   ? "bg-[#27176518] dark:bg-[#4b8cc918]"
+                   : "bg-gray-100 dark:bg-[#414141] text-gray-500 dark:text-gray-300"
+               }
+               ${isSelected ? "ring-2 ring-[#576cbc] dark:ring-[#7a94e8]" : ""}
+               ${isPast ? "opacity-50 cursor-not-allowed" : ""}
+               ${isTodayFlag ? "font-bold" : ""}
+             `}
+               >
+                 <div
+                   className={`font-medium text-[10px] sm:text-xs ${
+                     isTodayFlag ? "text-[#4b8cc9] dark:text-[#7a94e8]" : ""
+                   }`}
+                 >
+                   {day}
+                 </div>
+ 
+                 {hasMeetings && (
+                   <div className="w-full mt-0.5 overflow-hidden px-0.5">
+                     <div className="truncate text-[8px] sm:text-[9px] font-medium">
+                       {dayMeetings[0]?.course?.courseName ?? "No Course"}
+                     </div>
+                     <div className="truncate text-[7px] sm:text-[8px] text-gray-600 dark:text-gray-400">
+                       {dayMeetings[0]?.startTime?.[0] ?? "--:--"} -{" "}
+                       {dayMeetings[0]?.endTime?.[0] ?? "--:--"}
+                     </div>
+                   </div>
+                 )}
+               </button>
+             );
+           })}
+         </div>
+       </div>
+     );
+   };
 
   return (
     <BaseLayout>
@@ -936,7 +899,7 @@ const TeachersSchedule = () => {
         {success && (
           <SuccessPopup
             onClose={() => setSucces(false)}
-            title="Leave Request"
+            title=" Request"
           />
         )}
         {failed && (

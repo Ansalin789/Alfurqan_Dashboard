@@ -174,7 +174,7 @@ function Analytics() {
 
       try {
         const res = await axios.get(
-          `http://localhost:5001/dashboard/teacher/counts?teacherId=${teacherId}`,
+          `https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts?teacherId=${teacherId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

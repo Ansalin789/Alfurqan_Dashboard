@@ -47,7 +47,7 @@ const Total = () => {
     try {
       console.log("Making API call...") 
 
-const response = await axios.get("http://localhost:5001/dashboard/teacher/counts", {
+const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts", {
   params: { teacherId },
   headers: {
     Authorization: `Bearer ${token}`,

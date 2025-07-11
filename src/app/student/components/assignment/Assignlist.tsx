@@ -28,7 +28,7 @@ function Assignment() {
         }
 
         const response = await axios.get(
-          `http://localhost:5001/assignments/cardcount?studentId=${studentId}`
+          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`
         );
 
         // Log the full API response for debugging
