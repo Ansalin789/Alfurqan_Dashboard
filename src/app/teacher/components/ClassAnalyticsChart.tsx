@@ -125,16 +125,24 @@ const ClassAnalytics = () => {
   if (error) return <p className="text-red-500 text-center">{error}</p>;
 
   return (
-    <div className="bg-white dark:bg-[#343434] shadow-md rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between w-full h-full">
-      {/* SVG Circular Chart */}
-      <div className="relative w-[200px] h-[200px] flex items-center justify-center">
+    
+       <div className="bg-white dark:bg-[#343434] shadow-md rounded-2xl px-6 py-4 w-full h-full">
+    {/* Header */}
+    <h3 className="text-[#0E1B3D] dark:text-white font-semibold text-[16px] mb-4">
+      Class Analytics
+    </h3>
+
+    {/* Chart and Legend */}
+    <div className="flex flex-col md:flex-row mt-3 items-center justify-between">
+      {/* Left: SVG Chart */}
+      <div className="relative w-[160px] h-[160px] flex items-center justify-center">
         <svg viewBox="0 0 160 160" className="w-full h-full">
           {circleData.map(({ radius, color, dash, circumference }, i) => (
             <circle
               key={i}
               cx="80"
               cy="80"
-              r={radius}
+              r={radius - 3} // space around center text
               fill="transparent"
               stroke={color}
               strokeWidth="6"
@@ -144,43 +152,38 @@ const ClassAnalytics = () => {
             />
           ))}
         </svg>
-        {/* Center Total Display */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <p className="text-[28px] font-bold text-[#0E1B3D] dark:text-white">
+          <p className="text-[28px] font-bold text-[#0E1B3D] dark:text-white leading-none">
             {totalClasses}
           </p>
-          <p className="text-xs text-[#7B7E8E] dark:text-gray-300 font-semibold mt-1">
-            TOTAL CLASS ASSIGNED
+          <p className="text-[11px] text-black dark:text-gray-300 font-normal text-center leading-tight mt-3">
+            TOTAL<br />CLASS<br />ASSIGNED
           </p>
         </div>
       </div>
 
-      {/* Status Summary */}
-      <div className="flex flex-col w-full max-w-[300px] mt-6 md:mt-0 md:ml-6">
-        <h3 className="text-[#0E1B3D] dark:text-white font-bold text-[18px] mb-4">
-          Class Analytics
-        </h3>
-        <div className="space-y-3">
-          {["Scheduled", "Completed", "Absent"].map((label, index) => (
-            <div key={label} className="flex justify-between items-center">
-              <div className="flex items-center">
-                <span
-                  className="inline-block w-3 h-3 rounded-full mr-2"
-                  style={{ backgroundColor: COLORS[index] }}
-                />
-                <span className="text-[#1E2B4B] dark:text-white/80 font-medium text-sm">
-                  {label}
-                </span>
-              </div>
-              <span className="text-[#1E2B4B] dark:text-white/80 font-semibold text-sm">
-                {chartData[index]}
+      {/* Right: Legend */}
+      <div className="flex flex-col justify-center mt-6 md:mt-0 md:ml-6 w-full max-w-[220px] space-y-3">
+        {["Scheduled", "Completed", "Absent"].map((label, index) => (
+          <div key={label} className="flex justify-between items-center">
+            <div className="flex items-center">
+              <span
+                className="inline-block w-3 h-3  rounded-full mr-2"
+                style={{ backgroundColor: COLORS[index] }}
+              />
+              <span className="text-sm font-medium text-[#1E2B4B] dark:text-white/80">
+                {label}
               </span>
             </div>
-          ))}
-        </div>
+            <span className="text-sm font-semibold text-[#1E2B4B] ml-2 dark:text-white/80">
+              {chartData[index]}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default ClassAnalytics;

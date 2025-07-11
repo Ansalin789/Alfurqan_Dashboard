@@ -26,6 +26,10 @@ export const getSocket = (userId: string): Socket => {
       console.error('❌ Socket connection error:', err);
     });
   }
+  
+   if (socket.connected && userId) {
+    socket.emit('subscribe', userId);
+  }
 
   return socket;
 };

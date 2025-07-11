@@ -52,7 +52,7 @@ interface ClassData {
 function LiveClass() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [showFeedback, setShowFeedback] = useState(true);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [ratings, setRatings] = useState([0, 0, 0]);
   const [feedback, setFeedback] = useState("");
   const [classData, setClassData] = useState<ClassData | null>(null);

@@ -168,7 +168,7 @@ const Meeting = () => {
     try {
       const token = localStorage.getItem("TeacherAuthToken"); // or use context/auth provider
       const response = await fetch(
-        `http://localhost:5001/updateTeacherMeeting/${selectedItemId}`,
+        `https://api.blackstoneinfomaticstech.com/updateTeacherMeeting/${selectedItemId}`,
         {
           method: "PUT",
           headers: {

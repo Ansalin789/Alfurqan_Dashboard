@@ -65,7 +65,7 @@ const StudentList = () => {
     if (!assignmentId) return;
     setLoading(true);
     setError(null);
-    fetch(`http://localhost:5001/assignments/?assignmentId=${assignmentId}`)
+    fetch(`https://api.blackstoneinfomaticstech.com/assignments/?assignmentId=${assignmentId}`)
       .then((res) => res.json())
       .then((data) => {
         setAssignments(data.data || []);

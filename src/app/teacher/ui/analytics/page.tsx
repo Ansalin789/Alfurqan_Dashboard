@@ -72,14 +72,10 @@ interface SimpleStudent {
 }
 
 interface AnalyticsData {
-  totalStudents: number;
-  totalClasses: number;
-  totalAmount: number;
-  students: {
-    studentId: string;
-    studentFirstname: string;
-    studentLastName: string;
-  }[];
+  totalclasses: number;
+  totalstudents: number;
+  totalhours: number;
+  totalearnings: number;
 }
 
 type ViewType = "students" | "classes" | "earnings";
@@ -110,28 +106,49 @@ function Analytics() {
     time: "",
   });
 
-  // Get unique values for dropdowns from API data
-  const courseNames = Array.from(
-    new Set(
-      uniqueStudentSchedules
-        .map((item) => item.course?.courseName)
-        .filter(Boolean)
-    )
-  );
-  const classTypes = Array.from(
-    new Set(
-      uniqueStudentSchedules
-        .map((item) => item.sessionClassType)
-        .filter(Boolean)
-    )
-  );
-  const times = Array.from(
-    new Set(
-      uniqueStudentSchedules
-        .flatMap((item) => item.startTime || [])
-        .filter(Boolean)
-    )
-  );
+  // Get unique values for dropdowns from API data based on active view
+  const getCourseNames = () => {
+    if (activeView === "students") {
+      return Array.from(
+        new Set(
+          students
+            .map((item) => item.studentDetails.student?.learningInterest)
+            .filter(Boolean)
+        )
+      );
+    } else {
+      return Array.from(
+        new Set(
+          uniqueStudentSchedules
+            .map((item) => item.course?.courseName)
+            .filter(Boolean)
+        )
+      );
+    }
+  };
+
+  const getClassTypes = () => {
+    if (activeView === "students") {
+      return Array.from(
+        new Set(
+          students
+            .map((item) => item.studentDetails.classType)
+            .filter(Boolean)
+        )
+      );
+    } else {
+      return Array.from(
+        new Set(
+          uniqueStudentSchedules
+            .map((item) => item.sessionClassType)
+            .filter(Boolean)
+        )
+      );
+    }
+  };
+
+  const courseNames = getCourseNames();
+  const classTypes = getClassTypes();
 
   //cards
 
@@ -145,9 +162,25 @@ function Analytics() {
         return;
       }
 
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("TeacherAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ TeacherAuthToken not found");
+        return;
+      }
+
       try {
         const res = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/analyticscardcount?teacherId=${teacherId}`
+          `https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts?teacherId=${teacherId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
         console.log("Analytics data fetched:", res.data); // DEBUG
         setAnalytics(res.data);
@@ -237,68 +270,123 @@ function Analytics() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    const filtered = uniqueStudentSchedules.filter((item) => {
-      const fullName =
-        `${item.student.studentFirstName} ${item.student.studentLastName}`.toLowerCase();
-      return (
-        item._id.toLowerCase().includes(query.toLowerCase()) ||
-        fullName.includes(query.toLowerCase()) ||
-        item.student.studentEmail
-          ?.toLowerCase()
-          .includes(query.toLowerCase()) ||
-        item.course.courseName?.toLowerCase().includes(query.toLowerCase()) ||
-        item.scheduleStatus?.toLowerCase().includes(query.toLowerCase()) ||
-        item.teacher.teacherName?.toLowerCase().includes(query.toLowerCase())
-      );
-    });
+    
+    if (activeView === "students") {
+      // Search in students data
+      const filtered = students.filter((item) => {
+        const name = item.name?.toLowerCase() || "";
+        const course = item.studentDetails?.course?.courseName?.toLowerCase() || "";
+        const classType = item.studentDetails?.classType?.toLowerCase() || "";
+        const status = item.studentDetails?.status?.toLowerCase() || "";
+        const studentId = item.studentId?.toLowerCase() || "";
 
-    setFilteredClasses(filtered);
+        return (
+          studentId.includes(query.toLowerCase()) ||
+          name.includes(query.toLowerCase()) ||
+          course.includes(query.toLowerCase()) ||
+          classType.includes(query.toLowerCase()) ||
+          status.includes(query.toLowerCase())
+        );
+      });
+      setFilteredStudents(filtered);
+    } else {
+      // Search in classes/earnings data
+      const filtered = uniqueStudentSchedules.filter((item) => {
+        const fullName =
+          `${item.student.studentFirstName} ${item.student.studentLastName}`.toLowerCase();
+        return (
+          item._id.toLowerCase().includes(query.toLowerCase()) ||
+          fullName.includes(query.toLowerCase()) ||
+          item.student.studentEmail
+            ?.toLowerCase()
+            .includes(query.toLowerCase()) ||
+          item.course.courseName?.toLowerCase().includes(query.toLowerCase()) ||
+          item.scheduleStatus?.toLowerCase().includes(query.toLowerCase()) ||
+          item.teacher.teacherName?.toLowerCase().includes(query.toLowerCase())
+        );
+      });
+      setFilteredClasses(filtered);
+    }
+    
     setCurrentPage(1);
   };
 
   const handleApplyFilters = () => {
-    let filtered = [...uniqueStudentSchedules];
+    // Apply filters based on active view
+    if (activeView === "students") {
+      // Filter students data (SimpleStudent[])
+      let filtered = [...students];
 
-    if (filters.courseName) {
-      filtered = filtered.filter(
-        (item) =>
-          item.course?.courseName.toLowerCase().trim() ===
-          filters.courseName.toLowerCase().trim()
-      );
-    }
+      if (filters.courseName) {
+        filtered = filtered.filter((item) =>
+          item.studentDetails.course.courseName
+            ?.toLowerCase()
+            .includes(filters.courseName.toLowerCase())
+        );
+      }
 
-    if (filters.classType) {
-      filtered = filtered.filter(
-        (item) => item.sessionClassType === filters.classType
-      );
-    }
+      if (filters.classType) {
+        filtered = filtered.filter((item) =>
+          item.studentDetails.classType
+            ?.toLowerCase()
+            .includes(filters.classType.toLowerCase())
+        );
+      }
 
-    if (filters.studentName) {
-      filtered = filtered.filter((item) => {
-        const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`;
-        return fullName === filters.studentName;
-      });
-    }
+      if (filters.studentName) {
+        filtered = filtered.filter((item) => item.name === filters.studentName);
+      }
 
-    if (filters.time) {
-      filtered = filtered.filter((item) =>
-        item.startTime?.some((t) => t.trim() === filters.time.trim())
-      );
-    }
+      if (filters.fromDate && filters.toDate) {
+        const from = new Date(filters.fromDate);
+        const to = new Date(filters.toDate);
+        filtered = filtered.filter((item) => {
+          const dateStr = item.studentDetails.classStartDate;
+          if (!dateStr) return false;
+          const date = new Date(dateStr);
+          return date >= from && date <= to;
+        });
+      }
 
-    if (filters.fromDate && filters.toDate) {
-      const from = new Date(filters.fromDate);
-      const to = new Date(filters.toDate);
-      filtered = filtered.filter((item) => {
-        const startDate = new Date(item.startDate);
-        return startDate >= from && startDate <= to;
-      });
+      setFilteredStudents(filtered);
+    } else {
+      // Filter classes/earnings data (Schedule[])
+      let filtered = [...uniqueStudentSchedules];
+
+      if (filters.courseName) {
+        filtered = filtered.filter(
+          (item) =>
+            item.course?.courseName.toLowerCase().trim() ===
+            filters.courseName.toLowerCase().trim()
+        );
+      }
+
+      if (filters.classType) {
+        filtered = filtered.filter(
+          (item) => item.sessionClassType === filters.classType
+        );
+      }
+
+      if (filters.studentName) {
+        filtered = filtered.filter((item) => {
+          const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`;
+          return fullName === filters.studentName;
+        });
+      }
+
+      if (filters.fromDate && filters.toDate) {
+        const from = new Date(filters.fromDate);
+        const to = new Date(filters.toDate);
+        filtered = filtered.filter((item) => {
+          const startDate = new Date(item.startDate);
+          return startDate >= from && startDate <= to;
+        });
+      }
+
+      setFilteredClasses(filtered);
     }
 
     console.log("Filters applied:", filters);
-    console.log("Filtered results:", filtered);
-
-    setFilteredClasses(filtered);
     setCurrentPage(1);
     setIsFilterModalOpen(false); // close modal after applying
   };
@@ -312,88 +400,96 @@ function Analytics() {
       toDate: "",
       time: "",
     });
-    setFilteredClasses(uniqueStudentSchedules); // show all again
+    
+    // Reset based on active view
+    if (activeView === "students") {
+      setFilteredStudents(students); // show all students again
+    } else {
+      setFilteredClasses(uniqueStudentSchedules); // show all classes again
+    }
+    
     setSearchQuery(""); // optionally clear search
     setIsFilterModalOpen(false); // close modal
   };
 
   useEffect(() => {
-    let filtered = [...students];
+    // Only apply filters to students view
+    if (activeView === "students") {
+      let filtered = [...students];
 
-    if (filters.courseName) {
-      filtered = filtered.filter((item) =>
-        item.studentDetails.course.courseName
-          ?.toLowerCase()
-          .includes(filters.courseName.toLowerCase())
-      );
-    }
-
-    if (filters.classType) {
-      filtered = filtered.filter((item) =>
-        item.studentDetails.classType
-          ?.toLowerCase()
-          .includes(filters.classType.toLowerCase())
-      );
-    }
-
-    if (filters.studentName) {
-      filtered = filtered.filter((item) => item.name === filters.studentName);
-    }
-
-    if (filters.time) {
-      filtered = filtered.filter(
-        (item) =>
-          item.studentDetails?.classStartDate &&
-          new Date(item.studentDetails.classStartDate).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }) === filters.time
-      );
-    }
-
-    if (filters.fromDate && filters.toDate) {
-      const from = new Date(filters.fromDate);
-      const to = new Date(filters.toDate);
-      filtered = filtered.filter((item) => {
-        const dateStr = item.studentDetails.classStartDate;
-        if (!dateStr) return false;
-        const date = new Date(dateStr);
-        return date >= from && date <= to;
-      });
-    }
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase(); // 🔽 normalize once
-
-      filtered = filtered.filter((item) => {
-        const name = item.name?.toLowerCase() || "";
-        const course =
-          item.studentDetails?.course?.courseName?.toLowerCase() || "";
-        const classType = item.studentDetails?.classType?.toLowerCase() || "";
-        const status = item.studentDetails?.status?.toLowerCase() || "";
-        const studentId = item.studentId?.toLowerCase() || "";
-
-        return (
-          studentId.includes(query) ||
-          name.includes(query) ||
-          course.includes(query) ||
-          classType.includes(query) ||
-          status.includes(query)
+      if (filters.courseName) {
+        filtered = filtered.filter((item) =>
+          item.studentDetails.course.courseName
+            ?.toLowerCase()
+            .includes(filters.courseName.toLowerCase())
         );
-      });
+      }
+
+      if (filters.classType) {
+        filtered = filtered.filter((item) =>
+          item.studentDetails.classType
+            ?.toLowerCase()
+            .includes(filters.classType.toLowerCase())
+        );
+      }
+
+      if (filters.studentName) {
+        filtered = filtered.filter((item) => item.name === filters.studentName);
+      }
+
+      if (filters.fromDate && filters.toDate) {
+        const from = new Date(filters.fromDate);
+        const to = new Date(filters.toDate);
+        filtered = filtered.filter((item) => {
+          const dateStr = item.studentDetails.classStartDate;
+          if (!dateStr) return false;
+          const date = new Date(dateStr);
+          return date >= from && date <= to;
+        });
+      }
+
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+
+        filtered = filtered.filter((item) => {
+          const name = item.name?.toLowerCase() || "";
+          const course =
+            item.studentDetails?.course?.courseName?.toLowerCase() || "";
+          const classType = item.studentDetails?.classType?.toLowerCase() || "";
+          const status = item.studentDetails?.status?.toLowerCase() || "";
+          const studentId = item.studentId?.toLowerCase() || "";
+
+          return (
+            studentId.includes(query) ||
+            name.includes(query) ||
+            course.includes(query) ||
+            classType.includes(query) ||
+            status.includes(query)
+          );
+        });
+      }
+
+      setFilteredStudents(filtered);
     }
+  }, [students, filters, searchQuery, activeView]);
 
-    setFilteredStudents(filtered);
-  }, [students, filters, searchQuery]);
+  // Get student names based on active view
+  const getStudentNames = () => {
+    if (activeView === "students") {
+      return Array.from(new Set(students.map((item) => item.name)));
+    } else {
+      return Array.from(
+        new Set(
+          uniqueStudentSchedules.map(
+            (item) =>
+              `${item.student.studentFirstName} ${item.student.studentLastName}`
+          )
+        )
+      );
+    }
+  };
 
-  const studentNames = Array.from(
-    new Set(
-      uniqueStudentSchedules.map(
-        (item) =>
-          `${item.student.studentFirstName} ${item.student.studentLastName}`
-      )
-    )
-  );
+  const studentNames = getStudentNames();
 
   const itemsPerPage = 10; // ✅ Add this line to fix the error
 
@@ -423,7 +519,7 @@ function Analytics() {
                   </h3>
                   <div className="flex items-center gap-2">
                     <p className="text-[28px] font-bold text-[#0f172a] dark:text-[#fff]">
-                      {analytics?.totalStudents}
+                      {analytics?.totalstudents}
                     </p>
                   </div>
                 </div>
@@ -451,7 +547,7 @@ function Analytics() {
                   </h3>
                   <div className="flex items-center gap-2">
                     <p className="text-[28px] font-bold text-[#0f172a] dark:text-[#fff]">
-                      {analytics?.totalClasses}
+                      {analytics?.totalclasses}
                     </p>
                   </div>
                 </div>
@@ -479,7 +575,7 @@ function Analytics() {
                   </h3>
                   <div className="flex items-center gap-2">
                     <p className="text-2xl font-bold text-[#0f172a] dark:text-[#fff]">
-                      ${analytics?.totalAmount.toFixed(2)}
+                      ${analytics?.totalearnings.toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -536,25 +632,25 @@ function Analytics() {
                 >
                   <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                     <tr className="font-medium">
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Student ID{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Student Name{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Course{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Class Type{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Joined Date{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Level
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Status
                       </th>
                     </tr>
@@ -565,23 +661,23 @@ function Analytics() {
                         key={schedule.name}
                         className={`text-[12px] h-[50px] ${"bg-[#fff] dark:bg-[#2C2C2C]"}`}
                       >
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                           {schedule.studentId}
                         </td>
-                        <td className="px-4 py-2 text-center">
+                        <td className="px-4 py-2 text-center overflow-hidden text-ellipsis whitespace-nowrap">
                           <div className="px-3 py-2 text-[#3D8FDE] font-medium text-left">
                             {schedule.name}{" "}
                           </div>
                         </td>
 
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
-                          {schedule.studentDetails.student.learningInterest}
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                          {schedule.studentDetails.student?.learningInterest || "-"}
                         </td>
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                           {schedule.studentDetails.classType}
                         </td>
 
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                           {
                             schedule.studentDetails.classStartDate
                               ? new Date(
@@ -595,10 +691,10 @@ function Analytics() {
                           }
                         </td>
 
-                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                        <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                           1
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 overflow-hidden text-ellipsis whitespace-nowrap">
                           <span className="px-2.5 py-1 bg-[#4ade80]/10 text-[#299350] border border-[#299350] rounded-lg text-[11px]">
                             {schedule.studentDetails.status}
                           </span>
@@ -616,28 +712,28 @@ function Analytics() {
                 >
                   <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                     <tr className="font-medium">
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Student ID{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] pl-10">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap pl-10">
                         Student Name{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Courses{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Class Type{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Course Duration{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Class Date{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Time{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Status{" "}
                       </th>
                     </tr>
@@ -650,22 +746,22 @@ function Analytics() {
                           key={cls._id}
                           className={`text-[12px] h-[50px] ${"bg-[#fff] dark:bg-[#2C2C2C]"}`}
                         >
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {cls._id}
                           </td>
-                          <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left pl-10">
+                          <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left pl-10 overflow-hidden text-ellipsis whitespace-nowrap">
                             {cls.student.studentFirstName}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {cls.course.courseName}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {cls.sessionClassType}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {cls.totalHourse}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {new Date(cls.startDate).toLocaleDateString(
                               "en-US",
                               {
@@ -675,10 +771,10 @@ function Analytics() {
                               }
                             )}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {cls.startTime}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-3 overflow-hidden text-ellipsis whitespace-nowrap">
                             <span
                               className={`text-[10px] font-semibold px-5 py-1 rounded-lg ${
                                 cls.scheduleStatus === "Scheduled"
@@ -702,32 +798,32 @@ function Analytics() {
                 >
                   <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                     <tr className="font-medium">
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Student Id{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] pl-4">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap pl-4">
                         Student Name{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Course{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Class Type{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Course Duration{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Class Date{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Time{" "}
                       </th>
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Amount{" "}
                       </th>
 
-                      <th className="text-left px-4 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0]">
+                      <th className="text-left px-4 py-3 font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         Status{" "}
                       </th>
                     </tr>
@@ -743,22 +839,22 @@ function Analytics() {
                           key={earning._id}
                           className={`text-[12px] h-[50px] ${"bg-[#fff] dark:bg-[#2C2C2C]"}`}
                         >
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {earning._id}
                           </td>
-                          <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left pl-12">
+                          <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left pl-12 overflow-hidden text-ellipsis whitespace-nowrap">
                             {earning.student.studentFirstName}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {earning.course.courseName}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {earning.sessionClassType}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {earning.totalHourse}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {new Date(earning.startDate).toLocaleDateString(
                               "en-US",
                               {
@@ -768,13 +864,13 @@ function Analytics() {
                               }
                             )}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {earning.startTime}
                           </td>
-                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left">
+                          <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
                             {earning.amount}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-3 overflow-hidden text-ellipsis whitespace-nowrap">
                             <span
                               className={`text-[10px] font-semibold px-5 py-1 rounded-lg ${
                                 earning.scheduleStatus === "Scheduled"
@@ -841,11 +937,12 @@ function Analytics() {
                       setFilters({ ...filters, courseName: e.target.value })
                     }
                   >
-                    {" "}
                     <option value="">Select Course</option>
-                    <option value="Quran">Quran</option>
-                    <option value="Arabic">Arabic</option>
-                    <option value="Tajweed">Tajweed</option>
+                    {courseNames.map((course) => (
+                      <option key={course} value={course}>
+                        {course}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -882,10 +979,12 @@ function Analytics() {
                       setFilters({ ...filters, classType: e.target.value })
                     }
                   >
-                    {" "}
                     <option value="">Select ClassType</option>
-                    <option value="REGULARCLASS">REGULARCLASS</option>
-                    <option value="GROUPCLASS">GROUPCLASS</option>
+                    {classTypes.map((classType) => (
+                      <option key={classType} value={classType}>
+                        {classType}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

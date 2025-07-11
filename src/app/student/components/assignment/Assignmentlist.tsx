@@ -73,7 +73,7 @@ const StudentList = () => {
           console.error("Missing token or teacher ID");
           return;
         }
-        const res = await fetch(`http://localhost:5001/assignments/student?studentId=${studentId}`);
+        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`);
         if (!res.ok) throw new Error("Failed to fetch assignments");
         const data = await res.json();
         setAssignments((data.data || []) as AssignmentType[]);

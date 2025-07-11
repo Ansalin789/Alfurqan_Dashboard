@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from "react";
 import TeacherHeader from "../../components/TeacherHeader";
 import { FaMicrophone, FaTrash, FaUpload } from "react-icons/fa";
 import { useSearchParams } from "next/navigation";
+import SuccessPopup from "@/app/supervisor/components/successPopup";
+import FailedPopup from "@/app/supervisor/components/failedPopup";
 
 interface AssignmentFormData {
   studentId: string;
@@ -59,7 +61,7 @@ interface Assignment {
   questionName?: string;
   correctAnswer: string;
   answerValidation: string;
-
+ answerText?: string; // For reading/writing
   // Audio fields
   audioURL?: string; // For preview URL
   audioName?: string; // Original filename
@@ -68,7 +70,7 @@ interface Assignment {
   imageURL?: string; // For preview URL
   imageName?: string; // Original filename
   imageFile?: File; // Actual File object
-   uploadFile?: ArrayBuffer;  // For binary data
+  uploadFile?: ArrayBuffer;  // For binary data
   uploadFileBase64?: string; // Alternative for Base64
   audioFile?: ArrayBuffer;
   audioFileBase64?: string;
@@ -95,8 +97,12 @@ const NewAssignment = () => {
   const [sessionClassType, setSessionClassType] = useState("");
   const [assignedTeacher, setAssignedTeacher] = useState("");
   const [assignedTeacherId, setAssignedTeacherId] = useState("");
-
+  const [success, setSuccess] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const searchParams = useSearchParams();
+
 
   useEffect(() => {
     const title = searchParams?.get("title") || "";
@@ -170,28 +176,28 @@ const NewAssignment = () => {
   const [noOptions, setNoOptions] = useState(false);
   const [answerText, setAnswerText] = useState("");
 
-// Utility function to convert File/Blob to Buffer
-const fileToBuffer = async (file: File): Promise<Buffer> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result) {
-        const arrayBuffer = reader.result as ArrayBuffer;
-        const buffer = Buffer.from(new Uint8Array(arrayBuffer));
-        resolve(buffer);
-      } else {
-        reject(new Error("File reading failed"));
-      }
-    };
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(file);
-  });
-};
+  // Utility function to convert File/Blob to Buffer
+  const fileToBuffer = async (file: File): Promise<Buffer> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result) {
+          const arrayBuffer = reader.result as ArrayBuffer;
+          const buffer = Buffer.from(new Uint8Array(arrayBuffer));
+          resolve(buffer);
+        } else {
+          reject(new Error("File reading failed"));
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  };
 
-// Alternative if you're not using Node.js Buffer in frontend
-const fileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
-  return file.arrayBuffer();
-};
+  // Alternative if you're not using Node.js Buffer in frontend
+  const fileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
+    return file.arrayBuffer();
+  };
 
   // Update the handleAddAssignment function
   const handleAddAssignment = () => {
@@ -205,15 +211,15 @@ const fileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
       !answerText.trim()
     ) {
       alert(
-        `⚠️ Please provide ${
-          assignmentType === "reading" ? "reading content" : "writing prompt"
+        `⚠️ Please provide ${assignmentType === "reading" ? "reading content" : "writing prompt"
         }.`
       );
       return;
     }
     // Special validation for image identification
-    if (assignmentType === "image identification") {
-      if (!uploadedFileURL || !uploadedFileType?.startsWith("image/")) {
+    if (assignmentType === "image identification" || assignmentType === "word match") {
+      if (assignmentType === "image identification" &&
+        (!uploadedFileURL || !uploadedFileType?.startsWith("image/"))) {
         alert("⚠️ Please upload an image for image identification.");
         return;
       }
@@ -229,8 +235,15 @@ const fileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
         return;
       }
     }
-    // Skip options validation for reading/writing types
-    if (!["reading", "writing"].includes(assignmentType)) {
+    // Skip true/false validation for non-quiz types
+    if (!["reading", "writing", "image identification", "word match"].includes(assignmentType)) {
+      if (questionType === "truefalse" && trueFalseAnswer === null) {
+        alert("⚠️ Please select True or False for this question.");
+        return;
+      }
+    }
+    // Skip options validation for reading/writing/image identification/word match types
+    if (!["reading", "writing", "image identification", "word match"].includes(assignmentType)) {
       // For choose type with options
       if (questionType === "choose" && hasOptions && !noOptions) {
         const missingOptions = Object.entries(options)
@@ -275,25 +288,33 @@ const fileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
       // Include options for image identification or choose type
       options:
         assignmentType === "image identification" ||
-        (questionType === "choose" && hasOptions && !noOptions)
+          assignmentType === "word match" ||
+
+          (questionType === "choose" && hasOptions && !noOptions)
           ? {
-              optionOne: options.a.text,
-              optionTwo: options.b.text,
-              optionThree: options.c.text,
-              optionFour: options.d.text,
-            }
+            optionOne: options.a.text,
+            optionTwo: options.b.text,
+            optionThree: options.c.text,
+            optionFour: options.d.text,
+          }
           : undefined,
       correctAnswer: "",
+      // Fix: Use answerText for reading/writing, selectedAnswer for others
       answerValidation: ["reading", "writing"].includes(assignmentType)
-        ? typedQuestion // For reading/writing
-        : selectedAnswer, // For all other types (choose, truefalse, image identification)
-   audioFile: audioFileBuffer || undefined,
-    uploadFile: uploadedFileBuffer || undefined,
+        ? answerText // Use the textarea content for reading/writing
+        : questionType === "truefalse"
+          ? String(trueFalseAnswer) // For true/false questions
+          : selectedAnswer, // For all other types (choose, image identification)
+        answerText: ["reading", "writing"].includes(assignmentType) 
+      ? answerText // Explicitly store answerText for these types
+      : undefined,
+      audioFile: audioFileBuffer || undefined,
+      uploadFile: uploadedFileBuffer || undefined,
     };
- console.log(' New assignment created with:', {
-    hasUploadFile: !!uploadedFileBuffer,
-    hasAudioFile: !!audioFileBuffer
-  });
+    console.log(' New assignment created with:', {
+      hasUploadFile: !!uploadedFileBuffer,
+      hasAudioFile: !!audioFileBuffer
+    });
     setAssignments((prev) => [...prev, newAssignment]);
     alert("✅ Assignment added successfully!");
 
@@ -310,10 +331,12 @@ const fileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
     setSelectedAnswer("");
     setTrueFalseAnswer(null);
     setUploadedFileURL(null);
-
     setUploadedFileName(null);
     setUploadedFileType(null);
     setAnswerText("");
+    setAudioURL(null);
+    setAudioFileBuffer(null);
+    setUploadedFileBuffer(null);
 
   };
   useEffect(() => {
@@ -353,67 +376,67 @@ const fileToArrayBuffer = async (file: File): Promise<ArrayBuffer> => {
   };
 
   // In the component, update the handleFileUpload to handle images separately:
-const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  setIsUploading(true);
-  
-  try {
-    // Clean up previous URLs
-  
+    setIsUploading(true);
 
-    // Create preview URL
-    const url = URL.createObjectURL(file);
-    
-    // Convert file to buffer
-    const buffer = await file.arrayBuffer();
-    
-    // Update state
-    setUploadedFileName(file.name);
-    setUploadedFileType(file.type);
-    setUploadedFileURL(url);
-    setUploadedFileBuffer(buffer); // Store the ArrayBuffer
+    try {
+      // Clean up previous URLs
 
-    // Handle audio files separately
-    if (file.type.startsWith("audio/")) {
-      setAudioURL(url);
-      setAudioFileBuffer(buffer);
-    } else {
-      setAudioURL(null);
-      setAudioFileBuffer(null);
+
+      // Create preview URL
+      const url = URL.createObjectURL(file);
+
+      // Convert file to buffer
+      const buffer = await file.arrayBuffer();
+
+      // Update state
+      setUploadedFileName(file.name);
+      setUploadedFileType(file.type);
+      setUploadedFileURL(url);
+      setUploadedFileBuffer(buffer); // Store the ArrayBuffer
+
+      // Handle audio files separately
+      if (file.type.startsWith("audio/")) {
+        setAudioURL(url);
+        setAudioFileBuffer(buffer);
+      } else {
+        setAudioURL(null);
+        setAudioFileBuffer(null);
+      }
+
+      console.log('📁 File processed:', {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        bufferLength: buffer.byteLength
+      });
+
+      e.target.value = '';
+    } catch (error) {
+      console.error("File upload error:", error);
+      alert("Error processing file upload");
+    } finally {
+      setIsUploading(false);
     }
+  };
 
-    console.log('📁 File processed:', {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      bufferLength: buffer.byteLength
+  // Add these state variables
+  const [uploadedFileBuffer, setUploadedFileBuffer] = useState<ArrayBuffer | null>(null);
+  const [audioFileBuffer, setAudioFileBuffer] = useState<ArrayBuffer | null>(null);
+
+
+  // File to Base64 converter function
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
     });
-
-    e.target.value = '';
-  } catch (error) {
-    console.error("File upload error:", error);
-    alert("Error processing file upload");
-  } finally {
-    setIsUploading(false);
-  }
-};
-
-// Add these state variables
-const [uploadedFileBuffer, setUploadedFileBuffer] = useState<ArrayBuffer | null>(null);
-const [audioFileBuffer, setAudioFileBuffer] = useState<ArrayBuffer | null>(null);
-
-
-// File to Base64 converter function
-const convertToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-  });
-};
+  };
 
   const handleDeleteFile = () => {
     setAudioURL(null);
@@ -425,7 +448,7 @@ const convertToBase64 = (file: File): Promise<string> => {
   // Update the submitAssignment function
   const submitAssignment = async () => {
     const formData = new FormData();
-   console.log("📤 Starting assignment submission...");
+    console.log("📤 Starting assignment submission...");
     console.log("👤 Student ID:", studentId);
     console.log("📝 Assignment count:", assignments.length);
     formData.append("studentId", studentId);
@@ -436,7 +459,7 @@ const convertToBase64 = (file: File): Promise<string> => {
 
     for (let index = 0; index < assignments.length; index++) {
       const item = assignments[index];
-  
+
       console.log(`\n📄 Processing assignment ${index + 1}: ${item.name}`);
       console.log("🖼️ Assignment type:", item.type);
       formData.append(`assignments[${index}][assignmentName]`, item.name);
@@ -469,7 +492,10 @@ const convertToBase64 = (file: File): Promise<string> => {
       // }
 
       // Handle options for image identification
-      if (item.type === "image identification" && item.options) {
+      if (
+        (item.type === "image identification" || item.type === "word match") &&
+        item.options
+      ) {
         formData.append(
           `assignments[${index}][options]`,
           JSON.stringify(item.options)
@@ -507,9 +533,14 @@ const convertToBase64 = (file: File): Promise<string> => {
       // ✅ Proper answerValidation handling
       let answerValidationValue = "";
 
-      if (["image identification", "reading", "writing"].includes(item.type)) {
-        answerValidationValue = item.question;
-      } else if (item.questionType === "truefalse") {
+      if(item.type === "reading" || item.type === "writing") {
+        answerValidationValue = item.answerText || ""; // Use answerText for reading/writing
+      }
+      else if (item.type === "image identification" || item.type === "word match") {
+        // For image/word match, use the selected answer (value from radio button)
+        answerValidationValue = item.answerValidation || selectedAnswer;
+      }
+      else if (item.questionType === "truefalse") {
         answerValidationValue = String(item.answerValidation);
       } else if (Array.isArray(item.answerValidation)) {
         answerValidationValue = item.answerValidation.join(","); // or JSON.stringify(...) if your backend expects array
@@ -533,66 +564,72 @@ const convertToBase64 = (file: File): Promise<string> => {
         "Assigned"
       );
 
-if (item.uploadFile ) {
-  const blob = new Blob(
-    [item.uploadFile]
-  );
+      if (item.uploadFile) {
+        const blob = new Blob(
+          [item.uploadFile]
+        );
 
-  formData.append(
-    `assignments[${index}][uploadFile]`,
-    blob,
-   item.imageName
-  );
+        formData.append(
+          `assignments[${index}][uploadFile]`,
+          blob,
+          item.imageName
+        );
 
-  console.log('📤 Added upload file buffer:', item.uploadFile.byteLength, 'bytes');
-}
+        console.log('📤 Added upload file buffer:', item.uploadFile.byteLength, 'bytes');
+      }
 
 
-    if (item.audioFile) {
-      const blob = new Blob([item.audioFile], { type: 'audio/mpeg' });
-      formData.append(
-        `assignments[${index}][audioFile]`,
-        blob,
-        item.audioName || 'audio_file.mp3'
-      );
-      console.log('🎵 Added audio file buffer:', item.audioFile.byteLength, 'bytes');
+      if (item.audioFile) {
+        const blob = new Blob([item.audioFile], { type: 'audio/mpeg' });
+        formData.append(
+          `assignments[${index}][audioFile]`,
+          blob,
+          item.audioName || 'audio_file.mp3'
+        );
+        console.log('🎵 Added audio file buffer:', item.audioFile.byteLength, 'bytes');
+      }
     }
-  }
 
-  // Debug: Log formData contents
-  console.log('📦 FormData contents:');
-  for (const [key, value] of Array.from(formData.entries())) {
-    console.log(key, value instanceof Blob ? 
-      `Blob (${value.size} bytes, ${value.type})` : 
-      value);
-  }
+    // Debug: Log formData contents
+    console.log('📦 FormData contents:');
+    for (const [key, value] of Array.from(formData.entries())) {
+      console.log(key, value instanceof Blob ?
+        `Blob (${value.size} bytes, ${value.type})` :
+        value);
+    }
 
- try {
-    const response = await fetch("http://localhost:5001/assignments", {
-      method: "POST",
-      body: formData, // ✅ Use FormData directly
+    try {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/assignments", {
+        method: "POST",
+        body: formData, // ✅ Use FormData directly
 
-      // headers: {
-      //   "Content-Type": "application/json",
-      // },
-      // body: JSON.stringify({
-      //   // ... other data ...
-      //   assignments: assignments.map(assignment => ({
-      //     ...assignment,
-      //     // Convert buffers to the format your backend expects
-      //     audioFile: assignment.audioFile ? Buffer.from(assignment.audioFile) : undefined,
-      //     uploadFile: assignment.uploadFile ? Buffer.from(assignment.uploadFile) : undefined
-      //   }))
-      // }),
-    });
+        // headers: {
+        //   "Content-Type": "application/json",
+        // },
+        // body: JSON.stringify({
+        //   // ... other data ...
+        //   assignments: assignments.map(assignment => ({
+        //     ...assignment,
+        //     // Convert buffers to the format your backend expects
+        //     audioFile: assignment.audioFile ? Buffer.from(assignment.audioFile) : undefined,
+        //     uploadFile: assignment.uploadFile ? Buffer.from(assignment.uploadFile) : undefined
+        //   }))
+        // }),
+      });
 
-    if (!response.ok) throw new Error("Submission failed");
-    const result = await response.json();
-    console.log("Submission successful:", result);
-  } catch (error) {
-    console.error("Error submitting:", error);
-  }
-};
+      if (response.status === 201 || response.status === 200) {
+        setSuccess(true);
+        setSuccessMessage('Assignment submitted successfully!');
+        setTimeout(() => (false), 3000);
+      } else {
+        console.log("Failed to submit Assignment. Please try again.");
+        setFailedMessage('Check Inputs');
+      }
+    } catch (error) {
+      console.error("Error submitting Assignment:", error);
+      console.log("Error submitting Assignment. Please try again.");
+    }
+  };
 
   useEffect(() => {
     const chooseTypeRaw = localStorage.getItem("chooseType");
@@ -619,7 +656,7 @@ if (item.uploadFile ) {
         },
       };
 
-      alert(`📝 Option ${optionId.toUpperCase()} updated to: ${newText}`);
+      // alert(`📝 Option ${optionId.toUpperCase()} updated to: ${newText}`);
       console.log("📦 Updated options object:", updated); // log to console
       return updated;
     });
@@ -664,7 +701,8 @@ if (item.uploadFile ) {
                 type="text"
                 placeholder="Name of assignment"
                 className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-              />
+                value={assignmentName}
+                onChange={(e) => setAssignmentName(e.target.value)} />
             </div>
 
             <div className="w-1/2">
@@ -682,6 +720,8 @@ if (item.uploadFile ) {
                 <option value="image identification">
                   image identification
                 </option>
+                <option value="word match">word match</option> {/* Add this line */}
+
               </select>
             </div>
           </div>
@@ -690,15 +730,15 @@ if (item.uploadFile ) {
             <label className="block text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
               Answer Type
             </label>
-            {/* Only show answer type options for quiz */}
-            {!(
-              assignmentType === "writing" || assignmentType === "reading"
-            ) && (
+            {/* Hide for reading/writing */}
+            {!(assignmentType === "writing" || assignmentType === "reading") && (
               <div className="flex items-center gap-6 text-sm text-[#010E30]">
+                {/* Always show Choose option */}
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={questionType === "choose"}
+                    checked={true}
+                    disabled={assignmentType === "word match" || assignmentType === "image identification"}
                     onChange={() => {
                       setQuestionType("choose");
                       if (assignmentType === "quiz") setChooseType(true);
@@ -710,20 +750,23 @@ if (item.uploadFile ) {
                   </span>
                 </label>
 
-                <label className="flex items-center gap-2 dark:text-[#fff]">
-                  <input
-                    className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
-                    type="checkbox"
-                    checked={questionType === "truefalse"}
-                    onChange={() => {
-                      setQuestionType("truefalse");
-                      if (assignmentType === "quiz") setChooseType(false);
-                    }}
-                  />
-                  <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff] ">
-                    True or False
-                  </span>
-                </label>
+                {/* Only show True/False for quiz */}
+                {assignmentType === "quiz" && (
+                  <label className="flex items-center gap-2 dark:text-[#fff]">
+                    <input
+                      className="appearance-none w-4 h-4 rounded-sm border-2 dark:border-white border-[#343434] checked:bg-[#576CBC] checked:border-[#576CBC] focus:outline-none transition-all duration-150"
+                      type="checkbox"
+                      checked={questionType === "truefalse"}
+                      onChange={() => {
+                        setQuestionType("truefalse");
+                        if (assignmentType === "quiz") setChooseType(false);
+                      }}
+                    />
+                    <span className="block text-[13px] font-light text-[#010E30] dark:text-[#fff]">
+                      True or False
+                    </span>
+                  </label>
+                )}
               </div>
             )}
           </div>
@@ -735,8 +778,8 @@ if (item.uploadFile ) {
             <input
               type="text"
               placeholder="Enter question name"
-              value={assignmentName}
-              onChange={(e) => setAssignmentName(e.target.value)}
+              value={questionName}
+              onChange={(e) => setQuestionName(e.target.value)}
               className="w-full p-3 px-5 text-[11px] border border-gray-300 rounded-xl dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
             />
           </div>
@@ -755,30 +798,24 @@ if (item.uploadFile ) {
             />
             {!audioURL && !uploadedFileURL && (
               <div className="absolute bottom-2 right-2 flex gap-2 dark:text-[#fff]">
-                <button
+                {/* <button
                   type="button"
-                  className={`p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center dark:border-[#343434] dark:text-[#fff] ${
-                    isRecording ? "bg-red-200" : ""
-                  }`}
+                  className={`p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center dark:border-[#343434] dark:text-[#fff] ${isRecording ? "bg-red-200" : ""
+                    }`}
                   title={isRecording ? "Stop Recording" : "Record"}
                   onClick={isRecording ? stopRecording : startRecording}
                 >
                   <FaMicrophone
-                    className={`text-xl ${
-                      isRecording ? "text-red-600" : "text-gray-700"
-                    }`}
+                    className={`text-xl ${isRecording ? "text-red-600" : "text-gray-700"
+                      }`}
                   />
-                </button>
+                </button> */}
                 {/* File upload button - shown when no file is uploaded */}
                 {!uploadedFileURL && (
                   <label className="p-2 bg-gray-200 rounded-full border border-gray-300 flex items-center justify-center cursor-pointer">
                     <input
                       type="file"
-                      accept={
-                        assignmentType === "image identification"
-                          ? "image/*"
-                          : "audio/*,image/*"
-                      }
+                      accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.txt"  // Common file types
                       className="hidden"
                       onChange={handleFileUpload}
                       disabled={isUploading}
@@ -850,8 +887,7 @@ if (item.uploadFile ) {
           {/* Only show choose/truefalse options if not writing/reading/image identification */}
           {questionType === "choose" &&
             (assignmentType === "writing" ||
-              assignmentType === "reading" ||
-              assignmentType === "image identification") && (
+              assignmentType === "reading" ) && (
               <div className="mb-4">
                 <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff] ">
                   Type the Answer
@@ -866,47 +902,49 @@ if (item.uploadFile ) {
               </div>
             )}
           {(assignmentType === "image identification" ||
+            assignmentType === "word match" ||
             (questionType === "choose" && assignmentType === "quiz")) && (
-            <div className="mb-4">
-              <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
-                Options (Select the correct answer)
-              </label>
-              <div className="space-y-2">
-                {Object.entries(options).map(([key, value]) => (
-                  <div key={key} className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="correctOption"
-                      checked={value.isCorrect}
-                      onChange={() => {
-                        handleAnswerChange(key as OptionKey);
-                        setSelectedAnswer(value.text);
-                      }}
-                      className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
-                    />
-                    <input
-                      type="text"
-                      value={value.text}
-                      placeholder={`Option ${key.toUpperCase()}`}
-                      onChange={(e) => {
-                        handleOptionChange(key as OptionKey, e.target.value);
-                        if (options[key as OptionKey].isCorrect) {
-                          setSelectedAnswer(e.target.value);
-                        }
-                      }}
-                      className="flex-1 p-2 text-sm border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
-                    />
-                  </div>
-                ))}
+              <div className="mb-4">
+                <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                  Options (Select the correct answer)
+                </label>
+                <div className="space-y-2">
+                  {Object.entries(options).map(([key, value]) => (
+                    <div key={key} className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="correctOption"
+                        checked={value.isCorrect}
+                        onChange={() => {
+                          handleAnswerChange(key as OptionKey);
+                          setSelectedAnswer(value.text);
+                        }}
+                        className="w-4 h-4 text-[#576CBC] focus:ring-[#576CBC]"
+                      />
+                      <input
+                        type="text"
+                        value={value.text}
+                        placeholder={`Option ${key.toUpperCase()}`}
+                        onChange={(e) => {
+                          handleOptionChange(key as OptionKey, e.target.value);
+                          if (options[key as OptionKey].isCorrect) {
+                            setSelectedAnswer(e.target.value);
+                          }
+                        }}
+                        className="flex-1 p-2 text-sm border border-gray-300 rounded-md dark:bg-[#343434] dark:border-[#343434] dark:text-[#fff]"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {questionType === "truefalse" &&
             !(
               assignmentType === "writing" ||
               assignmentType === "reading" ||
-              assignmentType === "image identification"
+              assignmentType === "image identification" ||
+              assignmentType === "word match"
             ) && (
               <div className="mb-4">
                 <p className="text-sm font-medium text-[#010E30] mb-2 dark:text-[#fff]">
@@ -1030,6 +1068,54 @@ if (item.uploadFile ) {
                     </div>
                   </div>
                 )}
+
+                {item.type === "word match" && item.audioURL && (
+                  <div className="mt-4">
+                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                      Uploaded Audio
+                    </label>
+                    <div className="flex items-center gap-3 mt-1 bg-gray-100 dark:bg-[#343434] rounded-lg px-4 py-2 shadow">
+                      <audio
+                        controls
+                        src={item.audioURL}
+                        className="flex-1 min-w-0"
+                      />
+                      <span className="text-xs break-all dark:text-[#fff]">
+                        {item.audioName}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {(item.type === "image identification" || item.type === "word match") && item.options && (
+                  <div className="mt-4">
+                    <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
+                      Options
+                    </label>
+                    <div className="bg-gray-100 dark:bg-[#343434] p-3 rounded-lg">
+                      {Object.entries({
+                        a: item.options.optionOne,
+                        b: item.options.optionTwo,
+                        c: item.options.optionThree,
+                        d: item.options.optionFour,
+                      }).map(
+                        ([key, value]) =>
+                          value && (
+                            <div key={key} className="mb-2 last:mb-0 flex items-center">
+                              <span className="font-medium dark:text-[#fff] mr-2">
+                                {key.toUpperCase()}:
+                              </span>
+                              <span className="dark:text-[#fff] flex-grow">{value}</span>
+                              {item.answerValidation === value && (
+                                <span className="ml-2 text-green-600">✓ Correct</span>
+                              )}
+                            </div>
+                          )
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {(item.type === "reading" || item.type === "writing") && (
                   <div className="mt-4">
                     <label className="block text-[13px] font-light text-[#010E30] mb-2 dark:text-[#fff]">
@@ -1078,6 +1164,12 @@ if (item.uploadFile ) {
             </button>
           </div>
         </div>
+        {success && (
+          <SuccessPopup onClose={() => setSuccess(false)} title={successMessage} />
+        )}
+        {failed && (
+          <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
+        )}
       </div>
     </BaseLayout>
   );

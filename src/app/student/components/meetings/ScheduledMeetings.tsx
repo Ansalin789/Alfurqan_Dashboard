@@ -11,6 +11,7 @@ import Pagination from "@/components/Pagination";
 import { IoMdClose } from "react-icons/io";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
+import { getSocket } from "@/app/utils/socket";
 
 interface Teacher {
   teacherId: string;
@@ -57,8 +58,7 @@ const ScheduledMeetings = () => {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
-    const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState("upcoming");
   const [currentPage, setCurrentPage] = useState(1);
@@ -86,8 +86,10 @@ const ScheduledMeetings = () => {
   const [success, setSuccess] = useState(false);
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
-  const [selectedMeetingDetails, setSelectedMeetingDetails] = useState<Meeting | null>(null);
-  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] = useState(false);
+  const [selectedMeetingDetails, setSelectedMeetingDetails] =
+    useState<Meeting | null>(null);
+  const [isMeetingDetailsModalOpen, setIsMeetingDetailsModalOpen] =
+    useState(false);
 
   useEffect(() => {
     Modal.setAppElement("body");
@@ -99,7 +101,7 @@ const ScheduledMeetings = () => {
         if (!token || !teacherId) return;
 
         const response = await axios.get<MeetingResponse>(
-          `http://localhost:5001/teacherMeetinglist`,
+          `https://api.blackstoneinfomaticstech.com/teacherMeetinglist`,
           {
             params: { teacherId },
             headers: {
@@ -121,15 +123,13 @@ const ScheduledMeetings = () => {
         };
 
         // Only show as upcoming if end time is in the future and not completed
-        const upcoming = meetings.filter(
-          (m) =>
+        const upcoming = meetings.filter((m) =>
           ["Scheduled", "Rescheduled"].includes(m.meetingStatus)
         );
 
         // Show as completed if status is completed or end time is in the past
         const completed = meetings.filter(
-          (m) =>
-            m.meetingStatus === "Completed"
+          (m) => m.meetingStatus === "Completed"
         );
 
         setUpcomingClasses(upcoming);
@@ -140,6 +140,32 @@ const ScheduledMeetings = () => {
     };
 
     fetchClasses();
+  }, []);
+  useEffect(() => {
+    const studentId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("StudentPortalId")
+        : null;
+    if (!studentId) return;
+    const socket = getSocket(studentId);
+    const handleList = (data: Meeting) => {
+      console.log("log for new meeting WS");
+      const participants = Array.isArray(data.participants)
+        ? data.participants
+        : [data.participants];
+      const found = participants.find((app) => app.studentId === studentId);
+      if (found) {
+        setUpcomingClasses((prev) =>
+          prev.some((m) => m.meetingId === data.meetingId)
+            ? prev
+            : [...prev, data]
+        );
+      }
+    };
+    socket.on("teacherStudentMeeting", handleList);
+    return () => {
+      socket.off("teacherStudentMeeting", handleList);
+    };
   }, []);
 
   const dataToShow = activeTab === "upcoming" ? upcomingClasses : completedData;
@@ -172,17 +198,21 @@ const ScheduledMeetings = () => {
 
     if (meetingFilters.meetingName) {
       filtered = filtered.filter((m) =>
-        m.meetingName.toLowerCase().includes(meetingFilters.meetingName.toLowerCase())
+        m.meetingName
+          .toLowerCase()
+          .includes(meetingFilters.meetingName.toLowerCase())
       );
     }
     if (meetingFilters.teacher) {
       filtered = filtered.filter((m) =>
-        m.teacher.teacherName.toLowerCase().includes(meetingFilters.teacher.toLowerCase())
+        m.teacher.teacherName
+          .toLowerCase()
+          .includes(meetingFilters.teacher.toLowerCase())
       );
     }
     if (meetingFilters.status) {
-      filtered = filtered.filter((m) =>
-        m.meetingStatus === meetingFilters.status
+      filtered = filtered.filter(
+        (m) => m.meetingStatus === meetingFilters.status
       );
     }
     if (meetingFilters.fromDate && meetingFilters.toDate) {
@@ -250,15 +280,18 @@ const ScheduledMeetings = () => {
     }
   };
 
-  
-
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredMeetings.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredMeetings.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
 
-    function handleRescheduleSubmit(event: React.MouseEvent<HTMLButtonElement>): void {
-        throw new Error("Function not implemented.");
-    }
+  function handleRescheduleSubmit(
+    event: React.MouseEvent<HTMLButtonElement>
+  ): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <>
@@ -291,35 +324,34 @@ const ScheduledMeetings = () => {
         </button>
       </div>
 
-
- <div className="mt-2">
-            <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
-              <div className="flex justify-between items-center px-4 py-0">
-                <Search className="w-3 h-3 text-gray-400 dark:text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search by keyword"
-                  className="bg-transparent outline-none text-[12px] ml-1 w-52 py-3"
-                  value={searchQuery}
+      <div className="mt-2">
+        <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
+          <div className="flex justify-between items-center px-4 py-0">
+            <Search className="w-3 h-3 text-gray-400 dark:text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by keyword"
+              className="bg-transparent outline-none text-[12px] ml-1 w-52 py-3"
+              value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-                />
-              </div>
-              <div
-            onClick={() => setShowMeetingFilterModal(true)}
-                className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-              >
-                <MdTune className="w-4 h-4" />
-                <span>Filter</span>
-              </div>
-              <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                <span className="text-center -ml-60">
-            Showing {currentItems.length} of {filteredMeetings.length}
-                </span>
-              </div>
-            </div>
+            />
           </div>
+          <div
+            onClick={() => setShowMeetingFilterModal(true)}
+            className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+          >
+            <MdTune className="w-4 h-4" />
+            <span>Filter</span>
+          </div>
+          <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+            <span className="text-center -ml-60">
+              Showing {currentItems.length} of {filteredMeetings.length}
+            </span>
+          </div>
+        </div>
+      </div>
 
-          <div className="w-full h-[610px] bg-[#FAFAFB] dark:bg-[#343434] overflow-y-auto">
+      <div className="w-full h-[610px] bg-[#FAFAFB] dark:bg-[#343434] overflow-y-auto">
         <table className="w-full table-auto">
           <thead className="text-[12px] bg-[#4C6993] text-white">
             <tr>
@@ -333,7 +365,9 @@ const ScheduledMeetings = () => {
           <tbody>
             {currentItems.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-4">No meetings found.</td>
+                <td colSpan={6} className="text-center py-4">
+                  No meetings found.
+                </td>
               </tr>
             ) : (
               currentItems.map((item) => (
@@ -341,8 +375,12 @@ const ScheduledMeetings = () => {
                   key={item._id}
                   className="text-[12px] odd:bg-white even:bg-[#F8F8F8] dark:odd:bg-[#2C2C2C] dark:even:bg-[#303030]"
                 >
-                  <td className="px-3 py-2 text-[#3D8FDE] font-medium">{item.meetingId}</td>
-                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">{item.meetingName}</td>
+                  <td className="px-3 py-2 text-[#3D8FDE] font-medium">
+                    {item.meetingId}
+                  </td>
+                  <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
+                    {item.meetingName}
+                  </td>
                   <td className="px-3 py-2 text-[#17243E] dark:text-[#FDFDFD]">
                     {new Date(item.selectedDate).toLocaleDateString("en-US", {
                       month: "short",
@@ -351,22 +389,21 @@ const ScheduledMeetings = () => {
                     })}
                   </td>
                   <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
-                      {item.startTime}
-                    </td>
+                    {item.startTime}
+                  </td>
                   <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
-                      <span
-                        className={`px-2 text-[10px] text-center py-[3px] rounded-md ${
-                          item.meetingStatus === "Scheduled"
-                            ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
-                            : item.meetingStatus === "Rescheduled"
-                            ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
-                            : ""
-                        }`}
-                      >
-                        {(item.meetingStatus || "UNKNOWN").toUpperCase()}
-                      </span>
-                    </td>
-             
+                    <span
+                      className={`px-2 text-[10px] text-center py-[3px] rounded-md ${
+                        item.meetingStatus === "Scheduled"
+                          ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
+                          : item.meetingStatus === "Rescheduled"
+                          ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
+                          : ""
+                      }`}
+                    >
+                      {(item.meetingStatus || "UNKNOWN").toUpperCase()}
+                    </span>
+                  </td>
                 </tr>
               ))
             )}
@@ -399,35 +436,55 @@ const ScheduledMeetings = () => {
                 type="text"
                 className="w-full px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 value={meetingFilters.meetingName}
-                onChange={(e) => setMeetingFilters({ ...meetingFilters, meetingName: e.target.value })}
+                onChange={(e) =>
+                  setMeetingFilters({
+                    ...meetingFilters,
+                    meetingName: e.target.value,
+                  })
+                }
               />
             </div>
             <div className="mb-4">
-  <label className="block text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-    Meeting Date
-  </label>
-  <div className="flex gap-2">
-    <input
-      type="date"
-      className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]  [&::-webkit-calendar-picker-indicator]:dark:invert"
-      value={meetingFilters.fromDate}
-      onChange={(e) => setMeetingFilters({ ...meetingFilters, fromDate: e.target.value })}
-    />
-    <input
-      type="date"
-      className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]  [&::-webkit-calendar-picker-indicator]:dark:invert"
-      value={meetingFilters.toDate}
-      onChange={(e) => setMeetingFilters({ ...meetingFilters, toDate: e.target.value })}
-    />
-  </div>
-</div>
-     <div className="mb-6">
+              <label className="block text-sm font-medium mb-1 dark:text-[#D6D6D6]">
+                Meeting Date
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]  [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  value={meetingFilters.fromDate}
+                  onChange={(e) =>
+                    setMeetingFilters({
+                      ...meetingFilters,
+                      fromDate: e.target.value,
+                    })
+                  }
+                />
+                <input
+                  type="date"
+                  className="w-1/2 px-3 py-2 border rounded text-xs dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]  [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  value={meetingFilters.toDate}
+                  onChange={(e) =>
+                    setMeetingFilters({
+                      ...meetingFilters,
+                      toDate: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div className="mb-6">
               <label className="block text-sm font-medium mb-1">Time</label>
               <input
                 type="time"
                 className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]  [&::-webkit-calendar-picker-indicator]:dark:invert"
                 value={meetingFilters.timing}
-                onChange={(e) => setMeetingFilters({ ...meetingFilters, timing: e.target.value })}
+                onChange={(e) =>
+                  setMeetingFilters({
+                    ...meetingFilters,
+                    timing: e.target.value,
+                  })
+                }
               />
             </div>
             <div className="mb-4">
@@ -437,7 +494,12 @@ const ScheduledMeetings = () => {
               <select
                 className="w-full border rounded-md p-2 text-[12px] dark:text-[#fff] dark:border-[#5C5C5C] dark:bg-[#343434]"
                 value={meetingFilters.status}
-                onChange={(e) => setMeetingFilters({ ...meetingFilters, status: e.target.value })}
+                onChange={(e) =>
+                  setMeetingFilters({
+                    ...meetingFilters,
+                    status: e.target.value,
+                  })
+                }
               >
                 <option value="">Select status</option>
                 <option value="Scheduled">Scheduled</option>
@@ -566,7 +628,7 @@ const ScheduledMeetings = () => {
         </div>
       )}
 
-           {isRescheduleModalOpen && (
+      {isRescheduleModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black bg-opacity-50" />
@@ -644,7 +706,6 @@ const ScheduledMeetings = () => {
       {failed && (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
       )}
-
     </>
   );
 };

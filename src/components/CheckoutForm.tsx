@@ -1,12 +1,14 @@
 'use client';
 
+import React, { useState } from 'react';
 import {
   CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
 import type { StripeCardNumberElementChangeEvent } from '@stripe/stripe-js';
-import { useState } from 'react';
 import { CreditCard } from 'lucide-react';
 
 interface CheckoutFormProps {
@@ -34,7 +36,7 @@ const getCardLogo = (brand: LocalCardBrand): string => {
     diners: 'https://img.icons8.com/color/48/diners-club.png',
     jcb: 'https://img.icons8.com/color/48/jcb.png',
     unionpay: 'https://img.icons8.com/color/48/unionpay.png',
-    rupay: '/assets/images/icons8-rupay-48.png', // <-- local logo
+    rupay: '/assets/images/icons8-rupay-48.png',
     unknown: '',
   };
   return logos[brand] || '';
@@ -58,12 +60,13 @@ const detectBrandWithRupayOverride = (
   return stripeBrand as LocalCardBrand;
 };
 
-const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret }) => {
+const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret, evaluationId }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [cardBrand, setCardBrand] = useState<LocalCardBrand>('unknown');
+  const [zip, setZip] = useState('');
 
   const handleCardChange = (event: StripeCardNumberElementChangeEvent) => {
     const detected = detectBrandWithRupayOverride(event);
@@ -72,27 +75,66 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret }) => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
     if (!stripe || !elements) return;
 
     setLoading(true);
     setMessage('');
 
-    const cardElement = elements.getElement(CardNumberElement);
-    if (!cardElement) return;
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    const expiryElement = elements.getElement(CardExpiryElement);
+    const cvcElement = elements.getElement(CardCvcElement);
 
-    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: cardElement,
-      },
-    });
-
-    if (error) {
-      setMessage(error.message || 'Payment failed');
-    } else if (paymentIntent?.status === 'succeeded') {
-      setMessage('Payment successful!');
+    if (!cardNumberElement || !expiryElement || !cvcElement) {
+      setMessage('Payment elements not ready. Please try again.');
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    try {
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: cardNumberElement,
+          billing_details: {
+            address: {
+              postal_code: zip,
+            },
+          },
+        },
+      });
+
+      if (error) {
+        setMessage(error.message ?? 'An unexpected error occurred.');
+      } else if (paymentIntent?.status === 'succeeded') {
+        const payload = {
+          amount: paymentIntent.amount,
+          currency: paymentIntent.currency,
+          evaluationId,
+          paymentIntentResponse: paymentIntent,
+        };
+
+        const backendRes = await fetch(
+          `https://api.blackstoneinfomaticstech.com/create-payment-intent`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        if (backendRes.ok) {
+          setMessage('✅ Payment successful!');
+        } else {
+          setMessage('❌ Backend failed to confirm payment.');
+        }
+      }
+    } catch (err: any) {
+      setMessage('❌ Payment failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -130,32 +172,58 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret }) => {
         )}
       </div>
 
-      {/* Expiry + CVC */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-800 mb-1">Expiration Date</label>
-          <input
-            type="text"
-            placeholder="MM/YY"
-            maxLength={5}
-            onChange={(e) => {
-              let val = e.target.value.replace(/\D/g, '');
-              if (val.length > 4) val = val.slice(0, 4);
-              if (val.length >= 3) val = `${val.slice(0, 2)}/${val.slice(2)}`;
-              e.target.value = val;
-            }}
-            className="w-full border rounded-md px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+          <div className="border rounded-md px-3 py-2 text-sm text-gray-800 bg-white">
+            <CardExpiryElement
+              options={{
+                style: {
+                  base: {
+                    fontSize: '14px',
+                    color: '#2d3748',
+                    '::placeholder': { color: '#a0aec0' },
+                  },
+                  invalid: { color: '#e53e3e' },
+                },
+              }}
+            />
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-800 mb-1">Security Code</label>
-          <input
-            type="text"
-            placeholder="CVC"
-            maxLength={4}
-            className="w-full border rounded-md px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+          <div className="border rounded-md px-3 py-2 text-sm text-gray-800 bg-white">
+            <CardCvcElement
+              options={{
+                style: {
+                  base: {
+                    fontSize: '14px',
+                    color: '#2d3748',
+                    '::placeholder': { color: '#a0aec0' },
+                  },
+                  invalid: { color: '#e53e3e' },
+                },
+              }}
+            />
+          </div>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-800 mb-1">ZIP Code</label>
+        <input
+          type="text"
+          maxLength={6}
+          pattern="\d{6}"
+          required
+          value={zip}
+          onChange={(e) => {
+            const cleaned = e.target.value.replace(/\D/g, '');
+            setZip(cleaned);
+          }}
+          placeholder="123456"
+          className="w-full border rounded-md px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
       </div>
 
       <hr className="my-6" />
@@ -166,7 +234,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ clientSecret }) => {
         className={`w-full py-2 px-4 rounded text-white font-bold transition-colors ${
           !stripe || loading
             ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-[#5A6ACF] hover:bg-[#4a5ac0]'
+            : 'bg-blue-600 hover:bg-blue-700'
         }`}
       >
         {loading ? 'Processing...' : 'Pay Now'}

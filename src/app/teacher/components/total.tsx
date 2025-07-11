@@ -9,7 +9,6 @@ interface TeacherDashboardStats {
   totalstudents: number
   totalhours: number
   totalearnings: number
-  debug?: any // For development debugging
 }
 
 const Total = () => {
@@ -19,8 +18,8 @@ const Total = () => {
     totalhours: 0,
     totalearnings: 0,
   })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+
+
 
   const safeNumber = (value: unknown): number => {
     if (typeof value === "string") {
@@ -32,17 +31,7 @@ const Total = () => {
     return isNaN(num) ? 0 : num
   }
 
-  const formatValue = (value: number, isCurrency = false, suffix = ""): string => {
-    if (isCurrency) {
-    return new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-}).format(value)
-    }
-    return `${value}${suffix}`
-  }
+  
 
   const fetchData = async () => {
     const teacherId = localStorage.getItem("TeacherPortalId")
@@ -52,15 +41,13 @@ const Total = () => {
     console.log("Token exists:", !!token) // Debug log (don't log actual token)
 
     if (!teacherId || !token) {
-      setError("Please login as a teacher first")
-      setLoading(false)
       return
     }
 
     try {
-      console.log("Making API call...") // Debug log
+      console.log("Making API call...") 
 
-const response = await axios.get("http://127.0.0.1:5001/dashboard/teacher/counts", {
+const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts", {
   params: { teacherId },
   headers: {
     Authorization: `Bearer ${token}`,
@@ -84,12 +71,10 @@ const response = await axios.get("http://127.0.0.1:5001/dashboard/teacher/counts
         totalearnings: safeNumber(data.totalearnings),
       })
 
-      setError(null)
+
     } catch (err: any) {
       console.error("API Error:", err)
-
-      let errorMessage = "Failed to load teacher statistics"
-
+      let errorMessage;
       if (err.response) {
         // Server responded with error status
         console.error("Error response:", err.response.data)
@@ -101,11 +86,8 @@ const response = await axios.get("http://127.0.0.1:5001/dashboard/teacher/counts
         // Something else happened
         errorMessage = err.message || "Unknown error occurred"
       }
-
-      setError(errorMessage)
-    } finally {
-      setLoading(false)
-    }
+      console.log(errorMessage);
+    } 
   }
 
   useEffect(() => {
@@ -113,14 +95,11 @@ const response = await axios.get("http://127.0.0.1:5001/dashboard/teacher/counts
   }, [])
 
   useEffect(() => {
-    const teacherId = localStorage.getItem("TeacherPortalId")
+    const teacherId = typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null;
     if (!teacherId) return
-
     const socket = getSocket(teacherId)
-
     const handleLiveStats = (data: TeacherDashboardStats) => {
-      console.log("Received live stats:", data) // Debug log
-
+      console.log("Received live stats:", data) 
       setStats({
         totalclasses: safeNumber(data.totalclasses),
         totalstudents: safeNumber(data.totalstudents),
@@ -128,71 +107,44 @@ const response = await axios.get("http://127.0.0.1:5001/dashboard/teacher/counts
         totalearnings: safeNumber(data.totalearnings),
       })
     }
-
-    socket.on("teacherDashboardCard", handleLiveStats)
-
+    socket.on("teacherDashboardCardCount", handleLiveStats)
     return () => {
-      socket.off("teacherDashboardCard", handleLiveStats)
+      socket.off("teacherDashboardCardCount", handleLiveStats)
     }
   }, [])
 
   const cards = [
     {
       title: "Total Classes",
-      count: formatValue(stats.totalclasses),
+      count: stats.totalclasses ?? 0,
       icon: "/assets/images/tc1.svg",
       bg: "bg-[#e3efff] dark:bg-[#3e4e50]",
     },
     {
       title: "Total Students",
-      count: formatValue(stats.totalstudents),
+      count: stats.totalstudents ?? 0,
       icon: "/assets/images/tc2.svg",
       bg: "bg-[#ede5ff] dark:bg-[#3f3e50]",
     },
     {
       title: "Total Hours",
-      count: formatValue(stats.totalhours, false, " hrs"),
+      count: stats.totalhours ?? 0,
       icon: "/assets/images/tc3.svg",
       bg: "bg-[#ffe9e9] dark:bg-[#503e3e]",
     },
     {
       title: "Total Earnings",
-      count: formatValue(stats.totalearnings, true),
+      count: `$${stats.totalearnings}`,
       icon: "/assets/images/tc4.svg",
       bg: "bg-[#fff5d4] dark:bg-[#504d3e]",
     },
   ]
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-[110px] bg-gray-200 dark:bg-[#404040] rounded-2xl animate-pulse" />
-        ))}
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 bg-red-100 text-red-800 rounded-lg">
-        <div className="font-semibold">Error:</div>
-        <div>{error}</div>
-        <button
-          onClick={fetchData}
-          className="mt-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-        >
-          Retry
-        </button>
-      </div>
-    )
-  }
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {cards.map((card, index) => (
+      {cards.map((card) => (
         <div
-          key={index}
+          key={card.title}
           className="flex items-center justify-between p-5 rounded-2xl shadow-sm bg-white dark:bg-[#343434] dark:text-[#fff]"
         >
           <div>

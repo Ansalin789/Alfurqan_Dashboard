@@ -370,7 +370,7 @@ const ManageStudentView = () => {
         }
 
         const res = await axios.get<StudentWithAssignments[]>(
-          "http://localhost:5001/classShedule/teacher/list/",
+          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list/",
           {
             headers: {
               "Content-Type": "application/json",
@@ -468,7 +468,7 @@ const ManageStudentView = () => {
         }
 
         const response = await axios.get(
-          `http://localhost:5001/assignments/cardcount?studentId=${studentId}`
+          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`
         );
 
         // Log the full API response for debugging

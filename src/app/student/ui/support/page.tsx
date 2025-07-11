@@ -1,113 +1,152 @@
 import BaseLayout2 from "@/components/BaseLayout2";
 import React from "react";
-import { BiLogoTelegram } from "react-icons/bi";
-
+import { IoIosArrowDown } from "react-icons/io";
+import { MdOutlineArrowOutward } from "react-icons/md";
+import StudentHeader from "../../components/StudentHeader";
 
 const Support = () => {
   return (
     <BaseLayout2>
-      <div className="min-h-screen p-8">
-        {/* Page Title */}
-        <h1 className="text-center text-2xl font-bold text-gray-800 mb-8 bg-[#C4C4C4] p-3 rounded-lg">
-          Support
-        </h1>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Chat Section */}
-          <div className="col-span-1 bg-white shadow-lg rounded-xl p-6 h-[80vh]">
-          <div className="flex items-center justify-between mb-4">
-      <h2 className="text-[15px] font-semibold text-gray-800 flex items-center">
-        <span className="mr-2">🤖</span> Chat Support
-      </h2>
-      <span className="text-green-500 font-medium text-[12px]">● Online</span>
-    </div>
-            <div className="space-y-4">
-              <div className="bg-gray-100 p-4 rounded-lg text-gray-700 text-[12px]">
-                <p>
-                  There are many programming languages in the market that are
-                  used in designing and building websites, various applications,
-                  and other tasks. All these languages are popular in their
-                  place and in the way they are used, and many programmers learn
-                  and use them.
-                </p>
-              </div>
-              <button className="bg-blue-500 text-white py-2 px-4 rounded-tr-lg rounded-tl-lg rounded-bl-lg ml-32">
-                So explain to me more
-              </button>
-              <div className="bg-gray-100 p-4 rounded-lg text-gray-700 text-[12px]">
-                <p>
-                  There are many programming languages in the market that are
-                  used in designing and building websites, various applications,
-                  and other tasks. All these languages are popular in their
-                  place and in the way they are used, and many programmers learn
-                  and use them.
-                </p>
-              </div>
-            </div>
-            <div className="mt-24 flex items-center">
-              <input
-                type="text"
-                placeholder="Write your message"
-                className="flex-grow bg-gray-100 rounded-lg p-3 outline-none border text-[13px]"
-              />
-              <button className="ml-2 bg-blue-500 text-white p-3 rounded-lg">
-                <BiLogoTelegram />
-              </button>
+    <StudentHeader currentSection="Support"/>
+      <div className="p-4 mx-auto">
+        <div className="flex gap-x-5 w-auto">
+          <div className="bg-[#7689BD] shadow-lg rounded-xl p-4 h-[616px] w-[340px]">
+            <h2 className="text-[20px] font-semibold text-[#fff] mb-4 p-4">
+              Contact
+            </h2>
+            <div className="text-gray-800 space-y-4 justify-evenly px-6">
+              <p>
+                <strong className="text-white text-[16px] font-medium flex items-center gap-2">
+                  <img
+                    src="/assets/images/location.png"
+                    alt="location"
+                    className="w-4 h-4"
+                  />
+                  Visit Us :
+                </strong>
+                <div className="ml-6">
+                <span className="text-[13px] font-normal text-white">
+                  Come say Hello at Our Office HQ
+                </span>
+                <br />
+                <span className="text-white text-[13px] font-normal">
+                  {" "}
+                  128, City Road, London, EC1V 2NX, United Kingdom
+                </span>
+                </div>
+                
+              </p>
+              <p>
+                <strong className="text-white text-[16px] font-medium flex items-center gap-2">
+                  <img
+                    src="/assets/images/call.png"
+                    alt="call"
+                    className="w-4 h-4"
+                  />
+                  Call Us :
+                </strong>
+                <div className="ml-6">
+                <span className="text-[13px] font-normal text-white">
+                  Monday – Sunday/ 24×7
+                </span>
+                <br />
+                <span className="text-white text-[13px] font-normal">
+                  UK +44 20 4577 1227
+                  <br />
+                  USA +1 85 5442 3380
+                </span>
+                </div>
+              </p>
+              <p>
+                <strong className="text-white text-[16px] font-medium flex items-center gap-2">
+                  <img
+                    src="/assets/images/email.png"
+                    alt="email"
+                    className="w-4 h-4"
+                  />
+                  Email to Us :
+                </strong>
+                <div className="ml-6">
+                <span className="text-[13px] font-normal text-white">
+                  Our Friendly team is here to Help
+                </span>
+                <br />
+                <span className="text-white text-[13px] font-normal">
+                  contact@alfurqan.academy
+                </span>
+                </div>
+              </p>
             </div>
           </div>
 
-          {/* Contact Section */}
-          <div className="col-span-1 bg-[#4CBC9A] shadow-lg rounded-xl p-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Contact</h2>
-            <div className="text-gray-800 space-y-4">
-              <p>
-                <strong className="text-white font-semibold">Visit Us:</strong><br /><span className="text-[13px]">Come say Hello at Our Office HQ</span> 
-                <br />
-               <span className="text-white text-[13px]"> 128, City Road, London, EC1V 2NX, United Kingdom</span>
-              </p>
-              <p>
-                <strong className="text-white font-semibold">Call Us:</strong><br /><span className="text-[13px]">Monday – Sunday/ 24×7</span> 
-                <br />
-                <span className="text-white text-[13px]">UK +44 20 4577 1227
-                <br />
-                USA +1 85 5442 3380</span> 
-              </p>
-              <p>
-                <strong className="text-white font-semibold">Chat to Us:</strong><br /><span className="text-[13px]">Our Friendly team is here to Help</span> 
-                <br />
-                <span className="text-white text-[13px]">contact@alfurqan.academy</span>
-              </p>
-            </div>
-            <div className="mt-8 text-center">
-              <h3 className="text-lg font-semibold text-[#1C3557]">WE’RE HERE TO ASSIST YOU!</h3>
-            </div>
-            <img src="/assets/images/support.png" alt="" className="w-60 justify-center ml-16"/>
-          </div>
-
-          {/* FAQ Section */}
-          <div className="col-span-1 bg-[#223857] shadow-lg rounded-xl p-6 justify-evenly">
-            <h2 className="text-xl font-semibold text-[#fff] mb-4">
+          <div className="bg-[#5E6578] shadow-lg rounded-xl p-6 w-[915px] h-[616px]">
+            <h2 className="text-[20px] p-4 text-left font-semibold text-[#FAFAFA] mb-7">
               Do you have questions?
             </h2>
-            <details className="mb-4 p-2">
-              <summary className="text-[13px]  font-medium text-[#fff] cursor-pointer">
-                What if I encounter technical issues?
-              </summary>
-              <p className="text-[#fff] text-[11px] mt-2">
-                Visit the Help Center or Support section of the site. You can
-                often find troubleshooting guides or contact the support team
-                via email, chat, or phone.
-              </p>
-            </details>
-            <details className="p-2">
-              <summary className="text-[13px] font-medium text-[#fff] cursor-pointer">
-                Can I use the Teacher Module to communicate with students?
-              </summary>
-              <p className="text-[#fff] text-[11px] mt-2">
-                Yes, the Teacher Module provides features to communicate
-                directly with students.
-              </p>
-            </details>
+            <div className="px-6">
+              <details className="group mb-6 py-2 w-full border-b border-b-[#818795]">
+                <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
+                  What if I encounter technical issues?
+                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                </summary>
+                <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
+                  Visit the Help Center or Support section of the site. You can
+                  often find troubleshooting guides or contact the support team
+                  via email, chat, or phone.
+                </div>
+              </details>
+
+              <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
+                <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
+                  Can I use the Teacher Module to communicate with students?
+                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                </summary>
+                <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
+                  Yes, the Teacher Module provides features to communicate
+                  directly with students.
+                </div>
+              </details>
+
+              <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
+                <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
+                  Can I track my students' progress?
+                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                </summary>
+                <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
+                  Yes, the Teacher Module allows tracking student progress
+                  effectively.
+                </div>
+              </details>
+
+              <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
+                <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
+                  Does the platform support mobile access?
+                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                </summary>
+                <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
+                  Yes, the platform is fully responsive and can be accessed from
+                  any mobile device.
+                </div>
+              </details>
+
+              <details className="group py-2 mb-6 w-full border-b border-b-[#818795]">
+                <summary className="flex items-center justify-between text-[16px] font-normal text-[#fff] cursor-pointer">
+                  Can I provide personalized feedback to students?
+                  <IoIosArrowDown className="text-white transition-transform duration-300 group-open:rotate-180" />
+                </summary>
+                <div className="text-[#BBBBBB] text-[14px] mt-2 break-words">
+                  Yes, you can provide personalized feedback to students through
+                  the platform.
+                </div>
+              </details>
+            </div>
+
+            <div className="flex gap-3 mt-24 text-[#fff] text-center justify-end p-2">
+              <button className="bg-[#FAFAFA] text-[#1B242C] p-2 rounded-lg flex items-center gap-2">
+                Connect Us
+                <MdOutlineArrowOutward className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
