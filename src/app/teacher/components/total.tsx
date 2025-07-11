@@ -19,8 +19,6 @@ const Total = () => {
     totalearnings: 0,
   })
 
-
-
   const safeNumber = (value: unknown): number => {
     if (typeof value === "string") {
       const cleaned = value.replace(/[$,]/g, "")
@@ -31,35 +29,34 @@ const Total = () => {
     return isNaN(num) ? 0 : num
   }
 
-  
+  const formatNumber = (num: number, isCurrency = false): string => {
+    if (isCurrency) {
+      return num.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    }
+    return num.toLocaleString()
+  }
 
   const fetchData = async () => {
     const teacherId = localStorage.getItem("TeacherPortalId")
     const token = localStorage.getItem("TeacherAuthToken")
 
-    console.log("Teacher ID:", teacherId) // Debug log
-    console.log("Token exists:", !!token) // Debug log (don't log actual token)
-
-    if (!teacherId || !token) {
-      return
-    }
+    if (!teacherId || !token) return
 
     try {
-      console.log("Making API call...") 
-
-const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts", {
-  params: { teacherId },
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-})
-
-
-      console.log("API Response:", response.data) // Debug log
+      const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts", {
+        params: { teacherId },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
       const data = response.data
 
-      // Validate response structure
       if (typeof data !== "object" || data === null) {
         throw new Error("Invalid response format")
       }
@@ -71,23 +68,18 @@ const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashb
         totalearnings: safeNumber(data.totalearnings),
       })
 
-
     } catch (err: any) {
       console.error("API Error:", err)
       let errorMessage;
       if (err.response) {
-        // Server responded with error status
-        console.error("Error response:", err.response.data)
         errorMessage = err.response.data?.error || `Server error: ${err.response.status}`
       } else if (err.request) {
-        // Request was made but no response received
         errorMessage = "No response from server. Please check your connection."
       } else {
-        // Something else happened
         errorMessage = err.message || "Unknown error occurred"
       }
       console.log(errorMessage);
-    } 
+    }
   }
 
   useEffect(() => {
@@ -95,11 +87,11 @@ const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashb
   }, [])
 
   useEffect(() => {
-    const teacherId = typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null;
+    const teacherId = typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null
     if (!teacherId) return
+
     const socket = getSocket(teacherId)
     const handleLiveStats = (data: TeacherDashboardStats) => {
-      console.log("Received live stats:", data) 
       setStats({
         totalclasses: safeNumber(data.totalclasses),
         totalstudents: safeNumber(data.totalstudents),
@@ -107,6 +99,7 @@ const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashb
         totalearnings: safeNumber(data.totalearnings),
       })
     }
+
     socket.on("teacherDashboardCardCount", handleLiveStats)
     return () => {
       socket.off("teacherDashboardCardCount", handleLiveStats)
@@ -116,53 +109,73 @@ const response = await axios.get("https://api.blackstoneinfomaticstech.com/dashb
   const cards = [
     {
       title: "Total Classes",
-      count: stats.totalclasses ?? 0,
+      count: formatNumber(stats.totalclasses),
       icon: "/assets/images/tc1.svg",
       bg: "bg-[#e3efff] dark:bg-[#3e4e50]",
     },
     {
       title: "Total Students",
-      count: stats.totalstudents ?? 0,
+      count: formatNumber(stats.totalstudents),
       icon: "/assets/images/tc2.svg",
       bg: "bg-[#ede5ff] dark:bg-[#3f3e50]",
     },
     {
       title: "Total Hours",
-      count: stats.totalhours ?? 0,
+      count: formatNumber(stats.totalhours),
       icon: "/assets/images/tc3.svg",
       bg: "bg-[#ffe9e9] dark:bg-[#503e3e]",
     },
     {
       title: "Total Earnings",
-      count: `$${stats.totalearnings}`,
+      count: formatNumber(stats.totalearnings, true),
       icon: "/assets/images/tc4.svg",
       bg: "bg-[#fff5d4] dark:bg-[#504d3e]",
     },
   ]
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {cards.map((card) => (
-        <div
-          key={card.title}
-          className="flex items-center justify-between p-5 rounded-2xl shadow-sm bg-white dark:bg-[#343434] dark:text-[#fff]"
-        >
-          <div>
-            <p className="text-[14px] font-medium text-black dark:text-white">{card.title}</p>
-            <p className="text-[28px] font-semibold text-black dark:text-white">{card.count}</p>
-          </div>
-          <div className={`${card.bg} p-3 rounded-full flex items-center justify-center`}>
-            <Image
-              src={card.icon || "/placeholder.svg"}
-              alt={card.title}
-              width={40}
-              height={40}
-              className="object-contain"
-            />
-          </div>
-        </div>
-      ))}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+  {cards.map((card) => (
+    <div
+      key={card.title}
+      className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-[#343434] rounded-2xl shadow-sm px-5 py-5 w-full min-h-[120px]"
+    >
+      {/* Text Section */}
+      <div className="flex-1 text-center sm:text-left overflow-hidden">
+        <p className="text-black dark:text-white font-medium text-[clamp(14px,1.2vw,18px)] leading-tight">
+          {card.title}
+        </p>
+        <p className="text-black dark:text-white font-semibold text-[clamp(22px,2.2vw,32px)] leading-tight break-words">
+          {card.count}
+        </p>
+      </div>
+
+      {/* Icon Section */}
+      <div
+        className={`${card.bg} rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden`}
+        style={{
+          width: "clamp(48px, 4vw, 60px)",
+          height: "clamp(48px, 4vw, 60px)",
+        }}
+      >
+        <Image
+          src={card.icon}
+          alt={card.title}
+          width={40}
+          height={40}
+          className="object-contain"
+          style={{
+            width: "80%",
+            height: "80%",
+            maxWidth: "40px",
+            maxHeight: "40px",
+          }}
+        />
+      </div>
     </div>
+  ))}
+</div>
+
   )
 }
 
