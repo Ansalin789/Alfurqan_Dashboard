@@ -285,10 +285,10 @@ const TeacherSchedulePage = () => {
                             {event.status && (
                               <span
                                 className={`text-[10px] font-bold px-2 py-1 rounded ml-1
-                                  ${event.status === 'Scheduled' ? 'bg-blue-100 text-blue-700' :
-                                    event.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                                    event.status === 'Rescheduled' ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-gray-200 text-gray-700'}`}
+                                  ${event.status === 'Scheduled' ? ' text-blue-700' :
+                                    event.status === 'Completed' ? ' text-green-700' :
+                                    event.status === 'Rescheduled' ? ' text-yellow-700' :
+                                    ' text-gray-700'}`}
                               >
                                 {event.status}
                               </span>
@@ -334,9 +334,9 @@ const TeacherSchedulePage = () => {
                 {event.status && (
                   <span
                     className={`text-[10px] font-bold px-2 py-1 rounded ml-1
-                      ${event.status === 'Scheduled' ? 'bg-blue-100 text-blue-700' :
-                        event.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                        event.status === 'Rescheduled' ? 'bg-yellow-100 text-yellow-700' :
+                      ${event.status === 'Scheduled' ? ' text-blue-700' :
+                        event.status === 'Completed' ? ' text-green-700' :
+                        event.status === 'Rescheduled' ? ' text-yellow-700' :
                         'bg-gray-200 text-gray-700'}`}
                   >
                     {event.status}
@@ -435,9 +435,9 @@ const TeacherSchedulePage = () => {
                     {dayEvents[0].status && (
                       <span
                         className={`text-[8px] font-bold px-1 rounded ml-1
-                          ${dayEvents[0].status === 'Scheduled' ? 'bg-blue-100 text-blue-700' :
-                            dayEvents[0].status === 'Completed' ? 'bg-green-100 text-green-700' :
-                            dayEvents[0].status === 'Rescheduled' ? 'bg-yellow-100 text-yellow-700' :
+                          ${dayEvents[0].status === 'Scheduled' ? ' text-blue-700' :
+                            dayEvents[0].status === 'Completed' ? ' text-green-700' :
+                            dayEvents[0].status === 'Rescheduled' ? ' text-yellow-700' :
                             'bg-gray-200 text-gray-700'}`}
                       >
                         {dayEvents[0].status}
