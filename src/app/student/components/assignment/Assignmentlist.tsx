@@ -48,6 +48,10 @@ interface AssignmentType {
   answerValidation?: string;
   assignmentStatus?: string;
   __v?: number;
+  questions?: {
+    _id: string;
+    status: string;
+  }[];
 }
 
 const StudentList = () => {
@@ -89,7 +93,12 @@ const StudentList = () => {
 
   // Tab logic (if you want to filter by assignmentStatus)
   const pendingAssignments = assignments.filter(a => a.assignmentStatus?.toUpperCase() !== "COMPLETED");
-  const completedAssignments = assignments.filter(a => a.assignmentStatus?.toUpperCase() === "COMPLETED");
+  const completedAssignments = assignments.filter(a => {
+    const isAssignmentCompleted = a.assignmentStatus?.toUpperCase() === "COMPLETED";
+    // If there are questions, check that none are "ASSIGNED"
+    const allQuestionsNotAssigned = !a.questions || a.questions.every(q => q.status?.toUpperCase() !== "ASSIGNED");
+    return isAssignmentCompleted && allQuestionsNotAssigned;
+  });
   const studentsToDisplay = activeTab === "Pending" ? pendingAssignments : completedAssignments;
 
   const toggleDropdown = (id: string) => {
