@@ -8,99 +8,51 @@ import RecordedClassesBase from "../../components/knowlegdebase/RecordedClassesB
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
-import { Student } from "@/app/Academic-coach/components/addGroupAssignClass";
-import Teacher from "@/app/admin-main/ui/employees/teacher/page";
-
-interface StudentInfo {
-  studentId: string;
-  studentFirstName: string;
-  studentLastName: string;
-  studentEmail?: string;
-  learningInterest: string;
-}
-
-interface TeacherInfo {
-  teacherId: string;
-  teacherName: string;
-  teacherEmail: string;
-}
-
-interface SubscriptionInfo {
-  subscriptionName: string;
-}
-
-interface StudentDetails {
-  _id: string;
-  student: StudentInfo;
-  teacher: TeacherInfo;
-  subscription: SubscriptionInfo;
-  classType: string;
-  classStartDate: string;
-  classEndDate: string;
-  classStatus: string;
-  languageLevel?: string;
-  [key: string]: any;
-}
 
 interface Knowledge {
   assigmentId: string;
   name: string;
-  studentDetails: StudentDetails;
   pdfUrl?: string;
-}
-
-interface ClassData {
-  _id: string;
-  student: Student;
-  teacher: Teacher;
-  classDay: string[];
-  package: string;
-  preferedTeacher: string;
-  totalHourse: number;
-  startDate: string;
-  endDate: string;
-  startTime: string[];
-  endTime: string[];
-  scheduleStatus: string;
-  classLink: string;
-  status: string;
-  classStatus: string;
-  createdBy: string;
-  createdDate: string;
-  lastUpdatedDate: string;
 }
 
 const arrayBufferToBase64 = (buffer: number[]) => {
   let binary = "";
   const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
+  for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
 };
 
 const Knowledge: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showFilter, setShowFilter] = useState(false);
-  const [filteredClass, setFilteredClass] = useState<Knowledge[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  // PDF Section States
+  const [pdfSearchQuery, setPdfSearchQuery] = useState("");
+  const [pdfShowFilter, setPdfShowFilter] = useState(false);
+  const [pdfFilteredClass, setPdfFilteredClass] = useState<Knowledge[]>([]);
+  const [pdfCurrentPage, setPdfCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const displayedClasses = filteredClass
-    .filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const displayedPdfClasses = pdfFilteredClass
+    .filter((item) => item.name.toLowerCase().includes(pdfSearchQuery.toLowerCase()))
+    .slice((pdfCurrentPage - 1) * itemsPerPage, pdfCurrentPage * itemsPerPage);
+
+  const totalPdfPages = Math.ceil(
+    pdfFilteredClass.filter((item) =>
+      item.name.toLowerCase().includes(pdfSearchQuery.toLowerCase())
+    ).length / itemsPerPage
+  );
+
+  // Recorded Section States
+  const [recordedSearchQuery, setRecordedSearchQuery] = useState("");
+  const [recordedShowFilter, setRecordedShowFilter] = useState(false);
 
   useEffect(() => {
     const fetchKnowledgeList = async () => {
       try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("StudentAuthToken")
-            : null;
+        const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
 
         if (!token) {
-          console.error("\u274C StudentAuthToken not found");
+          console.error("❌ StudentAuthToken not found");
           return;
         }
 
@@ -121,36 +73,30 @@ const Knowledge: React.FC = () => {
           const formatted = result.data.map((item: any) => ({
             assigmentId: item._id,
             name: item.subjectTitle,
-            studentDetails: {} as StudentDetails,
             pdfUrl: `data:application/pdf;base64,${arrayBufferToBase64(
               item.uploadedFile?.data || []
             )}`,
           }));
-          setFilteredClass(formatted);
+          setPdfFilteredClass(formatted);
         } else {
-          console.error("\u274C Failed to fetch knowledge base list:", result.message);
+          console.error("❌ Failed to fetch knowledge base list:", result.message);
         }
       } catch (error) {
-        console.error("\u274C Error fetching knowledge base list:", error);
+        console.error("❌ Error fetching knowledge base list:", error);
       }
     };
 
     fetchKnowledgeList();
   }, []);
 
-  const totalPages = Math.ceil(
-    filteredClass.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase())).length /
-      itemsPerPage
-  );
-
   const renderPagination = () => {
     const pages = [];
 
-    if (currentPage > 1) {
+    if (pdfCurrentPage > 1) {
       pages.push(
         <button
           key="prev"
-          onClick={() => setCurrentPage(currentPage - 1)}
+          onClick={() => setPdfCurrentPage(pdfCurrentPage - 1)}
           className="mx-1 w-8 h-8 text-[20px] rounded bg-[#F8F8FA] dark:bg-[#717171] dark:text-[#9A9A9A] text-[#223857] hover:bg-[#eaeaea] dark:hover:bg-gray-600"
         >
           ‹
@@ -158,13 +104,13 @@ const Knowledge: React.FC = () => {
       );
     }
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = 1; i <= totalPdfPages; i++) {
       pages.push(
         <button
           key={i}
-          onClick={() => setCurrentPage(i)}
+          onClick={() => setPdfCurrentPage(i)}
           className={`mx-1 w-8 h-8 rounded text-sm font-medium ${
-            i === currentPage
+            i === pdfCurrentPage
               ? "bg-white dark:bg-[#717171] dark:text-white border border-[#223857] text-[#223857]"
               : "bg-[#F8F8FA] dark:bg-[#3F3F3F] text-[#203F78] dark:text-[#BDBDBD] hover:bg-[#eaeaea] dark:hover:bg-gray-600"
           }`}
@@ -174,11 +120,11 @@ const Knowledge: React.FC = () => {
       );
     }
 
-    if (currentPage < totalPages) {
+    if (pdfCurrentPage < totalPdfPages) {
       pages.push(
         <button
           key="next"
-          onClick={() => setCurrentPage(currentPage + 1)}
+          onClick={() => setPdfCurrentPage(pdfCurrentPage + 1)}
           className="mx-1 w-8 h-8 text-[20px] rounded bg-[#F8F8FA] dark:bg-[#717171] dark:text-[#9A9A9A] text-[#223857] hover:bg-[#eaeaea] dark:hover:bg-gray-600"
         >
           ›
@@ -197,6 +143,7 @@ const Knowledge: React.FC = () => {
     <BaseLayout2>
       <TeacherHeader currentSection="Knowledge Base" />
       <div className="w-full px-2 sm:px-4 py-6 min-h-screen">
+        {/* PDF Section */}
         <section className="w-full bg-[#F5F5F5] dark:bg-[#3B3B3B] py-3 rounded-xl shadow">
           <div className="flex flex-col md:flex-row items-center justify-between w-full bg-[#FAFAFB] dark:bg-[#343434] px-4 sm:px-6 -mt-3 rounded-t-xl gap-4">
             <div className="flex-1 flex items-center gap-2 text-sm text-gray-500">
@@ -204,13 +151,13 @@ const Knowledge: React.FC = () => {
               <input
                 type="text"
                 placeholder="Search by Keyword"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={pdfSearchQuery}
+                onChange={(e) => setPdfSearchQuery(e.target.value)}
                 className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
               />
             </div>
             <button
-              onClick={() => setShowFilter(true)}
+              onClick={() => setPdfShowFilter(!pdfShowFilter)}
               className="flex-1 flex items-center justify-between text-sm text-gray-400 cursor-pointer border-y-0 border-x-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
             >
               <span className="flex items-center gap-2">
@@ -221,13 +168,13 @@ const Knowledge: React.FC = () => {
             </button>
             <div className="flex-1 flex items-center text-sm text-gray-500">
               <span>
-                Showing {displayedClasses.length} of {filteredClass.length}
+                Showing {displayedPdfClasses.length} of {pdfFilteredClass.length}
               </span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 p-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {displayedClasses.map((item, index) => (
+            {displayedPdfClasses.map((item, index) => (
               <PdfCard
                 key={item.assigmentId || index}
                 title={item.name}
@@ -240,41 +187,47 @@ const Knowledge: React.FC = () => {
 
         {renderPagination()}
 
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold text-[#0a0a0a] dark:text-white dark:bg-[#242424] pb-3">
-            Recorded Classes
-          </h2>
-          <section className="w-full bg-[#F5F5F5] dark:bg-[#3b3b3b] py-4 rounded-xl shadow">
-            <div className="flex flex-col md:flex-row items-center dark:bg-[#343434] bg-[#FAFAFB] justify-between w-full px-4 sm:px-6 -mt-4 rounded-t-xl gap-4">
-              <div className="flex-1 flex items-center gap-2 text-sm text-gray-500">
-                <Search className="w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search by Keyword"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
-                />
-              </div>
-              <button
-                onClick={() => setShowFilter(true)}
-                className="flex-1 flex items-center justify-between text-sm text-gray-400 cursor-pointer border-y-0 border-x-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
-              >
-                <span className="flex items-center gap-2">
-                  <MdTune className="w-5 h-5" />
-                  Filter
-                </span>
-                <span className="ml-auto text-[20px]">&#9662;</span>
-              </button>
-              <div className="flex-1 flex items-center text-sm text-gray-500">
-                <span>
-                  Showing {displayedClasses.length} of {filteredClass.length}
-                </span>
-              </div>
-            </div>
-            <RecordedClassesBase searchValue={searchQuery} />
-          </section>
-        </div>
+       {/* Recorded Classes Section */}
+<div className="mt-6">
+  <h2 className="text-xl font-semibold text-[#0a0a0a] dark:text-white dark:bg-[#242424] pb-3">
+    Recorded Classes
+  </h2>
+  <section className="w-full bg-[#F5F5F5] dark:bg-[#3b3b3b] py-4 rounded-xl shadow">
+    <div className="flex flex-col md:flex-row items-center dark:bg-[#343434] bg-[#FAFAFB] justify-between w-full px-4 sm:px-6 -mt-4 rounded-t-xl gap-4">
+      <div className="flex-1 flex items-center gap-2 text-sm text-gray-500">
+        <Search className="w-5 h-5 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search by Keyword"
+          value={recordedSearchQuery}
+          onChange={(e) => setRecordedSearchQuery(e.target.value)}
+          className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
+        />
+      </div>
+
+      <button
+        onClick={() => setRecordedShowFilter(!recordedShowFilter)}
+        className="flex-1 flex items-center justify-between text-sm text-gray-400 cursor-pointer border-y-0 border-x-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
+      >
+        <span className="flex items-center gap-2">
+          <MdTune className="w-5 h-5" />
+          Filter
+        </span>
+        <span className="ml-auto text-[20px]">&#9662;</span>
+      </button>
+
+      <div className="flex-1 flex items-center text-sm text-gray-500">
+        <span>
+          Showing : {recordedSearchQuery ? `1 of 1` : `2 of 2`}
+        </span>
+      </div>
+    </div>
+
+    {/* RecordedClassesBase will handle searchValue internally */}
+    <RecordedClassesBase searchValue={recordedSearchQuery} />
+  </section>
+</div>
+
 
         <section className="mt-8">
           <h2 className="text-[18px] font-semibold text-[#5C5F85] p-1">Learn More Courses</h2>
