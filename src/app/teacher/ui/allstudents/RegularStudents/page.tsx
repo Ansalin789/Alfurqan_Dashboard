@@ -114,6 +114,7 @@ export interface StudentWithAssignments extends StudentCoreInfo {
   classType: string;
   groupClassId: string;
   assignment: AssignmentItem[];
+  level?: string;
 }
 
 const RegularStudents = () => {
@@ -127,6 +128,8 @@ const RegularStudents = () => {
   const [sessionClassType, setSessionClassType] = useState("");
   const [assignedTeacher, setAssignedTeacher] = useState("");
   const [assignedTeacherId, setAssignedTeacherId] = useState("");
+  const [course, setCourse] = useState("");
+  const [level, setLevel] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<StudentWithAssignments[]>(
     []
@@ -334,7 +337,17 @@ const RegularStudents = () => {
     setCurrentPage(1);
   };
 
-  const handleClick = () => {
+  const handleClick = (courseValue?: string, levelValue?: string) => {
+    const finalCourse = courseValue || course;
+    const finalLevel = levelValue || level;
+    
+    console.log("🔍 Debug - Values being passed:");
+    console.log("course:", finalCourse);
+    console.log("level:", finalLevel);
+    console.log("studentId:", studentId);
+    console.log("studentName:", studentName);
+    console.log("course:", finalCourse);
+    console.log("level:", finalLevel);
     const query = new URLSearchParams({
       title,
       assignedDate,
@@ -345,8 +358,11 @@ const RegularStudents = () => {
       sessionClassType,
       assignedTeacher,
       assignedTeacherId,
+      course: finalCourse,
+      level: finalLevel ||"",
     }).toString();
 
+    console.log("🔍 Final URL:", `/teacher/ui/addingnewassignment?${query}`);
     router.push(`/teacher/ui/addingnewassignment?${query}`);
   };
 
@@ -630,7 +646,9 @@ const RegularStudents = () => {
                           {studentInfo?.studentLastName}
                         </td>
                         <td className="px-3 py-2 break-words">-</td>
-                        <td className="px-3 py-2 break-words">-</td>
+                        <td className="px-3 py-2 break-words">
+                          {student?.level || "-"}
+                        </td>
                         <td className="px-3 py-2 break-words">
                           {studentDetails?.student?.learningInterest}
                         </td>
@@ -683,11 +701,23 @@ const RegularStudents = () => {
                                     studentDetails?.classType ?? "REGULARCLASS"
                                   );
                                   setAssignedTeacher(
-                                    studentDetails?.assignedTeacherEmail ?? ""
+                                    studentDetails?.teacher?.teacherName ?? ""
                                   );
                                   setAssignedTeacherId(
                                     studentDetails?.teacher?.teacherId ?? ""
                                   );
+                                  console.log("🔍 Setting values for student:", student.studentId);
+                                  console.log("🔍 Full student object:", student);
+                                  console.log("🔍 Full studentDetails object:", studentDetails);
+                                  console.log("🔍 studentDetails?.student?.learningInterest:", studentDetails?.student?.learningInterest);
+                                  console.log("🔍 studentDetails?.languageLevel:", studentDetails?.languageLevel);
+                                  console.log("🔍 student?.level:", student?.level);
+                                  
+                                  const courseValue = studentDetails?.student?.learningInterest || "";
+                                  const levelValue = student?.level || "";
+                                  
+                                  setCourse(courseValue);
+                                  setLevel(levelValue);
                                   setOpenModalId(modalIdNoAssignment);
                                 }}
                               >
@@ -773,7 +803,11 @@ const RegularStudents = () => {
                                   </button>
                                   <button
                                     className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                    onClick={() => handleClick()}
+                                                                          onClick={() => {
+                                        const courseValue = studentDetails?.student?.learningInterest || "";
+                                        const levelValue = student?.level || "";
+                                        handleClick(courseValue, levelValue);
+                                      }}
                                   >
                                     Create Assignment
                                   </button>
@@ -827,7 +861,7 @@ const RegularStudents = () => {
                             {assignmentItem.assignmentId || "-"}
                           </td>
                           <td className="px-3 py-2 break-words">
-                            {studentDetails?.languageLevel || "-"}
+                            {student?.level || "-"}
                           </td>
                           <td className="px-3 py-2 break-words">
                             {studentDetails?.student?.learningInterest}
@@ -900,7 +934,7 @@ const RegularStudents = () => {
                                                 "REGULARCLASS"
                                             );
                                             setAssignedTeacher(
-                                              studentDetails?.assignedTeacherEmail ??
+                                              studentDetails?.teacher?.teacherName ??
                                                 ""
                                             );
                                             setAssignedTeacherId(
@@ -983,13 +1017,23 @@ const RegularStudents = () => {
                                                 "REGULARCLASS"
                                             );
                                             setAssignedTeacher(
-                                              studentDetails?.assignedTeacherEmail ??
+                                              studentDetails?.teacher?.teacherName ??
                                                 ""
                                             );
                                             setAssignedTeacherId(
                                               studentDetails?.teacher
                                                 ?.teacherId ?? ""
                                             );
+                                            console.log("🔍 Setting values for assignment student:", student.studentId);
+                                            console.log("🔍 studentDetails?.student?.learningInterest:", studentDetails?.student?.learningInterest);
+                                            console.log("🔍 studentDetails?.languageLevel:", studentDetails?.languageLevel);
+                                            console.log("🔍 student?.level:", student?.level);
+                                            
+                                            const courseValue = studentDetails?.student?.learningInterest || "";
+                                            const levelValue = student?.level || "";
+                                            
+                                            setCourse(courseValue);
+                                            setLevel(levelValue);
                                             setOpenModalId(modalId);
                                           }}
                                         >
@@ -1092,7 +1136,11 @@ const RegularStudents = () => {
                                     </button>
                                     <button
                                       className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                      onClick={() => handleClick()}
+                                                                          onClick={() => {
+                                      const courseValue = studentDetails?.student?.learningInterest || "";
+                                      const levelValue = student?.level || "";
+                                      handleClick(courseValue, levelValue);
+                                    }}
                                     >
                                       Create Assignment
                                     </button>
