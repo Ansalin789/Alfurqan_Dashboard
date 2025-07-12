@@ -18,6 +18,7 @@ import { MdTune } from "react-icons/md";
 import StudentHeader from "../../components/StudentHeader";
 import React from "react";
 import Link from "next/link";
+import Pagination from "@/components/Pagination";
 
 const stripePromise = loadStripe(
   "pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE"
@@ -41,7 +42,7 @@ interface Invoice {
   _id: string;
   courseName: string;
   amount: number;
-  paymentDate:number;
+  paymentDate: number;
   status: string;
   createdDate: string;
   createdBy: string;
@@ -70,6 +71,7 @@ interface CheckoutFormProps {
   amount: number;
   currency: string;
 }
+const itemsPerPage = 10;
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({
   clientSecret,
@@ -105,7 +107,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     if (error) {
       setMessage(error.message ?? "Payment failed.");
     } else if (paymentIntent?.status === "succeeded") {
-    
       // Now send this to your backend if needed
       await axios.post(
         "http://localhost:5001/student/create-payment-intent",
@@ -113,7 +114,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
           amount,
           currency,
           invoiceId,
-          paymentIntentResponse:paymentIntent,
+          paymentIntentResponse: paymentIntent,
         },
         {
           headers: {
@@ -134,42 +135,48 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       className="w-full max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-[#343434]"
     >
       <div className="">
-      <div className="mb-4 ">
-        <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">Card Number</label>
-        <div className="border rounded-md px-3 py-2 flex items-center bg-white dark:bg-[#3C3C3C]">
-          <CardNumberElement className="w-full dark:text-[#ffffff]" />
-        </div>
-      </div>
-      <div className="flex gap-4 mb-4">
-        <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">Expiry</label>
-          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
-            <CardExpiryElement className="w-full dark:text-[#ffffff]" />
+        <div className="mb-4 ">
+          <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">
+            Card Number
+          </label>
+          <div className="border rounded-md px-3 py-2 flex items-center bg-white dark:bg-[#3C3C3C]">
+            <CardNumberElement className="w-full dark:text-[#ffffff]" />
           </div>
         </div>
-        <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">CVC</label>
-          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
-            <CardCvcElement className="w-full dark:text-[#ffffff]" />
+        <div className="flex gap-4 mb-4">
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">
+              Expiry
+            </label>
+            <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
+              <CardExpiryElement className="w-full dark:text-[#ffffff]" />
+            </div>
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">
+              CVC
+            </label>
+            <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
+              <CardCvcElement className="w-full dark:text-[#ffffff]" />
+            </div>
           </div>
         </div>
-      </div>
 
-      <button
-        type="submit"
-        disabled={!stripe || loading}
-        className={`w-full py-2 px-4 rounded-lg text-white font-bold transition-colors text-[13px] ${
-          !stripe || loading
-            ? "bg-gray-400 cursor-not-allowed"
-            : "cursor-pointer bg-[#2D6AE0] hover:bg-[#1B4FA0]"
-        }`}
-      >
-        {loading ? "Processing..." : "Pay"}
-      </button>
+        <button
+          type="submit"
+          disabled={!stripe || loading}
+          className={`w-full py-2 px-4 rounded-lg text-white font-bold transition-colors text-[13px] ${
+            !stripe || loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "cursor-pointer bg-[#2D6AE0] hover:bg-[#1B4FA0]"
+          }`}
+        >
+          {loading ? "Processing..." : "Pay"}
+        </button>
 
-      {message && (
-        <p className="text-center text-sm text-gray-700">{message}</p>
-      )}
+        {message && (
+          <p className="text-center text-sm text-gray-700">{message}</p>
+        )}
       </div>
     </form>
   );
@@ -189,6 +196,7 @@ const Invoice = () => {
   const [positionApplied, setPositionApplied] = useState("Pending");
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Calculate total price based on selected invoice
   const calculateTotalPrice = () => {
@@ -268,7 +276,7 @@ const Invoice = () => {
           amount: totalprice * 100,
           currency: "usd",
           invoiceId: evaluationid,
-          paymentIntentResponse:"",
+          paymentIntentResponse: "",
         },
         {
           headers: {
@@ -359,22 +367,29 @@ const Invoice = () => {
   const handleFilter = () => {
     let filtered = invoices;
     if (fromDate) {
-      filtered = filtered.filter(inv => toDateString(inv.createdDate) >= fromDate);
+      filtered = filtered.filter(
+        (inv) => toDateString(inv.createdDate) >= fromDate
+      );
     }
     if (toDate) {
-      filtered = filtered.filter(inv => toDateString(inv.createdDate) <= toDate);
+      filtered = filtered.filter(
+        (inv) => toDateString(inv.createdDate) <= toDate
+      );
     }
     if (positionApplied) {
-      filtered = filtered.filter(inv => inv.invoiceStatus === positionApplied);
+      filtered = filtered.filter(
+        (inv) => inv.invoiceStatus === positionApplied
+      );
     }
     if (searchText.trim() !== "") {
       const lower = searchText.toLowerCase();
-      filtered = filtered.filter(inv =>
-        inv.courseName.toLowerCase().includes(lower) ||
-        inv._id.toLowerCase().includes(lower) ||
-        toDateString(inv.createdDate).includes(lower) ||
-        formatDateDMY(inv.createdDate).includes(lower) ||
-        inv.invoiceStatus.toLowerCase().includes(lower)
+      filtered = filtered.filter(
+        (inv) =>
+          inv.courseName.toLowerCase().includes(lower) ||
+          inv._id.toLowerCase().includes(lower) ||
+          toDateString(inv.createdDate).includes(lower) ||
+          formatDateDMY(inv.createdDate).includes(lower) ||
+          inv.invoiceStatus.toLowerCase().includes(lower)
       );
     }
     setFilteredInvoices(filtered);
@@ -390,255 +405,40 @@ const Invoice = () => {
     let filtered = invoices;
     if (searchText.trim() !== "" && searchText.trim() !== ".") {
       const lower = searchText.toLowerCase();
-      filtered = filtered.filter(inv =>
-        inv.courseName.toLowerCase().includes(lower) ||
-        inv._id.toLowerCase().includes(lower) ||
-        toDateString(inv.createdDate).includes(lower) ||
-        formatDateDMY(inv.createdDate).includes(lower) ||
-        inv.invoiceStatus.toLowerCase().includes(lower)
+      filtered = filtered.filter(
+        (inv) =>
+          inv.courseName.toLowerCase().includes(lower) ||
+          inv._id.toLowerCase().includes(lower) ||
+          toDateString(inv.createdDate).includes(lower) ||
+          formatDateDMY(inv.createdDate).includes(lower) ||
+          inv.invoiceStatus.toLowerCase().includes(lower)
       );
     }
     setFilteredInvoices(filtered);
   }, [searchText, invoices]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredInvoices, searchText]);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const dataToPaginate = filteredInvoices.length > 0 ? filteredInvoices : invoices;
+  const currentItems = dataToPaginate.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(dataToPaginate.length / itemsPerPage);
+
   return (
     <BaseLayout2>
       <StudentHeader currentSection="Payment" />
       <div id="invoic" className="px-4 py-4 flex justify-center w-full ">
-        <div className="w-full h-[480px] bg-white py-4 px-0 rounded-lg shadow dark:bg-[#343434]">
+        <div className="w-full  ">
           {/* Header Section */}
-          <div className="p-2">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-              <h1 className="text-md font-semibold dark:text-[#ffffff]">
-                Invoice
-              </h1>
-              <img
-                src="/assets/images/alf.png"
-                alt="Al Furqan Academy"
-                className="w-40 dark:text-[#ffffff]"
-              />
-            </div>
-
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-              {/* <div className="flex items-center mb-2 md:mb-0">
-                
-              </div> */}
-              <div className="justify-between flex text-xs w-full">
-                <div>
-                  <p>
-                    <span className="font-semibold text dark:text-[#ffffff]">
-                      Reg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{" "}
-                    </span>{" "}
-                    <span> {selectedInvoice?._id || ""}</span>
-                  </p>
-                  <p>
-                    <span className="font-semibold text dark:text-[#ffffff]">
-                      Email Id
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:{" "}
-                    </span>{" "}
-                    <span>{selectedInvoice?.student.studentEmail || ""}</span>
-                  </p>
-                  <p>
-                    <span className="font-semibold text dark:text-[#ffffff]">
-                      Phone number &nbsp;&nbsp;:{" "}
-                    </span>{" "}
-                    <span>{selectedInvoice?.student.studentPhone || ""}</span>
-                  </p>
-                </div>
-                <div>
-                  <p>
-                    <span className="font-semibold dark:text-[#ffffff]">
-                      Invoice Number &nbsp; :
-                    </span>{" "}
-                    <span>{selectedInvoice?._id || ""}</span>
-                  </p>
-                  <p>
-                    <span className="font-semibold dark:text-[#ffffff]">
-                      Invoice Date
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:
-                    </span>{" "}
-                    <span>{formatDateDMY(selectedInvoice?.createdDate)}</span>
-                  </p>
-                  <p>
-                    <span className="font-semibold dark:text-[#ffffff]">
-                      Due
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:
-                    </span>{" "}
-                    <span>{formatDateDMY(selectedInvoice?.dueDate)}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Invoice + Payment Summary */}
-            {/* Invoice + Payment Summary */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6 ">
-              {/* Left Table */}
-              <div className="w-full md:w-3/4 bg-gray-100 text-xs rounded-lg overflow-hidden dark:bg-[#343434]">
-                <table className="w-full text-xs border">
-                  <thead className="bg-[#505050] text-white">
-                    <tr>
-                      <th className="p-2 border">Description</th>
-                      <th className="p-2 border">Quantity</th>
-                      <th className="p-2 border">Price</th>
-                      <th className="p-2 border">Discount</th>
-                      <th className="p-2 border">GST</th>
-                      <th className="p-2 border">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="text-center">
-                      <td className="p-2 border font-semibold text-left">
-                        {selectedInvoice?.courseName}
-                      </td>
-                      <td className="p-2 border">1</td>
-                      <td className="p-2 border">
-                        ${selectedInvoice?.amount ?? 0}
-                      </td>
-                      <td className="p-2 border">0.00</td>
-                      <td className="p-2 border">0.00</td>
-                      <td className="p-2 border text-right">
-                        ${selectedInvoice?.amount ?? 0}
-                      </td>
-                    </tr>
-                    {/* Show payments if any */}
-                    {selectedInvoice?.payments &&
-                      selectedInvoice.payments.length > 0 &&
-                      selectedInvoice.payments.map((payment, pidx) => (
-                        <tr key={pidx} className="text-center bg-gray-50">
-                          <td className="p-2 border text-left pl-8">
-                            Payment on {formatDateDMY(payment.date)}
-                          </td>
-                          <td className="p-2 border"></td>
-                          <td className="p-2 border">-${payment.amount}</td>
-                          <td className="p-2 border"></td>
-                          <td className="p-2 border"></td>
-                          <td className="p-2 border text-right">
-                            -${payment.amount}
-                          </td>
-                        </tr>
-                      ))}
-                    <tr>
-                      <td className="p-2 border font-semibold">
-                        Sub total (Excl. GST):
-                      </td>
-                      <td colSpan={4} className="p-2 border"></td>
-                      <td className="p-2 border text-right">
-                        ${selectedInvoice?.amount ?? 0}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 border font-semibold">Total GST:</td>
-                      <td colSpan={4} className="p-2 border"></td>
-                      <td className="p-2 border text-right">$0.00</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2 border font-semibold">
-                        Amount due on :{" "}
-                        {formatDateDMY(selectedInvoice?.dueDate)}
-                      </td>
-                      <td colSpan={4} className="p-2 border"></td>
-                      <td className="p-2 border text-right">
-                        ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Right Payment Summary */}
-              <div className="w-full md:w-1/4 bg-gray-100 rounded-lg  text-xs dark:bg-[#343434]">
-                <div className="bg-[#505050] text-white px-3 py-2 rounded-t">
-                  Payment Details
-                </div>
-                <div className="divide-y text-sm">
-                  <div className="flex justify-between px-2 py-2">
-                    <span className="text-xs">Payment Type</span>
-                    <span className="text-blue-900 font-semibold text-xs">
-                      Stripe
-                    </span>
-                  </div>
-                  <div className="flex justify-between px-2 py-2">
-                    <span className="text-xs">Total Amount</span>
-                    <span className="text-blue-900 font-semibold text-xs">
-                      ${selectedInvoice ? getInvoiceDue(selectedInvoice) : 0}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Instructions + Actions */}
-            <div className="relative   p-1 rounded text-xs mb-8 -mt-5">
-              <div
-                id="hideDuringDownload"
-                className="absolute top-1 right-0 flex items-center gap-2"
-              >
-                <button
-                  onClick={handleClick}
-                  className="bg-[#576CBC] text-white text-xs px-2 py-1 rounded hover:bg-blue-600"
-                >
-                  Pay Online
-                </button>
-                <span className="text-[10px]">with</span>
-                <img
-                  src="/assets/images/stripe.png"
-                  alt="Stripe"
-                  className="h-7 ml-[61px]"
-                />
-              </div>
-              <div className="text-[11px] leading-relaxed pr-40">
-                <h3 className="font-bold text-[#223857] mb-1 dark:text-[#ffffff]">
-                  Payment Instructions
-                </h3>
-                <div className="space-y-[2px]">
-                  <p>
-                    <strong>Name</strong> &nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    : 1234567890
-                  </p>
-                  <p>
-                    <strong>Bank Name</strong>&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:
-                    contact@alfurqan.academy
-                  </p>
-                  <p>
-                    <strong>Swift / Iban</strong>{" "}
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    : GB0021030012
-                  </p>
-                  <p>
-                    <strong>Account Number</strong>&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 12-1234-123456-12
-                  </p>
-                </div>
-                <p className="mt-2 text-[10px] font-semibold uppercase">
-                  Please use INV-0205 as a reference number
-                </p>
-                <p className="text-[10px]">
-                  For any questions please contact us at{" "}
-                  <span className="font-bold">contact@alfurqan.academy</span>
-                </p>
-              </div>
-              <div className="absolute bottom-2 right-0">
-                <button
-                  id="hideDuringDownloadFooter"
-                  onClick={downloadInvoice}
-                  className="bg-[#576CBC] text-white text-xs px-4 py-2 rounded hover:bg-blue-600"
-                >
-                  Download Invoice
-                </button>
-              </div>
-            </div>
-          </div>
 
           {!isGeneratingPDF && (
             <div>
-              <h3 className="text-[17px] font-semibold text-gray-800 dark:text-[#ffffff]">
-                Latest Transactions
-              </h3>
+            
               <br />
-              <div className="w-full h-[300px]  bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+              <div className="w-full h-[300px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
                 {/* <a href="/transactions" className="text-xs text-blue-500 hover:underline">View all</a> */}
                 <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -709,16 +509,12 @@ const Invoice = () => {
                           <select
                             className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                             value={positionApplied}
-                            onChange={(e) =>
-                              setPositionApplied(e.target.value)
-                            }
+                            onChange={(e) => setPositionApplied(e.target.value)}
                           >
                             <option>Pending</option>
                             <option>Paid</option>
                           </select>
                         </div>
-
-                        
 
                         {/* Buttons */}
                         <div className="flex justify-end gap-3">
@@ -740,7 +536,11 @@ const Invoice = () => {
                   )}
                   <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                     <span className="text-left -ml-60 ">
-                      Showing {5} of {5}
+                      Showing{" "}
+                      {filteredInvoices.length > 0
+                        ? filteredInvoices.length
+                        : invoices.length}{" "}
+                      of {invoices.length}
                     </span>
                   </div>
                 </div>
@@ -775,11 +575,9 @@ const Invoice = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {(filteredInvoices.length > 0 ? filteredInvoices : invoices)
-                      .slice(0, 5)
-                      .map((invoice, index) => (
-                      <React.Fragment key={invoice._id || index}>
+                    {currentItems.map((invoice, index) => (
                         <tr
+                          key={invoice._id || index}
                           onClick={() => {
                             if (invoice.invoiceStatus === "Pending") {
                               handleInvoiceClick(invoice);
@@ -802,9 +600,14 @@ const Invoice = () => {
                           </td>
                           <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
                             {invoice.amount}{" "}
-                           </td>
+                          </td>
                           <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
-                          {invoice.paymentDate ? formatDateDMY(new Date(invoice.paymentDate).toISOString()) : ""}</td>
+                            {invoice.paymentDate
+                              ? formatDateDMY(
+                                  new Date(invoice.paymentDate).toISOString()
+                                )
+                              : ""}
+                          </td>
                           <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
                             <span
                               className={
@@ -855,74 +658,16 @@ const Invoice = () => {
                             )}
                           </td>
                         </tr>
-                        {/* Show payments if any */}
-                        {invoice.payments &&
-                          invoice.payments.length > 0 &&
-                          invoice.payments.map((payment, pidx) => (
-                            <tr key={pidx} className="text-center bg-gray-50">
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
-                                Payment on {formatDateDMY(payment.date)}
-                              </td>
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
-                                {payment.amount}
-                              </td>
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
-                                {payment.amount}
-                              </td>
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
-                                {payment.amount}
-                              </td>
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
-                                {payment.amount}
-                              </td>
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#fff]">
-                                -${payment.amount}
-                              </td>
-                              <td></td>
-                            </tr>
-                          ))}
-                      </React.Fragment>
-                    ))}
+                      ))}
                   </tbody>
                 </table>
-                <div className="mt-4 text-right">
-            <Link
-              href="/student/ui/allstudentsinvoice"
-              className="text-[#576CBC] text-[10px] border border-[#576CBC] px-3 py-1 rounded-md bg-white dark:bg-[#3C3C3C]"
-            >
-              View All
-            </Link>
-          </div>
               </div>
-            </div>
-          )}
-          {/* Modal for Payment Form */}
-          {showModal && clientSecret && clientSecret.includes("_secret_") && (
-            <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
-              <div className="bg-white p-4 rounded-lg shadow-lg w-[600px] relative dark:bg-[#343434]">
-                {/* X Close Icon */}
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
-                  aria-label="Close payment modal"
-                  type="button"
-                >
-                  ×
-                </button>
-                <h2 className="text-lg font-bold mb-4">
-                  Complete Your Payment
-                </h2>
-                <Elements stripe={stripePromise} options={{ clientSecret }}>
-                  <CheckoutForm
-                    clientSecret={clientSecret}
-                    invoiceId={selectedInvoice?._id ?? ""}
-                    amount={
-                      selectedInvoice?.amount ? selectedInvoice.amount * 100 : 0
-                    }
-                    currency="usd"
-                  />
-                </Elements>
-                {/* Close button removed as requested */}
+              <div className="mt-4 text-right">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               </div>
             </div>
           )}
