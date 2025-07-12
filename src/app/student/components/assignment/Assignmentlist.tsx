@@ -312,7 +312,7 @@ const StudentList = () => {
           {/* Filter Modal */}
           {showFilter && (
             <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-              <form className="bg-white dark:bg-[#232323] p-6 rounded-2xl shadow-lg w-[500px] flex flex-col z-50 max-h-[80vh] overflow-y-auto">
+              <form className="bg-white dark:bg-[#232323] p-6 rounded-2xl shadow-lg w-[500px] flex flex-col z-50 max-h-[80vh] overflow-scroll scrollbar-none">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="font-bold text-lg">Filter by</h2>
                   <button
@@ -366,39 +366,41 @@ const StudentList = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Assigned Date</label>
+                  <label className="block text-xs font-medium mb-1">Assigned Date</label>
                   <div className="flex gap-2">
                     <input
                       type="date"
                       value={filters.assignedDateFrom}
                       onChange={(e) => handleFilterChange('assignedDateFrom', e.target.value)}
-                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-gray-50 dark:bg-[#23272f] text-[15px] w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-[#23272f] text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
                     />
                     <input
                       type="date"
                       value={filters.assignedDateTo}
                       onChange={(e) => handleFilterChange('assignedDateTo', e.target.value)}
-                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-gray-50 dark:bg-[#23272f] text-[15px] w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-[#23272f] text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
                     />
                   </div>
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Due Date</label>
+                  <label className="block text-xs font-medium mb-1">Due Date</label>
                   <div className="flex gap-2">
                     <input
                       type="date"
                       value={filters.dueDateFrom}
                       onChange={(e) => handleFilterChange('dueDateFrom', e.target.value)}
-                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-gray-50 dark:bg-[#23272f] text-[15px] w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-[#23272f] text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
                     />
                     <input
                       type="date"
                       value={filters.dueDateTo}
                       onChange={(e) => handleFilterChange('dueDateTo', e.target.value)}
-                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-gray-50 dark:bg-[#23272f] text-[15px] w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-[#23272f] text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
                     />
                   </div>
                 </div>
+
+                
                 <div className="mb-6">
                   <label className="block text-sm font-medium mb-1">Status</label>
                   <select
@@ -412,21 +414,26 @@ const StudentList = () => {
                     <option value="Completed">Completed</option>
                   </select>
                 </div>
-                <div className="flex gap-2 mt-auto">
+                <div className="flex gap-4 mt-auto justify-end">
                   <button
                     type="button"
-                    className="w-24 border border-[#576CBC] text-[#576CBC] rounded-md py-2 font-semibold cursor-pointer"
-                    onClick={resetFilters}
-                  >
-                    Reset
-                  </button>
+                    className="border border-[#576CBC] bg-white text-[#576CBC] rounded-lg px-6 py-2 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#576CBC]"
+                    onClick={() => setFilters({
+                      assignmentName: "",
+                      course: "",
+                      level: "",
+                      assignedDateFrom: "",
+                      assignedDateTo: "",
+                      dueDateFrom: "",
+                      dueDateTo: "",
+                      status: ""
+                    })}
+                  >Reset</button>
                   <button
-                    type="button"
-                    className="flex-1 bg-[#576CBC] text-white rounded-md py-2 font-semibold cursor-pointer"
-                    onClick={applyFilters}
-                  >
-                    Show results
-                  </button>
+                    type="submit"
+                    className="bg-[#576CBC] text-white rounded-lg px-6 py-2 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#576CBC]"
+                    onClick={() => setShowFilter(false)}
+                  >Show results</button>
                 </div>
               </form>
               <div className="fixed inset-0"
