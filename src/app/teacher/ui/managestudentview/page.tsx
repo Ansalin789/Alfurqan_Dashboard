@@ -335,6 +335,13 @@ const ManageStudentView = () => {
   const studentId = searchParams.get("studentId");
   const dropdownRef = useRef<HTMLTableCellElement | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const initialFilters = {
+    studentName: "",
+    assignmentName: "",
+    status: "",
+    // Add more filter fields as needed
+  };
+  const [filters, setFilters] = useState(initialFilters);
   const [searchText, setSearchText] = useState("");
   const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
   const totalAssignments = 8;
@@ -574,6 +581,153 @@ const ManageStudentView = () => {
 
   //Classschedule against the studentId
 
+  const [filterState, setFilterState] = useState({
+    studentName: "",
+    assignmentName: "",
+    status: "",
+    course: "",
+    level: "",
+    fromDate: "",
+    toDate: "",
+  });
+  const [filteredStudents, setFilteredStudents] = useState<
+    StudentWithAssignments[]
+  >([]);
+  const [searchedData, setSearchedData] = useState<StudentWithAssignments[]>([]);
+
+  const applyFilters = () => {
+    let filtered = [...studentsToDisplay];
+
+    if (filterState.studentName) {
+      filtered = filtered.filter((student) =>
+        `${student.studentDetails?.student?.studentFirstName ?? ""} ${
+          student.studentDetails?.student?.studentLastName ?? ""
+        }`
+          .toLowerCase()
+          .includes(filterState.studentName.toLowerCase())
+      );
+    }
+
+    if (filterState.assignmentName) {
+      filtered = filtered
+        .map((student) => ({
+          ...student,
+          assignment: student.assignment.filter((a) =>
+            a.title
+              .toLowerCase()
+              .includes(filterState.assignmentName.toLowerCase())
+          ),
+        }))
+        .filter((s) => s.assignment.length > 0);
+    }
+
+    if (filterState.status) {
+      filtered = filtered
+        .map((student) => ({
+          ...student,
+          assignment: student.assignment.filter(
+            (a) =>
+              a.assignmentStatus?.toLowerCase() ===
+              filterState.status.toLowerCase()
+          ),
+        }))
+        .filter((s) => s.assignment.length > 0);
+    }
+
+    if (filterState.course) {
+      filtered = filtered.filter((student) =>
+        student.studentDetails?.student?.learningInterest
+          ?.toLowerCase()
+          .includes(filterState.course.toLowerCase())
+      );
+    }
+
+    if (filterState.level) {
+      filtered = filtered.filter((student) =>
+        student.studentDetails?.languageLevel
+          ?.toLowerCase()
+          .includes(filterState.level.toLowerCase())
+      );
+    }
+
+    if (filterState.fromDate && filterState.toDate) {
+      const from = new Date(filterState.fromDate);
+      const to = new Date(filterState.toDate);
+      filtered = filtered
+        .map((student) => ({
+          ...student,
+          assignment: student.assignment.filter((a) => {
+            const assigned = new Date(a.assignedDate);
+            return assigned >= from && assigned <= to;
+          }),
+        }))
+        .filter((s) => s.assignment.length > 0);
+    }
+
+    setFilteredStudents(filtered);
+    setCurrentPage(1); // ✅ Reset to first page
+  };
+
+  const resetFilters = () => {
+    setFilterState({
+      studentName: "",
+      assignmentName: "",
+      status: "",
+      course: "",
+      level: "",
+      fromDate: "",
+      toDate: "",
+    });
+    setFilteredStudents([]);
+  };
+
+  const handleSearch = (text: string) => {
+    setSearchText(text);
+
+    const baseData =
+      filteredStudents.length > 0 || Object.values(filterState).some(Boolean)
+        ? filteredStudents
+        : studentsToDisplay;
+
+    if (text.trim() === "") {
+      setSearchedData([]);
+      return;
+    }
+
+    const lowerText = text.toLowerCase();
+
+    const searched = baseData
+      .map((student) => {
+        const matchedAssignments = student.assignment.filter((a) => {
+          const valuesToCheck = [
+            student.studentId,
+            student.studentDetails?.student?.studentFirstName,
+            student.studentDetails?.student?.studentLastName,
+            student.studentDetails?.languageLevel,
+            student.studentDetails?.student?.learningInterest,
+            a.assignmentId,
+            a.title,
+            a.assignmentStatus,
+            a.status,
+            a.assignedDate,
+            a.dueDate,
+          ]
+            .map((v) => (v ? String(v).toLowerCase() : ""))
+            .join(" ");
+
+          return valuesToCheck.includes(lowerText);
+        });
+
+        return matchedAssignments.length > 0
+          ? { ...student, assignment: matchedAssignments }
+          : null;
+      })
+      .filter(Boolean) as StudentWithAssignments[];
+
+    setSearchedData(searched);
+    setCurrentPage(1);
+  };
+
   return (
     <BaseLayout>
       <div>
@@ -706,7 +860,7 @@ const ManageStudentView = () => {
                 placeholder="Search by keyword"
                 className="bg-transparent outline-none text-[15px] w-52 py-3 "
                 value={searchText}
-                // onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
 
@@ -752,12 +906,14 @@ const ManageStudentView = () => {
               </tr>
             </thead>
             <tbody>
-              {studentsToDisplay.map((student, studentIndex) => {
+              {(searchedData.length > 0 ? searchedData : (filteredStudents.length > 0 ? filteredStudents : studentsToDisplay)).map((student, studentIndex) => {
                 const studentInfo = student.studentDetails?.student;
                 const studentDetails = student.studentDetails;
 
                 return student.assignment.map((assignmentItem, assignIndex) => {
                   const dropdownId = `${student.studentId}-${assignmentItem.assignmentName}-${assignIndex}`;
+
+                  const statusValue = (assignmentItem?.assignmentStatus || '').toLowerCase().trim();
 
                   return (
                     <tr
@@ -793,15 +949,15 @@ const ManageStudentView = () => {
                       <td className="px-3 py-3 break-words">
                         {formatDate(assignmentItem?.dueDate)}
                       </td>
-                      <td className="px-3 py-3 break-words">
-                        <span
-                          className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
-                            assignmentItem.status
-                          )}`}
-                        >
-                          {assignmentItem?.assignmentStatus ||
-                            assignmentItem?.status ||
-                            "Not Assigned"}{" "}
+                      <td className="px-3 py-2 break-words">
+                        <span className={`py-1 px-3 rounded-md text-[9px] min-w-[60px] inline-block
+                          ${statusValue === 'completed'
+                            ? 'bg-green-100 text-green-700'
+                            : statusValue === 'pending'
+                            ? 'bg-orange-100 text-orange-700'
+                            : ''}
+                        `}>
+                          {assignmentItem?.assignmentStatus || 'Not Assigned'}
                         </span>
                       </td>
                       <td className="px-4 py-2 text-center relative">
@@ -817,9 +973,9 @@ const ManageStudentView = () => {
                         </button>
 
                         {openDropdownId === dropdownId && (
-                          <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
+                          <div className="absolute right-0 w-40 space-y-2 bg-white rounded-md z-50 dark:bg-[#343434] text-left">
                             <button
-                              className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
+                              className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff] !text-left"
                               onClick={() =>
                                 handleViewProfile(student.studentId)
                               }
@@ -827,7 +983,7 @@ const ManageStudentView = () => {
                               View Question Form
                             </button>
                             <button
-                              className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+                              className="block text-left w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
                               onClick={() => setOpenDropdownId(null)}
                             >
                               Cancel
@@ -857,6 +1013,38 @@ const ManageStudentView = () => {
         onApplyFilters={handleApplyFilters}
         // users={activeTab === "regular" ? scheduledClasses : completedClasses}
       /> */}
+      <Modal
+  isOpen={isFilterModalOpen}
+  onRequestClose={() => setIsFilterModalOpen(false)}
+  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white  dark:bg-[#343434] w-[650px] z-50"
+  overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
+>
+  <div>
+    <h2 className="text-[16px] font-semibold mb-6 text-[#2D2D2D] dark:text-white">
+      Filter by
+    </h2>
+    <div className="grid grid-cols-2 gap-4 mb-6">
+      {/* ...all your filter fields as in your code... */}
+    </div>
+    <div className="flex justify-end gap-3">
+      <button
+        onClick={resetFilters}
+        className="px-5 py-2 border border-[#576CBC] text-[#576CBC] bg-white rounded-lg text-sm font-medium hover:bg-[#f6f8ff]"
+      >
+        Reset
+      </button>
+      <button
+        onClick={() => {
+          applyFilters();
+          setIsFilterModalOpen(false);
+        }}
+        className="px-5 py-2 bg-[#576CBC] text-white rounded-lg text-sm font-medium hover:bg-[#475ab1]"
+      >
+        Show Results
+      </button>
+    </div>
+  </div>
+</Modal>
     </BaseLayout>
   );
 };
