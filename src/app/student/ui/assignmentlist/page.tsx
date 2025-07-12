@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import {  useSearchParams } from "next/navigation";
 import BaseLayout from "@/components/BaseLayout";
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import Pagination from "@/components/Pagination";
 import BaseLayout2 from "@/components/BaseLayout2";
 import StudentHeader from "../../components/StudentHeader";
+import { useRouter } from "next/navigation"; // Add this at the top
 
 interface AssignmentType {
   _id: string;
@@ -59,9 +61,11 @@ const StudentList = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const itemsPerPage = 10;
   const searchParams = useSearchParams();
   const assignmentId = searchParams?.get("assignmentId") ;
+  const router = useRouter();
 
   useEffect(() => {
     if (!assignmentId) return;
@@ -96,6 +100,10 @@ const StudentList = () => {
       default:
         return "bg-gray-100 text-gray-600";
     }
+  };
+
+  const toggleDropdown = (id: string) => {
+    setOpenDropdownId((prev) => (prev === id ? null : id));
   };
 
   return (
@@ -151,6 +159,7 @@ const StudentList = () => {
                           "Assigned Date",
                           "Due Date",
                           "Status",
+                          "Action"
                         ].map((header, idx) => (
                           <th
                             key={idx}
@@ -201,6 +210,36 @@ const StudentList = () => {
                               <span className={`py-1 px-1 rounded-md text-[8px] flex items-center justify-center w-[80px] ${getStatusStyle(assignment.assignmentStatus || "")}`}>
                                 {assignment.assignmentStatus}
                               </span>
+                            </td>
+                            <td className="px-4 py-3 text-center relative text-[11px]">
+                              <button
+                                className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
+                                onClick={() => toggleDropdown(assignment._id)}
+                              >
+                                <BsThreeDotsVertical />
+                              </button>
+                              {openDropdownId === assignment._id && (
+                                <div className="absolute right-0 w-32 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
+                                  <button
+                                    className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
+                                    onClick={() => {
+                                      setOpenDropdownId(null);
+                                      // Add navigation to view question page here
+                                      router.push(
+                                        `/student/ui/question?id=${assignment._id}`
+                                      );
+                                    }}
+                                  >
+                                    View Question
+                                  </button>
+                                  <button
+                                    className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
+                                    onClick={() => setOpenDropdownId(null)}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         );

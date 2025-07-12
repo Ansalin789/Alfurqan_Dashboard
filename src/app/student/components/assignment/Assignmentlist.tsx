@@ -247,15 +247,15 @@ const StudentList = () => {
                         <td className="px-4 py-3 text-center relative text-[11px]">
                           {(() => {
                             let buttonClass = "text-gray-500 hover:text-gray-700 dark:text-[#ffff] ";
-                            if (isNotAssigned || isCompleted) {
+                            if (isNotAssigned) {
                               buttonClass += "opacity-40 cursor-not-allowed";
                             }
                             const handleClick = () => {
-                              if (!isNotAssigned && !isCompleted) {
+                              if (!isNotAssigned) {
                                 toggleDropdown(assignment._id);
                               }
                             };
-                            const isButtonDisabled = isNotAssigned || isCompleted;
+                            const isButtonDisabled = isNotAssigned;
                             return (
                               <button
                                 className={buttonClass}
@@ -300,22 +300,21 @@ const StudentList = () => {
                             </div>
                           )}
                           {openDropdownId === assignment._id && isCompleted && (
-                            <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434] opacity-40 pointer-events-none">
+                            <div className="absolute right-0 w-32 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
                               <button
                                 className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                disabled
-                              >
-                                Start Assignment
-                              </button>
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                disabled
+                                onClick={() => {
+                                  setOpenDropdownId(null);
+                                  router.push(
+                                    `/student/ui/assignmentlist?assignmentId=${assignment.assignmentId}`
+                                  );
+                                }}
                               >
                                 View List
                               </button>
                               <button
                                 className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
-                                disabled
+                                onClick={() => setOpenDropdownId(null)}
                               >
                                 Cancel
                               </button>
