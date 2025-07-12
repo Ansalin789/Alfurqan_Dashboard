@@ -8,42 +8,56 @@ import { FaClock } from "react-icons/fa";
 import { BsFillCalendar2WeekFill } from "react-icons/bs";
 import TeacherHeader from "../../components/TeacherHeader";
 
-// --- New interfaces for meeting API ---
-interface MeetingTeacher {
+// --- New interfaces for class schedule API ---
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+  gender: string;
+}
+
+interface Teacher {
   teacherId: string;
   teacherName: string;
   teacherEmail: string;
 }
 
-interface MeetingParticipant {
-  studentId: string;
-  studentName: string;
-  studentEmail: string;
-  _id: string;
+interface Course {
+  courseId: string;
+  courseName: string;
 }
 
-interface Meeting {
-  teacher: MeetingTeacher;
+interface ClassSchedule {
+  student: Student;
+  teacher: Teacher;
+  course: Course;
+  earnings: number;
   _id: string;
-  meetingId: string;
-  meetingName: string;
-  participants: MeetingParticipant[];
-  selectedDate: string;
-  startTime: string;
-  endTime: string;
-  description: string;
-  meetingStatus: string;
+  classDay: string[];
+  package: string;
+  totalHourse: number;
+  startDate: string;
+  endDate: string;
+  startTime: string[];
+  endTime: string[];
+  scheduleStatus: string;
+  classLink: string;
   status: string;
-  createdDate: string;
   createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
+  sessionClassType: string;
+  sessionStarttime: string;
+  sessionsEndtime: string;
+  createdDate: string;
+  lastUpdatedDate: string;
   __v: number;
+  amount: string;
+  sessionStatus: string;
 }
 
-interface MeetingApiResponse {
+interface ClassScheduleApiResponse {
   totalCount: number;
-  students: Meeting[];
+  classSchedule: ClassSchedule[];
 }
 
 interface Event {
@@ -53,7 +67,7 @@ interface Event {
   end: string;
   description: string;
   date: string;
-  status?: string;
+  status?: string; // Add status field
 }
 
 const TeacherSchedulePage = () => {
@@ -63,9 +77,13 @@ const TeacherSchedulePage = () => {
   const [selectedDate, setSelectedDate] = useState<string>(
     moment().format("YYYY-MM-DD")
   );
-  const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>([]);
+  const [eventsForSelectedDate, setEventsForSelectedDate] = useState<Event[]>(
+    []
+  );
   const [events, setEvents] = useState<Event[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [classSchedule, setClassSchedule] = useState<ClassSchedule[]>([]);
+
 
   const tabs = ["monthly", "weekly", "daily"] as const;
 
@@ -74,39 +92,42 @@ const TeacherSchedulePage = () => {
       typeof window !== "undefined"
         ? localStorage.getItem("TeacherAuthToken")
         : null;
+    const teacherId = typeof window !== "undefined" ? localStorage.getItem("TeacherPortalId") : null;
 
-    if (!token) {
+    if (!token || !teacherId) {
       console.error("❌ TeacherAuthToken not found");
       return;
     }
 
-    fetch("http://localhost:5001/teacherMeetinglist", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    fetch(
+      `https://api.blackstoneinfomaticstech.com/classShedule/teacher?teacherId=${teacherId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
       .then((response) => response.json())
-      .then((data: MeetingApiResponse) => {
-        // Map meetings to events
-        const mappedEvents = data.students.map((meeting) => ({
-          id: meeting._id,
-          title: meeting.meetingName,
-          start: meeting.startTime,
-          end: meeting.endTime,
-          description: meeting.description,
-          date: moment(meeting.selectedDate).format("YYYY-MM-DD"),
-          status: meeting.meetingStatus,
-        }));
-        setEvents(mappedEvents);
-
-        // Set today's events as default
-        const today = moment().format("YYYY-MM-DD");
-        setEventsForSelectedDate(
-          mappedEvents.filter((event) => event.date === today)
-        );
+      .then((data: ClassScheduleApiResponse) => {
+        setClassSchedule(data.classSchedule);
       })
-      .catch((error) => console.error("Error fetching meeting list: ", error));
+      .catch((error) => console.error("Error fetching class schedule: ", error));
   }, []);
+
+  // Map classSchedule to events with status
+  useEffect(() => {
+    setEvents(
+      classSchedule.map((item) => ({
+        id: item._id,
+        title: `${item.course.courseName} with ${item.teacher.teacherName}`,
+        start: item.startTime[0] || '',
+        end: item.endTime[0] || '',
+        description: `${item.package} | ${item.scheduleStatus}`,
+        date: moment(item.startDate).format("YYYY-MM-DD"),
+        status: item.scheduleStatus,
+      }))
+    );
+  }, [classSchedule]);
 
   const handleDateClick = (date: Date) => {
     const formattedDate = moment(date).format("YYYY-MM-DD");
@@ -288,7 +309,7 @@ const TeacherSchedulePage = () => {
                                   ${event.status === 'Scheduled' ? ' text-blue-700' :
                                     event.status === 'Completed' ? ' text-green-700' :
                                     event.status === 'Rescheduled' ? ' text-yellow-700' :
-                                    ' text-gray-700'}`}
+                                    'bg-gray-200 text-gray-700'}`}
                               >
                                 {event.status}
                               </span>
@@ -426,7 +447,7 @@ const TeacherSchedulePage = () => {
                 </div>
                 {hasEvents && (
                   <div className="w-full overflow-hidden">
-                    <div className="text-[9px] truncate px-1">
+                    <div className="text-[8px] truncate px-1">
                       {dayEvents[0].title}
                     </div>
                     <div className="text-[8px] truncate px-1">

@@ -134,48 +134,52 @@ const Total = () => {
   ]
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-  {cards.map((card) => (
-    <div
-      key={card.title}
-      className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-[#343434] rounded-2xl shadow-sm px-5 py-5 w-full min-h-[120px]"
-    >
-      {/* Text Section */}
-      <div className="flex-1 text-center sm:text-left overflow-hidden">
-        <p className="text-black dark:text-white font-medium text-[clamp(14px,1.2vw,18px)] leading-tight">
-          {card.title}
-        </p>
-        <p className="text-black dark:text-white font-semibold text-[clamp(22px,2.2vw,32px)] leading-tight break-words">
-          {card.count}
-        </p>
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full px-2">
+      {cards.map((card) => (
+        <div
+          key={card.title}
+          className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-[#343434] rounded-2xl shadow-sm px-4 py-5 w-full min-h-[120px] max-w-full overflow-hidden"
+        >
+          {/* Text Section */}
+          <div className="flex-1 text-center sm:text-left min-w-0">
+            <p className="text-black dark:text-white font-medium text-[clamp(13px,1.1vw,16px)] leading-snug">
+              {card.title}
+            </p>
+            <p className="text-black dark:text-white font-semibold text-[clamp(20px,2vw,28px)] leading-tight break-words">
+              {card.count}
+            </p>
+          </div>
 
-      {/* Icon Section */}
-      <div
-        className={`${card.bg} rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden`}
-        style={{
-          width: "clamp(48px, 4vw, 60px)",
-          height: "clamp(48px, 4vw, 60px)",
-        }}
-      >
-        <Image
-          src={card.icon}
-          alt={card.title}
-          width={40}
-          height={40}
-          className="object-contain"
-          style={{
-            width: "80%",
-            height: "80%",
-            maxWidth: "40px",
-            maxHeight: "40px",
-          }}
-        />
-      </div>
+          {/* Icon Section */}
+          <div
+            className={`${card.bg} rounded-full flex items-center justify-center flex-shrink-0`}
+            style={{
+              width: "clamp(44px, 4vw, 56px)",
+              height: "clamp(44px, 4vw, 56px)",
+              maxWidth: "56px",
+              maxHeight: "56px",
+              minWidth: "44px",
+              minHeight: "44px",
+              overflow: "hidden",
+            }}
+          >
+            <Image
+              src={card.icon}
+              alt={card.title}
+              width={40}
+              height={40}
+              className="object-contain"
+              style={{
+                width: "clamp(24px, 2.4vw, 36px)",
+                height: "clamp(24px, 2.4vw, 36px)",
+                maxWidth: "36px",
+                maxHeight: "36px",
+              }}
+            />
+          </div>
+        </div>
+      ))}
     </div>
-  ))}
-</div>
-
   )
 }
 

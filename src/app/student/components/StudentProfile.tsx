@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { BsPersonPlus } from "react-icons/bs";
+import { IoDiamondSharp } from "react-icons/io5";
 
 export interface IStudentInvoice {
   _id: string;
@@ -23,6 +25,7 @@ export interface IStudentInvoice {
   status: string;
   dueDate: string; // ISO date string
   createdDate: string; // ISO date string
+  paymentDate: string; // ISO date string
   createdBy: string;
   lastUpdatedDate: string;
   lastUpdatedBy: string;
@@ -55,7 +58,7 @@ const StudentProfile = () => {
         }
 
         const response = await axios.get(
-          "http://localhost:5001/studentinvoiceById",
+          "https://api.blackstoneinfomaticstech.com/studentinvoiceById",
           {
             params: { studentId },
             headers: {
@@ -113,7 +116,7 @@ const StudentProfile = () => {
         const courseName = localStorage.getItem("StudentCourseName");
 
         const response = await axios.get(
-          "http://localhost:5001/dashboard/student/counts",
+          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
           {
             params: { studentId, courseName },
             headers: {
@@ -158,7 +161,7 @@ const StudentProfile = () => {
         <p className="text-gray-500 text-[12px] text-center">
           {studentEmail ?? "Loading..."}
         </p>
-        <p className="text-gray-500 text-[12px] mb-2 text-center">{dashboardCounts.totalLevel}</p>
+        <p className="text-gray-500 text-[12px] mb-2 text-center">Level {dashboardCounts.totalLevel}</p>
 
         <div className="flex justify-center space-x-1 mb-2">
           {[...Array(4)].map((_, i) => (
@@ -171,7 +174,7 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 w-full">
+      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 h-[180px] mt-1 w-full">
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-3 dark:text-white">
           Upcoming Payments
         </h3>
@@ -218,7 +221,7 @@ const StudentProfile = () => {
       </div>
 
       {/* Payment Item */}
-      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] p-4 w-full">
+      <div className="rounded-xl shadow-lg bg-white dark:bg-[#343434] mt-2 h-[180px] p-4 w-full">
         <h3 className="text-[#010E30] font-semibold text-[16px] mb-3 dark:text-white">
           Recent Payments
         </h3>
@@ -252,7 +255,7 @@ const StudentProfile = () => {
                 <div className="flex flex-col items-end">
                   <p className="text-[#377E36] text-[11px]">Paid</p>
                   <p className="text-gray-400 text-[12px]">
-                    {new Date(invoice.dueDate).toLocaleDateString("en-US", {
+                    {new Date(invoice.paymentDate).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
@@ -265,21 +268,17 @@ const StudentProfile = () => {
       </div>
 
       {/* Gradient Action Cards - Example 1 */}
-      <div className="flex items-center justify-between p-4 rounded-xl mb-3 bg-gradient-to-r from-[#7e57c2] to-[#5c6bc0] text-white">
+      <div className="flex items-center justify-between p-4 mt-2 rounded-xl mb-0 bg-gradient-to-r from-[#7e57c2] to-[#5c6bc0] text-white">
         <div className="flex items-center gap-4">
           {/* ICON CIRCLE with image */}
-          <div className="bg-white bg-opacity-20 p-3 rounded-full w-12 h-12 flex items-center justify-center">
-            <img
-              src="/refer-icon.png" // <-- your uploaded image
-              alt="Refer Icon"
-              className="w-6 h-6 object-contain"
-            />
+          <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">
+          <BsPersonPlus />
           </div>
 
           {/* Text */}
           <div>
             <p className="text-sm font-semibold">Refer a Friend</p>
-            <p className="text-xs opacity-80">
+            <p className="text-[10px] opacity-80">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
             </p>
           </div>
@@ -305,21 +304,17 @@ const StudentProfile = () => {
       </div>
 
       {/* Gradient Action Cards - Example 2 */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3">
+      <div className="flex items-center justify-between p-4 mt-2 rounded-xl bg-gradient-to-r from-[#ef5350] via-[#ec407a] to-[#ab47bc] text-white mb-3">
         <div className="flex items-center gap-4">
           {/* Image icon in circle */}
-          <div className="bg-white bg-opacity-20 p-3 rounded-full w-12 h-12 flex items-center justify-center">
-            <img
-              src="/upgrade-icon.png" // ← your uploaded image
-              alt="Upgrade Icon"
-              className="w-6 h-6 object-contain"
-            />
+          <div className="bg-white bg-opacity-20 p-3 rounded-full w-10 h-10 flex items-center justify-center">
+          <IoDiamondSharp  />
           </div>
 
           {/* Text content */}
           <div>
             <p className="text-sm font-semibold">Upgrade Packages</p>
-            <p className="text-xs opacity-80">
+            <p className="text-[11px] opacity-80">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
             </p>
           </div>

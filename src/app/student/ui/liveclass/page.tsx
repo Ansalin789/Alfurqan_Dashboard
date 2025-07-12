@@ -4,7 +4,7 @@ import { JitsiMeeting } from "@jitsi/react-sdk";
 import BaseLayout2 from "@/components/BaseLayout2";
 import axios, { AxiosError } from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
+import StudentHeader from "../../components/StudentHeader";
 import { AiOutlineClockCircle } from "react-icons/ai";
 import { FaUser } from "react-icons/fa";
 import { MdDateRange } from "react-icons/md";
@@ -246,10 +246,10 @@ function LiveClass() {
 
   return (
     <BaseLayout2>
-      <SupervisorHeader
+      <StudentHeader
         currentSection="Re-Schedule Class"
         showBackButton={true}
-        showBackPath="schedule"
+        showBackPath="classes"
       />
 
       <div className=" min-w-screen min-h-screen px-1 sm:px-2 md:px-4 ">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import BaseLayout1 from "@/components/BaseLayout1";
+import BaseLayout2 from "@/components/BaseLayout2";
 import moment from "moment";
 import { CalendarDays, Clock } from "lucide-react";
 import { FaClock } from "react-icons/fa";
@@ -475,7 +475,7 @@ const StudentSchedulePage = () => {
   };
 
   return (
-    <BaseLayout1>
+    <BaseLayout2>
       <StudentHeader currentSection="Calendar" />
         <div className="p-2">
           <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[630px]">
@@ -578,7 +578,7 @@ const StudentSchedulePage = () => {
             </div>
           </div>
         </div>
-    </BaseLayout1>
+    </BaseLayout2>
   );
 };
 

@@ -4,32 +4,44 @@ import React from 'react';
 interface PdfCardProps {
   title: string;
   details: string;
-  pdfUrl: string; // Add a prop for the PDF file URL
+  pdfUrl: string;
 }
 
 const PdfCard: React.FC<PdfCardProps> = ({ title, details, pdfUrl }) => {
   return (
-    <div className="w-40 bg-white rounded-lg shadow-lg p-4 flex flex-col items-center text-center">
+    <div className="w-full dark:bg-[#343434] dark:border-white  bg-[#FFFFFF] rounded-xl shadow p-6 flex flex-col items-center text-center">
       {/* PDF Icon */}
       <div className="mb-3">
         <img
-          src="/assets/images/pdf.svg" // Replace with your actual PDF icon path
+          src="/assets/images/pdf2.svg"
           alt="PDF Icon"
-          className="w-16 h-16"
+          className="w-14 h-14"
         />
       </div>
+
       {/* Title */}
-      <h3 className="text-[13px] font-semibold text-[#223857] mb-1">{title}</h3>
-      {/* Subtitle */}
-      <p className="text-[11px] text-[#717579] mb-2">{details}</p>
-      {/* Button */}
-      <a
-        href={pdfUrl} // Provide the URL of the PDF file
-        download // This enables the browser to download the file
-        className="bg-[#223857] text-[13px] text-white px-5 py-1 text-sm rounded-md hover:bg-[#1e324e]"
-      >
-        View
-      </a>
+      <h3 className="text-[13px] font-semibold dark:text-white text-[#223857] mb-1 line-clamp-2">
+        {title}
+      </h3>
+
+      {/* Subtitle / Details */}
+      <p className="text-[11px] dark:text-white text-[#717579] mb-3 line-clamp-2">
+        {details}
+      </p>
+
+      {/* View Button */}
+      {/* View Button */}
+<a
+  href={pdfUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="mt-2 px-6 py-2 bg-[#576CBC] text-white text-[12px] rounded hover:bg-[#1b2f45] transition-colors"
+>
+  View File
+</a>
+
+
+
     </div>
   );
 };
