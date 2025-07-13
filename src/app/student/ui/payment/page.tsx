@@ -69,6 +69,10 @@ interface CheckoutFormProps {
   invoiceId: string;
   amount: number;
   currency: string;
+  onPaymentSuccess: (details: any) => void;
+  onPaymentFailure: () => void;
+  selectedInvoice: Invoice | null;
+  downloadInvoice: () => void;
 }
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({
@@ -76,55 +80,64 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
   invoiceId,
   amount,
   currency,
+  selectedInvoice,
+  downloadInvoice,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-
+  const [paymentStatus, setPaymentStatus] = useState<null | 'succeeded' | 'failed'>(null);
+  const [paymentDetails, setPaymentDetails] = useState<any>(null);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
-
+  
     if (!stripe || !elements) return;
-
+  
     const cardNumberElement = elements.getElement(CardNumberElement);
     if (!cardNumberElement) {
       setMessage("Card details are required.");
       setLoading(false);
       return;
     }
-
+  
     const { error, paymentIntent } = await stripe.confirmCardPayment(
       clientSecret,
       {
         payment_method: { card: cardNumberElement },
       }
     );
-
+  
     if (error) {
       setMessage(error.message ?? "Payment failed.");
-    } else if (paymentIntent?.status === "succeeded") {
-    
-      // Now send this to your backend if needed
-      await axios.post(
-        "http://localhost:5001/student/create-payment-intent",
-        {
-          amount,
-          currency,
-          invoiceId,
-          paymentIntentResponse:paymentIntent,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
+      setPaymentStatus('failed');
+    } else if (paymentIntent?.status === 'succeeded') {
+      try {
+        const response = await axios.post(
+          "http://localhost:5001/student/create-payment-intent",
+          {
+            amount,
+            currency,
+            invoiceId,
+            paymentIntentResponse: paymentIntent,
           },
-        }
-      );
-
-      setMessage("Payment successful!");
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+  
+        setPaymentDetails(response.data);
+        setPaymentStatus('succeeded');
+        setMessage("Payment successful!");
+      } catch (error) {
+        setMessage("Payment processing failed.");
+        setPaymentStatus('failed');
+      }
     }
-
+  
     setLoading(false);
   };
 
@@ -189,7 +202,8 @@ const Invoice = () => {
   const [positionApplied, setPositionApplied] = useState("Pending");
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [searchText, setSearchText] = useState("");
-
+  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  const [paymentStatus, setPaymentStatus] = useState<null | 'succeeded' | 'failed'>(null);
   // Calculate total price based on selected invoice
   const calculateTotalPrice = () => {
     if (!selectedInvoice) return 0;
@@ -203,16 +217,72 @@ const Invoice = () => {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
+        // Debug: Check all localStorage items
+        console.log("🔍 All localStorage items:");
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            const value = localStorage.getItem(key);
+            console.log(`  ${key}: ${value ? value.substring(0, 50) + '...' : 'null'}`);
+          }
+        }
+
         const studentIdToFilter = localStorage.getItem("StudentPortalId");
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("StudentAuthToken")
-            : null;
+        
+        // Try different possible token keys
+        let token = localStorage.getItem("StudentAuthToken");
+        if (!token) {
+          token = localStorage.getItem("authToken");
+        }
+        if (!token) {
+          token = localStorage.getItem("token");
+        }
+        if (!token) {
+          token = localStorage.getItem("accessToken");
+        }
+        if (!token) {
+          token = localStorage.getItem("userToken");
+        }
 
         if (!token) {
-          console.error("❌ StudentAuthToken not found");
+          console.error("❌ No authentication token found in localStorage");
+          console.error("❌ Checked keys: StudentAuthToken, authToken, token, accessToken, userToken");
+          alert("No authentication token found. Please log in again.");
           return;
         }
+
+        // Try to parse token if it's stored as JSON
+        try {
+          if (token) {
+            const parsedToken = JSON.parse(token);
+            if (typeof parsedToken === 'object' && parsedToken.token) {
+              token = parsedToken.token;
+            } else if (typeof parsedToken === 'object' && parsedToken.accessToken) {
+              token = parsedToken.accessToken;
+            }
+          }
+        } catch (e) {
+          // Token is not JSON, use as is
+          console.log("🔍 Token is not JSON format, using as string");
+        }
+
+        // Debug: Log the token to see its format
+        if (token) {
+          console.log("🔍 Token being sent:", token);
+          console.log("🔍 Token length:", token.length);
+          console.log("🔍 Token starts with:", token.substring(0, 20));
+
+          // Validate token format (should be a JWT token)
+          if (!token.includes('.') || token.split('.').length !== 3) {
+            console.error("❌ Invalid token format - not a valid JWT");
+            console.error("❌ Token format check failed. Token should be in JWT format (xxx.yyy.zzz)");
+            return;
+          }
+        } else {
+          console.error("❌ Token is null after parsing");
+          return;
+        }
+
         const response = await axios.get<InvoiceResponse>(
           "https://api.blackstoneinfomaticstech.com/studentinvoice",
           {
@@ -222,7 +292,7 @@ const Invoice = () => {
             },
           }
         );
-        console.log("api response", response);
+        console.log("✅ API response:", response);
         const filteredInvoices = response.data.invoice.filter(
           (invoice) => invoice.student.studentId === studentIdToFilter
         );
@@ -231,9 +301,22 @@ const Invoice = () => {
         if (filteredInvoices.length > 0) {
           setSelectedInvoice(filteredInvoices[0]);
         }
-      } catch (error) {
-        console.log("Failed to fetch invoices. Please try again.");
-        console.error("Error fetching invoices:", error);
+      } catch (error: any) {
+        console.error("❌ Failed to fetch invoices:", error);
+        
+        // Handle specific authentication errors
+        if (error.response?.status === 401) {
+          console.error("❌ Authentication failed - token may be invalid or expired");
+          console.error("❌ Error details:", error.response.data);
+          
+          // Optionally redirect to login or show a message
+          alert("Authentication failed. Please log in again.");
+          // You might want to redirect to login page here
+          // window.location.href = '/login';
+        } else {
+          console.error("❌ Network or server error:", error.message);
+          alert("Failed to fetch invoices. Please try again.");
+        }
       }
     };
 
@@ -331,6 +414,28 @@ const Invoice = () => {
       });
   };
 
+  const downloadReceipt = () => {
+    if (typeof window === "undefined") return;
+
+    setIsGeneratingPDF(true);
+
+    const receiptElement = document.getElementById("receipt-content");
+    const options = {
+      filename: "receipt.pdf",
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    };
+
+    const html2pdf = require("html2pdf.js");
+    html2pdf()
+      .set(options)
+      .from(receiptElement)
+      .save()
+      .then(() => {
+        setIsGeneratingPDF(false);
+      });
+  };
+
   function formatDateDMY(dateString?: string) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -400,6 +505,143 @@ const Invoice = () => {
     }
     setFilteredInvoices(filtered);
   }, [searchText, invoices]);
+
+  // Payment status modal (moved from CheckoutForm)
+  const paymentStatusModal = paymentStatus && (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white dark:bg-[#232323] p-6 rounded-xl shadow-xl w-96 relative" id="receipt-content">
+        {/* Close (X) button */}
+        <button
+          onClick={() => setPaymentStatus(null)}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-200 text-2xl font-bold focus:outline-none"
+          aria-label="Close receipt modal"
+          type="button"
+        >
+          ×
+        </button>
+        <div className="flex flex-col items-center">
+          {/* Icon */}
+          {paymentStatus === 'succeeded' ? (
+            <svg className="h-12 w-12 text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <circle cx="12" cy="12" r="12" fill="#e6f9ed"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 13l3 3 7-7" />
+            </svg>
+          ) : (
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" className="mb-2">
+              <circle cx="24" cy="24" r="20" fill="#FDE8E8"/>
+              <circle cx="24" cy="24" r="16" fill="#E53935"/>
+              <path d="M30 18L18 30" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+              <path d="M18 18L30 30" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            </svg>
+          )}
+
+          {/* Title and subtext */}
+          <h3 className={`text-xl font-bold mt-2 ${paymentStatus === 'succeeded' ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+            {paymentStatus === 'succeeded' ? 'Payment Success' : 'Payment Failed'}
+          </h3>
+          <p className={`text-sm mt-1 ${paymentStatus === 'succeeded' ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+            {paymentStatus === 'succeeded'
+              ? 'Your payment has been successfully done'
+              : 'Your payment has been Failed'}
+          </p>
+          <div className={`w-full border-b-2 my-4 ${paymentStatus === 'succeeded' ? 'border-green-500 dark:border-green-500' : 'border-red-500 dark:border-red-500'}`}></div>
+
+          {/* Total Payment */}
+          <h4 className="font-bold text-lg text-gray-900 dark:text-white mb-1">Total Payment</h4>
+          <div className="flex items-center justify-center gap-3 mb-2 w-full">
+            <img
+              src="/assets/images/rec.png"
+              alt="Course"
+              className="h-10 w-10 p-1 bg-white rounded-full dark:bg-black"
+            />
+            <div className="flex flex-col items-start">
+              <span className="font-semibold text-black dark:text-white text-sm">{selectedInvoice?.courseName}</span>
+              <div className="flex gap-4 text-xs mt-1">
+                <span className="text-gray-700 dark:text-gray-300">
+                  Month: <span className="font-bold">{(() => {
+                    const date = paymentDetails?.createdDate
+                      ? new Date(paymentDetails.createdDate)
+                      : new Date();
+                    return date.toLocaleString('default', { month: 'short' });
+                  })()}</span>
+                </span>
+                <span className="text-gray-700 dark:text-gray-300">
+                  Year: <span className="font-bold">{(() => {
+                    const date = paymentDetails?.createdDate
+                      ? new Date(paymentDetails.createdDate)
+                      : new Date();
+                    return date.getFullYear();
+                  })()}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            ${((paymentDetails?.paymentAmount || 0) / 100).toFixed(2)}
+          </div>
+
+          {/* Info boxes */}
+          <div className="grid grid-cols-2 gap-4 w-full mb-4">
+            <div className="bg-gray-50 dark:bg-[#232323] rounded-lg py-3 px-2 text-center border border-gray-200 dark:border-gray-100">
+              <p className="text-xs dark:text-gray-400">Ref Number</p>
+              <p className="text-xs font-medium text-gray-400 break-all dark:text-gray-400">
+                {paymentDetails?.paymentResponseId
+                  ? (() => {
+                      const ref = paymentDetails.paymentResponseId;
+                      const mid = Math.ceil(ref.length / 2);
+                      return (
+                        <>
+                          {ref.slice(0, mid)}<br />
+                          {ref.slice(mid)}
+                        </>
+                      );
+                    })()
+                  : 'N/A'}
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-[#232323] rounded-lg py-3 px-2 text-center border border-gray-200 dark:border-gray-100">
+              <p className="text-xs dark:text-gray-400">Payment Time</p>
+              <p className="text-xs font-medium text-gray-400 dark:text-gray-400">
+                {(() => {
+                  const date = paymentDetails?.createdDate
+                    ? new Date(paymentDetails.createdDate)
+                    : new Date();
+                  const day = date.getDate().toString().padStart(2, '0');
+                  const month = date.toLocaleString('default', { month: 'short' });
+                  const year = date.getFullYear();
+                  const hour = date.getHours().toString().padStart(2, '0');
+                  const min = date.getMinutes().toString().padStart(2, '0');
+                  return `${day} ${month} ${year}, ${hour}:${min}`;
+                })()}
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-[#232323] rounded-lg py-3 px-2 text-center border border-gray-200 dark:border-gray-100">
+              <p className="text-xs dark:text-gray-400">Payment Method</p>
+              <p className="text-xs font-medium text-gray-400 dark:text-gray-400">Bank Transfer</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-[#232323] rounded-lg py-3 px-2 text-center border border-gray-200 dark:border-gray-100">
+              <p className="text-xs dark:text-gray-400">Sender Name</p>
+              <p className="text-xs font-medium text-gray-400 dark:text-gray-400">{selectedInvoice?.student.studentName || 'N/A'}</p>
+            </div>
+          </div>
+
+          {/* Button */}
+          <button
+            onClick={() => {
+              downloadReceipt();
+              setPaymentStatus(null);
+            }}
+            className="w-full mt-2 py-2 bg-[#576CBC] dark:bg-[#576CBC] rounded-lg text-white font-semibold flex items-center justify-center gap-2"
+          >
+            <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4m-8 8h8" />
+            </svg>
+            Get PDF Receipt
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <BaseLayout2>
@@ -842,9 +1084,50 @@ const Invoice = () => {
                             </button>
                             {actionMenuOpen === invoice._id && (
                               <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10 dark:bg-[#343434]">
-                                <button className="block w-full text-left px-4 py-2  text-xs dark:text-[#ffffff]">
-                                  View Receipt
-                                </button>
+                                {invoice.invoiceStatus === "Paid" ? (
+                                  <button 
+                                    className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
+                                    onClick={() => {
+                                      setSelectedInvoice(invoice);
+                                      setPaymentDetails({
+                                        paymentAmount: invoice.amount * 100,
+                                        paymentResponseId: invoice._id,
+                                        createdDate: invoice.paymentDate
+                                          ? new Date(invoice.paymentDate).toISOString()
+                                          : new Date().toISOString()
+                                      });
+                                      setPaymentStatus('succeeded');
+                                      setActionMenuOpen(null);
+                                    }}
+                                  >
+                                    View Receipt
+                                  </button>
+                                ) : invoice.invoiceStatus === "Failed" ? (
+                                  <button 
+                                    className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
+                                    onClick={() => {
+                                      setSelectedInvoice(invoice);
+                                      setPaymentDetails({
+                                        paymentAmount: invoice.amount * 100,
+                                        paymentResponseId: invoice._id,
+                                        createdDate: invoice.paymentDate
+                                          ? new Date(invoice.paymentDate).toISOString()
+                                          : new Date().toISOString()
+                                      });
+                                      setPaymentStatus('failed');
+                                      setActionMenuOpen(null);
+                                    }}
+                                  >
+                                    View Receipt
+                                  </button>
+                                ) : (
+                                  <button 
+                                    className="block w-full text-left px-4 py-2 text-xs text-gray-400 cursor-not-allowed dark:text-gray-500"
+                                    disabled
+                                  >
+                                    View Receipt
+                                  </button>
+                                )}
                                 <button
                                   className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
                                   onClick={() => setActionMenuOpen(null)}
@@ -913,20 +1196,30 @@ const Invoice = () => {
                   Complete Your Payment
                 </h2>
                 <Elements stripe={stripePromise} options={{ clientSecret }}>
-                  <CheckoutForm
-                    clientSecret={clientSecret}
-                    invoiceId={selectedInvoice?._id ?? ""}
-                    amount={
-                      selectedInvoice?.amount ? selectedInvoice.amount * 100 : 0
-                    }
-                    currency="usd"
-                  />
-                </Elements>
+  <CheckoutForm
+    clientSecret={clientSecret}
+    invoiceId={selectedInvoice?._id ?? ""}
+    amount={selectedInvoice?.amount ? selectedInvoice.amount * 100 : 0}
+    currency="usd"
+    selectedInvoice={selectedInvoice}
+    downloadInvoice={downloadInvoice}
+    onPaymentSuccess={(details) => {
+      setPaymentDetails(details);
+      setPaymentStatus('succeeded');
+      setShowModal(false);
+    }}
+    onPaymentFailure={() => {
+      setPaymentStatus('failed');
+    }}
+  />
+</Elements>
                 {/* Close button removed as requested */}
               </div>
             </div>
           )}
         </div>
+      
+      {paymentStatusModal}
       </div>
     </BaseLayout2>
   );
