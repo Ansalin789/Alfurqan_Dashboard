@@ -11,6 +11,7 @@ import {
   CardExpiryElement,
   CardCvcElement,
 } from "@stripe/react-stripe-js";
+import type { StripeCardNumberElementChangeEvent } from '@stripe/stripe-js';
 import BaseLayout2 from "@/components/BaseLayout2";
 import axios from "axios";
 import { Search } from "lucide-react";
@@ -75,6 +76,46 @@ interface CheckoutFormProps {
   downloadInvoice: () => void;
 }
 
+type CardBrand =
+  | 'visa'
+  | 'mastercard'
+  | 'amex'
+  | 'discover'
+  | 'diners'
+  | 'jcb'
+  | 'unionpay'
+  | 'rupay'
+  | 'unknown';
+
+const getCardLogo = (brand: string) => {
+  const logos: Record<CardBrand, string> = {
+    visa: 'https://img.icons8.com/color/48/visa.png',
+    mastercard: 'https://img.icons8.com/color/48/mastercard-logo.png',
+    amex: 'https://img.icons8.com/color/48/amex.png',
+    discover: 'https://img.icons8.com/color/48/discover.png',
+    diners: 'https://img.icons8.com/color/48/diners-club.png',
+    jcb: 'https://img.icons8.com/color/48/jcb.png',
+    unionpay: 'https://img.icons8.com/color/48/unionpay.png',
+    rupay: '/assets/images/icons8-rupay-48.png',
+    unknown: '',
+  };
+  return logos[(brand as CardBrand)] || '';
+};
+
+const detectBrandWithRupayOverride = (event:any) => {
+  const value = event?.value || '';
+  const bin = value.replace(/\D/g, '').slice(0);
+  const stripeBrand = event.brand;
+  if (
+    stripeBrand === 'unionpay' ||
+    stripeBrand === 'unknown' ||
+    /^(508|60|65|6521|6522|81|82)/.test(bin)
+  ) {
+    return 'rupay';
+  }
+  return stripeBrand;
+};
+
 const CheckoutForm: React.FC<CheckoutFormProps> = ({
   clientSecret,
   invoiceId,
@@ -89,6 +130,23 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
   const [message, setMessage] = useState("");
   const [paymentStatus, setPaymentStatus] = useState<null | 'succeeded' | 'failed'>(null);
   const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  const [isDark, setIsDark] = useState(false);
+  const [cardBrand, setCardBrand] = useState('unknown');
+  const [zip, setZip] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
+        setIsDark(e.matches);
+      });
+    }
+  }, []);
+
+  const handleCardChange = (event: StripeCardNumberElementChangeEvent) => {
+    setCardBrand(detectBrandWithRupayOverride(event));
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
@@ -105,7 +163,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     const { error, paymentIntent } = await stripe.confirmCardPayment(
       clientSecret,
       {
-        payment_method: { card: cardNumberElement },
+        payment_method: {
+          card: cardNumberElement,
+          billing_details: {
+            address: {
+              postal_code: zip,
+            },
+          },
+        },
       }
     );
   
@@ -146,32 +211,96 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       onSubmit={handleSubmit}
       className="w-full max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-[#343434]"
     >
-      <div className="">
       <div className="mb-4 ">
         <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">Card Number</label>
-        <div className="border rounded-md px-3 py-2 flex items-center bg-white dark:bg-[#3C3C3C]">
-            <CardNumberElement className="w-full dark:text-[#ffffff]" />
+        <div className="relative border rounded-md px-3 py-2 flex items-center bg-white dark:bg-[#3C3C3C] dark:text-white">
+          <CardNumberElement
+            options={{
+              style: {
+                base: {
+                  color: isDark ? "#fff" : "#222",
+                  fontSize: '14px',
+                  '::placeholder': { color: isDark ? "#ccc" : "#888" },
+                },
+                invalid: {
+                  color: "#ff6b6b",
+                },
+              },
+            }}
+            className="w-full dark:text-white"
+            onChange={handleCardChange}
+          />
+          {cardBrand && cardBrand !== 'unknown' && getCardLogo(cardBrand) && (
+            <img
+              src={getCardLogo(cardBrand)}
+              alt={cardBrand}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-5 w-auto max-w-[40px]"
+            />
+          )}
         </div>
       </div>
       <div className="flex gap-4 mb-4">
         <div className="flex-1">
           <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">Expiry</label>
-          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
-            <CardExpiryElement className="w-full dark:text-[#ffffff] " />
+          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-white">
+            <CardExpiryElement
+              options={{
+                style: {
+                  base: {
+                    color: isDark ? "#fff" : "#222",
+                    fontSize: '14px',
+                    '::placeholder': { color: isDark ? "#ccc" : "#888" },
+                  },
+                  invalid: {
+                    color: "#ff6b6b",
+                  },
+                },
+              }}
+              className="w-full dark:text-white"
+            />
           </div>
         </div>
         <div className="flex-1">
           <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">CVC</label>
-          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
-            <CardCvcElement className="w-full dark:text-[#ffffff]" />
+          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-white">
+            <CardCvcElement
+              options={{
+                style: {
+                  base: {
+                    color: isDark ? "#fff" : "#222",
+                    fontSize: '14px',
+                    '::placeholder': { color: isDark ? "#ccc" : "#888" },
+                  },
+                  invalid: {
+                    color: "#ff6b6b",
+                  },
+                },
+              }}
+              className="w-full dark:text-white"
+            />
           </div>
         </div>
       </div>
-
+      {/* <div className="mb-4">
+        <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">ZIP Code</label>
+        <input
+          type="text"
+          maxLength={6}
+          pattern="\d{6}"
+          required
+          value={zip}
+          onChange={(e) => {
+            const cleaned = e.target.value.replace(/\D/g, '');
+            setZip(cleaned);
+          }}
+          placeholder="123456"
+          className="w-full border rounded-md px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-[#232323] dark:text-white"
+        />
+      </div> */}
       <button
         type="submit"
         disabled={!stripe || loading}
-        className={`w-full py-2 px-4 rounded-lg text-white dark:text-white font-bold transition-colors text-[13px] ${
+        className={`w-full py-2 px-4 rounded-lg text-white font-bold transition-colors text-[13px] ${
           !stripe || loading
             ? "bg-gray-400 cursor-not-allowed"
             : "cursor-pointer bg-[#2D6AE0] hover:bg-[#1B4FA0]"
@@ -179,11 +308,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       >
         {loading ? "Processing..." : "Pay"}
       </button>
-
       {message && (
         <p className="text-center text-sm text-gray-700 dark:text-white">{message}</p>
       )}
-      </div>
     </form>
   );
 };
@@ -797,7 +924,7 @@ const Invoice = () => {
                   <div className="flex justify-between px-2 py-2">
                     <span className="text-xs">Payment Type</span>
                     <span className="text-blue-900 font-semibold text-xs">
-                      Stripe
+                      Online
                     </span>
                   </div>
                   <div className="flex justify-between px-2 py-2">
