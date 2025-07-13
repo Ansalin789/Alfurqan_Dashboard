@@ -150,14 +150,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       <div className="mb-4 ">
         <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">Card Number</label>
         <div className="border rounded-md px-3 py-2 flex items-center bg-white dark:bg-[#3C3C3C]">
-          <CardNumberElement className="w-full dark:text-[#ffffff]" />
+            <CardNumberElement className="w-full dark:text-[#ffffff]" />
         </div>
       </div>
       <div className="flex gap-4 mb-4">
         <div className="flex-1">
           <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">Expiry</label>
           <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
-            <CardExpiryElement className="w-full dark:text-[#ffffff]" />
+            <CardExpiryElement className="w-full dark:text-[#ffffff] " />
           </div>
         </div>
         <div className="flex-1">
@@ -171,7 +171,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       <button
         type="submit"
         disabled={!stripe || loading}
-        className={`w-full py-2 px-4 rounded-lg text-white font-bold transition-colors text-[13px] ${
+        className={`w-full py-2 px-4 rounded-lg text-white dark:text-white font-bold transition-colors text-[13px] ${
           !stripe || loading
             ? "bg-gray-400 cursor-not-allowed"
             : "cursor-pointer bg-[#2D6AE0] hover:bg-[#1B4FA0]"
@@ -181,7 +181,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       </button>
 
       {message && (
-        <p className="text-center text-sm text-gray-700">{message}</p>
+        <p className="text-center text-sm text-gray-700 dark:text-white">{message}</p>
       )}
       </div>
     </form>
@@ -617,7 +617,7 @@ const Invoice = () => {
             </div>
             <div className="bg-gray-50 dark:bg-[#232323] rounded-lg py-3 px-2 text-center border border-gray-200 dark:border-gray-100">
               <p className="text-xs dark:text-gray-400">Payment Method</p>
-              <p className="text-xs font-medium text-gray-400 dark:text-gray-400">Bank Transfer</p>
+              <p className="text-xs font-medium text-gray-400 dark:text-gray-400">Online</p>
             </div>
             <div className="bg-gray-50 dark:bg-[#232323] rounded-lg py-3 px-2 text-center border border-gray-200 dark:border-gray-100">
               <p className="text-xs dark:text-gray-400">Sender Name</p>
