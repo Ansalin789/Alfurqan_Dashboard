@@ -6,7 +6,7 @@ import axios from "axios";
 
 function Assignment() {
   const [assignmentData, setAssignmentData] = useState({
-    totalAssigned: 0,
+    totalAssignments: 0,
     totalCompleted: 0,
     totalPending: 0,
   });
@@ -28,7 +28,7 @@ function Assignment() {
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`
+          `http://localhost:5001/assignments/cardcount?studentId=${studentId}`
         );
 
         // Log the full API response for debugging
@@ -36,6 +36,7 @@ function Assignment() {
 
         if (response.data.status === "success") {
           // Bind the response data to state
+          console.log("Setting assignment data:", response.data.data);
           setAssignmentData(response.data.data);
         } else {
           console.error("Failed to fetch data:", response.data.message);
@@ -50,20 +51,24 @@ function Assignment() {
     fetchAssignmentData();
   }, []);
 
-  const { totalAssigned, totalCompleted, totalPending } = assignmentData;
+  const { totalAssignments, totalCompleted, totalPending } = assignmentData;
 
-  const completionPercentage = totalAssigned
-    ? Math.round((totalCompleted / totalAssigned) * 100)
+  console.log("Current assignment data:", { totalAssignments, totalCompleted, totalPending });
+
+  const completionPercentage = totalAssignments
+    ? Math.round((totalCompleted / totalAssignments) * 100)
     : 0;
 
-  const pendingPercentage = totalAssigned
-    ? Math.round((totalPending / totalAssigned) * 100)
+  const pendingPercentage = totalAssignments
+    ? Math.round((totalPending / totalAssignments) * 100)
     : 0;
+
+  console.log("Calculated percentages:", { completionPercentage, pendingPercentage });
 
   const cards = [
     {
       title: "Total Assignment Assigned",
-      count: totalAssigned,
+      count: totalAssignments,
       percentage: 100,
       ringColor: "#88A2CF",
       bgColor: "#CDD5E2",

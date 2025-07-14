@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -197,6 +197,7 @@ const Invoice = () => {
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [course, setCourse] = useState("");
 
   // Calculate total price based on selected invoice
   const calculateTotalPrice = () => {
@@ -348,6 +349,16 @@ const Invoice = () => {
     return `${day}-${month}-${year}`;
   }
 
+  function formatDateMMMDDYYYY(dateString?: string | number) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+  }
+
   function toDateString(date: string) {
     return new Date(date).toISOString().slice(0, 10);
   }
@@ -360,12 +371,23 @@ const Invoice = () => {
 
   const openFilterModal = () => {
     setShowFilterModal(true);
-    setShowModal(false); // <-- Add this line
+    setShowModal(false);
   };
 
-  // Filtering logic
-  const handleFilter = () => {
+  // Get unique course names for dropdown
+  const courseOptions = useMemo(() => {
+    const set = new Set(invoices.map((inv) => inv.courseName));
+    return Array.from(set);
+  }, [invoices]);
+
+  // Unified filtering logic for both search and filters
+  const applyFilters = () => {
     let filtered = invoices;
+    // Course filter
+    if (course) {
+      filtered = filtered.filter((inv) => inv.courseName === course);
+    }
+    // Date range filters
     if (fromDate) {
       filtered = filtered.filter(
         (inv) => toDateString(inv.createdDate) >= fromDate
@@ -376,46 +398,53 @@ const Invoice = () => {
         (inv) => toDateString(inv.createdDate) <= toDate
       );
     }
-    if (positionApplied) {
+    // Status filter
+    if (positionApplied && positionApplied !== "Pending") {
       filtered = filtered.filter(
         (inv) => inv.invoiceStatus === positionApplied
       );
     }
+    // Search text filter
     if (searchText.trim() !== "") {
-      const lower = searchText.toLowerCase();
-      filtered = filtered.filter(
-        (inv) =>
-          inv.courseName.toLowerCase().includes(lower) ||
-          inv._id.toLowerCase().includes(lower) ||
-          toDateString(inv.createdDate).includes(lower) ||
-          formatDateDMY(inv.createdDate).includes(lower) ||
-          inv.invoiceStatus.toLowerCase().includes(lower)
-      );
+      const searchLower = searchText.toLowerCase();
+      filtered = filtered.filter((inv) => {
+        const invoiceDate = formatDateMMMDDYYYY(inv.createdDate).toLowerCase();
+        const invoiceNumber = inv._id.toLowerCase();
+        const courseName = inv.courseName.toLowerCase();
+        const paymentDate = inv.paymentDate
+          ? formatDateDMY(new Date(inv.paymentDate).toISOString()).toLowerCase()
+          : "";
+        const status = inv.invoiceStatus.toLowerCase();
+        const amount = inv.amount.toString().toLowerCase();
+        return (
+          invoiceDate.includes(searchLower) ||
+          invoiceNumber.includes(searchLower) ||
+          courseName.includes(searchLower) ||
+          paymentDate.includes(searchLower) ||
+          status.includes(searchLower) ||
+          amount.includes(searchLower)
+        );
+      });
     }
     setFilteredInvoices(filtered);
+  };
+
+  useEffect(() => {
+    applyFilters();
+  }, [searchText, fromDate, toDate, positionApplied, course, invoices]);
+
+  // Filter modal submit handler
+  const handleFilter = () => {
     setShowFilterModal(false);
   };
 
-  // Optionally, filter by searchText live (not just on filter submit)
-  useEffect(() => {
-    if (searchText.trim() === "" || searchText.trim() === ".") {
-      setFilteredInvoices([]);
-      return;
-    }
-    let filtered = invoices;
-    if (searchText.trim() !== "" && searchText.trim() !== ".") {
-      const lower = searchText.toLowerCase();
-      filtered = filtered.filter(
-        (inv) =>
-          inv.courseName.toLowerCase().includes(lower) ||
-          inv._id.toLowerCase().includes(lower) ||
-          toDateString(inv.createdDate).includes(lower) ||
-          formatDateDMY(inv.createdDate).includes(lower) ||
-          inv.invoiceStatus.toLowerCase().includes(lower)
-      );
-    }
-    setFilteredInvoices(filtered);
-  }, [searchText, invoices]);
+  const clearFilters = () => {
+    setFromDate("");
+    setToDate("");
+    setPositionApplied("Pending");
+    setSearchText("");
+    setCourse("");
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -423,7 +452,15 @@ const Invoice = () => {
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const dataToPaginate = filteredInvoices.length > 0 ? filteredInvoices : invoices;
+  const isAnyFilterActive = (
+    searchText.trim() !== "" ||
+    fromDate ||
+    toDate ||
+    course ||
+    positionApplied
+  );
+
+  const dataToPaginate = isAnyFilterActive ? filteredInvoices : invoices;
   const currentItems = dataToPaginate.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(dataToPaginate.length / itemsPerPage);
 
@@ -436,9 +473,7 @@ const Invoice = () => {
 
           {!isGeneratingPDF && (
             <div>
-            
-              <br />
-              <div className="w-full h-[300px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+              <div className="w-full h-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
                 {/* <a href="/transactions" className="text-xs text-blue-500 hover:underline">View all</a> */}
                 <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -446,24 +481,40 @@ const Invoice = () => {
                     <input
                       type="text"
                       placeholder="Search"
-                      className="bg-transparent outline-none text-[15px] w-52 py-3"
+                      className="bg-transparent outline-none text-[12px] w-52 py-3"
                       value={searchText}
                       onChange={(e) => setSearchText(e.target.value)}
                     />
                   </div>
 
-                  <div
-                    className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                    onClick={() => setShowFilterModal(true)}
-                  >
-                    {/* <BsFilterLeft /> */}
-                    <MdTune className="w-4 h-4" />
-                    <span>Filter</span>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`flex items-center gap-2 text-sm py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer ${
+                        (fromDate || toDate || positionApplied !== "Pending") 
+                          ? "text-[#576CBC] dark:text-[#6087C0]" 
+                          : "text-gray-400 dark:border-[#606060]"
+                      }`}
+                      onClick={() => setShowFilterModal(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                      {(fromDate || toDate || positionApplied !== "Pending") && (
+                        <span className="w-2 h-2 bg-[#576CBC] dark:bg-[#6087C0] rounded-full"></span>
+                      )}
+                    </div>
+                    {(fromDate || toDate || positionApplied !== "Pending") && (
+                      <button
+                        onClick={clearFilters}
+                        className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+                      >
+                        Clear filters
+                      </button>
+                    )}
                   </div>
                   {/* Modal */}
                   {showFilterModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
-                      <div className="bg-white p-6 rounded-lg w-[500px] relative dark:bg-[#252525]">
+                      <div className="bg-white p-6 rounded-lg w-[350px] relative dark:bg-[#252525]">
                         {/* Close Icon */}
                         <button
                           className="absolute top-2 right-3 text-gray-400 text-xl"
@@ -471,64 +522,64 @@ const Invoice = () => {
                         >
                           &times;
                         </button>
-
-                        <h2 className="text-lg font-semibold mb-4">
-                          Filter by
-                        </h2>
-
+                        <h2 className="text-md font-semibold mb-4">Filter by</h2>
+                        {/* Course Dropdown */}
+                        <div className="mb-4">
+                          <label className="text-[13px] font-medium mb-1 dark:text-[#D6D6D6]">Course</label>
+                          <select
+                            className="w-full border rounded-md p-2 text-[10px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                            value={course}
+                            onChange={(e) => setCourse(e.target.value)}
+                          >
+                            <option value="">All Courses</option>
+                            {courseOptions.map((c) => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        </div>
                         {/* Date Input */}
                         <div className="mb-4">
-                          <label className="text-sm font-medium mb-1 dark:text-[#D6D6D6]">
-                            Date Range
-                          </label>
-
+                          <label className="text-[13px] font-medium mb-1 dark:text-[#D6D6D6]">Payment Date</label>
                           <div className="flex gap-2 mb-2">
                             <input
                               type="date"
-                              className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                              className="w-1/2 px-3 py-2 border rounded text-[10px] text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                               value={fromDate}
                               onChange={(e) => setFromDate(e.target.value)}
                             />
                             <input
                               type="date"
-                              className="w-1/2 px-3 py-2 border rounded text-xs text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
+                              className="w-1/2 px-3 py-2 border rounded text-[10px] text-[#343434] dark:text-white dark:bg-[#343434] dark:border-[#5C5C5C]"
                               value={toDate}
                               onChange={(e) => setToDate(e.target.value)}
                             />
                           </div>
                         </div>
-
-                        {/* Position Applied */}
+                        {/* Status Dropdown */}
                         <div className="mb-4">
-                          <label
-                            htmlFor="position"
-                            className="block text-sm font-medium mb-1"
-                          >
-                            Status
-                          </label>
+                          <label htmlFor="position" className="block text-[13px] font-medium mb-1">Status</label>
                           <select
-                            className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
+                            className="w-full border rounded-md p-2 text-[10px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                             value={positionApplied}
                             onChange={(e) => setPositionApplied(e.target.value)}
                           >
-                            <option>Pending</option>
-                            <option>Paid</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Paid">Paid</option>
                           </select>
                         </div>
-
                         {/* Buttons */}
                         <div className="flex justify-end gap-3">
                           <button
-                            onClick={() => setShowFilterModal(false)}
-                            className="px-4 py-1 rounded-md border border-[#576CBC] text-[#576CBC] font-medium"
+                            onClick={clearFilters}
+                            className="px-4 py-1 rounded-md border border-gray-400 text-gray-600 dark:text-[#fff] font-medium text-[10px]"
                           >
-                            Cancel
+                            Reset
                           </button>
                           <button
-                            className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium"
-                            onClick={handleFilter}
+                            className="px-4 py-1 rounded-md bg-[#576CBC] text-white font-medium text-[10px]"
+                            onClick={() => { handleFilter(); }}
                           >
-                            Submit
+                            Show {filteredInvoices.length} results
                           </button>
                         </div>
                       </div>
@@ -589,40 +640,40 @@ const Invoice = () => {
                               : "bg-[#F8F8F8] dark:bg-[#303030]"
                           } cursor-pointer`}
                         >
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 rounded-l-lg dark:text-[#ffffff]">
-                            {formatDateDMY(invoice.createdDate)}
+                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap rounded-l-lg dark:text-[#ffffff]">
+                            {formatDateMMMDDYYYY(invoice.createdDate)}
                           </td>
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
+                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap dark:text-[#ffffff]">
                             {invoice._id}
                           </td>
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
+                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap dark:text-[#ffffff]">
                             {invoice.courseName}
                           </td>
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
+                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap dark:text-[#ffffff]">
                             {invoice.amount}{" "}
                           </td>
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
+                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap dark:text-[#ffffff]">
                             {invoice.paymentDate
                               ? formatDateDMY(
                                   new Date(invoice.paymentDate).toISOString()
                                 )
                               : ""}
                           </td>
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
+                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap dark:text-[#ffffff]">
                             <span
                               className={
                                 (invoice.invoiceStatus === "Paid"
                                   ? "bg-[#ECFDF3] text-[#377E36] border border-green-600"
                                   : invoice.invoiceStatus === "Pending"
-                                  ? "bg-[#FDF6EC] text-[#F0AD4E] border border-orange-600"
+                                  ? "bg-[#FDF6EC] text-[#F0AD4E] border border-[#F0AD4E]"
                                   : "bg-gray-100 text-gray-600 border border-gray-400") +
-                                " py-0.5 px-1  rounded-lg text-[10px] min-w-[70px] inline-block text-center"
+                                " py-0.5 px-1  rounded-md text-[10px] min-w-[70px] inline-block text-center"
                               }
                             >
                               {invoice.invoiceStatus}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap border-b border-gray-200 rounded-r-lg relative">
+                          <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap rounded-r-lg relative">
                             <button
                               className="focus:outline-none dark:text-[#ffffff]"
                               onClick={(e) => {
@@ -636,7 +687,7 @@ const Invoice = () => {
                             >
                               <span
                                 style={{
-                                  fontSize: 20,
+                                  fontSize: 18,
                                   verticalAlign: "middle",
                                 }}
                               >
@@ -644,12 +695,12 @@ const Invoice = () => {
                               </span>
                             </button>
                             {actionMenuOpen === invoice._id && (
-                              <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10 dark:bg-[#343434]">
-                                <button className="block w-full text-left px-4 py-2  text-xs dark:text-[#ffffff]">
-                                  View Receipt
+                              <div className="absolute right-0 mt-2 w-40 divide-y bg-white border rounded-lg shadow-lg z-10 dark:bg-[#343434]">
+                                <button className="block w-full text-left px-4 py-2  text-xs dark:text-[#ffffff] text-[#000]">
+                                  View Payment Receipt
                                 </button>
                                 <button
-                                  className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
+                                  className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff] text-[#000]"
                                   onClick={() => setActionMenuOpen(null)}
                                 >
                                   Cancel

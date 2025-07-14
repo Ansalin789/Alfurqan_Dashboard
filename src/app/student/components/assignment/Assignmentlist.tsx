@@ -5,6 +5,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation"; // Add this at the top
+// import AssignmentFilterForm from "./AssignmentFilterForm"; // You need to create this component as described
 
 interface AssignmentType {
   _id: string;
@@ -52,6 +53,7 @@ interface AssignmentType {
     _id: string;
     status: string;
   }[];
+  
 }
 
 const StudentList = () => {
@@ -62,6 +64,46 @@ const StudentList = () => {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const router = useRouter();
   const [backendScore, setBackendScore] = useState<number | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+  // Filter state variables
+  const [filters, setFilters] = useState({
+    assignmentName: "",
+    course: "",
+    level: "",
+    assignedDateFrom: "",
+    assignedDateTo: "",
+    dueDateFrom: "",
+    dueDateTo: "",
+    status: ""
+  });
+
+  // Get unique values for filter options
+  const getUniqueCourses = () => {
+    const values = assignments.map(assignment => assignment.courses).filter(Boolean) as string[];
+    return Array.from(new Set(values));
+  };
+  
+  const getUniqueLevels = () => {
+    const values = assignments.map(assignment => assignment.level).filter(Boolean) as string[];
+    return Array.from(new Set(values));
+  };
+
+  // Map assignment status for display and filtering
+  const mapStatus = (status?: string) => {
+    switch (status?.toUpperCase()) {
+      case "ASSIGNED":
+      case "INPROGRESS":
+        return "Assigned";
+      case "COMPLETED":
+        return "Completed";
+      case "PENDING":
+      case "NOT ASSIGNED":
+      default:
+        return "Pending";
+    }
+  };
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -91,15 +133,82 @@ const StudentList = () => {
     fetchAssignments();
   }, []);
 
+  // Filter assignments based on current filters
+  const filterAssignments = (assignments: AssignmentType[]) => {
+    return assignments.filter(assignment => {
+      // Search by keyword in all table data (case-insensitive)
+      if (
+        searchKeyword &&
+        !Object.values(assignment)
+          .map(val => (typeof val === 'string' ? val.toLowerCase() : ''))
+          .join(' ')
+          .includes(searchKeyword.toLowerCase())
+      ) {
+        return false;
+      }
+      // Assignment Name filter
+      if (filters.assignmentName && !assignment.title?.toLowerCase().includes(filters.assignmentName.toLowerCase())) {
+        return false;
+      }
+      // Course filter
+      if (filters.course && assignment.courses !== filters.course) {
+        return false;
+      }
+      // Level filter
+      if (filters.level && assignment.level !== filters.level) {
+        return false;
+      }
+      // Status filter (use mapped status)
+      if (filters.status && mapStatus(assignment.assignmentStatus) !== filters.status) {
+        return false;
+      }
+      // Assigned Date range filter
+      if (filters.assignedDateFrom && assignment.assignedDate) {
+        const assignedDate = new Date(assignment.assignedDate);
+        const fromDate = new Date(filters.assignedDateFrom);
+        if (assignedDate < fromDate) {
+          return false;
+        }
+      }
+      if (filters.assignedDateTo && assignment.assignedDate) {
+        const assignedDate = new Date(assignment.assignedDate);
+        const toDate = new Date(filters.assignedDateTo);
+        if (assignedDate > toDate) {
+          return false;
+        }
+      }
+      // Due Date range filter
+      if (filters.dueDateFrom && assignment.dueDate) {
+        const dueDate = new Date(assignment.dueDate);
+        const fromDate = new Date(filters.dueDateFrom);
+        if (dueDate < fromDate) {
+          return false;
+        }
+      }
+      if (filters.dueDateTo && assignment.dueDate) {
+        const dueDate = new Date(assignment.dueDate);
+        const toDate = new Date(filters.dueDateTo);
+        if (dueDate > toDate) {
+          return false;
+        }
+      }
+      return true;
+    });
+  };
+
   // Tab logic (if you want to filter by assignmentStatus)
-  const pendingAssignments = assignments.filter(a => a.assignmentStatus?.toUpperCase() !== "COMPLETED");
+  const pendingAssignments = assignments.filter(a => mapStatus(a.assignmentStatus) !== "Completed");
   const completedAssignments = assignments.filter(a => {
-    const isAssignmentCompleted = a.assignmentStatus?.toUpperCase() === "COMPLETED";
+    const isAssignmentCompleted = mapStatus(a.assignmentStatus) === "Completed";
     // If there are questions, check that none are "ASSIGNED"
-    const allQuestionsNotAssigned = !a.questions || a.questions.every(q => q.status?.toUpperCase() !== "ASSIGNED");
+    const allQuestionsNotAssigned = !a.questions || a.questions.every(q => mapStatus(q.status) !== "Assigned");
     return isAssignmentCompleted && allQuestionsNotAssigned;
   });
-  const studentsToDisplay = activeTab === "Pending" ? pendingAssignments : completedAssignments;
+
+  // Apply filters to the appropriate tab
+  const filteredPendingAssignments = filterAssignments(pendingAssignments);
+  const filteredCompletedAssignments = filterAssignments(completedAssignments);
+  const studentsToDisplay = activeTab === "Pending" ? filteredPendingAssignments : filteredCompletedAssignments;
 
   const toggleDropdown = (id: string) => {
     setOpenDropdownId((prev) => (prev === id ? null : id));
@@ -119,9 +228,33 @@ const StudentList = () => {
   };
 
   const tabOptions = [
-    { type: "Pending", label: "Pending", count: pendingAssignments.length },
-    { type: "Completed", label: "Completed", count: completedAssignments.length },
+    { type: "Pending", label: "Pending", count: filteredPendingAssignments.length },
+    { type: "Completed", label: "Completed", count: filteredCompletedAssignments.length },
   ];
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      assignmentName: "",
+      course: "",
+      level: "",
+      assignedDateFrom: "",
+      assignedDateTo: "",
+      dueDateFrom: "",
+      dueDateTo: "",
+      status: ""
+    });
+  };
+
+  const applyFilters = () => {
+    setShowFilter(false);
+  };
 
   return (
     <div className="md:p-0 mx-auto w-full">
@@ -155,11 +288,15 @@ const StudentList = () => {
                   type="text"
                   placeholder="Search by keyword"
                   className="bg-transparent outline-none text-[15px] w-52 py-3"
-                  disabled
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
                 />
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+              <div
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                onClick={() => setShowFilter(true)}
+              >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
@@ -171,6 +308,138 @@ const StudentList = () => {
               </div>
             </div>
           </div>
+
+          {/* Filter Modal */}
+          {showFilter && (
+            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+              <form className="bg-white dark:bg-[#232323] p-6 rounded-2xl shadow-lg w-[500px] flex flex-col z-50 max-h-[80vh] overflow-scroll scrollbar-none">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="font-bold text-lg">Filter by</h2>
+                  <button
+                    type="button"
+                    className="text-gray-400 text-2xl font-bold cursor-pointer"
+                    onClick={() => setShowFilter(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
+                    Assignment Name
+                  </label>
+                  <input
+                    type="text"
+                    value={filters.assignmentName}
+                    onChange={(e) => handleFilterChange('assignmentName', e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-gray-50 dark:bg-[#23272f] placeholder-gray-400 dark:placeholder-gray-500 text-[15px] focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                    placeholder="Enter assignment name..."
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Course</label>
+                  <select
+                    value={filters.course}
+                    onChange={(e) => handleFilterChange('course', e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-gray-50 dark:bg-[#23272f] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                  >
+                    <option value="">Select Course</option>
+                    {getUniqueCourses().map((course) => (
+                      <option key={course} value={course}>{course}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Level</label>
+                  <select
+                    value={filters.level}
+                    onChange={(e) => handleFilterChange('level', e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-gray-50 dark:bg-[#23272f] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                  >
+                    <option value="">Select Level</option>
+                    {getUniqueLevels().map((level) => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-xs font-medium mb-1">Assigned Date</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      value={filters.assignedDateFrom}
+                      onChange={(e) => handleFilterChange('assignedDateFrom', e.target.value)}
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-[#23272f] text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                    />
+                    <input
+                      type="date"
+                      value={filters.assignedDateTo}
+                      onChange={(e) => handleFilterChange('assignedDateTo', e.target.value)}
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-[#23272f] text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                    />
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-xs font-medium mb-1">Due Date</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      value={filters.dueDateFrom}
+                      onChange={(e) => handleFilterChange('dueDateFrom', e.target.value)}
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-[#23272f] text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                    />
+                    <input
+                      type="date"
+                      value={filters.dueDateTo}
+                      onChange={(e) => handleFilterChange('dueDateTo', e.target.value)}
+                      className="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-gray-50 dark:bg-[#23272f] text-xs w-full focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                    />
+                  </div>
+                </div>
+
+                
+                <div className="mb-6">
+                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-gray-50 dark:bg-[#23272f] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#7B83EB] transition"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="Assigned">Assigned</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+                <div className="flex gap-4 mt-auto justify-end">
+                  <button
+                    type="button"
+                    className="border border-[#576CBC] bg-white text-[#576CBC] rounded-lg px-6 py-2 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#576CBC]"
+                    onClick={() => setFilters({
+                      assignmentName: "",
+                      course: "",
+                      level: "",
+                      assignedDateFrom: "",
+                      assignedDateTo: "",
+                      dueDateFrom: "",
+                      dueDateTo: "",
+                      status: ""
+                    })}
+                  >Reset</button>
+                  <button
+                    type="submit"
+                    className="bg-[#576CBC] text-white rounded-lg px-6 py-2 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#576CBC]"
+                    onClick={() => setShowFilter(false)}
+                  >Show results</button>
+                </div>
+              </form>
+              <div className="fixed inset-0"
+                 onClick={() => setShowFilter(false)} />
+            </div>
+          )}
           {(() => {
             return (
               <table className="table-fixed w-full">
@@ -178,7 +447,7 @@ const StudentList = () => {
                   <tr>
                     {[
                       "Assignment ID",
-                      "Assignment By",
+                      "Assigned By",
                       "Course",
                       "Level",
                       "Assignemnt Name",
@@ -199,10 +468,10 @@ const StudentList = () => {
                 </thead>
                 <tbody>
                   {studentsToDisplay.map((assignment, index) => {
-                    const status = assignment.assignmentStatus?.toUpperCase();
-                    const isNotAssigned = status === "NOT ASSIGNED";
-                    const isCompleted = status === "COMPLETED";
-                    const isAssigned = status === "ASSIGNED" || status === "INPROGRESS";
+                    const status = mapStatus(assignment.assignmentStatus);
+                    const isNotAssigned = status === "Pending";
+                    const isCompleted = status === "Completed";
+                    const isAssigned = status === "Assigned";
 
                     // 🛠 Fix: Extract nested ternary condition
                     const rowBgClass =
@@ -240,22 +509,22 @@ const StudentList = () => {
                           {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "-"}
                         </td>
                         <td className="px-3 py-4 break-words text-[11px]">
-                          <span className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(assignment.assignmentStatus || "")}`}>
-                            {assignment.assignmentStatus}
+                          <span className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(mapStatus(assignment.assignmentStatus))}`}>
+                            {mapStatus(assignment.assignmentStatus)}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-center relative text-[11px]">
                           {(() => {
                             let buttonClass = "text-gray-500 hover:text-gray-700 dark:text-[#ffff] ";
-                            if (isNotAssigned || isCompleted) {
+                            if (isNotAssigned) {
                               buttonClass += "opacity-40 cursor-not-allowed";
                             }
                             const handleClick = () => {
-                              if (!isNotAssigned && !isCompleted) {
+                              if (!isNotAssigned) {
                                 toggleDropdown(assignment._id);
                               }
                             };
-                            const isButtonDisabled = isNotAssigned || isCompleted;
+                            const isButtonDisabled = isNotAssigned;
                             return (
                               <button
                                 className={buttonClass}
@@ -300,22 +569,21 @@ const StudentList = () => {
                             </div>
                           )}
                           {openDropdownId === assignment._id && isCompleted && (
-                            <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434] opacity-40 pointer-events-none">
+                            <div className="absolute right-0 w-32 p-2 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
                               <button
                                 className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                disabled
-                              >
-                                Start Assignment
-                              </button>
-                              <button
-                                className="block w-full px-4 py-1 text-[11px] text-black dark:text-[#ffff]"
-                                disabled
+                                onClick={() => {
+                                  setOpenDropdownId(null);
+                                  router.push(
+                                    `/student/ui/assignmentlist?assignmentId=${assignment.assignmentId}`
+                                  );
+                                }}
                               >
                                 View List
                               </button>
                               <button
                                 className="block w-full px-4 py-1 text-[11px] dark:text-[#ffff]"
-                                disabled
+                                onClick={() => setOpenDropdownId(null)}
                               >
                                 Cancel
                               </button>

@@ -115,6 +115,7 @@ export interface StudentWithAssignments extends StudentCoreInfo {
   classType: string;
   groupClassId: string;
   assignment: AssignmentItem[];
+  level?: string;
 }
 
 const GroupStudents = () => {
@@ -126,6 +127,8 @@ const GroupStudents = () => {
   const [sessionClassType, setSessionClassType] = useState("");
   const [assignedTeacher, setAssignedTeacher] = useState("");
   const [assignedTeacherId, setAssignedTeacherId] = useState("");
+  const [course, setCourse] = useState("");
+  const [level, setLevel] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredGroups, setFilteredGroups] = useState<
     Record<string, StudentWithAssignments[]>
@@ -416,7 +419,16 @@ const GroupStudents = () => {
     router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
   };
 
-  const handleClick = () => {
+  const handleClick = (courseValue?: string, levelValue?: string) => {
+    const finalCourse = courseValue || course;
+    const finalLevel = levelValue || level;
+    
+    console.log("🔍 Debug - Values being passed:");
+    console.log("course:", finalCourse);
+    console.log("level:", finalLevel);
+    console.log("studentId:", studentId);
+    console.log("studentName:", studentName);
+    
     const query = new URLSearchParams({
       title,
       assignedDate,
@@ -427,8 +439,11 @@ const GroupStudents = () => {
       sessionClassType,
       assignedTeacher,
       assignedTeacherId,
+      course: finalCourse,
+      level: finalLevel,
     }).toString();
 
+    console.log("🔍 Final URL:", `/teacher/ui/addingnewassignment?${query}`);
     router.push(`/teacher/ui/addingnewassignment?${query}`);
   };
 
@@ -709,7 +724,9 @@ const GroupStudents = () => {
                         <td className="px-3 py-2 break-words">
                           {groupId === "no-group" ? "-" : groupId}
                         </td>
-                        <td className="px-3 py-2 break-words">-</td>
+                        <td className="px-3 py-2 break-words">
+                          {students[0]?.level || "-"}
+                        </td>
                         <td className="px-3 py-2 break-words">
                           {studentDetails?.student?.learningInterest}
                         </td>
@@ -762,11 +779,13 @@ const GroupStudents = () => {
                                     studentDetails?.classType ?? "GROUPCLASS"
                                   );
                                   setAssignedTeacher(
-                                    studentDetails?.assignedTeacherEmail ?? ""
+                                    studentDetails?.teacher?.teacherName ?? ""
                                   );
                                   setAssignedTeacherId(
                                     studentDetails?.teacher?.teacherId ?? ""
                                   );
+                                  setCourse(studentDetails?.student?.learningInterest || "");
+                                  setLevel(studentDetails?.languageLevel || "");
                                   setOpenModalId(modalIdNoAssignment);
                                 }}
                               >
@@ -936,10 +955,10 @@ const GroupStudents = () => {
                             {assignmentItem.title}
                           </td>
                           <td className="px-3 py-2 break-words">
-                            {studentDetails?.student?.learningInterest}
+                            {students[0]?.level || "-"}
                           </td>
                           <td className="px-3 py-2 break-words">
-                            {studentDetails?.student?.learningInterest || "-"}
+                            {studentDetails?.student?.learningInterest}
                           </td>
                           <td className="px-3 py-2 break-words">
                             {assignmentItem?.assignedDate}
@@ -1000,11 +1019,25 @@ const GroupStudents = () => {
                                               studentDetails?.classType ?? "GROUPCLASS"
                                             );
                                             setAssignedTeacher(
-                                              studentDetails?.assignedTeacherEmail ?? ""
+                                              studentDetails?.teacher?.teacherName ?? ""
                                             );
                                             setAssignedTeacherId(
                                               studentDetails?.teacher?.teacherId ?? ""
                                             );
+                                            console.log("🔍 GroupStudents - Setting values for student:", firstStudent.studentId);
+                                            console.log("🔍 students array:", students);
+                                            console.log("🔍 students[0]:", students[0]);
+                                            console.log("🔍 students[0]?.level:", students[0]?.level);
+                                            console.log("🔍 studentDetails?.student?.learningInterest:", studentDetails?.student?.learningInterest);
+                                            
+                                            const courseValue = studentDetails?.student?.learningInterest || "";
+                                            const levelValue = students[0]?.level || "";
+                                            
+                                            console.log("🔍 Final courseValue:", courseValue);
+                                            console.log("🔍 Final levelValue:", levelValue);
+                                            
+                                            setCourse(courseValue);
+                                            setLevel(levelValue);
                                             setOpenModalId(modalId);
                                           }}
                                         >
@@ -1062,13 +1095,27 @@ const GroupStudents = () => {
                                                 "GROUPCLASS"
                                             );
                                             setAssignedTeacher(
-                                              studentDetails?.assignedTeacherEmail ??
+                                              studentDetails?.teacher?.teacherName ??
                                                 ""
                                             );
                                             setAssignedTeacherId(
                                               studentDetails?.teacher
                                                 ?.teacherId ?? ""
                                             );
+                                            console.log("🔍 GroupStudents - Setting values for assignment student:", firstStudent.studentId);
+                                            console.log("🔍 students array:", students);
+                                            console.log("🔍 students[0]:", students[0]);
+                                            console.log("🔍 students[0]?.level:", students[0]?.level);
+                                            console.log("🔍 studentDetails?.student?.learningInterest:", studentDetails?.student?.learningInterest);
+                                            
+                                            const courseValue = studentDetails?.student?.learningInterest || "";
+                                            const levelValue = students[0]?.level || "";
+                                            
+                                            console.log("🔍 Final courseValue:", courseValue);
+                                            console.log("🔍 Final levelValue:", levelValue);
+                                            
+                                            setCourse(courseValue);
+                                            setLevel(levelValue);
                                             setOpenModalId(modalId);
                                           }}
                                         >
@@ -1171,7 +1218,19 @@ const GroupStudents = () => {
                                     </button>
                                     <button
                                       className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                      onClick={() => handleClick()}
+                                      onClick={() => {
+                                        console.log("🔍 GroupStudents - Create Assignment button clicked");
+                                        console.log("🔍 studentDetails?.student?.learningInterest:", studentDetails?.student?.learningInterest);
+                                        console.log("🔍 students[0]?.level:", students[0]?.level);
+                                        
+                                        const courseValue = studentDetails?.student?.learningInterest || "";
+                                        const levelValue = students[0]?.level || "";
+                                        
+                                        console.log("🔍 Passing to handleClick - courseValue:", courseValue);
+                                        console.log("🔍 Passing to handleClick - levelValue:", levelValue);
+                                        
+                                        handleClick(courseValue, levelValue);
+                                      }}
                                     >
                                       Create Assignment
                                     </button>

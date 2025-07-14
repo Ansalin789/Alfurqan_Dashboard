@@ -10,7 +10,7 @@ const [dashboardCounts, setDashboardCounts] = useState({
   totalAttendance: 0, // percentage
   totalClasses: 0,
   presentCount: 0,    // <-- add this
-  totalDuration: "0 Hr",
+  totalDuration: 0,
 });
 
 
@@ -29,9 +29,9 @@ const [dashboardCounts, setDashboardCounts] = useState({
 
         const studentId = localStorage.getItem("StudentPortalId");
         const courseName = localStorage.getItem("StudentCourseName");
-
+        console.log("Retrieved courseName from local storage:", courseName);
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/dashboard/student/counts",
+          "http://localhost:5001/dashboard/student/counts",
           {
             params: { studentId, courseName },
             headers: {
@@ -40,14 +40,14 @@ const [dashboardCounts, setDashboardCounts] = useState({
             },
           }
         );
+  console.log(">>>>>>>>>>>",response)
 
-        console.log("API Response:", response.data);
         setDashboardCounts({
           totalLevel: Number(response.data.totalLevel) || 0,
           totalAttendance: Number(response.data.totalAttendance) || 0,
           totalClasses: Number(response.data.totalClasses) || 0,
           presentCount: 0, // Not provided in response
-          totalDuration: String(response.data.totalDuration) || "0",
+          totalDuration: Number(response.data.totalDuration) || 0,
         });
       } catch (error) {
         console.error("Error fetching dashboard counts:", error);
@@ -75,7 +75,7 @@ const [dashboardCounts, setDashboardCounts] = useState({
     },
     {
       title: "Total Classes",
-      value: `${Math.floor(dashboardCounts.totalClasses)}%`,
+      value: `${Math.floor(dashboardCounts.totalClasses)}`,
       percentage: Math.floor(dashboardCounts.totalClasses),
       ringColor: "#8B93D2",
       bgColor: "#E7EFF2",
