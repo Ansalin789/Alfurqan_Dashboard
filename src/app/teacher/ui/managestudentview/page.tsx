@@ -434,7 +434,9 @@ const ManageStudentView = () => {
   const router = useRouter(); // Add this
 
   const handleViewProfile = (studentId: string) => {
-    router.push(`/teacher/ui/question?id=${studentId}`);
+     const studentId1 = searchParams.get("studentId");
+     const assignmentId = searchParams.get("assignmentId");
+    router.push(`/teacher/ui/question?id=${studentId}&studentId=${studentId1}&assignmentId=${assignmentId}`);
   };
 
   const handleClick = () => {

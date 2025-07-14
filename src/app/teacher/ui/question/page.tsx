@@ -76,13 +76,29 @@ export interface Assignment {
 export default function Page() {
   const [assignments, setAssignments] = useState<Assignment>();
   const search = useSearchParams();
+  const studentId =search.get('studentId');
+  const assignmentId = search.get('assignmentId');
   useEffect(() => {
+     const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("TeacherAuthToken")
+          : null;
+
+      if (!token) {
+        console.error("❌ TeacherAuthToken not found");
+        return;
+      }
     const fetchAssignment = async () => {
       const assigmnetId = search.get('id');
       if(!assigmnetId) return;
       try {
         const res = await axios.get<Assignment>(
-          `http://localhost:5001/assignments/${assigmnetId}`
+          `http://localhost:5001/assignments/${assigmnetId}`,{
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
         );
         setAssignments(res.data);
       } catch (error) {
@@ -101,7 +117,7 @@ export default function Page() {
   return (
     <div>
       <BaseLayout>
-        <TeacherHeader currentSection="Assignments" showBackButton={true} showBackPath="managestudentview" />
+        <TeacherHeader currentSection="Assignments" showBackButton={true} showBackPath={`/teacher/ui/managestudentview?studentId=${studentId}&assignmentId=${assignmentId}`} />
         {assignments?.assignmentType?.type === "quiz" &&
           (assignments.trueorfalseType ? (
             <QuizTrueOrFalseAnswerCard
