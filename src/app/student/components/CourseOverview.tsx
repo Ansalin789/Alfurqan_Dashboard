@@ -4,95 +4,119 @@ import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
 import axios from "axios";
 
-const CourseOverview = () => {
-const [dashboardCounts, setDashboardCounts] = useState({
-  totalLevel: 0,
-  totalAttendance: 0, // percentage
-  totalClasses: 0,
-  presentCount: 0,    // <-- add this
-  totalDuration: 0,
-});
+const handleLogin = (studentId: string, courseName: string) => {
+  localStorage.setItem("StudentPortalId", studentId);
+  localStorage.setItem("StudentCourseName", courseName);
+  console.log("StudentPortalId set to:", studentId);
+  console.log("StudentCourseName set to:", courseName);
+  // Now you can call fetchData or set a state to trigger it
+};
 
+
+const CourseOverview = () => {
+  const [dashboardCounts, setDashboardCounts] = useState({
+    totalLevel: 0,
+    totalAttendance: 0,
+    totalClasses: 0,
+    presentCount: 0,
+    totalDuration: 0,
+  });
+  const [courseName, setCourseName] = useState<string>("");
 
   useEffect(() => {
-    const fetchData = async () => { 
+    const storedCourseName = localStorage.getItem("StudentcourseName"); // Check the casing
+    if (storedCourseName) {
+      setCourseName(storedCourseName);
+    } else {
+      console.warn("⚠️ No courseName found in localStorage");
+    }
+  }, []);
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("StudentAuthToken")
-            : null;
-
-        if (!token) {
-          console.error("❌ StudentAuthToken not found");
+        const token = localStorage.getItem("StudentAuthToken");
+        const studentId = localStorage.getItem("StudentPortalId");
+        const courseName = localStorage.getItem("StudentcourseName"); // check exact key
+  
+        console.log("✅ token:", token);
+        console.log("✅ studentId:", studentId);
+        console.log("✅ courseName:", courseName);
+  
+        if (!token || !studentId || !courseName) {
+          console.error("❌ studentId or courseName missing in localStorage");
           return;
         }
-
-        const studentId = localStorage.getItem("StudentPortalId");
-        const courseName = localStorage.getItem("StudentCourseName");
-        console.log("Retrieved courseName from local storage:", courseName);
-        const response = await axios.get(
-          "http://localhost:5001/dashboard/student/counts",
-          {
-            params: { studentId, courseName },
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-  console.log(">>>>>>>>>>>",response)
-
+  
+        const response = await axios.get("http://localhost:5001/dashboard/student/counts", {
+          params: { studentId, courseName },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        console.log("✅ FULL API response:", response);
+        console.log("✅ Final Data:", JSON.stringify(response.data, null, 2));
+  
         setDashboardCounts({
           totalLevel: Number(response.data.totalLevel) || 0,
           totalAttendance: Number(response.data.totalAttendance) || 0,
           totalClasses: Number(response.data.totalClasses) || 0,
-          presentCount: 0, // Not provided in response
+          presentCount: 0,
           totalDuration: Number(response.data.totalDuration) || 0,
         });
       } catch (error) {
-        console.error("Error fetching dashboard counts:", error);
+        console.error("❌ Error fetching dashboard counts:", error);
       }
     };
-
+  
     fetchData();
   }, []);
+  
 
   const data = [
     {
-        title: "Level",
-        value: `${Math.floor(dashboardCounts.totalLevel)}`,
-        percentage: Math.floor(dashboardCounts.totalLevel),
-        ringColor: "#7DB5CB",
-        bgColor: "#E7EFF2",
-      },
-      
+      title: "Level",
+      value: `${Math.floor(dashboardCounts.totalLevel)}`,
+      percentage: Math.floor(dashboardCounts.totalLevel),
+      ringColor: "#7DB5CB",
+      bgColor: "#E7EFF2",
+    },
+
     {
       title: "Attendance",
       value: `${Math.floor(dashboardCounts.totalAttendance)}%`,
-      percentage:  Math.floor(dashboardCounts.totalAttendance),
+      percentage: Math.floor(dashboardCounts.totalAttendance),
       ringColor: "#9AD7D6",
       bgColor: "#E7EFF2",
     },
+
     {
       title: "Total Classes",
-      value: `${Math.floor(dashboardCounts.totalClasses)}`,
-      percentage: Math.floor(dashboardCounts.totalClasses),
+      value: `${Math.floor(dashboardCounts.totalClasses)}`, // No % sign here
+      // Cap percentage to 100 for pie chart to avoid overflow
+      percentage:
+        dashboardCounts.totalClasses > 100
+          ? 100
+          : Math.floor(dashboardCounts.totalClasses),
       ringColor: "#8B93D2",
       bgColor: "#E7EFF2",
     },
+
     {
-        title: "Duration",
-        value: `${Math.floor(Number(dashboardCounts.totalDuration))} Hr`,
-        percentage: Math.floor(Number(dashboardCounts.totalDuration)),
-        ringColor: "#B690D5",
-        bgColor: "#E7EFF2",
-      },     
+      title: "Duration",
+      value: `${Math.floor(dashboardCounts.totalDuration)} Hr`,
+      percentage: Math.floor(dashboardCounts.totalDuration),
+      ringColor: "#B690D5",
+      bgColor: "#E7EFF2",
+    },
   ];
 
   return (
     <div>
       <h5 className="text-[16px] font-semibold text-[#010E30] dark:text-white mb-4">
-        Course Overview <span className="text-[#6786FB]">(Quran)</span>
+        Course Overview{" "}
+        {courseName && <span className="text-[#6786FB]">({courseName})</span>}
       </h5>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {data.map((item, idx) => (
