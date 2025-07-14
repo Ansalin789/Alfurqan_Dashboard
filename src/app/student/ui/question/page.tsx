@@ -101,7 +101,7 @@ export default function Page() {
   return (
     <div>
       <BaseLayout2>
-        <StudentHeader currentSection="Assignments" />
+        <StudentHeader currentSection="Assignments" showBackButton={true} showBackPath="assignmentlist" />
         {assignments?.assignmentType?.type === "quiz" &&
           (assignments.trueorfalseType ? (
             <QuizTrueOrFalseAnswerCard

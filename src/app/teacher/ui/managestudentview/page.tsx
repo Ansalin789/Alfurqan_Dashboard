@@ -297,6 +297,26 @@ export interface Assignment {
   sessionClassType?: string;
   __v: number;
 }
+
+export interface AssignmentType {
+  type: string;
+}
+
+export interface AssignmentData {
+  _id: string;
+  assignmentId: string;
+  assignmentName: string;
+  assignmentType: AssignmentType;
+  questionName: string;
+  assignedDate: string; // ISO Date string
+  dueDate: string;      // ISO Date string
+  assignmentStatus: string; // e.g., "Completed"
+}
+
+export interface AssignmentApiResponse {
+  assignmentData: AssignmentData[];
+  totalCount: number;
+}
 const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return "-";
   const date = new Date(dateStr);
@@ -355,7 +375,7 @@ const ManageStudentView = () => {
     []
   );
   const [selectedStudentAssignments, setSelectedStudentAssignments] = useState<
-    StudentWithAssignments[]
+     AssignmentData[]
   >([]);
 
   const [regularCount, setRegularCount] = useState<number>(0);
@@ -368,56 +388,42 @@ const ManageStudentView = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const teacherId = localStorage.getItem("TeacherPortalId");
+         const studentId = searchParams.get("studentId");
+          const assignmentId = searchParams.get("assignmentId");
         const token = localStorage.getItem("TeacherAuthToken");
 
-        if (!token || !teacherId || !studentId) {
+        if (!token ||  !studentId) {
           console.warn("Missing teacherId, token, or studentId");
           return;
         }
 
-        const res = await axios.get<StudentWithAssignments[]>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list/",
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            params: { teacherId },
-          }
-        );
+      const res = await axios.get(
+  `http://localhost:5001/assignments/questionlist`,
+  {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    params: {
+      studentId,
+      assignmentId,
+    },
+  }
+);
 
-        // ✅ Filter only for selected student
-        const filteredAssignments = res.data.filter(
-          (item) => item.studentId === studentId
-        );
 
-        console.log("Filtered Assignments:", filteredAssignments);
 
-        setSelectedStudentAssignments(filteredAssignments);
+        
 
-        // ✅ You can now split into REGULAR and GROUP if needed
-        const regular = filteredAssignments.filter(
-          (student) =>
-            student.studentDetails?.classType?.toUpperCase() === "REGULARCLASS"
-        );
+        console.log("Filtered Assignments:", res.data.assignmentData);
 
-        const group = filteredAssignments.filter(
-          (student) =>
-            student.studentDetails?.classType?.toUpperCase() === "GROUPCLASS"
-        );
-
-        setRegularStudents(regular);
-        setGroupStudents(group);
-        setRegularCount(regular.length);
-        setGroupCount(group.length);
+        setSelectedStudentAssignments(res.data.assignmentData);
       } catch (error) {
         console.error("Error fetching assignments:", error);
       }
     };
 
     fetchData();
-  }, [studentId]);
+  }, []);
 
   const studentsToDisplay =
     activeTab === "Regular" ? regularStudents : groupStudents;
@@ -882,121 +888,103 @@ const ManageStudentView = () => {
 
           {/* Table */}
           <table className="table-fixed w-full">
-            <thead className="text-[12px] bg-[#4C6993] text-white">
-              <tr>
-                {[
-                  "Student ID",
-                  "Student Name",
-                  "Assignment ID",
-                  "Level",
-                  "Course",
-                  "Assignment Name",
-                  "Assigned Date",
-                  "Due Date",
-                  "Status",
-                  "Action",
-                ].map((header, idx) => (
-                  <th
-                    key={idx}
-                    className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
-                  >
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {(searchedData.length > 0 ? searchedData : (filteredStudents.length > 0 ? filteredStudents : studentsToDisplay)).map((student, studentIndex) => {
-                const studentInfo = student.studentDetails?.student;
-                const studentDetails = student.studentDetails;
+  <thead className="text-[12px] bg-[#4C6993] text-white">
+    <tr>
+      {[
+        "Assignment ID",
+        "Assignment Name",
+        "Type",
+        "Assigned Date",
+        "Due Date",
+        "Status",
+        "Action",
+      ].map((header, idx) => (
+        <th
+          key={idx}
+          className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+        >
+          {header}
+        </th>
+      ))}
+    </tr>
+  </thead>
+  <tbody>
+    {selectedStudentAssignments.map((assignmentItem, index) => {
+      const statusValue = assignmentItem.assignmentStatus?.toLowerCase().trim();
 
-                return student.assignment.map((assignmentItem, assignIndex) => {
-                  const dropdownId = `${student.studentId}-${assignmentItem.assignmentName}-${assignIndex}`;
+      return (
+        <tr
+          key={assignmentItem._id}
+          className={`text-[10px] ${
+            index % 2 === 0
+              ? "bg-[#fff] dark:bg-[#2C2C2C]"
+              : "bg-[#F8F8F8] dark:bg-[#303030]"
+          }`}
+        >
+          <td className="px-3 py-3 break-words">
+            {assignmentItem.assignmentId}
+          </td>
+          <td className="px-3 py-3 break-words">
+            {assignmentItem.assignmentName}
+          </td>
+          <td className="px-3 py-3 break-words capitalize">
+            {assignmentItem.assignmentType?.type || "-"}
+          </td>
+          <td className="px-3 py-3 break-words">
+            {formatDate(assignmentItem.assignedDate)}
+          </td>
+          <td className="px-3 py-3 break-words">
+            {formatDate(assignmentItem.dueDate)}
+          </td>
+          <td className="px-3 py-2 break-words">
+            <span
+              className={`py-1 px-3 rounded-md text-[9px] min-w-[60px] inline-block
+                ${
+                  statusValue === "completed"
+                    ? "bg-green-100 text-green-700"
+                    : statusValue === "pending"
+                    ? "bg-orange-100 text-orange-700"
+                    : "bg-gray-100 text-gray-600"
+                }
+              `}
+            >
+              {assignmentItem.assignmentStatus || "Not Assigned"}
+            </span>
+          </td>
+         <td className="px-4 py-2 text-center relative">
+  <button
+    className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
+    onClick={() =>
+      setOpenDropdownId(openDropdownId === assignmentItem._id ? null : assignmentItem._id)
+    }
+  >
+    <BsThreeDotsVertical />
+  </button>
 
-                  const statusValue = (assignmentItem?.assignmentStatus || '').toLowerCase().trim();
+  {openDropdownId === assignmentItem._id && (
+    <div className="absolute right-0 w-40 space-y-2 bg-white rounded-md z-50 dark:bg-[#343434] text-left shadow-lg">
+      <button
+        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff] !text-left"
+        onClick={() => handleViewProfile(assignmentItem.assignmentId)}
+      >
+        View Question Form
+      </button>
+      <button
+        className="block text-left w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+        onClick={() => setOpenDropdownId(null)}
+      >
+        Cancel
+      </button>
+    </div>
+  )}
+</td>
 
-                  return (
-                    <tr
-                      key={`${student.studentId}-${assignIndex}`}
-                      className={`text-[10px] ${
-                        studentIndex % 2 === 0
-                          ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                          : "bg-[#F8F8F8] dark:bg-[#303030]"
-                      }`}
-                    >
-                      <td className="px-3 py-3 break-words">
-                        {student?.studentId}
-                      </td>
-                      <td className="px-3 py-3 text-[#3D8FDE] font-medium break-words">
-                        {studentInfo?.studentFirstName}{" "}
-                        {studentInfo?.studentLastName}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {assignmentItem.assignmentId || "-"}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {studentDetails?.languageLevel || "-"}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {studentDetails?.student?.learningInterest}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {assignmentItem.title}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {formatDate(assignmentItem?.assignedDate)}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {formatDate(assignmentItem?.dueDate)}
-                      </td>
-                      <td className="px-3 py-2 break-words">
-                        <span className={`py-1 px-3 rounded-md text-[9px] min-w-[60px] inline-block
-                          ${statusValue === 'completed'
-                            ? 'bg-green-100 text-green-700'
-                            : statusValue === 'pending'
-                            ? 'bg-orange-100 text-orange-700'
-                            : ''}
-                        `}>
-                          {assignmentItem?.assignmentStatus || 'Not Assigned'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-center relative">
-                        <button
-                          className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
-                          onClick={() =>
-                            setOpenDropdownId(
-                              openDropdownId === dropdownId ? null : dropdownId
-                            )
-                          }
-                        >
-                          <BsThreeDotsVertical />
-                        </button>
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
 
-                        {openDropdownId === dropdownId && (
-                          <div className="absolute right-0 w-40 space-y-2 bg-white rounded-md z-50 dark:bg-[#343434] text-left">
-                            <button
-                              className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff] !text-left"
-                              onClick={() =>
-                                handleViewProfile(student.studentId)
-                              }
-                            >
-                              View Question Form
-                            </button>
-                            <button
-                              className="block text-left w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                              onClick={() => setOpenDropdownId(null)}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                });
-              })}
-            </tbody>
-          </table>
         </div>
 
         {/* <Pagination
