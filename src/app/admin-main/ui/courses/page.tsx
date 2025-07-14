@@ -1,7 +1,8 @@
-'use client';
+"use client";
 import BaseLayout4 from "@/components/BaseLayout4";
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
+import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 
 const cardData = [
   {
@@ -12,6 +13,9 @@ const cardData = [
     total: "100",
     course: "Islamic History",
     city: "India",
+    duration: "150 Hours",
+    date: "11/05/25",
+    createdBy: "Admin",
     href: "/admin-main/ui/courses/coursedetails",
   },
   {
@@ -22,6 +26,9 @@ const cardData = [
     total: "100",
     course: "Islamic History",
     city: "UAE",
+    duration: "60 Hours",
+    date: "12/05/25",
+    createdBy: "Admin",
     href: "/admin-main/ui/assignments",
   },
   {
@@ -30,8 +37,9 @@ const cardData = [
     id: "HBC/ENG/28/31",
     totalLabel: "Total Levels",
     total: "100",
-    course: "Islamic History",
-    city: "US",
+    duration: "70 Hours",
+    date: "12/05/25",
+    createdBy: "Admin",
     href: "/admin-main/ui/assessments",
   },
   {
@@ -40,8 +48,9 @@ const cardData = [
     id: "HBC/ENG/28/32",
     totalLabel: "Total Levels",
     total: "100",
-    course: "Islamic History",
-    city: "India",
+    duration: "80 Hours",
+    date: "13/05/25",
+    createdBy: "Admin",
     href: "/admin-main/ui/knowledge",
   },
   {
@@ -50,86 +59,59 @@ const cardData = [
     id: "HBC/ENG/28/33",
     totalLabel: "Total Packages",
     total: "100",
+    date: "13/05/25",
+    createdBy: "Admin",
     href: "/admin-main/ui/package",
   },
 ];
 
 const Page = () => {
-  useEffect(() => {
-    const fetchCardData = async (token: string) => {
-      try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/some-auth-endpoint", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        });
-        const data = await response.json();
-        console.log("Fetched card data:", data);
-        // You can update `cardData` here using state if needed
-      } catch (error) {
-        console.error("Error fetching card data:", error);
-      }
-    };
-
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("AdminAuthToken");
-      if (token) {
-        fetchCardData(token);
-      } else {
-        console.log("No auth token found.");
-      }
-    }
-  }, []);
-
   return (
     <BaseLayout4>
-      <div className="min-h-screen w-full px-4 sm:px-6 lg:px-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 xl:gap-10 place-items-center overflow-y-auto h-[750px] mt-10 scrollbar-none">
+      <SupervisorHeader currentSection="Course" />
+      <div className="min-h-screen w-full px-4 sm:px-6 lg:px-10 py-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 place-items-center">
           {cardData.map((item, idx) => (
             <Link
-              key={idx}
+              key={item.title}
               href={item.href}
-              className="w-full max-w-[360px] h-[450px] bg-white rounded-xl shadow p-5 hover:shadow-lg transition-shadow duration-200"
+              className="w-full max-w-[360px] bg-white dark:bg-[#1D1D1D] rounded-xl shadow-md hover:shadow-lg transition duration-300 p-6 text-center"
             >
-              <h2 className="text-lg font-bold text-[#0b2447] mb-4 text-center">
+              <h2 className="text-lg font-bold text-[#0b2447] dark:text-white mb-4">
                 {item.title}
               </h2>
 
-              <div className="flex flex-col">
-                <div className="w-full h-28 border border-gray-400 rounded-lg mb-4" />
-                <p className="text-[10px] text-gray-600 mb-4 leading-snug">
-                  Description for this particular {item.title.toLowerCase()},
-                  description for this particular {item.title.toLowerCase()},
-                  description for this particular {item.title.toLowerCase()}
-                </p>
-              </div>
+              {/* Image Placeholder */}
+              <div className="w-28 h-28 mx-auto bg-gray-300 rounded-lg mb-4" />
 
-              <div className="text-[10px] text-gray-600 space-y-[13px] mt-3">
+              {/* Description */}
+              <p className="text-xs text-gray-600 dark:text-gray-300 mb-6 leading-snug">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+                enim ad minim veniam
+              </p>
+
+              {/* Info List */}
+              <div className="text-xs text-gray-700 dark:text-gray-300 space-y-3 text-left">
                 <div className="flex justify-between">
-                  <span className="font-semibold">{item.idLabel}</span>
+                  <span className="font-medium">Course ID</span>
                   <span>{item.id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-semibold">{item.totalLabel}</span>
+                  <span className="font-medium">Course Duration</span>
+                  <span>{item.duration}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Number of Levels</span>
                   <span>{item.total}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-semibold">Date added</span>
-                  <span>11/04/2024</span>
+                  <span className="font-medium">Creation Date</span>
+                  <span>{item.date}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-semibold">Course</span>
-                  <span>{item.course}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-semibold">City</span>
-                  <span>{item.city}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-semibold">Country</span>
-                  <span>Egyptian</span>
+                  <span className="font-medium">Created By</span>
+                  <span>{item.createdBy}</span>
                 </div>
               </div>
             </Link>
