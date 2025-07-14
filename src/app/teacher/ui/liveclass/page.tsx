@@ -17,6 +17,7 @@ interface Student {
   studentEmail: string;
   city: string;
   country: string;
+  level: number;
   trailId: string;
   course: string;
   classStatus: string;
@@ -84,6 +85,9 @@ export default function LiveClass() {
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const params = useSearchParams();
+  const [editableLevel, setEditableLevel] = useState(
+    classData?.student.level || ""
+  );
 
   const startTimeRef = useRef<string>("");
 
@@ -128,6 +132,7 @@ export default function LiveClass() {
           console.log("Setting classData to:", nextClass);
           setClassData(nextClass);
           setRoomName(nextClass.classLink);
+          setEditableLevel(nextClass.student.level);
           setAttendance([
             {
               id: "",
@@ -146,6 +151,7 @@ export default function LiveClass() {
         }
       } catch (err) {
         console.log("Error loading class details:", err);
+        console.log("Submitting feedback:", feedback);
       }
     };
 
@@ -297,35 +303,42 @@ export default function LiveClass() {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [showPopup]);
+
   const handleSubmit = async () => {
-    // Create request body
     const feedbackData = {
       student: {
-        studentId: classData?.student.studentId,
-        studentFirstName: classData?.student.studentFirstName,
-        studentLastName: classData?.student.studentLastName,
-        studentEmail: classData?.student.studentEmail,
+        studentId: classData!.student.studentId,
+        studentFirstName: classData!.student.studentFirstName,
+        studentLastName: classData!.student.studentLastName,
+        studentEmail: classData!.student.studentEmail,
       },
+      level: Number(editableLevel), // outside student
+      debug: {
+        editableLevel,
+        fromClassData: classData?.student.level,
+      },
+
       teacher: {
-        teacherId: classData?.teacher.teacherId,
-        teacherName: classData?.teacher.teacherName,
-        teacherEmail: classData?.teacher.teacherEmail,
+        teacherId: classData!.teacher.teacherId,
+        teacherName: classData!.teacher.teacherName,
+        teacherEmail: classData!.teacher.teacherEmail,
       },
-      classDay: classData?.classDay[0],
-      preferedTeacher: classData?.preferedTeacher,
+      classDay: classData!.classDay[0],
+      preferedTeacher: classData!.preferedTeacher,
       course: {
-        courseId: classData?.course.courseId,
-        courseName: classData?.course.courseName,
+        courseId: classData!.course.courseId,
+        courseName: classData!.course.courseName,
       },
-      studentsRating: {
-        classUnderstanding: ratings[0],
-        engagement: ratings[1],
-        homeworkCompletion: ratings[2],
+      teacherRatings: {
+        listeningAbility: ratings[0],
+        readingAbility: ratings[1],
+        overallPerformance: ratings[2],
+        communicationConcentration: ratings[3],
       },
-      startDate: classData?.startDate,
-      endDate: classData?.endDate,
-      startTime: classData?.startTime[0],
-      endTime: classData?.endTime[0],
+      startDate: classData!.startDate,
+      endDate: classData!.endDate,
+      startTime: classData!.startTime[0],
+      endTime: classData!.endTime[0],
       feedbackmessage: feedback,
       createdDate: new Date().toISOString(),
       createdBy: "User",
@@ -344,7 +357,7 @@ export default function LiveClass() {
         return;
       }
       const response = await axios.post(
-        "https://api.blackstoneinfomaticstech.com/feedback",
+        "https://api.blackstoneinfomaticstech.com/teacherfeedback",
         feedbackData,
         {
           headers: {
@@ -363,6 +376,7 @@ export default function LiveClass() {
     } catch (error) {
       console.error("Error submitting feedback:", error);
       console.log("Error submitting feedback. Please try again.");
+      console.log("🚀 Final feedbackData:", feedbackData);
     }
   };
 
@@ -373,8 +387,8 @@ export default function LiveClass() {
   const categories = [
     "Listening Ability",
     "Reading Ability",
-    "Communication and Concentration",
     "Overall Performance",
+    "Communication and Concentration",
   ];
 
   return (
@@ -396,32 +410,39 @@ export default function LiveClass() {
                   </Link>
                 )}
               </div>
-             {showPopup && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-    <div className="bg-white rounded-xl shadow-lg w-[90%] max-w-md px-6 py-8 text-center relative">
-      <div className="flex justify-center items-center w-14 h-14 mx-auto bg-green-100 rounded-full mb-4">
-        <svg
-          className="w-7 h-7 text-green-600"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="3"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-      </div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-1">Feedback Added</h2>
-      <p className="text-gray-500 mb-6">Your feedback added successfully!</p>
-      <button
-        onClick={() => setShowPopup(false)}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition duration-200"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-)}
-
+              {showPopup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+                  <div className="bg-white rounded-xl shadow-lg w-[90%] max-w-md px-6 py-8 text-center relative">
+                    <div className="flex justify-center items-center w-14 h-14 mx-auto bg-green-100 rounded-full mb-4">
+                      <svg
+                        className="w-7 h-7 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-1">
+                      Feedback Added
+                    </h2>
+                    <p className="text-gray-500 mb-6">
+                      Your feedback added successfully!
+                    </p>
+                    <button
+                      onClick={() => setShowPopup(false)}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition duration-200"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {showFeedback ? (
                 <div className="flex flex-col xl:flex-row gap-4 items-stretch justify-center px-4 py-6 w-full">
@@ -447,15 +468,22 @@ export default function LiveClass() {
                         <div className="text-sm text-[#010E30]/90  dark:text-[#FFF] space-y-2">
                           <div className="flex justify-between">
                             <span>Student Name</span>
-                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4"> {classData?.student.studentFirstName}</span>
+                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                              {" "}
+                              {classData?.student.studentFirstName}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span>Student ID</span>
-                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">{classData?.student.studentId}</span>
+                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                              {classData?.student.studentId}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span>Course</span>
-                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">{classData?.course.courseName}</span>
+                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                              {classData?.course.courseName}
+                            </span>
                           </div>
 
                           <div className="flex justify-between">
@@ -467,16 +495,19 @@ export default function LiveClass() {
                           </div>
                           <div className="flex justify-between">
                             <span>Day</span>
-                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">{classData?.classDay}</span>
+                            <span className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                              {classData?.classDay}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span>Date</span>
-                             <p className=" text-[#959595]  dark:text-[#A1A1A1] mb-4"> {classData?.classDay} -{" "}
-                            {new Date(
-                              classData?.startDate ?? "2022-01-01"
-                            ).toLocaleDateString()}</p>
-
-                           
+                            <p className=" text-[#959595]  dark:text-[#A1A1A1] mb-4">
+                              {" "}
+                              {classData?.classDay} -{" "}
+                              {new Date(
+                                classData?.startDate ?? "2022-01-01"
+                              ).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -503,7 +534,17 @@ export default function LiveClass() {
                           />
                         </div>
                       ))}
-
+                      <div className="mt-4">
+                        <label className="text-sm font-medium text-[#010E30] dark:text-white mb-2 block">
+                          Student Current Level:
+                        </label>
+                        <input
+                          type="text"
+                          value={editableLevel}
+                          onChange={(e) => setEditableLevel(e.target.value)}
+                          className=" w-14 h-8 px-3 py-2  rounded-md text-sm bg-[#576CBC]  text-white dark:text-white"
+                        />
+                      </div>
                       <div className="mt-6">
                         <h4 className="text-sm font-medium mb-2 text-[#010E30] dark:text-[#FFFFFF]">
                           Additional feedback
