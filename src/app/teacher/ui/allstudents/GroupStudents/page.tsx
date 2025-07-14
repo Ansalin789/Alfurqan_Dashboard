@@ -134,7 +134,7 @@ const GroupStudents = () => {
     Record<string, StudentWithAssignments[]>
   >({});
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+  const itemsPerPage = 8;
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [openModalId, setOpenModalId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -415,6 +415,13 @@ const GroupStudents = () => {
     return acc;
   }, {} as Record<string, StudentWithAssignments[]>);
 
+  // Pagination logic helpers for group students
+  // Flatten the filteredGroups object into a single array for pagination
+  const displayList = Object.values(filteredGroups).flat();
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const paginatedList = displayList.slice(startIdx, endIdx);
+
   const handleViewProfile = (studentId: string, assignmentId: string) => {
     if (assignmentId && assignmentId.trim() !== "") {
       router.push(`/teacher/ui/managestudentview?studentId=${studentId}&assignmentId=${assignmentId}`);
@@ -675,11 +682,15 @@ const GroupStudents = () => {
                 </tr>
               </thead>
               <tbody>
-               {Object.entries(
-    searchQuery || Object.values(filters).some(v => v !== '') 
-      ? filteredGroups 
-      : groupedStudents
-  ).map(([groupId, students], groupIndex) => {
+                {/* Render only paginated students, grouped by groupId */}
+                {(() => {
+                  // Group paginatedList by groupId for rendering
+                  const groupMap = paginatedList.reduce((acc, student) => {
+                    if (!acc[student.groupClassId]) acc[student.groupClassId] = [];
+                    acc[student.groupClassId].push(student);
+                    return acc;
+                  }, {} as Record<string, StudentWithAssignments[]>);
+                  return Object.entries(groupMap).flatMap(([groupId, students], groupIndex) => {
                   // Get the first student's details for the group row
                   const firstStudent = students[0];
                   const studentInfo = firstStudent.studentDetails?.student;
@@ -709,7 +720,7 @@ const GroupStudents = () => {
                           </button>
                           {expandedGroupId === groupId && (
                             <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 p-2 z-10 min-w-[100px]">
-                              {students.map((student, idx) => {
+                              {students.map((student) => {
                                 const studentData =
                                   student.studentDetails?.student;
                                 return (
@@ -804,89 +815,89 @@ const GroupStudents = () => {
                             </div>
                           )}
 
-                          {/* Assignment Modal for students with no assignments */}
-                          {openModalId === modalIdNoAssignment && (
-                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                              <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
-                                <div>
-                                  <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">
-                                    Assign
-                                  </h2>
-                                  <div className="mb-4">
-                                    <label className="text-sm block mb-1 dark:text-[#fff]">
-                                      Title
-                                    </label>
-                                    <input
-                                      type="text"
-                                      placeholder="Enter title"
-                                      value={title}
-                                      onChange={(e) => setTitle(e.target.value)}
-                                      className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
-                                    />
-                                  </div>
-                                  <div className="flex gap-4 mb-4">
-                                    <div className="flex-1">
+                            {/* Assignment Modal for students with no assignments */}
+                            {openModalId === modalIdNoAssignment && (
+                              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                <div className="bg-white rounded-lg w-[400px] h-[500px] p-6 border flex flex-col justify-between text-left dark:bg-[#343434]">
+                                  <div>
+                                    <h2 className="text-lg font-semibold mb-4 dark:text-[#fff]">
+                                      Assign
+                                    </h2>
+                                    <div className="mb-4">
                                       <label className="text-sm block mb-1 dark:text-[#fff]">
-                                        Assigned Date
+                                        Title
                                       </label>
                                       <input
-                                        type="date"
+                                        type="text"
+                                        placeholder="Enter title"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
                                         className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
-                                        value={assignedDate}
-                                        onChange={(e) =>
-                                          setAssignedDate(e.target.value)
-                                        }
                                       />
                                     </div>
-                                    <div className="flex-1">
+                                    <div className="flex gap-4 mb-4">
+                                      <div className="flex-1">
+                                        <label className="text-sm block mb-1 dark:text-[#fff]">
+                                          Assigned Date
+                                        </label>
+                                        <input
+                                          type="date"
+                                          className="w-full border rounded-md px-2 py-2 dark:text-[#fff] dark:bg-[#5C5C5C]"
+                                          value={assignedDate}
+                                          onChange={(e) =>
+                                            setAssignedDate(e.target.value)
+                                          }
+                                        />
+                                      </div>
+                                      <div className="flex-1">
+                                        <label className="text-sm block mb-1 dark:text-[#fff]">
+                                          Due Date
+                                        </label>
+                                        <input
+                                          type="date"
+                                          className="w-full border rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                          value={dueDate}
+                                          onChange={(e) =>
+                                            setDueDate(e.target.value)
+                                          }
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="mb-4">
                                       <label className="text-sm block mb-1 dark:text-[#fff]">
-                                        Due Date
+                                        Comment
                                       </label>
-                                      <input
-                                        type="date"
-                                        className="w-full border rounded-md px-2 py-2 dark:bg-[#5C5C5C] dark:text-[#fff]"
-                                        value={dueDate}
+                                      <textarea
+                                        placeholder="Write your comment here..."
+                                        value={comment}
                                         onChange={(e) =>
-                                          setDueDate(e.target.value)
+                                          setComment(e.target.value)
                                         }
-                                      />
+                                        className="w-full border rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
+                                      ></textarea>
                                     </div>
                                   </div>
-                                  <div className="mb-4">
-                                    <label className="text-sm block mb-1 dark:text-[#fff]">
-                                      Comment
-                                    </label>
-                                    <textarea
-                                      placeholder="Write your comment here..."
-                                      value={comment}
-                                      onChange={(e) =>
-                                        setComment(e.target.value)
-                                      }
-                                      className="w-full border rounded-md px-2 py-2 h-28 resize-none dark:bg-[#5C5C5C] dark:text-[#fff]"
-                                    ></textarea>
+                                  <div className="flex justify-end gap-3">
+                                    <button
+                                      className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
+                                      onClick={() => setOpenModalId(null)}
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
+                                      onClick={() => handleClick()}
+                                    >
+                                      Create Assignment
+                                    </button>
                                   </div>
-                                </div>
-                                <div className="flex justify-end gap-3">
-                                  <button
-                                    className="bg-gray-200 text-gray-800 px-4 py-2 bg-[#576CBC/10] rounded-md dark:text-[#576CBC] dark:bg-[#576CBC] dark:bg-opacity-10 dark:border-[#576CBC] border border-[#576CBC]"
-                                    onClick={() => setOpenModalId(null)}
-                                  >
-                                    Cancel
-                                  </button>
-                                  <button
-                                    className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                    onClick={() => handleClick()}
-                                  >
-                                    Create Assignment
-                                  </button>
                                 </div>
                               </div>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  }
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    }
 
                   // Ensure unique assignments per group
                   const uniqueAssignmentsMap = new Map<
@@ -1223,16 +1234,8 @@ const GroupStudents = () => {
                                     <button
                                       className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
                                       onClick={() => {
-                                        console.log("🔍 GroupStudents - Create Assignment button clicked");
-                                        console.log("🔍 studentDetails?.student?.learningInterest:", studentDetails?.student?.learningInterest);
-                                        console.log("🔍 students[0]?.level:", students[0]?.level);
-                                        
                                         const courseValue = studentDetails?.student?.learningInterest || "";
                                         const levelValue = students[0]?.level || "";
-                                        
-                                        console.log("🔍 Passing to handleClick - courseValue:", courseValue);
-                                        console.log("🔍 Passing to handleClick - levelValue:", levelValue);
-                                        
                                         handleClick(courseValue, levelValue);
                                       }}
                                     >
@@ -1245,16 +1248,15 @@ const GroupStudents = () => {
                           </td>
                         </tr>
                       );
-                    }
-                  );
-                })}
+                    });
+                  });
+                })()}
               </tbody>
             </table>
           </div>
-          
                 <Pagination
                   currentPage={currentPage}
-                  totalPages={Math.ceil(groupStudents.length / itemsPerPage)}
+                  totalPages={Math.ceil(displayList.length / itemsPerPage)}
                   onPageChange={setCurrentPage}
                 />
         </div>

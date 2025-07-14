@@ -142,7 +142,7 @@ const RegularStudents = () => {
   const [assignedDate, setAssignedDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [comment, setComment] = useState("");
-  const itemsPerPage = 10;
+  const itemsPerPage = 8;
 
   const formatDate = (dateStr: string | undefined): string => {
     if (!dateStr) return "-";
@@ -398,6 +398,16 @@ const RegularStudents = () => {
     }
   };
 
+  // Pagination logic helpers
+  const displayList = isFiltered
+    ? filteredStudents
+    : searchQuery
+    ? filteredUsers
+    : regularStudents;
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const paginatedList = displayList.slice(startIdx, endIdx);
+
   return (
     <div className="md:p-0 mx-auto w-full">
       <div className="flex flex-col h-full w-full justify-between">
@@ -619,12 +629,7 @@ const RegularStudents = () => {
                 </tr>
               </thead>
               <tbody>
-                {(isFiltered
-                  ? filteredStudents
-                  : searchQuery
-                  ? filteredUsers
-                  : regularStudents
-                ).map((student, studentIndex) => {
+                {paginatedList.map((student, studentIndex) => {
                   const studentInfo = student.studentDetails?.student;
                   const studentDetails = student.studentDetails;
 
@@ -1163,7 +1168,7 @@ const RegularStudents = () => {
           </div>
           <Pagination
             currentPage={currentPage}
-            totalPages={Math.ceil(regularStudents.length / itemsPerPage)}
+            totalPages={Math.ceil(displayList.length / itemsPerPage)}
             onPageChange={setCurrentPage}
           />
         </div>
