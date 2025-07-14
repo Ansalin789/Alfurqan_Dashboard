@@ -434,7 +434,7 @@ const ManageStudentView = () => {
   const router = useRouter(); // Add this
 
   const handleViewProfile = (studentId: string) => {
-    router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
+    router.push(`/teacher/ui/question?id=${studentId}`);
   };
 
   const handleClick = () => {
@@ -965,7 +965,7 @@ const ManageStudentView = () => {
     <div className="absolute right-0 w-40 space-y-2 bg-white rounded-md z-50 dark:bg-[#343434] text-left shadow-lg">
       <button
         className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff] !text-left"
-        onClick={() => handleViewProfile(assignmentItem.assignmentId)}
+        onClick={() => handleViewProfile(assignmentItem._id)}
       >
         View Question Form
       </button>

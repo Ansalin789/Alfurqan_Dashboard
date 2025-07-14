@@ -299,8 +299,12 @@ const RegularStudents = () => {
     fetchData();
   }, []);
 
-  const handleViewProfile = (studentId: string) => {
-    router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
+  const handleViewProfile = (studentId: string, assignmentId: string) => {
+    if (assignmentId && assignmentId.trim() !== "") {
+      router.push(`/teacher/ui/managestudentview?studentId=${studentId}&assignmentId=${assignmentId}`);
+    } else {
+      router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
+    }
   };
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -683,7 +687,7 @@ const RegularStudents = () => {
                               <button
                                 className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                 onClick={() =>
-                                  handleViewProfile(student.studentId)
+                                  handleViewProfile(student.studentId, "")
                                 }
                               >
                                 Assign
@@ -911,7 +915,7 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId)
+                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
                                           }
                                         >
                                           View Profile
@@ -949,7 +953,7 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId)
+                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
                                           }
                                         >
                                           Assign
@@ -973,7 +977,7 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId)
+                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
                                           }
                                         >
                                           View Profile
@@ -994,7 +998,7 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId)
+                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
                                           }
                                         >
                                           Assign
