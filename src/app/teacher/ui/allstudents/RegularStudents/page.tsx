@@ -611,7 +611,7 @@ const RegularStudents = () => {
                   ].map((header, idx) => (
                     <th
                       key={header.label}
-                      className={`px-2 py-1 border border-[#4C6993] text-left text-wrap break-words ${header.width}`}
+                      className={`px-2 py-1 text-left text-wrap break-words ${header.width}`}
                     >
                       {header.label}
                     </th>
@@ -636,7 +636,7 @@ const RegularStudents = () => {
                     return (
                       <tr
                         key={modalIdNoAssignment}
-                        className={`text-[12px] border-b border-gray-300 dark:border-gray-600 ${
+                        className={`text-[12px] ${
                           studentIndex % 2 === 0
                             ? "bg-white dark:bg-[#2C2C2C]"
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
@@ -651,7 +651,7 @@ const RegularStudents = () => {
                         </td>
                         <td className="px-3 py-2 break-words">-</td>
                         <td className="px-3 py-2 break-words">
-                          {student?.level || "-"}
+                          {student.level || "-"}
                         </td>
                         <td className="px-3 py-2 break-words">
                           {studentDetails?.student?.learningInterest}
@@ -848,7 +848,7 @@ const RegularStudents = () => {
                       return (
                         <tr
                           key={`${student.studentId}-${assignIndex}`}
-                          className={`text-[12px] border-b border-gray-300 dark:border-gray-600 ${
+                          className={`text-[12px] ${
                             studentIndex % 2 === 0
                               ? "bg-white dark:bg-[#2C2C2C]"
                               : "bg-[#F8F8F8] dark:bg-[#303030]"
@@ -865,7 +865,7 @@ const RegularStudents = () => {
                             {assignmentItem.assignmentId || "-"}
                           </td>
                           <td className="px-3 py-2 break-words">
-                            {student?.level || "-"}
+                            {student.level || "-"}
                           </td>
                           <td className="px-3 py-2 break-words">
                             {studentDetails?.student?.learningInterest}

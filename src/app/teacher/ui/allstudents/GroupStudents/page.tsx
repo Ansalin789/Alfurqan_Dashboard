@@ -8,17 +8,17 @@ import { Search } from "lucide-react";
 import { IoMdList } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import Pagination from "@/components/Pagination";
-
 export interface AssignmentItem {
   assignmentId?: string;
   assignmentType: string;
   status: string;
   assignmentName: string;
   title: string;
-  assignmentStatus?: string;
+  assignmentStatus: string;
   assignedDate: string;
   dueDate: string;
 }
+
 
 export interface StudentCoreInfo {
   studentId: string;
@@ -654,9 +654,9 @@ const GroupStudents = () => {
               <thead className="text-[12px] bg-[#4C6993] text-white">
                 <tr>
                   {[
-                    { label: "Student ID", width: "w-[15%]" },
-                    { label: "Student Name", width: "w-[12%]" },
                     { label: "Assignment ID", width: "w-[15%]" },
+                    { label: "Student Name", width: "w-[12%]" },
+                    { label: "Group ID", width: "w-[15%]" },
                     { label: "Level", width: "w-[6%]" },
                     { label: "Course", width: "w-[10%]" },
                     { label: "Assignment Name", width: "w-[15%]" },
@@ -921,7 +921,7 @@ const GroupStudents = () => {
                           }`}
                         >
                           <td className="px-3 py-2 break-words">
-                            {assignmentItem.assignmentId || "-"}
+                            {assignmentItem.assignmentId || ""}
                           </td>
                           <td className="px-3 py-2 break-words relative">
                             <button

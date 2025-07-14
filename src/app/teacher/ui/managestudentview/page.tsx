@@ -468,7 +468,33 @@ const ManageStudentView = () => {
   });
 
   const [loading, setLoading] = useState(true);
+// Add this state at the top of your component
+const [assignmentStats, setAssignmentStats] = useState({
+  assigned: 0,
+  completed: 0,
+});
 
+// Add this useEffect to calculate stats when groupStudents changes
+useEffect(() => {
+  if (groupStudents.length > 0) {
+    let assignedCount = 0;
+    let completedCount = 0;
+
+    groupStudents.forEach(student => {
+      student.assignment.forEach(assignment => {
+        assignedCount++;
+        if (assignment.assignmentStatus === 'Completed' || assignment.status === 'Completed') {
+          completedCount++;
+        }
+      });
+    });
+
+    setAssignmentStats({
+      assigned: assignedCount,
+      completed: completedCount,
+    });
+  }
+}, [groupStudents]);
   useEffect(() => {
     const fetchAssignmentData = async () => {
       try {
@@ -507,34 +533,33 @@ const ManageStudentView = () => {
 
   const { totalAssigned, totalCompleted, totalPending } = assignmentData;
 
-  const completionPercentage = totalAssigned
-    ? Math.round((totalCompleted / totalAssigned) * 100)
-    : 0;
+// Calculate percentages
+const assignedPercentage = 100; // Always 100% since it's the baseline
+const completedPercentage = totalAssigned > 0 
+  ? Math.min(100, Math.round((totalCompleted / totalAssigned) * 100))
+  : 0;
 
-  const pendingPercentage = totalAssigned
-    ? Math.round((totalPending / totalAssigned) * 100)
-    : 0;
-  const cards = [
-    {
-      title: "Total Assignment\nAssigned",
-      count: totalAssigned,
-      percentage: 100,
-      ringColor: "#88A2CF",
-      bgColor: "#CDD5E2",
-      pieData: [{ value: 100 }],
-    },
-    {
-      title: "Total Assignment\nCompleted",
-      count: totalCompleted,
-      percentage: completionPercentage,
-      ringColor: "#88CF9B",
-      bgColor: "#CDD5E2",
-      pieData: [
-        { value: completionPercentage },
-        { value: 100 - completionPercentage },
-      ],
-    },
-  ];
+const cards = [
+  {
+    title: "Total Assignment\nAssigned",
+    count: totalAssigned,
+    percentage: assignedPercentage,
+    ringColor: "#88A2CF",
+    bgColor: "#CDD5E2",
+    pieData: [{ value: 100 }], // Full circle
+  },
+  {
+    title: "Total Assignment\nCompleted",
+    count: totalCompleted,
+    percentage: completedPercentage,
+    ringColor: "#88CF9B", 
+    bgColor: "#CDD5E2",
+    pieData: [
+      { value: completedPercentage }, // Completed portion
+      { value: 100 - completedPercentage } // Remaining
+    ],
+  }
+];
 
   //Rolebyaccess
   useEffect(() => {
@@ -598,82 +623,43 @@ const ManageStudentView = () => {
     fromDate: "",
     toDate: "",
   });
-  const [filteredStudents, setFilteredStudents] = useState<
-    StudentWithAssignments[]
-  >([]);
-  const [searchedData, setSearchedData] = useState<StudentWithAssignments[]>([]);
+  const [filteredAssignments, setFilteredAssignments] = useState<AssignmentData[]>([]);
+  const [searchedAssignments, setSearchedAssignments] = useState<AssignmentData[]>([]);
 
+  // --- FILTER LOGIC ---
   const applyFilters = () => {
-    let filtered = [...studentsToDisplay];
-
-    if (filterState.studentName) {
-      filtered = filtered.filter((student) =>
-        `${student.studentDetails?.student?.studentFirstName ?? ""} ${
-          student.studentDetails?.student?.studentLastName ?? ""
-        }`
-          .toLowerCase()
-          .includes(filterState.studentName.toLowerCase())
-      );
-    }
+    let filtered = [...selectedStudentAssignments];
 
     if (filterState.assignmentName) {
-      filtered = filtered
-        .map((student) => ({
-          ...student,
-          assignment: student.assignment.filter((a) =>
-            a.title
-              .toLowerCase()
-              .includes(filterState.assignmentName.toLowerCase())
-          ),
-        }))
-        .filter((s) => s.assignment.length > 0);
+      filtered = filtered.filter((a) =>
+        a.assignmentName?.toLowerCase().includes(filterState.assignmentName.toLowerCase())
+      );
     }
-
     if (filterState.status) {
-      filtered = filtered
-        .map((student) => ({
-          ...student,
-          assignment: student.assignment.filter(
-            (a) =>
-              a.assignmentStatus?.toLowerCase() ===
-              filterState.status.toLowerCase()
-          ),
-        }))
-        .filter((s) => s.assignment.length > 0);
+      filtered = filtered.filter((a) =>
+        a.assignmentStatus?.toLowerCase() === filterState.status.toLowerCase()
+      );
     }
-
     if (filterState.course) {
-      filtered = filtered.filter((student) =>
-        student.studentDetails?.student?.learningInterest
-          ?.toLowerCase()
-          .includes(filterState.course.toLowerCase())
+      filtered = filtered.filter((a) =>
+        a.assignmentName?.toLowerCase().includes(filterState.course.toLowerCase())
       );
     }
-
     if (filterState.level) {
-      filtered = filtered.filter((student) =>
-        student.studentDetails?.languageLevel
-          ?.toLowerCase()
-          .includes(filterState.level.toLowerCase())
+      filtered = filtered.filter((a) =>
+        a.assignmentName?.toLowerCase().includes(filterState.level.toLowerCase())
       );
     }
-
     if (filterState.fromDate && filterState.toDate) {
       const from = new Date(filterState.fromDate);
       const to = new Date(filterState.toDate);
-      filtered = filtered
-        .map((student) => ({
-          ...student,
-          assignment: student.assignment.filter((a) => {
-            const assigned = new Date(a.assignedDate);
-            return assigned >= from && assigned <= to;
-          }),
-        }))
-        .filter((s) => s.assignment.length > 0);
+      filtered = filtered.filter((a) => {
+        const assigned = new Date(a.assignedDate);
+        return assigned >= from && assigned <= to;
+      });
     }
-
-    setFilteredStudents(filtered);
-    setCurrentPage(1); // ✅ Reset to first page
+    setFilteredAssignments(filtered);
+    setCurrentPage(1);
   };
 
   const resetFilters = () => {
@@ -686,55 +672,52 @@ const ManageStudentView = () => {
       fromDate: "",
       toDate: "",
     });
-    setFilteredStudents([]);
+    setFilteredAssignments([]);
   };
 
+  // --- SEARCH LOGIC ---
   const handleSearch = (text: string) => {
     setSearchText(text);
-
-    const baseData =
-      filteredStudents.length > 0 || Object.values(filterState).some(Boolean)
-        ? filteredStudents
-        : studentsToDisplay;
-
-    if (text.trim() === "") {
-      setSearchedData([]);
+    if (!text.trim()) {
+      setSearchedAssignments([]);
       return;
     }
-
     const lowerText = text.toLowerCase();
-
-    const searched = baseData
-      .map((student) => {
-        const matchedAssignments = student.assignment.filter((a) => {
-          const valuesToCheck = [
-            student.studentId,
-            student.studentDetails?.student?.studentFirstName,
-            student.studentDetails?.student?.studentLastName,
-            student.studentDetails?.languageLevel,
-            student.studentDetails?.student?.learningInterest,
-            a.assignmentId,
-            a.title,
-            a.assignmentStatus,
-            a.status,
-            a.assignedDate,
-            a.dueDate,
-          ]
-            .map((v) => (v ? String(v).toLowerCase() : ""))
-            .join(" ");
-
-          return valuesToCheck.includes(lowerText);
-        });
-
-        return matchedAssignments.length > 0
-          ? { ...student, assignment: matchedAssignments }
-          : null;
-      })
-      .filter(Boolean) as StudentWithAssignments[];
-
-    setSearchedData(searched);
+    const baseData =
+      filteredAssignments.length > 0 ? filteredAssignments : selectedStudentAssignments;
+    const searched = baseData.filter((a) =>
+      [
+        a.assignmentId,
+        a.assignmentName,
+        a.assignmentType?.type,
+        a.assignmentStatus,
+        a.assignedDate,
+        a.dueDate,
+      ]
+        .map((v) => (v ? String(v).toLowerCase() : ""))
+        .join(" ")
+        .includes(lowerText)
+    );
+    setSearchedAssignments(searched);
     setCurrentPage(1);
   };
+
+  const isFilterActive = !!(
+    filterState.assignmentName ||
+    filterState.status ||
+    filterState.fromDate ||
+    filterState.toDate
+  );
+
+  const isSearchActive = !!searchText;
+
+  // --- DATA TO RENDER ---
+  const tableData =
+    isSearchActive
+      ? searchedAssignments
+      : isFilterActive
+      ? filteredAssignments
+      : selectedStudentAssignments;
 
   return (
     <BaseLayout>
@@ -859,7 +842,7 @@ const ManageStudentView = () => {
 
         {/* Tabs and Table Section */}
 
-        <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
+        <div className="w-full  bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
           <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
@@ -883,77 +866,83 @@ const ManageStudentView = () => {
 
             <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
               <span className="text-left -ml-60 ">
-                Showing {currentItems.length} of {paginatedData.length}
+                Showing {tableData.length} of {selectedStudentAssignments.length}
               </span>
             </div>
           </div>
 
           {/* Table */}
-          <table className="table-fixed w-full">
-  <thead className="text-[12px] bg-[#4C6993] text-white">
-    <tr>
-      {[
-        "Assignment ID",
-        "Assignment Name",
-        "Type",
-        "Assigned Date",
-        "Due Date",
-        "Status",
-        "Action",
-      ].map((header, idx) => (
-        <th
-          key={idx}
-          className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
-        >
-          {header}
-        </th>
-      ))}
-    </tr>
-  </thead>
-  <tbody>
-    {selectedStudentAssignments.map((assignmentItem, index) => {
-      const statusValue = assignmentItem.assignmentStatus?.toLowerCase().trim();
-
-      return (
-        <tr
-          key={assignmentItem._id}
-          className={`text-[10px] ${
-            index % 2 === 0
-              ? "bg-[#fff] dark:bg-[#2C2C2C]"
-              : "bg-[#F8F8F8] dark:bg-[#303030]"
-          }`}
-        >
-          <td className="px-3 py-3 break-words">
-            {assignmentItem.assignmentId}
-          </td>
-          <td className="px-3 py-3 break-words">
-            {assignmentItem.assignmentName}
-          </td>
-          <td className="px-3 py-3 break-words capitalize">
-            {assignmentItem.assignmentType?.type || "-"}
-          </td>
-          <td className="px-3 py-3 break-words">
-            {formatDate(assignmentItem.assignedDate)}
-          </td>
-          <td className="px-3 py-3 break-words">
-            {formatDate(assignmentItem.dueDate)}
-          </td>
-          <td className="px-3 py-2 break-words">
-            <span
-              className={`py-1 px-3 rounded-md text-[9px] min-w-[60px] inline-block
-                ${
-                  statusValue === "completed"
-                    ? "bg-green-100 text-green-700"
-                    : statusValue === "pending"
-                    ? "bg-orange-100 text-orange-700"
-                    : "bg-gray-100 text-gray-600"
-                }
-              `}
+          <div className="relative">
+            <table className="table-fixed w-full">
+              <thead className="text-[12px] bg-[#4C6993] text-white">
+                <tr>
+                  {[
+                    "Assignment ID",
+                    "Assignment Name",
+                    "Type",
+                    "Assigned Date",
+                    "Due Date",
+                    "Status",
+                    "Action",
+                  ].map((header, idx) => (
+                    <th
+                      key={idx}
+                      className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            </table>
+            <div
+              className="overflow-y-auto"
+              style={{ maxHeight: "300px" }}
             >
-              {assignmentItem.assignmentStatus || "Not Assigned"}
-            </span>
-          </td>
-         <td className="px-4 py-2 text-center relative">
+              <table className="table-fixed w-full">
+                <tbody>
+                  {tableData.map((assignmentItem, index) => {
+                    const statusValue = assignmentItem.assignmentStatus?.toLowerCase().trim();
+                    return (
+                      <tr
+                        key={assignmentItem._id}
+                        className={`text-[10px] ${
+                          index % 2 === 0
+                            ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                            : "bg-[#F8F8F8] dark:bg-[#303030]"
+                        }`}
+                      >
+                        <td className="px-3 py-3 break-words text-[12px]">
+                          {assignmentItem.assignmentId}
+                        </td>
+                        <td className="px-3 py-3 break-words text-[12px]">
+                          {assignmentItem.assignmentName}
+                        </td>
+                        <td className="px-3 py-3 break-words capitalize text-[12px]">
+                          {assignmentItem.assignmentType?.type || "-"}
+                        </td>
+                        <td className="px-3 py-3 break-words text-[12px]">
+                          {formatDate(assignmentItem.assignedDate)}
+                        </td>
+                        <td className="px-3 py-3 break-words text-[12px]">
+                          {formatDate(assignmentItem.dueDate)}
+                        </td>
+                        <td className="px-3 py-2 break-words text-[12px]">
+                          <span
+                            className={`py-1 px-3 rounded-md text-[9px] min-w-[60px] inline-block
+                              ${
+                                statusValue === "completed"
+                                  ? "bg-green-100 text-green-700"
+                                  : statusValue === "pending"
+                                  ? "bg-orange-100 text-orange-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }
+                            `}
+                          >
+                            {assignmentItem.assignmentStatus || "Not Assigned"}
+                          </span>
+                        </td>
+                       <td className="px-4 py-2 text-left relative">
   <button
     className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
     onClick={() =>
@@ -981,11 +970,20 @@ const ManageStudentView = () => {
   )}
 </td>
 
-        </tr>
-      );
-    })}
-  </tbody>
-</table>
+                      </tr>
+                    );
+                  })}
+                  {tableData.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="text-center py-4 text-gray-400">
+                        No assignments found for the selected filter/search.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
         </div>
 
@@ -1014,7 +1012,47 @@ const ManageStudentView = () => {
       Filter by
     </h2>
     <div className="grid grid-cols-2 gap-4 mb-6">
-      {/* ...all your filter fields as in your code... */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Assignment Name</label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border rounded text-xs"
+          value={filterState.assignmentName}
+          onChange={e => setFilterState({ ...filterState, assignmentName: e.target.value })}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Status</label>
+        <select
+          className="w-full px-3 py-2 border rounded text-xs"
+          value={filterState.status}
+          onChange={e => setFilterState({ ...filterState, status: e.target.value })}
+        >
+          <option value="">All</option>
+          <option value="Completed">Completed</option>
+          <option value="Pending">Pending</option>
+          <option value="Not Assigned">Not Assigned</option>
+          {/* Add more statuses as needed */}
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">From Date</label>
+        <input
+          type="date"
+          className="w-full px-3 py-2 border rounded text-xs"
+          value={filterState.fromDate}
+          onChange={e => setFilterState({ ...filterState, fromDate: e.target.value })}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">To Date</label>
+        <input
+          type="date"
+          className="w-full px-3 py-2 border rounded text-xs"
+          value={filterState.toDate}
+          onChange={e => setFilterState({ ...filterState, toDate: e.target.value })}
+        />
+      </div>
     </div>
     <div className="flex justify-end gap-3">
       <button

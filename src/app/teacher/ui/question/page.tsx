@@ -90,15 +90,16 @@ export default function Page() {
       }
     const fetchAssignment = async () => {
       const assigmnetId = search.get('id');
+      const token = localStorage.getItem("TeacherAuthToken");
+
+        if (!token) {
+          console.warn("Missing teacherId or token");
+          return;
+        }
       if(!assigmnetId) return;
       try {
         const res = await axios.get<Assignment>(
-          `http://localhost:5001/assignments/${assigmnetId}`,{
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+          `http://localhost:5001/assignments/${assigmnetId}`
         );
         setAssignments(res.data);
       } catch (error) {
