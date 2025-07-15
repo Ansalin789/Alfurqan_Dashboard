@@ -418,40 +418,47 @@ const Page = () => {
 
     // Fetch teacher status count
     axios
-      .get("https://api.blackstoneinfomaticstech.com/teacher/statuscount", {
+      .get("http://localhost:5001/teacher/statuscount", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
         const data = response.data;
-        if (data && data.length > 0) {
-          const count = data[0];
+        if (data) {
+          const count = data;
+          const max = count.overallCount;
+
           const chartData = [
             {
               name: "Total Teachers",
               value: count.teacherTotalCount,
+              scaledValue: (count.teacherTotalCount / max) * 100,
               color: "#AFC0FF",
             },
             {
               name: "Active Teachers",
               value: count.activeTeacher,
+              scaledValue: (count.activeTeacher / max) * 100,
               color: "#9FD0FF",
             },
             {
               name: "Inactive Teachers",
               value: count.inActiveTeacher,
+              scaledValue: (count.inActiveTeacher / max) * 100,
               color: "#78A1DB",
             },
             {
               name: "Teachers on Leave",
               value: count.leaveOnTeacher,
+              scaledValue: (count.leaveOnTeacher / max) * 100,
               color: "#B9DDFF",
             },
           ];
           setBarData(chartData);
         }
       })
+
       .catch((error) => {
         console.error("Error fetching teacher status count:", error);
       });
@@ -459,7 +466,7 @@ const Page = () => {
     // Fetch teacher gender count
     axios
       .get<GenderResponse>(
-        "https://api.blackstoneinfomaticstech.com/teacher/gendercount",
+        "http://localhost:5001/teacher/gendercount",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -505,7 +512,7 @@ const Page = () => {
     const fetchTeachers = async () => {
       try {
         const res = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER",
+          "http://localhost:5001/users?role=TEACHER",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -903,8 +910,20 @@ const Page = () => {
                                 tick={false}
                               />
                               <YAxis hide />
-                              <Tooltip cursor={{ fill: "transparent" }} />
-                              <Bar dataKey="value" radius={[10, 10, 10, 10]}>
+                              <Tooltip
+                                cursor={{ fill: "transparent" }}
+                                formatter={(value, name, props) => {
+                                  // Show actual count in tooltip
+                                  return [
+                                    `${props.payload.value} Teachers`,
+                                    "Count",
+                                  ];
+                                }}
+                              />
+                              <Bar
+                                dataKey="scaledValue"
+                                radius={[10, 10, 10, 10]}
+                              >
                                 {barData.map((entry) => (
                                   <Cell key={entry.name} fill={entry.color} />
                                 ))}
@@ -1420,22 +1439,19 @@ const Page = () => {
 
                         {/* Bar Chart Section */}
                         <div className="flex-1 h-[220px] pt-2">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={barData} barSize={40}>
-                              <XAxis
-                                dataKey="name"
-                                axisLine={false}
-                                tick={false}
-                              />
-                              <YAxis hide />
-                              <Tooltip cursor={{ fill: "transparent" }} />
-                              <Bar dataKey="value" radius={[10, 10, 10, 10]}>
-                                {barData.map((entry) => (
-                                  <Cell key={entry.name} fill={entry.color} />
-                                ))}
-                              </Bar>
-                            </BarChart>
-                          </ResponsiveContainer>
+                   <ResponsiveContainer width="100%" height="100%">
+  <BarChart data={chartData} barSize={40}>
+    <XAxis dataKey="name" axisLine={false} tick={false} />
+    <YAxis hide domain={[0, 100]} /> {/* Set Y-axis as percentage */}
+    <Tooltip cursor={{ fill: "transparent" }} />
+    <Bar dataKey="value" radius={[10, 10, 10, 10]}>
+      {chartData.map((entry) => (
+        <Cell key={entry.name} fill={entry.color} />
+      ))}
+    </Bar>
+  </BarChart>
+</ResponsiveContainer>
+
                         </div>
                       </div>
                     </div>
@@ -1673,116 +1689,142 @@ const Page = () => {
                       </button>
                     </div>
                     <div className="mt-3 w-full h-full shadow bg-[#f5f5f5] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
-                    <div className="flex justify-between bg-[#fafafb] items-center px-4 py-0 rounded-md dark:bg-[#343434] h-12">
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
-                        <input
-                          type="text"
-                          placeholder="Search"
-                          className="bg-transparent outline-none text-[15px] w-52 py-3"
-                          value={searchQuery1}
-                          onChange={(e) => setSearchQuery1(e.target.value)}
-                        />
-                      </div>
-                      <div className="relative ">
-                        {/* Filter Button (opens your filter popup) */}
-                        <button
-                          className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                          onClick={() => setshowTeacherfilterForm(true)}
-                        >
-                          <MdTune className="w-4 h-4" />
-                          <span>Filter</span>
-                        </button>
-                        {showTeacherfilterForm && (
-                          <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
-                            <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg overflow-hidden m-4 relative">
-                              <button
-                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
-                                onClick={() => setshowTeacherfilterForm(false)}
-                                aria-label="Close"
-                              >
-                                ×
-                              </button>
-                              <div className="p-6 space-y-4">
-                                <h2 className="text-lg font-semibold mb-2">
-                                  Filter by
-                                </h2>
-                                <div className="flex flex-col gap-3">
-                                  <label className="text-sm font-medium text-gray-700">
-                                    Role
-                                  </label>
-                                  <select
-                                    className="border rounded px-3 py-2 text-sm"
-                                    value={filterCourse}
-                                    onChange={(e) =>
-                                      setFilterCourse(e.target.value)
-                                    }
-                                  >
-                                    <option value="">Select Role</option>
-                                    <option value="ADMIN">Admin</option>
-                                    <option value="ACADEMICCOACH">
-                                      Academic Coach
-                                    </option>
-                                    <option value="SUPERVISOR">
-                                      Supervisor
-                                    </option>
-                                    <option value="OTHERS">Others</option>
-                                  </select>
-                                  <label className="text-sm font-medium text-gray-700 mt-2">
-                                    Name
-                                  </label>
-                                  <input
-                                    type="text"
-                                    className="border rounded px-3 py-2 text-sm"
-                                    placeholder="Enter name"
-                                    value={filterName}
-                                    onChange={(e) =>
-                                      setFilterName(e.target.value)
-                                    }
-                                  />
-                                </div>
-                                <div className="flex gap-3 mt-6">
-                                  <button
-                                    className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
-                                    onClick={() => {
-                                      setFilterCourse("");
-                                      setFilterName("");
-                                    }}
-                                  >
-                                    Reset
-                                  </button>
-                                  <button
-                                    className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
-                                    onClick={() =>
-                                      setshowTeacherfilterForm(false)
-                                    }
-                                  >
-                                    Show{" "}
-                                    {
-                                      employees.filter(
-                                        (emp) =>
-                                          (!filterCourse ||
-                                            emp.role.includes(filterCourse)) &&
-                                          (!filterName ||
-                                            emp.userName
-                                              .toLowerCase()
-                                              .includes(
-                                                filterName.toLowerCase()
-                                              ))
-                                      ).length
-                                    }{" "}
-                                    results
-                                  </button>
+                      <div className="flex justify-between bg-[#fafafb] items-center px-4 py-0 rounded-md dark:bg-[#343434] h-12">
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                          <input
+                            type="text"
+                            placeholder="Search"
+                            className="bg-transparent outline-none text-[15px] w-52 py-3"
+                            value={searchQuery1}
+                            onChange={(e) => setSearchQuery1(e.target.value)}
+                          />
+                        </div>
+                        <div className="relative ">
+                          {/* Filter Button (opens your filter popup) */}
+                          <button
+                            className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                            onClick={() => setshowTeacherfilterForm(true)}
+                          >
+                            <MdTune className="w-4 h-4" />
+                            <span>Filter</span>
+                          </button>
+                          {showTeacherfilterForm && (
+                            <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
+                              <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                                <button
+                                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+                                  onClick={() =>
+                                    setshowTeacherfilterForm(false)
+                                  }
+                                  aria-label="Close"
+                                >
+                                  ×
+                                </button>
+                                <div className="p-6 space-y-4">
+                                  <h2 className="text-lg font-semibold mb-2">
+                                    Filter by
+                                  </h2>
+                                  <div className="flex flex-col gap-3">
+                                    <label className="text-sm font-medium text-gray-700">
+                                      Role
+                                    </label>
+                                    <select
+                                      className="border rounded px-3 py-2 text-sm"
+                                      value={filterCourse}
+                                      onChange={(e) =>
+                                        setFilterCourse(e.target.value)
+                                      }
+                                    >
+                                      <option value="">Select Role</option>
+                                      <option value="ADMIN">Admin</option>
+                                      <option value="ACADEMICCOACH">
+                                        Academic Coach
+                                      </option>
+                                      <option value="SUPERVISOR">
+                                        Supervisor
+                                      </option>
+                                      <option value="OTHERS">Others</option>
+                                    </select>
+                                    <label className="text-sm font-medium text-gray-700 mt-2">
+                                      Name
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="border rounded px-3 py-2 text-sm"
+                                      placeholder="Enter name"
+                                      value={filterName}
+                                      onChange={(e) =>
+                                        setFilterName(e.target.value)
+                                      }
+                                    />
+                                  </div>
+                                  <div className="flex gap-3 mt-6">
+                                    <button
+                                      className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                                      onClick={() => {
+                                        setFilterCourse("");
+                                        setFilterName("");
+                                      }}
+                                    >
+                                      Reset
+                                    </button>
+                                    <button
+                                      className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                                      onClick={() =>
+                                        setshowTeacherfilterForm(false)
+                                      }
+                                    >
+                                      Show{" "}
+                                      {
+                                        employees.filter(
+                                          (emp) =>
+                                            (!filterCourse ||
+                                              emp.role.includes(
+                                                filterCourse
+                                              )) &&
+                                            (!filterName ||
+                                              emp.userName
+                                                .toLowerCase()
+                                                .includes(
+                                                  filterName.toLowerCase()
+                                                ))
+                                        ).length
+                                      }{" "}
+                                      results
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                        <span className="text-left gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+                          Showing{" "}
+                          {
+                            employees.filter(
+                              (emp) =>
+                                (!filterCourse ||
+                                  emp.role.includes(filterCourse)) &&
+                                (!filterName ||
+                                  emp.userName
+                                    .toLowerCase()
+                                    .includes(filterName.toLowerCase())) &&
+                                (emp.userName
+                                  .toLowerCase()
+                                  .includes(searchQuery1.toLowerCase()) ||
+                                  emp.email
+                                    .toLowerCase()
+                                    .includes(searchQuery1.toLowerCase()))
+                            ).length
+                          }{" "}
+                          Of {employees.length}
+                        </span>
                       </div>
-                      <span className="text-left gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
-                        Showing{" "}
-                        {
-                          employees.filter(
+                      {/* Employee Cards - match Teachers card grid */}
+                      <div className="grid grid-cols-1 xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
+                        {employees
+                          .filter(
                             (emp) =>
                               (!filterCourse ||
                                 emp.role.includes(filterCourse)) &&
@@ -1796,96 +1838,75 @@ const Page = () => {
                                 emp.email
                                   .toLowerCase()
                                   .includes(searchQuery1.toLowerCase()))
-                          ).length
-                        }{" "}
-                        Of {employees.length}
-                      </span>
-                    </div>
-                    {/* Employee Cards - match Teachers card grid */}
-                    <div className="grid grid-cols-1 xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
-                      {employees
-                        .filter(
-                          (emp) =>
-                            (!filterCourse ||
-                              emp.role.includes(filterCourse)) &&
-                            (!filterName ||
-                              emp.userName
-                                .toLowerCase()
-                                .includes(filterName.toLowerCase())) &&
-                            (emp.userName
-                              .toLowerCase()
-                              .includes(searchQuery1.toLowerCase()) ||
-                              emp.email
-                                .toLowerCase()
-                                .includes(searchQuery1.toLowerCase()))
-                        )
-                        .slice(0, 50) // limit for performance
-                        .map((employee) => (
-                          <div
-                            key={employee._id}
-                            className="bg-white dark:bg-[#343434] h-full shadow-md rounded-lg p-4 flex flex-col justify-between"
-                          >
-                            <div className="items-center">
-                              <div className="h-[126px] rounded-md bg-[#e8e8e8] dark:bg-[#dadada] flex items-center justify-center">
-                                <Image
-                                  src={
-                                    employee.profileImage ??
-                                    "/assets/images/proff.jpg"
-                                  }
-                                  alt="Employee"
-                                  className="rounded-md"
-                                  width={90}
-                                  height={90}
-                                />
+                          )
+                          .slice(0, 50) // limit for performance
+                          .map((employee) => (
+                            <div
+                              key={employee._id}
+                              className="bg-white dark:bg-[#343434] h-full shadow-md rounded-lg p-4 flex flex-col justify-between"
+                            >
+                              <div className="items-center">
+                                <div className="h-[126px] rounded-md bg-[#e8e8e8] dark:bg-[#dadada] flex items-center justify-center">
+                                  <Image
+                                    src={
+                                      employee.profileImage ??
+                                      "/assets/images/proff.jpg"
+                                    }
+                                    alt="Employee"
+                                    className="rounded-md"
+                                    width={90}
+                                    height={90}
+                                  />
+                                </div>
+                              </div>
+                              <div className="mt-2 text-center">
+                                <h3 className="text-[12px] font-semibold text-[#010e30] dark:text-[#fff] mb-1">
+                                  {employee.userName}
+                                </h3>
+                                <p className="text-[#717579] text-[10px] dark:text-[#fff]">
+                                  Role: {employee.role.join(", ")}
+                                </p>
+                                <p className="text-[#717579] text-[10px] dark:text-[#fff]">
+                                  {employee.gender}
+                                </p>
+                                <div className="flex flex-col justify-center gap-2 px-5 mt-2">
+                                  <button
+                                    className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
+                                    onClick={() =>
+                                      handlePortalAccessforemployee(
+                                        employee._id
+                                      )
+                                    }
+                                    disabled={!dashboardRead}
+                                  >
+                                    Portal Access
+                                  </button>
+                                  <button
+                                    className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
+                                    onClick={() =>
+                                      handleViewEmployee(
+                                        employee.userId,
+                                        employee._id
+                                      )
+                                    }
+                                  >
+                                    View Profile
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                            <div className="mt-2 text-center">
-                              <h3 className="text-[12px] font-semibold text-[#010e30] dark:text-[#fff] mb-1">
-                                {employee.userName}
-                              </h3>
-                              <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                                Role: {employee.role.join(", ")}
-                              </p>
-                              <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                                {employee.gender}
-                              </p>
-                              <div className="flex flex-col justify-center gap-2 px-5 mt-2">
-                                <button
-                                  className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
-                                  onClick={() =>
-                                    handlePortalAccessforemployee(employee._id)
-                                  }
-                                  disabled={!dashboardRead}
-                                >
-                                  Portal Access
-                                </button>
-                                <button
-                                  className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
-                                  onClick={() =>
-                                    handleViewEmployee(
-                                      employee.userId,
-                                      employee._id
-                                    )
-                                  }
-                                >
-                                  View Profile
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                      </div>
+                    </div>
+                    {/* Pagination (if needed, match Teachers section) */}
+                    <div className="flex justify-end mt-4">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(employees.length / itemsPerPage)}
+                        onPageChange={setCurrentPage}
+                      />
                     </div>
                   </div>
-                  {/* Pagination (if needed, match Teachers section) */}
-                  <div className="flex justify-end mt-4">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={Math.ceil(employees.length / itemsPerPage)}
-                      onPageChange={setCurrentPage}
-                    />
-                  </div>
-                  </div>
-                  
                 </div>
               </div>
             )}
