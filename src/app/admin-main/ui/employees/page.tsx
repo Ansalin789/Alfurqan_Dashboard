@@ -1,11 +1,10 @@
 "use client";
 
-
 import BaseLayout4 from "@/components/BaseLayout4";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Sun, Bell, FileText } from "lucide-react";
+import { Sun, Bell, FileText, Search } from "lucide-react";
 import Link from "next/link";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
@@ -21,7 +20,7 @@ import {
   PieChart,
   Pie,
 } from "recharts";
-import { Line} from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   LineElement,
@@ -33,6 +32,10 @@ import {
 } from "chart.js";
 import ApplicantsPage from "../../components/employeesrecruitment";
 import axios from "axios";
+import TeacherHeader from "@/app/teacher/components/TeacherHeader";
+import Flag from "react-world-flags";
+import { MdTune } from "react-icons/md";
+import Pagination from "@/components/Pagination";
 
 // Register chart.js modules
 ChartJS.register(
@@ -87,8 +90,6 @@ interface EmpCountryData {
   percentage: number;
 }
 
-
-
 interface Teacher {
   _id: string;
   userId: string;
@@ -97,6 +98,7 @@ interface Teacher {
   profileImage: string | null;
   level?: string;
   subject?: string;
+  position?: string;
   rating?: number;
   gender?: string;
 }
@@ -127,14 +129,14 @@ type ChartData = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  ADMIN: "#012A4A",
-  ACADEMICCOACH: "#6256BA",
-  SUPERVISOR: "#00CCFF",
-  USER: "#0074FF",
+  ADMIN: "#AFC0FF",
+  ACADEMICCOACH: "#9FD0FF",
+  SUPERVISOR: "#78A1DB",
+  USER: "#B9DDFF",
 };
 interface GenderResponse {
   teacherPercentage: number;
-  teacherMalePercentage: string;   // or number if you convert it
+  teacherMalePercentage: string; // or number if you convert it
   teacherFemalePercentage: string; // or number
 }
 
@@ -174,10 +176,8 @@ const formatRole = (role: string) => {
       return role;
   }
 };
-const COLORS = {
-  Female: "#FF82F5", // Pink
-  Male: "#00CCFF",   // Blue
-};
+// Replace COLORS object with array for correct indexing
+const COLORS = ["#A3D3FF", "#FFD6F7", "#B4C7ED"];
 interface GenderCountResponse {
   employeePercentage: number;
   employeeMalePercentage: string;
@@ -189,7 +189,6 @@ interface DashboardCounts {
   rejected: number;
   waiting: number;
 }
-
 
 const leaveData = [
   {
@@ -302,21 +301,19 @@ const leaveData = [
   },
 ];
 
-
-
-
-
-
 const Page = () => {
   const [activeTab, setActiveTab] = useState<
     "teachers" | "otheremployees" | "recruitment" | "leave"
   >("teachers");
- 
+
   const router = useRouter();
-  const [dashboardRead,setdashboardRead]=useState(false);
+  const [dashboardRead, setdashboardRead] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchQuery1, setSearchQuery1] = useState<string>("");
   const [showForm, setShowForm] = useState(false);
+  const [showTeacherfilterForm, setshowTeacherfilterForm] = useState(false);
+  const [filterCourse, setFilterCourse] = useState("");
+  const [filterName, setFilterName] = useState("");
   const [selectedLeave, setSelectedLeave] = useState<{
     id: string;
     name: string;
@@ -331,276 +328,336 @@ const Page = () => {
   const [countryData, setCountryData] = useState<CountryStat[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [chartData, setChartData] = useState<
-  { name: string; value: number; color: string }[]
->([]);
-const [empData, setEmpData] = useState<
-{ name: string; value: number; color: string }[]
->([]);
-const [employees, setEmployees] = useState<OtherEmployee[]>([]);
-const [counts, setCounts] = useState<DashboardCounts>({
-  totalApplication: 0,
-  shortlisted: 0,
-  rejected: 0,
-  waiting: 0,
-});
-const [formData, setFormData] = useState<OtherEmployeess>({
-  firstName: "",
-  lastName: "",
-  email: "",
-  phoneNumber: 0,
-  nationality: "",
-  country: "",
-  city: "",
-  dateOfBirth: "",
-  gender: "",
-  residentialAddress: "",
-  higherQualification: "",
-  universityName: "",
-  previousJob: "",
-  experience: "",
-  bankName: "",
-  accountNumber: 0,
-  bankCode: "",
-  passportNumber: "",
-  languagesKnown: [],
-  emergencyContactNumber: 0,
-  relationshipWithEmployee: "",
-  address: "",
-  designation: "",
-  department: "",
-  preferedWorkingHours: 8,
-  preferedShiftFrom: "09:00 AM",
-  preferedShiftTo: "09:00 PM",
-  comments: "",
-  profileImage: null,
-  applicationDate: new Date().toISOString(),
-  currency: "USD",
-  expectedSalary: 0,
-  applicationStatus: "Pending",
-  preferedWorkingDays: [],
-  status: "Active",
-});
-const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
-useEffect(() => {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+    { name: string; value: number; color: string }[]
+  >([]);
+  const [empData, setEmpData] = useState<
+    { name: string; value: number; color: string }[]
+  >([]);
+  const [employees, setEmployees] = useState<OtherEmployee[]>([]);
+  const [counts, setCounts] = useState<DashboardCounts>({
+    totalApplication: 0,
+    shortlisted: 0,
+    rejected: 0,
+    waiting: 0,
+  });
+  const [formData, setFormData] = useState<OtherEmployeess>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: 0,
+    nationality: "",
+    country: "",
+    city: "",
+    dateOfBirth: "",
+    gender: "",
+    residentialAddress: "",
+    higherQualification: "",
+    universityName: "",
+    previousJob: "",
+    experience: "",
+    bankName: "",
+    accountNumber: 0,
+    bankCode: "",
+    passportNumber: "",
+    languagesKnown: [],
+    emergencyContactNumber: 0,
+    relationshipWithEmployee: "",
+    address: "",
+    designation: "",
+    department: "",
+    preferedWorkingHours: 8,
+    preferedShiftFrom: "09:00 AM",
+    preferedShiftTo: "09:00 PM",
+    comments: "",
+    profileImage: null,
+    applicationDate: new Date().toISOString(),
+    currency: "USD",
+    expectedSalary: 0,
+    applicationStatus: "Pending",
+    preferedWorkingDays: [],
+    status: "Active",
+  });
+  const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+  const filteredTeachers = teachers.filter(
+    (teacher) =>
+      (filterCourse === "" || teacher.position === filterCourse) &&
+      (filterName === "" ||
+        teacher.userName.toLowerCase().includes(filterName.toLowerCase())) &&
+      (teacher.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        teacher.email.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+  const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedTeachers = filteredTeachers.slice(startIndex, endIndex);
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-  const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
 
- if (roleAccessRaw) {
-        try {
-          const roleAccess = JSON.parse(roleAccessRaw);
-          const hasRead = roleAccess?.employees?.write ?? false;
-          console.log(hasRead);
-          setdashboardRead(hasRead);
-        } catch (error) {
-          console.error("Invalid JSON in AdminRolePermission:", error);
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
+    const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+    if (roleAccessRaw) {
+      try {
+        const roleAccess = JSON.parse(roleAccessRaw);
+        const hasRead = roleAccess?.employees?.write ?? false;
+        console.log(hasRead);
+        setdashboardRead(hasRead);
+      } catch (error) {
+        console.error("Invalid JSON in AdminRolePermission:", error);
+      }
+    }
+
+    // Fetch teacher status count
+    axios
+      .get("https://api.blackstoneinfomaticstech.com/teacher/statuscount", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        const data = response.data;
+        if (data && data.length > 0) {
+          const count = data[0];
+          const chartData = [
+            {
+              name: "Total Teachers",
+              value: count.teacherTotalCount,
+              color: "#AFC0FF",
+            },
+            {
+              name: "Active Teachers",
+              value: count.activeTeacher,
+              color: "#9FD0FF",
+            },
+            {
+              name: "Inactive Teachers",
+              value: count.inActiveTeacher,
+              color: "#78A1DB",
+            },
+            {
+              name: "Teachers on Leave",
+              value: count.leaveOnTeacher,
+              color: "#B9DDFF",
+            },
+          ];
+          setBarData(chartData);
         }
-      }
+      })
+      .catch((error) => {
+        console.error("Error fetching teacher status count:", error);
+      });
 
-  // Fetch teacher status count
-  axios
-    .get("https://api.blackstoneinfomaticstech.com/teacher/statuscount", {
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    })
-    .then((response) => {
-      const data = response.data;
-      if (data && data.length > 0) {
-        const count = data[0];
-        const chartData = [
-          { name: "Total", value: count.teacherTotalCount, color: "#012A4A" },
-          { name: "Active", value: count.activeTeacher, color: "#6D5DD3" },
-          { name: "Inactive", value: count.inActiveTeacher, color: "#00CFFF" },
-          { name: "Leave", value: count.leaveOnTeacher, color: "#007BFF" },
+    // Fetch teacher gender count
+    axios
+      .get<GenderResponse>(
+        "https://api.blackstoneinfomaticstech.com/teacher/gendercount",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+        const res = response.data;
+        const chartData: GenderChartData[] = [
+          {
+            name: "Female",
+            value: parseFloat(res.teacherFemalePercentage),
+            color: "#FF82F5",
+          },
+          {
+            name: "Male",
+            value: parseFloat(res.teacherMalePercentage),
+            color: "#00CFFF",
+          },
         ];
-        setBarData(chartData);
+        setGenderData(chartData);
+      })
+      .catch((error) => {
+        console.error("Error fetching gender count:", error);
+      });
+
+    // Fetch student count by country
+    axios
+      .get(
+        "https://api.blackstoneinfomaticstech.com/applicants/countriescount",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((res) => {
+        setCountryData(res.data.studentCountByCountry);
+      })
+      .catch((err) => console.error("Failed to fetch country stats", err));
+
+    // Fetch teachers list
+    const fetchTeachers = async () => {
+      try {
+        const res = await axios.get(
+          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const teacherData: Teacher[] = res.data.users.map((user: any) => ({
+          _id: user._id,
+          userId: user.userId,
+          userName: user.userName,
+          email: user.email,
+          profileImage: user.profileImage ?? "/assets/images/proff.jpg",
+          position: user.position ?? "General",
+          rating: 1.0, // optionally calculate or default
+          gender: user.gender,
+        }));
+        setTeachers(teacherData);
+      } catch (error) {
+        console.error("Error fetching teachers:", error);
       }
-    })
-    .catch((error) => {
-      console.error("Error fetching teacher status count:", error);
-    });
+    };
+    fetchTeachers();
 
-  // Fetch teacher gender count
-  axios
-    .get<GenderResponse>("https://api.blackstoneinfomaticstech.com/teacher/gendercount", {
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    })
-    .then((response) => {
-      const res = response.data;
-      const chartData: GenderChartData[] = [
-        { name: "Female", value: parseFloat(res.teacherFemalePercentage), color: "#FF82F5" },
-        { name: "Male", value: parseFloat(res.teacherMalePercentage), color: "#00CFFF" },
-      ];
-      setGenderData(chartData);
-    })
-    .catch((error) => {
-      console.error("Error fetching gender count:", error);
-    });
+    // Fetch other employee count data
+    const fetchDataemp = async () => {
+      try {
+        const res = await fetch(
+          "https://api.blackstoneinfomaticstech.com/otherempcount",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const json: OtherEmpCountResponse = await res.json();
+        const transformed = json.otherEmpCount.map((entry) => {
+          const role = entry.country[0];
+          return {
+            name: formatRole(role),
+            value: entry.count,
+            color: ROLE_COLORS[role] || "#999999",
+          };
+        });
+        setChartData(transformed);
+      } catch (error) {
+        console.error("Error fetching role data", error);
+      }
+    };
+    fetchDataemp();
 
-  // Fetch student count by country
-  axios
-    .get("https://api.blackstoneinfomaticstech.com/applicants/countriescount", {
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    })
-    .then((res) => {
-      setCountryData(res.data.studentCountByCountry);
-    })
-    .catch((err) => console.error("Failed to fetch country stats", err));
+    // Fetch gender data for employees
+    const fetchGenderData = async () => {
+      try {
+        const res = await fetch(
+          "https://api.blackstoneinfomaticstech.com/otheremp/gendercount",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const json: GenderCountResponse = await res.json();
+        const data = [
+          {
+            name: "Female",
+            value: parseFloat(json.employeeFemalePercentage),
+            color: COLORS[0],
+          },
+          {
+            name: "Male",
+            value: parseFloat(json.employeeMalePercentage),
+            color: COLORS[1],
+          },
+        ];
+        setEmpData(data);
+      } catch (error) {
+        console.error("Error fetching gender data:", error);
+      }
+    };
+    fetchGenderData();
 
-  // Fetch teachers list
-  const fetchTeachers = async () => {
-    try {
-      const res = await axios.get("https://api.blackstoneinfomaticstech.com/users?role=TEACHER", {
+    // Fetch employees list
+    const fetchEmployees = async () => {
+      try {
+        const res = await fetch(
+          "https://api.blackstoneinfomaticstech.com/otheremployees",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data: OtherEmployeesResponse = await res.json();
+        setEmployees(data.users);
+        console.log(data.users);
+      } catch (error) {
+        console.error("Error fetching employees:", error);
+      }
+    };
+    fetchEmployees();
+
+    // Fetch supervisor dashboard counts
+    const fetchCounts = async () => {
+      try {
+        const response = await axios.get<DashboardCounts>(
+          "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setCounts(response.data);
+      } catch (error) {
+        console.error("Error fetching dashboard counts:", error);
+      }
+    };
+    fetchCounts();
+
+    // Fetch other employee count by country
+    axios
+      .get("https://api.blackstoneinfomaticstech.com/otheremp/countriescount", {
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-      });
-      const teacherData: Teacher[] = res.data.users.map((user: any) => ({
-        _id: user._id,
-        userId: user.userId,
-        userName: user.userName,
-        email: user.email,
-        profileImage: user.profileImage ?? "/assets/images/proff.jpg",
-        level: "Junior", // mock default or pull from another source
-        subject: "General", // same here
-        rating: 1.0, // optionally calculate or default
-        gender: user.gender,
-      }));
-      setTeachers(teacherData);
-    } catch (error) {
-      console.error("Error fetching teachers:", error);
-    }
-  };
-  fetchTeachers();
-
-  // Fetch other employee count data
-  const fetchDataemp = async () => {
-    try {
-      const res = await fetch("https://api.blackstoneinfomaticstech.com/otherempcount", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-      const json: OtherEmpCountResponse = await res.json();
-      const transformed = json.otherEmpCount.map((entry) => {
-        const role = entry.country[0];
-        return {
-          name: formatRole(role),
-          value: entry.count,
-          color: ROLE_COLORS[role] || "#999999",
-        };
-      });
-      setChartData(transformed);
-    } catch (error) {
-      console.error("Error fetching role data", error);
-    }
-  };
-  fetchDataemp();
-
-  // Fetch gender data for employees
-  const fetchGenderData = async () => {
-    try {
-      const res = await fetch("https://api.blackstoneinfomaticstech.com/otheremp/gendercount", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-      const json: GenderCountResponse = await res.json();
-      const data = [
-        {
-          name: "Female",
-          value: parseFloat(json.employeeFemalePercentage),
-          color: COLORS.Female,
-        },
-        {
-          name: "Male",
-          value: parseFloat(json.employeeMalePercentage),
-          color: COLORS.Male,
-        },
-      ];
-      setEmpData(data);
-    } catch (error) {
-      console.error("Error fetching gender data:", error);
-    }
-  };
-  fetchGenderData();
-
-  // Fetch employees list
-  const fetchEmployees = async () => {
-    try {
-      const res = await fetch("https://api.blackstoneinfomaticstech.com/otheremployees", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-      const data: OtherEmployeesResponse = await res.json();
-      setEmployees(data.users);
-      console.log(data.users);
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-    }
-  };
-  fetchEmployees();
-
-  // Fetch supervisor dashboard counts
-  const fetchCounts = async () => {
-    try {
-      const response = await axios.get<DashboardCounts>("https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-      setCounts(response.data);
-    } catch (error) {
-      console.error("Error fetching dashboard counts:", error);
-    }
-  };
-  fetchCounts();
-
-  // Fetch other employee count by country
-  axios
-    .get("https://api.blackstoneinfomaticstech.com/otheremp/countriescount", {
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    })
-    .then((res) => {
-      setCountryDataemp(res.data.otherEmpCountByCountry);
-    })
-    .catch((err) => console.error("Failed to fetch country stats", err));
-
-}, []); // Empty dependency array means this effect runs once on component mount
-
-
+      })
+      .then((res) => {
+        setCountryDataemp(res.data.otherEmpCountByCountry);
+      })
+      .catch((err) => console.error("Failed to fetch country stats", err));
+  }, []); // Empty dependency array means this effect runs once on component mount
 
   const handleViewTeacher = (teacherId: string) => {
     if (!teacherId) {
       console.error("Teacher ID is undefined.");
       return;
     }
-    
+
     console.log("Teacher ID:", teacherId);
     router.push(`/admin-main/ui/employees/teacher?teacherId=${teacherId}`);
   };
 
-  const handleViewEmployee = (employeeId: string,userId :string) => {
+  const handleViewEmployee = (employeeId: string, userId: string) => {
     if (!employeeId) {
       console.error("Employee ID is undefined.");
       return;
     }
-  // Log employeeId (for debugging)
-  console.log(employeeId);
-    router.push(`/admin-main/ui/employees/otheremployees?employeeId=${employeeId}&userId=${userId}`);
+    // Log employeeId (for debugging)
+    console.log(employeeId);
+    router.push(
+      `/admin-main/ui/employees/otheremployees?employeeId=${employeeId}&userId=${userId}`
+    );
   };
   // Generate month names for the chart labels
   const chartTemplate = (color: string) => ({
@@ -671,22 +728,25 @@ useEffect(() => {
     const portalURL = `https://blackstoneinfomaticstech.com/supervisor/ui/sign?username=${username}&password=${password}`;
     window.location.href = portalURL;
   }
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-      
     }));
   };
-  const formatTime = (value:any) => {
+  const formatTime = (value: any) => {
     // if you're using a 24h input, convert to AM/PM
     const [hour, minute] = value.split(":");
     const h = parseInt(hour, 10);
     const suffix = h >= 12 ? "PM" : "AM";
     const formattedHour = h % 12 === 0 ? 12 : h % 12;
-    return `${formattedHour.toString().padStart(2, '0')}:${minute} ${suffix}`;
+    return `${formattedHour.toString().padStart(2, "0")}:${minute} ${suffix}`;
   };
 
   const handleSubmit = async () => {
@@ -698,17 +758,24 @@ useEffect(() => {
         form.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
       }
       const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-      await axios.post("https://api.blackstoneinfomaticstech.com/otheremployee", form, {
-        headers: { "Content-Type": "multipart/form-data" ,
-          "Authorization" :`Bearer ${token}`
-         },
-      });
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+      await axios.post(
+        "https://api.blackstoneinfomaticstech.com/otheremployee",
+        form,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       alert("Employee added successfully!");
       setShowForm(false);
@@ -718,39 +785,44 @@ useEffect(() => {
     }
   };
 
+  // Preprocess countryData to standardize country names for flag display
+  const preprocessCountryData = (data: typeof countryData) =>
+    data.map((item) => ({
+      ...item,
+      country: item.country === "The Bahamas" ? "Bahamas" : item.country,
+    }));
+
+  const processedCountryData = preprocessCountryData(countryData);
+
+  // Helper function to calculate label position for Pie segments
+  function getPieLabelPosition(
+    cx: number,
+    cy: number,
+    innerRadius: number,
+    outerRadius: number,
+    startAngle: number,
+    endAngle: number
+  ) {
+    const midAngle = (startAngle + endAngle) / 2;
+    const radius = (innerRadius + outerRadius) / 2;
+    const RADIAN = Math.PI / 180;
+    return {
+      x: cx + radius * Math.cos(-midAngle * RADIAN),
+      y: cy + radius * Math.sin(-midAngle * RADIAN),
+    };
+  }
+
   return (
     <BaseLayout4>
-      <div className="h-full w-full px-4 py-4 md:mr-10 scrollbar-none">
+      <TeacherHeader currentSection="Employees" />
+      <div className="h-full w-full p-2 md:mr-10 scrollbar-none">
         <div className="max-w-7xl w-full mx-auto scrollbar-none">
-          {/* Header Section */}
-          <div className="p-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-            <div className="relative">
-              <h2 className="text-lg sm:text-xl font-semibold">Employees</h2>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <button className="p-2 bg-white rounded-lg shadow hover:bg-gray-200">
-                <Sun size={16} className="text-black" />
-              </button>
-              <button className="p-2 bg-white rounded-lg shadow hover:bg-gray-200">
-                <Bell size={16} className="text-black" />
-              </button>
-              <Link href="#">
-                <img
-                  src="/assets/images/student-profile.png"
-                  alt="Profile"
-                  className="w-8 h-8 rounded-lg border border-gray-300 shadow"
-                />
-              </Link>
-            </div>
-          </div>
-
           {/* Tab Navigation */}
           <div className="flex flex-wrap gap-2 sm:space-x-4 border-b py-2 overflow-x-auto">
             <button
               className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
                 activeTab === "teachers"
-                  ? "bg-[#012A4A] text-white rounded-lg"
+                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
                   : ""
               }`}
               onClick={() => setActiveTab("teachers")}
@@ -760,7 +832,7 @@ useEffect(() => {
             <button
               className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
                 activeTab === "otheremployees"
-                  ? "bg-[#012A4A] text-white rounded-lg"
+                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
                   : ""
               }`}
               onClick={() => setActiveTab("otheremployees")}
@@ -770,7 +842,7 @@ useEffect(() => {
             <button
               className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
                 activeTab === "recruitment"
-                  ? "bg-[#012A4A] text-white rounded-lg"
+                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
                   : ""
               }`}
               onClick={() => setActiveTab("recruitment")}
@@ -780,7 +852,7 @@ useEffect(() => {
             <button
               className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
                 activeTab === "leave"
-                  ? "bg-[#012A4A] text-white rounded-lg"
+                  ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
                   : ""
               }`}
               onClick={() => setActiveTab("leave")}
@@ -790,42 +862,41 @@ useEffect(() => {
           </div>
 
           {/* Tab Content */}
-          <div className="w-full py-6">
+          <div className="w-full py-2">
             {activeTab === "teachers" && (
-              <div className="flex flex-col gap-6 w-full ">
+              <div className="flex flex-col gap-3 w-full ">
                 <div className="h-[600px] overflow-y-auto scrollbar-none">
-                  <div className="flex flex-row gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-14  ">
+                  <div className="flex flex-row gap-4 sm:gap-4 md:gap-4 lg:gap-4 xl:gap-4  ">
                     {/* Teachers Records */}
-                    <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[380px] md:max-w-[400px] lg:max-w-[620px] h-[280px]">
-                      <h2 className="text-[16px] font-semibold text-gray-800 mb-4">
+                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[370px] md:max-w-[390px] lg:max-w-[620px] h-[280px]">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19] mb-4">
                         Teachers Record
                       </h2>
-                      <div className="flex items-center">
-                        <div className="space-y-6 text-xs">
+                      <div className="flex items-start justify-between gap-10">
+                        {/* Legend Section */}
+                        <div className="space-y-8 text-[13px] mt-3 text-[#0B0F19]">
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-[#012A4A]"></div>
+                            <div className="w-3 h-3 rounded-[4px] bg-[#AFC0FF]"></div>
                             <span>Total Teachers</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-[#6D5DD3]"></div>
+                            <div className="w-3 h-3 rounded-[4px] bg-[#9FD0FF]"></div>
                             <span>Active Teachers</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-[#00CFFF]"></div>
+                            <div className="w-3 h-3 rounded-[4px] bg-[#78A1DB]"></div>
                             <span>Inactive Teachers</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-[#007BFF]"></div>
+                            <div className="w-3 h-3 rounded-[4px] bg-[#B9DDFF]"></div>
                             <span>Teachers on Leave</span>
                           </div>
                         </div>
-                        <div className="flex-1 h-[230px]">
+
+                        {/* Bar Chart Section */}
+                        <div className="flex-1 h-[220px] pt-2">
                           <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={barData} barSize={40}>
-                              <CartesianGrid
-                                vertical={false}
-                                strokeDasharray="3 3"
-                              />
                               <XAxis
                                 dataKey="name"
                                 axisLine={false}
@@ -833,7 +904,7 @@ useEffect(() => {
                               />
                               <YAxis hide />
                               <Tooltip cursor={{ fill: "transparent" }} />
-                              <Bar dataKey="value" radius={[5, 5, 0, 0]}>
+                              <Bar dataKey="value" radius={[10, 10, 10, 10]}>
                                 {barData.map((entry) => (
                                   <Cell key={entry.name} fill={entry.color} />
                                 ))}
@@ -843,392 +914,944 @@ useEffect(() => {
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Gender Chart */}
-                    <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[280px] flex flex-col items-center justify-between relative">
-  <h2 className="text-[16px] font-semibold text-gray-800 self-start">Gender</h2>
 
-  {/* Chart */}
-  <div className="relative w-[170px] h-[100px] flex items-center justify-center">
-    <ResponsiveContainer width="100%" height="100%">
-      <PieChart>
-        <Pie
-          data={genderData}
-          dataKey="value"
-          cx="50%"
-          cy="100%"
-          startAngle={180}
-          endAngle={0}
-          innerRadius={60}
-          outerRadius={80}
-        >
-          {genderData.map((entry) => (
-            <Cell key={`cell-${entry.name}`} fill={entry.color} />
-          ))}
-        </Pie>
-      </PieChart>
-    </ResponsiveContainer>
-    {/* Optional center line below pie */}
-    <div className="absolute left-1/2 bottom-0 w-1 h-[45px] bg-[#00CFFF] transform -translate-x-1/2 rotate-[40deg] origin-bottom rounded-sm"></div>
-  </div>
-
-  {/* Labels */}
-  <div className="flex justify-between w-full px-5 text-gray-700 text-[14px] mb-5">
-    {genderData.map((item) => (
-      <div key={item.name} className="flex flex-col items-center">
-        <span className="text-[18px] font-bold">{item.value}%</span>
-        <span className="text-[12px]">{item.name}</span>
-        <div
-          className="w-10 h-1 mt-1 rounded-full"
-          style={{ backgroundColor: item.color }}
-        ></div>
-      </div>
-    ))}
-  </div>
-</div>
-
-                 
-                    {/* Countries Block */}
-                    <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[280px] space-y-3">
-      <h2 className="text-[16px] font-semibold text-gray-800">Countries</h2>
-      {countryData.map((country, i) => {
-        // Get 2-letter country code
-        const countryCode = countries.getAlpha2Code(country.country, "en");
-        // Construct the flag URL
-        const flagUrl = countryCode
-          ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`
-          : "/assets/images/flags/default.png"; // Use a default image if no flag is found
-
-        return (
-          <div key={country.country} className="flex items-center gap-2">
-            {/* Flag */}
-            <img
-              src={flagUrl}
-              alt={country.country}
-              className="w-5 h-5 rounded-full"
-            />
-
-            <div className="w-full">
-              {/* Country name and value */}
-              <div className="flex justify-between text-[13px] font-medium text-gray-800">
-                <span>{country.country}</span>
-                <span className="text-[#809FB8]">
-                  {country.count.toLocaleString()}
-                </span>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                <div
-                  className="h-2 bg-[#012A4A] rounded-full"
-                  style={{
-                    width: `${country.percentage}%`, // Using percentage directly from response
-                  }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-                  </div>
-
-                  {/* Search & Cards Section */}
-                  <div className="mt-6 w-full">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-                      <input
-                        type="text"
-                        placeholder="Search here..."
-                        className="border rounded-lg px-3 py-2 text-sm shadow w-full md:w-1/2 lg:w-1/3"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                      <div className="flex items-center gap-2 w-full md:w-auto">
-                        <span className="text-sm font-semibold whitespace-nowrap">
-                          Duration:
-                        </span>
-                        <select className="border rounded-lg p-2 text-sm shadow w-full md:w-auto">
-                          <option>Last month</option>
-                          <option>Last week</option>
-                          <option>Last year</option>
-                        </select>
+                    {/* Gender Chart (Teachers section) */}
+                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19] self-start">
+                        Gender
+                      </h2>
+                      {/* Chart */}
+                      <div className="relative flex items-center justify-center w-full h-[170px]">
+                        <PieChart width={150} height={150}>
+                          {/* Male Segment */}
+                          {(() => {
+                            const male =
+                              genderData.find((g) => g.name === "Male")
+                                ?.value || 0;
+                            const female =
+                              genderData.find((g) => g.name === "Female")
+                                ?.value || 0;
+                            const total = male + female;
+                            const percent =
+                              total > 0 ? Math.round((male / total) * 100) : 0;
+                            const startAngle = -90;
+                            const endAngle = -90 + (male / (total || 1)) * 360;
+                            const pos = getPieLabelPosition(
+                              75,
+                              75,
+                              0,
+                              55,
+                              startAngle,
+                              endAngle
+                            );
+                            return (
+                              <>
+                                <Pie
+                                  data={[{ name: "Male", value: male }]}
+                                  cx={75}
+                                  cy={75}
+                                  innerRadius={0}
+                                  outerRadius={55}
+                                  startAngle={startAngle}
+                                  endAngle={endAngle}
+                                  dataKey="value"
+                                  strokeWidth={0}
+                                  fill={COLORS[0]}
+                                  label={false}
+                                  labelLine={false}
+                                />
+                                {male > 0 && (
+                                  <text
+                                    x={pos.x}
+                                    y={pos.y}
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                    fontSize="14px"
+                                    fontWeight="bold"
+                                    fill="#fff"
+                                  >
+                                    {percent}%
+                                  </text>
+                                )}
+                              </>
+                            );
+                          })()}
+                          {/* Female Segment */}
+                          {(() => {
+                            const male =
+                              genderData.find((g) => g.name === "Male")
+                                ?.value || 0;
+                            const female =
+                              genderData.find((g) => g.name === "Female")
+                                ?.value || 0;
+                            const total = male + female;
+                            const percent =
+                              total > 0
+                                ? Math.round((female / total) * 100)
+                                : 0;
+                            const startAngle =
+                              -90 + (male / (total || 1)) * 360;
+                            const endAngle = 270;
+                            const pos = getPieLabelPosition(
+                              75,
+                              75,
+                              0,
+                              50,
+                              startAngle,
+                              endAngle
+                            );
+                            return (
+                              <>
+                                <Pie
+                                  data={[{ name: "Female", value: female }]}
+                                  cx={75}
+                                  cy={75}
+                                  innerRadius={0}
+                                  outerRadius={50}
+                                  startAngle={startAngle}
+                                  endAngle={endAngle}
+                                  dataKey="value"
+                                  strokeWidth={0}
+                                  fill={COLORS[1]}
+                                  label={false}
+                                  labelLine={false}
+                                />
+                                {female > 0 && (
+                                  <text
+                                    x={pos.x}
+                                    y={pos.y}
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                    fontSize="13px"
+                                    fontWeight="bold"
+                                    fill="#fff"
+                                  >
+                                    {percent}%
+                                  </text>
+                                )}
+                              </>
+                            );
+                          })()}
+                          {/* Outline */}
+                          {(() => {
+                            const male =
+                              genderData.find((g) => g.name === "Male")
+                                ?.value || 0;
+                            const female =
+                              genderData.find((g) => g.name === "Female")
+                                ?.value || 0;
+                            const total = male + female;
+                            const startAngle = -90;
+                            const endAngle = -90 + (male / (total || 1)) * 360;
+                            return (
+                              <Pie
+                                data={[{ name: "Male", value: male }]}
+                                cx={75}
+                                cy={75}
+                                innerRadius={58}
+                                outerRadius={62}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                dataKey="value"
+                                strokeWidth={0}
+                                fill={COLORS[2]}
+                              />
+                            );
+                          })()}
+                        </PieChart>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 w-full mt-10">
+                        {/* Legend for Male and Female */}
+                        <div className="flex flex-col items-center text-start">
+                          <div className="flex items-center gap-[3px]">
+                            <div
+                              className="w-[12px] h-[12px] rounded-[2px]"
+                              style={{ backgroundColor: COLORS[0] }}
+                            ></div>
+                            <span className="text-[10px] font-semibold text-[#010E30] dark:text-white">
+                              Male
+                            </span>
+                          </div>
+                          <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">
+                            {genderData.find((g) => g.name === "Male")?.value ||
+                              0}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center text-start">
+                          <div className="flex items-center gap-[3px]">
+                            <div
+                              className="w-[12px] h-[12px] rounded-[2px]"
+                              style={{ backgroundColor: COLORS[1] }}
+                            ></div>
+                            <span className="text-[10px] font-semibold text-[#010E30] dark:text-white">
+                              Female
+                            </span>
+                          </div>
+                          <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">
+                            {genderData.find((g) => g.name === "Female")
+                              ?.value || 0}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Teacher Cards */}
-                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
-                      {teachers
-                        .filter(
-                          (teacher) =>
-                            teacher.userName
-                              .toLowerCase()
-                              .includes(searchQuery.toLowerCase()) ||
-                            teacher.email
-                              .toLowerCase()
-                              .includes(searchQuery.toLowerCase())
-                        )
-                        .map((teacher) => (
-                          <div
-                            key={teacher._id}
-                            className="bg-white shadow-md rounded-lg p-5 sm:p-5"
-                          >
-                            <div className="flex justify-center">
-                              <Image
-                                src="/assets/images/proff.jpg"
-                                alt="Teacher"
-                                className="w-10 h-10 mt-2 rounded-full"
-                                width={40}
-                                height={40}
-                              />
+                    {/* Countries Block */}
+                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[312px] h-[280px] flex flex-col">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19]">
+                        Countries
+                      </h2>
+                      <div className="space-y-2 mt-2 flex-1 overflow-y-auto scrollbar-none">
+                        {processedCountryData.map((country) => {
+                          const countryCode = countries.getAlpha2Code(
+                            country.country,
+                            "en"
+                          );
+                          return (
+                            <div
+                              key={country.country}
+                              className="flex items-center justify-between border-b py-1 last:border-b-0"
+                            >
+                              <div className="flex items-center gap-2">
+                                {countryCode ? (
+                                  <Flag
+                                    code={countryCode}
+                                    style={{
+                                      width: "24px",
+                                      height: "16px",
+                                      borderRadius: "10%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-6 h-4 bg-gray-300 rounded" />
+                                )}
+                                <span className="text-[12px] text-gray-700">
+                                  {country.country}
+                                </span>
+                              </div>
+                              <span className="text-[12px] font-medium text-gray-900">
+                                {country.count}
+                              </span>
                             </div>
-                            <div className="mt-3 text-center">
-                              <h3 className="text-sm font-bold text-[#223857]">
-                                {teacher.userName}
-                              </h3>
-                              <p className="text-xs mt-2 text-[#717579]">
-                                Level: {teacher.level}
-                              </p>
-                              <p className="text-xs mt-2 text-[#717579]">
-                                {teacher.subject}
-                              </p>
-                              <div className="flex flex-col justify-center gap-3 px-5 mt-2">
-                                <button
-                                  className="text-[12px] bg-[#c95b45] text-white px-2 py-1 rounded-lg"
-                                  onClick={() =>
-                                    handlePortalAccess(teacher._id)
-                                    
-                                  }
-                                  disabled={!dashboardRead}
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
 
-                                >
-                                  Portal Access
-                                </button>
-                                <button
-                                  className="text-[12px] bg-[#223857] text-white px-2 py-1 rounded-lg"
-                                  onClick={() => handleViewTeacher(teacher._id)}
-
-                                >
-                                  View Profile
-                                </button>
+                  {/* Search & Cards Section */}
+                  <div className="mt-6 w-full h-full shadow bg-[#f5f5f5] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
+                    <div className="flex justify-between bg-[#fafafb] items-center px-4 py-0 rounded-md dark:bg-[#343434] h-12">
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search"
+                          className="bg-transparent outline-none text-[15px] w-52 py-3"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      <div className="relative ">
+                        {/* Filter Button (opens your filter popup) */}
+                        <button
+                          className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                          onClick={() => setshowTeacherfilterForm(true)}
+                        >
+                          <MdTune className="w-4 h-4" />
+                          <span>Filter</span>
+                        </button>
+                        {/* Filter Popup */}
+                        {showTeacherfilterForm && (
+                          <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
+                            <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                              <button
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+                                onClick={() => setshowTeacherfilterForm(false)}
+                                aria-label="Close"
+                              >
+                                ×
+                              </button>
+                              <div className="p-6 space-y-4">
+                                <h2 className="text-lg font-semibold mb-2">
+                                  Filter by
+                                </h2>
+                                <div className="flex flex-col gap-3">
+                                  <label className="text-sm font-medium text-gray-700">
+                                    Course
+                                  </label>
+                                  <select
+                                    className="border rounded px-3 py-2 text-sm"
+                                    value={filterCourse}
+                                    onChange={(e) =>
+                                      setFilterCourse(e.target.value)
+                                    }
+                                  >
+                                    <option value="">Select Course</option>
+                                    <option value="Arabic">Arabic</option>
+                                    <option value="Math">Math</option>
+                                    <option value="Science">Science</option>
+                                    {/* Add more courses as needed */}
+                                  </select>
+                                  <label className="text-sm font-medium text-gray-700 mt-2">
+                                    Name
+                                  </label>
+                                  <input
+                                    type="text"
+                                    className="border rounded px-3 py-2 text-sm"
+                                    placeholder="Enter name"
+                                    value={filterName}
+                                    onChange={(e) =>
+                                      setFilterName(e.target.value)
+                                    }
+                                  />
+                                </div>
+                                <div className="flex gap-3 mt-6">
+                                  <button
+                                    className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                                    onClick={() => {
+                                      setFilterCourse("");
+                                      setFilterName("");
+                                    }}
+                                  >
+                                    Reset
+                                  </button>
+                                  <button
+                                    className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                                    onClick={() =>
+                                      setshowTeacherfilterForm(false)
+                                    }
+                                  >
+                                    Show{" "}
+                                    {
+                                      filteredTeachers.filter(
+                                        (t) =>
+                                          (!filterCourse ||
+                                            t.position === filterCourse) &&
+                                          (!filterName ||
+                                            t.userName
+                                              .toLowerCase()
+                                              .includes(
+                                                filterName.toLowerCase()
+                                              )) &&
+                                          (t.userName
+                                            .toLowerCase()
+                                            .includes(
+                                              searchQuery.toLowerCase()
+                                            ) ||
+                                            t.email
+                                              .toLowerCase()
+                                              .includes(
+                                                searchQuery.toLowerCase()
+                                              ))
+                                      ).length
+                                    }{" "}
+                                    results
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        ))}
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                        <span className="text-left -ml-60 ">
+                          Showing{" "}
+                          {
+                            teachers.filter(
+                              (teacher) =>
+                                (filterCourse === "" ||
+                                  teacher.position === filterCourse) &&
+                                (filterName === "" ||
+                                  teacher.userName
+                                    .toLowerCase()
+                                    .includes(filterName.toLowerCase())) &&
+                                (teacher.userName
+                                  .toLowerCase()
+                                  .includes(searchQuery.toLowerCase()) ||
+                                  teacher.email
+                                    .toLowerCase()
+                                    .includes(searchQuery.toLowerCase()))
+                            ).length
+                          }{" "}
+                          Of {teachers.length}
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Teacher Cards - manage teacher style, with Portal Access */}
+                    <div className="grid grid-cols-1 xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
+                      {paginatedTeachers.map((teacher) => (
+                        <div
+                          key={teacher._id}
+                          className="bg-white dark:bg-[#343434] h-full shadow-md rounded-lg p-4 flex flex-col justify-between"
+                        >
+                          <div className="items-center">
+                            <div className="h-[126px] rounded-md bg-[#e8e8e8] dark:bg-[#dadada] flex items-center justify-center">
+                              <Image
+                                src={
+                                  teacher.profileImage ??
+                                  "/assets/images/proff.jpg"
+                                }
+                                alt="Teacher"
+                                className="rounded-md"
+                                width={90}
+                                height={90}
+                              />
+                            </div>
+                          </div>
+                          <div className="mt-2 text-center">
+                            <h3 className="text-[12px] font-semibold text-[#010e30] dark:text-[#fff] mb-1">
+                              {teacher.userName}
+                            </h3>
+                            <p className="text-[#717579] text-[10px] dark:text-[#fff]">
+                              {teacher.position}
+                            </p>
+                            <div className="flex justify-center mb-2">
+                              {/* Star rating placeholder */}
+                              <svg
+                                className="text-[#faab3c] text-[10px]"
+                                width="12"
+                                height="12"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
+                              </svg>
+                              <svg
+                                className="text-[#faab3c] text-[10px] mx-1"
+                                width="12"
+                                height="12"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
+                              </svg>
+                              <svg
+                                className="text-[#faab3c] text-[10px]"
+                                width="12"
+                                height="12"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
+                              </svg>
+                              <svg
+                                className="text-gray-300 text-[10px] mx-1"
+                                width="12"
+                                height="12"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
+                              </svg>
+                              <svg
+                                className="text-gray-300 text-[10px]"
+                                width="12"
+                                height="12"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.388-2.46a1 1 0 00-1.175 0l-3.388 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.045 9.394c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.967z" />
+                              </svg>
+                            </div>
+                            <div className="flex flex-col justify-center gap-2 px-5 mt-2">
+                              <button
+                                className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
+                                onClick={() => handlePortalAccess(teacher._id)}
+                                disabled={!dashboardRead}
+                              >
+                                Portal Access
+                              </button>
+                              <button
+                                className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
+                                onClick={() => handleViewTeacher(teacher._id)}
+                              >
+                                View Profile
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Pagination */}
+                  <div className="flex justify-end mt-4">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                    />
                   </div>
                 </div>
               </div>
             )}
 
             {activeTab === "otheremployees" && (
-              <div className="flex flex-col gap-6 w-full ">
+              <div className="flex flex-col gap-3 w-full ">
                 <div className="h-[600px] overflow-y-auto scrollbar-none">
-                  <div className="flex flex-row gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-14  ">
-                    {/* Teachers Records */}
-                    <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[380px] md:max-w-[400px] lg:max-w-[620px] h-[280px]">
-                      <h2 className="text-[16px] font-semibold text-gray-800 mb-4">
+                  {/* Top analytics/statistics cards (Employees Record, Gender, Countries) - keep as is */}
+                  <div className="flex flex-row gap-4 sm:gap-4 md:gap-4 lg:gap-4 xl:gap-4">
+                    {/* Employees Record card */}
+                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[370px] md:max-w-[390px] lg:max-w-[620px] h-[280px]">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19] mb-4">
                         Employees Record
                       </h2>
-                      <div className="flex items-center">
-                        <div className="space-y-6 text-xs">
+                      <div className="flex items-start justify-between gap-10">
+                        {/* Legend Section */}
+                        <div className="space-y-8 text-[13px] mt-3 text-[#0B0F19]">
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-[#012A4A]"></div>
-                            <span>Admin</span>
+                            <div className="w-3 h-3 rounded-[4px] bg-[#AFC0FF]"></div>
+                            <span>Total Employees</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-[#6D5DD3]"></div>
-                            <span>Academic coach</span>
+                            <div className="w-3 h-3 rounded-[4px] bg-[#9FD0FF]"></div>
+                            <span>Active Employees</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-[#00CFFF]"></div>
-                            <span>Supervisor</span>
+                            <div className="w-3 h-3 rounded-[4px] bg-[#78A1DB]"></div>
+                            <span>Inactive Employees</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-[#007BFF]"></div>
-                            <span>Others</span>
+                            <div className="w-3 h-3 rounded-[4px] bg-[#B9DDFF]"></div>
+                            <span>Employees on Leave</span>
                           </div>
                         </div>
-                        <div className="flex-1 h-[230px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} barSize={40}>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis dataKey="name" axisLine={false} tick={false} />
-          <YAxis hide />
-          <Tooltip cursor={{ fill: "transparent" }} />
-          <Bar dataKey="value" radius={[5, 5, 0, 0]}>
-            {chartData.map((entry) => (
-              <Cell key={entry.name} fill={entry.color} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+
+                        {/* Bar Chart Section */}
+                        <div className="flex-1 h-[220px] pt-2">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={barData} barSize={40}>
+                              <XAxis
+                                dataKey="name"
+                                axisLine={false}
+                                tick={false}
+                              />
+                              <YAxis hide />
+                              <Tooltip cursor={{ fill: "transparent" }} />
+                              <Bar dataKey="value" radius={[10, 10, 10, 10]}>
+                                {barData.map((entry) => (
+                                  <Cell key={entry.name} fill={entry.color} />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Gender Chart */}
-                    <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[280px] flex flex-col items-center justify-between relative">
-  <h2 className="text-[16px] font-semibold text-gray-800 self-start">Gender</h2>
-
-  {/* Chart */}
-  <div className="relative w-[170px] h-[100px] flex items-center justify-center">
-    <ResponsiveContainer width="100%" height="100%">
-      <PieChart>
-        <Pie
-          data={empData}
-          dataKey="value"
-          cx="50%"
-          cy="100%"
-          startAngle={180}
-          endAngle={0}
-          innerRadius={60}
-          outerRadius={80}
-        >
-          {empData.map((entry) => (
-            <Cell key={`cell-${entry.name}`} fill={entry.color} />
-          ))}
-        </Pie>
-      </PieChart>
-    </ResponsiveContainer>
-    {/* Optional center line below pie */}
-    <div className="absolute left-1/2 bottom-0 w-1 h-[45px] bg-[#00CFFF] transform -translate-x-1/2 rotate-[40deg] origin-bottom rounded-sm"></div>
-  </div>
-
-  {/* Labels */}
-  <div className="flex justify-between w-full px-5 text-gray-700 text-[14px] mb-5">
-    {empData.map((item) => (
-      <div key={item.name} className="flex flex-col items-center">
-        <span className="text-[18px] font-bold">{item.value}%</span>
-        <span className="text-[12px]">{item.name}</span>
-        <div
-          className="w-10 h-1 mt-1 rounded-full"
-          style={{ backgroundColor: item.color }}
-        ></div>
-      </div>
-    ))}
-  </div>
-</div>
+                    {/* Gender Chart (Employees section) */}
+                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19] self-start">
+                        Gender
+                      </h2>
+                      {/* Chart */}
+                      <div className="relative flex items-center justify-center w-full h-[170px]">
+                        <PieChart width={150} height={150}>
+                          {/* Male Segment */}
+                          {(() => {
+                            const male =
+                              empData.find((g) => g.name === "Male")?.value ||
+                              0;
+                            const female =
+                              empData.find((g) => g.name === "Female")?.value ||
+                              0;
+                            const total = male + female;
+                            const percent =
+                              total > 0 ? Math.round((male / total) * 100) : 0;
+                            const startAngle = -90;
+                            const endAngle = -90 + (male / (total || 1)) * 360;
+                            const pos = getPieLabelPosition(
+                              75,
+                              75,
+                              0,
+                              55,
+                              startAngle,
+                              endAngle
+                            );
+                            return (
+                              <>
+                                <Pie
+                                  data={[{ name: "Male", value: male }]}
+                                  cx={75}
+                                  cy={75}
+                                  innerRadius={0}
+                                  outerRadius={55}
+                                  startAngle={startAngle}
+                                  endAngle={endAngle}
+                                  dataKey="value"
+                                  strokeWidth={0}
+                                  fill={COLORS[0]}
+                                  label={false}
+                                  labelLine={false}
+                                />
+                                {male > 0 && (
+                                  <text
+                                    x={pos.x}
+                                    y={pos.y}
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                    fontSize="14px"
+                                    fontWeight="bold"
+                                    fill="#fff"
+                                  >
+                                    {percent}%
+                                  </text>
+                                )}
+                              </>
+                            );
+                          })()}
+                          {/* Female Segment */}
+                          {(() => {
+                            const male =
+                              empData.find((g) => g.name === "Male")?.value ||
+                              0;
+                            const female =
+                              empData.find((g) => g.name === "Female")?.value ||
+                              0;
+                            const total = male + female;
+                            const percent =
+                              total > 0
+                                ? Math.round((female / total) * 100)
+                                : 0;
+                            const startAngle =
+                              -90 + (male / (total || 1)) * 360;
+                            const endAngle = 270;
+                            const pos = getPieLabelPosition(
+                              75,
+                              75,
+                              0,
+                              50,
+                              startAngle,
+                              endAngle
+                            );
+                            return (
+                              <>
+                                <Pie
+                                  data={[{ name: "Female", value: female }]}
+                                  cx={75}
+                                  cy={75}
+                                  innerRadius={0}
+                                  outerRadius={50}
+                                  startAngle={startAngle}
+                                  endAngle={endAngle}
+                                  dataKey="value"
+                                  strokeWidth={0}
+                                  fill={COLORS[1]}
+                                  label={false}
+                                  labelLine={false}
+                                />
+                                {female > 0 && (
+                                  <text
+                                    x={pos.x}
+                                    y={pos.y}
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                    fontSize="13px"
+                                    fontWeight="bold"
+                                    fill="#fff"
+                                  >
+                                    {percent}%
+                                  </text>
+                                )}
+                              </>
+                            );
+                          })()}
+                          {/* Outline */}
+                          {(() => {
+                            const male =
+                              empData.find((g) => g.name === "Male")?.value ||
+                              0;
+                            const female =
+                              empData.find((g) => g.name === "Female")?.value ||
+                              0;
+                            const total = male + female;
+                            const startAngle = -90;
+                            const endAngle = -90 + (male / (total || 1)) * 360;
+                            return (
+                              <Pie
+                                data={[{ name: "Male", value: male }]}
+                                cx={75}
+                                cy={75}
+                                innerRadius={58}
+                                outerRadius={62}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                dataKey="value"
+                                strokeWidth={0}
+                                fill={COLORS[2]}
+                              />
+                            );
+                          })()}
+                        </PieChart>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 w-full mt-10">
+                        {/* Legend for Male and Female */}
+                        <div className="flex flex-col items-center text-start">
+                          <div className="flex items-center gap-[3px]">
+                            <div
+                              className="w-[12px] h-[12px] rounded-[2px]"
+                              style={{ backgroundColor: COLORS[0] }}
+                            ></div>
+                            <span className="text-[10px] font-semibold text-[#010E30] dark:text-white">
+                              Male
+                            </span>
+                          </div>
+                          <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">
+                            {empData.find((g) => g.name === "Male")?.value || 0}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center text-start">
+                          <div className="flex items-center gap-[3px]">
+                            <div
+                              className="w-[12px] h-[12px] rounded-[2px]"
+                              style={{ backgroundColor: COLORS[1] }}
+                            ></div>
+                            <span className="text-[10px] font-semibold text-[#010E30] dark:text-white">
+                              Female
+                            </span>
+                          </div>
+                          <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">
+                            {empData.find((g) => g.name === "Female")?.value ||
+                              0}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
                     {/* Countries Block */}
-                    <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[270px] h-[280px] space-y-3">
-      <h2 className="text-[16px] font-semibold text-gray-800">Countries</h2>
-      {countryDataemp.map((country, i) => {
-        // Get 2-letter country code
-        const countryCode = countries.getAlpha2Code(country.country, "en");
-        // Construct the flag URL
-        const flagUrl = countryCode
-          ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`
-          : "/assets/images/flags/default.png"; // Use a default image if no flag is found
-
-        return (
-          <div key={country.country} className="flex items-center gap-2">
-            {/* Flag */}
-            <img
-              src={flagUrl}
-              alt={country.country}
-              className="w-5 h-5 rounded-full"
-            />
-
-            <div className="w-full">
-              {/* Country name and value */}
-              <div className="flex justify-between text-[13px] font-medium text-gray-800">
-                <span>{country.country}</span>
-                <span className="text-[#809FB8]">
-                  {country.count.toLocaleString()}
-                </span>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                <div
-                  className="h-2 bg-[#012A4A] rounded-full"
-                  style={{
-                    width: `${country.percentage}%`, // Using percentage directly from response
-                  }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-                  </div>
-                  <div className="mt-6 w-full">
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-4">
-                      {/* Search Input */}
-                      <input
-                        type="text"
-                        placeholder="Search here..."
-                        className="border rounded-lg px-2 py-2 text-sm shadow w-full lg:w-1/3"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-
-                      {/* Right Side Controls */}
-                      <div className="flex items-center gap-3">
-                        {/* Add New Button */}
-                        <button
-                          onClick={() => setShowForm(true)}
-                          className="flex items-center gap-2 bg-[#0D2444] text-white text-sm font-medium px-4 py-2 rounded-xl shadow"
-                          disabled={!dashboardRead}
->
-                          <span className="text-sm">+</span> Add new
-                        </button>
-
-                        {/* Duration Dropdown */}
-                        <div className="flex items-center bg-white border rounded-xl px-4 py-2 shadow text-sm text-[#0D2444]">
-                          <span className="font-normal mr-1">Duration :</span>
-                          <select className="bg-transparent focus:outline-none font-semibold">
-                            <option>Last month</option>
-                            <option>Last week</option>
-                            <option>Last year</option>
-                          </select>
-                        </div>
+                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[312px] h-[280px] flex flex-col">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19]">
+                        Countries
+                      </h2>
+                      <div className="space-y-2 mt-2 flex-1 overflow-y-auto scrollbar-none">
+                        {processedCountryData.map((country) => {
+                          const countryCode = countries.getAlpha2Code(
+                            country.country,
+                            "en"
+                          );
+                          return (
+                            <div
+                              key={country.country}
+                              className="flex items-center justify-between border-b py-1 last:border-b-0"
+                            >
+                              <div className="flex items-center gap-2">
+                                {countryCode ? (
+                                  <Flag
+                                    code={countryCode}
+                                    style={{
+                                      width: "24px",
+                                      height: "16px",
+                                      borderRadius: "10%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-6 h-4 bg-gray-300 rounded" />
+                                )}
+                                <span className="text-[12px] text-gray-700">
+                                  {country.country}
+                                </span>
+                              </div>
+                              <span className="text-[12px] font-medium text-gray-900">
+                                {country.count}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
-
-                    {/* Teacher Cards */}
-                    <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-7 max-h-[300px] ">
+                  </div>
+                  <div className="py-3">
+                    <div className="flex items-end justify-end gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                      <button
+                        onClick={() => setShowForm(true)}
+                        className="flex items-center gap-2 bg-[#576CBC] text-white text-xs font-medium px-4 py-2 rounded-lg shadow"
+                        disabled={!dashboardRead}
+                      >
+                        <span className="text-lg">+</span> Add new
+                      </button>
+                    </div>
+                    <div className="mt-3 w-full h-full shadow bg-[#f5f5f5] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
+                    <div className="flex justify-between bg-[#fafafb] items-center px-4 py-0 rounded-md dark:bg-[#343434] h-12">
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search"
+                          className="bg-transparent outline-none text-[15px] w-52 py-3"
+                          value={searchQuery1}
+                          onChange={(e) => setSearchQuery1(e.target.value)}
+                        />
+                      </div>
+                      <div className="relative ">
+                        {/* Filter Button (opens your filter popup) */}
+                        <button
+                          className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                          onClick={() => setshowTeacherfilterForm(true)}
+                        >
+                          <MdTune className="w-4 h-4" />
+                          <span>Filter</span>
+                        </button>
+                        {showTeacherfilterForm && (
+                          <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
+                            <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                              <button
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+                                onClick={() => setshowTeacherfilterForm(false)}
+                                aria-label="Close"
+                              >
+                                ×
+                              </button>
+                              <div className="p-6 space-y-4">
+                                <h2 className="text-lg font-semibold mb-2">
+                                  Filter by
+                                </h2>
+                                <div className="flex flex-col gap-3">
+                                  <label className="text-sm font-medium text-gray-700">
+                                    Role
+                                  </label>
+                                  <select
+                                    className="border rounded px-3 py-2 text-sm"
+                                    value={filterCourse}
+                                    onChange={(e) =>
+                                      setFilterCourse(e.target.value)
+                                    }
+                                  >
+                                    <option value="">Select Role</option>
+                                    <option value="ADMIN">Admin</option>
+                                    <option value="ACADEMICCOACH">
+                                      Academic Coach
+                                    </option>
+                                    <option value="SUPERVISOR">
+                                      Supervisor
+                                    </option>
+                                    <option value="OTHERS">Others</option>
+                                  </select>
+                                  <label className="text-sm font-medium text-gray-700 mt-2">
+                                    Name
+                                  </label>
+                                  <input
+                                    type="text"
+                                    className="border rounded px-3 py-2 text-sm"
+                                    placeholder="Enter name"
+                                    value={filterName}
+                                    onChange={(e) =>
+                                      setFilterName(e.target.value)
+                                    }
+                                  />
+                                </div>
+                                <div className="flex gap-3 mt-6">
+                                  <button
+                                    className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                                    onClick={() => {
+                                      setFilterCourse("");
+                                      setFilterName("");
+                                    }}
+                                  >
+                                    Reset
+                                  </button>
+                                  <button
+                                    className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                                    onClick={() =>
+                                      setshowTeacherfilterForm(false)
+                                    }
+                                  >
+                                    Show{" "}
+                                    {
+                                      employees.filter(
+                                        (emp) =>
+                                          (!filterCourse ||
+                                            emp.role.includes(filterCourse)) &&
+                                          (!filterName ||
+                                            emp.userName
+                                              .toLowerCase()
+                                              .includes(
+                                                filterName.toLowerCase()
+                                              ))
+                                      ).length
+                                    }{" "}
+                                    results
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-left gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+                        Showing{" "}
+                        {
+                          employees.filter(
+                            (emp) =>
+                              (!filterCourse ||
+                                emp.role.includes(filterCourse)) &&
+                              (!filterName ||
+                                emp.userName
+                                  .toLowerCase()
+                                  .includes(filterName.toLowerCase())) &&
+                              (emp.userName
+                                .toLowerCase()
+                                .includes(searchQuery1.toLowerCase()) ||
+                                emp.email
+                                  .toLowerCase()
+                                  .includes(searchQuery1.toLowerCase()))
+                          ).length
+                        }{" "}
+                        Of {employees.length}
+                      </span>
+                    </div>
+                    {/* Employee Cards - match Teachers card grid */}
+                    <div className="grid grid-cols-1 xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
                       {employees
                         .filter(
-                          (employee) =>
-                            employee.userName
+                          (emp) =>
+                            (!filterCourse ||
+                              emp.role.includes(filterCourse)) &&
+                            (!filterName ||
+                              emp.userName
+                                .toLowerCase()
+                                .includes(filterName.toLowerCase())) &&
+                            (emp.userName
                               .toLowerCase()
                               .includes(searchQuery1.toLowerCase()) ||
-                            employee.email
-                              .toLowerCase()
-                              .includes(searchQuery1.toLowerCase())
+                              emp.email
+                                .toLowerCase()
+                                .includes(searchQuery1.toLowerCase()))
                         )
+                        .slice(0, 50) // limit for performance
                         .map((employee) => (
                           <div
                             key={employee._id}
-                            className="bg-white shadow-md rounded-lg p-5"
+                            className="bg-white dark:bg-[#343434] h-full shadow-md rounded-lg p-4 flex flex-col justify-between"
                           >
-                            <div className="flex  justify-center ">
-                              <Image
-                                src={
-                                  employee.profileImage ??
-                                  "/assets/images/proff.jpg"
-                                }
-                                alt="Employee"
-                                className="w-10 h-10  mt-2 rounded-full"
-                                width={40}
-                                height={40}
-                              />
+                            <div className="items-center">
+                              <div className="h-[126px] rounded-md bg-[#e8e8e8] dark:bg-[#dadada] flex items-center justify-center">
+                                <Image
+                                  src={
+                                    employee.profileImage ??
+                                    "/assets/images/proff.jpg"
+                                  }
+                                  alt="Employee"
+                                  className="rounded-md"
+                                  width={90}
+                                  height={90}
+                                />
+                              </div>
                             </div>
-                            <div className="mt-3 text-center">
-                              <h3 className="text-sm font-bold text-[#223857] mb-2">
+                            <div className="mt-2 text-center">
+                              <h3 className="text-[12px] font-semibold text-[#010e30] dark:text-[#fff] mb-1">
                                 {employee.userName}
                               </h3>
-                              <p className="text-[#717579] text-xs">
-                                {employee.role}
+                              <p className="text-[#717579] text-[10px] dark:text-[#fff]">
+                                Role: {employee.role.join(", ")}
                               </p>
-                              <p className="text-[#717579] p-1 text-xs">
+                              <p className="text-[#717579] text-[10px] dark:text-[#fff]">
                                 {employee.gender}
                               </p>
-                              <div className="flex flex-col justify-center gap-3 px-5 mt-2">
+                              <div className="flex flex-col justify-center gap-2 px-5 mt-2">
                                 <button
-                                  className="text-[12px] bg-[#c95b45] text-white px-2 py-1 rounded-lg"
+                                  className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
                                   onClick={() =>
                                     handlePortalAccessforemployee(employee._id)
                                   }
@@ -1237,9 +1860,12 @@ useEffect(() => {
                                   Portal Access
                                 </button>
                                 <button
-                                  className="text-[12px] bg-[#223857] text-white px-2 py-1 rounded-lg"
+                                  className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
                                   onClick={() =>
-                                    handleViewEmployee(employee.userId,employee._id)
+                                    handleViewEmployee(
+                                      employee.userId,
+                                      employee._id
+                                    )
                                   }
                                 >
                                   View Profile
@@ -1250,6 +1876,16 @@ useEffect(() => {
                         ))}
                     </div>
                   </div>
+                  {/* Pagination (if needed, match Teachers section) */}
+                  <div className="flex justify-end mt-4">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={Math.ceil(employees.length / itemsPerPage)}
+                      onPageChange={setCurrentPage}
+                    />
+                  </div>
+                  </div>
+                  
                 </div>
               </div>
             )}
@@ -1711,43 +2347,116 @@ useEffect(() => {
                   { label: "First name", name: "firstName", type: "text" },
                   { label: "Last name", name: "lastName", type: "text" },
                   { label: "Email", name: "email", type: "email" },
-                  { label: "Phone number", name: "phoneNumber", type: "number" },
+                  {
+                    label: "Phone number",
+                    name: "phoneNumber",
+                    type: "number",
+                  },
                   { label: "City", name: "city", type: "text" },
                   { label: "Nationality", name: "nationality", type: "text" },
                   { label: "Date of Birth", name: "dateOfBirth", type: "date" },
                   { label: "Country", name: "country", type: "text" },
                   { label: "Gender", name: "gender", type: "text" },
-                  { label: "Residential Address", name: "residentialAddress", type: "text", full: true },
-                  { label: "Highest Qualification", name: "higherQualification", type: "text" },
-                  { label: "University/Institute Name", name: "universityName", type: "text" },
-                  { label: "Previous Job Title", name: "previousJob", type: "text" },
-                  { label: "Experience (in years)", name: "experience", type: "text" },
+                  {
+                    label: "Residential Address",
+                    name: "residentialAddress",
+                    type: "text",
+                    full: true,
+                  },
+                  {
+                    label: "Highest Qualification",
+                    name: "higherQualification",
+                    type: "text",
+                  },
+                  {
+                    label: "University/Institute Name",
+                    name: "universityName",
+                    type: "text",
+                  },
+                  {
+                    label: "Previous Job Title",
+                    name: "previousJob",
+                    type: "text",
+                  },
+                  {
+                    label: "Experience (in years)",
+                    name: "experience",
+                    type: "text",
+                  },
                   { label: "Bank Name", name: "bankName", type: "text" },
-                  { label: "Account Number", name: "accountNumber", type: "number" },
-                  { label: "Bank Code", name: "bankCode", type: "text", full: true },
-                  { label: "Passport Number", name: "passportNumber", type: "text" },
-                  { label: "Emergency Contact Number", name: "emergencyContactNumber", type: "number" },
-                  { label: "Relationship with Employee", name: "relationshipWithEmployee", type: "text" },
-                  { label: "Address", name: "address", type: "text", full: true },
+                  {
+                    label: "Account Number",
+                    name: "accountNumber",
+                    type: "number",
+                  },
+                  {
+                    label: "Bank Code",
+                    name: "bankCode",
+                    type: "text",
+                    full: true,
+                  },
+                  {
+                    label: "Passport Number",
+                    name: "passportNumber",
+                    type: "text",
+                  },
+                  {
+                    label: "Emergency Contact Number",
+                    name: "emergencyContactNumber",
+                    type: "number",
+                  },
+                  {
+                    label: "Relationship with Employee",
+                    name: "relationshipWithEmployee",
+                    type: "text",
+                  },
+                  {
+                    label: "Address",
+                    name: "address",
+                    type: "text",
+                    full: true,
+                  },
                   { label: "Designation", name: "designation", type: "text" },
                   { label: "Department", name: "department", type: "text" },
-                  { label: "Preferred Working Hours", name: "preferedWorkingHours", type: "number" },
+                  {
+                    label: "Preferred Working Hours",
+                    name: "preferedWorkingHours",
+                    type: "number",
+                  },
                 ].map((field, index) => (
-                  <div key={index} className={`flex flex-col ${field.full ? "col-span-2" : ""}`}>
-                    <label className="text-xs font-medium text-gray-700 mb-1">{field.label}</label>
+                  <div
+                    key={index}
+                    className={`flex flex-col ${
+                      field.full ? "col-span-2" : ""
+                    }`}
+                  >
+                    <label className="text-xs font-medium text-gray-700 mb-1">
+                      {field.label}
+                    </label>
                     <input
                       type={field.type}
                       name={field.name}
                       value={
-                        Array.isArray(formData[field.name as keyof OtherEmployeess])
-                          ? (formData[field.name as keyof OtherEmployeess] as string[]).join(", ")
+                        Array.isArray(
+                          formData[field.name as keyof OtherEmployeess]
+                        )
+                          ? (
+                              formData[
+                                field.name as keyof OtherEmployeess
+                              ] as string[]
+                            ).join(", ")
                           : formData[field.name as keyof OtherEmployeess] ?? ""
                       }
                       onChange={(e) => {
-                        if (field.name === "languagesKnown" || field.name === "preferedWorkingDays") {
+                        if (
+                          field.name === "languagesKnown" ||
+                          field.name === "preferedWorkingDays"
+                        ) {
                           setFormData((prev) => ({
                             ...prev,
-                            [field.name]: e.target.value.split(",").map((item) => item.trim()),
+                            [field.name]: e.target.value
+                              .split(",")
+                              .map((item) => item.trim()),
                           }));
                         } else {
                           handleChange(e);
@@ -1762,7 +2471,9 @@ useEffect(() => {
                 {["preferedShiftFrom", "preferedShiftTo"].map((name, index) => (
                   <div key={index} className="flex flex-col">
                     <label className="text-xs font-medium text-gray-700 mb-1">
-                      {name === "preferedShiftFrom" ? "Preferred Shift From" : "Preferred Shift To"}
+                      {name === "preferedShiftFrom"
+                        ? "Preferred Shift From"
+                        : "Preferred Shift To"}
                     </label>
                     <input
                       type="time"
@@ -1778,7 +2489,9 @@ useEffect(() => {
 
                 {/* Language Input */}
                 <div className="col-span-2">
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Languages Known</label>
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">
+                    Languages Known
+                  </label>
                   <input
                     type="text"
                     name="languagesKnown"
@@ -1786,7 +2499,9 @@ useEffect(() => {
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        languagesKnown: e.target.value.split(",").map((item) => item.trim()),
+                        languagesKnown: e.target.value
+                          .split(",")
+                          .map((item) => item.trim()),
                       }))
                     }
                     className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-xs"
@@ -1795,7 +2510,9 @@ useEffect(() => {
 
                 {/* Currency Dropdown */}
                 <div>
-                  <label className="text-xs font-medium text-gray-700 block">Currency</label>
+                  <label className="text-xs font-medium text-gray-700 block">
+                    Currency
+                  </label>
                   <select
                     name="currency"
                     value={formData.currency}
@@ -1812,7 +2529,9 @@ useEffect(() => {
 
                 {/* Expected Salary */}
                 <div>
-                  <label className="text-xs font-medium text-gray-700 block">Expected Salary</label>
+                  <label className="text-xs font-medium text-gray-700 block">
+                    Expected Salary
+                  </label>
                   <input
                     type="number"
                     name="expectedSalary"
@@ -1824,10 +2543,23 @@ useEffect(() => {
 
                 {/* Working Days Checkbox */}
                 <div className="col-span-2">
-                  <label className="text-xs font-medium text-gray-700 block">Preferred Working Days</label>
+                  <label className="text-xs font-medium text-gray-700 block">
+                    Preferred Working Days
+                  </label>
                   <div className="flex flex-wrap gap-3">
-                    {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
-                      <label key={day} className="flex items-center space-x-2 text-xs">
+                    {[
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday",
+                    ].map((day) => (
+                      <label
+                        key={day}
+                        className="flex items-center space-x-2 text-xs"
+                      >
                         <input
                           type="checkbox"
                           value={day}
@@ -1837,7 +2569,10 @@ useEffect(() => {
                             setFormData((prev) => {
                               const days = new Set(prev.preferedWorkingDays);
                               checked ? days.add(value) : days.delete(value);
-                              return { ...prev, preferedWorkingDays: Array.from(days) };
+                              return {
+                                ...prev,
+                                preferedWorkingDays: Array.from(days),
+                              };
                             });
                           }}
                         />
@@ -1849,7 +2584,9 @@ useEffect(() => {
 
                 {/* Profile Image */}
                 <div className="col-span-2">
-                  <label className="text-xs font-medium text-gray-700 block">Profile Image</label>
+                  <label className="text-xs font-medium text-gray-700 block">
+                    Profile Image
+                  </label>
                   <input
                     type="file"
                     accept="image/*"
@@ -1858,7 +2595,10 @@ useEffect(() => {
                       if (file) {
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          setFormData((prev) => ({ ...prev, profileImage: reader.result as string }));
+                          setFormData((prev) => ({
+                            ...prev,
+                            profileImage: reader.result as string,
+                          }));
                         };
                         reader.readAsDataURL(file);
                       }
@@ -1869,7 +2609,9 @@ useEffect(() => {
 
                 {/* Comments */}
                 <div className="col-span-2">
-                  <label className="text-xs font-medium text-gray-700 block">Additional Comments</label>
+                  <label className="text-xs font-medium text-gray-700 block">
+                    Additional Comments
+                  </label>
                   <textarea
                     name="comments"
                     value={formData.comments}
@@ -1899,8 +2641,6 @@ useEffect(() => {
           </div>
         </div>
       )}
-
-
     </BaseLayout4>
   );
 };

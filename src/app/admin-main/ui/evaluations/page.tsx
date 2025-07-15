@@ -175,11 +175,11 @@ useEffect(() => {
   return (
     <BaseLayout4>
       <div className="h-full w-full py-2 md:mr-10 scrollbar-none">
-        <div className="flex justify-between ml-4">
+        <div className="flex justify-between">
           <h2 className="text-[20px] font-semibold">Trial Class Request</h2>
         </div>
 
-        <div className="p-2">
+        <div>
           <Dashboard />
         </div>
 
