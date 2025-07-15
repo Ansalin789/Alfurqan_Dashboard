@@ -460,9 +460,10 @@ useEffect(() => {
                                     onClick={() => {
                                       setOpenDropdownId(null);
                                       // Add navigation to view question page here
-                                      router.push(
-                                        `/student/ui/question?id=${assignment._id}`
-                                      );
+                                    router.push(
+  `/student/ui/question?id=${assignment._id}&assignmentId=${assignmentId}`
+);
+
                                     }}
                                   >
                                     View Question

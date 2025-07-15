@@ -76,22 +76,44 @@ export interface Assignment {
 export default function Page() {
   const [assignments, setAssignments] = useState<Assignment>();
   const search = useSearchParams();
-  useEffect(() => {
-    const fetchAssignment = async () => {
-      const assigmnetId = search.get('id');
-      if(!assigmnetId) return;
-      try {
-        const res = await axios.get<Assignment>(
-          `http://localhost:5001/assignments/${assigmnetId}`
-        );
-        setAssignments(res.data);
-      } catch (error) {
-        console.log("Failed to fetch assignment", error);
-      }
-    };
+  const assignmentId = search.get('assignmentId');
 
-    fetchAssignment();
-  }, []);
+useEffect(() => {
+  const fetchAssignment = async () => {
+    const assignmentId = search.get('id'); 
+    if (!assignmentId) return;
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+
+    if (!token) {
+      console.error("Missing auth token");
+      return;
+    }
+
+    try {
+      const res = await axios.get<Assignment>(
+        `http://localhost:5001/assignments/${assignmentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          params: {
+            assignmentId: assignmentId // optional: if your backend expects it here too
+          }
+        }
+      );
+      setAssignments(res.data);
+    } catch (error) {
+      console.log("Failed to fetch assignment", error);
+    }
+  };
+
+  fetchAssignment();
+}, []);
+
+
+
   const optionArray = assignments?.options
     ? Object.values(assignments.options).filter(
         (val) => typeof val === "string" && val.trim() !== ""
@@ -101,7 +123,7 @@ export default function Page() {
   return (
     <div>
       <BaseLayout2>
-        <StudentHeader currentSection="Assignments" showBackButton={true} showBackPath="assignmentlist" />
+        <StudentHeader currentSection="Assignments" showBackButton={true} showBackPath={`/student/ui/assignmentlist?assignmentId=${assignmentId}`} />
         {assignments?.assignmentType?.type === "quiz" &&
           (assignments.trueorfalseType ? (
             <QuizTrueOrFalseAnswerCard
