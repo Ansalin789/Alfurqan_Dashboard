@@ -155,21 +155,44 @@ const StudentList = () => {
     });
   };
 
-  useEffect(() => {
-    if (!assignmentId) return;
+useEffect(() => {
+  if (!assignmentId) return;
+
+  const fetchAssignmentById = async () => {
     setLoading(true);
     setError(null);
-    fetch(`https://api.blackstoneinfomaticstech.com/assignments/?assignmentId=${assignmentId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setAssignments(data.data || []);
+
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+      const studentId = localStorage.getItem("StudentPortalId");
+
+      if (!token || !studentId) {
+        console.error("Missing token or student ID");
         setLoading(false);
-      })
-      .catch((err) => {
-        setError("Failed to fetch assignments");
-        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/?assignmentId=${assignmentId}&studentId=${studentId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
       });
-  }, [assignmentId]);
+
+      if (!res.ok) throw new Error("Failed to fetch assignment");
+
+      const data = await res.json();
+      setAssignments(data.data || []);
+    } catch (err) {
+      setError("Failed to fetch assignments");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchAssignmentById();
+}, [assignmentId]);
+
 
   const filteredAssignments = filterAssignments(assignments);
   const paginatedAssignments = filteredAssignments.slice(

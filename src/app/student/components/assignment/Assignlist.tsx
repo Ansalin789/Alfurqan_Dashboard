@@ -16,10 +16,12 @@ function Assignment() {
   useEffect(() => {
     const fetchAssignmentData = async () => {
       try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("StudentAuthToken")
-            : null;
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+      if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }
         const studentId = localStorage.getItem("StudentPortalId");
 
         if (!token || !studentId) {
@@ -29,6 +31,11 @@ function Assignment() {
 
         const response = await axios.get(
           `http://localhost:5001/assignments/cardcount?studentId=${studentId}`
+          , {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+            },
+          }
         );
 
         // Log the full API response for debugging

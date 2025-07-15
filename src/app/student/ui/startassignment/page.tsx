@@ -295,8 +295,25 @@ const QuizPage = () => {
     const fetchAssignments = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/assignments?assignmentId=${assignmentId}`
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+      if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }
+        const studentId = localStorage.getItem("StudentPortalId");
+
+        if (!token || !studentId) {
+          console.error("Missing token or teacher ID");
+          return;
+        }
+       const res = await fetch(
+          `https://api.blackstoneinfomaticstech.com/assignments?assignmentId=${assignmentId}`,
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+            },
+          }
         );
         const data: AssignmentApiResponse = await res.json();
 

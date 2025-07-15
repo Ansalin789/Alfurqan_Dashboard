@@ -170,15 +170,26 @@ const StudentList = () => {
     const fetchAssignments = async () => {
       setLoading(true);
       setError(null);
-      try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+            try {
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("StudentAuthToken") : null;
+      if (!token) {
+    console.error("❌ StudentAuthToken not found");
+    return;
+  }
         const studentId = localStorage.getItem("StudentPortalId");
+
         if (!token || !studentId) {
-          console.error("Missing token or student ID");
-          setLoading(false);
+          console.error("Missing token or teacher ID");
           return;
         }
-        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`);
+        const res = await fetch(`https://api.blackstoneinfomaticstech.com/assignments/student?studentId=${studentId}`,
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+            },
+          }
+        );
         if (!res.ok) throw new Error("Failed to fetch assignments");
         const data = await res.json();
         const allAssignments = (data.data || []) as AssignmentType[];
