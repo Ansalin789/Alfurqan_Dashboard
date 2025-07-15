@@ -364,9 +364,7 @@ const ManageStudentView = () => {
   const [filters, setFilters] = useState(initialFilters);
   const [searchText, setSearchText] = useState("");
   const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
-  const totalAssignments = 8;
-  const completedAssignments = 6;
-  const pendingAssignments = totalAssignments - completedAssignments;
+  
 
   const [regularStudents, setRegularStudents] = useState<
     StudentWithAssignments[]
@@ -381,7 +379,11 @@ const ManageStudentView = () => {
   const [regularCount, setRegularCount] = useState<number>(0);
   const [groupCount, setGroupCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<"Regular" | "Group">("Regular");
-
+  const [assignmentData, setAssignmentData] = useState({
+    totalAssigned: 0,
+    totalCompleted: 0,
+    totalPending: 0,
+  });
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openModalId, setOpenModalId] = useState<string | null>(null);
@@ -461,11 +463,7 @@ const ManageStudentView = () => {
     }
   };
 
-  const [assignmentData, setAssignmentData] = useState({
-    totalAssigned: 0,
-    totalCompleted: 0,
-    totalPending: 0,
-  });
+
 
   const [loading, setLoading] = useState(true);
 // Add this state at the top of your component
@@ -495,29 +493,60 @@ useEffect(() => {
     });
   }
 }, [groupStudents]);
+
+
+ 
+
   useEffect(() => {
     const fetchAssignmentData = async () => {
       try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("TeacherAuthToken")
-            : null;
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+      if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  }
+        const teacherId = localStorage.getItem("TeacherPortalId");
 
-        if (!token || !studentId) {
+        if (!token || !teacherId) {
           console.error("Missing token or teacher ID");
           return;
         }
 
         const response = await axios.get(
-          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`
+          `http://localhost:5001/assignments/cardcount?studentId=${studentId}`
+          , {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+            },
+          }
         );
 
         // Log the full API response for debugging
-        console.log("API response:", response);
+        console.log("API response:", response.data);
 
         if (response.data.status === "success") {
-          // Bind the response data to state
-          setAssignmentData(response.data.data);
+          // Check if there are assignments
+          if (response.data.data) {
+            console.log("Setting assignment data:", response.data.data);
+            setAssignmentData({
+              totalAssigned: response.data.data.totalAssignments, // Use the correct property name
+              totalCompleted: response.data.data.totalCompleted,
+              totalPending: response.data.data.totalPending,
+            });
+            console.log("Updated assignment data:", {
+              totalAssigned: response.data.data.totalAssignments,
+              totalCompleted: response.data.data.totalCompleted,
+              totalPending: response.data.data.totalPending,
+            });
+          } else {
+            // Set totalAssigned to 0 if no assignments
+            setAssignmentData({
+              totalAssigned: 0,
+              totalCompleted: 0,
+              totalPending: 0,
+            });
+          }
         } else {
           console.error("Failed to fetch data:", response.data.message);
         }
@@ -533,33 +562,42 @@ useEffect(() => {
 
   const { totalAssigned, totalCompleted, totalPending } = assignmentData;
 
-// Calculate percentages
-const assignedPercentage = 100; // Always 100% since it's the baseline
-const completedPercentage = totalAssigned > 0 
-  ? Math.min(100, Math.round((totalCompleted / totalAssigned) * 100))
-  : 0;
+  const completionPercentage = totalAssigned > 0
+    ? Math.round((totalCompleted / totalAssigned) * 100)
+    : 0;
 
-const cards = [
-  {
-    title: "Total Assignment\nAssigned",
-    count: totalAssigned,
-    percentage: assignedPercentage,
-    ringColor: "#88A2CF",
-    bgColor: "#CDD5E2",
-    pieData: [{ value: 100 }], // Full circle
-  },
-  {
-    title: "Total Assignment\nCompleted",
-    count: totalCompleted,
-    percentage: completedPercentage,
-    ringColor: "#88CF9B", 
-    bgColor: "#CDD5E2",
-    pieData: [
-      { value: completedPercentage }, // Completed portion
-      { value: 100 - completedPercentage } // Remaining
-    ],
-  }
-];
+  const pendingPercentage = totalAssigned > 0
+    ? Math.round((totalPending / totalAssigned) * 100)
+    : 0;
+
+  console.log("Total Assigned:", totalAssigned);
+  console.log("Total Completed:", totalCompleted);
+  console.log("Total Pending:", totalPending);
+  console.log("Completion Percentage:", completionPercentage);
+  console.log("Pending Percentage:", pendingPercentage);
+
+  const cards = [
+    {
+      title: "Total Assignment Assigned",
+      count: totalAssigned,
+      percentage: 100,
+      ringColor: "#88A2CF",
+      bgColor: "#CDD5E2",
+      pieData: [{ value: 100 }],
+    },
+    {
+      title: "Total Assignment Completed",
+      count: totalCompleted,
+      percentage: completionPercentage,
+      ringColor: "#88CF9B",
+      bgColor: "#CDD5E2",
+      pieData: [
+        { value: completionPercentage },
+        { value: 100 - completionPercentage },
+      ],
+    },
+   
+  ];
 
   //Rolebyaccess
   useEffect(() => {
