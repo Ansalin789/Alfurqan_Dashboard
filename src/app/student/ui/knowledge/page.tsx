@@ -7,6 +7,7 @@ import TeacherHeader from '@/app/teacher/components/TeacherHeader';
 import { MdTune } from 'react-icons/md';
 import { Search } from 'lucide-react';
 import RecordedClassesBase from '../../components/knowlegdebase/RecordedClassesBase';
+import StudentHeader from '../../components/StudentHeader';
 
 interface Knowledge {
   assigmentId: string;
@@ -169,7 +170,7 @@ const Knowledge: React.FC = () => {
 
   return (
     <BaseLayout2>
-      <TeacherHeader currentSection="Knowledge Base" />
+      <StudentHeader currentSection="Knowledge Base" />
       <div className="w-full px-2 sm:px-4 py-6 min-h-screen">
         <section className="w-full bg-[#F5F5F5] dark:bg-[#3B3B3B] py-3 rounded-xl shadow">
           <div className="flex flex-col md:flex-row items-center justify-between w-full bg-[#FAFAFB] dark:bg-[#343434] px-4 sm:px-6 -mt-3 rounded-t-xl gap-4">
