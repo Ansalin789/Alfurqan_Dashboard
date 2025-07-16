@@ -312,6 +312,23 @@ const PreferredTeachersCard = () => {
   const malePercent = total > 0 ? Math.round((male / total) * 100) : 0;
   const femalePercent = total > 0 ? Math.round((female / total) * 100) : 0;
 
+  const getPieLabelPosition = (
+    cx: number,
+    cy: number,
+    innerRadius: number,
+    outerRadius: number,
+    startAngle: number,
+    endAngle: number
+  ) => {
+    const midAngle = (startAngle + endAngle) / 2;
+    const radius = (innerRadius + outerRadius) / 2;
+    const RADIAN = Math.PI / 180;
+    return {
+      x: cx + radius * Math.cos(-midAngle * RADIAN),
+      y: cy + radius * Math.sin(-midAngle * RADIAN),
+    };
+  };
+
   return (
     <div>
       <div>
@@ -321,74 +338,102 @@ const PreferredTeachersCard = () => {
         <div className="relative flex items-center justify-center -ml-2 mt-2">
           <PieChart width={150} height={150}>
             {/* Male Segment */}
-            <Pie
-              data={[{ name: "Male", value: male }]}
-              cx={75}
-              cy={75}
-              innerRadius={0}
-              outerRadius={55}
-              startAngle={-90}
-              endAngle={-90 + (male / (male + female || 1)) * 360}
-              dataKey="value"
-              strokeWidth={0}
-              fill={COLORS[0]}
-              label={({ cx, cy }) => (
-                <text
-                  x={cx + 19}
-                  y={cy - 10}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="14px"
-                  fontWeight="semibold"
-                  fill="#fff"
-                >
-                  {malePercent}%
-                </text>
-              )}
-              labelLine={false}
-            />
-
+            {(() => {
+              const total = male + female;
+              const percent = total > 0 ? Math.round((male / total) * 100) : 0;
+              const startAngle = -90;
+              const endAngle = -90 + (male / (total || 1)) * 360;
+              const pos = getPieLabelPosition(75, 75, 0, 55, startAngle, endAngle);
+              return (
+                <>
+                  <Pie
+                    data={[{ name: "Male", value: male }]}
+                    cx={75}
+                    cy={75}
+                    innerRadius={0}
+                    outerRadius={55}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    dataKey="value"
+                    strokeWidth={0}
+                    fill={COLORS[0]}
+                    label={false}
+                    labelLine={false}
+                  />
+                  {male > 0 && (
+                    <text
+                      x={pos.x}
+                      y={pos.y}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize="14px"
+                      fontWeight="bold"
+                      fill="#fff"
+                    >
+                      {percent}%
+                    </text>
+                  )}
+                </>
+              );
+            })()}
             {/* Female Segment */}
-            <Pie
-              data={[{ name: "Female", value: female }]}
-              cx={75}
-              cy={75}
-              innerRadius={0}
-              outerRadius={50}
-              startAngle={-90 + (male / (male + female || 1)) * 360}
-              endAngle={270}
-              dataKey="value"
-              strokeWidth={0}
-              fill={COLORS[1]}
-              label={({ cx, cy }) => (
-                <text
-                  x={cx - 20}
-                  y={cy + 20}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="13px"
-                  fontWeight="semibold"
-                  fill="#fff"
-                >
-                  {femalePercent}%
-                </text>
-              )}
-              labelLine={false}
-            />
-
+            {(() => {
+              const total = male + female;
+              const percent = total > 0 ? Math.round((female / total) * 100) : 0;
+              const startAngle = -90 + (male / (total || 1)) * 360;
+              const endAngle = 270;
+              const pos = getPieLabelPosition(75, 75, 0, 50, startAngle, endAngle);
+              return (
+                <>
+                  <Pie
+                    data={[{ name: "Female", value: female }]}
+                    cx={75}
+                    cy={75}
+                    innerRadius={0}
+                    outerRadius={50}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    dataKey="value"
+                    strokeWidth={0}
+                    fill={COLORS[1]}
+                    label={false}
+                    labelLine={false}
+                  />
+                  {female > 0 && (
+                    <text
+                      x={pos.x}
+                      y={pos.y}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize="13px"
+                      fontWeight="bold"
+                      fill="#fff"
+                    >
+                      {percent}%
+                    </text>
+                  )}
+                </>
+              );
+            })()}
             {/* Outline */}
-            <Pie
-              data={[{ name: "Male", value: male }]}
-              cx={75}
-              cy={75}
-              innerRadius={58}
-              outerRadius={62}
-              startAngle={-90}
-              endAngle={-90 + (male / (male + female || 1)) * 360}
-              dataKey="value"
-              strokeWidth={0}
-              fill={COLORS[2]}
-            />
+            {(() => {
+              const startAngle = -90;
+              const endAngle = -90 + (male / (male + female || 1)) * 360;
+              return (
+                <Pie
+                  data={[{ name: "Male", value: male }]}
+                  cx={75}
+                  cy={75}
+                  innerRadius={58}
+                  outerRadius={62}
+                  startAngle={startAngle}
+                  endAngle={endAngle}
+                  dataKey="value"
+                  strokeWidth={0}
+                  fill={COLORS[2]}
+                />
+              );
+            })()}
           </PieChart>
         </div>
         <div className="grid grid-cols-2 gap-1 w-full mt-10">
@@ -449,7 +494,7 @@ const CoursesChart = () => {
   const fetchCourseData = async (token: string) => {
     try {
       const res = await fetch(
-        "https://api.blackstoneinfomaticstech.com/studentcourse",
+        "http://localhost:5001/studentcourse",
         {
           method: "GET",
           headers: {

@@ -2,23 +2,24 @@
 
 import React, { useEffect, useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import {  BsClockHistory } from "react-icons/bs";
+import { BsClockHistory } from "react-icons/bs";
 import { MdOutlineCurrencyExchange, MdOutlineCancel } from "react-icons/md";
-import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar'
-import { format } from 'date-fns/format'
-import { parse } from 'date-fns/parse'
-import { startOfWeek } from 'date-fns/startOfWeek'
-import { getDay } from 'date-fns/getDay'
-import 'react-big-calendar/lib/css/react-big-calendar.css'
+import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
+import { format } from "date-fns/format";
+import { parse } from "date-fns/parse";
+import { startOfWeek } from "date-fns/startOfWeek";
+import { getDay } from "date-fns/getDay";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 import { FaUserGraduate } from "react-icons/fa6";
 import { FaRegEye, FaCalendarAlt } from "react-icons/fa";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
-import { useSearchParams,useRouter } from 'next/navigation'; 
+import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
+import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 
 const locales = {
-  'en-US': require('date-fns/locale/en-US'),
-}
+  "en-US": require("date-fns/locale/en-US"),
+};
 
 const localizer = dateFnsLocalizer({
   format,
@@ -26,14 +27,14 @@ const localizer = dateFnsLocalizer({
   startOfWeek,
   getDay,
   locales,
-})
+});
 interface StudentData {
   studentId: string;
   name: string;
   studentDetails: StudentDetails;
 }
 
- interface StudentDetails {
+interface StudentDetails {
   student: Student;
   teacher: Teacher;
   subscription: Subscription;
@@ -83,7 +84,7 @@ interface StudentData {
   teacherStatus: string;
 }
 
- interface Student {
+interface Student {
   studentId: string;
   studentFirstName: string;
   studentLastName: string;
@@ -107,11 +108,11 @@ interface StudentData {
   createdBy: string;
 }
 
- interface Teacher {
+interface Teacher {
   teacherName: string;
 }
 
- interface Subscription {
+interface Subscription {
   subscriptionName: string;
 }
 
@@ -129,7 +130,8 @@ interface User {
   lastLoginDate: string;
   createdDate: string;
   lastUpdatedDate: string;
-  gender: "Male" | "Female"; 
+  gender: string;
+  position: string;
 }
 interface ScheduledClass {
   student: {
@@ -162,6 +164,7 @@ interface ScheduledClass {
   lastUpdatedDate: string;
   amount: string;
 }
+
 interface WageData {
   _id: string;
   employeeId: string;
@@ -179,49 +182,108 @@ interface WageData {
   updatedBy: string;
 }
 
+interface MonthlyData {
+  year: number;
+  month: number; // 1 to 12
+  totalclasses: number;
+  totalstudents: number;
+  totalhours: number;
+  totalearnings: number;
+}
+
+interface TeacherCounts {
+  totalclasses: number;
+  totalstudents: number;
+  totalhours: number;
+  totalearnings: number;
+  monthlyData?: MonthlyData[];
+}
+
+interface Student {
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
+
+interface ClassSchedule {
+  _id: string;
+  startDate: string;
+  amount: string;
+  currency: string;
+  createdDate: string;
+  description?: string;
+  status?: string;
+  classLink: string;
+  teacher: {
+    teacherId: string;
+    teacherName: string;
+    teacherEmail: string;
+  };
+}
+
 const Teacher = () => {
   const [activeTab, setActiveTab] = useState("Studentslist");
-  const [view, setView] = useState<'month' | 'week' | 'day' | 'agenda'>('agenda');
-  const tabs = ["Studentslist", "ScheduledClass", "Earnings", "Payments", "Wages", "WorkingHours"];
+  const [view, setView] = useState<"month" | "week" | "day" | "agenda">(
+    "agenda"
+  );
+  const tabs = [
+    "Studentslist",
+    "ScheduledClass",
+    "Earnings",
+    "Payments",
+    "Wages",
+    "WorkingHours",
+  ];
   const searchParams = useSearchParams();
-  const employeeId = searchParams.get('teacherId');
+  const employeeId = searchParams.get("teacherId");
+
   const [users, setUsers] = useState<User>();
   const [scheduledclass, setScheduledClass] = useState<ScheduledClass[]>([]);
   const [wages, setWages] = useState<WageData[]>([]);
   const [students, setStudents] = useState<StudentData[]>([]);
+  const [teacherCounts, setTeacherCounts] = useState<TeacherCounts>({
+    totalclasses: 0,
+    totalstudents: 0,
+    totalhours: 0,
+    totalearnings: 0,
+  });
+
   const events = [
     {
-      title: 'Evaluation Class (20)',
+      title: "Evaluation Class (20)",
       start: new Date(2024, 0, 2),
       end: new Date(2024, 0, 2),
     },
     {
-      title: 'To-Do Task (01)',
+      title: "To-Do Task (01)",
       start: new Date(2024, 0, 2),
       end: new Date(2024, 0, 2),
     },
     {
-      title: 'Meeting (01)',
+      title: "Meeting (01)",
       start: new Date(2024, 0, 17),
       end: new Date(2024, 0, 17),
     },
-  ]
+  ];
 
   const statusStyle = {
-    Complete: 'bg-[#002F56] text-white',
-    Pending: 'bg-gray-300 text-gray-700',
-    Rescheduled: 'bg-yellow-300 text-black',
+    Complete: "bg-[#002F56] text-white",
+    Pending: "bg-gray-300 text-gray-700",
+    Rescheduled: "bg-yellow-300 text-black",
   };
 
   useEffect(() => {
     const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-  
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
+
     if (token && employeeId && employeeId !== "null") {
       fetchUsers(token);
       fetchSchedule(token);
@@ -231,7 +293,7 @@ const Teacher = () => {
       console.log("No auth token or employee ID found.");
     }
   }, [employeeId]); // re-run if employeeId changes
-  
+
   const fetchUsers = async (token: string) => {
     try {
       const response = await axios.get(
@@ -239,7 +301,7 @@ const Teacher = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -249,7 +311,7 @@ const Teacher = () => {
       console.error("Error fetching users:", error);
     }
   };
-  
+
   const fetchSchedule = async (token: string) => {
     try {
       const response = await axios.get(
@@ -257,7 +319,7 @@ const Teacher = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -266,7 +328,41 @@ const Teacher = () => {
       console.error("Error fetching schedule:", error);
     }
   };
-  
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const token = localStorage.getItem("AdminAuthToken");
+        console.log(
+          "Sending request with teacherId:",
+          employeeId,
+          "Token:",
+          token
+        );
+
+        const res = await axios.get(
+          `http://localhost:5001/dashboard/teacher/counts`,
+          {
+            params: { teacherId: employeeId },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("API Response:", res.data);
+        setTeacherCounts(res.data);
+      } catch (error: any) {
+        console.error("Error fetching teacher counts:", error.message);
+        if (error.response) {
+          console.error("Server responded with:", error.response.data);
+        }
+      }
+    };
+
+    fetchCounts();
+  }, []);
+
   const fetchWages = async (token: string) => {
     try {
       const response = await axios.get(
@@ -274,7 +370,7 @@ const Teacher = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -283,7 +379,7 @@ const Teacher = () => {
       console.error("Error fetching wages:", error);
     }
   };
-  
+
   const fetchClasses = async (token: string) => {
     try {
       const res = await axios.get<StudentData[]>(
@@ -291,7 +387,7 @@ const Teacher = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -300,143 +396,138 @@ const Teacher = () => {
       console.error("Failed to fetch classes", error);
     }
   };
-  
 
   const CustomToolbar = (toolbar: any) => (
     <div className="flex justify-center items-center py-2 px-4">
       <h2 className="text-xl font-semibold text-center">{toolbar.label}</h2>
     </div>
-  )
+  );
 
   const router = useRouter();
 
-  const handleView = () => {
-    router.push(`/admin-main/ui/employees/teacher/monthdata`);
-  };
+
 
   const handleclickcalender = () => {
-    router.push(`/admin-main/ui/employees/teacher/calendar?teacherId=${employeeId}`);
+    router.push(
+      `/admin-main/ui/employees/teacher/calendar?teacherId=${employeeId}`
+    );
   };
-  
+
+  const formatTime = (timeStr: string): string => {
+    const [hour, minute] = timeStr.split(":");
+    const date = new Date();
+    date.setHours(Number(hour), Number(minute));
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false, // disables AM/PM
+    });
+  };
 
   return (
     <BaseLayout4>
+      <TeacherHeader currentSection="Employees" />
       <div className="p-4 min-h-screen w-full">
-        <h2 className="font-semibold pb-2">Teachers</h2>
-
-        <div className="grid grid-cols-5 gap-4">
-          <div className="col-span-3 bg-white p-4 rounded-xl shadow flex justify-between flex-row">
-            <div className="flex flex-col items-center md:w-1/3 text-center">
-              <div className="border-r-2 p-6 -ml-8">
-                <div className="w-10 h-10 rounded-full overflow-hidden ml-2">
-                  <img
-                    src="/assets/images/Avatar.png"
-                    alt="Avatar"
-                    width={96}
-                    height={96}
-                  />
-                </div>
-                <div className="-ml-6">
-                  <h2 className="text-xs font-medium mt-4">{users?.userName}</h2>
-                  <p className="text-gray-500 text-[11px]">Teacher</p>
-                  <div className="mt-4">
-                    <div className=" h-1 bg-[#455E8F] rounded-full w-[120px]">
-                      <div className="h-1 bg-[#8CB2FF] rounded-full" style={{ width: '75%' }}></div>
-                    </div>
-                    <div className="text-[10px] text-gray-500 mb-1 mt-2">Course completion : 75%</div>
-                  </div>
-                </div>
+        <div className="grid grid-cols-5 gap-2">
+          {/* Left Card */}
+          <div className="col-span-3 bg-[#555D75] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row">
+            {/* Profile Section */}
+            <div className="flex flex-col items-center w-[30%] pr-4 border-r border-gray-500">
+              <div className="w-[90px] h-[90px] rounded-full overflow-hidden border border-white">
+                <img
+                  src="/assets/images/Avatar.png"
+                  alt="Avatar"
+                  className="object-cover w-full h-full"
+                />
               </div>
+              <h2 className="text-sm font-semibold mt-2">
+                {users?.userName || "Will Jonto"}
+              </h2>
+              <p className="text-xs text-gray-300">
+                {users?.email || "willjonto@gmail.com"}
+              </p>
             </div>
-            <div className="flex-1 gap-y-2 gap-x-6 text-sm">
-              <h2 className="text-xs py-4 font-medium">Contact & Details</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-3">
-                <div className="text-[12px]">
-                  <p className="text-gray-500">Email</p>
-                  <p className="text-[10px] text-gray-400 ">{users?.email}</p>
+
+            {/* Info Section */}
+            <div className="flex-1 pl-4">
+              <h2 className="text-sm font-semibold mb-3">Personal Info</h2>
+              <div className="grid grid-cols-2 gap-y-3 text-xs">
+                <div>
+                  <p className="text-gray-300">Contact</p>
+                  <p>{users?.phone || "(1) 2345 6789 3245"}</p>
                 </div>
-                <div className="text-[12px]">
-                  <p className="text-gray-500">Phone</p>
-                  <p className="text-[10px] text-gray-400">+880 1234 567891</p>
+                <div>
+                  <p className="text-gray-300">Country</p>
+                  <p>{users?.country || "UAE"}</p>
                 </div>
-                <div className="text-[12px]">
-                  <p className="text-gray-500">Gender</p>
-                  <p className="text-[10px] text-gray-400">{users?.gender}</p>
+
+                <div>
+                  <p className="text-gray-300">Gender</p>
+                  <p>{users?.gender || "Male"}</p>
                 </div>
-                <div className="text-[12px]">
-                  <p className="text-gray-500">Course</p>
-                  <p className="text-[10px] text-gray-400">Islamic History</p>
+                <div>
+                  <p className="text-gray-300">Nationality</p>
+                  <p>{users?.nationality || "Egyptian"}</p>
                 </div>
-                <div className="text-[12px]">
-                  <p className="text-gray-500">Ijaz</p>
-                  <p className="text-[10px] text-gray-400">Yes</p>
+
+                <div>
+                  <p className="text-gray-300">Course</p>
+                  <p>{users?.position || "Islamic Studies"}</p>
                 </div>
-                <div className="text-[12px]">
-                  <p className="text-gray-500">Specialization</p>
-                  <p className="text-[10px] text-gray-400">Aqeeda & Fiqh</p>
-                </div>
-                <div className="text-[12px]">
-                  <p className="text-gray-500">Country</p>
-                  <p className="text-[10px] text-gray-400">UAE</p>
-                </div>
-                <div className="text-[12px]">
-                  <p className="text-gray-500">Nationality</p>
-                  <p className="text-[10px] text-gray-400">Egyptian</p>
-                </div>
-                <div className="text-[12px]">
-                  <p className="text-gray-500">Employment</p>
-                  <p className="text-[10px] text-gray-400">Full-time</p>
+                <div>
+                  <p className="text-gray-300">Employment</p>
+                  <p>{users?.employment || "Full-time"}</p>
                 </div>
               </div>
             </div>
           </div>
-          <div className="col-span-2 bg-white p-4 rounded-xl shadow">
-            <div className=" text-xs w-full">
-              <div className="max-w-md mx-auto bg-white rounded-full p-2">
-                <div className="flex justify-start mb-6">
-                  <h2 className='bg-[#0F2C59] text-white w-[120px] text-center text-[11px] px-2 py-2 rounded-lg'>Quran</h2>
-                </div>
 
-                <div className="grid grid-cols-3 gap-y-6 text-center text-sm">
-                  <div>
-                    <p className="text-xl font-normal text-[#012A4A]">30</p>
-                    <p className="text-gray-500 text-xs">Students</p>
-                  </div>
-                  <div>
-                    <p className="text-xl font-normal text-[#15A033]">20</p>
-                    <p className="text-gray-500 text-xs">Total classes</p>
-                  </div>
-                  <div>
-                    <p className="text-xl font-normal text-[#38A0FF]">$500</p>
-                    <p className="text-gray-500 text-xs">Total earned</p>
-                  </div>
-                  <div>
-                    <p className="text-xl font-normal text-[#FF4D4D]">3</p>
-                    <p className="text-gray-500 text-xs">Absent</p>
-                  </div>
-                  <div>
-                    <p className="text-xl font-normal text-[#6C2BD9]">5</p>
-                    <p className="text-gray-500 text-xs">Days on leave</p>
-                  </div>
-                  <div>
-                    <p className="text-xl font-normal text-[#FF922E]">2</p>
-                    <p className="text-gray-500 text-xs">Rescheduled</p>
-                  </div>
+          {/* Right Analytics Panel */}
+          <div className="col-span-2 bg-[#7A83C1] px-3 py-3 rounded-lg shadow-sm text-white">
+            {/* Dropdown */}
+            <div className="mb-3">
+              <select className="bg-[#ADB5E0] text-[#0F2C59] text-xs px-3 py-[4px] rounded-md w-[90px] outline-none">
+                <option>Quran</option>
+                <option>Arabic</option>
+                <option>Islamic</option>
+              </select>
+            </div>
+
+            {/* Cards */}
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: "30", label: "Students" },
+                { value: "3", label: "Absent Days" },
+                { value: "20", label: "Total Classes" },
+                { value: "5", label: "Days On Leave" },
+                { value: "$500", label: "Total Earned" },
+                { value: "2", label: "Rescheduled" },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="border border-[#9DA4C4] rounded-lg p-2 bg-[#7A83C1]"
+                >
+                  <p className="text-base font-semibold text-white">
+                    {item.value}
+                  </p>
+                  <p className="text-xs text-[#E0E2F1]">{item.label}</p>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
 
+        {/*Table card */}
         <div className="mt-4 bg-white p-4 rounded-xl shadow h-min">
           <div className="flex space-x-6">
             {tabs.map((tab) => (
               <button
                 key={tab}
-                className={`px-3 py-[7px] text-xs font-medium rounded-lg focus:outline-none transition-all duration-200 ${activeTab === tab
-                  ? "bg-[#102645] text-white shadow"
-                  : "text-black"
-                  }`}
+                className={`px-3 py-[7px] text-xs font-medium rounded-lg focus:outline-none transition-all duration-200 ${
+                  activeTab === tab
+                    ? "bg-[#102645] text-white shadow"
+                    : "text-black"
+                }`}
                 onClick={() => setActiveTab(tab)}
               >
                 {tab}
@@ -448,38 +539,60 @@ const Teacher = () => {
             {activeTab === "Studentslist" && (
               <div className="space-y-6">
                 <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                  <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">Total Students</h2>
+                  <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">
+                    Total Students
+                  </h2>
 
                   <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
                     <table className="w-full min-w-[900px] text-sm text-left">
                       <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className='border-b-[1px] border-[#1C3557]'>
-                          <th className="p-4 font-semibold text-[12px] text-center">Student ID</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Student's name</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Country</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Subject</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Duration</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Classes</th>
+                        <tr className="border-b-[1px] border-[#1C3557]">
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Student ID
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Student's name
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Country
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Subject
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Duration
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Classes
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="text-xs text-[#1D2939]">
-  {students.map((item, index) => {
-    const student = item.studentDetails?.student;
-    return (
-      <tr
-        key={item.studentId || index}
-        className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
-      >
-        <td className="p-3">{item.studentId || "N/A"}</td>
-        <td className="p-3">{student?.studentFirstName || "N/A"}</td>
-        <td className="p-3">{student?.studentCountry || "N/A"}</td>
-        <td className="p-3">{student?.learningInterest || "N/A"}</td>
-        <td className="p-3">{item.studentDetails?.hours ? `${item.studentDetails.hours} hrs` : "N/A"}</td>
-        <td className="p-3">{item.studentDetails?.classDay?.join(', ') || "N/A"}</td>
-      </tr>
-    );
-  })}
-</tbody>
+                        {students.map((item, index) => {
+                          const student = item.studentDetails?.student;
+                          return (
+                            <tr
+                              key={item.studentId || index}
+                              className={`border-t border-gray-100 text-center ${
+                                index % 2 === 0
+                                  ? "bg-[#faf9f9]"
+                                  : "bg-[#ebebeb]"
+                              }`}
+                            >
+                              <td className="p-3">{item.studentId}</td>
+                              <td className="p-3">
+                                {student?.studentFirstName}
+                              </td>
+                              <td className="p-3">{student?.studentCountry}</td>
+                              <td className="p-3">
+                                {student?.learningInterest}
+                              </td>
+                              <td className="p-3">30 min</td>
+                              <td className="p-3"></td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
                     </table>
                   </div>
                 </div>
@@ -492,23 +605,33 @@ const Teacher = () => {
                   <div className="flex justify-between items-center mb-0">
                     <div className="space-x-4">
                       <button
-                        className={`font-medium text-[14px] ${view === 'month' ? 'text-black' : 'text-gray-400'}`}
-                        onClick={ handleclickcalender}
+                        className={`font-medium text-[14px] ${
+                          view === "month" ? "text-black" : "text-gray-400"
+                        }`}
+                        onClick={handleclickcalender}
                       >
                         <FaCalendarAlt />
                       </button>
                       <button
-                        className={`font-medium text-[14px] ${view === 'agenda' ? 'text-black' : 'text-gray-400'}`}
-                        onClick={() => setView('agenda')}
+                        className={`font-medium text-[14px] ${
+                          view === "agenda" ? "text-black" : "text-gray-400"
+                        }`}
+                        onClick={() => setView("agenda")}
                       >
                         List View
                       </button>
                     </div>
-                    {view === 'month' ? (
+                    {view === "month" ? (
                       <div className="space-x-2">
-                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">+ Add Meeting</button>
-                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">+ Add ToDoList</button>
-                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">+ Add Schedule</button>
+                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">
+                          + Add Meeting
+                        </button>
+                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">
+                          + Add ToDoList
+                        </button>
+                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">
+                          + Add Schedule
+                        </button>
                       </div>
                     ) : (
                       <div className="flex items-center">
@@ -521,22 +644,30 @@ const Teacher = () => {
                     )}
                   </div>
                   <div className="overflow-x-auto overflow-y-auto custom-scrollbar scrollbar-none">
-                    {view === 'month' ? (
+                    {view === "month" ? (
                       <Calendar
                         localizer={localizer}
                         events={events}
                         startAccessor="start"
                         endAccessor="end"
-                        style={{ height: 600, width: '100%' }}
+                        style={{ height: 600, width: "100%" }}
                         view={view}
-                        onView={(newView) => setView(newView as 'month' | 'week' | 'day' | 'agenda')}
-                        onNavigate={(date) => console.log('Navigated to:', date)}
+                        onView={(newView) =>
+                          setView(
+                            newView as "month" | "week" | "day" | "agenda"
+                          )
+                        }
+                        onNavigate={(date) =>
+                          console.log("Navigated to:", date)
+                        }
                         selectable
                         popup
                         components={{ toolbar: CustomToolbar }}
                         eventPropGetter={(event) => ({
                           style: {
-                            backgroundColor: event.title.includes("Meeting") ? "#fcd4d4" : "#e8fcd8",
+                            backgroundColor: event.title.includes("Meeting")
+                              ? "#fcd4d4"
+                              : "#e8fcd8",
                             color: "#000",
                             fontSize: "10px",
                             padding: "2px 4px",
@@ -546,31 +677,82 @@ const Teacher = () => {
                     ) : (
                       <div className="space-y-6 mt-2">
                         <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                          <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">Total Students</h2>
+                          <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">
+                            Total Students
+                          </h2>
                           <div className="overflow-x-auto max-h-[240px] overflow-y-scroll  scrollbar-none">
                             <table className="w-full min-w-[900px] text-sm text-left">
                               <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                                <tr className='border-b-[1px] border-[#1C3557]'>
-                                  <th className="p-4 font-semibold text-[12px] text-center">Student name</th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">Student ID</th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">Courses</th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">Package</th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">Course Duration</th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">Class - Date & Time</th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">Status</th>
+                                <tr className="border-b-[1px] border-[#1C3557]">
+                                  <th className="p-4 font-semibold text-[12px] text-center">
+                                    Student name
+                                  </th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">
+                                    Student ID
+                                  </th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">
+                                    Courses
+                                  </th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">
+                                    Class Type
+                                  </th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">
+                                    Course Duration
+                                  </th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">
+                                    Date
+                                  </th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">
+                                    Time
+                                  </th>
+                                  <th className="p-4 font-semibold text-[12px] text-center">
+                                    Status
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody className="text-xs text-[#1D2939]">
                                 {scheduledclass.map((event, index) => (
-                                  <tr key={event._id} className={`border-b hover:bg-gray-50 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}>
-                                    <td className="p-2 text-center">{event.student.studentFirstName}</td>
-                                    <td className="p-2 text-center text-blue-600 font-medium">{event.student.studentId}</td>
-                                    <td className="p-2 text-center">Quran</td>
-                                    <td className="p-2 text-center">{event.package}</td>
-                                    <td className="p-2 text-center">30 Min</td>
-                                    <td className="p-2 text-center"> {new Date(event.startDate).toLocaleString()}-{event.startTime}</td>
+                                  <tr
+                                    key={event._id}
+                                    className={`border-b hover:bg-gray-50 ${
+                                      index % 2 === 0
+                                        ? "bg-[#faf9f9]"
+                                        : "bg-[#ebebeb]"
+                                    }`}
+                                  >
                                     <td className="p-2 text-center">
-                                      <span className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${statusStyle[event.scheduleStatus as keyof typeof statusStyle]}`}>
+                                      {event.student.studentFirstName}
+                                    </td>
+                                    <td className="p-2 text-center text-blue-600 font-medium">
+                                      {event.student.studentId}
+                                    </td>
+                                    <td className="p-2 text-center">Quran</td>
+                                    <td className="p-2 text-center">
+                                      {event.sessionClassType}
+                                    </td>
+                                    <td className="p-2 text-center">30 Min</td>
+                                    <td className="p-2 text-center">
+                                      {new Date(
+                                        event.startDate
+                                      ).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                      })}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                      {formatTime(event.startTime[0])} –{" "}
+                                      {formatTime(event.endTime[0])}
+                                    </td>
+
+                                    <td className="p-2 text-center">
+                                      <span
+                                        className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${
+                                          statusStyle[
+                                            event.scheduleStatus as keyof typeof statusStyle
+                                          ]
+                                        }`}
+                                      >
                                         {event.scheduleStatus}
                                       </span>
                                     </td>
@@ -589,29 +771,38 @@ const Teacher = () => {
 
             {activeTab === "Earnings" && (
               <div className="space-y-6">
+                {/* Summary Cards */}
                 <div className="flex flex-wrap gap-4">
                   <div className="bg-[#012A4A] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
                     <div>
                       <p className="text-xs">Total Classes</p>
-                      <h2 className="text-lg font-bold mt-1">100</h2>
+                      <h2 className="text-lg font-bold mt-1">
+                        {teacherCounts.totalclasses}
+                      </h2>
                     </div>
                     <div className="bg-[#003E6E] p-2 rounded-lg text-sm">
                       <FaUserGraduate className="text-[#ffffffbd]" />
                     </div>
                   </div>
+
                   <div className="bg-[#2D49AD] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
                     <div>
                       <p className="text-xs">Total Hours</p>
-                      <h2 className="text-lg font-bold mt-1">130</h2>
+                      <h2 className="text-lg font-bold mt-1">
+                        {teacherCounts.totalhours}
+                      </h2>
                     </div>
                     <div className="bg-[#8280ffc0] p-2 rounded-lg text-sm">
                       <BsClockHistory className="text-[#15255f]" />
                     </div>
                   </div>
+
                   <div className="bg-[#667085] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
                     <div>
                       <p className="text-xs">Total Earnings</p>
-                      <h2 className="text-lg font-bold mt-1">$800</h2>
+                      <h2 className="text-lg font-bold mt-1">
+                        ${teacherCounts.totalearnings}
+                      </h2>
                     </div>
                     <div className="bg-[#979797] p-2 rounded-lg text-sm">
                       <MdOutlineCurrencyExchange className="text-[#4F5154]" />
@@ -619,89 +810,66 @@ const Teacher = () => {
                   </div>
                 </div>
 
+                {/* Monthly Breakdown Table */}
                 <div className="space-y-6">
                   <div className="rounded-xl border border-[#000] shadow overflow-hidden">
                     <div className="overflow-x-auto max-h-[181px] overflow-y-auto custom-scrollbar scrollbar-none">
                       <table className="w-full min-w-[900px] text-sm text-left">
                         <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                          <tr className='border-b-[1px] border-[#1C3557]'>
-                            <th className="p-4 font-semibold text-[12px] text-center">Month</th>
-                            <th className="p-4 font-semibold text-[12px] text-center">Total Classes</th>
-                            <th className="p-4 font-semibold text-[12px] text-center">Total Hours</th>
-                            <th className="p-4 font-semibold text-[12px] text-center">Total Earnings</th>
-                            <th className="p-4 font-semibold text-[12px] text-center">View</th>
+                          <tr className="border-b-[1px] border-[#1C3557]">
+                            <th className="p-4 font-semibold text-[12px] text-center">
+                              Month
+                            </th>
+                            <th className="p-4 font-semibold text-[12px] text-center">
+                              Total Classes
+                            </th>
+                            <th className="p-4 font-semibold text-[12px] text-center">
+                              Total Hours
+                            </th>
+                            <th className="p-4 font-semibold text-[12px] text-center">
+                              Total Earnings
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="text-xs text-[#1D2939]">
-                          {[
-                            {
-                              month: "11/11/2022",
-                              class: "$500",
-                              hours: "Monthly Salary",
-                              earnings: "Monthly Salary",
-                              view: <FaRegEye />,
-                            },
-                            {
-                              month: "11/11/2022",
-                              class: "$500",
-                              hours: "Monthly Salary",
-                              earnings: "Monthly Salary",
-                              view: <FaRegEye />,
-                            },
-                            {
-                              month: "11/11/2022",
-                              class: "$500",
-                              hours: "Monthly Salary",
-                              earnings: "Monthly Salary",
-                              view: <FaRegEye />,
-                            },
-                            {
-                              month: "11/11/2022",
-                              class: "$500",
-                              hours: "Monthly Salary",
-                              earnings: "Monthly Salary",
-                              view: <FaRegEye />,
-                            },
-                            {
-                              month: "11/11/2022",
-                              class: "$500",
-                              hours: "Monthly Salary",
-                              earnings: "Monthly Salary",
-                              view: <FaRegEye />,
-                            },
-                            {
-                              month: "11/11/2022",
-                              class: "$500",
-                              hours: "Monthly Salary",
-                              earnings: "Monthly Salary",
-                              view: <FaRegEye />,
-                            },
-                            {
-                              month: "11/11/2022",
-                              class: "$500",
-                              hours: "Monthly Salary",
-                              earnings: "Monthly Salary",
-                              view: <FaRegEye />,
-                            },
-                          ].map((item, index) => (
-                            <tr
-                              key={index}
-                              className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
-                            >
-                              <td className="p-3">{item.month}</td>
-                              <td className="p-3">{item.class}</td>
-                              <td className="p-3">{item.hours}</td>
-                              <td className="p-3">{item.earnings}</td>
-                              <td className="p-3">
-                                <button
-                                  onClick={() => handleView()}
-                                  className="text-gray-600 hover:text-blue-500"
-                                >
-                                  {item.view}
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                          {Array.from({ length: 12 }).map((_, index) => {
+                            const monthNumber = index + 1;
+                            const currentYear = new Date().getFullYear();
+                            const monthName = new Date(0, index).toLocaleString(
+                              "default",
+                              {
+                                month: "short",
+                              }
+                            );
+
+                            const monthly = teacherCounts.monthlyData?.find(
+                              (item) =>
+                                item.month === monthNumber &&
+                                item.year === currentYear
+                            );
+
+                            return (
+                              <tr
+                                key={`${monthName}-${currentYear}`}
+                                className={`border-t border-gray-100 text-center ${
+                                  index % 2 === 0
+                                    ? "bg-[#faf9f9]"
+                                    : "bg-[#ebebeb]"
+                                }`}
+                              >
+                                <td className="p-3">{`${monthName} ${currentYear}`}</td>
+                                <td className="p-3">
+                                  {monthly?.totalclasses || 0}
+                                </td>
+                                <td className="p-3">
+                                  {monthly?.totalhours || 0}
+                                </td>
+                                <td className="p-3">
+                                  ${monthly?.totalearnings || 0}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -716,93 +884,69 @@ const Teacher = () => {
                   <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
                     <table className="w-full min-w-[900px] text-sm text-left">
                       <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className='border-b-[1px] border-[#1C3557]'>
-                          <th className="p-4 font-semibold text-[12px] text-center">Payment Date</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Amount</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Description</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Payment Method</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Status</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Comments for Reference</th>
-                          <th className="p-4 font-semibold text-[12px] text-center"></th>
+                        <tr className="border-b-[1px] border-[#1C3557]">
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Payment Date
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Amount
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Paid For
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Payment Method
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Status
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Comments for Reference
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Action
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="text-xs text-[#1D2939]">
-                        {[
-                          {
-                            date: "11/11/2022",
-                            amount: "$500",
-                            description: "Monthly Salary",
-                            method: "PayPal",
-                            status: "Paid",
-                          },
-                          {
-                            date: "22/10/2022",
-                            amount: "$500",
-                            description: "Bonus",
-                            method: "PayPal",
-                            status: "Paid",
-                          },
-                          {
-                            date: "22/05/2022",
-                            amount: "$500",
-                            description: "Monthly Salary",
-                            method: "PayPal",
-                            status: "Pending",
-                          },
-                          {
-                            date: "14/07/2020",
-                            amount: "$500",
-                            description: "Monthly Salary",
-                            method: "Stripe",
-                            status: "Paid",
-                          },
-                          {
-                            date: "12/04/2021",
-                            amount: "$500",
-                            description: "Monthly Salary",
-                            method: "Bank Transfer",
-                            status: "Pending",
-                          },
-                          {
-                            date: "02/02/2022",
-                            amount: "$500",
-                            description: "Bonus",
-                            method: "Bank Transfer",
-                            status: "Paid",
-                          },
-                          {
-                            date: "02/02/2022",
-                            amount: "$500",
-                            description: "Bonus",
-                            method: "Bank Transfer",
-                            status: "Paid",
-                          },
-                        ].map((item, index) => (
+                        {scheduledclass.map((item, index) => (
                           <tr
-                            key={index}
-                            className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+                            key={item._id}
+                            className={`border-t border-gray-100 text-center ${
+                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                            }`}
                           >
-                            <td className="p-3">{item.date}</td>
-                            <td className="p-3">{item.amount}</td>
-                            <td className="p-3">{item.description}</td>
-                            <td className="p-3">{item.method}</td>
                             <td className="p-3">
-                              {item.status === "Paid" ? (
-                                <span className="inline-flex items-center justify-center  gap-1">
-                                  <span className="text-lg"><IoIosCheckmarkCircleOutline className="text-green-600 text-xs" />
-                                  </span> Paid
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center justify-center  gap-1">
-                                  <span className="text-lg"><MdOutlineCancel className="text-red-600 text-xs" />
-                                  </span> Pending
-                                </span>
+                              {new Date(item.startDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
                               )}
                             </td>
-                            <td className="p-3"></td>
+                            <td className="p-3">
+                              {item.amount === "0" ? "-" : item.amount}
+                            </td>
+                            <td className="p-3">Monthly Salary</td>
+                            <td className="p-3">Bank Transfer</td>
+                            <td className="p-3">
+                              <span className="inline-flex items-center justify-center gap-1">
+                                <span className="text-lg">
+                                  {item.amount === "0" ? (
+                                    <MdOutlineCancel className="text-red-600 text-xs" />
+                                  ) : (
+                                    <IoIosCheckmarkCircleOutline className="text-green-600 text-xs" />
+                                  )}
+                                </span>
+                                {item.amount === "0" ? "Pending" : "Paid"}
+                              </span>
+                            </td>
+                            <td className="p-3">-</td>
                             <td className="p-3 text-center">
-                              <button className="text-gray-600 hover:text-blue-500 text-xs">
-                                ⬇️
+                              <button className="text-blue-500 text-xs">
+                                Download
                               </button>
                             </td>
                           </tr>
@@ -820,26 +964,38 @@ const Teacher = () => {
                   <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
                     <table className="w-full min-w-[900px] text-sm text-left">
                       <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className='border-b-[1px] border-[#1C3557]'>
-                          <th className="p-4 font-semibold text-[12px] text-center">Class Type</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Rate</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Currency</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Duration</th>
+                        <tr className="border-b-[1px] border-[#1C3557]">
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Class Type
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Rate
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Currency
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Duration
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="text-xs text-[#1D2939]">
-               {wages.map((item, index) => (
-    <tr
-      key={item._id}
-      className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
-    >
-      <td className="p-3">{item.classType.className}</td>
-      <td className="p-3">{item.classType.rate}</td>
-      <td className="p-3">{item.classType.currency}</td>
-      <td className="p-3">{item.classType.hoursMins} mins</td>
-    </tr>
-  ))}
-</tbody>
+                        {wages.map((item, index) => (
+                          <tr
+                            key={item._id}
+                            className={`border-t border-gray-100 text-center ${
+                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                            }`}
+                          >
+                            <td className="p-3">{item.classType.className}</td>
+                            <td className="p-3">{item.classType.rate}</td>
+                            <td className="p-3">{item.classType.currency}</td>
+                            <td className="p-3">
+                              {item.classType.hoursMins} mins
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
                     </table>
                   </div>
                 </div>
@@ -852,12 +1008,18 @@ const Teacher = () => {
                   <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
                     <table className="w-full min-w-[900px] text-sm text-left">
                       <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className='border-b-[1px] border-[#1C3557]'>
-                          <th className="p-4 font-semibold text-[12px] text-center">Day</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Working Hours</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">GMT</th>
-                      </tr>
-                    </thead>
+                        <tr className="border-b-[1px] border-[#1C3557]">
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Day
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Working Hours
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            GMT
+                          </th>
+                        </tr>
+                      </thead>
                       <tbody className="text-xs text-[#1D2939]">
                         {[
                           {
@@ -898,15 +1060,17 @@ const Teacher = () => {
                         ].map((item, index) => (
                           <tr
                             key={index}
-                            className={`border-t border-gray-100 text-center ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
+                            className={`border-t border-gray-100 text-center ${
+                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                            }`}
                           >
                             <td className="p-3">{item.day}</td>
                             <td className="p-3">{item.whours}</td>
                             <td className="p-3">{item.GMT}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>

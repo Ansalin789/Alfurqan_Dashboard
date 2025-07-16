@@ -6,6 +6,7 @@ import BaseLayout4 from "@/components/BaseLayout4";
 import axios from "axios";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Document } from "mongoose";
 
 interface IStudent {
   student: {
@@ -21,17 +22,93 @@ interface IStudent {
   _id: string;
   username: string;
   password: string;
-  role: "Student" | "Admin" | "Teacher"; // Adjust based on your app roles
+  role: "Student" | "Admin" | "Teacher";
   status: "Active" | "Inactive";
-  createdDate: string; // ISO Date string
+  createdDate: string;
   createdBy: string;
-  updatedDate: string; // ISO Date string
+  updatedDate: string;
   __v: number;
   classScheduleCount: number;
+  evaluation?: Array<{
+    _id: string;
+    academicCoachId: string;
+    student: {
+      studentId: string;
+      studentFirstName: string;
+      studentLastName: string;
+      studentEmail: string;
+      studentGender: string;
+      studentPhone: number;
+      studentCity: string;
+      studentCountry: string;
+      studentCountryCode: string;
+      learningInterest: string;
+      numberOfStudents: number;
+      preferredTeacher: string;
+      preferredFromTime: string;
+      preferredToTime: string;
+      timeZone: string;
+      referralSource: string;
+      preferredDate: string;
+      evaluationStatus: string;
+      status: string;
+      createdDate: string;
+      createdBy: string;
+    };
+    classType: string;
+    teacher?: {
+      teacherId: string;
+      teacherName: string;
+      teacherEmail: string;
+    };
+    classDay: string[];
+    startTime: string[];
+    endTime: string[];
+    isLanguageLevel: boolean;
+    languageLevel: string;
+    isReadingLevel: boolean;
+    readingLevel: string;
+    isGrammarLevel: boolean;
+    grammarLevel: string;
+    hours: number;
+    subscription?: {
+      subscriptionName: string;
+    };
+    planTotalPrice: number;
+    classStartDate: string;
+    classEndDate: string;
+    classStartTime: string;
+    classEndTime: string;
+    accomplishmentTime: string;
+    studentRate: number;
+    gardianName: string;
+    gardianEmail: string;
+    gardianPhone: string;
+    gardianCity: string;
+    gardianCountry: string;
+    gardianTimeZone: string;
+    gardianLanguage: string;
+    assignedTeacher: string;
+    studentStatus: string;
+    classStatus: string;
+    comments: string;
+    trialClassStatus: string;
+    invoiceStatus: string;
+    paymentLink: string;
+    paymentStatus: string;
+    teacherStatus: string;
+    status: string;
+    createdDate: string;
+    createdBy: string;
+    updatedDate: string;
+    updatedBy: string;
+    expectedFinishingDate: number;
+    assignedTeacherId: string;
+    assignedTeacherEmail: string;
+    __v: number;
+  }>;
 }
-
-
-interface IStudentInvoice {
+export interface IStudentInvoice {
   student: {
     studentId: string;
     studentName: string;
@@ -40,21 +117,26 @@ interface IStudentInvoice {
     country: string;
     city: string;
   };
+  evaluationData?: any; // Use a specific type if possible
+  paymentDate?: Date; 
   courseName: string;
-  amount: number;
-  invoiceNumber: number;
-  invoiceStatus: "Pending" | "Paid" | "Cancelled"; // You can adjust these values based on your app
+  amount: number; 
   packageType: string;
   itemDescription: string;
   duration: string;
   rate: string;
   description: string;
-  attachFile: string; // Base64 string
-  status: "Active" | "Inactive"; // Adjust if needed
-  dueDate: string; // ISO date string
+  attachFile?: string;
+  dueDate?: string;
+  invoiceStatus: string;
+  status: string;
+  createdDate?: string;
   createdBy: string;
+  lastUpdatedDate?: string;
   lastUpdatedBy: string;
+  invoiceNumber?: number;
 }
+
 
 export default function InvoicePage() {
 
@@ -80,7 +162,7 @@ export default function InvoicePage() {
     const fetchStudents = async (token: string) => {
       try {
         const response = await axios.get(
-          "https://api.blackstoneinfomaticstech.com/alstudents",{
+          "http://localhost:5001/alstudents",{
             method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -140,19 +222,33 @@ export default function InvoicePage() {
   if (!token) {
     console.error("❌ AdminAuthToken not found");
     return;
-  }
+  }    
+  console.log("Sending invoice data:", JSON.stringify(invoiceData, null, 2));
+
+      // Always use the latest selectedStudent and their evaluation
+      const firstEvaluation = selectedStudent?.evaluation?.[0];
+      const payload = {
+        ...invoiceData,
+        evaluationData: firstEvaluation ? { ...firstEvaluation } : undefined,
+      };
+
       // Send data to backend
-      const response = await axios.post('https://api.blackstoneinfomaticstech.com/invoice/send', invoiceData ,{
+      const response = await axios.post('http://localhost:5001/invoice/send', payload ,{
         headers:{
           'Content-Type' :'application/json',
-          'Authorization' :`Baerer ${token}`,
+          'Authorization' :`Bearer ${token}`,
         }
       });
-      console.log('Invoice created successfully:', response.data);  
+      console.log('Full API response:', response);
 
       // Check if response is successful
       if (response.status === 201) {
-        // Show success toast notification
+        const invoiceWithEvaluation = {
+          ...response.data.data,
+          evaluationData: invoiceData.evaluationData
+        };
+        
+        console.log("Combined invoice data:", invoiceWithEvaluation);
         toast.success('Invoice created successfully!', {
           position: 'top-right',
           autoClose: 3000, // Toast will auto-close after 3 seconds
@@ -256,30 +352,32 @@ export default function InvoicePage() {
               <select
                 className="w-full p-3 rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                 value={selectedStudent?._id ?? ""}
-                onChange={(e) => {
-                  const selected = students.find((stu) => stu._id === e.target.value);
-                  setSelectedStudent(selected || null);
-                  if (selected) {
-                    setInvoiceData((prev) => ({
-                      ...prev,
-                     
-                      lastUpdatedBy: new Date().toISOString(),  
-                      student: {
-                        studentId: selected._id,
-                        studentName: selected.username,
-                        studentEmail: selected.student.studentEmail,
-                        studentPhone: String(selected.student.studentPhone), // fixed
-                        country: selected.student.country,
-                        city: selected.student.city,
-                      },
-                      courseName: selected.student.course,
-                      packageType: selected.student.package,
-                      itemDescription: "Regular Class",
-                      rate: "10",        // <-- fix: string not number
-                      duration: "30",    // <-- fix: string not number
-                    }));
-                  }
-                }}
+               // In your select student onChange handler:
+               onChange={(e) => {
+                const selected = students.find((stu) => stu._id === e.target.value);
+                setSelectedStudent(selected || null);
+                if (selected) {
+                  const firstEvaluation = selected.evaluation?.[0];
+                  setInvoiceData((prev) => ({
+                    ...prev,
+                    lastUpdatedBy: new Date().toISOString(),
+                    student: {
+                      studentId: selected._id,
+                      studentName: selected.username,
+                      studentEmail: selected.student.studentEmail,
+                      studentPhone: String(selected.student.studentPhone),
+                      country: selected.student.country,
+                      city: selected.student.city,
+                    },
+                    courseName: selected.student.course,
+                    packageType: selected.student.package,
+                    itemDescription: "Regular Class",
+                    rate: "10",
+                    duration: "30",
+                    evaluationData: firstEvaluation ? { ...firstEvaluation } : undefined,
+                  }));
+                }
+              }}
               >
                 <option value="" disabled>Select a student</option>
                 {students.map((student) => (
