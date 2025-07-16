@@ -1384,7 +1384,7 @@ const Page = () => {
                               </button>
                               <button
                                 className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
-                                onClick={() => handleViewTeacher(teacher._id)}
+                                onClick={() => handleViewTeacher(teacher.userId)}
                               >
                                 View Profile
                               </button>
