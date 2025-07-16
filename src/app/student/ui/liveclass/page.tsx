@@ -106,6 +106,112 @@ function LiveClass() {
     fetchClassData();
   }, []);
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        console.log("Tab inactive or switched — calling handleEndCall");
+        handleEndCall(); // ✅ Or partial save, pause session etc.
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("StudentAuthToken")
+          : null;
+      const id = searchParams.get("id");
+
+      if (!token || !id) {
+        console.warn("Missing token or ID in beforeunload.");
+        return;
+      }
+
+      const payload = {
+        token,
+        isBeacon: true,
+        student: {
+          studnetSessionStart: "00:00", // Use actual start if available
+          studnetSessionEnd: new Date().toTimeString().slice(0, 5), // current time
+        },
+      };
+
+      const blob = new Blob([JSON.stringify(payload)], {
+        type: "application/json",
+      });
+
+      navigator.sendBeacon(
+        `http://localhost:5001/classShedule/attendanceupdate/${id}`,
+        blob
+      );
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
+  const updateAttendance = async (data: any) => {
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("StudentAuthToken")
+          : null;
+      const id = searchParams.get("id");
+      if (!token) {
+        console.error("Token not found. User may not be logged in.");
+        return;
+      }
+      const res = await axios.put(
+        `http://localhost:5001/classShedule/attendanceupdate/${id}`,
+        { student: data },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Attendance updated:", res.data);
+      return res;
+    } catch (err) {
+      console.error("Failed to update attendance", err);
+      return null;
+    }
+  };
+  const handleJoinCall = async () => {
+    const now = new Date();
+    const sessionStartTime = now.toTimeString().slice(0, 5);
+    console.log("Joined at:", sessionStartTime);
+
+    await updateAttendance({
+      studnetSessionStart: sessionStartTime,
+      studnetSessionEnd: "00:00",
+    });
+  };
+  const handleEndCall = async () => {
+    const now = new Date();
+    const sessionEndTime = now.toTimeString().slice(0, 5);
+    console.log("Left at:", sessionEndTime);
+
+    const res = await updateAttendance({
+      studnetSessionStart: "00:00",
+      studnetSessionEnd: sessionEndTime,
+    });
+    if (res && res.status === 200) {
+      setShowFeedback(true);
+    }
+  };
   const handleSubmitfeed = async () => {
     const feedbackData = {
       student: {
@@ -191,9 +297,6 @@ function LiveClass() {
     }
   };
 
-  const handleEndCall = () => {
-    setShowFeedback(true);
-  };
   const StarRating = ({
     value,
     onChange,
@@ -247,7 +350,7 @@ function LiveClass() {
   return (
     <BaseLayout2>
       <StudentHeader
-        currentSection="Re-Schedule Class"
+        currentSection="Live Class"
         showBackButton={true}
         showBackPath="classes"
       />
@@ -259,6 +362,9 @@ function LiveClass() {
             {/* Content Area */}
             {showFeedback ? (
               <div className="flex flex-col xl:flex-row gap-4 items-stretch justify-start px-4 py-6 w-full">
+                <div className="fixed top-17 right-4 z-[9999] bg-blue-100 text-blue-800 text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg shadow border border-blue-400">
+                  ℹ️ Once feedback done, class will be closed completely
+                </div>
                 {/* Class Details Card */}
                 <div className="bg-white dark:bg-[#3B3B3B] rounded-2xl shadow w-full xl:w-[35%] flex flex-col">
                   <img
@@ -416,11 +522,18 @@ function LiveClass() {
                           "filmstrip",
                           "shortcuts",
                           "tileview",
-                          "recording",
                         ],
                       }}
                       onApiReady={(api) => {
+                        api.addListener(
+                          "videoConferenceJoined",
+                          handleJoinCall
+                        );
                         api.addListener("videoConferenceLeft", handleEndCall);
+                        api.addListener(
+                          "connectionDisconnected",
+                          handleEndCall
+                        );
                       }}
                       getIFrameRef={(ref) => {
                         ref.style.border = "0px";
@@ -429,6 +542,10 @@ function LiveClass() {
                       }}
                     />
                   )}
+                </div>
+                <div className="mt-3 bg-blue-100 text-yellow-900 dark:bg-blue-900 dark:text-yellow-100 px-4 py-2 text-center rounded shadow text-sm font-medium border border-blue-300 dark:border-blue-700">
+                  ⚠ Please don’t switch the tab or leave this page. The video
+                  call will end.
                 </div>
               </div>
             )}

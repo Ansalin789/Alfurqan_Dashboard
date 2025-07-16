@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { LogOut } from "lucide-react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+
 import { JitsiMeeting } from "@jitsi/react-sdk";
 import BaseLayout from "@/components/BaseLayout";
 import axios from "axios";
-import Link from "next/link";
+
 import TeacherHeader from "../../components/TeacherHeader";
-import dayjs from "dayjs";
-import { useParams, useSearchParams } from "next/navigation";
+
+import {useSearchParams } from "next/navigation";
 
 interface Student {
   studentId: string;
@@ -28,7 +28,7 @@ interface Teacher {
   teacherName: string;
   teacherEmail: string;
 }
-interface course {
+interface Course {
   courseId: string;
   courseName: string;
 }
@@ -47,7 +47,7 @@ interface ClassData {
   endTime: string[]; // Array of strings for endTime
   scheduleStatus: string;
   classLink: string;
-  course: course;
+  course: Course;
   sessionStarttime: string;
   sessionsEndtime: string;
   sessionStatus: string;
@@ -80,7 +80,6 @@ export default function LiveClass() {
   const [showPopup, setShowPopup] = useState(false);
   const [ratings, setRatings] = useState([0, 0, 0]);
   const [feedback, setFeedback] = useState("");
-  const [startTime, setStartTime] = useState<string>("");
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [roomName, setRoomName] = useState("");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
@@ -90,7 +89,17 @@ export default function LiveClass() {
   );
 
   const startTimeRef = useRef<string>("");
-
+ const userInfo = useMemo(
+    () => ({
+      displayName: `${classData?.teacher?.teacherName} | ID : ${classData?.teacher?.teacherId}`,
+      email: `${classData?.teacher?.teacherEmail}`,
+    }),
+    [
+      classData?.teacher?.teacherName,
+      classData?.teacher?.teacherId,
+      classData?.teacher?.teacherEmail
+    ]
+  );
   useEffect(() => {
     const fetchClassData = async () => {
       try {
@@ -157,105 +166,20 @@ export default function LiveClass() {
 
     fetchClassData();
   }, []);
-  const handleEndCall = async () => {
-    const endCallTime = new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-
-    setShowFeedback(true);
-    const startTimeUsed = startTimeRef.current;
-    console.log("startTime:", startTimeUsed);
-    console.log("endTime:", endCallTime);
-
-    if (!classData?._id || !startTimeUsed) {
-      console.error("Missing class data or start time.");
-      return;
-    }
-
-    const scheduledDate = classData.startDate; // "YYYY-MM-DD"
-    const scheduledTime = classData.startTime?.[0]; // "HH:mm"
-    const scheduledStart = dayjs(`${scheduledDate}T${scheduledTime}`);
-    let joinHour = 0;
-    let joinMinute = 0;
-
-    if (startTimeUsed && startTimeUsed.includes(":")) {
-      const [h, m] = startTimeUsed.split(":").map(Number);
-      if (!isNaN(h) && !isNaN(m)) {
-        joinHour = h;
-        joinMinute = m;
-      } else {
-        console.warn("⛔ Invalid parsed start time (NaN):", h, m);
-      }
-    } else {
-      console.warn("⛔ Invalid startTimeUsed format:", startTimeUsed);
-    }
-    const actualJoin = dayjs(
-      `${scheduledDate}T${String(joinHour).padStart(2, "0")}:${String(
-        joinMinute
-      ).padStart(2, "0")}`
-    );
-    const diffMinutes = actualJoin.diff(scheduledStart, "minute");
-    const teacherAbsent = diffMinutes >= 15;
-    console.log("⏱️ Teacher joined late by:", diffMinutes, "min");
-    console.log("🚫 Teacher is", teacherAbsent ? "ABSENT" : "PRESENT");
-    const student = attendanceRef.current[0]; // only one student
-    console.log("stuiudent", student);
-    const studentJoined = student.joinTime && student.joinTime !== "";
-    const parsedStudentJoin = studentJoined
-      ? dayjs(`${scheduledDate}T${student.joinTime}`)
-      : null;
-    const studentLateBy = parsedStudentJoin
-      ? parsedStudentJoin.diff(scheduledStart, "minute")
-      : Infinity;
-    console.log("student late by ", studentLateBy);
-    const studentAbsent = !studentJoined || studentLateBy > 15;
-    const studentAttendee = studentAbsent ? "absent" : "present";
-    const isStudentPresent = studentAttendee === "present";
-    let sessionStarttime = "00:00";
-    let sessionsEndtime = "00:00";
-
-    if (!teacherAbsent) {
-      if (isStudentPresent) {
-        sessionStarttime = startTimeUsed;
-        sessionsEndtime = endCallTime;
-      } else {
-        sessionStarttime = classData.startTime[0];
-        sessionsEndtime = classData.endTime[0];
-      }
-    }
-    const payload = {
-      ...classData,
-      classDay: classData.classDay.map((day) => ({
-        label: day,
-        value: day,
-      })),
-      startTime: classData.startTime.map((time) => ({
-        label: time,
-        value: time,
-      })),
-      endTime: classData.endTime.map((time) => ({
-        label: time,
-        value: time,
-      })),
-
-      sessionStarttime: sessionStarttime,
-      sessionsEndtime: sessionsEndtime,
-      sessionStatus: "COMPLETED",
-      teacherAttendee: teacherAbsent ? "absent" : "present",
-      studentAttendee: studentAttendee,
-    };
-
-    console.log(payload);
+ const updateAttendance = async (data: any) => {
     try {
-      const token =
+     const token =
         typeof window !== "undefined"
           ? localStorage.getItem("TeacherAuthToken")
           : null;
-      const response = await axios.put(
-        `https://api.blackstoneinfomaticstech.com/classShedule/${classData._id}`,
-        payload,
+      const id = params.get("id");
+      if (!token) {
+        console.error("Token not found. User may not be logged in.");
+        return;
+      }
+      const res = await axios.put(
+        `http://localhost:5001/classShedule/attendanceupdate/${id}`,
+        { teacher: data },
         {
           headers: {
             "Content-Type": "application/json",
@@ -263,9 +187,35 @@ export default function LiveClass() {
           },
         }
       );
-      console.log("Class schedule updated:", response.data);
-    } catch (error) {
-      console.error("Failed to update class schedule:", error);
+
+      console.log("Attendance updated:", res.data);
+      return res;
+    } catch (err) {
+      console.error("Failed to update attendance", err);
+      return null;
+    }
+  };
+  const handleJoinCall = async () => {
+    const now = new Date();
+    const sessionStartTime = now.toTimeString().slice(0, 5);
+    console.log("Joined at:", sessionStartTime);
+
+    await updateAttendance({
+      teacherSessionStart: sessionStartTime,
+      teacherSessionEnd: "00:00",
+    });
+  };
+  const handleEndCall = async () => {
+    const now = new Date();
+    const sessionEndTime = now.toTimeString().slice(0, 5);
+    console.log("Left at:", sessionEndTime);
+
+    const res = await updateAttendance({
+      teacherSessionStart: "00:00",
+      teacherSessionEnd: sessionEndTime,
+    });
+    if (res && res.status === 200) {
+      setShowFeedback(true);
     }
   };
 
@@ -393,23 +343,12 @@ export default function LiveClass() {
 
   return (
     <BaseLayout>
-      <TeacherHeader currentSection="Live Class" />
+      <TeacherHeader currentSection="Live Class" showBackButton={true} showBackPath="schedule" />
       <div className="flex h-screen">
         <div className="flex flex-col w-full min-h-screen px-4 sm:px-6 md:px-8">
           {/* Page Content */}
           <div className="flex flex-col lg:flex-row gap-6 flex-1 w-full max-w-screen-xl mx-auto py-0">
             <div className="flex-1 overflow-auto">
-              {/* Header */}
-              <div className="relative mb-0">
-                {showFeedback && (
-                  <Link
-                    href="/supervisor/ui/viewschedule"
-                    className="absolute top-0 right-0"
-                  >
-                    <LogOut className="w-6 h-6 text-red-500 hover:text-red-600 transition" />
-                  </Link>
-                )}
-              </div>
               {showPopup && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
                   <div className="bg-white rounded-xl shadow-lg w-[90%] max-w-md px-6 py-8 text-center relative">
@@ -446,6 +385,9 @@ export default function LiveClass() {
 
               {showFeedback ? (
                 <div className="flex flex-col xl:flex-row gap-4 items-stretch justify-center px-4 py-6 w-full">
+                  <div className="fixed top-17 right-4 z-[9999] bg-blue-100 text-blue-800 text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg shadow border border-blue-400">
+                  ℹ️ Once feedback done, class will be closed completely
+                </div>
                   <div className="flex flex-col xl:flex-row gap-6 items-stretch justify-center px-6 py-8 w-full">
                     {/* Student Info Card */}
                     <div className="bg-white dark:bg-[#3B3B3B] rounded-2xl shadow flex flex-col w-full xl:w-1/2">
@@ -535,7 +477,7 @@ export default function LiveClass() {
                         </div>
                       ))}
                       <div className="mt-4">
-                        <label className="text-sm font-medium text-[#010E30] dark:text-white mb-2 block">
+                        <label htmlFor="ytcyuc" className="text-sm font-medium text-[#010E30] dark:text-white mb-2 block">
                           Student Current Level:
                         </label>
                         <input
@@ -570,13 +512,19 @@ export default function LiveClass() {
                 <div className="p-1 sm:p-2 relative w-full flex flex-col flex-1 h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] xl:h-[85vh]">
                   {/* Student Info */}
                   <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h2 className="text-lg font-medium">
+                    <div className="mt-2">
+                        { classData?.sessionClassType === 'REGULARCLASS' ?
+                         <h2 className="text-lg font-medium">
                         {classData?.student.studentFirstName}{" "}
                         {classData?.student.studentLastName}
-                      </h2>
-                      <span className="text-sm text-gray-500">
-                        {classData?.student.course}
+                        </h2>
+                         : 
+                          <h2 className="text-lg font-medium">
+                            {classData?.sessionClassType}
+                          </h2>
+                     }
+                      <span className="text-sm  text-gray-500">
+                        {classData?.course.courseName}
                       </span>
                     </div>
 
@@ -589,7 +537,7 @@ export default function LiveClass() {
                       </label>
                       <select
                         id="attendance-select"
-                        className="w-full border p-2 rounded"
+                        className="w-full border text-xs p-2 rounded dark:text-gray-500"
                       >
                         {attendance.map((s) => {
                           let statusLabel = "❌ Not Joined";
@@ -615,6 +563,7 @@ export default function LiveClass() {
                     {roomName && (
                       <JitsiMeeting
                         roomName={roomName}
+                         userInfo={userInfo}
                         domain="meet.blackstoneinfomaticstech.com"
                         configOverwrite={{
                           startWithAudioMuted: false,
@@ -722,69 +671,49 @@ export default function LiveClass() {
                           );
 
                           // 🎥 Host/Teacher Joined
-                          externalApi.addListener(
-                            "videoConferenceJoined",
-                            async () => {
-                              const startCallTime =
-                                new Date().toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: false,
-                                });
-                              startTimeRef.current = startCallTime; // ✅ store in ref
-                              setStartTime(startCallTime);
+                        externalApi.addListener("videoConferenceJoined", async () => {
+  // 1. Store teacher join time
+  const startCallTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  startTimeRef.current = startCallTime;
 
-                              console.log(
-                                "✅ Teacher joined, call started at",
-                                startCallTime
-                              );
+  console.log("✅ Teacher joined, call started at", startCallTime);
 
-                              // ✅ Handle already-present participants (students who joined before teacher)
-                              const existingParticipants =
-                                externalApi.getParticipantsInfo();
+  // 2. Mark teacher as joined (if you're tracking them in state/backend)
+  handleJoinCall(); // your existing attendance update logic
 
-                              existingParticipants.forEach(
-                                (participant: any) => {
-                                  const parts =
-                                    participant.displayName?.split("| ID :");
-                                  const name = parts?.[0]?.trim() ?? "Unknown";
-                                  const studentId = parts?.[1]?.trim() ?? "N/A";
+  // 3. Get already-present participants (likely students who joined before teacher)
+  const existingParticipants = externalApi.getParticipantsInfo();
 
-                                  const joinTime =
-                                    new Date().toLocaleTimeString([], {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      hour12: false,
-                                    });
+  console.log("🎯 Checking existing participants:", existingParticipants);
 
-                                  console.log(
-                                    "🟡 Detected existing student in room:",
-                                    {
-                                      name,
-                                      studentId,
-                                    }
-                                  );
+  existingParticipants.forEach((participant: any) => {
+    const parts = participant.displayName?.split("| ID :");
+    const name = parts?.[0]?.trim() ?? "Unknown";
+    const studentId = parts?.[1]?.trim() ?? "N/A";
 
-                                  setAttendance((prev) =>
-                                    prev.map((a) =>
-                                      a.studentId === studentId
-                                        ? {
-                                            ...a,
-                                            id: participant.participantId,
-                                            joined: true,
-                                            joinTime,
-                                          }
-                                        : a
-                                    )
-                                  );
-                                }
-                              );
-                            }
-                          );
+    console.log("👀 Already present:", { name, studentId });
+
+    // 4. Mark only presence; don’t overwrite joinTime
+    setAttendance((prev) =>
+      prev.map((a) =>
+        a.studentId === studentId && !a.joined
+          ? {
+              ...a,
+              id: participant.participantId,
+              joined: true,
+              joinTime: a.joinTime || "", // don't overwrite if already set
+            }
+          : a
+      )
+    );
+  });
+});
+
                           externalApi.addListener("videoConferenceLeft", () => {
-                            console.log(
-                              "📞 Hangup clicked or call ended by user"
-                            );
                             handleEndCall();
                           });
                         }}
@@ -796,6 +725,10 @@ export default function LiveClass() {
                       />
                     )}
                   </div>
+                  <div className="mt-3 bg-blue-100 text-yellow-900 dark:bg-blue-900 dark:text-yellow-100 px-4 py-2 text-center rounded shadow text-sm font-medium border border-blue-300 dark:border-blue-700">
+                  ⚠ Please don’t switch the tab or leave this page. The video
+                  call will end.
+                </div>
                 </div>
               )}
             </div>
