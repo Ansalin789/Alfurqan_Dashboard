@@ -75,9 +75,10 @@ const Page = () => {
             <Link
               key={item.title}
               href={item.href}
-              className="w-full bg-white dark:bg-[#343434] rounded-2xl  shadow-md hover:shadow-lg transition-all duration-300 p-5 sm:p-6 text-center hover:border-[#576CBC] hover:border-[2.5px]"
+              className="w-full bg-white dark:bg-[#343434] rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-5 sm:p-6 text-center hover:border-[#576CBC] hover:border-[2.5px]"
             >
-              <h2 className="text-lg font-semibold text-[#0b2447] dark:text-white mb-4">
+              {/* Title */}
+              <h2 className="text-lg font-semibold text-[#0b2447] dark:text-white mb-4 break-words">
                 {item.title}
               </h2>
 
@@ -85,34 +86,46 @@ const Page = () => {
               <div className="w-24 h-24 mx-auto bg-gray-200 dark:bg-[#C4C4C4] rounded-md mb-5" />
 
               {/* Info List */}
-              <div className="text-xs text-gray-700 dark:text-gray-300 space-y-3 text-left">
+              <div className="w-full text-xs sm:text-sm text-gray-700 dark:text-gray-300 space-y-3 text-left">
                 {item.id && (
-                  <div className="flex justify-between">
-                    <span className="font-medium">{item.idLabel || "ID"}</span>
-                    <span className="text-right">{item.id}</span>
+                  <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
+                    <span className="font-medium break-words">
+                      {item.idLabel || "ID"}
+                    </span>
+                    <span className="text-right break-words">{item.id}</span>
                   </div>
                 )}
+
                 {item.duration && (
-                  <div className="flex justify-between">
-                    <span className="font-medium">Course Duration</span>
-                    <span>{item.duration}</span>
+                  <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
+                    <span className="font-medium break-words">
+                     Duration
+                    </span>
+                    <span className="text-right break-words">
+                      {item.duration}
+                    </span>
                   </div>
                 )}
+
                 {item.total && (
-                  <div className="flex justify-between">
-                    <span className="font-medium">
+                  <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
+                    <span className="font-medium break-words">
                       {item.totalLabel || "Total"}
                     </span>
-                    <span>{item.total}</span>
+                    <span className="text-right break-words">{item.total}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span className="font-medium">Creation Date</span>
-                  <span>{item.date}</span>
+
+                <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
+                  <span className="font-medium break-words">Creation Date</span>
+                  <span className="text-right break-words">{item.date}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Created By</span>
-                  <span>{item.createdBy}</span>
+
+                <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
+                  <span className="font-medium break-words">Created By</span>
+                  <span className="text-right break-words">
+                    {item.createdBy}
+                  </span>
                 </div>
               </div>
             </Link>
