@@ -8,8 +8,8 @@ type TimeFrame = "Last Week" | "Last Month" | "Last Year";
 interface ClassRecord {
   date: string;
   classCompleted: number;
-  classPending: number;
-  classReschedule: number;
+  classScheduled: number;
+  classRescheduled: number;
   classCancelled: number;
 }
 
@@ -31,64 +31,55 @@ const getDateRangeParam = (timeFrame: TimeFrame) => {
 };
 
 export default function TotalClasses() {
-  const [timeFrame, setTimeFrame] = useState<TimeFrame>("Last Week");
+  const [timeFrame, setTimeFrame] = useState<TimeFrame>("Last Month");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [classData, setClassData] = useState<ChartItem[]>([]);
+  const [totalClasses, setTotalClasses] = useState(0);
 
   const fetchClassData = async (token: string, range: TimeFrame) => {
     try {
       const res = await fetch(
-        `https://api.blackstoneinfomaticstech.com/dashboard/admin/totalclass?dateRange=${getDateRangeParam(range)}`,
+        `http://localhost:5001/dashboard/admin/totalclass?dateRange=${getDateRangeParam(range)}`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
   
-      const data: ClassRecord[] = await res.json();
-  
-      const totals = data.reduce(
-        (acc, item) => {
-          acc.classCompleted += item.classCompleted;
-          acc.classPending += item.classPending;
-          acc.classReschedule += item.classReschedule;
-          acc.classCancelled += item.classCancelled;
-          return acc;
-        },
-        {
-          classCompleted: 0,
-          classPending: 0,
-          classReschedule: 0,
-          classCancelled: 0,
-        }
-      );
+      const totals: ClassRecord = await res.json();
+      console.log("Fetched class data:", totals); // Log the fetched data
+
   
       const chartData: ChartItem[] = [
-        { type: "Completed", count: totals.classCompleted, color: "bg-gray-900" },
-        { type: "Pending", count: totals.classPending, color: "bg-blue-300" },
-        { type: "Rescheduled", count: totals.classReschedule, color: "bg-purple-500" },
-        { type: "Cancelled", count: totals.classCancelled, color: "bg-blue-500" },
+        { type: "Completed", count: totals.classCompleted, color: "#4CAF50" },
+        { type: "Rescheduled", count: totals.classRescheduled, color: "#9B82FF" },
+        { type: "Scheduled", count: totals.classScheduled, color: "#FBC02D" },
+        { type: "Cancelled", count: totals.classCancelled, color: "#F44336" },
       ];
   
       setClassData(chartData);
+      setTotalClasses(
+        totals.classCompleted +
+          totals.classScheduled +
+          totals.classRescheduled +
+          totals.classCancelled
+      );
     } catch (error) {
       console.error("Failed to fetch class data:", error);
     }
   };
   
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('AdminAuthToken');
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("AdminAuthToken");
       if (token) {
         fetchClassData(token, timeFrame);
-      } else {
-        console.log("No auth token found.");
       }
     }
   }, [timeFrame]);
-  
 
   const maxCount = Math.max(...classData.map((item) => item.count), 1);
 
@@ -101,79 +92,171 @@ export default function TotalClasses() {
     setIsDropdownOpen(false);
   };
 
+  // Arrange items into left and right columns
+  const leftItems = classData.filter(
+    (item) => item.type === "Rescheduled" || item.type === "Scheduled"
+  );
+  const rightItems = classData.filter(
+    (item) => item.type === "Completed" || item.type === "Cancelled"
+  );
+
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 w-full">
+    <div className="bg-[#fff] rounded-xl p-5 shadow-sm w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-semibold text-gray-800">Total Classes</h2>
+      <div className="flex items-center justify-between ">
+        <h2 className="text-sm font-semibold text-gray-800">Total Classes</h2>
         <div className="relative">
           <button
             onClick={toggleDropdown}
-            className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-200 rounded-md px-3 py-1"
+            className="flex items-center text-xs font-medium text-gray-700 border border-gray-300 rounded px-3 py-1 bg-white"
           >
-            {timeFrame} <ChevronDown className="ml-1 h-4 w-4" />
+            {timeFrame}
+            <ChevronDown className="ml-1 h-4 w-4" />
           </button>
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg z-10">
-              <div className="py-1">
-                {(["Last Week", "Last Month", "Last Year"] as TimeFrame[]).map(
-                  (option) => (
-                    <button
-                      key={option}
-                      onClick={() => selectTimeFrame(option)}
-                      className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
-                    >
-                      {option}
-                    </button>
-                  )
-                )}
-              </div>
+            <div className="absolute right-0 mt-2 w-36 bg-[#EFEFEF] color-[#747474] rounded shadow-lg z-10">
+              {(["Last Week", "Last Month", "Last Year"] as TimeFrame[]).map(
+                (option) => (
+                  <button
+                    key={option}
+                    onClick={() => selectTimeFrame(option)}
+                    className="block w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-100"
+                  >
+                    {option}
+                  </button>
+                )
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Chart Section */}
-      <div className="h-48 flex">
-        {/* Y-Axis Labels */}
-        <div className="flex flex-col justify-between text-gray-700 text-xs pl-1 pr-2">
-          {Array.from({ length: 5 }, (_, i) =>
-            Math.round((maxCount / 4) * (4 - i))
-          ).map((label, index) => (
-            <div key={index} className="h-6 flex items-center justify-end">
-              {label}
-            </div>
-          ))}
-        </div>
+      {/* Main Content */}
+      <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+        {/* Chart Container with Y-axis */}
+        <div className="flex items-end justify-center gap-2 h-56">
+          {/* Y-axis labels */}
+          <div className="flex flex-col justify-between h-48 pr-2 text-[11px] text-gray-500">
+            {[300, 250, 200, 150, 100, 50, 0].map((label) => (
+              <div key={label} className="h-full flex items-center justify-end">
+                {label}
+              </div>
+            ))}
+          </div>
 
-        {/* Bar Chart */}
-        <div className="flex-1 flex flex-col">
-          <div className="flex-1 flex items-end justify-between sm:justify-center sm:gap-x-3 md:gap-x-8 lg:gap-x-10 h-full pl-4">
+          {/* Bar Chart */}
+          <div className="flex items-end justify-center gap-6 h-46">
             {classData.map((item) => (
-              <div
-                key={item.type}
-                className="flex flex-col items-center h-full"
-                style={{ minWidth: "40px" }}
-              >
-                {/* Bar container */}
-                <div className="flex-1 w-full flex flex-col justify-end items-center">
-                  {/* Actual bar */}
+              <div key={item.type} className="flex flex-col items-center">
+                {/* Bar background container */}
+                <div className="w-8 md:w-8 h-48 bg-gray-200 rounded-lg flex flex-col justify-end overflow-hidden">
+                  {/* Fill bar */}
                   <div
-                    className={`w-8 sm:w-10 md:w-10 rounded-t-md ${item.color}`}
+                    className="w-full rounded-lg transition-all duration-500"
                     style={{
-                      height: `${(item.count / maxCount) * 100}%`,
-                      minHeight: "2px",
+                      height: `${(item.count / 300) * 100}%`, // Use 300 as max for fixed scale
+                      backgroundColor: item.color,
                     }}
                     title={`${item.count} ${item.type}`}
                   ></div>
                 </div>
-
-                {/* Bar Label */}
-                <span className="text-xs text-gray-700 mt-2 text-center">
-                  {item.type}
-                </span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Total + breakdown */}
+        <div className="flex flex-col items-center gap-10 w-full md:w-auto">
+          {/* Total Classes Box */}
+          <div className="bg-[#7D8597] text-white rounded-md mt-16 px-4 py-2 font-medium text-sm text-center w-full md:w-48">
+            Total Classes - {totalClasses}
+          </div>
+
+          {/* Two-column breakdown */}
+          <div className="grid grid-cols-2 gap-4 w-full md:w-48">
+            {/* Left column */}
+            <div className="flex flex-col items-center gap-3">
+  {/* Completed */}
+  <div className="flex flex-col items-center">
+    <div className="flex items-center gap-1">
+      <span
+        className="inline-block w-3 h-3 rounded"
+        style={{ backgroundColor: "#79BA89" }}
+      ></span>
+      <span className="text-gray-600 text-xs">Completed</span>
+    </div>
+    <span className="font-semibold mr-11 text-gray-900 text-xs">
+      {classData.find((item) => item.type === "Completed")?.count}
+    </span>
+  </div>
+
+  {/* Pending */}
+  <div className="flex flex-col items-center">
+    <div className="flex items-center gap-1">
+      <span
+        className="inline-block w-3 h-3 rounded"
+        style={{ backgroundColor: "#F9C479" }}
+      ></span>
+      <span className="text-gray-600 mr-4 text-xs">Pending</span>
+    </div>
+    <span className="font-semibold mr-11 text-gray-900 text-xs">
+      {classData.find((item) => item.type === "Scheduled")?.count}
+    </span>
+  </div>
+</div>
+
+            {/* Right column */}
+            <div className="flex flex-col items-center gap-3">
+  {/* Completed */}
+  <div className="flex flex-col items-center">
+    <div className="flex items-center gap-1">
+      <span
+        className="inline-block w-3 h-3 rounded"
+        style={{ backgroundColor: "#968AEA" }}
+      ></span>
+      <span className="text-gray-600 text-xs">Rescheduled</span>
+    </div>
+    <span className="font-semibold mr-12 text-gray-900 text-xs">
+      {classData.find((item) => item.type === "Rescheduled")?.count}
+    </span>
+  </div>
+
+  {/* Pending */}
+  <div className="flex flex-col items-center">
+    <div className="flex items-center gap-1">
+      <span
+        className="inline-block w-3 h-3 rounded"
+        style={{ backgroundColor: "#F87F7F" }}
+      ></span>
+      <span className="text-gray-600 mr-4 text-xs">Cancelled</span>
+    </div>
+    <span className="font-semibold mr-12 text-gray-900 text-xs">
+      {classData.find((item) => item.type === "Cancelled")?.count}
+    </span>
+  </div>
+</div>
+
+            {/* <div className="flex flex-col items-center gap-3">
+              {classData
+                .filter(
+                  (item) =>
+                    item.type === "Rescheduled" || item.type === "Cancelled"
+                )
+                .map((item) => (
+                  <div key={item.type} className="flex flex-col items-center">
+                    <div className="flex items-center gap-1">
+                      <span
+                        className="inline-block w-3 h-3 rounded"
+                        style={{ backgroundColor: item.color }}
+                      ></span>
+                      <span className="text-gray-600 text-xs">{item.type}</span>
+                    </div>
+                    <span className="font-semibold mr-10 text-gray-900 text-xs">
+                      {item.count}
+                    </span>
+                  </div>
+                ))}
+            </div> */}
           </div>
         </div>
       </div>

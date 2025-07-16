@@ -121,8 +121,8 @@ const StudentTeacherStaff = () => {
           </div>
 
           {/* Responsive Pie Chart */}
-          <div className="relative mt-6 flex justify-center">
-            <PieChart width={160} height={100} style={{ display: 'block', margin: '0 auto' }}>
+          <div className="relative mt-6">
+            <PieChart width={80} height={50}>
               <Tooltip content={<CustomTooltip />} />
               {/* Male segment */}
               <Pie
