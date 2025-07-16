@@ -70,41 +70,42 @@ const Page = () => {
     <BaseLayout4>
       <SupervisorHeader currentSection="Course" />
       <div className="min-h-screen w-full px-4 sm:px-6 lg:px-10 py-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 place-items-center">
-          {cardData.map((item, idx) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+          {cardData.map((item) => (
             <Link
               key={item.title}
               href={item.href}
-              className="w-full max-w-[360px] bg-white dark:bg-[#1D1D1D] rounded-xl shadow-md hover:shadow-lg transition duration-300 p-6 text-center"
+              className="w-full bg-white dark:bg-[#343434] rounded-2xl  shadow-md hover:shadow-lg transition-all duration-300 p-5 sm:p-6 text-center hover:border-[#576CBC] hover:border-[2.5px]"
             >
-              <h2 className="text-lg font-bold text-[#0b2447] dark:text-white mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-[#0b2447] dark:text-white mb-4">
                 {item.title}
               </h2>
 
               {/* Image Placeholder */}
-              <div className="w-28 h-28 mx-auto bg-gray-300 rounded-lg mb-4" />
-
-              {/* Description */}
-              <p className="text-xs text-gray-600 dark:text-gray-300 mb-6 leading-snug">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam
-              </p>
+              <div className="w-24 h-24 sm:w-28 sm:h-28 mx-auto bg-gray-200 dark:bg-[#C4C4C4] rounded-md mb-5" />
 
               {/* Info List */}
               <div className="text-xs text-gray-700 dark:text-gray-300 space-y-3 text-left">
-                <div className="flex justify-between">
-                  <span className="font-medium">Course ID</span>
-                  <span>{item.id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Course Duration</span>
-                  <span>{item.duration}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Number of Levels</span>
-                  <span>{item.total}</span>
-                </div>
+                {item.id && (
+                  <div className="flex justify-between">
+                    <span className="font-medium">{item.idLabel || "ID"}</span>
+                    <span className="text-right">{item.id}</span>
+                  </div>
+                )}
+                {item.duration && (
+                  <div className="flex justify-between">
+                    <span className="font-medium">Course Duration</span>
+                    <span>{item.duration}</span>
+                  </div>
+                )}
+                {item.total && (
+                  <div className="flex justify-between">
+                    <span className="font-medium">
+                      {item.totalLabel || "Total"}
+                    </span>
+                    <span>{item.total}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="font-medium">Creation Date</span>
                   <span>{item.date}</span>

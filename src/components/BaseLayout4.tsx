@@ -41,12 +41,12 @@ export default function BaseLayout4({ children }: Props) {
         className="flex"
       >
         {/* Sidebar - only visible from md and up */}
-        <div className="hidden md:block w-[200px] bg-[#012A4A]">
+        <div className="hidden md:block w-[240px] bg-[#012A4A]">
           <Sidebar4 />
         </div>
 
         {/* Main content */}
-        <div className="flex-1 overflow-auto py-2 px-4 scrollbar-none">
+        <div className="flex-1 overflow-auto py-2 px-4 bg-[#E4E7F4]  dark:bg-[#242424] scrollbar-none">
           {children}
         </div>
       </div>

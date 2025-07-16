@@ -280,7 +280,7 @@ const Page = () => {
           {currentPage === 1 && (
             <button
               onClick={() => setShowForm(true)}
-              className="w-full max-w-xs bg-white dark:bg-[#343434] border border-gray-300 dark:border-[#444] rounded-xl shadow hover:shadow-md transition flex flex-col items-center justify-center p-4 aspect-[4.8/5]"
+              className="w-full max-w-xs bg-white dark:bg-[#343434] border hover:border-[#576CBC] hover:border-[2px] border-gray-300 dark:border-[#444] rounded-xl shadow hover:shadow-md transition flex flex-col items-center justify-center p-4 aspect-[4.8/5]"
             >
               <div className="w-14 h-14 bg-[#0b2447] dark:bg-[#C4C4C4] rounded-full flex items-center justify-center">
                 <Plus color="white" size={28} />
@@ -304,6 +304,7 @@ const Page = () => {
                   title: course.courseTitle,
                   courseId: course.courseId,
                   maxLevels: course.level.toString(),
+                  d:course.courseDuration,
                 },
               }}
               className="w-full max-w-xs"
@@ -347,7 +348,7 @@ const Page = () => {
             onClick={() => setCurrentPage(page)}
             className={`w-8 h-8 rounded-md border flex items-center justify-center text-sm transition ${
               page === currentPage
-                ? "bg-[#0b2447] text-white dark:bg-[#939393]"
+                ? "bg-[#FAFAFB] text-[#203F78] border-[#203F78] dark:bg-[#939393]"
                 : "bg-white dark:bg-[#565656] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#939393]"
             }`}
           >
@@ -461,7 +462,7 @@ const CourseCard = ({
   createdBy,
 }: Course) => {
   return (
-    <div className="w-full bg-white dark:bg-[#343434] rounded-xl border border-gray-300 dark:border-[#444] shadow hover:shadow-md transition flex flex-col justify-between p-4 aspect-[4.8/5]">
+    <div className="w-full bg-white dark:bg-[#343434] rounded-xl border hover:border-[#576CBC] hover:border-[2px] border-gray-300 dark:border-[#444] shadow hover:shadow-md transition flex flex-col justify-between p-4 aspect-[4.8/5]">
       {/* Title */}
       <h2 className="text-sm sm:text-base font-bold text-[#0b2447] dark:text-white mb-2 text-center">
         {courseTitle}
