@@ -77,12 +77,12 @@ const Page = () => {
               href={item.href}
               className="w-full bg-white dark:bg-[#343434] rounded-2xl  shadow-md hover:shadow-lg transition-all duration-300 p-5 sm:p-6 text-center hover:border-[#576CBC] hover:border-[2.5px]"
             >
-              <h2 className="text-lg sm:text-xl font-semibold text-[#0b2447] dark:text-white mb-4">
+              <h2 className="text-lg font-semibold text-[#0b2447] dark:text-white mb-4">
                 {item.title}
               </h2>
 
               {/* Image Placeholder */}
-              <div className="w-24 h-24 sm:w-28 sm:h-28 mx-auto bg-gray-200 dark:bg-[#C4C4C4] rounded-md mb-5" />
+              <div className="w-24 h-24 mx-auto bg-gray-200 dark:bg-[#C4C4C4] rounded-md mb-5" />
 
               {/* Info List */}
               <div className="text-xs text-gray-700 dark:text-gray-300 space-y-3 text-left">

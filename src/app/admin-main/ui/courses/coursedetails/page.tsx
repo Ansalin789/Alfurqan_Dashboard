@@ -260,7 +260,7 @@ const Page = () => {
           }
         }
   };
-  const itemsPerPage = 8;
+  const itemsPerPage = 4;
 
   const paginatedCourses = courses.slice(
     (currentPage - 1) * itemsPerPage,
@@ -280,20 +280,20 @@ const Page = () => {
           {currentPage === 1 && (
             <button
               onClick={() => setShowForm(true)}
-              className="w-full max-w-xs bg-white dark:bg-[#343434] border hover:border-[#576CBC] hover:border-[2px] border-gray-300 dark:border-[#444] rounded-xl shadow hover:shadow-md transition flex flex-col items-center justify-center p-4 aspect-[4.8/5]"
+              className="w-full  bg-white dark:bg-[#343434] border hover:border-[#576CBC] hover:border-[2px] border-gray-300 dark:border-[#444] rounded-xl shadow hover:shadow-md transition flex flex-col items-center justify-center p-4 aspect-[4.8/5]"
             >
-              <div className="w-14 h-14 bg-[#0b2447] dark:bg-[#C4C4C4] rounded-full flex items-center justify-center">
+              <div className="w-14 h-14 bg-[#576CBC] dark:bg-[#C4C4C4] rounded-full flex items-center justify-center">
                 <Plus color="white" size={28} />
               </div>
-              <p className="mt-3 text-sm font-medium text-gray-700 dark:text-gray-200 text-center">
+              <button  className="mt-5 px-6 py-2 bg-[#576CBC] text-white  text-xs justify-end font-medium rounded-md">
                 Add New Course
-              </p>
+              </button>
             </button>
           )}
 
           {/* Course Cards */}
           {(currentPage === 1
-            ? paginatedCourses.slice(0, 7)
+            ? paginatedCourses.slice(0, 3)
             : paginatedCourses
           ).map((course) => (
             <Link
@@ -496,7 +496,7 @@ const CourseCard = ({
         </div>
         <div className="flex justify-between">
           <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">Date</span>
-          <span className="text-[#322121cc] dark:text-[#DADADACC]">{createdDate}</span>
+          <span className="text-[#322121cc] dark:text-[#DADADACC]">{createdDate.toString()}</span>
         </div>
         <div className="flex justify-between">
           <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">By</span>
