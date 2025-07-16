@@ -245,7 +245,7 @@ const Page = () => {
           {currentPage === 1 && (
             <button
               onClick={() => setShowForm(true)}
-              className="w-full  bg-white dark:bg-[#343434] border border-gray-300 dark:border-[#444]  hover:border-[#576CBC] hover:border-[2px] rounded-xl shadow hover:shadow-md transition flex flex-col items-center justify-center p-4 aspect-[4.8/5]"
+              className="w-full h-full bg-white dark:bg-[#343434] border border-gray-300 dark:border-[#444]  hover:border-[#576CBC] hover:border-[2px] rounded-xl shadow hover:shadow-md transition flex flex-col items-center justify-center p-4 aspect-[4.8/5]"
             >
               <div className="w-14 h-14 bg-[#576CBC] dark:bg-[#C4C4C4] rounded-full flex items-center justify-center">
                 <Plus color="white" size={28} />
@@ -259,8 +259,8 @@ const Page = () => {
           {(currentPage === 1
             ? paginatedCourses.slice(0, 3)
             : paginatedCourses
-          ).map((course) => (
-            <div key={course.level} className="w-full max-w-xs">
+          ).map((course,index) => (
+            <div key={course.level || `level ${index}`} className="w-full max-w-xs">
               <CourseCard {...course} />
             </div>
           ))}
