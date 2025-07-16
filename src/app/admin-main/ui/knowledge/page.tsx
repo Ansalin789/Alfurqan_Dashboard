@@ -456,7 +456,7 @@ export default function KnowledgeBase() {
                 />
               </div>
               <button
-                className="mt-5 px-6 py-1.5 bg-[#576CBC] text-white  text-xs justify-end font-medium rounded-md"
+                className="mt-5 px-6 py-1.5 bg-[#576CBC] text-white text-xs sm:text-[11px] justify-end font-medium rounded-md"
                 onClick={() => setShowModal(true)}
               >
                 Add New
@@ -746,94 +746,99 @@ export default function KnowledgeBase() {
         </h3>
 
         {/* Videos */}
-        <div className=" mt-4 bg-[#F5F5F5] dark:bg-[#3B3B3B] rounded-xl overflow-y-auto h-[380px] w-full scrollbar-none">
-          <div className="flex flex-col md:flex-row items-start dark:bg-[#343434] bg-[#FAFAFB] rounded-xl md:items-center px-4 relative gap-4 md:gap-0">
-            <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-300 justify-start py-3 px-4">
-              <Search className="w-5 h-5 text-gray-400 dark:text-gray-300" />
-              <input
-                type="text"
-                placeholder="Search by Course Name"
-                value={searchQuery1}
-                onChange={(e) => setSearchQuery1(e.target.value)}
-                className="w-full text-sm outline-none bg-transparent placeholder-gray-400 dark:placeholder-gray-500 text-gray-800 dark:text-gray-100"
-              />
-            </div>
+       <div className="mt-4 bg-[#F5F5F5] dark:bg-[#3B3B3B] rounded-xl overflow-y-auto h-[45vh] w-full scrollbar-none">
+  {/* Top bar (search + filter) */}
+  <div className="flex flex-col md:flex-row items-start dark:bg-[#343434] bg-[#FAFAFB] rounded-xl md:items-center px-4 gap-4">
+    <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-300 justify-start py-3 px-4">
+      <Search className="w-5 h-5 text-gray-400 dark:text-gray-300" />
+      <input
+        type="text"
+        placeholder="Search by Course Name"
+        value={searchQuery1}
+        onChange={(e) => setSearchQuery1(e.target.value)}
+        className="w-full text-sm outline-none bg-transparent placeholder-gray-400 dark:placeholder-gray-500 text-gray-800 dark:text-gray-100"
+      />
+    </div>
 
-            <button
-              onClick={() => setShowFilter1(true)}
-              className="flex-1 flex items-center gap-2 text-sm text-gray-400 dark:text-gray-300 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
-            >
-              <MdTune className="w-5 h-5" />
-              <span>Filter</span>
-            </button>
+    <button
+      onClick={() => setShowFilter1(true)}
+      className="flex-1 flex items-center gap-2 text-sm text-gray-400 dark:text-gray-300 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
+    >
+      <MdTune className="w-5 h-5" />
+      <span>Filter</span>
+    </button>
 
-            <div className="flex-1 flex items-center text-sm text-gray-500 dark:text-gray-300 py-3 px-4 justify-start">
-              <span>Showing {videoFiles.length} entries</span>
-            </div>
-          </div>
-         <div className="flex flex-col lg:flex-row w-full gap-4 px-5 py-4 overflow-x-auto">
-            {/* Add New Card (fixed left) */}
-            <div className="flex-shrink-0 w-full sm:w-[290px] lg:w-[390px] h-[300px] bg-white dark:bg-[#343434] rounded-xl border border-gray-200 dark:border-[#555] flex flex-col items-center justify-center  hover:border-[#576CBC] text-center transition-all duration-300 shadow-md hover:shadow-lg">
-              <div className="flex flex-col items-center">
-                <div className=" flex items-center justify-center mb-4">
-                  <img
-                    src="/assets/images/Vector.svg"
-                    alt="Add"
-                    className="w-24 h-24 object-contain dark:invert dark:brightness-500"
-                  />
-                </div>
-                <button
-                  onClick={() => setShowUploadModal(true)}
-                  disabled={!dashboardRead}
-                  className="bg-[#576CBC] text-white px-6 py-1.5 rounded-md text-sm"
-                >
-                  Add New
-                </button>
+    <div className="flex-1 flex items-center text-sm text-gray-500 dark:text-gray-300 py-3 px-4 justify-start">
+      <span>Showing {videoFiles.length} entries</span>
+    </div>
+  </div>
+
+  {/* Scrollable row of cards */}
+  <div className="flex flex-col lg:flex-row w-full gap-4 px-5 py-4 overflow-x-auto">
+    {/* Add New Card */}
+    <div className="flex-shrink-0 w-[80vw] sm:w-[50vw] md:w-[40vw] lg:w-[30vw] xl:w-[25vw] h-[35vh] bg-white dark:bg-[#343434] rounded-xl border border-gray-200 dark:border-[#555] flex flex-col items-center justify-center hover:border-[#576CBC] text-center transition-all duration-300 shadow-md hover:shadow-lg">
+      <div className="flex flex-col items-center">
+        <div className="flex items-center justify-center mb-4">
+          <img
+            src="/assets/images/Vector.svg"
+            alt="Add"
+            className="w-20 h-20 object-contain dark:invert dark:brightness-500"
+          />
+        </div>
+        <button
+          onClick={() => setShowUploadModal(true)}
+          disabled={!dashboardRead}
+          className="bg-[#576CBC] text-white px-6 py-1.5 rounded-md text-sm"
+        >
+          Add New
+        </button>
+      </div>
+    </div>
+
+    {/* Video Cards */}
+    <div className="w-full overflow-x-auto scrollbar-none">
+      <div className="grid grid-flow-col auto-cols-[80vw] sm:auto-cols-[50vw] md:auto-cols-[40vw] lg:auto-cols-[30vw] xl:auto-cols-[25vw] gap-4 ">
+        {filteredClass1.map((vid, index) => (
+          <button
+            onClick={() =>
+              setSelectedVideo({
+                title: vid.courseName,
+                uploadedFile: vid.uploadedFile,
+              })
+            }
+            key={vid._id || `video-${index}`}
+            className="h-[35vh] bg-white dark:bg-[#343434] rounded-2xl border-2 border-gray-200 dark:border-[#555]  shadow-sm  hover:border-[#576CBC] text-center transition-all duration-300 hover:shadow-lg"
+          >
+            <div className="relative h-45 w-full overflow-hidden">
+  <img
+    src="/assets/images/profilePicture.svg"
+    alt="Video Thumbnail"
+    className="w-full  object-cover rounded-t-2xl"
+  />
+</div>
+
+
+            {/* Info */}
+            <div className="p-3 text-center text-xs h-[calc(100%-10rem)] flex flex-col">
+              <div>
+                <h4 className="font-semibold text-sm text-[#002b4d] dark:text-gray-300">
+                  {vid.courseName} | {vid.subjectTitle}
+                </h4>
+                <p className="text-gray-600 text-xs dark:text-gray-300 mt-1">
+                  {new Date(vid.createdDate).toLocaleDateString()}
+                </p>
               </div>
+              <p className="text-gray-500 dark:text-gray-300 text-[11px] mt-1 leading-snug">
+                Note: Recorded classes will remain available for a maximum of
+                three months from the class date.
+              </p>
             </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
 
-            {/* Scrollable Grid of Cards */}
-            <div className="w-full overflow-x-auto scrollbar-none">
-               <div className="grid grid-flow-col auto-cols-[250px] sm:auto-cols-[300px] md:auto-cols-[350px] lg:auto-cols-[400px] gap-4 pb-2">
-                {filteredClass1.map((vid,index) => (
-                  <button
-                    onClick={() =>
-                      setSelectedVideo({
-                        title: vid.courseName,
-                        uploadedFile: vid.uploadedFile,
-                      })
-                    }
-                    key={vid._id || `video-${index}`}
-                    className="h-[300px] bg-white dark:bg-[#343434] rounded-xl border-2 border-gray-200 dark:border-[#555]  overflow-hidden shadow-sm relative hover:border-[#576CBC] text-center  transition-all duration-300  hover:shadow-lg"
-                  >
-                    {/* Thumbnail */}
-                    <div className="relative h-45 w-full overflow-hidden">
-                      <img
-                        src="/assets/images/profilePicture.svg"
-                        alt="Video Thumbnail"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    {/* Info */}
-                    <div className="p-3 text-center text-xs h-[calc(100%-10rem)] flex flex-col ">
-                      <div>
-                        <h4 className="font-semibold text-sm text-[#002b4d]  dark:text-gray-300">
-                          {vid.courseName} | {vid.subjectTitle}
-                        </h4>
-                        <p className="text-gray-600 text-xs dark:text-gray-300 mt-1">
-                          {new Date(vid.createdDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <p className="text-gray-500 dark:text-gray-300 text-[11px] mt-1 leading-snug">
-                        Note: Recorded classes will remain available for a
-                        maximum of three months from the class date.
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
 
           {showFilter1 && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -1034,14 +1039,14 @@ export default function KnowledgeBase() {
           {/* Video Playback Modal */}
           {selectedVideo && (
             <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-              <div className="bg-white rounded-xl p-6 max-w-3xl  h-[600px] w-full shadow-lg relative">
+              <div className="bg-white rounded-xl p-6 max-w-3xl dark:bg-[#1D1D1D] h-[600px] w-full shadow-lg relative">
                 <button
                   onClick={() => setSelectedVideo(null)}
-                  className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
+                  className="absolute top-2 right-2 text-gray-700 hover:text-black dark:hover:text-blue-900 text-xl"
                 >
                   &times;
                 </button>
-                <h3 className="text-lg font-semibold text-[#002b4d] mb-4">
+                <h3 className="text-lg font-semibold text-[#002b4d] dark:text-[#ffff] mb-4">
                   Course
                 </h3>
                 <video

@@ -83,16 +83,16 @@ const Page = () => {
               </h2>
 
               {/* Image Placeholder */}
-              <div className="w-24 h-24 mx-auto bg-gray-200 dark:bg-[#C4C4C4] rounded-md mb-5" />
+              <div className="w-24 h-24 mx-auto sm:w-20 sm:h-20 bg-gray-200 dark:bg-[#C4C4C4] rounded-md mb-5" />
 
               {/* Info List */}
-              <div className="w-full text-xs sm:text-sm text-gray-700 dark:text-gray-300 space-y-3 text-left">
+              <div className="w-full text-xs sm:text-[11px] text-gray-700 dark:text-gray-300 space-y-3 text-left">
                 {item.id && (
                   <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
                     <span className="font-medium break-words">
                       {item.idLabel || "ID"}
                     </span>
-                    <span className="text-right break-words">{item.id}</span>
+                    <span className="text-right break-words font-normal">{item.id}</span>
                   </div>
                 )}
 
@@ -101,7 +101,7 @@ const Page = () => {
                     <span className="font-medium break-words">
                      Duration
                     </span>
-                    <span className="text-right break-words">
+                    <span className="text-right break-words font-normal">
                       {item.duration}
                     </span>
                   </div>
@@ -112,18 +112,18 @@ const Page = () => {
                     <span className="font-medium break-words">
                       {item.totalLabel || "Total"}
                     </span>
-                    <span className="text-right break-words">{item.total}</span>
+                    <span className="text-right break-words font-normal">{item.total}</span>
                   </div>
                 )}
 
                 <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
                   <span className="font-medium break-words">Creation Date</span>
-                  <span className="text-right break-words">{item.date}</span>
+                  <span className="text-right break-words font-normal">{item.date}</span>
                 </div>
 
                 <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
                   <span className="font-medium break-words">Created By</span>
-                  <span className="text-right break-words">
+                  <span className="text-right break-words font-normal">
                     {item.createdBy}
                   </span>
                 </div>
