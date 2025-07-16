@@ -6,6 +6,8 @@ import { FaSyncAlt, FaFilter, FaEdit } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Dashboard from "@/app/admin-main/components/trailmanagementcard";
 import BaseLayout4 from "@/components/BaseLayout4";
+import { Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
 // Define the return type of the getAllUsers function
 
 export interface TransformedUser {
@@ -42,7 +44,7 @@ export interface TransformedUser {
   };
   classDay: string[]; // e.g., ["Monday", "Tuesday"]
   startTime: string[]; // e.g., ["09:00", "09:00"]
-  endTime: string[];   // e.g., ["09:30", "09:30"]
+  endTime: string[]; // e.g., ["09:30", "09:30"]
   isLanguageLevel: boolean;
   languageLevel: string;
   isReadingLevel: boolean;
@@ -52,7 +54,7 @@ export interface TransformedUser {
   hours: number;
   planTotalPrice: number;
   classStartDate: string; // ISO Date string
-  classEndDate: string;   // ISO Date string
+  classEndDate: string; // ISO Date string
   classStartTime: string;
   classEndTime: string;
   accomplishmentTime: string;
@@ -84,7 +86,6 @@ export interface TransformedUser {
   __v: number;
 }
 
-
 const TrailManagement = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -95,37 +96,38 @@ const TrailManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-
   console.log(setItemsPerPage);
 
   const router = useRouter();
- useEffect(() => {
-   Modal.setAppElement("body");
-   const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+  useEffect(() => {
+    Modal.setAppElement("body");
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
     if (token) {
       getAllUsers(token); // call your function with token
     } else {
       console.log("No auth token found.");
     }
   }, []);
-  
+
   const getAllUsers = async (token: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass",
+      const response = await fetch(
+        "https://api.blackstoneinfomaticstech.com/alltrialclass",
         {
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
-      
       );
       if (!response.ok) {
         throw new Error("Failed to fetch users");
@@ -145,7 +147,6 @@ const TrailManagement = () => {
     }
   };
 
- 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setSearchTerm(query);
@@ -186,146 +187,168 @@ const TrailManagement = () => {
         <div className="p-2">
           <Dashboard />
         </div>
-        <div className="w-full max-w-[1300px] mx-auto px-4">
+        <div className="w-full h-[350px] overflow-y-scroll scrollbar-none bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
           <div className="flex justify-between items-center p-2 -ml-2">
-            <div className="flex flex-1 mb-4 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
-              <div className="flex ">
+            <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+              <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search here..."
-                  className="border rounded-lg px-2 text-[12px] mr-4 shadow"
+                  className="bg-transparent outline-none text-[15px] w-52 py-3"
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                 />
-                <button
-                  onClick={() => setIsFilterModalOpen(true)}
-                  className="flex items-center bg-gray-200 p-2 rounded-lg shadow text-[12px]"
-                >
-                  <FaFilter className="mr-2" /> Filter
-                </button>
               </div>
-              <div className="flex">
-                <select className="border rounded-lg p-2 shadow text-[12px] appearance-none  bg-white">
-                  <option>Duration: Last month</option>
-                  <option>Duration: Last week</option>
-                  <option>Duration: Last year</option>
-                </select>
+              <div
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 ml-48 cursor-pointer"
+                onClick={() => setIsFilterModalOpen(true)}
+              >
+                <MdTune className="w-4 h-4" />
+                <span>Filter</span>
+              </div>
+              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                <span className="text-left ml-60 ">
+                  Showing {filteredUsers.length === 0 ? 0 : 1} to{" "}
+                  {Math.min(5, filteredUsers.length)} of {filteredUsers.length}
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] h-full  flex flex-col justify-between">
-            <table className="min-w-full table-fixed bg-white shadow rounded-lg">
-              <thead className="border-b-[1px] border-[#1C3557] text-[10px] font-semibold">
+          <div className="w-full h-[350px] overflow-y-scroll scrollbar-none bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+            <table className="w-full table-fixed">
+              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                 <tr>
                   {[
-                    "Trial ID",
-                    "Student Name",
-                    "Mobile",
-                    "Country",
-                    "Course",
-                    "Preferred Teacher",
-                    "Assigned Teacher",
-                    "Time",
-                    "Class Status",
-                    "Payment Status",
-                    "Student Status",
+                    { label: "Trial ID", width: "w-[10%]" },
+                    { label: "Student Name", width: "w-[12%]" },
+                    { label: "Mobile", width: "w-[10%]" },
+                    { label: "Country", width: "w-[8%]" },
+                    { label: "Course", width: "w-[10%]" },
+                    { label: "Preferred Teacher", width: "w-[10%]" },
+                    { label: "Assigned Teacher", width: "w-[10%]" },
+                    { label: "Date", width: "w-[10%]" },
+                    { label: "Time", width: "w-[10%]" },
+                    { label: "Class Status", width: "w-[8%]" },
+                    { label: "Student Status", width: "w-[8%]" },
+                    { label: "Payment Status", width: "w-[10%]" },
                   ].map((header, i) => (
                     <th
-                      key={i}
-                      className="p-3 text-center w-[8.33%] break-words"
+                      key={header.label}
+                      className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
                     >
-                      {header}
+                      {header.label}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="text-[9px] font-medium">
-                      {filteredItems.length > 0 ? (
-                        filteredItems.slice(0, 5).map((item, index) => (
-                          <tr
-                            key={item._id}
-                            className={
-                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                            }
-                          >
-                            <td className="p-3 text-center break-words">
-                              {item._id}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.student.studentFirstName}{" "}
-                              {item.student.studentLastName}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.student.studentPhone}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.student.studentCountry}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.student.learningInterest}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.student.preferredTeacher}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.assignedTeacher}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.classStartTime}
-                            </td>
-                            {/* Trial Class Status */}
-                            <td className="p-3 text-center break-words">
-                              <span
-                                className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                                  item.trialClassStatus === "COMPLETED"
-                                    ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                    : "bg-green-100 text-green-800 border border-green-900 px-2"
-                                }`}
-                              >
-                                {item.trialClassStatus}
-                              </span>
-                            </td>
-                            {/* Payment Status */}
-                            <td className="p-3 text-center break-words">
-                              <span
-                                className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                                  item.paymentStatus === "PAID"
-                                    ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                    : "bg-green-100 text-green-800 border border-green-900 px-2"
-                                }`}
-                              >
-                                {item.paymentStatus}
-                              </span>
-                            </td>
-                            {/* Account Status */}
-                            <td className="p-3 text-center break-words">
-                              <span
-                                className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                                  item.status === "Active"
-                                    ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                    : "bg-green-100 text-green-800 border border-green-900 px-2"
-                                }`}
-                              >
-                                {item.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={11} className="p-4 text-center">
-                            No data available
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
+              <tbody>
+                {filteredItems.length > 0 ? (
+                  filteredItems.map((item, index) => (
+                    <tr
+                      key={item._id}
+                      className={`text-[12px] ${
+                        index % 2 === 0 ? "bg-[#fff]" : "bg-[#F8F8F8]"
+                      }`}
+                    >
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%]">
+                        {item._id}
+                      </td>
+                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%]">
+                        {item.student.studentFirstName}{" "}
+                        {item.student.studentLastName}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%]">
+                        {item.student.studentPhone}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                        {item.student.studentCountry}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                        {item.student.learningInterest}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                        {item.student.preferredTeacher}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                        {item.assignedTeacher}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                        {item.classStartDate
+                          ? new Date(item.classStartDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )
+                          : ""}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                        {item.classStartTime}
+                      </td>
+                      {/* Class Status */}
+                      <td className="px-3 py-2 text-[11px]">
+                        <span
+                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                            item.trialClassStatus === "COMPLETED"
+                              ? "bg-[#ECFDF3] text-[#377E36] px-2 border border-[#377E36]"
+                              : item.trialClassStatus === "INPROGRESS"
+                              ? "bg-[#FDECEC] text-[#D34645] px-3 border border-[#D34645]"
+                              : "bg-[#FDF6EC] text-[#F0AD4E] px-3 border border-[#F0AD4E]"
+                          }`}
+                        >
+                          {item.trialClassStatus}
+                        </span>
+                      </td>
+                      {/* Student Status */}
+                      <td className="px-3 py-2 text-[11px]">
+                        <span
+                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                            item.status === "Active"
+                              ? "bg-[#ECFDF3] text-[#377E36] px-3 border border-[#377E36]"
+                              : item.status === "PENDING"
+                              ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 border border-[#F0AD4E]"
+                              : "bg-[#FDECEC] text-[#D34645] px-3 border border-[#D34645]"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      {/* Payment Status */}
+                      <td className="px-3 py-2 text-[11px]">
+                        <span
+                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                            item.paymentStatus === "PAID"
+                              ? "bg-[#ECFDF3] text-[#377E36] px-4 border border-[#377E36]"
+                              : item.paymentStatus === "PENDING"
+                              ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 border border-[#F0AD4E]"
+                              : "bg-[#FDECEC] text-[#D34645] px-3 border border-[#D34645]"
+                          }`}
+                        >
+                          {item.paymentStatus}
+                        </span>
+                      </td>
+                      
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={12} className="p-4 text-center">
+                      No data available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
             </table>
           </div>
 
-          <div className="flex justify-end">
+        </div>
+        <div className="flex justify-end mt-4">
             <button
-              className="text-[#fff] mt-4 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
+              className="bg-transparent border border-[#576CBC] text-[#576CBC] text-[11px] px-3 py-1 rounded-md shadow transition"
               onClick={() =>
                 router.push("/admin-main/ui/scheduledtrailclasslist")
               }
@@ -333,9 +356,7 @@ const TrailManagement = () => {
               View All
             </button>
           </div>
-        </div>
       </div>
-
     </BaseLayout4>
   );
 };

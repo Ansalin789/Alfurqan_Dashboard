@@ -4,10 +4,16 @@ import { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { FaFilter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
+import { FaEllipsisV } from "react-icons/fa";
+import Pagination from "@/components/Pagination";
 
 import Dashboard from "../../components/evaluationcard";
 import BaseLayout4 from "@/components/BaseLayout4";
 import error from "next/error";
+import { MdTune } from "react-icons/md";
+import AcademicHeader from "@/app/Academic-coach/components/academicHeader";
+import axios from "axios";
 
 export interface TransformedUser {
   _id: string;
@@ -88,23 +94,23 @@ export interface TransformedUser {
 const TrailSection = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState<TransformedUser[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const router = useRouter();
-useEffect(() => {
-  Modal.setAppElement("body");
-     const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+  useEffect(() => {
+    Modal.setAppElement("body");
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
     if (token) {
       getAllUsers(token); // call your function with token
     } else {
@@ -114,24 +120,29 @@ useEffect(() => {
   // Fetch API Data
   const getAllUsers = async (token: string) => {
     try {
-      setIsLoading(true);
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass",
+      if (!token) {
+        setErrorMessage("Authentication token missing. Please log in again.");
+        setIsLoading(false);
+        return;
+      }
+      const adminId = localStorage.getItem("AdminPortalId");
+      // setIsLoading(true);
+      const response = await axios.get(
+        `https://api.blackstoneinfomaticstech.com/alltrialclass`,
         {
-          method: "GET",
+          params: { adminId: adminId },
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-        });
-      if (!response.ok) {
+        }
+      );
+      console.log("Raw API Response:", JSON.stringify(response.data, null, 2));
+      if (!response) {
         throw new Error("Failed to fetch users");
       }
-      const data = await response.json();
-      const pendingClasses = data.evaluation.filter(
-        (item: { trialClassStatus: string }) =>
-          item.trialClassStatus === "PENDING"
-      );
-      setFilteredUsers(pendingClasses); // Only pending data
+      const data = await response.data;
+      setFilteredUsers(data.evaluation); // Show all data
       setErrorMessage(null);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -141,17 +152,12 @@ useEffect(() => {
     }
   };
 
-  
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setSearchTerm(query);
   };
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-
-  const filteredItems = currentItems.filter((item) => {
+  const filteredItems = filteredUsers.filter((item) => {
     const searchFields = [
       item._id,
       `${item.student.studentFirstName} ${item.student.studentLastName}`,
@@ -174,181 +180,131 @@ useEffect(() => {
 
   return (
     <BaseLayout4>
+      <AcademicHeader currentSection="Trail Class Request" />
       <div className="h-full w-full py-2 md:mr-10 scrollbar-none">
-        <div className="flex justify-between">
-          <h2 className="text-[20px] font-semibold">Trial Class Request</h2>
-        </div>
-
         <div>
           <Dashboard />
         </div>
 
-        <div className="w-full max-w-[1300px] mx-auto px-4">
+        <div className="w-full h-[350px] overflow-y-scroll scrollbar-none bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
           <div className="flex justify-between items-center p-2 -ml-2">
-            <div className="flex flex-1 mb-4 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none">
-              <div className="flex">
+            <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+            <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search here..."
-                  className="border rounded-lg px-2 text-[12px] mr-4 shadow"
+                  placeholder="Search"
+                  className="bg-transparent outline-none text-[15px] w-52 py-3"
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                 />
-                <button
-                  onClick={() => setIsFilterModalOpen(true)}
-                  className="flex items-center bg-gray-200 p-2 rounded-lg shadow text-[12px]"
-                >
-                  <FaFilter className="mr-2" /> Filter
-                </button>
               </div>
-
-              <div className="flex">
-                <select className="border rounded-lg p-2 shadow text-[12px] appearance-none bg-white">
-                  <option>Duration: Last month</option>
-                  <option>Duration: Last week</option>
-                  <option>Duration: Last year</option>
-                </select>
+              <div
+                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 ml-48 cursor-pointer"
+                onClick={() => setIsFilterModalOpen(true)}
+              >
+                <MdTune className="w-4 h-4" />
+                <span>Filter</span>
+              </div>
+              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                <span className="text-left ml-60 ">
+                  Showing{" "}
+                  {filteredUsers.length === 0 ? 0 : 1} to{" "}
+                  {Math.min(5, filteredUsers.length)} of{" "}
+                  {filteredUsers.length}
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] h-full flex flex-col justify-between">
-            {(() => {
-              let content: JSX.Element | null = null;
-              let errorMessage: string | null = null;
-
-              if (isLoading) {
-                content = <div className="text-center p-8">Loading...</div>;
-              } else if (errorMessage) {
-                errorMessage = "Something went wrong";
-                content = (
-                  <div className="text-center p-8 text-red-500">
-                    {errorMessage}
-                  </div>
-                );
-              } else {
-                content = (
-                  <table className="min-w-full bg-white shadow rounded-lg table-fixed">
-                    <thead className="border-b-[1px] border-[#1C3557] text-[10px] font-semibold">
-                      <tr>
-                        {[
-                          "Trial ID",
-                          "Student Name",
-                          "Mobile",
-                          "Country",
-                          "Course",
-                          "Preferred Teacher",
-                          "Assigned Teacher",
-                          "Time",
-                          "Class Status",
-                          "Payment Status",
-                          "Student Status",
-                        ].map((header, i) => (
-                          <th
-                            key={i}
-                            className="p-3 text-center w-[120px] break-words"
-                          >
-                            {header}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="text-[9px] font-medium">
-                      {filteredItems.length > 0 ? (
-                        filteredItems.slice(0, 5).map((item, index) => (
-                          <tr
-                            key={item._id}
-                            className={
-                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                            }
-                          >
-                            <td className="p-3 text-center break-words">
-                              {item._id}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.student.studentFirstName}{" "}
-                              {item.student.studentLastName}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.student.studentPhone}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.student.studentCountry}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.student.learningInterest}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.student.preferredTeacher}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.assignedTeacher}
-                            </td>
-                            <td className="p-3 text-center break-words">
-                              {item.classStartTime}
-                            </td>
-                            {/* Trial Class Status */}
-                            <td className="p-3 text-center break-words">
-                              <span
-                                className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                                  item.trialClassStatus === "COMPLETED"
-                                    ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                    : "bg-green-100 text-green-800 border border-green-900 px-2"
-                                }`}
-                              >
-                                {item.trialClassStatus}
-                              </span>
-                            </td>
-                            {/* Payment Status */}
-                            <td className="p-3 text-center break-words">
-                              <span
-                                className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                                  item.paymentStatus === "PAID"
-                                    ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                    : "bg-green-100 text-green-800 border border-green-900 px-2"
-                                }`}
-                              >
-                                {item.paymentStatus}
-                              </span>
-                            </td>
-                            {/* Account Status */}
-                            <td className="p-3 text-center break-words">
-                              <span
-                                className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                                  item.status === "Active"
-                                    ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                    : "bg-green-100 text-green-800 border border-green-900 px-2"
-                                }`}
-                              >
-                                {item.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={11} className="p-4 text-center">
-                            No data available
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                );
-              }
-
-              return content;
-            })()}
+          {/* Table Section */}
+          <div className="overflow-x-auto w-full">
+            <table className="w-full table-fixed">
+              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                <tr>
+                  {[
+                    { label: "Trial ID", width: "w-[10%]" },
+                    { label: "Student Name", width: "w-[12%]" },
+                    { label: "Contact", width: "w-[10%]" },
+                    { label: "Country", width: "w-[8%]" },
+                    { label: "Course", width: "w-[10%]" },
+                    { label: "Preferred Teacher", width: "w-[10%]" },
+                    { label: "Assigned Academic Coach", width: "w-[10%]" },
+                    { label: "Date", width: "w-[10%]" },
+                    { label: "Time", width: "w-[10%]" },
+                  ].map((header, i) => (
+                    <th
+                      key={header.label}
+                      className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
+                    >
+                      {header.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredItems.length > 0 ? (
+                  filteredItems.map((item, index) => (
+                    <tr
+                      key={item._id}
+                      className={`text-[12px] ${
+                        index % 2 === 0 ? "bg-[#fff]" : "bg-[#F8F8F8]"
+                      }`}
+                    >
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%]">
+                        {item._id}
+                      </td>
+                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%]">
+                        {item.student.studentFirstName}{" "}
+                        {item.student.studentLastName}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%]">
+                        {item.student.studentPhone}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                        {item.student.studentCountry}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                        {item.student.learningInterest}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                        {item.student.preferredTeacher}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                        {item.assignedTeacher}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                        {item.classStartDate
+                          ? new Date(item.classStartDate).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : ""}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                        {item.classStartTime}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={12} className="p-4 text-center">
+                      No data available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-
-          <div className="flex justify-end">
-            <button
-              className="text-[#fff] mt-4 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
-              onClick={() => router.push("/admin-main/ui/trailclasslist")}
-            >
-              View All
-            </button>
-          </div>
+        </div>
+        <div className="flex justify-end mt-4">
+          <button
+            className="bg-transparent border border-[#576CBC] text-[#576CBC] text-[11px] px-3 py-1 rounded-md shadow transition"
+            onClick={() => router.push("/admin-main/ui/trailclasslist")}
+          >
+            View All
+          </button>
         </div>
       </div>
     </BaseLayout4>
