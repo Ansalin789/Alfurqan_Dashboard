@@ -132,6 +132,10 @@ interface User {
   lastUpdatedDate: string;
   gender: string;
   position: string;
+  contact: string,
+  country: string,
+  city: string
+
 }
 interface ScheduledClass {
   student: {
@@ -305,7 +309,7 @@ const Teacher = () => {
   const fetchUsers = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/users/${employeeId}`,
+        `http://localhost:5001/users/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -480,10 +484,10 @@ const Teacher = () => {
                 />
               </div>
               <h2 className="text-sm font-semibold mt-2">
-                {users?.userName || "Will Jonto"}
+                {users?.userName}
               </h2>
               <p className="text-xs text-gray-300">
-                {users?.email || "willjonto@gmail.com"}
+                {users?.email}
               </p>
             </div>
 
@@ -493,11 +497,11 @@ const Teacher = () => {
               <div className="grid grid-cols-2 gap-y-3 text-xs">
                 <div>
                   <p className="text-gray-300">Contact</p>
-                  <p>{users?.phone || "(1) 2345 6789 3245"}</p>
+                  <p>{users?.contact}</p>
                 </div>
                 <div>
                   <p className="text-gray-300">Country</p>
-                  <p>{users?.country || "UAE"}</p>
+                  <p>{users?.country}</p>
                 </div>
 
                 <div>
@@ -506,16 +510,16 @@ const Teacher = () => {
                 </div>
                 <div>
                   <p className="text-gray-300">Nationality</p>
-                  <p>{users?.nationality || "Egyptian"}</p>
+                  <p>{users?.country}</p>
                 </div>
 
                 <div>
                   <p className="text-gray-300">Course</p>
-                  <p>{users?.position || "Islamic Studies"}</p>
+                  <p>{users?.position}</p>
                 </div>
                 <div>
                   <p className="text-gray-300">Employment</p>
-                  <p>{users?.employment || "Full-time"}</p>
+                  <p>Full Time</p>
                 </div>
               </div>
             </div>
