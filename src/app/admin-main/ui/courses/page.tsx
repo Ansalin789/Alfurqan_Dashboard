@@ -69,7 +69,7 @@ const Page = () => {
   return (
     <BaseLayout4>
       <SupervisorHeader currentSection="Course" />
-      <div className="min-h-screen w-full px-4 sm:px-6 lg:px-10 py-5">
+      <div className="min-h-100vh w-full px-4 sm:px-6 lg:px-10 py-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
           {cardData.map((item) => (
             <Link
