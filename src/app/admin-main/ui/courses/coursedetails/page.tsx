@@ -290,7 +290,7 @@ const Page = () => {
 
           {/* Course Cards */}
           {(currentPage === 1
-            ? paginatedCourses.slice(0, 3)
+            ? paginatedCourses.slice(0, 2)
             : paginatedCourses
           ).map((course,index) => (
             <Link
