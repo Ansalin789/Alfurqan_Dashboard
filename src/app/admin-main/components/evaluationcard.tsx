@@ -215,7 +215,7 @@ const CountriesCard = () => {
           return (
             <div key={countryInfo.country}>
               {/* Country Row */}
-              <div className="flex items-center justify-between border-b py-1">
+              <div className="flex items-center justify-between border-b dark:border-b-[#f3f2f2] py-1">
                 {/* Flag & Name */}
                 <div className="flex items-center space-x-3">
                   {countryCode ? (
@@ -231,13 +231,13 @@ const CountriesCard = () => {
                   ) : (
                     <div className="w-6 h-6 bg-gray-300" />
                   )}
-                  <span className="text-[12px] text-gray-700">
+                  <span className="text-[12px] text-gray-700 dark:text-white">
                     {countryInfo.country}
                   </span>
                 </div>
 
                 {/* Count */}
-                <span className="text-[12px] font-medium text-gray-900">
+                <span className="text-[12px] font-medium text-gray-900 dark:text-white">
                   {countryInfo.count}
                 </span>
               </div>
@@ -332,7 +332,7 @@ const PreferredTeachersCard = () => {
   return (
     <div>
       <div>
-        <h2 className="text-sm font-semibold text-gray-900">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
           Preferred Teachers
         </h2>
         <div className="relative flex items-center justify-center -ml-2 mt-2">
@@ -529,7 +529,7 @@ const CoursesChart = () => {
 
   return (
     <div>
-      <h2 className="text-[15px] font-semibold text-gray-900">Courses</h2>
+      <h2 className="text-[15px] font-semibold text-gray-900 dark:text-white">Courses</h2>
 
       <ResponsiveContainer width="100%" height={198}>
         <BarChart data={courseData} barCategoryGap={30}>
@@ -558,7 +558,7 @@ const CoursesChart = () => {
               className="w-[10px] h-[10px] rounded-[2px]"
               style={{ backgroundColor: entry.color }}
             ></div>
-            <span className="text-[10px] text-[#010E30] font-semibold">{entry.name}</span>
+            <span className="text-[10px] text-[#010E30] dark:text-white font-semibold">{entry.name}</span>
           </div>
         ))}
       </div>
@@ -569,16 +569,16 @@ const CoursesChart = () => {
 export default function Dashboard() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full w-full py-4 md:mr-10 scrollbar-none">
-      <div className="bg-[#FFFFFF] dark:bg-[#343434] p-0 rounded-xl shadow-md border border-gray-200 h-full w-full">
+      <div className="bg-[#FFFFFF] dark:bg-[#343434] p-0 rounded-xl shadow-md  h-full w-full">
         <TotalRequestChart />
       </div>
-      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+      <div className="bg-white dark:bg-[#343434] p-4 rounded-lg shadow-md  h-full w-full">
         <CountriesCard />
       </div>
-      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+      <div className="bg-white dark:bg-[#343434] p-4 rounded-lg shadow-md  h-full w-full">
         <PreferredTeachersCard />
       </div>
-      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 h-full w-full">
+      <div className="bg-white dark:bg-[#343434] p-4 rounded-lg shadow-md  h-full w-full">
         <CoursesChart />
       </div>
     </div>

@@ -4,8 +4,7 @@ import BaseLayout4 from "@/components/BaseLayout4";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Sun, Bell, FileText, Search, MoreVertical } from "lucide-react";
-import Link from "next/link";
+import { Search, MoreVertical } from "lucide-react";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
 import {
@@ -15,12 +14,10 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  CartesianGrid,
   Cell,
   PieChart,
   Pie,
 } from "recharts";
-import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   LineElement,
@@ -32,11 +29,11 @@ import {
 } from "chart.js";
 import ApplicantsPage from "../../components/employeesrecruitment";
 import axios from "axios";
-import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import Flag from "react-world-flags";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import ReactDOM from "react-dom";
+import AdminHeader from "../../components/AdminHeader";
 
 // Register chart.js modules
 ChartJS.register(
@@ -892,7 +889,7 @@ const Page = () => {
 
   return (
     <BaseLayout4>
-      <TeacherHeader currentSection="Employees" />
+      <AdminHeader currentSection="Employees" />
       <div className="h-full w-full p-2 md:mr-10 scrollbar-none">
         <div className="max-w-7xl w-full mx-auto scrollbar-none">
           {/* Tab Navigation */}

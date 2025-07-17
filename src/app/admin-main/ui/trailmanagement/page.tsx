@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
-import { FaSyncAlt, FaFilter, FaEdit } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Dashboard from "@/app/admin-main/components/trailmanagementcard";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
-// Define the return type of the getAllUsers function
+import AdminHeader from "../../components/AdminHeader";
 
 export interface TransformedUser {
   _id: string;
@@ -179,64 +178,57 @@ const TrailManagement = () => {
 
   return (
     <BaseLayout4>
+    <AdminHeader currentSection="Scheduled Trail Classes" />
       <div className="py-2 md:mr-10 w-full scrollbar-none mx-auto h-full">
-        <div className="flex justify-between ml-4">
-          <h2 className="text-[20px] font-semibold">Scheduled Trail Classes</h2>
-        </div>
-
         <div className="p-2">
           <Dashboard />
         </div>
         <div className="w-full h-[350px] overflow-y-scroll scrollbar-none bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
-          <div className="flex justify-between items-center p-2 -ml-2">
             <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
-              <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
-                <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
                 <input
                   type="text"
-                  placeholder="Search here..."
-                  className="bg-transparent outline-none text-[15px] w-52 py-3"
+                  placeholder="Search"
+                  className="bg-transparent outline-none text-[12px] w-52 py-3"
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                 />
               </div>
-              <div
-                className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 ml-48 cursor-pointer"
+              <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
                 onClick={() => setIsFilterModalOpen(true)}
               >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
-              <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-                <span className="text-left ml-60 ">
+              <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+              <span className="text-left ml-60 ">
                   Showing {filteredUsers.length === 0 ? 0 : 1} to{" "}
                   {Math.min(5, filteredUsers.length)} of {filteredUsers.length}
                 </span>
               </div>
             </div>
-          </div>
 
-          <div className="w-full h-[350px] overflow-y-scroll scrollbar-none bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
-            <table className="w-full table-fixed">
+            <table className="w-full table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
               <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                <tr>
+                <tr className="font-medium">
                   {[
                     { label: "Trial ID", width: "w-[10%]" },
                     { label: "Student Name", width: "w-[12%]" },
                     { label: "Mobile", width: "w-[10%]" },
                     { label: "Country", width: "w-[8%]" },
                     { label: "Course", width: "w-[10%]" },
-                    { label: "Preferred Teacher", width: "w-[10%]" },
-                    { label: "Assigned Teacher", width: "w-[10%]" },
+                    { label: "Preferred Teacher", width: "w-[9%]" },
+                    { label: "Assigned Teacher", width: "w-[13%]" },
                     { label: "Date", width: "w-[10%]" },
-                    { label: "Time", width: "w-[10%]" },
-                    { label: "Class Status", width: "w-[8%]" },
+                    { label: "Time", width: "w-[8%]" },
+                    { label: "Class Status", width: "w-[10%]" },
                     { label: "Student Status", width: "w-[8%]" },
                     { label: "Payment Status", width: "w-[10%]" },
                   ].map((header, i) => (
                     <th
                       key={header.label}
-                      className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
+                      className={`text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] ${header.width}`}
                     >
                       {header.label}
                     </th>
@@ -249,32 +241,32 @@ const TrailManagement = () => {
                     <tr
                       key={item._id}
                       className={`text-[12px] ${
-                        index % 2 === 0 ? "bg-[#fff]" : "bg-[#F8F8F8]"
+                        index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[10px] break-words w-[10%]">
                         {item._id}
                       </td>
                       <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%]">
                         {item.student.studentFirstName}{" "}
                         {item.student.studentLastName}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] break-words w-[10%]">
                         {item.student.studentPhone}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] w-[8%]">
                         {item.student.studentCountry}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] w-[10%]">
                         {item.student.learningInterest}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] break-words w-[10%]">
                         {item.student.preferredTeacher}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] w-[10%]">
                         {item.assignedTeacher}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] w-[8%]">
                         {item.classStartDate
                           ? new Date(item.classStartDate).toLocaleDateString(
                               "en-US",
@@ -286,18 +278,18 @@ const TrailManagement = () => {
                             )
                           : ""}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] w-[8%]">
                         {item.classStartTime}
                       </td>
                       {/* Class Status */}
-                      <td className="px-3 py-2 text-[11px]">
+                      <td className="px-3 py-2 text-[11px] w-[20%]">
                         <span
                           className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.trialClassStatus === "COMPLETED"
-                              ? "bg-[#ECFDF3] text-[#377E36] px-2 border border-[#377E36]"
+                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-2"
                               : item.trialClassStatus === "INPROGRESS"
-                              ? "bg-[#FDECEC] text-[#D34645] px-3 border border-[#D34645]"
-                              : "bg-[#FDF6EC] text-[#F0AD4E] px-3 border border-[#F0AD4E]"
+                              ? "bg-[#FDECEC] dark:bg-[#D3464533] dark:opacity-20 text-[#D34645] px-3"
+                              : "bg-[#FDF6EC] dark:bg-[#F0AD4E33] dark:opacity-20 text-[#F0AD4E] px-3"
                           }`}
                         >
                           {item.trialClassStatus}
@@ -308,10 +300,10 @@ const TrailManagement = () => {
                         <span
                           className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.status === "Active"
-                              ? "bg-[#ECFDF3] text-[#377E36] px-3 border border-[#377E36]"
+                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-3"
                               : item.status === "PENDING"
-                              ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 border border-[#F0AD4E]"
-                              : "bg-[#FDECEC] text-[#D34645] px-3 border border-[#D34645]"
+                              ? "bg-[#FDF6EC] dark:bg-[#F0AD4E33] dark:opacity-20 text-[#F0AD4E] px-3"
+                              : "bg-[#FDECEC] dark:bg-[#D3464533] dark:opacity-20 text-[#D34645] px-3"
                           }`}
                         >
                           {item.status}
@@ -322,10 +314,10 @@ const TrailManagement = () => {
                         <span
                           className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.paymentStatus === "PAID"
-                              ? "bg-[#ECFDF3] text-[#377E36] px-4 border border-[#377E36]"
+                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-4"
                               : item.paymentStatus === "PENDING"
-                              ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 border border-[#F0AD4E]"
-                              : "bg-[#FDECEC] text-[#D34645] px-3 border border-[#D34645]"
+                              ? "bg-[#FDF6EC] dark:bg-[#F0AD4E33] dark:opacity-20 text-[#F0AD4E] px-3"
+                              : "bg-[#FDECEC] dark:bg-[#D3464533] dark:bg-opacity-20 text-[#D34645] px-3"
                           }`}
                         >
                           {item.paymentStatus}
@@ -343,7 +335,6 @@ const TrailManagement = () => {
                 )}
               </tbody>
             </table>
-          </div>
 
         </div>
         <div className="flex justify-end mt-4">
