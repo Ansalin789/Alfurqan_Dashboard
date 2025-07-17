@@ -188,116 +188,6 @@ interface DashboardCounts {
   waiting: number;
 }
 
-const leaveData = [
-  {
-    id: "#0983867",
-    name: "Robert James",
-    designation: "Supervisor",
-    leaveType: "Sick Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Sickness",
-    status: "Pending",
-  },
-  {
-    id: "#0983867",
-    name: "Stefan Salvatore",
-    designation: "Admin",
-    leaveType: "Sick Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Sickness",
-    status: "Approved",
-  },
-  {
-    id: "#0983867",
-    name: "Gia Rose",
-    designation: "Admin",
-    leaveType: "Privilege Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Vacation",
-    status: "Declined",
-  },
-  {
-    id: "#0983867",
-    name: "Robert James",
-    designation: "Supervisor",
-    leaveType: "Sick Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Sickness",
-    status: "Pending",
-  },
-  {
-    id: "#0983867",
-    name: "Stefan Salvatore",
-    designation: "Admin",
-    leaveType: "Sick Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Sickness",
-    status: "Approved",
-  },
-  {
-    id: "#0983867",
-    name: "Gia Rose",
-    designation: "Admin",
-    leaveType: "Privilege Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Vacation",
-    status: "Declined",
-  },
-  {
-    id: "#0983867",
-    name: "Robert James",
-    designation: "Supervisor",
-    leaveType: "Sick Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Sickness",
-    status: "Pending",
-  },
-  {
-    id: "#0983867",
-    name: "Stefan Salvatore",
-    designation: "Admin",
-    leaveType: "Sick Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Sickness",
-    status: "Approved",
-  },
-  {
-    id: "#0983867",
-    name: "Gia Rose",
-    designation: "Admin",
-    leaveType: "Privilege Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Vacation",
-    status: "Declined",
-  },
-  {
-    id: "#0983867",
-    name: "Robert James",
-    designation: "Supervisor",
-    leaveType: "Sick Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Sickness",
-    status: "Pending",
-  },
-  {
-    id: "#0983867",
-    name: "Stefan Salvatore",
-    designation: "Admin",
-    leaveType: "Sick Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Sickness",
-    status: "Approved",
-  },
-  {
-    id: "#0983867",
-    name: "Gia Rose",
-    designation: "Admin",
-    leaveType: "Privilege Leave",
-    dateRange: "Jan 2, 2022 - Jan 5, 2022",
-    reason: "Vacation",
-    status: "Declined",
-  },
-];
 
 // Add interface for leave request list API
 interface LeaveRequest {
@@ -401,7 +291,7 @@ const Page = () => {
   });
   const [countryDataemp, setCountryDataemp] = useState<EmpCountryData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 5;
   const filteredTeachers = teachers.filter(
     (teacher) =>
       (filterCourse === "" || teacher.position === filterCourse) &&
@@ -426,6 +316,18 @@ const Page = () => {
     top: number;
     left: number;
   } | null>(null);
+
+  const filteredEmployees = employees.filter(
+    (emp) =>
+      (!filterCourse || emp.role.includes(filterCourse)) &&
+      (!filterName || emp.userName.toLowerCase().includes(filterName.toLowerCase())) &&
+      (emp.userName.toLowerCase().includes(searchQuery1.toLowerCase()) ||
+        emp.email.toLowerCase().includes(searchQuery1.toLowerCase()))
+  );
+  const totalEmployeePages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  const startEmployeeIndex = (currentPage - 1) * itemsPerPage;
+  const endEmployeeIndex = startEmployeeIndex + itemsPerPage;
+  const paginatedEmployees = filteredEmployees.slice(startEmployeeIndex, endEmployeeIndex);
 
   useEffect(() => {
     const token =
@@ -893,7 +795,7 @@ const Page = () => {
       <div className="h-full w-full p-2 md:mr-10 scrollbar-none">
         <div className="max-w-7xl w-full mx-auto scrollbar-none">
           {/* Tab Navigation */}
-          <div className="flex flex-wrap gap-2 sm:space-x-4 border-b py-2 overflow-x-auto">
+          <div className="flex flex-wrap gap-2 sm:space-x-4 py-2 overflow-x-auto">
             <button
               className={`px-3 py-2 text-xs sm:text-[14px] font-semibold whitespace-nowrap ${
                 activeTab === "teachers"
@@ -943,13 +845,13 @@ const Page = () => {
                 <div className="h-[600px] overflow-y-auto scrollbar-none">
                   <div className="flex flex-row gap-4 sm:gap-4 md:gap-4 lg:gap-4 xl:gap-4  ">
                     {/* Teachers Records */}
-                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[370px] md:max-w-[390px] lg:max-w-[620px] h-[280px]">
-                      <h2 className="text-[16px] font-semibold text-[#0B0F19] mb-4">
+                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[370px] md:max-w-[390px] lg:max-w-[620px] h-[280px]">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white mb-4">
                         Teachers Record
                       </h2>
                       <div className="flex items-start justify-between gap-10">
                         {/* Legend Section */}
-                        <div className="space-y-8 text-[13px] mt-3 text-[#0B0F19]">
+                        <div className="space-y-8 text-[13px] mt-3 text-[#0B0F19] dark:text-white">
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-[4px] bg-[#AFC0FF]"></div>
                             <span>Total Teachers</span>
@@ -1003,8 +905,8 @@ const Page = () => {
                     </div>
 
                     {/* Gender Chart (Teachers section) */}
-                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
-                      <h2 className="text-[16px] font-semibold text-[#0B0F19] self-start">
+                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white self-start">
                         Gender
                       </h2>
                       {/* Chart */}
@@ -1183,8 +1085,8 @@ const Page = () => {
                     </div>
 
                     {/* Countries Block */}
-                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[312px] h-[280px] flex flex-col">
-                      <h2 className="text-[16px] font-semibold text-[#0B0F19]">
+                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white">
                         Countries
                       </h2>
                       <div className="space-y-2 mt-2 flex-1 overflow-y-auto scrollbar-none">
@@ -1196,7 +1098,7 @@ const Page = () => {
                           return (
                             <div
                               key={country.country}
-                              className="flex items-center justify-between border-b py-1 last:border-b-0"
+                              className="flex items-center justify-between border-b dark:border-b-[#5C5C5C] py-1"
                             >
                               <div className="flex items-center gap-2">
                                 {countryCode ? (
@@ -1212,11 +1114,11 @@ const Page = () => {
                                 ) : (
                                   <div className="w-6 h-4 bg-gray-300 rounded" />
                                 )}
-                                <span className="text-[12px] text-gray-700">
+                                <span className="text-[12px] text-gray-700 dark:text-white">
                                   {country.country}
                                 </span>
                               </div>
-                              <span className="text-[12px] font-medium text-gray-900">
+                              <span className="text-[12px] font-medium text-gray-900 dark:text-white">
                                 {country.count}
                               </span>
                             </div>
@@ -1227,8 +1129,8 @@ const Page = () => {
                   </div>
 
                   {/* Search & Cards Section */}
-                  <div className="mt-6 w-full h-full shadow bg-[#f5f5f5] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
-                    <div className="flex justify-between bg-[#fafafb] items-center px-4 py-0 rounded-md dark:bg-[#343434] h-12">
+                  <div className="mt-6 w-full shadow bg-[#f5f5f5] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
+                    <div className="flex justify-between bg-[#fafafb] items-center px-4 py-0 rounded-md dark:bg-[#343434]">
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                         <input
@@ -1367,7 +1269,7 @@ const Page = () => {
                     </div>
 
                     {/* Teacher Cards - manage teacher style, with Portal Access */}
-                    <div className="grid grid-cols-1 xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
+                    <div className="bg-white dark:bg-[#3b3b3b] grid grid-cols-1 xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
                       {paginatedTeachers.map((teacher) => (
                         <div
                           key={teacher._id}
@@ -1378,7 +1280,7 @@ const Page = () => {
                               <Image
                                 src={
                                   teacher.profileImage ??
-                                  "/assets/images/proff.jpg"
+                                  "/assets/images/profilePicture.png"
                                 }
                                 alt="Teacher"
                                 className="rounded-md"
@@ -1482,28 +1384,28 @@ const Page = () => {
                   {/* Top analytics/statistics cards (Employees Record, Gender, Countries) - keep as is */}
                   <div className="flex flex-row gap-4 sm:gap-4 md:gap-4 lg:gap-4 xl:gap-4">
                     {/* Employees Record card */}
-                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[370px] md:max-w-[390px] lg:max-w-[620px] h-[280px]">
-                      <h2 className="text-[16px] font-semibold text-[#0B0F19] mb-4">
+                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[370px] md:max-w-[390px] lg:max-w-[620px] h-[280px]">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white mb-4">
                         Employees Record
                       </h2>
                       <div className="flex items-start justify-between gap-10">
                         {/* Legend Section */}
-                        <div className="space-y-8 text-[13px] mt-3 text-[#0B0F19]">
+                        <div className="space-y-8 text-[13px] mt-3 text-[#0B0F19] dark:text-white">
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-[4px] bg-[#AFC0FF]"></div>
-                            <span>Total Employees</span>
+                            <span>Admin</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-[4px] bg-[#9FD0FF]"></div>
-                            <span>Active Employees</span>
+                            <span>Academic Coach</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-[4px] bg-[#78A1DB]"></div>
-                            <span>Inactive Employees</span>
+                            <span>Supervisor</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-[4px] bg-[#B9DDFF]"></div>
-                            <span>Employees on Leave</span>
+                            <span>Others</span>
                           </div>
                         </div>
 
@@ -1531,8 +1433,8 @@ const Page = () => {
                     </div>
 
                     {/* Gender Chart (Employees section) */}
-                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
-                      <h2 className="text-[16px] font-semibold text-[#0B0F19] self-start">
+                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col items-center justify-between relative">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white self-start">
                         Gender
                       </h2>
                       {/* Chart */}
@@ -1710,8 +1612,8 @@ const Page = () => {
                     </div>
 
                     {/* Countries Block */}
-                    <div className="bg-[#F7FBFF] p-5 rounded-2xl shadow-md border border-gray-200 w-full sm:max-w-[312px] h-[280px] flex flex-col">
-                      <h2 className="text-[16px] font-semibold text-[#0B0F19]">
+                    <div className="bg-[#F7FBFF] dark:bg-[#343434] p-5 rounded-2xl shadow-md w-full sm:max-w-[312px] h-[280px] flex flex-col">
+                      <h2 className="text-[16px] font-semibold text-[#0B0F19] dark:text-white">
                         Countries
                       </h2>
                       <div className="space-y-2 mt-2 flex-1 overflow-y-auto scrollbar-none">
@@ -1723,7 +1625,7 @@ const Page = () => {
                           return (
                             <div
                               key={country.country}
-                              className="flex items-center justify-between border-b py-1 last:border-b-0"
+                              className="flex items-center justify-between border-b dark:border-b-[#5C5C5C] py-1"
                             >
                               <div className="flex items-center gap-2">
                                 {countryCode ? (
@@ -1739,11 +1641,11 @@ const Page = () => {
                                 ) : (
                                   <div className="w-6 h-4 bg-gray-300 rounded" />
                                 )}
-                                <span className="text-[12px] text-gray-700">
+                                <span className="text-[12px] text-gray-700 dark:text-white">
                                   {country.country}
                                 </span>
                               </div>
-                              <span className="text-[12px] font-medium text-gray-900">
+                              <span className="text-[12px] font-medium text-gray-900 dark:text-white">
                                 {country.count}
                               </span>
                             </div>
@@ -1753,7 +1655,7 @@ const Page = () => {
                     </div>
                   </div>
                   <div className="py-3">
-                    <div className="flex items-end justify-end gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                    {/* <div className="flex items-end justify-end gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <button
                         onClick={() => setShowForm(true)}
                         className="flex items-center gap-2 bg-[#576CBC] text-white text-xs font-medium px-4 py-2 rounded-lg shadow"
@@ -1761,7 +1663,7 @@ const Page = () => {
                       >
                         <span className="text-lg">+</span> Add new
                       </button>
-                    </div>
+                    </div> */}
                     <div className="mt-3 w-full h-full shadow bg-[#f5f5f5] rounded-lg dark:bg-[#343434] dark:text-[#dedede]">
                       <div className="flex justify-between bg-[#fafafb] items-center px-4 py-0 rounded-md dark:bg-[#343434] h-12">
                         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -1851,7 +1753,7 @@ const Page = () => {
                                     >
                                       Show{" "}
                                       {
-                                        employees.filter(
+                                        filteredEmployees.filter(
                                           (emp) =>
                                             (!filterCourse ||
                                               emp.role.includes(
@@ -1862,6 +1764,16 @@ const Page = () => {
                                                 .toLowerCase()
                                                 .includes(
                                                   filterName.toLowerCase()
+                                                )) &&
+                                            (emp.userName
+                                              .toLowerCase()
+                                              .includes(
+                                                searchQuery1.toLowerCase()
+                                              ) ||
+                                              emp.email
+                                                .toLowerCase()
+                                                .includes(
+                                                  searchQuery1.toLowerCase()
                                                 ))
                                         ).length
                                       }{" "}
@@ -1876,7 +1788,7 @@ const Page = () => {
                         <span className="text-left gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
                           Showing{" "}
                           {
-                            employees.filter(
+                            filteredEmployees.filter(
                               (emp) =>
                                 (!filterCourse ||
                                   emp.role.includes(filterCourse)) &&
@@ -1896,87 +1808,70 @@ const Page = () => {
                         </span>
                       </div>
                       {/* Employee Cards - match Teachers card grid */}
-                      <div className="grid grid-cols-1 xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
-                        {employees
-                          .filter(
-                            (emp) =>
-                              (!filterCourse ||
-                                emp.role.includes(filterCourse)) &&
-                              (!filterName ||
-                                emp.userName
-                                  .toLowerCase()
-                                  .includes(filterName.toLowerCase())) &&
-                              (emp.userName
-                                .toLowerCase()
-                                .includes(searchQuery1.toLowerCase()) ||
-                                emp.email
-                                  .toLowerCase()
-                                  .includes(searchQuery1.toLowerCase()))
-                          )
-                          .slice(0, 50) // limit for performance
-                          .map((employee) => (
-                            <div
-                              key={employee._id}
-                              className="bg-white dark:bg-[#343434] h-full shadow-md rounded-lg p-4 flex flex-col justify-between"
-                            >
-                              <div className="items-center">
-                                <div className="h-[126px] rounded-md bg-[#e8e8e8] dark:bg-[#dadada] flex items-center justify-center">
-                                  <Image
-                                    src={
-                                      employee.profileImage ??
-                                      "/assets/images/proff.jpg"
-                                    }
-                                    alt="Employee"
-                                    className="rounded-md"
-                                    width={90}
-                                    height={90}
-                                  />
-                                </div>
-                              </div>
-                              <div className="mt-2 text-center">
-                                <h3 className="text-[12px] font-semibold text-[#010e30] dark:text-[#fff] mb-1">
-                                  {employee.userName}
-                                </h3>
-                                <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                                  Role: {employee.role.join(", ")}
-                                </p>
-                                <p className="text-[#717579] text-[10px] dark:text-[#fff]">
-                                  {employee.gender}
-                                </p>
-                                <div className="flex flex-col justify-center gap-2 px-5 mt-2">
-                                  <button
-                                    className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
-                                    onClick={() =>
-                                      handlePortalAccessforemployee(
-                                        employee._id
-                                      )
-                                    }
-                                    disabled={!dashboardRead}
-                                  >
-                                    Portal Access
-                                  </button>
-                                  <button
-                                    className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
-                                    onClick={() =>
-                                      handleViewEmployee(
-                                        employee.userId,
-                                        employee._id
-                                      )
-                                    }
-                                  >
-                                    View Profile
-                                  </button>
-                                </div>
+                      <div className="grid grid-cols-1 bg-white dark:bg-[#3b3b3b] xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
+                        {paginatedEmployees.map((employee) => (
+                          <div
+                            key={employee._id}
+                            className="bg-white dark:bg-[#343434] h-full shadow-md rounded-lg p-4 flex flex-col justify-between"
+                          >
+                            <div className="items-center">
+                              <div className="h-[126px] rounded-md bg-[#e8e8e8] dark:bg-[#dadada] flex items-center justify-center">
+                                <Image
+                                  src={
+                                    employee.profileImage ??
+                                    "/assets/images/proff.jpg"
+                                  }
+                                  alt="Employee"
+                                  className="rounded-md"
+                                  width={90}
+                                  height={90}
+                                />
                               </div>
                             </div>
-                          ))}
+                            <div className="mt-2 text-center">
+                              <h3 className="text-[12px] font-semibold text-[#010e30] dark:text-[#fff] mb-1">
+                                {employee.userName}
+                              </h3>
+                              <p className="text-[#717579] text-[10px] dark:text-[#fff]">
+                                Role: {employee.role.join(", ")}
+                              </p>
+                              <p className="text-[#717579] text-[10px] dark:text-[#fff]">
+                                {employee.gender}
+                              </p>
+                              <div className="flex flex-col justify-center gap-2 px-5 mt-2">
+                                <button
+                                  className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
+                                  onClick={() =>
+                                    handlePortalAccessforemployee(
+                                      employee._id
+                                    )
+                                  }
+                                  disabled={!dashboardRead}
+                                >
+                                  Portal Access
+                                </button>
+                                <button
+                                  className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
+                                  onClick={() =>
+                                    handleViewEmployee(
+                                      employee.userId,
+                                      employee._id
+                                    )
+                                  }
+                                >
+                                  View Profile
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                     {/* Pagination (if needed, match Teachers section) */}
                     <div className="flex justify-end mt-4">
                       <Pagination
                         currentPage={currentPage}
-                        totalPages={Math.ceil(employees.length / itemsPerPage)}
+                        totalPages={totalEmployeePages}
                         onPageChange={setCurrentPage}
                       />
                     </div>
