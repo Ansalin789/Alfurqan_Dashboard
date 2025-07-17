@@ -84,6 +84,8 @@ interface Assignment {
   assignedTeacher?: string;
   assignedTeacherId?: string;
   title?: string;
+  level?: string;
+  courses?: string;
 }
 
 const NewAssignment = () => {
@@ -97,6 +99,8 @@ const NewAssignment = () => {
   const [sessionClassType, setSessionClassType] = useState("");
   const [assignedTeacher, setAssignedTeacher] = useState("");
   const [assignedTeacherId, setAssignedTeacherId] = useState("");
+  const [course, setCourse] = useState("");
+  const [level, setLevel] = useState("");
   const [success, setSuccess] = useState(false);
   const [failed, setFailed] = useState(false);
   const [failedMessage, setFailedMessage] = useState("");
@@ -114,6 +118,8 @@ const NewAssignment = () => {
     const sessionClassType = searchParams?.get("sessionClassType") || "";
     const assignedTeacher = searchParams?.get("assignedTeacher") || "";
     const assignedTeacherId = searchParams?.get("assignedTeacherId") || "";
+    const course = searchParams?.get("course") || "";
+    const level = searchParams?.get("level") || "";
 
     console.log("🔍 Query Params:");
     console.log("title:", title);
@@ -125,6 +131,8 @@ const NewAssignment = () => {
     console.log("sessionClassType:", sessionClassType);
     console.log("assignedTeacher:", assignedTeacher);
     console.log("assignedTeacherId:", assignedTeacherId);
+    console.log("course:", course);
+    console.log("level:", level);
 
     setMetaTitle(title);
     setAssignedDate(assignedDate);
@@ -135,6 +143,8 @@ const NewAssignment = () => {
     setSessionClassType(sessionClassType);
     setAssignedTeacher(assignedTeacher);
     setAssignedTeacherId(assignedTeacherId);
+    setCourse(course);
+    setLevel(level);
   }, [searchParams]);
   const [hasOptions, setHasOptions] = useState<boolean>(true); // default true
 
@@ -308,6 +318,8 @@ const NewAssignment = () => {
         answerText: ["reading", "writing"].includes(assignmentType) 
       ? answerText // Explicitly store answerText for these types
       : undefined,
+      level: level,
+      courses: course,
       audioFile: audioFileBuffer || undefined,
       uploadFile: uploadedFileBuffer || undefined,
     };
@@ -456,7 +468,8 @@ const NewAssignment = () => {
     formData.append("sessionClassType", sessionClassType);
     formData.append("assignedTeacher", assignedTeacher);
     formData.append("assignedTeacherId", assignedTeacherId);
-
+    formData.append("level", level);
+    formData.append("course", course);
     for (let index = 0; index < assignments.length; index++) {
       const item = assignments[index];
 
@@ -558,6 +571,8 @@ const NewAssignment = () => {
       formData.append(`assignments[${index}][dueDate]`, dueDate);
       formData.append(`assignments[${index}][createdBy]`, assignedTeacher);
       formData.append(`assignments[${index}][updatedBy]`, assignedTeacher);
+      formData.append(`assignments[${index}][level]`, level);
+      formData.append(`assignments[${index}][courses]`, course);
       formData.append(`assignments[${index}][status]`, "Active");
       formData.append(
         `assignments[${index}][assignmentStatus]`,
@@ -1153,7 +1168,9 @@ const NewAssignment = () => {
           </div>
 
           <div className="flex justify-end gap-4 mt-6">
-            <button className="border border-gray-300 text-[12px] px-4 py-[6px] rounded-xl text-gray-700 hover:bg-gray-100 dark:border-[#343434] dark:text-[#fff] dark:bg-[#343434]">
+            <button className="border border-gray-300 text-[12px] px-4 py-[6px] rounded-xl text-gray-700 hover:bg-gray-100 dark:border-[#343434] dark:text-[#fff] dark:bg-[#343434]"
+              onClick={() => setAssignments([])}
+            >
               Cancel
             </button>
             <button

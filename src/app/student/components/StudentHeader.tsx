@@ -202,7 +202,7 @@ export default function StudentHeader({ currentSection, showBackButton = false, 
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <button
-            onClick={() => router.push("/student/ui/calender")}
+            onClick={() => router.push("/student/ui/schedule")}
             className="p-2.5 bg-white dark:bg-gray-700 rounded-lg"
           >
             <CalendarDays className="w-4 h-4 text-gray-800 dark:text-white" />

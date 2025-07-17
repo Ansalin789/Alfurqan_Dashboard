@@ -217,7 +217,7 @@ const Page = () => {
         <div className="mt-4 text-right">
             <Link
               href="/teacher/ui/allstudents"
-              className="text-[#576CBC] text-[10px] border border-[#576CBC] px-3 py-1 rounded-md bg-white"
+              className="text-[#576CBC] text-[10px] border border-[#576CBC] px-3 py-1 rounded-md bg-white dark:bg-[#3C3C3C]"
             >
               View All
             </Link>

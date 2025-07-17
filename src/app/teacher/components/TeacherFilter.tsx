@@ -378,17 +378,19 @@ const TeacherFilter = () => {
                       {item.startTime}
                     </td>
                   <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
-                      <span
-                        className={`px-2 text-[10px] text-center py-[3px] rounded-md ${
-                          item.meetingStatus === "Scheduled"
-                            ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
-                            : item.meetingStatus === "Rescheduled"
-                            ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
-                            : ""
-                        }`}
-                      >
-                        {(item.meetingStatus || "UNKNOWN").toUpperCase()}
-                      </span>
+                  <span
+                  className={`px-2 text-[10px] text-center py-[3px] rounded-md ${
+                    item.meetingStatus === "Scheduled"
+                      ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
+                      : item.meetingStatus === "Rescheduled"
+                      ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
+                      : item.meetingStatus === "Completed"
+                      ? "bg-green-100 text-[#377E36] text-[10px]"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {(item.meetingStatus || "UNKNOWN").toUpperCase()}
+                </span>
                     </td>
                 <td className="px-3 py-2 relative ">
                                      {item.meetingStatus === "Scheduled" ||
