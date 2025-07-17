@@ -4,7 +4,7 @@ import BaseLayout4 from "@/components/BaseLayout4";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Sun, Bell, FileText, Search } from "lucide-react";
+import { Sun, Bell, FileText, Search, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
@@ -36,6 +36,7 @@ import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import Flag from "react-world-flags";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
+import ReactDOM from "react-dom";
 
 // Register chart.js modules
 ChartJS.register(
@@ -301,6 +302,30 @@ const leaveData = [
   },
 ];
 
+// Add interface for leave request list API
+interface LeaveRequest {
+  _id: string;
+  name: string;
+  employeeId: string;
+  role: string;
+  fromDate: string;
+  toDate: string;
+  leaveStatus: string;
+  leaveType: string;
+  approvedId: string;
+  approvedName: string;
+  reason: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  __v: number;
+}
+interface LeaveRequestListResponse {
+  totalCount: number;
+  leaveRequest: LeaveRequest[];
+}
+
 const Page = () => {
   const [activeTab, setActiveTab] = useState<
     "teachers" | "otheremployees" | "recruitment" | "leave"
@@ -392,6 +417,18 @@ const Page = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedTeachers = filteredTeachers.slice(startIndex, endIndex);
+  const [leaveCard, setLeaveCard] = useState({
+    totalApplication: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  });
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [actionDropdown, setActionDropdown] = useState<string | null>(null);
+  const [dropdownPos, setDropdownPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
 
   useEffect(() => {
     const token =
@@ -465,14 +502,11 @@ const Page = () => {
 
     // Fetch teacher gender count
     axios
-      .get<GenderResponse>(
-        "http://localhost:5001/teacher/gendercount",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      .get<GenderResponse>("http://localhost:5001/teacher/gendercount", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((response) => {
         const res = response.data;
         const chartData: GenderChartData[] = [
@@ -618,7 +652,7 @@ const Page = () => {
     const fetchCounts = async () => {
       try {
         const response = await axios.get<DashboardCounts>(
-          "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
+          "http://localhost:5001/dashboard/supervisor/counts",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -643,6 +677,43 @@ const Page = () => {
         setCountryDataemp(res.data.otherEmpCountByCountry);
       })
       .catch((err) => console.error("Failed to fetch country stats", err));
+
+    // Fetch leave card summary
+    const fetchLeaveCard = async () => {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
+      if (!token) return;
+      try {
+        const res = await axios.get("http://localhost:5001/leaverequest/card", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setLeaveCard(res.data);
+      } catch (err) {
+        console.error("Error fetching leave card summary", err);
+      }
+    };
+    fetchLeaveCard();
+
+    // Fetch leave request list
+    const fetchLeaveRequests = async () => {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
+      if (!token) return;
+      try {
+        const res = await axios.get<LeaveRequestListResponse>(
+          "http://localhost:5001/leaverequest/list",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setLeaveRequests(res.data.leaveRequest);
+      } catch (err) {
+        console.error("Error fetching leave request list", err);
+      }
+    };
+    fetchLeaveRequests();
   }, []); // Empty dependency array means this effect runs once on component mount
 
   const handleViewTeacher = (teacherId: string) => {
@@ -1384,7 +1455,9 @@ const Page = () => {
                               </button>
                               <button
                                 className="text-[12px] bg-[#576CBC] text-white px-2 py-1 rounded-lg"
-                                onClick={() => handleViewTeacher(teacher.userId)}
+                                onClick={() =>
+                                  handleViewTeacher(teacher.userId)
+                                }
                               >
                                 View Profile
                               </button>
@@ -1439,19 +1512,23 @@ const Page = () => {
 
                         {/* Bar Chart Section */}
                         <div className="flex-1 h-[220px] pt-2">
-                   <ResponsiveContainer width="100%" height="100%">
-  <BarChart data={chartData} barSize={40}>
-    <XAxis dataKey="name" axisLine={false} tick={false} />
-    <YAxis hide domain={[0, 100]} /> {/* Set Y-axis as percentage */}
-    <Tooltip cursor={{ fill: "transparent" }} />
-    <Bar dataKey="value" radius={[10, 10, 10, 10]}>
-      {chartData.map((entry) => (
-        <Cell key={entry.name} fill={entry.color} />
-      ))}
-    </Bar>
-  </BarChart>
-</ResponsiveContainer>
-
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData} barSize={40}>
+                              <XAxis
+                                dataKey="name"
+                                axisLine={false}
+                                tick={false}
+                              />
+                              <YAxis hide domain={[0, 100]} />{" "}
+                              {/* Set Y-axis as percentage */}
+                              <Tooltip cursor={{ fill: "transparent" }} />
+                              <Bar dataKey="value" radius={[10, 10, 10, 10]}>
+                                {chartData.map((entry) => (
+                                  <Cell key={entry.name} fill={entry.color} />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
                         </div>
                       </div>
                     </div>
@@ -1952,28 +2029,19 @@ const Page = () => {
                     ].map((card) => (
                       <div
                         key={card.title}
-                        className="bg-white shadow-md rounded-xl flex flex-col justify-between w-full"
+                        className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
                       >
-                        <div className="flex items-start justify-between px-4 mt-4 mb-2">
-                          <div
-                            className={`w-10 h-10 rounded-full ${card.iconBg} flex items-center justify-center`}
-                          >
-                            <FileText size={20} className={card.iconColor} />
-                          </div>
-                          <div className="text-right">
-                            <h3 className="text-2xl font-bold text-gray-800">
-                              {card.count}
-                            </h3>
-                            <p className="text-sm text-gray-500">
+                        <div className="flex flex-col justify-between gap-y-8">
+                          <div>
+                            <p className="text-[16px] font-medium dark:text-white text-white">
                               {card.title}
                             </p>
                           </div>
-                        </div>
-                        <div className="h-16">
-                          <Line
-                            data={chartTemplate(card.chartColor)}
-                            options={smallChartOptions}
-                          />
+                          <div>
+                            <h3 className="text-[28px] font-semibold dark:text-white text-white">
+                              {card.count}
+                            </h3>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1993,106 +2061,247 @@ const Page = () => {
               <div className="space-y-4 overflow-y-auto scrollbar-none">
                 {/* Summary Cards */}
                 <div className="flex gap-5 ">
-                  <div className="bg-[#012A4A] text-white rounded-xl shadow p-5 w-[200px]">
-                    <p className="text-sm">Total Leave Requests</p>
-                    <h2 className="text-2xl font-semibold ">150</h2>
+                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
+                    <p className="text-md font-medium">Total Leave Requests</p>
+                    <h2 className="text-2xl font-semibold ">
+                      {leaveCard.totalApplication}
+                    </h2>
                   </div>
-                  <div className="bg-[#2D49AD] text-white rounded-xl shadow p-5 w-[200px]">
-                    <p className="text-sm">Total Approved</p>
-                    <h2 className="text-2xl font-semibold">125</h2>
+                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
+                    <p className="text-md font-medium">Total Approved</p>
+                    <h2 className="text-2xl font-semibold">
+                      {leaveCard.approved}
+                    </h2>
                   </div>
-                  <div className="bg-[#667085] text-white rounded-xl shadow p-5 w-[200px]">
-                    <p className="text-sm">Total Declined</p>
-                    <h2 className="text-2xl font-semibold">25</h2>
+                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
+                    <p className="text-md font-medium">Total Declined</p>
+                    <h2 className="text-2xl font-semibold">
+                      {leaveCard.rejected}
+                    </h2>
                   </div>
                 </div>
-                <div className="flex flex-1 space-x-0 items-center justify-between mt-8">
-                  {/* Search Bar */}
-                  <div className="flex ml-0">
-                    <div className="relative">
+                <div className="w-full h-[350px] overflow-y-scroll scrollbar-none bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+                  <div className="flex justify-between items-center p-2 -ml-2">
+                    <div className="flex items-center gap-2 text-sm text-gray-500 px-2">
+                      <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                       <input
                         type="text"
-                        placeholder="Search here..."
-                        className="border rounded-lg px-10 py-2 text-sm shadow focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[15px] w-52 py-3"
                         value={searchQuery1}
                         onChange={(e) => setSearchQuery1(e.target.value)}
                       />
                     </div>
-                    <button className="ml-2 px-4 py-2 bg-white border rounded-lg shadow text-sm font-base hover:bg-gray-100">
-                      Filter
-                    </button>
+                    <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 ml-48 cursor-pointer">
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {leaveRequests.length === 0 ? 0 : 1} to{" "}
+                        {leaveRequests.length} of {leaveRequests.length}
+                      </span>
+                    </div>
                   </div>
-
-                  {/* Duration Dropdown */}
-                  <div className="flex">
-                    <select className="border rounded-lg p-2 shadow text-sm">
-                      <option>Duration : March</option>
-                      <option>Last Month</option>
-                      <option>Last Week</option>
-                      <option>Last Year</option>
-                    </select>
+                  <div className="overflow-x-auto w-full">
+                    <table className="w-full table-fixed">
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr>
+                          {[
+                            "Employee ID",
+                            "Employee Name",
+                            "Role",
+                            "Leave Type",
+                            "Date Range",
+                            "Reason For Leave",
+                            "Status",
+                            "Action",
+                          ].map((header) => (
+                            <th
+                              key={header}
+                              className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words`}
+                            >
+                              {header}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {leaveRequests.length > 0 ? (
+                          leaveRequests
+                            .filter((item) => {
+                              const search = searchQuery1.toLowerCase();
+                              return (
+                                item.employeeId
+                                  .toLowerCase()
+                                  .includes(search) ||
+                                item.name.toLowerCase().includes(search) ||
+                                item.role.toLowerCase().includes(search) ||
+                                item.leaveType.toLowerCase().includes(search) ||
+                                item.fromDate.toLowerCase().includes(search) ||
+                                item.toDate.toLowerCase().includes(search) ||
+                                item.reason.toLowerCase().includes(search) ||
+                                item.leaveStatus.toLowerCase().includes(search)
+                              );
+                            })
+                            .map((item, index) => {
+                              const btnId = `action-btn-${item._id}`;
+                              return (
+                                <tr
+                                  key={item._id}
+                                  className={`text-[12px] ${
+                                    index % 2 === 0
+                                      ? "bg-[#fff]"
+                                      : "bg-[#F8F8F8]"
+                                  }`}
+                                >
+                                  <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words">
+                                    {item.employeeId}
+                                  </td>
+                                  <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words">
+                                    {item.name}
+                                  </td>
+                                  <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words">
+                                    {item.role}
+                                  </td>
+                                  <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words">
+                                    {item.leaveType}
+                                  </td>
+                                  <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words">
+                                    {`${new Date(
+                                      item.fromDate
+                                    ).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })} - ${new Date(
+                                      item.toDate
+                                    ).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}`}
+                                  </td>
+                                  <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words">
+                                    {item.reason}
+                                  </td>
+                                  <td className="px-3 py-2 text-[11px]">
+                                    <span
+                                      className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                                        item.leaveStatus === "APPROVED"
+                                          ? "bg-[#ECFDF3] text-[#377E36] px-2 border border-[#377E36]"
+                                          : item.leaveStatus === "WAITINGLIST"
+                                          ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 border border-[#F0AD4E]"
+                                          : item.leaveStatus === "REJECTED"
+                                          ? "bg-[#FDECEC] text-[#D34645] px-3 border border-[#D34645]"
+                                          : "bg-gray-200 text-gray-700 px-3 border border-gray-300"
+                                      }`}
+                                    >
+                                      {item.leaveStatus}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 text-[11px] relative ">
+                                    <button
+                                      id={btnId}
+                                      className="p-1 rounded hover:bg-gray-200 "
+                                      onClick={(e) => {
+                                        if (actionDropdown === item._id) {
+                                          setActionDropdown(null);
+                                          setDropdownPos(null);
+                                        } else {
+                                          const rect = (
+                                            e.target as HTMLElement
+                                          ).getBoundingClientRect();
+                                          setDropdownPos({
+                                            top: rect.bottom + window.scrollY,
+                                            left: rect.left + window.scrollX,
+                                          });
+                                          setActionDropdown(item._id);
+                                        }
+                                      }}
+                                    >
+                                      <MoreVertical size={16} />
+                                    </button>
+                                    {/* Portal dropdown */}
+                                    {actionDropdown === item._id &&
+                                      dropdownPos &&
+                                      typeof window !== "undefined" &&
+                                      ReactDOM.createPortal(
+                                        <div
+                                          style={{
+                                            position: "absolute",
+                                            top: dropdownPos.top,
+                                            left: dropdownPos.left,
+                                            zIndex: 9999,
+                                            width: "7rem",
+                                          }}
+                                          className="bg-white rounded-lg shadow-lg"
+                                        >
+                                          <button
+                                            className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100 border-b"
+                                            onClick={() => {
+                                              setSelectedLeave({
+                                                id: item.employeeId,
+                                                name: item.name,
+                                                designation: item.role,
+                                                leaveType: item.leaveType,
+                                                dateRange: `${new Date(
+                                                  item.fromDate
+                                                ).toLocaleDateString("en-US", {
+                                                  month: "short",
+                                                  day: "numeric",
+                                                  year: "numeric",
+                                                })} - ${new Date(
+                                                  item.toDate
+                                                ).toLocaleDateString("en-US", {
+                                                  month: "short",
+                                                  day: "numeric",
+                                                  year: "numeric",
+                                                })}`,
+                                                reason: item.reason,
+                                                status: item.leaveStatus,
+                                              });
+                                              setActionDropdown(null);
+                                              setDropdownPos(null);
+                                            }}
+                                          >
+                                            View
+                                          </button>
+                                          <button
+                                            className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100 text-red-600"
+                                            onClick={() => {
+                                              // Implement cancel logic here
+                                              setActionDropdown(null);
+                                              setDropdownPos(null);
+                                            }}
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>,
+                                        document.body
+                                      )}
+                                  </td>
+                                </tr>
+                              );
+                            })
+                        ) : (
+                          <tr>
+                            <td colSpan={8} className="p-4 text-center">
+                              No data available
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-
-                {/* Table Section */}
-                <div className="bg-white shadow-md border border-gray-900 rounded-lg h-[500px] overflow-x-auto mt-4 scrollbar-none">
-                  <table className="min-w-full text-sm text-[#0d1b3e] table-fixed">
-                    <thead className="bg-white">
-                      <tr className="text-center">
-                        {[
-                          "Employee ID",
-                          "Employee Name",
-                          "Designation",
-                          "Leave Type",
-                          "Date Range",
-                          "Reason For Leave",
-                          "Status",
-                        ].map((title) => (
-                          <th
-                            key={title}
-                            className="px-6 py-3 text-sm font-semibold text-center bg-[#F4F5F7] text-gray-700 whitespace-nowrap"
-                          >
-                            {title}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-100 text-center">
-                      {leaveData.map((item) => (
-                        <tr
-                          key={item.id}
-                          className="hover:bg-gray-50 align-middle border-b border-gray-300"
-                        >
-                          <td className="px-6 py-3 text-xs whitespace-nowrap text-center align-middle border-b border-gray-300">
-                            {item.id}
-                          </td>
-                          <td className="px-6 py-3 text-xs whitespace-nowrap text-center align-middle border-b border-gray-300">
-                            {item.name}
-                          </td>
-                          <td className="px-6 py-3 text-xs whitespace-nowrap text-center align-middle border-b border-gray-300">
-                            {item.designation}
-                          </td>
-                          <td className="px-6 py-3 text-xs whitespace-nowrap text-center align-middle border-b border-gray-300">
-                            {item.leaveType}
-                          </td>
-                          <td className="px-6 py-3 text-xs whitespace-nowrap text-center align-middle border-b border-gray-300">
-                            {item.dateRange}
-                          </td>
-                          <td className="px-6 py-3 text-xs whitespace-nowrap text-center align-middle border-b border-gray-300">
-                            {item.reason}
-                          </td>
-                          <td className="px-6 py-3 text-xs whitespace-nowrap text-center align-middle border-b border-gray-300">
-                            <button
-                              onClick={() => setSelectedLeave(item)}
-                              className="w-[110px] h-[30px] flex items-center justify-center border rounded-md cursor-pointer hover:bg-gray-100 transition"
-                            >
-                              {getStatusBadge(item.status)}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="flex justify-end mt-4">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={() => router.push("/admin-main/ui/leavelist")}
+                  >
+                    View All
+                  </button>
                 </div>
 
                 {selectedLeave && (
