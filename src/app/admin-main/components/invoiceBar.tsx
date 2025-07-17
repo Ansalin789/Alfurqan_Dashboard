@@ -1,0 +1,154 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+import "react-date-range/dist/styles.css";
+import "react-date-range/dist/theme/default.css";
+
+type InvoiceMonthData = {
+    date: string;
+    total: number;
+    paid: number;
+  };
+const ApplicationChart = () => {
+    const [monthlyInvoices, setMonthlyInvoices] = useState<InvoiceMonthData[]>(
+        []
+      );
+    
+        useEffect(() => {
+        const token =
+        typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+    
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
+        if (token) {
+          fetchMonthlyInvoices(token); // call your function with token
+        } else {
+          console.log("No auth token found.");
+        }
+      }, []);
+      
+      const fetchMonthlyInvoices = async (token: string) => {
+          try {
+            const res = await fetch("https://api.blackstoneinfomaticstech.com/totalinvoice",
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+                },
+              });
+            const json = await res.json();
+            if (json.success) {
+              setMonthlyInvoices(json.data);
+            }
+          } catch (error) {
+            console.error("Failed to fetch monthly invoice data", error);
+          }
+        };
+    
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <div className="w-full relative">
+      <div className="bg-white  dark:bg-[#343434] ">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-[#181A20] text-base font-bold">Total Invoice</h3>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-[#a6c1ff]" />
+              <span className="text-xs text-[#181A20]">Total Invoices</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full bg-[#d5e0ff]" />
+              <span className="text-xs text-[#181A20]">Paid Invoices</span>
+            </div>
+            {/* Year Box */}
+            <div className="bg-white text-gray-500 text-xs px-3 py-1 rounded shadow-sm ml-2">
+              {currentYear}
+            </div>
+            {/* If you want a dropdown for year selection, use: */}
+            {/* 
+            <select className="bg-white text-gray-500 text-xs px-2 py-1 rounded shadow-sm ml-2">
+              <option>2025</option>
+              <option>2024</option>
+              ...
+            </select>
+            */}
+          </div>
+        </div>
+
+        {/* Chart */}
+        <div className="text-black dark:text-white/80">
+          <ResponsiveContainer width="100%" height={210}>
+            <BarChart
+              data={monthlyInvoices}
+              margin={{ top: 0, right: 10, left: 0, bottom: 5 }}
+              barCategoryGap="25%" // Decrease this to make bars thicker
+            >
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={({ x, y, payload }) => {
+                  // Split "Jan-2025" into ["Jan", "2025"] and use only the month
+                  const [month] = payload.value.split("-");
+                  return (
+                    <g transform={`translate(${x},${y})`}>
+                      <text
+                        x={0}
+                        y={0}
+                        dy={16}
+                        textAnchor="middle"
+                        fill="#181A20"
+                        fontSize={10}
+                      >
+                        {month}
+                      </text>
+                    </g>
+                  );
+                }}
+                padding={{ left: 4, right: 20 }}
+                interval={0}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 8, fill: "currentColor" }}
+              />
+              <Tooltip
+                cursor={{ fill: "transparent" }}
+                contentStyle={{ fontSize: "10px", borderRadius: "8px" }}
+              />
+              <Bar
+                dataKey="total"
+                stackId="a"
+                fill="#a6c1ff"
+                radius={[0,0,12,12]}
+              />
+              <Bar
+                dataKey="paid"
+                stackId="a"
+                fill="#d5e0ff"
+                radius={[12, 12, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ApplicationChart;
