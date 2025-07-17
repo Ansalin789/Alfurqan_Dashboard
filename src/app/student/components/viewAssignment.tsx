@@ -291,9 +291,9 @@ export const WritingAnswerCard = ({
       progressColor: "#3B82F6",
       height: 60,
       barWidth: 2,
-      responsive: true,
       cursorWidth: 0,
-    });
+      responsive: true,
+    } as any);
 
     wavesurferRef.current = ws;
     ws.load(audioUrl);
