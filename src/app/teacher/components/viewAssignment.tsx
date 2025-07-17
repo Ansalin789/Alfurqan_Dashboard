@@ -285,15 +285,15 @@ export const WritingAnswerCard = ({
       wavesurferRef.current = null;
     }
 
-    const ws = WaveSurfer.create({
+     const ws = WaveSurfer.create({
       container: waveformRef.current,
       waveColor: "#ccc",
       progressColor: "#3B82F6",
       height: 60,
       barWidth: 2,
-      responsive: true,
       cursorWidth: 0,
-    });
+      responsive: true,
+    } as any);
 
     wavesurferRef.current = ws;
     ws.load(audioUrl);
