@@ -44,9 +44,9 @@ export default function DashboardPage() {
   return (
     <BaseLayout4>
       <SupervisorHeader currentSection="Assessment" />
-      <div className="min-h-100vh flex flex-col space-y-6 p-1 w-full overflow-x-hidden">
+      <div className="min-h-100vh flex flex-col  p-1 w-full overflow-x-hidden">
         {/* Top Panel */}
-       <div className="grid grid-cols-1 xl:grid-cols-10 gap-6 flex-wrap">
+       <div className="grid grid-cols-1 xl:grid-cols-10 gap-6 flex-wrap mb-2">
       {/* 50% Profile Info = 5/10 cols */}
       <div className="col-span-1 xl:col-span-5 bg-[#5E6578] text-white rounded-2xl shadow-lg p-6 flex flex-wrap xl:flex-nowrap items-start gap-6 relative w-full">
         {/* Badge */}
@@ -70,7 +70,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Divider */}
-<div className="hidden xl:block w-px bg-gray-300 opacity-30" />
+<div className=" xl:block w-[2px] h-full bg-gray-300 opacity-30" />
 
         {/* Info */}
 <div className="w-full xl:w-2/3 mt-4 xl:mt-0">
@@ -161,10 +161,10 @@ export default function DashboardPage() {
         </ul>
       </div>
     </div>
-    <div className="flex flex-col gap-2 mt-3  w-full bg-[#F5F5F5] dark:bg-[#3B3B3B] rounded-xl ">
+    <div className="flex flex-col gap-1 mt-3  w-full bg-[#F5F5F5] dark:bg-[#3B3B3B] rounded-xl ">
       {/* Filter & Search */}
       <div className="flex flex-col md:flex-row items-start md:items-center dark:bg-[#343434] bg-[#FAFAFB] rounded-xl px-4 gap-4 md:gap-0">
-        <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-300 justify-start py-3 px-4">
+        <div className="flex-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-300 justify-start py-3 sm:py-2 px-4">
           <Search className="w-5 h-5 text-gray-400 dark:text-gray-300" />
           <input
             type="text"
@@ -173,12 +173,12 @@ export default function DashboardPage() {
           />
         </div>
 
-        <button className="flex-1 flex items-center gap-2 text-sm text-gray-400 dark:text-gray-300 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4">
+        <button className="flex-1 flex items-center gap-2 text-sm sm:py-2 text-gray-400 dark:text-gray-300 cursor-pointer justify-start border-y-0 border-l-2 border-r-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4">
           <MdTune className="w-5 h-5" />
           <span>Filter</span>
         </button>
 
-        <div className="flex-1 flex items-center text-sm text-gray-500 dark:text-gray-300 py-3 px-4 justify-start">
+        <div className="flex-1 flex items-center text-sm text-gray-500 sm:py-2 dark:text-gray-300 py-3 px-4 justify-start">
           <span>Showing {currentItems.length} entries</span>
         </div>
       </div>
@@ -188,7 +188,7 @@ export default function DashboardPage() {
         {currentItems.map((user, i) => (
           <div
             key={i}
-            className="bg-white dark:bg-[#343434] rounded-2xl shadow-lg p-5 text-center flex flex-col items-center justify-between hover:shadow-xl transition-shadow w-full"
+            className="bg-white dark:bg-[#343434] rounded-2xl shadow-lg p-3 text-center flex flex-col items-center justify-between hover:shadow-xl transition-shadow w-full"
           >
             <img
               src="/assets/images/profilePicture11.svg"
@@ -205,10 +205,10 @@ export default function DashboardPage() {
                 <Star key={idx} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
               ))}
             </div>
-            <button className="w-full bg-[#576CBC] text-white  hover:bg-[#4459A9] text-sm rounded-lg py-2 mb-2  transition-colors">
+            <button className="w-full bg-[#576CBC] text-white  hover:bg-[#4459A9] text-[12px] rounded-lg py-[7px] mb-2  transition-colors">
               View Profile
             </button>
-            <button className="w-full border border-[#576CBC] text-[#576CBC] hover:border-[#4459A9] text-sm rounded-lg py-2 hover:bg-[#E6E9F5] dark:hover:bg-[#333]  transition-colors">
+            <button className="w-full border border-[#576CBC] text-[#576CBC] hover:border-[#4459A9] text-[12px] rounded-lg py-[7px] hover:bg-[#E6E9F5] dark:hover:bg-[#333]  transition-colors">
               Portal Access
             </button>
           </div>
