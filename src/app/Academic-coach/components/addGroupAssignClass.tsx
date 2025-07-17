@@ -526,7 +526,7 @@ export default function AddGroupAssignClass({
       {success && (
         <SuccessPopup
           onClose={() => setSuccess(false)}
-          title="Group Class Added Successfully"
+          title="Group Class "
         />
       )}
       {failed && (
