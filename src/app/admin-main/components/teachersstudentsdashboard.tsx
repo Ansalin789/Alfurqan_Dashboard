@@ -28,7 +28,7 @@ type TeacherAPI = {
     
     const fetchTeacherStudentCount = async (token: string) => {
       try {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count", {
+        const res = await fetch("http://localhost:5001/teacher-student-count", {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -46,9 +46,8 @@ type TeacherAPI = {
     
   
     return (
-      <div className="bg-white rounded-lg shadow-sm p-5 h-[265px]">
-        <h2 className="text-[15px] font-semibold text-gray-800 mb-3">Teachers - Students</h2>
-        <div className="flex justify-between text-sm font-medium mb-2">
+      <div className="bg-white rounded-lg shadow-sm p-5 h-[528px]">
+        <div className="flex justify-between text-sm font-semibold mb-2">
           <span>Teachers</span>
           <span>Students</span>
         </div>

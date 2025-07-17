@@ -2,9 +2,10 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import { Sun, Bell, X, FileText } from "lucide-react";
+import { Sun, Bell, X, FileText, Search } from "lucide-react";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
 import axios from "axios";
+import ApplicationChart from "../../components/invoiceBar";
 
 interface Student {
   studentId: string;
@@ -42,6 +43,8 @@ import {
   ArcElement,
 } from "chart.js";
 import { useRouter } from "next/navigation";
+import InvoicesDueByDays from "../../components/invoicedue";
+import { MdTune } from "react-icons/md";
 
 // Register ChartJS components
 ChartJS.register(
@@ -59,92 +62,9 @@ ChartJS.register(
 
 export default function Page() {
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(5);
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      message: "New student registration pending approval",
-      seen: false,
-      time: "2 mins ago",
-      type: "urgent",
-    },
-    {
-      id: 2,
-      message: "Class rescheduled for tomorrow",
-      seen: false,
-      time: "1 hour ago",
-      type: "important",
-    },
-    {
-      id: 3,
-      message: "Payment received from student",
-      seen: false,
-      time: "3 hours ago",
-      type: "payment",
-    },
-    {
-      id: 4,
-      message: "System maintenance scheduled",
-      seen: true,
-      time: "Yesterday",
-      type: "system",
-    },
-    {
-      id: 5,
-      message: "New message from teacher",
-      seen: true,
-      time: "2 days ago",
-      type: "message",
-    },
-  ]);
-
-  const notificationRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target as Node)
-      ) {
-        setShowNotifications(false);
-      }
-    };
-
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const toggleNotifications = () => {
-    if (!showNotifications) {
-      const updatedNotifications = notifications.map((notif) => ({
-        ...notif,
-        seen: true,
-      }));
-      setNotifications(updatedNotifications);
-      setNotificationCount(0);
-    }
-    setShowNotifications(!showNotifications);
-  };
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "urgent":
-        return "🔴";
-      case "important":
-        return "🟡";
-      case "payment":
-        return "💰";
-      case "system":
-        return "⚙️";
-      case "message":
-        return "✉️";
-      default:
-        return "🔵";
-    }
-  };
+  
 
   type InvoiceType = "total" | "paid" | "pending" | "void";
   const [invoiceCounts, setInvoiceCounts] = useState<
@@ -155,6 +75,153 @@ export default function Page() {
     pending: 0,
     void: 0,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const itemsPerPage = 10;
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [dashboardRead,setdashboardRead]=useState(false);
+const [filters, setFilters] = useState({
+  invoiceId: "",
+  date: "",
+  studentName: "",
+  studentId: "",
+  course: "",
+  dueByDays: "",
+  paidDate: "",
+  status: "",
+});
+
+const [searchText, setSearchText] = useState("");
+const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+const [filterStatus, setFilterStatus] = useState("");
+const [filterRange, setFilterRange] = useState("");
+
+
+useEffect(() => {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+
+  if (!token) {
+    console.error("❌ AdminAuthToken not found");
+    return;
+  }
+  if (token) {
+    fetchInvoice(token); // Or call the function that performs the GET request
+  } else {
+    console.log("No auth token found.");
+  }
+  if (typeof window !== "undefined") {
+      const roleAccessRaw = localStorage.getItem("AdminRolePermission");
+
+      if (roleAccessRaw) {
+        try {
+          const roleAccess = JSON.parse(roleAccessRaw);
+          const hasRead = roleAccess?.invoice?.write ?? false;
+          console.log(hasRead);
+          setdashboardRead(hasRead);
+        } catch (error) {
+          console.error("Invalid JSON in AdminRolePermission:", error);
+        }
+      }
+    }
+
+}, []);
+
+const fetchInvoice = (token: string) => {
+  axios
+    .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list", {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+    .then((response) => {
+      setInvoices(response.data.data);
+    })
+    .catch((error) => {
+      console.error("Error fetching invoices:", error);
+    });
+};
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
+ 
+
+  // Combine filter modal and search text logic
+  const filterAndSearchInvoices = invoices.filter((invoice) => {
+    // Modal filters
+    const matchesInvoiceId = filters.invoiceId
+      ? invoice._id.toLowerCase().includes(filters.invoiceId.toLowerCase())
+      : true;
+    const matchesDate = filters.date
+      ? invoice.createdDate.slice(0, 10) === filters.date
+      : true;
+    const matchesStudentName = filters.studentName
+      ? invoice.student?.studentName?.toLowerCase().includes(filters.studentName.toLowerCase())
+      : true;
+    const matchesStudentId = filters.studentId
+      ? invoice.student?.studentId?.toLowerCase().includes(filters.studentId.toLowerCase())
+      : true;
+    const matchesCourse = filters.course
+      ? invoice.courseName?.toLowerCase().includes(filters.course.toLowerCase())
+      : true;
+    const matchesDueByDays = filters.dueByDays
+      ? calculateDueDays(invoice.dueDate).includes(filters.dueByDays)
+      : true;
+    const matchesPaidDate = filters.paidDate
+      ? invoice.lastUpdatedDate?.slice(0, 10) === filters.paidDate
+      : true;
+    const matchesStatus = filters.status
+      ? invoice.invoiceStatus === filters.status
+      : true;
+    // Modal filter modal (status/range)
+    const matchesFilterStatus = filterStatus ? invoice.invoiceStatus === filterStatus : true;
+    const matchesFilterRange = filterRange
+      ? (invoice.dueDate ? (() => {
+          const due = new Date(invoice.dueDate!);
+          const today = new Date();
+          const diffTime = due.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (filterRange === "0 to 10") return diffDays >= 0 && diffDays <= 10;
+          if (filterRange === "10 to 20") return diffDays > 10 && diffDays <= 20;
+          if (filterRange === "20 to 30") return diffDays > 20 && diffDays <= 30;
+          if (filterRange === "More than 30 Days") return diffDays > 30;
+          return true;
+        })() : false)
+      : true;
+    // Search text
+    const keyword = searchText.toLowerCase();
+    const matchesSearch =
+      invoice._id.toLowerCase().includes(keyword) ||
+      invoice.student?.studentName?.toLowerCase().includes(keyword) ||
+      invoice.student?.studentId?.toLowerCase().includes(keyword) ||
+      invoice.courseName?.toLowerCase().includes(keyword);
+    return (
+      matchesInvoiceId &&
+      matchesDate &&
+      matchesStudentName &&
+      matchesStudentId &&
+      matchesCourse &&
+      matchesDueByDays &&
+      matchesPaidDate &&
+      matchesStatus &&
+      matchesFilterStatus &&
+      matchesFilterRange &&
+      matchesSearch
+    );
+  });
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filterAndSearchInvoices.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filterAndSearchInvoices.length / itemsPerPage);
+
+  // Only one definition of calculateDueDays should exist, before its first use
+ 
+
   useEffect(() => {
      const token =
     typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
@@ -225,295 +292,21 @@ export default function Page() {
     },
   ];
 
-  type InvoiceMonthData = {
-    date: string;
-    total: number;
-    paid: number;
-  };
-
-  const monthOrder = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-
-  const [monthlyInvoices, setMonthlyInvoices] = useState<InvoiceMonthData[]>(
-    []
-  );
-
-    useEffect(() => {
-    const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
-
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-    if (token) {
-      fetchMonthlyInvoices(token); // call your function with token
-    } else {
-      console.log("No auth token found.");
-    }
-  }, []);
-  
-  const fetchMonthlyInvoices = async (token: string) => {
-      try {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/totalinvoice",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
-            },
-          });
-        const json = await res.json();
-        if (json.success) {
-          setMonthlyInvoices(json.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch monthly invoice data", error);
-      }
-    };
 
 
-
-  const COLORS = ["#0f172a", "#8b5cf6", "#0ea5e9", "#3b82f6"];
-  const [dueData, setDueData] = useState({
-    range_0_10: 0,
-    range_11_20: 0,
-    range_21_30: 0,
-    range_30_plus: 0,
-  });
-
-  useEffect(() => {
-    const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
-
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-    if (token) {
-      fetchData(token); // call your function with token
-    } else {
-      console.log("No auth token found.");
-    }
-  }, []);    
-  const fetchData = async (token: string) => {
-      try {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/invoiceduebydates",
-           {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
-            },
-          });
-        const json = await res.json();
-        if (json.success) {
-          setDueData(json.data);
-        }
-      } catch (err) {
-        console.error("Error fetching invoiceduebydates", err);
-      }
-    };
 
  
+ 
 
-  const barData = {
-    labels: monthOrder,
-    datasets: [
-      {
-        label: "Total",
-        data: monthOrder.map((month) => {
-          const entry = monthlyInvoices.find((item) =>
-            item.date.startsWith(month)
-          );
-          return entry?.total ?? 0;
-        }),
-        backgroundColor: "#217EFD",
-        borderRadius: {
-          bottomLeft: 10,
-          bottomRight: 10,
-        },
-        barThickness: 25,
-      },
-      {
-        label: "Paid",
-        data: monthOrder.map((month) => {
-          const entry = monthlyInvoices.find((item) =>
-            item.date.startsWith(month)
-          );
-          return entry?.paid ?? 0;
-        }),
-        backgroundColor: "#012A4A",
-        borderRadius: {
-          topLeft: 10,
-          topRight: 10,
-          bottomLeft: 0,
-          bottomRight: 0,
-        },
-        barThickness: 25,
-      },
-    ],
-  };
 
-  const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    layout: {
-      padding: {
-        top: 10,
-        bottom: 0,
-        left: 0,
-        right: 0,
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        callbacks: {
-          afterBody: function (context: any) {
-            const chart = context[0].chart;
-            const index = context[0].dataIndex;
 
-            const total = chart.data.datasets[0].data[index];
-            const paid = chart.data.datasets[1].data[index];
-
-            if (!total) return [`Total: 0`, `Paid: ${paid}`];
-            return [
-              `Total: ${total}`,
-              `Paid: ${paid} (${Math.round((paid / total) * 100)}%)`,
-            ];
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        stacked: true,
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        stacked: true,
-        beginAtZero: true,
-        ticks: {
-          stepSize: 5000,
-        },
-        grid: {
-          drawBorder: false,
-          drawTicks: false,
-          drawOnChartArea: false,
-        },
-      },
-    },
-  };
-
-  const doughnutData = {
-    labels: ["0-10", "11-20", "21-30", "More than 30"],
-    datasets: [
-      {
-        data: [
-          dueData.range_0_10,
-          dueData.range_11_20,
-          dueData.range_21_30,
-          dueData.range_30_plus,
-        ],
-        backgroundColor: COLORS,
-        borderWidth: 0,
-      },
-    ],
-  };
-
-  const doughnutOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    cutout: "70%",
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-  };
-
-  const legendLabels = [
-    { label: "0-10 days", value: dueData.range_0_10, color: COLORS[0] },
-    { label: "11-20 days", value: dueData.range_11_20, color: COLORS[1] },
-    { label: "21-30 days", value: dueData.range_21_30, color: COLORS[2] },
-    {
-      label: "More than 30 days",
-      value: dueData.range_30_plus,
-      color: COLORS[3],
-    },
-  ];
-
-  const InvoiceLegend = () => (
-    <div className="space-y-3">
-      {legendLabels.map(({ label, value, color }, idx) => (
-        <div key={idx} className="flex items-center gap-3">
-          <div
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: color }}
-          />
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">{label}</span>
-            <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-              {value}
-            </span>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 
   const handleviewlist = () => {
     router.push("/admin-main/ui/invoicelist");
   };
 
 
-useEffect(() => {
-    const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-    if (token) {
-      fetchStudentInvoices(token);
-    } else {
-      console.log("No auth token found.");
-    }
-  }, []);
-
-   const fetchStudentInvoices  = (token:string) => {
-    axios
-      .get("https://api.blackstoneinfomaticstech.com/studentinvoice/list", {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        setInvoices(response.data.data); // adapt to your API shape
-      })
-      .catch((error) => {
-        console.error("Error fetching invoices:", error);
-      });
-  };
 
 
   const calculateDueDays = (dueDate?: string) => {
@@ -530,331 +323,272 @@ useEffect(() => {
       <BaseLayout4>
         <div className="p-6 w-full mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-800">Invoice</h1>
-            <div className="flex items-center gap-4">
-              <button className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300">
-                <Sun size={16} className="text-gray-700" />
-              </button>
-
-              <button
-                className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 relative"
-                onClick={toggleNotifications}
-              >
-                <Bell size={16} className="text-gray-700" />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {notificationCount}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Notification Panel */}
-          {showNotifications && (
-            <div
-              ref={notificationRef}
-              className="absolute right-6 top-20 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50"
-            >
-              <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                <h4 className="font-semibold text-gray-900">Notifications</h4>
-                <button
-                  onClick={() => setShowNotifications(false)}
-                  className="text-gray-600 hover:text-gray-800"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <div className="h-60 overflow-y-auto p-2">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-3 border-b border-gray-100 ${
-                      notification.seen ? "bg-white" : "bg-blue-50"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-sm mt-0.5">
-                        {getNotificationIcon(notification.type)}
-                      </span>
-                      <div className="flex-1">
-                        <p className="text-sm">{notification.message}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {notification.time}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Invoice Stats Cards */}
           <div className="grid grid-cols-4 gap-4 mb-3">
-            {cards.map((card, index) => (
-              <div
-                key={index}
-                className="bg-white shadow-sm rounded-lg flex flex-col justify-between overflow-hidden"
-              >
-                <div className="px-4 pt-3 pb-1">
-                  <div className="flex items-start justify-between">
-                    <div
-                      className={`w-8 h-8 rounded-full ${card.iconBg} flex items-center justify-center`}
-                    >
-                      <FileText size={16} className={card.iconColor} />
-                    </div>
-                    <div className="text-right">
-                      <h3 className="text-xl font-semibold text-gray-800">
-                        {invoiceCounts[card.key]}
-                      </h3>
-                      <p className="text-xs text-gray-500">{card.title}</p>
-                    </div>
-                  </div>
-                </div>
+  {cards.map((card, index) => (
+    <div
+      key={index}
+      className="bg-[#7986CB] text-white rounded-md px-4 py-3 h-24 flex flex-col justify-between"
+    >
+      <p className="text-sm font-medium">{card.title}</p>
+      <h3 className="text-2xl font-bold">{invoiceCounts[card.key]}</h3>
+    </div>
+  ))}
+</div>
 
-                <div className="h-12 w-full relative">
-                  <Line
-                    data={{
-                      labels: ["", "", "", "", "", ""],
-                      datasets: [
-                        {
-                          data: [3, 8, 4, 6, 5, 9],
-                          borderColor: card.chartColor,
-                          backgroundColor: `${card.chartColor}20`,
-                          borderWidth: 4,
-                          fill: {
-                            target: "origin",
-                            above: `${card.chartColor}10`,
-                            below: `${card.chartColor}20`,
-                          },
-                          tension: 0.4,
-                        },
-                      ],
-                    }}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: { display: false },
-                        filler: { propagate: false },
-                      },
-                      scales: {
-                        x: {
-                          display: false,
-                          grid: { display: false },
-                          ticks: { padding: 0 },
-                        },
-                        y: {
-                          display: false,
-                          grid: { display: false },
-                          ticks: { padding: 0 },
-                          beginAtZero: true,
-                        },
-                      },
-                      layout: {
-                        padding: { left: 0, right: 0, top: 0, bottom: 0 },
-                      },
-                      elements: {
-                        point: { radius: 0 },
-                        line: { tension: 0.4, borderWidth: 2 },
-                      },
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+
 
           {/* Middle Sections */}
-          <div className="grid grid-cols-2 gap-6 mb-6 items-start">
-            {/* Total Invoice Section */}
-            <div className="bg-white rounded-xl shadow-sm p-3 h-[300px] w-full">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base font-semibold text-gray-800">
-                  Total Invoice
-                </h3>
-                <div className="flex gap-3 items-center flex-wrap">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-[#012A4A]" />
-                    <span className="text-xs text-gray-600">Total</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-[#217EFD]" />
-                    <span className="text-xs text-gray-600">Paid</span>
-                  </div>
-                  <div className="bg-gray-100 text-gray-500 text-[10px] px-2 py-[2px] rounded shadow-sm">
-                    Last year
-                  </div>
-                </div>
-              </div>
+          <div className="flex gap-6 mb-6 items-start">
+  {/* Total Invoice Section (Bar Chart) */}
+  <div className="bg-white rounded-xl shadow-sm p-4 h-[300px] flex-1">
+    <ApplicationChart />
+  </div>
 
-              <div className="w-full" style={{ height: "240px" }}>
-                <Bar data={barData} options={barOptions} />
-              </div>
-            </div>
+  {/* Invoices Due by Days (Doughnut Chart) */}
+  <div className="bg-white rounded-xl shadow-sm p-4 h-[300px] w-[300px] shrink-0">
+   <InvoicesDueByDays />
+  </div>
+</div>
 
-            {/* Invoices Due by Days */}
-            <div className="bg-white rounded-xl shadow-sm p-4 h-[300px] w-full">
-              <h3 className="text-sm font-semibold text-gray-800 mb-2">
-                Invoices Due by Days
-              </h3>
-              <div className="flex h-[calc(100%-50px)]">
-                {" "}
-                {/* Subtract title height */}
-                {/* Chart Container (60%) */}
-                <div className="w-[50%] h-full flex items-center justify-center mt-3">
-                  <Doughnut
-                    data={doughnutData}
-                    options={{
-                      ...doughnutOptions,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        ...doughnutOptions.plugins,
-                        legend: {
-                          display: false, // Hide default legend since we're using custom one
-                        },
-                      },
-                    }}
-                  />
-                </div>
-                {/* Legend Container (40%) */}
-                <div className="w-[50%] h-full flex items-center justify-center pl-4">
-                  <InvoiceLegend />
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Invoice Table */}
-          <div className="overflow-x-auto scrollbar-none h-[170px] bg-white rounded-lg border-2 border-[#1C3557] flex flex-col justify-between">
-            <table
-              className="min-w-full rounded-lg shadow bg-white"
-              style={{ width: "100%", tableLayout: "fixed" }}
+          <div className="">
+          <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg overflow-x-auto scrollbar-none">
+    <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+      {/* Left: Search */}
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search by keyword"
+          className="bg-transparent outline-none text-[15px] w-52 py-3"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+      </div>
+
+      {/* Center: Filter */}
+      <div
+        className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+        onClick={() => setIsFilterModalOpen(true)}
+      >
+        <MdTune className="w-4 h-4" />
+        <span>Filter</span>
+      </div>
+
+      {/* Right: Showing X of Y */}
+      <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+        <span className="text-left -ml-60">
+          Showing {filterAndSearchInvoices.length} of {filterAndSearchInvoices.length}
+        </span>
+      </div>
+    </div>
+    {/* Table scrollable wrapper start */}
+    <div className="h-96 overflow-y-auto w-full scrollbar-none">
+      <table className="table-fixed w-full">
+        <thead className="text-[13px] bg-[#4C6993] text-white sticky top-0 z-10">
+          <tr>
+            {[
+              "Invoice ID",
+              "Date",
+              "Student Name",
+              "Student ID",
+              "Course",
+              "Due By Days",
+              "Paid Date",
+              "Status",
+            ].map((header, idx) => (
+              <th
+                key={idx}
+                className="px-2 py-1 text-left text-wrap break-words"
+              >
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {[...filterAndSearchInvoices]
+            .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
+            .map((row: Invoice, index: number) => (
+            <tr
+              key={row._id}
+              className={`text-[9px] text-center  mt-0 ${
+                index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+              }`}
             >
-              <thead className="border-b-[1px] border-[#1C3557] text-[12px] font-semibold">
-                <tr>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "15%" }}
-                  >
-                    Invoice ID
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "15%" }}
-                  >
-                    Date
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "15%" }}
-                  >
-                    Student Name
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "12%" }}
-                  >
-                    Student ID
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "12%" }}
-                  >
-                    Course
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "10%" }}
-                  >
-                    Due By Days
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "15%" }}
-                  >
-                    Paid Date
-                  </th>
-                  <th
-                    className="p-3 py-5 font-semibold text-center"
-                    style={{ width: "10%" }}
-                  >
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="text-[10px] font-medium">
-                {invoices.length > 0 ? (
-                  invoices.map((invoice, index) => (
-                    <tr
-                      key={invoice._id}
-                      className={
-                        index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                      }
-                    >
-                      <td className="p-2 text-center">
-                        #{invoice._id.slice(-6)}
-                      </td>
-                      <td className="p-2 text-center">
-                        {new Date(invoice.createdDate).toLocaleDateString(
-                          undefined,
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )}
-                      </td>
-                      <td className="p-2 text-center">
-                        {invoice.student?.studentName || "-"}
-                      </td>
-                      <td className="p-2 text-center">
-                        {invoice.student?.studentId || "-"}
-                      </td>
-                      <td className="p-2 text-center">{invoice.courseName}</td>
-                      <td className="p-2 text-center">
-                        {calculateDueDays(invoice.dueDate)}
-                      </td>
-                      <td className="p-2 text-center">
-                        {invoice.invoiceStatus === "Paid"
-                          ? new Date(
-                              invoice.lastUpdatedDate
-                            ).toLocaleDateString(undefined, {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            })
-                          : "-"}
-                      </td>
-                      <td className="p-2 text-center">
-                        <span
-                          className={`inline-flex items-center justify-center w-12 h-4.5 px-3 py-1 rounded-md ${
-                            invoice.invoiceStatus === "Paid"
-                              ? "bg-green-100 text-green-800 border border-green-900"
-                              : "bg-yellow-100 text-yellow-800 border border-yellow-900"
-                          } text-[7px]`}
-                        >
-                          {invoice.invoiceStatus}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={8} className="text-center py-4 text-sm">
-                      No invoices found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+              <td className="px-3 py-3 break-words text-[12px] text-left">
+                #{row._id.slice(-6)}
+              </td>
+              <td className="px-3 py-3 break-words text-[12px] text-left">
+                {new Date(row.createdDate).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </td>
+              <td className="px-3 py-3 break-words text-[12px] text-left">
+                {row.student?.studentName || "-"}
+              </td>
+              <td className="px-3 py-3 break-words text-[12px] text-left">
+                {row.student?.studentId || "-"}
+              </td>
+              <td className="px-3 py-3 break-words text-[12px] text-left">
+                {row.courseName}
+              </td>
+              <td className="px-3 py-3 break-words text-[12px] text-left">
+                {calculateDueDays(row.dueDate)}
+              </td>
+              <td className="px-3 py-3 break-words text-[12px] text-left">
+                {row.invoiceStatus === "Paid"
+                  ? new Date(row.lastUpdatedDate).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : "-"}
+              </td>
+              <td className="px-3 py-3 break-words text-[12px] text-left">
+                <span
+                  className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-md
+                    ${
+                      row.invoiceStatus === "Paid"
+                        ? "bg-[#ECFDF3] text-[#377E36]"
+                        : row.invoiceStatus === "Pending"
+                        ? "bg-[#F0AD4E33] text-[#F0AD4E]"
+                        : "bg-gray-200 text-gray-700"
+                    }
+                  `}
+                >
+                  {row.invoiceStatus}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    {/* Table scrollable wrapper end */}
+    {/* Filter Modal */}
+    {isFilterModalOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 dark:bg-opacity-70">
+        <div className="bg-white dark:bg-zinc-900 text-black dark:text-white rounded-2xl shadow-lg p-5 w-[400px]">
+          <h2 className="text-base font-semibold mb-3">Filter by</h2>
+          {/* Invoice ID */}
+          <div className="mb-3">
+            <label className="block text-sm font-medium mb-1">Invoice ID</label>
+            <input
+              type="text"
+              className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+              value={filters.invoiceId}
+              onChange={e => setFilters(f => ({ ...f, invoiceId: e.target.value }))}
+              placeholder="Enter Invoice ID"
+            />
+          </div>
+          {/* Student ID */}
+          <div className="mb-3">
+            <label className="block text-sm font-medium mb-1">Student ID</label>
+            <input
+              type="text"
+              className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+              value={filters.studentId}
+              onChange={e => setFilters(f => ({ ...f, studentId: e.target.value }))}
+              placeholder="Enter Student ID"
+            />
+          </div>
+          {/* Student Name */}
+          <div className="mb-3">
+            <label className="block text-sm font-medium mb-1">Student Name</label>
+            <input
+              type="text"
+              className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+              value={filters.studentName}
+              onChange={e => setFilters(f => ({ ...f, studentName: e.target.value }))}
+              placeholder="Enter Student Name"
+            />
+          </div>
+          {/* Course */}
+          <div className="mb-3">
+            <label className="block text-sm font-medium mb-1">Course</label>
+            <input
+              type="text"
+              className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+              value={filters.course}
+              onChange={e => setFilters(f => ({ ...f, course: e.target.value }))}
+              placeholder="Enter Course Name"
+            />
+          </div>
+          {/* Due Date */}
+          <div className="mb-3">
+            <label className="block text-sm font-medium mb-1">Due Date</label>
+            <input
+              type="date"
+              className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+              value={filters.date}
+              onChange={e => setFilters(f => ({ ...f, date: e.target.value }))}
+            />
+          </div>
+        
+          {/* Status */}
+          <div className="mb-5">
+            <label className="block text-sm font-medium mb-1">Status</label>
+            <select
+              className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="">Select Status</option>
+              <option value="Paid">Paid</option>
+              <option value="Unpaid">Unpaid</option>
+            </select>
+          </div>
+          {/* Buttons */}
+          <div className="flex justify-between">
+            <button
+              className="px-4 py-1.5 text-sm rounded-md border bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-zinc-700"
+              onClick={() => {
+                setFilterRange("");
+                setFilterStatus("");
+                setIsFilterModalOpen(false);
+              }}
+            >
+              Reset
+            </button>
+            <button
+              className="px-4 py-1.5 text-sm rounded-md bg-[#002244] text-white hover:bg-blue-700"
+              onClick={() => setIsFilterModalOpen(false)}
+            >
+              Show {invoices.filter((row: Invoice) =>
+                row._id.toLowerCase().includes(searchText.toLowerCase()) &&
+                (filterStatus ? row.invoiceStatus === filterStatus : true) &&
+                (filterRange ? (row.dueDate ? (() => {
+                  const due = new Date(row.dueDate!);
+                  const today = new Date();
+                  const diffTime = due.getTime() - today.getTime();
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  if (filterRange === "0 to 10") return diffDays >= 0 && diffDays <= 10;
+                  if (filterRange === "10 to 20") return diffDays > 10 && diffDays <= 20;
+                  if (filterRange === "20 to 30") return diffDays > 20 && diffDays <= 30;
+                  if (filterRange === "More than 30 Days") return diffDays > 30;
+                  return true;
+                })() : false) : true)
+              ).length} results
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    {/* END Filter Modal */}
+    {/* Pagination */}
+  
+  {/* Close the main content div for w-full bg-[#FAFAFB] ... */}
+  </div>
           </div>
           <div className="flex justify-end">
             <button
-              className="text-[#fff] mt-3 text-[11px] bg-[#223857] cursor-pointer rounded-md border-none px-2 py-1"
-              onClick={handleviewlist}
+                className=" mt-2 text-[#576CBC] border border-[#576CBC] bg-[#fff] rounded-md px-4 py-2 text-sm font-medium hover:bg-[#dbe2f3] transition duration-200 dark:bg-[#2E3343]"
+                onClick={handleviewlist}
             >
               View All
             </button>

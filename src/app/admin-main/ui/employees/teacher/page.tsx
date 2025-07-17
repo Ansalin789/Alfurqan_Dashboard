@@ -132,6 +132,10 @@ interface User {
   lastUpdatedDate: string;
   gender: string;
   position: string;
+  contact: string,
+  country: string,
+  city: string
+
 }
 interface ScheduledClass {
   student: {
@@ -222,6 +226,13 @@ interface ClassSchedule {
   };
 }
 
+interface ShiftSchedule {
+  date: string;
+  day: string;
+  fromTime: string;
+  toTime: string;
+}
+
 const Teacher = () => {
   const [activeTab, setActiveTab] = useState("Studentslist");
   const [view, setView] = useState<"month" | "week" | "day" | "agenda">(
@@ -248,6 +259,7 @@ const Teacher = () => {
     totalhours: 0,
     totalearnings: 0,
   });
+  const [schedule, setSchedule] = useState<ShiftSchedule[]>([]);
 
   const events = [
     {
@@ -297,7 +309,7 @@ const Teacher = () => {
   const fetchUsers = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/users/${employeeId}`,
+        `http://localhost:5001/users/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -366,7 +378,7 @@ const Teacher = () => {
   const fetchWages = async (token: string) => {
     try {
       const response = await axios.get(
-        `https://api.blackstoneinfomaticstech.com/empwages/${employeeId}`,
+        `http://localhost:5001/empwages/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -381,6 +393,8 @@ const Teacher = () => {
   };
 
   const fetchClasses = async (token: string) => {
+
+    
     try {
       const res = await axios.get<StudentData[]>(
         `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`,
@@ -397,6 +411,37 @@ const Teacher = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchData = async ()  => {
+
+      const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
+
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
+      try {
+        const res = await axios.get(
+          `http://localhost:5001/shiftschedule/${employeeId}`,
+          {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+        );
+        setSchedule(res.data);
+      } catch (error) {
+        console.error("Error fetching schedule:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const CustomToolbar = (toolbar: any) => (
     <div className="flex justify-center items-center py-2 px-4">
       <h2 className="text-xl font-semibold text-center">{toolbar.label}</h2>
@@ -404,8 +449,6 @@ const Teacher = () => {
   );
 
   const router = useRouter();
-
-
 
   const handleclickcalender = () => {
     router.push(
@@ -441,10 +484,10 @@ const Teacher = () => {
                 />
               </div>
               <h2 className="text-sm font-semibold mt-2">
-                {users?.userName || "Will Jonto"}
+                {users?.userName}
               </h2>
               <p className="text-xs text-gray-300">
-                {users?.email || "willjonto@gmail.com"}
+                {users?.email}
               </p>
             </div>
 
@@ -454,11 +497,11 @@ const Teacher = () => {
               <div className="grid grid-cols-2 gap-y-3 text-xs">
                 <div>
                   <p className="text-gray-300">Contact</p>
-                  <p>{users?.phone || "(1) 2345 6789 3245"}</p>
+                  <p>{users?.contact}</p>
                 </div>
                 <div>
                   <p className="text-gray-300">Country</p>
-                  <p>{users?.country || "UAE"}</p>
+                  <p>{users?.country}</p>
                 </div>
 
                 <div>
@@ -467,16 +510,16 @@ const Teacher = () => {
                 </div>
                 <div>
                   <p className="text-gray-300">Nationality</p>
-                  <p>{users?.nationality || "Egyptian"}</p>
+                  <p>{users?.country}</p>
                 </div>
 
                 <div>
                   <p className="text-gray-300">Course</p>
-                  <p>{users?.position || "Islamic Studies"}</p>
+                  <p>{users?.position}</p>
                 </div>
                 <div>
                   <p className="text-gray-300">Employment</p>
-                  <p>{users?.employment || "Full-time"}</p>
+                  <p>Full Time</p>
                 </div>
               </div>
             </div>
@@ -1013,6 +1056,9 @@ const Teacher = () => {
                             Day
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
+                            Date
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
                             Working Hours
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
@@ -1021,43 +1067,7 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-xs text-[#1D2939]">
-                        {[
-                          {
-                            day: "11/11/2022",
-                            whours: "$500",
-                            GMT: "Monthly Salary",
-                          },
-                          {
-                            day: "11/11/2022",
-                            whours: "$500",
-                            GMT: "Monthly Salary",
-                          },
-                          {
-                            day: "11/11/2022",
-                            whours: "$500",
-                            GMT: "Monthly Salary",
-                          },
-                          {
-                            day: "11/11/2022",
-                            whours: "$500",
-                            GMT: "Monthly Salary",
-                          },
-                          {
-                            day: "11/11/2022",
-                            whours: "$500",
-                            GMT: "Monthly Salary",
-                          },
-                          {
-                            day: "11/11/2022",
-                            whours: "$500",
-                            GMT: "Monthly Salary",
-                          },
-                          {
-                            day: "11/11/2022",
-                            whours: "$500",
-                            GMT: "Monthly Salary",
-                          },
-                        ].map((item, index) => (
+                        {schedule.map((item, index) => (
                           <tr
                             key={index}
                             className={`border-t border-gray-100 text-center ${
@@ -1065,8 +1075,9 @@ const Teacher = () => {
                             }`}
                           >
                             <td className="p-3">{item.day}</td>
-                            <td className="p-3">{item.whours}</td>
-                            <td className="p-3">{item.GMT}</td>
+                            <td className="p-3">{item.date}</td>
+                            <td className="p-3">{`${item.fromTime} - ${item.toTime}`}</td>
+                            <td className="p-3">GMT</td>
                           </tr>
                         ))}
                       </tbody>
