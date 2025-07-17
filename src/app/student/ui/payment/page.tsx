@@ -184,7 +184,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     } else if (paymentIntent?.status === "succeeded") {
       try {
         const response = await axios.post(
-          "http://localhost:5001/student/create-payment-intent",
+          "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
           {
             amount,
             currency,
@@ -498,7 +498,7 @@ const Invoice = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5001/student/create-payment-intent",
+        "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
         {
           amount: totalprice * 100,
           currency: "usd",

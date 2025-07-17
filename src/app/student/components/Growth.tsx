@@ -57,7 +57,7 @@ const Growth: React.FC = () => {
     const fetchStudentLevels = async () => {
       try {
         const res = await axios.get<APIResponse>(
-          `http://localhost:5001/alstudents/studentslevel?studentId=${studentId}`
+          `https://api.blackstoneinfomaticstech.com/alstudents/studentslevel?studentId=${studentId}`
         );
         console.log("API response:", res.data);
         const data = res.data.studentCountByLevel;

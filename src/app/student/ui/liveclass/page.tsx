@@ -148,7 +148,7 @@ function LiveClass() {
       });
 
       navigator.sendBeacon(
-        `http://localhost:5001/classShedule/attendanceupdate/${id}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
         blob
       );
     };
@@ -172,7 +172,7 @@ function LiveClass() {
         return;
       }
       const res = await axios.put(
-        `http://localhost:5001/classShedule/attendanceupdate/${id}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
         { student: data },
         {
           headers: {

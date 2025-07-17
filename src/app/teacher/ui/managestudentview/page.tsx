@@ -400,7 +400,7 @@ const ManageStudentView = () => {
         }
 
       const res = await axios.get(
-  `http://localhost:5001/assignments/questionlist`,
+  `https://api.blackstoneinfomaticstech.com/assignments/questionlist`,
   {
     headers: {
       "Content-Type": "application/json",
@@ -514,7 +514,7 @@ useEffect(() => {
         }
 
         const response = await axios.get(
-          `http://localhost:5001/assignments/cardcount?studentId=${studentId}`
+          `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`
           , {
             headers: {
               "Authorization": `Bearer ${token}`,

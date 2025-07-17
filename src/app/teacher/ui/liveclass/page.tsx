@@ -178,7 +178,7 @@ export default function LiveClass() {
         return;
       }
       const res = await axios.put(
-        `http://localhost:5001/classShedule/attendanceupdate/${id}`,
+        `https://api.blackstoneinfomaticstech.com/classShedule/attendanceupdate/${id}`,
         { teacher: data },
         {
           headers: {
