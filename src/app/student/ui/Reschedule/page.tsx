@@ -5,13 +5,13 @@ import { useState, useEffect } from "react";
 import { CalendarX2, Clock } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import moment from "moment";
-import BaseLayout from "@/components/BaseLayout";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
+import BaseLayout2 from "@/components/BaseLayout2";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import StudentHeader from "../../components/StudentHeader";
 
 interface ClassScheduleResponse {
   totalCount: number;
@@ -749,11 +749,11 @@ const date = new Date(year, month, dayNum);
   };
 
   return (
-    <BaseLayout>
-      <SupervisorHeader
+    <BaseLayout2>
+      <StudentHeader
         currentSection="Re-Schedule Class"
         showBackButton={true}
-        showBackPath="schedule"
+        showBackPath="classes"
       />
       <ToastContainer position="top-center" theme="dark" autoClose={3000} />
       <div className="mx-auto flex flex-col lg:flex-row gap-4 overflow-hidden min-h-[calc(100vh-150px)] px-2 sm:px-4 md:px-6">
@@ -902,7 +902,7 @@ const date = new Date(year, month, dayNum);
       {failed && (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
       )}
-    </BaseLayout>
+    </BaseLayout2>
   );
 };
 

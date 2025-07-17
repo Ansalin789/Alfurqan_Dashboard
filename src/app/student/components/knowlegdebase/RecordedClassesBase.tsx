@@ -1,124 +1,151 @@
 'use client';
-import { useState } from "react";
-import { FiFilter } from "react-icons/fi";
+import { useEffect, useState, useMemo } from 'react';
+import { BsThreeDotsVertical } from 'react-icons/bs';
+import { FaPlay } from 'react-icons/fa';
+import axios from 'axios';
 
-const RecordedClassesBase: React.FC = () => {
-  const [selectedVideo, setSelectedVideo] = useState<{ url: string; isYouTube: boolean } | null>(null);
+interface VideoItem {
+  id: string;
+  videoUrl: string;
+  thumbnailUrl: string;
+  title: string;
+  time: string;
+}
 
-  // Sample data for videos
-  const videoData = [
-    {
-      id: 1,
-      thumbnail: "/assets/images/teaching.jpg",
-      videoUrl: "https://www.youtube.com/watch?v=hTYsf6bdSJ8&t=1778s",
-      title: "Class Id | Tajweed | Angela Moss",
-      time: "10.30 am 12/06/2024",
-    },
-    {
-      id: 2,
-      thumbnail: "/assets/images/teaching.jpg",
-      videoUrl: "/assets/videos/recorded-class-2.mp4",
-      title: "Class Id | Arabic | John Doe",
-      time: "11.30 am 12/06/2024",
-    },
-    {
-      id: 3,
-      thumbnail: "/assets/images/teaching.jpg",
-      videoUrl: "/assets/videos/recorded-class-3.mp4",
-      title: "Class Id | Islamic Studies | John Doe",
-      time: "12.00 am 12/06/2024",
-    },
-    {
-      id: 4,
-      thumbnail: "/assets/images/teaching.jpg",
-      videoUrl: "/assets/videos/recorded-class-4.mp4",
-      title: "Class Id | Quran | Jane Doe",
-      time: "12.30 pm 12/06/2024",
-    },
-  ];
+interface Props {
+  searchValue?: string;
+}
+
+const RecordedClassesBase: React.FC<Props> = ({ searchValue = '' }) => {
+  const [selectedVideo, setSelectedVideo] = useState<{
+    url: string;
+    isYouTube: boolean;
+  } | null>(null);
+
+  const [videoData, setVideoData] = useState<VideoItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRecordedClasses = async () => {
+      try {
+        const token = localStorage.getItem('StudentAuthToken');
+        if (!token) {
+          setError('StudentAuthToken not found');
+          return;
+        }
+
+        const response = await axios.get(
+          'https://api.blackstoneinfomaticstech.com/knowledgebase/list',
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const filteredVideos = (response.data.data || []).filter(
+          (item: any) =>
+            item.uploadedFormat?.toLowerCase() === 'video' && item.uploadedFile?.data
+        );
+
+        const transformed = filteredVideos.map((item: any, index: number) => ({
+          id: item._id || `video-${index}`,
+          videoUrl: `data:video/mp4;base64,${arrayBufferToBase64(item.uploadedFile.data)}`,
+          thumbnailUrl: '/assets/images/teaching.jpg',
+          title: item.subjectTitle || 'Class Title',
+          time: item.createdDate
+            ? new Date(item.createdDate).toLocaleString()
+            : 'Time not specified',
+        }));
+
+        setVideoData(transformed);
+      } catch (err) {
+        console.error('Failed to fetch recorded classes:', err);
+        setError('Failed to load recorded classes');
+      }
+    };
+
+    fetchRecordedClasses();
+  }, []);
+
+  const arrayBufferToBase64 = (buffer: number[]) => {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+  };
 
   const handleVideoClick = (videoUrl: string) => {
-    const isYouTube = videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
+    const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
     setSelectedVideo({ url: videoUrl, isYouTube });
   };
 
+  const filteredVideos = useMemo(() => {
+    return videoData.filter((video) =>
+      video.title.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [searchValue, videoData]);
+
   return (
-    <section className="bg-[#ffffff] p-2 rounded-xl mt-2">
-      <div className="flex items-center justify-between mb-2 p-1 border-b-2 border-b-[#525151]">
-        <h2 className="text-[18px] font-semibold text-[#5C5F85]">Recorded Classes Base</h2>
-        {/* Date and Filter */}
-        <div className="flex items-center space-x-2">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="MM/DD/YYYY"
-              className="border border-gray-300 rounded-lg px-2 py-1 text-[10px] w-full"
-            />
-            <div className="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 7V3m8 4V3m-9 8h10m-9 4h4m-7-6h16a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
-                />
-              </svg>
+    <section className="max-w-full h-full dark:bg-[#3b3b3b] p-2 rounded-xl mt-2">
+      {error && <p className="text-red-500 text-center">{error}</p>}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-2">
+        {filteredVideos.map((video) => (
+          <div
+            key={video.id}
+            onClick={() => handleVideoClick(video.videoUrl)}
+            className="bg-[#FAFAFB] px-4 dark:bg-[#343434] rounded-xl shadow hover:shadow-md transition cursor-pointer overflow-hidden relative flex flex-col items-center text-center"
+          >
+            <div className="relative w-full">
+              <img
+                src={video.thumbnailUrl}
+                alt="Thumbnail"
+                className="w-full h-36 object-cover rounded-t-md"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-white bg-opacity-90 dark:bg-[#ffffffc7] px-3 py-2 rounded-lg shadow">
+                  <FaPlay className="text-gray-600 w-3 h-3" />
+                </div>
+              </div>
+              <div className="absolute top-2 right-2 text-gray-200 dark:text-white z-10">
+                <BsThreeDotsVertical className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="px-2 py-3">
+              <h3 className="text-[13px] font-semibold dark:text-white text-[#223857] leading-snug">
+                {video.title}
+              </h3>
+              <p className="text-[11px] text-[#8E8E8E] dark:text-[#AAAAAA] mt-1">
+                {video.time}
+              </p>
+              <p className="text-[11px] text-[#4F4F4F] dark:text-[#AAAAAA] mt-2 leading-tight">
+                <strong className="text-[#4F4F4F] dark:text-[#AAAAAA]">Note-</strong> Recorded
+                classes will remain available for a maximum of three months
+              </p>
             </div>
           </div>
-          <button>
-            <FiFilter className="w-4 h-4 text-[#687E9C]" />
-          </button>
-        </div>
-      </div>
-
-      {/* Video Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
-        {videoData.map((video) => (
-          <button
-          key={video.id}
-          className="w-60 bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
-          onClick={() => handleVideoClick(video.videoUrl)}
-          aria-label={`Play video ${video.title}`}
-        >
-          <img
-            src={video.thumbnail}
-            alt="Class Thumbnail"
-            className="w-full h-32 object-cover"
-          />
-          <div className="p-3">
-            <h3 className="text-[12px] font-bold text-gray-800 mb-1">{video.title}</h3>
-            <p className="text-[11px] text-gray-500 mb-2">{video.time}</p>
-            <p className="text-[10px] text-gray-500 bg-[#dadada] px-[8px] py-[2px] rounded-lg">
-              <b>Note:</b> Recorded classes will remain available for a maximum of one month from the class date.
-            </p>
-          </div>
-        </button>
         ))}
       </div>
 
-      {/* Video Player Modal */}
+      {/* Video Modal */}
       {selectedVideo && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg overflow-hidden max-w-2xl w-full">
             {selectedVideo.isYouTube ? (
               <iframe
                 width="100%"
-                height="400"
-                src={`${selectedVideo.url.replace("watch?v=", "embed/")}`}
+                height="250"
+                src={`${selectedVideo.url.replace('watch?v=', 'embed/')}`}
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               ></iframe>
             ) : (
-              <video src={selectedVideo.url} controls className="w-full h-auto" />
+              <video src={selectedVideo.url} controls className="w-full h-[250px]" />
             )}
+
             <div className="flex justify-end p-2">
               <button
                 onClick={() => setSelectedVideo(null)}

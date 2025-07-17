@@ -1,96 +1,275 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PdfCard from '@/app/student/components/knowlegdebase/PdfCard';
 import BaseLayout2 from '@/components/BaseLayout2';
-import { FiFilter } from "react-icons/fi";
-import { GrShare } from "react-icons/gr";
+import TeacherHeader from '@/app/teacher/components/TeacherHeader';
+import { MdTune } from 'react-icons/md';
+import { Search } from 'lucide-react';
 import RecordedClassesBase from '../../components/knowlegdebase/RecordedClassesBase';
+import StudentHeader from '../../components/StudentHeader';
+
+interface Knowledge {
+  assigmentId: string;
+  name: string;
+  pdfUrl?: string;
+}
+
+const arrayBufferToBase64 = (buffer: number[]) => {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+};
 
 const Knowledge: React.FC = () => {
-  const [userType, setUserType] = useState('normal');
-  const [showPopup, setShowPopup] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilter, setShowFilter] = useState(false);
+  const [filteredClass, setFilteredClass] = useState<Knowledge[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
-  const handleRecordedClassesClick = () => {
-    if (userType === 'normal') {
-      setShowPopup(false);
+  const displayedClasses = filteredClass
+    .filter((item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // 🔍 Check user package type
+  useEffect(() => {
+    const checkUserPackage = () => {
+      const userPackage = localStorage.getItem('StudentPackage');
+      const userEmail = localStorage.getItem('StudentEmail');
+
+      console.log(`📧 User Email: ${userEmail}`);
+      console.log(`🎁 User Package: ${userPackage}`);
+
+      if (userPackage !== 'Pro') {
+        setShowPopup(true);
+      } else {
+        setShowPopup(false);
+      }
+    };
+
+    checkUserPackage();
+  }, []);
+
+  useEffect(() => {
+    if (showPopup) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
+  }, [showPopup]);
+
+  useEffect(() => {
+    const fetchKnowledgeList = async () => {
+      try {
+        const token =
+          typeof window !== 'undefined'
+            ? localStorage.getItem('StudentAuthToken')
+            : null;
+
+        if (!token) {
+          console.error('❌ StudentAuthToken not found');
+          return;
+        }
+
+        const response = await fetch(
+          'https://api.blackstoneinfomaticstech.com/knowledgebase/list',
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const result = await response.json();
+
+        if (result.status === 'success' && result.data) {
+          const formatted = result.data.map((item: any) => ({
+            assigmentId: item._id,
+            name: item.subjectTitle,
+            pdfUrl: `data:application/pdf;base64,${arrayBufferToBase64(
+              item.uploadedFile?.data || []
+            )}`,
+          }));
+          setFilteredClass(formatted);
+        } else {
+          console.error('❌ Failed to fetch knowledge base list:', result.message);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching knowledge base list:', error);
+      }
+    };
+
+    fetchKnowledgeList();
+  }, []);
+
+  const totalPages = Math.ceil(
+    filteredClass.filter((item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ).length / itemsPerPage
+  );
+
+  const renderPagination = () => {
+    const pages = [];
+
+    if (currentPage > 1) {
+      pages.push(
+        <button
+          key="prev"
+          onClick={() => setCurrentPage(currentPage - 1)}
+          className="mx-1 w-8 h-8 text-[20px] rounded bg-[#F8F8FA] dark:bg-[#717171] dark:text-[#9A9A9A] text-[#223857] hover:bg-[#eaeaea] dark:hover:bg-gray-600"
+        >
+          ‹
+        </button>
+      );
+    }
+
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => setCurrentPage(i)}
+          className={`mx-1 w-8 h-8 rounded text-sm font-medium ${
+            i === currentPage
+              ? 'bg-white dark:bg-[#717171] dark:text-white border border-[#223857] text-[#223857]'
+              : 'bg-[#F8F8FA] dark:bg-[#3F3F3F] text-[#203F78] dark:text-[#BDBDBD] hover:bg-[#eaeaea] dark:hover:bg-gray-600'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    if (currentPage < totalPages) {
+      pages.push(
+        <button
+          key="next"
+          onClick={() => setCurrentPage(currentPage + 1)}
+          className="mx-1 w-8 h-8 text-[20px] rounded bg-[#F8F8FA] dark:bg-[#717171] dark:text-[#9A9A9A] text-[#223857] hover:bg-[#eaeaea] dark:hover:bg-gray-600"
+        >
+          ›
+        </button>
+      );
+    }
+
+    return (
+      <div className="sticky bottom-0 w-full dark:bg-[#242424] z-10 py-3 px-2 flex justify-end border-t border-gray-200 dark:border-[#3b3b3b]">
+        <div className="flex flex-wrap">{pages}</div>
+      </div>
+    );
   };
 
   return (
     <BaseLayout2>
-      <div onClick={handleRecordedClassesClick} className={`${userType === 'normal' ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''} w-full p-2 px-4`}>
-        <section className=" bg-[#ffffff] p-6 py-3 rounded-xl w-full">
-          <div className="flex items-center justify-between p-1 border-b-2 border-b-[#525151] w-full">
-            <h2 className="text-[18px] font-semibold text-[#5C5F85]">Knowledge Base</h2>
-            {/* Date and Filter */}
-            <div className="flex items-center space-x-2">
-              <div className="relative">
+      <StudentHeader currentSection="Knowledge Base" />
+      <div className="w-full px-2 sm:px-4 py-6 min-h-screen">
+        <section className="w-full bg-[#F5F5F5] dark:bg-[#3B3B3B] py-3 rounded-xl shadow">
+          <div className="flex flex-col md:flex-row items-center justify-between w-full bg-[#FAFAFB] dark:bg-[#343434] px-4 sm:px-6 -mt-3 rounded-t-xl gap-4">
+            <div className="flex-1 flex items-center gap-2 text-sm text-gray-500">
+              <Search className="w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by Keyword"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
+              />
+            </div>
+            <button
+              onClick={() => setShowFilter(true)}
+              className="flex-1 flex items-center justify-between text-sm text-gray-400 cursor-pointer border-y-0 border-x-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
+            >
+              <span className="flex items-center gap-2">
+                <MdTune className="w-5 h-5" />
+                Filter
+              </span>
+              <span className="ml-auto text-[20px]">&#9662;</span>
+            </button>
+            <div className="flex-1 flex items-center text-sm text-gray-500">
+              <span>
+                Showing {displayedClasses.length} of {filteredClass.length}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 p-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            {displayedClasses.map((item, index) => (
+              <PdfCard
+                key={item.assigmentId || index}
+                title={item.name}
+                details="View Details"
+                pdfUrl={item.pdfUrl || ''}
+              />
+            ))}
+          </div>
+        </section>
+
+        {renderPagination()}
+
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold text-[#0a0a0a] dark:text-white dark:bg-[#242424] pb-3">
+            Recorded Classes
+          </h2>
+          <section className="w-full bg-[#F5F5F5] dark:bg-[#3b3b3b] py-4 rounded-xl shadow">
+            <div className="flex flex-col md:flex-row items-center dark:bg-[#343434] bg-[#FAFAFB] justify-between w-full px-4 sm:px-6 -mt-4 rounded-t-xl gap-4">
+              <div className="flex-1 flex items-center gap-2 text-sm text-gray-500">
+                <Search className="w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="MM/DD/YYYY"
-                  className="border border-gray-300 rounded-lg px-2 py-1 text-[10px] w-full"
+                  placeholder="Search by Keyword"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
                 />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-gray-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8 7V3m8 4V3m-9 8h10m-9 4h4m-7-6h16a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
-                    />
-                  </svg>
-                </div>
               </div>
-              <button>
-                <FiFilter className="w-4 h-4 text-[#687E9C]" />
+              <button
+                onClick={() => setShowFilter(true)}
+                className="flex-1 flex items-center justify-between text-sm text-gray-400 cursor-pointer border-y-0 border-x-2 border-gray-300 dark:border-[#868585] h-full md:h-[40px] px-4"
+              >
+                <span className="flex items-center gap-2">
+                  <MdTune className="w-5 h-5" />
+                  Filter
+                </span>
+                <span className="ml-auto text-[20px]">&#9662;</span>
               </button>
+              <div className="flex-1 flex items-center text-sm text-gray-500">
+                <span>
+                  Showing {displayedClasses.length} of {filteredClass.length}
+                </span>
+              </div>
             </div>
-          </div>
-
-          {/* Cards Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 p-1 overflow-y-scroll scrollbar-thin scrollbar-track-black">
-            {[...Array(6)].map((_, index) => (
-                <PdfCard
-                key={`pdf-card-${index}`}
-                title="Sample PDF"
-                details="Details"
-                pdfUrl="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
-                />
-            ))}
+            <RecordedClassesBase searchValue={searchQuery} />
+          </section>
         </div>
-
-        </section>
-
-        <div>
-          <RecordedClassesBase /> 
-        </div>
-        
-
-
-        <section>
-          <h2 className="text-[18px] font-semibold text-[#5C5F85] p-1 px-7">
-            Learn More Courses
-          </h2>
-          <button className="bg-[#223857] flex text-white text-[10px] p-[3px] ml-7 px-4 rounded-full hover:bg-[#1f334e]">
-            <GrShare className="mt-[1px]" />&nbsp; Look More Courses
-          </button>
-        </section>
       </div>
+
+      {/* 🔒 Popup if not Pro */}
       {showPopup && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-4 rounded shadow-lg">
-              <p className='text-[12px]'>Please upgrade your plan to access this feature.</p>
-              <button onClick={() => setShowPopup(false)} className="mt-2 bg-[#223857] text-white px-2 text-center justify-center py-1 rounded text-[12px] ml-28">Close</button>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 dark:bg-black/70">
+          <div className="bg-white dark:bg-[#2c2c2c] text-gray-800 dark:text-white rounded-2xl p-6 w-[320px] shadow-2xl flex flex-col items-center space-y-5 transition-all duration-300">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-b from-purple-500 to-cyan-400 flex items-center justify-center text-white text-3xl font-bold shadow-md">
+              !
             </div>
+            <p className="text-center text-[16px] font-medium">
+              Applicable for Only <br /> Pro Users!
+            </p>
+            <button
+              className="w-full bg-gradient-to-r from-purple-500 to-cyan-400 text-white text-[14px] font-semibold py-2 rounded-full hover:opacity-90 transition-all flex items-center justify-center gap-2"
+            >
+              Upgrade Now <span className="text-white text-sm">⚡</span>
+            </button>
           </div>
-        )}
+        </div>
+      )}
     </BaseLayout2>
   );
 };

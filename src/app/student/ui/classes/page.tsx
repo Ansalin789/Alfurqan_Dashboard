@@ -9,9 +9,9 @@ import axios from "axios";
 import { MoreVertical, Search, TimerReset } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import moment from "moment";
 import { getSocket } from "@/app/utils/socket";
+import StudentHeader from "../../components/StudentHeader";
 
 interface Student {
   studentId: string;
@@ -253,7 +253,7 @@ const Classes = () => {
       return;
     }
 
-    if (studentpackage === "Pro") {
+    if (studentpackage === "Pro" || studentpackage === "Elite") {
       router.push(
         `/student/ui/Proreschedule?classId=${classId}&course=${course}`
       );
@@ -275,7 +275,7 @@ const Classes = () => {
   return (
     <BaseLayout2>
       <div className="mx-auto max-w-screen-2xl px-2 sm:px-4 lg:px-6">
-        <SupervisorHeader currentSection="Scheduled Meetings" />
+        <StudentHeader currentSection="My Class" />
         <MyClass />
         {/* Tabs */}
         <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 py-4">

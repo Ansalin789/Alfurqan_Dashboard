@@ -11,12 +11,14 @@ import {
   CardExpiryElement,
   CardCvcElement,
 } from "@stripe/react-stripe-js";
+import type { StripeCardNumberElementChangeEvent } from "@stripe/stripe-js";
 import BaseLayout2 from "@/components/BaseLayout2";
 import axios from "axios";
 import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import StudentHeader from "../../components/StudentHeader";
 import React from "react";
+import Link from "next/link";
 
 const stripePromise = loadStripe(
   "pk_test_51LilJwCsMeuBsi2YvvK4gor68JPLEOcF2KIt1GuO8qplGSzCSjKTI2BYZ7Z7XLKD1VA8riExXLOT73YHQIA8wbUJ000VrpQkNE"
@@ -40,6 +42,7 @@ interface Invoice {
   _id: string;
   courseName: string;
   amount: number;
+  paymentDate: number;
   status: string;
   createdDate: string;
   createdBy: string;
@@ -67,18 +70,86 @@ interface CheckoutFormProps {
   invoiceId: string;
   amount: number;
   currency: string;
+  onPaymentSuccess: (details: any) => void;
+  onPaymentFailure: () => void;
+  selectedInvoice: Invoice | null;
+  downloadInvoice: () => void;
 }
+
+type CardBrand =
+  | "visa"
+  | "mastercard"
+  | "amex"
+  | "discover"
+  | "diners"
+  | "jcb"
+  | "unionpay"
+  | "rupay"
+  | "unknown";
+
+const getCardLogo = (brand: string) => {
+  const logos: Record<CardBrand, string> = {
+    visa: "https://img.icons8.com/color/48/visa.png",
+    mastercard: "https://img.icons8.com/color/48/mastercard-logo.png",
+    amex: "https://img.icons8.com/color/48/amex.png",
+    discover: "https://img.icons8.com/color/48/discover.png",
+    diners: "https://img.icons8.com/color/48/diners-club.png",
+    jcb: "https://img.icons8.com/color/48/jcb.png",
+    unionpay: "https://img.icons8.com/color/48/unionpay.png",
+    rupay: "/assets/images/icons8-rupay-48.png",
+    unknown: "",
+  };
+  return logos[brand as CardBrand] || "";
+};
+
+const detectBrandWithRupayOverride = (event: any) => {
+  const value = event?.value || "";
+  const bin = value.replace(/\D/g, "").slice(0);
+  const stripeBrand = event.brand;
+  if (
+    stripeBrand === "unionpay" ||
+    stripeBrand === "unknown" ||
+    /^(508|60|65|6521|6522|81|82)/.test(bin)
+  ) {
+    return "rupay";
+  }
+  return stripeBrand;
+};
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({
   clientSecret,
   invoiceId,
   amount,
   currency,
+  selectedInvoice,
+  downloadInvoice,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState<
+    null | "succeeded" | "failed"
+  >(null);
+  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  const [isDark, setIsDark] = useState(false);
+  const [cardBrand, setCardBrand] = useState("unknown");
+  const [zip, setZip] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", (e) => {
+          setIsDark(e.matches);
+        });
+    }
+  }, []);
+
+  const handleCardChange = (event: StripeCardNumberElementChangeEvent) => {
+    setCardBrand(detectBrandWithRupayOverride(event));
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -96,24 +167,44 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     const { error, paymentIntent } = await stripe.confirmCardPayment(
       clientSecret,
       {
-        payment_method: { card: cardNumberElement },
+        payment_method: {
+          card: cardNumberElement,
+          billing_details: {
+            address: {
+              postal_code: zip,
+            },
+          },
+        },
       }
     );
 
     if (error) {
       setMessage(error.message ?? "Payment failed.");
+      setPaymentStatus("failed");
     } else if (paymentIntent?.status === "succeeded") {
-      await axios.post(
-        "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
-        {
-          amount,
-          currency,
-          invoiceId,
-          paymentIntentResponse: paymentIntent,
-        }
-      );
+      try {
+        const response = await axios.post(
+          "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
+          {
+            amount,
+            currency,
+            invoiceId,
+            paymentIntentResponse: paymentIntent,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      setMessage("Payment successful!");
+        setPaymentDetails(response.data);
+        setPaymentStatus("succeeded");
+        setMessage("Payment successful!");
+      } catch (error) {
+        setMessage("Payment processing failed.");
+        setPaymentStatus("failed");
+      }
     }
 
     setLoading(false);
@@ -124,28 +215,98 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       onSubmit={handleSubmit}
       className="w-full max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg border border-gray-200 dark:bg-[#343434]"
     >
-      <div className="">
       <div className="mb-4 ">
-        <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">Card Number</label>
-        <div className="border rounded-md px-3 py-2 flex items-center bg-white dark:bg-[#3C3C3C]">
-          <CardNumberElement className="w-full dark:text-[#ffffff]" />
+        <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">
+          Card Number
+        </label>
+        <div className="relative border rounded-md px-3 py-2 flex items-center bg-white dark:bg-[#3C3C3C] dark:text-white">
+          <CardNumberElement
+            options={{
+              style: {
+                base: {
+                  color: isDark ? "#fff" : "#222",
+                  fontSize: "14px",
+                  "::placeholder": { color: isDark ? "#ccc" : "#888" },
+                },
+                invalid: {
+                  color: "#ff6b6b",
+                },
+              },
+            }}
+            className="w-full dark:text-white"
+            onChange={handleCardChange}
+          />
+          {cardBrand && cardBrand !== "unknown" && getCardLogo(cardBrand) && (
+            <img
+              src={getCardLogo(cardBrand)}
+              alt={cardBrand}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-5 w-auto max-w-[40px]"
+            />
+          )}
         </div>
       </div>
       <div className="flex gap-4 mb-4">
         <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">Expiry</label>
-          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
-            <CardExpiryElement className="w-full dark:text-[#ffffff]" />
+          <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">
+            Expiry
+          </label>
+          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-white">
+            <CardExpiryElement
+              options={{
+                style: {
+                  base: {
+                    color: isDark ? "#fff" : "#222",
+                    fontSize: "14px",
+                    "::placeholder": { color: isDark ? "#ccc" : "#888" },
+                  },
+                  invalid: {
+                    color: "#ff6b6b",
+                  },
+                },
+              }}
+              className="w-full dark:text-white"
+            />
           </div>
         </div>
         <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">CVC</label>
-          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-[#ffffff]">
-            <CardCvcElement className="w-full dark:text-[#ffffff]" />
+          <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">
+            CVC
+          </label>
+          <div className="border rounded-md px-3 py-2 bg-white dark:bg-[#3C3C3C] dark:text-white">
+            <CardCvcElement
+              options={{
+                style: {
+                  base: {
+                    color: isDark ? "#fff" : "#222",
+                    fontSize: "14px",
+                    "::placeholder": { color: isDark ? "#ccc" : "#888" },
+                  },
+                  invalid: {
+                    color: "#ff6b6b",
+                  },
+                },
+              }}
+              className="w-full dark:text-white"
+            />
           </div>
         </div>
       </div>
-
+      {/* <div className="mb-4">
+        <label className="block text-xs font-medium text-gray-800 mb-1 dark:text-[#ffffff]">ZIP Code</label>
+        <input
+          type="text"
+          maxLength={6}
+          pattern="\d{6}"
+          required
+          value={zip}
+          onChange={(e) => {
+            const cleaned = e.target.value.replace(/\D/g, '');
+            setZip(cleaned);
+          }}
+          placeholder="123456"
+          className="w-full border rounded-md px-3 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-[#232323] dark:text-white"
+        />
+      </div> */}
       <button
         type="submit"
         disabled={!stripe || loading}
@@ -157,11 +318,11 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       >
         {loading ? "Processing..." : "Pay"}
       </button>
-
       {message && (
-        <p className="text-center text-sm text-gray-700">{message}</p>
+        <p className="text-center text-sm text-gray-700 dark:text-white">
+          {message}
+        </p>
       )}
-      </div>
     </form>
   );
 };
@@ -180,7 +341,10 @@ const Invoice = () => {
   const [positionApplied, setPositionApplied] = useState("Pending");
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [searchText, setSearchText] = useState("");
-
+  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  const [paymentStatus, setPaymentStatus] = useState<
+    null | "succeeded" | "failed"
+  >(null);
   // Calculate total price based on selected invoice
   const calculateTotalPrice = () => {
     if (!selectedInvoice) return 0;
@@ -194,16 +358,81 @@ const Invoice = () => {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
+        // Debug: Check all localStorage items
+        console.log("🔍 All localStorage items:");
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key) {
+            const value = localStorage.getItem(key);
+            console.log(
+              `  ${key}: ${value ? value.substring(0, 50) + "..." : "null"}`
+            );
+          }
+        }
+
         const studentIdToFilter = localStorage.getItem("StudentPortalId");
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("StudentAuthToken")
-            : null;
+
+        // Try different possible token keys
+        let token = localStorage.getItem("StudentAuthToken");
+        if (!token) {
+          token = localStorage.getItem("authToken");
+        }
+        if (!token) {
+          token = localStorage.getItem("token");
+        }
+        if (!token) {
+          token = localStorage.getItem("accessToken");
+        }
+        if (!token) {
+          token = localStorage.getItem("userToken");
+        }
 
         if (!token) {
-          console.error("❌ StudentAuthToken not found");
+          console.error("❌ No authentication token found in localStorage");
+          console.error(
+            "❌ Checked keys: StudentAuthToken, authToken, token, accessToken, userToken"
+          );
+          alert("No authentication token found. Please log in again.");
           return;
         }
+
+        // Try to parse token if it's stored as JSON
+        try {
+          if (token) {
+            const parsedToken = JSON.parse(token);
+            if (typeof parsedToken === "object" && parsedToken.token) {
+              token = parsedToken.token;
+            } else if (
+              typeof parsedToken === "object" &&
+              parsedToken.accessToken
+            ) {
+              token = parsedToken.accessToken;
+            }
+          }
+        } catch (e) {
+          // Token is not JSON, use as is
+          console.log("🔍 Token is not JSON format, using as string");
+        }
+
+        // Debug: Log the token to see its format
+        if (token) {
+          console.log("🔍 Token being sent:", token);
+          console.log("🔍 Token length:", token.length);
+          console.log("🔍 Token starts with:", token.substring(0, 20));
+
+          // Validate token format (should be a JWT token)
+          if (!token.includes(".") || token.split(".").length !== 3) {
+            console.error("❌ Invalid token format - not a valid JWT");
+            console.error(
+              "❌ Token format check failed. Token should be in JWT format (xxx.yyy.zzz)"
+            );
+            return;
+          }
+        } else {
+          console.error("❌ Token is null after parsing");
+          return;
+        }
+
         const response = await axios.get<InvoiceResponse>(
           "https://api.blackstoneinfomaticstech.com/studentinvoice",
           {
@@ -213,7 +442,7 @@ const Invoice = () => {
             },
           }
         );
-        console.log("api response", response);
+        console.log("✅ API response:", response);
         const filteredInvoices = response.data.invoice.filter(
           (invoice) => invoice.student.studentId === studentIdToFilter
         );
@@ -222,9 +451,24 @@ const Invoice = () => {
         if (filteredInvoices.length > 0) {
           setSelectedInvoice(filteredInvoices[0]);
         }
-      } catch (error) {
-        console.log("Failed to fetch invoices. Please try again.");
-        console.error("Error fetching invoices:", error);
+      } catch (error: any) {
+        console.error("❌ Failed to fetch invoices:", error);
+
+        // Handle specific authentication errors
+        if (error.response?.status === 401) {
+          console.error(
+            "❌ Authentication failed - token may be invalid or expired"
+          );
+          console.error("❌ Error details:", error.response.data);
+
+          // Optionally redirect to login or show a message
+          alert("Authentication failed. Please log in again.");
+          // You might want to redirect to login page here
+          // window.location.href = '/login';
+        } else {
+          console.error("❌ Network or server error:", error.message);
+          alert("Failed to fetch invoices. Please try again.");
+        }
       }
     };
 
@@ -245,6 +489,13 @@ const Invoice = () => {
     const evaluationid = selectedInvoice._id;
     const totalprice = totalPrice;
 
+    // Debug: Log values before making the request
+    console.log("[DEBUG] totalprice:", totalprice);
+    console.log("[DEBUG] evaluationid:", evaluationid);
+
+    // Set paymentDate to current date/time in ISO format
+    const paymentDate = new Date().toISOString();
+
     try {
       const response = await axios.post(
         "https://api.blackstoneinfomaticstech.com/student/create-payment-intent",
@@ -253,12 +504,17 @@ const Invoice = () => {
           currency: "usd",
           invoiceId: evaluationid,
           paymentIntentResponse: "",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      console.log("Stripe Response:", response.data); // Debugging
+      console.log("[DEBUG] Stripe Response:", response.data); // Debugging
       const clientSecret = response?.data?.clientSecret;
-      console.log("Stripe Response:", response?.data);
+      console.log("[DEBUG] Stripe clientSecret:", clientSecret);
 
       if (clientSecret?.includes("_secret_")) {
         setClientSecret(clientSecret);
@@ -267,9 +523,14 @@ const Invoice = () => {
         alert("Error: Invalid payment session. Please try again.");
         setShowModal(false);
       }
-    } catch (error) {
-      console.error("Error fetching payment intent:", error);
-      alert("Payment initialization failed. Please try again later.");
+    } catch (error: any) {
+      if (error && error.response && error.response.data) {
+        console.error("[DEBUG] Error response data:", error.response.data);
+        alert("Backend error: " + JSON.stringify(error.response.data));
+      } else {
+        console.error("[DEBUG] Unknown error:", error);
+        alert("Unknown error occurred. Check console for details.");
+      }
       setShowModal(false);
     }
   };
@@ -305,6 +566,28 @@ const Invoice = () => {
       });
   };
 
+  const downloadReceipt = () => {
+    if (typeof window === "undefined") return;
+
+    setIsGeneratingPDF(true);
+
+    const receiptElement = document.getElementById("receipt-content");
+    const options = {
+      filename: "receipt.pdf",
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    };
+
+    const html2pdf = require("html2pdf.js");
+    html2pdf()
+      .set(options)
+      .from(receiptElement)
+      .save()
+      .then(() => {
+        setIsGeneratingPDF(false);
+      });
+  };
+
   function formatDateDMY(dateString?: string) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -333,22 +616,29 @@ const Invoice = () => {
   const handleFilter = () => {
     let filtered = invoices;
     if (fromDate) {
-      filtered = filtered.filter(inv => toDateString(inv.createdDate) >= fromDate);
+      filtered = filtered.filter(
+        (inv) => toDateString(inv.createdDate) >= fromDate
+      );
     }
     if (toDate) {
-      filtered = filtered.filter(inv => toDateString(inv.createdDate) <= toDate);
+      filtered = filtered.filter(
+        (inv) => toDateString(inv.createdDate) <= toDate
+      );
     }
     if (positionApplied) {
-      filtered = filtered.filter(inv => inv.invoiceStatus === positionApplied);
+      filtered = filtered.filter(
+        (inv) => inv.invoiceStatus === positionApplied
+      );
     }
     if (searchText.trim() !== "") {
       const lower = searchText.toLowerCase();
-      filtered = filtered.filter(inv =>
-        inv.courseName.toLowerCase().includes(lower) ||
-        inv._id.toLowerCase().includes(lower) ||
-        toDateString(inv.createdDate).includes(lower) ||
-        formatDateDMY(inv.createdDate).includes(lower) ||
-        inv.invoiceStatus.toLowerCase().includes(lower)
+      filtered = filtered.filter(
+        (inv) =>
+          inv.courseName.toLowerCase().includes(lower) ||
+          inv._id.toLowerCase().includes(lower) ||
+          toDateString(inv.createdDate).includes(lower) ||
+          formatDateDMY(inv.createdDate).includes(lower) ||
+          inv.invoiceStatus.toLowerCase().includes(lower)
       );
     }
     setFilteredInvoices(filtered);
@@ -364,16 +654,230 @@ const Invoice = () => {
     let filtered = invoices;
     if (searchText.trim() !== "" && searchText.trim() !== ".") {
       const lower = searchText.toLowerCase();
-      filtered = filtered.filter(inv =>
-        inv.courseName.toLowerCase().includes(lower) ||
-        inv._id.toLowerCase().includes(lower) ||
-        toDateString(inv.createdDate).includes(lower) ||
-        formatDateDMY(inv.createdDate).includes(lower) ||
-        inv.invoiceStatus.toLowerCase().includes(lower)
+      filtered = filtered.filter(
+        (inv) =>
+          inv.courseName.toLowerCase().includes(lower) ||
+          inv._id.toLowerCase().includes(lower) ||
+          toDateString(inv.createdDate).includes(lower) ||
+          formatDateDMY(inv.createdDate).includes(lower) ||
+          inv.invoiceStatus.toLowerCase().includes(lower)
       );
     }
     setFilteredInvoices(filtered);
   }, [searchText, invoices]);
+
+  // Payment status modal (moved from CheckoutForm)
+  const paymentStatusModal = paymentStatus && (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div
+        className="bg-white dark:bg-[#232323] p-6 rounded-xl shadow-xl w-96 relative"
+        id="receipt-content"
+      >
+        {/* Close (X) button */}
+        <button
+          onClick={() => setPaymentStatus(null)}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-200 text-2xl font-bold focus:outline-none"
+          aria-label="Close receipt modal"
+          type="button"
+        >
+          ×
+        </button>
+        <div className="flex flex-col items-center">
+          {/* Icon */}
+          {paymentStatus === "succeeded" ? (
+            <svg
+              className="h-12 w-12 text-green-500 mb-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <circle cx="12" cy="12" r="12" fill="#e6f9ed" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 13l3 3 7-7"
+              />
+            </svg>
+          ) : (
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 48 48"
+              fill="none"
+              className="mb-2"
+            >
+              <circle cx="24" cy="24" r="20" fill="#FDE8E8" />
+              <circle cx="24" cy="24" r="16" fill="#E53935" />
+              <path
+                d="M30 18L18 30"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M18 18L30 30"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          )}
+
+          {/* Title and subtext */}
+          <h3
+            className={`text-xl font-bold mt-2 ${
+              paymentStatus === "succeeded"
+                ? "text-green-500 dark:text-green-400"
+                : "text-red-500 dark:text-red-400"
+            }`}
+          >
+            {paymentStatus === "succeeded"
+              ? "Payment Success"
+              : "Payment Failed"}
+          </h3>
+          <p
+            className={`text-sm mt-1 ${
+              paymentStatus === "succeeded"
+                ? "text-green-500 dark:text-green-400"
+                : "text-red-500 dark:text-red-400"
+            }`}
+          >
+            {paymentStatus === "succeeded"
+              ? "Your payment has been successfully done"
+              : "Your payment has been Failed"}
+          </p>
+          <div
+            className={`w-full border-b-2 my-4 ${
+              paymentStatus === "succeeded"
+                ? "border-green-500 dark:border-green-500"
+                : "border-red-500 dark:border-red-500"
+            }`}
+          ></div>
+
+          {/* Total Payment */}
+          <h4 className="font-bold text-lg text-gray-900 dark:text-white mb-1">
+            Total Payment
+          </h4>
+          <div className="flex items-center justify-center gap-3 mb-2 w-full">
+            <img
+              src="/assets/images/rec.png"
+              alt="Course"
+              className="h-10 w-10 p-1 bg-white rounded-full dark:bg-black"
+            />
+            <div className="flex flex-col items-start">
+              <span className="font-semibold text-black dark:text-white text-sm">
+                {selectedInvoice?.courseName}
+              </span>
+              <div className="flex gap-4 text-xs mt-1">
+                <span className="text-gray-700 dark:text-gray-300">
+                  Month:{" "}
+                  <span className="font-bold">
+                    {(() => {
+                      const date = paymentDetails?.createdDate
+                        ? new Date(paymentDetails.createdDate)
+                        : new Date();
+                      return date.toLocaleString("default", { month: "short" });
+                    })()}
+                  </span>
+                </span>
+                <span className="text-gray-700 dark:text-gray-300">
+                  Year:{" "}
+                  <span className="font-bold">
+                    {(() => {
+                      const date = paymentDetails?.createdDate
+                        ? new Date(paymentDetails.createdDate)
+                        : new Date();
+                      return date.getFullYear();
+                    })()}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            ${((paymentDetails?.paymentAmount || 0) / 100).toFixed(2)}
+          </div>
+
+          {/* Info boxes */}
+          <div className="grid grid-cols-2 gap-4 w-full mb-4">
+            <div className="bg-gray-50 dark:bg-[#232323] rounded-lg py-3 px-2 text-center border border-gray-200 dark:border-gray-100">
+              <p className="text-xs dark:text-gray-400">Ref Number</p>
+              <p className="text-xs font-medium text-gray-400 break-all dark:text-gray-400">
+                {paymentDetails?.paymentResponseId
+                  ? (() => {
+                      const ref = paymentDetails.paymentResponseId;
+                      const mid = Math.ceil(ref.length / 2);
+                      return (
+                        <>
+                          {ref.slice(0, mid)}
+                          <br />
+                          {ref.slice(mid)}
+                        </>
+                      );
+                    })()
+                  : "N/A"}
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-[#232323] rounded-lg py-3 px-2 text-center border border-gray-200 dark:border-gray-100">
+              <p className="text-xs dark:text-gray-400">Payment Time</p>
+              <p className="text-xs font-medium text-gray-400 dark:text-gray-400">
+                {(() => {
+                  const date = paymentDetails?.createdDate
+                    ? new Date(paymentDetails.createdDate)
+                    : new Date();
+                  const day = date.getDate().toString().padStart(2, "0");
+                  const month = date.toLocaleString("default", {
+                    month: "short",
+                  });
+                  const year = date.getFullYear();
+                  const hour = date.getHours().toString().padStart(2, "0");
+                  const min = date.getMinutes().toString().padStart(2, "0");
+                  return `${day} ${month} ${year}, ${hour}:${min}`;
+                })()}
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-[#232323] rounded-lg py-3 px-2 text-center border border-gray-200 dark:border-gray-100">
+              <p className="text-xs dark:text-gray-400">Payment Method</p>
+              <p className="text-xs font-medium text-gray-400 dark:text-gray-400">
+                Online
+              </p>
+            </div>
+            <div className="bg-gray-50 dark:bg-[#232323] rounded-lg py-3 px-2 text-center border border-gray-200 dark:border-gray-100">
+              <p className="text-xs dark:text-gray-400">Sender Name</p>
+              <p className="text-xs font-medium text-gray-400 dark:text-gray-400">
+                {selectedInvoice?.student.studentName || "N/A"}
+              </p>
+            </div>
+          </div>
+
+          {/* Button */}
+          <button
+            onClick={() => {
+              downloadReceipt();
+              setPaymentStatus(null);
+            }}
+            className="w-full mt-2 py-2 bg-[#576CBC] dark:bg-[#576CBC] rounded-lg text-white font-semibold flex items-center justify-center gap-2"
+          >
+            <svg
+              className="h-5 w-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4v12m0 0l-4-4m4 4l4-4m-8 8h8"
+              />
+            </svg>
+            Get PDF Receipt
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <BaseLayout2>
@@ -529,7 +1033,7 @@ const Invoice = () => {
                   <div className="flex justify-between px-2 py-2">
                     <span className="text-xs">Payment Type</span>
                     <span className="text-blue-900 font-semibold text-xs">
-                      Stripe
+                      Online
                     </span>
                   </div>
                   <div className="flex justify-between px-2 py-2">
@@ -613,7 +1117,6 @@ const Invoice = () => {
               </h3>
               <br />
               <div className="w-full h-[300px]  bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
-                {/* <a href="/transactions" className="text-xs text-blue-500 hover:underline">View all</a> */}
                 <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
@@ -683,16 +1186,12 @@ const Invoice = () => {
                           <select
                             className="w-full border rounded-md p-2 text-[12px] dark:bg-[#343434] dark:text-[#D6D6D6] dark:border-[#565656]"
                             value={positionApplied}
-                            onChange={(e) =>
-                              setPositionApplied(e.target.value)
-                            }
+                            onChange={(e) => setPositionApplied(e.target.value)}
                           >
                             <option>Pending</option>
                             <option>Paid</option>
                           </select>
                         </div>
-
-                        
 
                         {/* Buttons */}
                         <div className="flex justify-end gap-3">
@@ -714,7 +1213,7 @@ const Invoice = () => {
                   )}
                   <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                     <span className="text-left -ml-60 ">
-                      Showing {(filteredInvoices.length > 0 ? filteredInvoices.length : invoices.length)} of {invoices.length}
+                      Showing {5} of {5}
                     </span>
                   </div>
                 </div>
@@ -749,116 +1248,182 @@ const Invoice = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {(filteredInvoices.length > 0 ? filteredInvoices : invoices).map((invoice, index) => (
-                      <React.Fragment key={invoice._id || index}>
-                        <tr
-                          onClick={() => {
-                            if (invoice.invoiceStatus === "Pending") {
-                              handleInvoiceClick(invoice);
-                            }
-                          }}
-                          className={`text-[12px] ${
-                            index % 2 === 0
-                              ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                              : "bg-[#F8F8F8] dark:bg-[#303030]"
-                          } cursor-pointer`}
-                        >
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 rounded-l-lg dark:text-[#ffffff]">
-                            {formatDateDMY(invoice.createdDate)}
-                          </td>
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
-                            {invoice._id}
-                          </td>
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
-                            {invoice.courseName}
-                          </td>
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
-                            {invoice.amount}{" "}
-                          </td>
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
-                            24-7-2025
-                          </td>
-                          <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
-                            <span
-                              className={
-                                (invoice.invoiceStatus === "Paid"
-                                  ? "bg-[#ECFDF3] text-[#377E36] border border-green-600"
-                                  : invoice.invoiceStatus === "Pending"
-                                  ? "bg-[#FDF6EC] text-[#F0AD4E] border border-orange-600"
-                                  : "bg-gray-100 text-gray-600 border border-gray-400") +
-                                " py-0.5 px-1  rounded-lg text-[10px] min-w-[70px] inline-block text-center"
+                    {(filteredInvoices.length > 0 ? filteredInvoices : invoices)
+                      .slice() // copy array
+                      .sort(
+                        (a, b) =>
+                          new Date(b.createdDate).getTime() -
+                          new Date(a.createdDate).getTime()
+                      )
+                      .slice(0, 5)
+                      .map((invoice, index) => (
+                        <React.Fragment key={invoice._id || index}>
+                          <tr
+                            onClick={() => {
+                              if (invoice.invoiceStatus === "Pending") {
+                                handleInvoiceClick(invoice);
                               }
-                            >
-                              {invoice.invoiceStatus}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap border-b border-gray-200 rounded-r-lg relative">
-                            <button
-                              className="focus:outline-none dark:text-[#ffffff]"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActionMenuOpen(
-                                  actionMenuOpen === invoice._id
-                                    ? null
-                                    : invoice._id
-                                );
-                              }}
-                            >
+                            }}
+                            className={`text-[12px] ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                            } cursor-pointer`}
+                          >
+                            <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 rounded-l-lg dark:text-[#ffffff]">
+                              {formatDateDMY(invoice.createdDate)}
+                            </td>
+                            <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
+                              {invoice._id}
+                            </td>
+                            <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
+                              {invoice.courseName}
+                            </td>
+                            <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
+                              {invoice.amount}{" "}
+                            </td>
+                            <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
+                              {invoice.paymentDate
+                                ? formatDateDMY(
+                                    new Date(invoice.paymentDate).toISOString()
+                                  )
+                                : ""}
+                            </td>
+                            <td className="px-4 py-3 text-[11px] text-gray-700 whitespace-nowrap border-b border-gray-200 dark:text-[#ffffff]">
                               <span
-                                style={{
-                                  fontSize: 20,
-                                  verticalAlign: "middle",
+                                className={
+                                  (invoice.invoiceStatus === "Paid"
+                                    ? "bg-[#ECFDF3] text-[#377E36] border border-green-600"
+                                    : invoice.invoiceStatus === "Pending"
+                                    ? "bg-[#FDF6EC] text-[#F0AD4E] border border-orange-600"
+                                    : "bg-gray-100 text-gray-600 border border-gray-400") +
+                                  " py-0.5 px-1  rounded-lg text-[10px] min-w-[70px] inline-block text-center"
+                                }
+                              >
+                                {invoice.invoiceStatus}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap border-b border-gray-200 rounded-r-lg relative">
+                              <button
+                                className="focus:outline-none dark:text-[#ffffff]"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActionMenuOpen(
+                                    actionMenuOpen === invoice._id
+                                      ? null
+                                      : invoice._id
+                                  );
                                 }}
                               >
-                                ⋮
-                              </span>
-                            </button>
-                            {actionMenuOpen === invoice._id && (
-                              <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10 dark:bg-[#343434]">
-                                <button className="block w-full text-left px-4 py-2  text-xs dark:text-[#ffffff]">
-                                  View Receipt
-                                </button>
-                                <button
-                                  className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
-                                  onClick={() => setActionMenuOpen(null)}
+                                <span
+                                  style={{
+                                    fontSize: 20,
+                                    verticalAlign: "middle",
+                                  }}
                                 >
-                                  Cancel
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                        {/* Show payments if any */}
-                        {invoice.payments &&
-                          invoice.payments.length > 0 &&
-                          invoice.payments.map((payment, pidx) => (
-                            <tr key={pidx} className="text-center bg-gray-50">
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
-                                Payment on {formatDateDMY(payment.date)}
-                              </td>
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
-                                {payment.amount}
-                              </td>
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
-                                {payment.amount}
-                              </td>
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
-                                {payment.amount}
-                              </td>
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
-                                {payment.amount}
-                              </td>
-                              <td className="px-3 py-2 text-[#17243E] dark:text-[#fff]">
-                                -${payment.amount}
-                              </td>
-                              <td></td>
-                            </tr>
-                          ))}
-                      </React.Fragment>
-                    ))}
+                                  ⋮
+                                </span>
+                              </button>
+                              {actionMenuOpen === invoice._id && (
+                                <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10 dark:bg-[#343434]">
+                                  {invoice.invoiceStatus === "Paid" ? (
+                                    <button
+                                      className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
+                                      onClick={() => {
+                                        setSelectedInvoice(invoice);
+                                        setPaymentDetails({
+                                          paymentAmount: invoice.amount * 100,
+                                          paymentResponseId: invoice._id,
+                                          createdDate: invoice.paymentDate
+                                            ? new Date(
+                                                invoice.paymentDate
+                                              ).toISOString()
+                                            : new Date().toISOString(),
+                                        });
+                                        setPaymentStatus("succeeded");
+                                        setActionMenuOpen(null);
+                                      }}
+                                    >
+                                      View Receipt
+                                    </button>
+                                  ) : invoice.invoiceStatus === "Failed" ? (
+                                    <button
+                                      className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
+                                      onClick={() => {
+                                        setSelectedInvoice(invoice);
+                                        setPaymentDetails({
+                                          paymentAmount: invoice.amount * 100,
+                                          paymentResponseId: invoice._id,
+                                          createdDate: invoice.paymentDate
+                                            ? new Date(
+                                                invoice.paymentDate
+                                              ).toISOString()
+                                            : new Date().toISOString(),
+                                        });
+                                        setPaymentStatus("failed");
+                                        setActionMenuOpen(null);
+                                      }}
+                                    >
+                                      View Receipt
+                                    </button>
+                                  ) : (
+                                    <button
+                                      className="block w-full text-left px-4 py-2 text-xs text-gray-400 cursor-not-allowed dark:text-gray-500"
+                                      disabled
+                                    >
+                                      View Receipt
+                                    </button>
+                                  )}
+                                  <button
+                                    className="block w-full text-left px-4 py-2 text-xs dark:text-[#ffffff]"
+                                    onClick={() => setActionMenuOpen(null)}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                          {/* Show payments if any */}
+                          {invoice.payments &&
+                            invoice.payments.length > 0 &&
+                            invoice.payments.map((payment, pidx) => (
+                              <tr key={pidx} className="text-center bg-gray-50">
+                                <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
+                                  Payment on {formatDateDMY(payment.date)}
+                                </td>
+                                <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
+                                  {payment.amount}
+                                </td>
+                                <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
+                                  {payment.amount}
+                                </td>
+                                <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
+                                  {payment.amount}
+                                </td>
+                                <td className="px-3 py-2 text-[#17243E] dark:text-[#ffffff]">
+                                  {payment.amount}
+                                </td>
+                                <td className="px-3 py-2 text-[#17243E] dark:text-[#fff]">
+                                  -${payment.amount}
+                                </td>
+                                <td></td>
+                              </tr>
+                            ))}
+                        </React.Fragment>
+                      ))}
                   </tbody>
                 </table>
+                
               </div>
+              <div className="mt-4 text-right">
+                  <Link
+                    href="/student/ui/allstudentsinvoice"
+                    className="text-[#576CBC] text-[10px] border border-[#576CBC] px-3 py-1 rounded-md bg-white dark:bg-[#3C3C3C]"
+                  >
+                    View All
+                  </Link>
+                </div>
             </div>
           )}
           {/* Modal for Payment Form */}
@@ -885,6 +1450,16 @@ const Invoice = () => {
                       selectedInvoice?.amount ? selectedInvoice.amount * 100 : 0
                     }
                     currency="usd"
+                    selectedInvoice={selectedInvoice}
+                    downloadInvoice={downloadInvoice}
+                    onPaymentSuccess={(details) => {
+                      setPaymentDetails(details);
+                      setPaymentStatus("succeeded");
+                      setShowModal(false);
+                    }}
+                    onPaymentFailure={() => {
+                      setPaymentStatus("failed");
+                    }}
                   />
                 </Elements>
                 {/* Close button removed as requested */}
@@ -892,6 +1467,8 @@ const Invoice = () => {
             </div>
           )}
         </div>
+
+        {paymentStatusModal}
       </div>
     </BaseLayout2>
   );

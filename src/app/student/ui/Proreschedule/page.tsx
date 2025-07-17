@@ -6,7 +6,6 @@ import { CalendarX2, Clock } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import moment from "moment";
 import BaseLayout2 from "@/components/BaseLayout2";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
 import { getSocket } from "@/app/utils/socket";
@@ -15,6 +14,7 @@ import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { useSearchParams } from "next/navigation";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import StudentHeader from "../../components/StudentHeader";
 
 interface ClassSchedule {
   _v: { __v: any };
@@ -907,11 +907,11 @@ const TeachersSchedule = () => {
 
   return (
     <BaseLayout2>
-      <SupervisorHeader
-        currentSection="Re-Schedule Class"
-        showBackButton={true}
-        showBackPath="schedule"
-      />
+       <StudentHeader
+              currentSection="Re-Schedule Class"
+              showBackButton={true}
+              showBackPath="classes"
+            />
       <ToastContainer position="top-center" theme="dark" autoClose={3000} />
       <div className="mx-auto gap-4 flex flex-col lg:flex-row overflow-hidden min-h-[calc(100vh-150px)]">
         {/* Left Side - Calendar View */}
