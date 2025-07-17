@@ -202,7 +202,6 @@ export default function LiveClass() {
 
     await updateAttendance({
       teacherSessionStart: sessionStartTime,
-      teacherSessionEnd: "00:00",
     });
   };
   const handleEndCall = async () => {
@@ -211,7 +210,6 @@ export default function LiveClass() {
     console.log("Left at:", sessionEndTime);
 
     const res = await updateAttendance({
-      teacherSessionStart: "00:00",
       teacherSessionEnd: sessionEndTime,
     });
     if (res && res.status === 200) {
