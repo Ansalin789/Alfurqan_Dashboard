@@ -7,6 +7,7 @@ import { MdOutlineCancel } from "react-icons/md";
 import { useSearchParams } from "next/navigation";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import axios from "axios";
+import { user } from "@nextui-org/react";
 interface Employee {
   _id: string;
   firstName: string;
@@ -79,18 +80,60 @@ interface EmployeeWage {
   monthlyData?: MonthlyEarnings[];
 }
 
+// interfaces/LeaveRequest.ts
+
+export interface ILeaveRecord {
+  _id: string;
+  name: string;
+  employeeId: string;
+  role: string;
+  fromDate: string;
+  toDate: string;
+  leaveStatus: "WAITINGLIST" | "APPROVED" | "DECLINED";
+  leaveType: string;
+  approvedId: string;
+  approvedName: string;
+  reason: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  __v: number;
+}
+
+export interface ILeaveSummary {
+  totalApplied: number;
+  totalApproved: number;
+  totalDeclined: number;
+}
+
+interface ShiftSchedule {
+  date: string;
+  day: string;
+  fromTime: string;
+  toTime: string;
+}
+
 const EmployeePage = () => {
   const [activeTab, setActiveTab] = useState("Wages");
-  const tabs = ["Wages", "Earnings", "Leave Records", "Working Hours"];
+  const tabs = ["Wages", "Earnings", "Leave Records", "WorkingHours"];
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [isFetched, setIsFetched] = useState(false); // Flag to check if data is fetched
   const searchParams = useSearchParams(); // Get the search params from the URL
   const [wage, setWage] = useState<EmployeeWage | null>(null);
+  const [leaveData, setLeaveData] = useState<ILeaveRecord[]>([]);
+  const [summary, setSummary] = useState<ILeaveSummary>({
+    totalApplied: 0,
+    totalApproved: 0,
+    totalDeclined: 0,
+  });
+  const [schedule, setSchedule] = useState<ShiftSchedule[]>([]);
 
   useEffect(() => {
-    // Retrieve employeeId from search params
+    // Retrieve employeeId and userId from search params
     const employeeId = searchParams.get("employeeId");
     const userId = searchParams.get("userId");
+
     if (!employeeId) {
       console.error("No employee ID found in search params");
       return;
@@ -99,7 +142,14 @@ const EmployeePage = () => {
     // Fetch employee data if not already fetched
     if (!isFetched && employee === null) {
       fetchEmployee(employeeId);
-      fetchWages(employeeId); // Call the API function with employeeId
+      fetchWages(employeeId);
+      fetchData(employeeId); // Fetch shift schedule data
+
+      if (userId) {
+        fetchLeaveData(userId); // ✅ Only call if userId is not null
+      } else {
+        console.error("No user ID found in search params");
+      }
     }
   }, [isFetched, employee, searchParams]);
 
@@ -161,6 +211,51 @@ const EmployeePage = () => {
         error.response?.data ?? error.message
       );
       setWage(null);
+    }
+  };
+
+  const fetchLeaveData = async (userId: string) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5001/leaverequest?employeeId=${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("AdminAuthToken")}`,
+          },
+        }
+      );
+      setLeaveData(res.data.records);
+      setSummary({
+        totalApplied: res.data.totalApplied,
+        totalApproved: res.data.totalApproved,
+        totalDeclined: res.data.totalDeclined,
+      });
+    } catch (error) {
+      console.error("Failed to fetch leave data", error);
+    }
+  };
+
+  const fetchData = async (employeeId: string) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5001/shiftschedule/${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("AdminAuthToken")}`,
+          },
+        }
+      );
+
+      // 🔧 If the API returns an array directly:
+      setSchedule(res.data);
+
+      // ❌ Avoid this unless API returns { records: [...] }
+      // setSchedule(res.data.records);
+    } catch (error) {
+      console.error("Failed to fetch shift schedule", error);
+      setSchedule([]); // fallback to empty array to prevent `.map()` errors
     }
   };
 
@@ -480,19 +575,31 @@ const EmployeePage = () => {
                   <div className="bg-[#11244D] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
                     <div>
                       <p className="text-xs">Total Applied Leave(Days)</p>
-                      <h2 className="text-lg font-bold mt-1">03</h2>
+                      <h2 className="text-lg font-bold mt-1">
+                        {summary.totalApplied}
+                      </h2>
                     </div>
                   </div>
                   <div className="bg-[#4F4CD1] text-white rounded-xl p-4 w-56 shadow-md">
                     <div>
                       <p className="text-xs">Total Approved</p>
-                      <h2 className="text-lg font-bold mt-1">02</h2>
+                      <h2 className="text-lg font-bold mt-1">
+                        <h2 className="text-lg font-bold mt-1">
+                          {summary.totalApproved}
+                        </h2>
+                      </h2>
                     </div>
                   </div>
                   <div className="bg-[#707791] text-white rounded-xl p-4 w-56 shadow-md">
                     <div>
                       <p className="text-xs">Total Declined</p>
-                      <h2 className="text-lg font-bold mt-1">01</h2>
+                      <h2 className="text-lg font-bold mt-1">
+                        {
+                          <h2 className="text-lg font-bold mt-1">
+                            {summary.totalDeclined}
+                          </h2>
+                        }
+                      </h2>
                     </div>
                   </div>
                 </div>
@@ -527,97 +634,45 @@ const EmployeePage = () => {
                         </tr>
                       </thead>
                       <tbody className="text-gray-800 text-xs">
-                        {[
-                          {
-                            id: "#0983867",
-                            name: "Robert james",
-                            designation: "Supervisor",
-                            type: "Sick Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Sickness",
-                            status: "Approved",
-                          },
-                          {
-                            id: "#0983867",
-                            name: "Stefan Salvatore",
-                            designation: "Human Resource",
-                            type: "Casual Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Family Function",
-                            status: "Approved",
-                          },
-                          {
-                            id: "#0983867",
-                            name: "Prasanna Popz",
-                            designation: "Teacher",
-                            type: "Privilege Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Vacation",
-                            status: "Declined",
-                          },
-                          {
-                            id: "#0983867",
-                            name: "Prasanna Popz",
-                            designation: "Teacher",
-                            type: "Privilege Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Vacation",
-                            status: "Declined",
-                          },
-                          {
-                            id: "#0983867",
-                            name: "Prasanna Popz",
-                            designation: "Teacher",
-                            type: "Privilege Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Vacation",
-                            status: "Declined",
-                          },
-                          {
-                            id: "#0983867",
-                            name: "Prasanna Popz",
-                            designation: "Teacher",
-                            type: "Privilege Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Vacation",
-                            status: "Declined",
-                          },
-                        ].map((item, index) => (
+                        {leaveData.map((item, index) => (
                           <tr
-                            key={item.id}
+                            key={item._id}
                             className={`border-t border-gray-100 text-center ${
                               index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
                             }`}
                           >
-                            <td className="p-1 text-center">{item.id}</td>
-                            <td className="p-2 text-center">{item.name}</td>
+                            <td className="p-1 text-center">{item.name}</td>
                             <td className="p-2 text-center">
-                              {item.designation}
+                              {item.employeeId}
                             </td>
-                            <td className="p-2 text-center">{item.type}</td>
-                            <td className="p-2 text-center">{item.range}</td>
+                            <td className="p-2 text-center">{item.role}</td>
+                            <td className="p-2 text-center">
+                              {item.leaveType}
+                            </td>
+                            <td className="p-2 text-center">
+                              {new Date(item.fromDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                }
+                              )}{" "}
+                              -{" "}
+                              {new Date(item.toDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                }
+                              )}
+                            </td>
+
                             <td className="p-2 text-center">{item.reason}</td>
                             <td className="p-2 text-center">
-                              <div className="flex items-center gap-2">
-                                {item.status === "Approved" ? (
-                                  <div>
-                                    <span className="inline-flex items-center justify-center  gap-1">
-                                      <span className="text-lg">
-                                        <IoIosCheckmarkCircleOutline className="text-green-600 text-xs" />
-                                      </span>{" "}
-                                      Approved
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <span className="inline-flex items-center justify-center  gap-1">
-                                      <span className="text-lg">
-                                        <MdOutlineCancel className="text-red-600 text-xs" />
-                                      </span>{" "}
-                                      Declined
-                                    </span>
-                                  </div>
-                                )}
+                              <div className="flex items-center gap-2 justify-center">
+                                {item.leaveStatus}
                               </div>
                             </td>
                           </tr>
@@ -630,57 +685,57 @@ const EmployeePage = () => {
             )}
 
             {/* Working Hours Tab */}
-            {activeTab === "Working Hours" && employee && (
-              <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                <div className="overflow-x-auto max-h-[270px] overflow-y-auto custom-scrollbar scrollbar-none">
-                  <table className="w-full min-w-[600px] text-sm text-left">
-                    <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                      <tr className="text-black border-b border-gray-900">
-                        <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
-                          <div className="flex items-center justify-center gap-2">
-                            <span>Day</span>
-                          </div>
-                        </th>
-                        <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
-                          <div className="flex items-center justify-center gap-2">
-                            <span>Working Hours</span>
-                          </div>
-                        </th>
-                        <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
-                          <div className="flex items-center justify-center gap-2">
-                            <span>GMT</span>
-                          </div>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-gray-800">
-                      {employee.preferedWorkingDays &&
-                        JSON.parse(
-                          employee.preferedWorkingDays.replace(
-                            /\b([A-Z]+)\b/g,
-                            '"$1"'
-                          )
-                        ).map((day: string, index: number) => (
-                          <tr
-                            key={day}
-                            className={`border-t border-gray-100 text-center ${
-                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                            }`}
-                          >
-                            <td className="px-4 py-2 text-[12px] border-r border-gray-200 w-1/3">
-                              {day}
-                            </td>
-                            <td className="px-4 py-2 text-[12px] border-r border-gray-200 w-1/3">
-                              {employee.preferedShiftFrom} -{" "}
-                              {employee.preferedShiftTo}
-                            </td>
-                            <td className="px-4 py-2 text-[12px] w-1/3">
-                              GMT +4
+            {activeTab === "WorkingHours" && (
+              <div className="space-y-6">
+                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
+                  <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
+                    <table className="w-full min-w-[900px] text-sm text-left">
+                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
+                        <tr className="border-b-[1px] border-[#1C3557]">
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Day
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Date
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Working Hours
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            GMT
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-xs text-[#1D2939]">
+                        {schedule.length > 0 ? (
+                          schedule.map((item, index) => (
+                            <tr
+                              key={index}
+                              className={`border-t border-gray-100 text-center ${
+                                index % 2 === 0
+                                  ? "bg-[#faf9f9]"
+                                  : "bg-[#ebebeb]"
+                              }`}
+                            >
+                              <td className="p-3">{item.day}</td>
+                              <td className="p-3">{item.date}</td>
+                              <td className="p-3">{`${item.fromTime} - ${item.toTime}`}</td>
+                              <td className="p-3">GMT</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              className="p-4 text-center text-gray-400"
+                              colSpan={4}
+                            >
+                              No working hours schedule available.
                             </td>
                           </tr>
-                        ))}
-                    </tbody>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
