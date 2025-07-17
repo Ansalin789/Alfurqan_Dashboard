@@ -302,12 +302,12 @@ const ScheduledClasses = () => {
 
           <div className="mt-2">
             <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
-              <div className="flex justify-between items-center px-4 py-0">
+              <div className="flex justify-between gap-2 items-center px-4 py-0">
                 <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search by keyword"
-                  className="bg-transparent outline-none text-[15px] w-52 py-3"
+                  className="bg-transparent outline-none text-[14px] w-52 py-3"
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                 />
@@ -327,14 +327,14 @@ const ScheduledClasses = () => {
             </div>
           </div>
 
-          <div className="w-full h-[610px] bg-[#FAFAFB] dark:bg-[#343434] overflow-y-auto">
+          <div className="overflow-x-auto scrollbar-none">
             <table
-              className="table-auto w-full"
+              className="w-full table-auto border-collapse text-[13px] sm:text-sm"
               style={{ tableLayout: "fixed" }}
             >
               <thead className="text-[12px] bg-[#4C6993] text-white">
                 <tr className="font-medium">
-                  <th className="text-left px-4 py-3">Class ID</th>
+                  <th className="text-left px-4 py-3 w-[180px]">Class ID</th>
                   <th className="text-left px-4 py-3">Student Name</th>
                   <th className="text-left px-4 py-3">Course</th>
                   <th className="text-left px-4 py-3">Date</th>
@@ -353,10 +353,10 @@ const ScheduledClasses = () => {
                         : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left w-[180px] break-words whitespace-normal">
+                    <td className="px-3 py-2 text-[10px] text-left break-words whitespace-normal">
                       {item._id}
                     </td>
-                    <td className="px-3 py-2 text-left w-[180px] break-words whitespace-normal">
+                    <td className=" text-[#3D8FDE] px-3 py-2 text-left w-[180px] break-words whitespace-normal">
                       {item.student.studentFirstName}{" "}
                       {item.student.studentLastName}
                     </td>
@@ -375,15 +375,15 @@ const ScheduledClasses = () => {
                     </td>
                     <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
                       <span
-                        className={`px-2 text-[10px] text-center py-[3px] rounded-md ${
+                        className={`px-3 py-2 font-semibold text-[11px] text-center  rounded-md ${
                           item.scheduleStatus === "Scheduled"
                             ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
                             : item.scheduleStatus === "Rescheduled"
                             ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
-                            : ""
+                            : "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
                         }`}
                       >
-                        {(item.scheduleStatus || "UNKNOWN").toUpperCase()}
+                        {(item.scheduleStatus || "UNKNOWN")}
                       </span>
                     </td>
                     <td className="px-3 py-2 relative ">
@@ -423,7 +423,39 @@ const ScheduledClasses = () => {
                           )}
                         </div>
                       ) : (
-                        <FaEye className="w-4 h-4 text-slate-600 dark:text-white" />
+                        <div className="relative inline-block text-left">
+                          <button
+                            // onClick={() =>
+                            //   setOpenDropdownId(
+                            //     openDropdownId === item._id ? null : item._id
+                            //   )
+                            // }
+                            className="p-2 rounded-md"
+                          >
+                            <MoreVertical className="w-4 h-4 text-slate-600 dark:text-white" />
+                          </button>
+
+                          {openDropdownId === item._id && (
+                            <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-[#2C2C2C] shadow-lg ring-1 ring-black ring-opacity-5">
+                              <div className="py-1 text-sm text-gray-700 dark:text-white">
+                                <button
+                                  onClick={() => {
+                                    handleRescheduleRedirect(item._id);
+                                  }}
+                                  className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-[#404040]"
+                                >
+                                  Reschedule
+                                </button>
+                                <button
+                                  onClick={() => setOpenDropdownId(null)}
+                                  className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-[#404040]"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -460,13 +492,13 @@ const ScheduledClasses = () => {
                 Student
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-whited text-[#5C5C5C] dark:border-[#5C5C5C]"
                 value={filters.studentName}
                 onChange={(e) =>
                   setFilters({ ...filters, studentName: e.target.value })
                 }
               >
-                <option value="">Select Student</option>
+                <option value=" ">Select Student</option>
                 {studentNames.map((name) => (
                   <option key={name} value={name}>
                     {name}
@@ -479,7 +511,7 @@ const ScheduledClasses = () => {
                 Course
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border text-[#5C5C5C] border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
                 value={filters.courseName}
                 onChange={(e) =>
                   setFilters({ ...filters, courseName: e.target.value })
@@ -499,7 +531,7 @@ const ScheduledClasses = () => {
               <input
                 type="date"
                 className="w-full px-3 py-2 border rounded-lg text-sm 
-               text-black dark:text-white 
+              text-[#5C5C5C] dark:text-white 
                bg-white dark:bg-[#343434] 
                border-gray-300 dark:border-[#5C5C5C]
                [&::-webkit-calendar-picker-indicator]:dark:invert"
@@ -517,7 +549,7 @@ const ScheduledClasses = () => {
               <input
                 type="date"
                 className="w-full px-3 py-2 border rounded-lg text-sm 
-               text-black dark:text-white 
+              text-[#5C5C5C] dark:text-white 
                bg-white dark:bg-[#343434] 
                border-gray-300 dark:border-[#5C5C5C]
                [&::-webkit-calendar-picker-indicator]:dark:invert"
@@ -532,7 +564,7 @@ const ScheduledClasses = () => {
                 Status
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white dark:border-[#5C5C5C]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] text-[#5C5C5C] dark:text-white dark:border-[#5C5C5C]"
                 value={filters.scheduleStatus}
                 onChange={(e) =>
                   setFilters({ ...filters, scheduleStatus: e.target.value })
