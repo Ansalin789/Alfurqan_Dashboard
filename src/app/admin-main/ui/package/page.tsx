@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Filter, Edit2 } from "lucide-react";
+import {  Edit2 } from "lucide-react";
 import BaseLayout4 from "@/components/BaseLayout4";
+import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 
 // Type Definitions
 
@@ -73,34 +74,9 @@ export default function PackagesPage() {
 
   return (
     <BaseLayout4>
+    <SupervisorHeader currentSection="package" />
       <div className="flex-1 overflow-auto scrollbar-none">
-        <div className="p-4 text-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-xl font-semibold text-[#002b4d]">Packages</h1>
-          </div>
-
-          <div className="flex justify-between mb-3 items-center">
-            <div className="flex space-x-2">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search here..."
-                  className="pl-8 pr-3 py-1.5 border rounded-md w-[280px] text-xs"
-                />
-                <Search className="absolute left-2 top-2.5 text-gray-400" size={16} />
-              </div>
-              <button className="flex items-center space-x-1 px-3 py-1.5 border rounded-md bg-white text-xs">
-                <Filter size={16} />
-                <span>Filter</span>
-              </button>
-            </div>
-            <button
-              className="bg-[#002b4d] text-white px-3 py-1.5 rounded-md flex items-center text-xs"
-              onClick={() => setShowPackageModal(true)}
-            >
-              <div className="mr-1 text-sm">+</div>
-              Add new Package
-            </button>
+                  <div className="flex justify-between mb-3 items-center">
             {showPackageModal && (
               <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                 <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl">
@@ -189,34 +165,35 @@ export default function PackagesPage() {
           </div>
 
           <div className="mb-3">
-            <div className="flex space-x-2">
-              {PACKAGE_NAMES.map((pkg) => (
-                <button
-                  key={pkg}
-                  className={`px-4 py-1.5 rounded-md text-xs ${
-                    selectedPackage === pkg
-                      ? "bg-[#002b4d] text-white"
-                      : "bg-white text-gray-700"
-                  }`}
-                  onClick={() => setSelectedPackage(pkg)}
-                >
-                  {pkg}
-                </button>
-              ))}
-            </div>
+           <div className="flex space-x-6">
+  {PACKAGE_NAMES.map((pkg) => (
+    <button
+      key={pkg}
+      onClick={() => setSelectedPackage(pkg)}
+      className={`relative text-lg font-medium pb-1 transition-all ${
+        selectedPackage === pkg
+          ? "text-[#576CBC] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[3px] after:bg-[#576CBC] after:rounded-full"
+          : "text-[#0F172A] dark:text-[#ffff]"
+      }`}
+    >
+      {pkg}
+    </button>
+  ))}
+</div>
+
           </div>
 
           <div className="mb-3">
-            <label className="block mb-1 font-medium text-xs">
+            <label htmlFor="uvuvu" className="block mb-1 font-medium text-sm text-[#010E30] dark:text-[#ffff]">
               Cost Per Hour
             </label>
             <div className="relative">
-              <span className="absolute left-2 top-2.5 text-xs">$</span>
+              <span className="absolute left-2 top-2 text-xs">$</span>
               <input
                 type="text"
                 value={packageFeatures[selectedPackage].cost}
                 readOnly
-                className="pl-6 pr-3 py-1.5 border rounded-md w-[280px] text-xs bg-gray-100"
+                className="pl-6 pr-3 py-1.5 border rounded-md w-[280px] text-xs bg-[#FFFFFF] dark:bg-[#2C2C2C]"
               />
             </div>
           </div>
@@ -242,33 +219,33 @@ export default function PackagesPage() {
             features={packageFeatures[selectedPackage].Discounts}
           />
 
-          <div className="flex justify-center space-x-3 mt-5">
-            <button className="px-4 py-1.5 border rounded-md bg-white text-xs">
+          <div className="flex justify-end space-x-3 mt-5 text-xs">
+                     <button className="px-3 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition ">
+
               Cancel
             </button>
-            <button className="px-4 py-1.5 rounded-md bg-[#002b4d] text-white text-xs">
+            <button className="px-4 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700 transition">
               Save
             </button>
           </div>
         </div>
-      </div>
     </BaseLayout4>
   );
 }
 
-function FeatureSection({ title, features }: { title: string; features: string[] }) {
+function FeatureSection({ title, features }: Readonly<{ title: string; features: string[] }>) {
   return (
     <div className="mb-3">
       <div className="flex justify-between items-center mb-1">
-        <h3 className="font-medium text-sm">{title}</h3>
+        <h3 className="font-medium text-sm text-[#010E30] dark:text-[#ffff]">{title}</h3>
         <button className="text-gray-500">
-          <Edit2 size={16} />
+          <Edit2 size={16} className="text-[#010E30]" />
         </button>
       </div>
-      <div className="bg-white border rounded-md p-3">
+      <div className="bg-[#FFFFFF] dark:bg-[#2C2C2C] border rounded-md p-3">
         {features.map((feature) => (
-          <div key={feature} className="flex items-start py-1 text-xs">
-            <input type="checkbox" className="mt-1 mr-2" />
+          <div key={feature} className="flex items-start py-1 text-sm dark:text-[#ffff]">
+            <input type="checkbox" className="mt-1 mr-2  accent-[#576CBC]" />
             <span>{feature}</span>
           </div>
         ))}

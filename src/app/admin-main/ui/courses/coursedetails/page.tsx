@@ -285,9 +285,6 @@ const Page = () => {
               <div className="w-14 h-14 bg-[#576CBC] dark:bg-[#C4C4C4] rounded-full flex items-center justify-center">
                 <Plus color="white" size={28} />
               </div>
-              <button  className="mt-5 px-6 py-2 bg-[#576CBC] text-white  text-xs justify-end font-medium rounded-md">
-                Add New Course
-              </button>
             </button>
           )}
 
