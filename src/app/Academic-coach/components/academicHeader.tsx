@@ -11,6 +11,7 @@ import axios from "axios";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import AddMeeting from "@/app/Academic-coach/components/addMeeting";
 import AddGroupAssignClass from "@/app/Academic-coach/components/addGroupAssignClass";
+import UpgradeClassForm from "./upgradeClass";
 type Props = {
   readonly currentSection: string;
   readonly showBackButton?: boolean;
@@ -64,6 +65,7 @@ export default function AcademicHeader({
   const [showAddMeeting, setAddMeetings] = useState(false);
   const [showAddApplicant, setAddApplicant] = useState(false);
   const [showAssignGroupClass, setAssignGroupClass] = useState(false);
+  const [showUpgradeClass,setShowUpgradeClass] = useState(false);
   const router = useRouter();
   const notificationRef = useRef(null);
   const [activeTab, setActiveTab] = useState<"Seen" | "Unseen">("Unseen");
@@ -270,6 +272,17 @@ if (currentSection === ("Dashboard") ){
       </button>
     );
   }
+  if (currentSection === ("Student")){
+    return (
+      <button
+        onClick={() => setShowUpgradeClass(true)}
+        className="bg-[#576CBC] hover:bg-[#4459A9] text-white text-sm px-4 py-2 rounded-lg"
+        disabled={!studentListWrite}
+      >
+        Upgrade Class
+      </button>
+    );
+  }
   return null;
 };
 
@@ -336,6 +349,9 @@ if (currentSection === ("Dashboard") ){
           onClose={() => setAssignGroupClass(false)}
           students={students}
         />
+      )}
+      {showUpgradeClass && (
+        <UpgradeClassForm onClose={() => setShowUpgradeClass(false)} />
       )}
       {showNotification && (
         <div

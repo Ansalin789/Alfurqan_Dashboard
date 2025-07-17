@@ -297,6 +297,26 @@ export interface Assignment {
   sessionClassType?: string;
   __v: number;
 }
+
+export interface AssignmentType {
+  type: string;
+}
+
+export interface AssignmentData {
+  _id: string;
+  assignmentId: string;
+  assignmentName: string;
+  assignmentType: AssignmentType;
+  questionName: string;
+  assignedDate: string; // ISO Date string
+  dueDate: string;      // ISO Date string
+  assignmentStatus: string; // e.g., "Completed"
+}
+
+export interface AssignmentApiResponse {
+  assignmentData: AssignmentData[];
+  totalCount: number;
+}
 const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return "-";
   const date = new Date(dateStr);
@@ -335,11 +355,16 @@ const ManageStudentView = () => {
   const studentId = searchParams.get("studentId");
   const dropdownRef = useRef<HTMLTableCellElement | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const initialFilters = {
+    studentName: "",
+    assignmentName: "",
+    status: "",
+    // Add more filter fields as needed
+  };
+  const [filters, setFilters] = useState(initialFilters);
   const [searchText, setSearchText] = useState("");
   const [studentListWrite, setStudentListWrite] = useState(false); // For Assign Group Class
-  const totalAssignments = 8;
-  const completedAssignments = 6;
-  const pendingAssignments = totalAssignments - completedAssignments;
+  
 
   const [regularStudents, setRegularStudents] = useState<
     StudentWithAssignments[]
@@ -348,69 +373,59 @@ const ManageStudentView = () => {
     []
   );
   const [selectedStudentAssignments, setSelectedStudentAssignments] = useState<
-    StudentWithAssignments[]
+     AssignmentData[]
   >([]);
 
   const [regularCount, setRegularCount] = useState<number>(0);
   const [groupCount, setGroupCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<"Regular" | "Group">("Regular");
-
+  const [assignmentData, setAssignmentData] = useState({
+    totalAssigned: 0,
+    totalCompleted: 0,
+    totalPending: 0,
+  });
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openModalId, setOpenModalId] = useState<string | null>(null);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const teacherId = localStorage.getItem("TeacherPortalId");
+         const studentId = searchParams.get("studentId");
+          const assignmentId = searchParams.get("assignmentId");
         const token = localStorage.getItem("TeacherAuthToken");
 
-        if (!token || !teacherId || !studentId) {
+        if (!token ||  !studentId) {
           console.warn("Missing teacherId, token, or studentId");
           return;
         }
 
-        const res = await axios.get<StudentWithAssignments[]>(
-          "https://api.blackstoneinfomaticstech.com/classShedule/teacher/list/",
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            params: { teacherId },
-          }
-        );
+      const res = await axios.get(
+  `https://api.blackstoneinfomaticstech.com/assignments/questionlist`,
+  {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    params: {
+      studentId,
+      assignmentId,
+    },
+  }
+);
 
-        // ✅ Filter only for selected student
-        const filteredAssignments = res.data.filter(
-          (item) => item.studentId === studentId
-        );
 
-        console.log("Filtered Assignments:", filteredAssignments);
 
-        setSelectedStudentAssignments(filteredAssignments);
+        
 
-        // ✅ You can now split into REGULAR and GROUP if needed
-        const regular = filteredAssignments.filter(
-          (student) =>
-            student.studentDetails?.classType?.toUpperCase() === "REGULARCLASS"
-        );
+        console.log("Filtered Assignments:", res.data.assignmentData);
 
-        const group = filteredAssignments.filter(
-          (student) =>
-            student.studentDetails?.classType?.toUpperCase() === "GROUPCLASS"
-        );
-
-        setRegularStudents(regular);
-        setGroupStudents(group);
-        setRegularCount(regular.length);
-        setGroupCount(group.length);
+        setSelectedStudentAssignments(res.data.assignmentData);
       } catch (error) {
         console.error("Error fetching assignments:", error);
       }
     };
 
     fetchData();
-  }, [studentId]);
+  }, []);
 
   const studentsToDisplay =
     activeTab === "Regular" ? regularStudents : groupStudents;
@@ -421,7 +436,9 @@ const ManageStudentView = () => {
   const router = useRouter(); // Add this
 
   const handleViewProfile = (studentId: string) => {
-    router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
+     const studentId1 = searchParams.get("studentId");
+     const assignmentId = searchParams.get("assignmentId");
+    router.push(`/teacher/ui/question?id=${studentId}&studentId=${studentId1}&assignmentId=${assignmentId}`);
   };
 
   const handleClick = () => {
@@ -446,37 +463,90 @@ const ManageStudentView = () => {
     }
   };
 
-  const [assignmentData, setAssignmentData] = useState({
-    totalAssigned: 0,
-    totalCompleted: 0,
-    totalPending: 0,
-  });
+
 
   const [loading, setLoading] = useState(true);
+// Add this state at the top of your component
+const [assignmentStats, setAssignmentStats] = useState({
+  assigned: 0,
+  completed: 0,
+});
+
+// Add this useEffect to calculate stats when groupStudents changes
+useEffect(() => {
+  if (groupStudents.length > 0) {
+    let assignedCount = 0;
+    let completedCount = 0;
+
+    groupStudents.forEach(student => {
+      student.assignment.forEach(assignment => {
+        assignedCount++;
+        if (assignment.assignmentStatus === 'Completed' || assignment.status === 'Completed') {
+          completedCount++;
+        }
+      });
+    });
+
+    setAssignmentStats({
+      assigned: assignedCount,
+      completed: completedCount,
+    });
+  }
+}, [groupStudents]);
+
+
+ 
 
   useEffect(() => {
     const fetchAssignmentData = async () => {
       try {
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("TeacherAuthToken")
-            : null;
+       const token =
+    typeof window !== "undefined" ? localStorage.getItem("TeacherAuthToken") : null;
+      if (!token) {
+    console.error("❌ TeacherAuthToken not found");
+    return;
+  }
+        const teacherId = localStorage.getItem("TeacherPortalId");
 
-        if (!token || !studentId) {
+        if (!token || !teacherId) {
           console.error("Missing token or teacher ID");
           return;
         }
 
         const response = await axios.get(
           `https://api.blackstoneinfomaticstech.com/assignments/cardcount?studentId=${studentId}`
+          , {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+            },
+          }
         );
 
         // Log the full API response for debugging
-        console.log("API response:", response);
+        console.log("API response:", response.data);
 
         if (response.data.status === "success") {
-          // Bind the response data to state
-          setAssignmentData(response.data.data);
+          // Check if there are assignments
+          if (response.data.data) {
+            console.log("Setting assignment data:", response.data.data);
+            setAssignmentData({
+              totalAssigned: response.data.data.totalAssignments, // Use the correct property name
+              totalCompleted: response.data.data.totalCompleted,
+              totalPending: response.data.data.totalPending,
+            });
+            console.log("Updated assignment data:", {
+              totalAssigned: response.data.data.totalAssignments,
+              totalCompleted: response.data.data.totalCompleted,
+              totalPending: response.data.data.totalPending,
+            });
+          } else {
+            // Set totalAssigned to 0 if no assignments
+            setAssignmentData({
+              totalAssigned: 0,
+              totalCompleted: 0,
+              totalPending: 0,
+            });
+          }
         } else {
           console.error("Failed to fetch data:", response.data.message);
         }
@@ -492,16 +562,23 @@ const ManageStudentView = () => {
 
   const { totalAssigned, totalCompleted, totalPending } = assignmentData;
 
-  const completionPercentage = totalAssigned
+  const completionPercentage = totalAssigned > 0
     ? Math.round((totalCompleted / totalAssigned) * 100)
     : 0;
 
-  const pendingPercentage = totalAssigned
+  const pendingPercentage = totalAssigned > 0
     ? Math.round((totalPending / totalAssigned) * 100)
     : 0;
+
+  console.log("Total Assigned:", totalAssigned);
+  console.log("Total Completed:", totalCompleted);
+  console.log("Total Pending:", totalPending);
+  console.log("Completion Percentage:", completionPercentage);
+  console.log("Pending Percentage:", pendingPercentage);
+
   const cards = [
     {
-      title: "Total Assignment\nAssigned",
+      title: "Total Assignment Assigned",
       count: totalAssigned,
       percentage: 100,
       ringColor: "#88A2CF",
@@ -509,7 +586,7 @@ const ManageStudentView = () => {
       pieData: [{ value: 100 }],
     },
     {
-      title: "Total Assignment\nCompleted",
+      title: "Total Assignment Completed",
       count: totalCompleted,
       percentage: completionPercentage,
       ringColor: "#88CF9B",
@@ -519,6 +596,7 @@ const ManageStudentView = () => {
         { value: 100 - completionPercentage },
       ],
     },
+   
   ];
 
   //Rolebyaccess
@@ -573,6 +651,111 @@ const ManageStudentView = () => {
   }, []);
 
   //Classschedule against the studentId
+
+  const [filterState, setFilterState] = useState({
+    studentName: "",
+    assignmentName: "",
+    status: "",
+    course: "",
+    level: "",
+    fromDate: "",
+    toDate: "",
+  });
+  const [filteredAssignments, setFilteredAssignments] = useState<AssignmentData[]>([]);
+  const [searchedAssignments, setSearchedAssignments] = useState<AssignmentData[]>([]);
+
+  // --- FILTER LOGIC ---
+  const applyFilters = () => {
+    let filtered = [...selectedStudentAssignments];
+
+    if (filterState.assignmentName) {
+      filtered = filtered.filter((a) =>
+        a.assignmentName?.toLowerCase().includes(filterState.assignmentName.toLowerCase())
+      );
+    }
+    if (filterState.status) {
+      filtered = filtered.filter((a) =>
+        a.assignmentStatus?.toLowerCase() === filterState.status.toLowerCase()
+      );
+    }
+    if (filterState.course) {
+      filtered = filtered.filter((a) =>
+        a.assignmentName?.toLowerCase().includes(filterState.course.toLowerCase())
+      );
+    }
+    if (filterState.level) {
+      filtered = filtered.filter((a) =>
+        a.assignmentName?.toLowerCase().includes(filterState.level.toLowerCase())
+      );
+    }
+    if (filterState.fromDate && filterState.toDate) {
+      const from = new Date(filterState.fromDate);
+      const to = new Date(filterState.toDate);
+      filtered = filtered.filter((a) => {
+        const assigned = new Date(a.assignedDate);
+        return assigned >= from && assigned <= to;
+      });
+    }
+    setFilteredAssignments(filtered);
+    setCurrentPage(1);
+  };
+
+  const resetFilters = () => {
+    setFilterState({
+      studentName: "",
+      assignmentName: "",
+      status: "",
+      course: "",
+      level: "",
+      fromDate: "",
+      toDate: "",
+    });
+    setFilteredAssignments([]);
+  };
+
+  // --- SEARCH LOGIC ---
+  const handleSearch = (text: string) => {
+    setSearchText(text);
+    if (!text.trim()) {
+      setSearchedAssignments([]);
+      return;
+    }
+    const lowerText = text.toLowerCase();
+    const baseData =
+      filteredAssignments.length > 0 ? filteredAssignments : selectedStudentAssignments;
+    const searched = baseData.filter((a) =>
+      [
+        a.assignmentId,
+        a.assignmentName,
+        a.assignmentType?.type,
+        a.assignmentStatus,
+        a.assignedDate,
+        a.dueDate,
+      ]
+        .map((v) => (v ? String(v).toLowerCase() : ""))
+        .join(" ")
+        .includes(lowerText)
+    );
+    setSearchedAssignments(searched);
+    setCurrentPage(1);
+  };
+
+  const isFilterActive = !!(
+    filterState.assignmentName ||
+    filterState.status ||
+    filterState.fromDate ||
+    filterState.toDate
+  );
+
+  const isSearchActive = !!searchText;
+
+  // --- DATA TO RENDER ---
+  const tableData =
+    isSearchActive
+      ? searchedAssignments
+      : isFilterActive
+      ? filteredAssignments
+      : selectedStudentAssignments;
 
   return (
     <BaseLayout>
@@ -697,7 +880,7 @@ const ManageStudentView = () => {
 
         {/* Tabs and Table Section */}
 
-        <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
+        <div className="w-full  bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-2">
           <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
@@ -706,7 +889,7 @@ const ManageStudentView = () => {
                 placeholder="Search by keyword"
                 className="bg-transparent outline-none text-[15px] w-52 py-3 "
                 value={searchText}
-                // onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
 
@@ -721,126 +904,125 @@ const ManageStudentView = () => {
 
             <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
               <span className="text-left -ml-60 ">
-                Showing {currentItems.length} of {paginatedData.length}
+                Showing {tableData.length} of {selectedStudentAssignments.length}
               </span>
             </div>
           </div>
 
           {/* Table */}
-          <table className="table-fixed w-full">
-            <thead className="text-[12px] bg-[#4C6993] text-white">
-              <tr>
-                {[
-                  "Student ID",
-                  "Student Name",
-                  "Assignment ID",
-                  "Level",
-                  "Course",
-                  "Assignment Name",
-                  "Assigned Date",
-                  "Due Date",
-                  "Status",
-                  "Action",
-                ].map((header, idx) => (
-                  <th
-                    key={idx}
-                    className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
-                  >
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {studentsToDisplay.map((student, studentIndex) => {
-                const studentInfo = student.studentDetails?.student;
-                const studentDetails = student.studentDetails;
-
-                return student.assignment.map((assignmentItem, assignIndex) => {
-                  const dropdownId = `${student.studentId}-${assignmentItem.assignmentName}-${assignIndex}`;
-
-                  return (
-                    <tr
-                      key={`${student.studentId}-${assignIndex}`}
-                      className={`text-[10px] ${
-                        studentIndex % 2 === 0
-                          ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                          : "bg-[#F8F8F8] dark:bg-[#303030]"
-                      }`}
+          <div className="relative">
+            <table className="table-fixed w-full">
+              <thead className="text-[12px] bg-[#4C6993] text-white">
+                <tr>
+                  {[
+                    "Assignment ID",
+                    "Assignment Name",
+                    "Type",
+                    "Assigned Date",
+                    "Due Date",
+                    "Status",
+                    "Action",
+                  ].map((header, idx) => (
+                    <th
+                      key={idx}
+                      className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
                     >
-                      <td className="px-3 py-3 break-words">
-                        {student?.studentId}
-                      </td>
-                      <td className="px-3 py-3 text-[#3D8FDE] font-medium break-words">
-                        {studentInfo?.studentFirstName}{" "}
-                        {studentInfo?.studentLastName}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {assignmentItem.assignmentId || "-"}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {studentDetails?.languageLevel || "-"}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {studentDetails?.student?.learningInterest}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {assignmentItem.title}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {formatDate(assignmentItem?.assignedDate)}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        {formatDate(assignmentItem?.dueDate)}
-                      </td>
-                      <td className="px-3 py-3 break-words">
-                        <span
-                          className={`py-1 px-2 rounded-md text-[8px] flex items-center justify-center min-w-[80px] ${getStatusStyle(
-                            assignmentItem.status
-                          )}`}
-                        >
-                          {assignmentItem?.assignmentStatus ||
-                            assignmentItem?.status ||
-                            "Not Assigned"}{" "}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-center relative">
-                        <button
-                          className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
-                          onClick={() =>
-                            setOpenDropdownId(
-                              openDropdownId === dropdownId ? null : dropdownId
-                            )
-                          }
-                        >
-                          <BsThreeDotsVertical />
-                        </button>
-
-                        {openDropdownId === dropdownId && (
-                          <div className="absolute right-0 w-36 shadow-2xl space-y-2 bg-white rounded-md z-50 border border-gray-200 dark:bg-[#343434]">
-                            <button
-                              className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
-                              onClick={() =>
-                                handleViewProfile(student.studentId)
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            </table>
+            <div
+              className="overflow-y-auto"
+              style={{ maxHeight: "300px" }}
+            >
+              <table className="table-fixed w-full">
+                <tbody>
+                  {tableData.map((assignmentItem, index) => {
+                    const statusValue = assignmentItem.assignmentStatus?.toLowerCase().trim();
+                    return (
+                      <tr
+                        key={assignmentItem._id}
+                        className={`text-[10px] ${
+                          index % 2 === 0
+                            ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                            : "bg-[#F8F8F8] dark:bg-[#303030]"
+                        }`}
+                      >
+                        <td className="px-3 py-3 break-words text-[12px]">
+                          {assignmentItem.assignmentId}
+                        </td>
+                        <td className="px-3 py-3 break-words text-[12px]">
+                          {assignmentItem.assignmentName}
+                        </td>
+                        <td className="px-3 py-3 break-words capitalize text-[12px]">
+                          {assignmentItem.assignmentType?.type || "-"}
+                        </td>
+                        <td className="px-3 py-3 break-words text-[12px]">
+                          {formatDate(assignmentItem.assignedDate)}
+                        </td>
+                        <td className="px-3 py-3 break-words text-[12px]">
+                          {formatDate(assignmentItem.dueDate)}
+                        </td>
+                        <td className="px-3 py-2 break-words text-[12px]">
+                          <span
+                            className={`py-1 px-3 rounded-md text-[9px] min-w-[60px] inline-block
+                              ${
+                                statusValue === "completed"
+                                  ? "bg-green-100 text-green-700"
+                                  : statusValue === "pending"
+                                  ? "bg-orange-100 text-orange-700"
+                                  : "bg-gray-100 text-gray-600"
                               }
-                            >
-                              View Question Form
-                            </button>
-                            <button
-                              className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
-                              onClick={() => setOpenDropdownId(null)}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        )}
+                            `}
+                          >
+                            {assignmentItem.assignmentStatus || "Not Assigned"}
+                          </span>
+                        </td>
+                       <td className="px-4 py-2 text-left relative">
+  <button
+    className="text-gray-500 hover:text-gray-700 dark:text-[#ffff]"
+    onClick={() =>
+      setOpenDropdownId(openDropdownId === assignmentItem._id ? null : assignmentItem._id)
+    }
+  >
+    <BsThreeDotsVertical />
+  </button>
+
+  {openDropdownId === assignmentItem._id && (
+    <div className="absolute right-0 w-40 space-y-2 bg-white rounded-md z-50 dark:bg-[#343434] text-left shadow-lg">
+      <button
+        className="block w-full px-4 py-1 text-[12px] dark:text-[#ffff] !text-left"
+        onClick={() => handleViewProfile(assignmentItem._id)}
+      >
+        View Question Form
+      </button>
+      <button
+        className="block text-left w-full px-4 py-1 text-[12px] dark:text-[#ffff]"
+        onClick={() => setOpenDropdownId(null)}
+      >
+        Cancel
+      </button>
+    </div>
+  )}
+</td>
+
+                      </tr>
+                    );
+                  })}
+                  {tableData.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="text-center py-4 text-gray-400">
+                        No assignments found for the selected filter/search.
                       </td>
                     </tr>
-                  );
-                });
-              })}
-            </tbody>
-          </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
 
         {/* <Pagination
@@ -857,6 +1039,78 @@ const ManageStudentView = () => {
         onApplyFilters={handleApplyFilters}
         // users={activeTab === "regular" ? scheduledClasses : completedClasses}
       /> */}
+      <Modal
+  isOpen={isFilterModalOpen}
+  onRequestClose={() => setIsFilterModalOpen(false)}
+  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white  dark:bg-[#343434] w-[650px] z-50"
+  overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
+>
+  <div>
+    <h2 className="text-[16px] font-semibold mb-6 text-[#2D2D2D] dark:text-white">
+      Filter by
+    </h2>
+    <div className="grid grid-cols-2 gap-4 mb-6">
+      <div>
+        <label className="block text-sm font-medium mb-1">Assignment Name</label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border rounded text-xs"
+          value={filterState.assignmentName}
+          onChange={e => setFilterState({ ...filterState, assignmentName: e.target.value })}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">Status</label>
+        <select
+          className="w-full px-3 py-2 border rounded text-xs"
+          value={filterState.status}
+          onChange={e => setFilterState({ ...filterState, status: e.target.value })}
+        >
+          <option value="">All</option>
+          <option value="Completed">Completed</option>
+          <option value="Pending">Pending</option>
+          <option value="Not Assigned">Not Assigned</option>
+          {/* Add more statuses as needed */}
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">From Date</label>
+        <input
+          type="date"
+          className="w-full px-3 py-2 border rounded text-xs"
+          value={filterState.fromDate}
+          onChange={e => setFilterState({ ...filterState, fromDate: e.target.value })}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">To Date</label>
+        <input
+          type="date"
+          className="w-full px-3 py-2 border rounded text-xs"
+          value={filterState.toDate}
+          onChange={e => setFilterState({ ...filterState, toDate: e.target.value })}
+        />
+      </div>
+    </div>
+    <div className="flex justify-end gap-3">
+      <button
+        onClick={resetFilters}
+        className="px-5 py-2 border border-[#576CBC] text-[#576CBC] bg-white rounded-lg text-sm font-medium hover:bg-[#f6f8ff]"
+      >
+        Reset
+      </button>
+      <button
+        onClick={() => {
+          applyFilters();
+          setIsFilterModalOpen(false);
+        }}
+        className="px-5 py-2 bg-[#576CBC] text-white rounded-lg text-sm font-medium hover:bg-[#475ab1]"
+      >
+        Show Results
+      </button>
+    </div>
+  </div>
+</Modal>
     </BaseLayout>
   );
 };

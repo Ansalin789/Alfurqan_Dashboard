@@ -13,15 +13,13 @@ import StudentProfile from "../../components/StudentProfile";
 import StudentHeader from "../../components/StudentHeader";
 
 const Dashboard = () => {
-
   return (
     <BaseLayout2>
-    <StudentHeader currentSection="Dashboard"/>
+      <StudentHeader currentSection="Dashboard" />
 
       <div className="flex flex-row gap-4 p-0 min-h-screen">
         {/* Main Content */}
         <div className="flex-1 flex flex-col gap-4">
-
           {/* Next Class Schedule */}
           <div className="grid grid-cols-1 gap-4">
             <NextScheduledClass />
@@ -38,19 +36,18 @@ const Dashboard = () => {
               </div>
             </div>
             {/* <div className="w-[33%] bg-white rounded-xl dark:bg-[#343434] h-[270px] flex flex-col"> */}
-              <Subject />
+            <Subject />
             {/* </div> */}
           </div>
 
           {/* Applications Table */}
-                  <UpcomingTable />
+          <UpcomingTable />
         </div>
-        
+
         {/* Sidebar */}
 
-<StudentProfile />
-
-</div>
+        <StudentProfile />
+      </div>
     </BaseLayout2>
   );
 };

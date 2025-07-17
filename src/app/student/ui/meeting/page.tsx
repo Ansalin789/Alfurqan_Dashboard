@@ -6,7 +6,7 @@ import { IoMdClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import { FaEye, FaUserCircle } from "react-icons/fa";
 import { CheckCircle, MoreVertical, Search, User, XCircle } from "lucide-react";
-import BaseLayout from "@/components/BaseLayout";
+import BaseLayout2 from "@/components/BaseLayout2";
 import axios from "axios";
 import Pagination from "@/components/Pagination";
 import { AiOutlineMenuUnfold } from "react-icons/ai";
@@ -19,6 +19,7 @@ import { getSocket } from "@/app/utils/socket";
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import NextMeetingSchedule from "../../components/meetings/NextMeetingScheduke";
 import ScheduledMeetings from "../../components/meetings/ScheduledMeetings";
+import StudentHeader from "../../components/StudentHeader";
 
 // Interface for Teacher (as object)
 interface Teacher {
@@ -249,12 +250,12 @@ const Meeting = () => {
   };
 
   return (
-    <BaseLayout>
-      <TeacherHeader currentSection="Scheduled Meeting" />
+    <BaseLayout2>
+      <StudentHeader currentSection="Scheduled Meeting" />
       <NextMeetingSchedule />
       {/* Tabs */}
       <ScheduledMeetings/>
-    </BaseLayout>
+    </BaseLayout2>
   );
 };
 

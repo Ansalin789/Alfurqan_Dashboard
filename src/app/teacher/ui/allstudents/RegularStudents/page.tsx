@@ -114,6 +114,7 @@ export interface StudentWithAssignments extends StudentCoreInfo {
   classType: string;
   groupClassId: string;
   assignment: AssignmentItem[];
+  level?: string;
 }
 
 const RegularStudents = () => {
@@ -127,6 +128,8 @@ const RegularStudents = () => {
   const [sessionClassType, setSessionClassType] = useState("");
   const [assignedTeacher, setAssignedTeacher] = useState("");
   const [assignedTeacherId, setAssignedTeacherId] = useState("");
+  const [course, setCourse] = useState("");
+  const [level, setLevel] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<StudentWithAssignments[]>(
     []
@@ -139,7 +142,7 @@ const RegularStudents = () => {
   const [assignedDate, setAssignedDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [comment, setComment] = useState("");
-  const itemsPerPage = 10;
+  const itemsPerPage = 8;
 
   const formatDate = (dateStr: string | undefined): string => {
     if (!dateStr) return "-";
@@ -296,8 +299,12 @@ const RegularStudents = () => {
     fetchData();
   }, []);
 
-  const handleViewProfile = (studentId: string) => {
-    router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
+  const handleViewProfile = (studentId: string, assignmentId: string) => {
+    if (assignmentId && assignmentId.trim() !== "") {
+      router.push(`/teacher/ui/managestudentview?studentId=${studentId}&assignmentId=${assignmentId}`);
+    } else {
+      router.push(`/teacher/ui/managestudentview?studentId=${studentId}`);
+    }
   };
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -334,7 +341,17 @@ const RegularStudents = () => {
     setCurrentPage(1);
   };
 
-  const handleClick = () => {
+  const handleClick = (courseValue?: string, levelValue?: string) => {
+    const finalCourse = courseValue || course;
+    const finalLevel = levelValue || level;
+    
+    console.log("🔍 Debug - Values being passed:");
+    console.log("course:", finalCourse);
+    console.log("level:", finalLevel);
+    console.log("studentId:", studentId);
+    console.log("studentName:", studentName);
+    console.log("course:", finalCourse);
+    console.log("level:", finalLevel);
     const query = new URLSearchParams({
       title,
       assignedDate,
@@ -345,8 +362,11 @@ const RegularStudents = () => {
       sessionClassType,
       assignedTeacher,
       assignedTeacherId,
+      course: finalCourse,
+      level: finalLevel ||"",
     }).toString();
 
+    console.log("🔍 Final URL:", `/teacher/ui/addingnewassignment?${query}`);
     router.push(`/teacher/ui/addingnewassignment?${query}`);
   };
 
@@ -378,6 +398,16 @@ const RegularStudents = () => {
     }
   };
 
+  // Pagination logic helpers
+  const displayList = isFiltered
+    ? filteredStudents
+    : searchQuery
+    ? filteredUsers
+    : regularStudents;
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const paginatedList = displayList.slice(startIdx, endIdx);
+
   return (
     <div className="md:p-0 mx-auto w-full">
       <div className="flex flex-col h-full w-full justify-between">
@@ -405,9 +435,10 @@ const RegularStudents = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+              <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+              onClick={() => setShowFilterModal(true)}>
                 <MdTune className="w-4 h-4" />
-                <span onClick={() => setShowFilterModal(true)}>Filter</span>
+                <span >Filter</span>
               </div>
               {showFilterModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-30">
@@ -577,33 +608,28 @@ const RegularStudents = () => {
               <thead className="text-[12px] bg-[#4C6993] text-white">
                 <tr>
                   {[
-                    "Student ID",
-                    "Student Name",
-                    "Assignment ID",
-                    "Level",
-                    "Course",
-                    "Assignment Name",
-                    "Assigned Date",
-                    "Due Date",
-                    "Status",
-                    "Action",
+                    { label: "Student ID", width: "w-[15%]" },
+                    { label: "Student Name", width: "w-[12%]" },
+                    { label: "Assignment ID", width: "w-[14%]" },
+                    { label: "Level", width: "w-[6%]" },
+                    { label: "Course", width: "w-[10%]" },
+                    { label: "Assignment Name", width: "w-[15%]" },
+                    { label: "Assign Date", width: "w-[10%]" },
+                    { label: "Due Date", width: "w-[11%]" },
+                    { label: "Status", width: "w-[12%]" },
+                    { label: "Action", width: "w-[8%]" },
                   ].map((header, idx) => (
                     <th
-                      key={idx}
-                      className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+                      key={header.label}
+                      className={`px-2 py-1 text-left text-wrap break-words ${header.width}`}
                     >
-                      {header}
+                      {header.label}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {(isFiltered
-                  ? filteredStudents
-                  : searchQuery
-                  ? filteredUsers
-                  : regularStudents
-                ).map((student, studentIndex) => {
+                {paginatedList.map((student, studentIndex) => {
                   const studentInfo = student.studentDetails?.student;
                   const studentDetails = student.studentDetails;
 
@@ -615,7 +641,7 @@ const RegularStudents = () => {
                     return (
                       <tr
                         key={modalIdNoAssignment}
-                        className={`text-[12px] border-b border-gray-300 dark:border-gray-600 ${
+                        className={`text-[12px] ${
                           studentIndex % 2 === 0
                             ? "bg-white dark:bg-[#2C2C2C]"
                             : "bg-[#F8F8F8] dark:bg-[#303030]"
@@ -629,7 +655,9 @@ const RegularStudents = () => {
                           {studentInfo?.studentLastName}
                         </td>
                         <td className="px-3 py-2 break-words">-</td>
-                        <td className="px-3 py-2 break-words">-</td>
+                        <td className="px-3 py-2 break-words">
+                          {student.level || "-"}
+                        </td>
                         <td className="px-3 py-2 break-words">
                           {studentDetails?.student?.learningInterest}
                         </td>
@@ -664,7 +692,7 @@ const RegularStudents = () => {
                               <button
                                 className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                 onClick={() =>
-                                  handleViewProfile(student.studentId)
+                                  handleViewProfile(student.studentId, "")
                                 }
                               >
                                 Assign
@@ -682,11 +710,23 @@ const RegularStudents = () => {
                                     studentDetails?.classType ?? "REGULARCLASS"
                                   );
                                   setAssignedTeacher(
-                                    studentDetails?.assignedTeacherEmail ?? ""
+                                    studentDetails?.teacher?.teacherName ?? ""
                                   );
                                   setAssignedTeacherId(
                                     studentDetails?.teacher?.teacherId ?? ""
                                   );
+                                  console.log("🔍 Setting values for student:", student.studentId);
+                                  console.log("🔍 Full student object:", student);
+                                  console.log("🔍 Full studentDetails object:", studentDetails);
+                                  console.log("🔍 studentDetails?.student?.learningInterest:", studentDetails?.student?.learningInterest);
+                                  console.log("🔍 studentDetails?.languageLevel:", studentDetails?.languageLevel);
+                                  console.log("🔍 student?.level:", student?.level);
+                                  
+                                  const courseValue = studentDetails?.student?.learningInterest || "";
+                                  const levelValue = student?.level || "";
+                                  
+                                  setCourse(courseValue);
+                                  setLevel(levelValue);
                                   setOpenModalId(modalIdNoAssignment);
                                 }}
                               >
@@ -772,7 +812,11 @@ const RegularStudents = () => {
                                   </button>
                                   <button
                                     className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                    onClick={() => handleClick()}
+                                                                          onClick={() => {
+                                        const courseValue = studentDetails?.student?.learningInterest || "";
+                                        const levelValue = student?.level || "";
+                                        handleClick(courseValue, levelValue);
+                                      }}
                                   >
                                     Create Assignment
                                   </button>
@@ -809,7 +853,7 @@ const RegularStudents = () => {
                       return (
                         <tr
                           key={`${student.studentId}-${assignIndex}`}
-                          className={`text-[12px] border-b border-gray-300 dark:border-gray-600 ${
+                          className={`text-[12px] ${
                             studentIndex % 2 === 0
                               ? "bg-white dark:bg-[#2C2C2C]"
                               : "bg-[#F8F8F8] dark:bg-[#303030]"
@@ -826,7 +870,7 @@ const RegularStudents = () => {
                             {assignmentItem.assignmentId || "-"}
                           </td>
                           <td className="px-3 py-2 break-words">
-                            {studentDetails?.languageLevel || "-"}
+                            {student.level || "-"}
                           </td>
                           <td className="px-3 py-2 break-words">
                             {studentDetails?.student?.learningInterest}
@@ -876,7 +920,7 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId)
+                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
                                           }
                                         >
                                           View Profile
@@ -899,7 +943,7 @@ const RegularStudents = () => {
                                                 "REGULARCLASS"
                                             );
                                             setAssignedTeacher(
-                                              studentDetails?.assignedTeacherEmail ??
+                                              studentDetails?.teacher?.teacherName ??
                                                 ""
                                             );
                                             setAssignedTeacherId(
@@ -914,7 +958,7 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId)
+                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
                                           }
                                         >
                                           Assign
@@ -938,7 +982,7 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId)
+                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
                                           }
                                         >
                                           View Profile
@@ -959,7 +1003,7 @@ const RegularStudents = () => {
                                         <button
                                           className="block w-full px-4 py-1 text-[12px] text-black dark:text-[#ffff]"
                                           onClick={() =>
-                                            handleViewProfile(student.studentId)
+                                            handleViewProfile(student.studentId, assignmentItem.assignmentId || "")
                                           }
                                         >
                                           Assign
@@ -982,13 +1026,23 @@ const RegularStudents = () => {
                                                 "REGULARCLASS"
                                             );
                                             setAssignedTeacher(
-                                              studentDetails?.assignedTeacherEmail ??
+                                              studentDetails?.teacher?.teacherName ??
                                                 ""
                                             );
                                             setAssignedTeacherId(
                                               studentDetails?.teacher
                                                 ?.teacherId ?? ""
                                             );
+                                            console.log("🔍 Setting values for assignment student:", student.studentId);
+                                            console.log("🔍 studentDetails?.student?.learningInterest:", studentDetails?.student?.learningInterest);
+                                            console.log("🔍 studentDetails?.languageLevel:", studentDetails?.languageLevel);
+                                            console.log("🔍 student?.level:", student?.level);
+                                            
+                                            const courseValue = studentDetails?.student?.learningInterest || "";
+                                            const levelValue = student?.level || "";
+                                            
+                                            setCourse(courseValue);
+                                            setLevel(levelValue);
                                             setOpenModalId(modalId);
                                           }}
                                         >
@@ -1091,7 +1145,11 @@ const RegularStudents = () => {
                                     </button>
                                     <button
                                       className="bg-[#576CBC] text-white px-4 py-2 rounded-md dark:text-[#fff]"
-                                      onClick={() => handleClick()}
+                                                                          onClick={() => {
+                                      const courseValue = studentDetails?.student?.learningInterest || "";
+                                      const levelValue = student?.level || "";
+                                      handleClick(courseValue, levelValue);
+                                    }}
                                     >
                                       Create Assignment
                                     </button>
@@ -1110,7 +1168,7 @@ const RegularStudents = () => {
           </div>
           <Pagination
             currentPage={currentPage}
-            totalPages={Math.ceil(regularStudents.length / itemsPerPage)}
+            totalPages={Math.ceil(displayList.length / itemsPerPage)}
             onPageChange={setCurrentPage}
           />
         </div>
