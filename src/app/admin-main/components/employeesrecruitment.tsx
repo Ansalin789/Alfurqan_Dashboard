@@ -1,7 +1,11 @@
-// components/ApplicantsList.tsx
+"use client";
+
 import React, { useEffect, useState } from "react";
-import {  FileText, Star, Upload, X } from "lucide-react";
+import { FileText, Star, Upload, X, MoreVertical, Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
 import axios from "axios";
+import ReactDOM from "react-dom";
+import { useRouter } from "next/navigation";
 
 interface Supervisor {
   supervisorId: string;
@@ -41,16 +45,16 @@ interface Applicant {
   supervisor?: Supervisor;
 }
 
-
-const  ApplicantsList: React.FC = () => {
-  // Static data for demonstration
-   const [applicants, setApplicants] = useState<Applicant[]>([]);
+const ApplicantsList: React.FC = () => {
+  const router = useRouter();
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
 
   const [activeTab, setActiveTab] = React.useState("All");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
   const [showAddApplicant, setShowAddApplicant] = React.useState(false);
-  const [selectedApplicant, setSelectedApplicant] = React.useState<Applicant | null>(null);
+  const [selectedApplicant, setSelectedApplicant] =
+    React.useState<Applicant | null>(null);
   // Static form state
   const [addApplicantForm, setAddApplicantForm] = React.useState({
     applicationDate: "",
@@ -65,7 +69,7 @@ const  ApplicantsList: React.FC = () => {
     expectedSalary: "",
     workingHours: "",
     resume: null as File | null,
-    comment: ""
+    comment: "",
   });
 
   // Static view state
@@ -80,11 +84,17 @@ const  ApplicantsList: React.FC = () => {
   const [applicationStatus, setApplicationStatus] = React.useState("");
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [actionDropdown, setActionDropdown] = useState<string | null>(null);
+  const [dropdownPos, setDropdownPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const tabs = ["All", "NewApplication", "Shortlisted", "Rejected", "Waiting"];
+  const tabs = ["All", "NewCandidates", "Shortlisted", "Rejected", "Waiting"];
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('AdminAuthToken');
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("AdminAuthToken");
       if (token) {
         fetchApplicants(token);
       } else {
@@ -92,22 +102,24 @@ const  ApplicantsList: React.FC = () => {
       }
     }
   }, []);
-  
+
   const fetchApplicants = async (token: string) => {
     try {
-      const response = await axios.get('https://api.blackstoneinfomaticstech.com/applicants', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-      });
-  
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/applicants",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       setApplicants(response.data.applicants);
     } catch (error) {
-      console.error('Error fetching applicants:', error);
+      console.error("Error fetching applicants:", error);
     }
   };
-  
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
@@ -125,10 +137,13 @@ const  ApplicantsList: React.FC = () => {
         return "bg-gray-300 text-black px-2 text-[9px]";
     }
   };
-  
 
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
@@ -149,7 +164,7 @@ const  ApplicantsList: React.FC = () => {
     if (e.target.files && e.target.files[0]) {
       setAddApplicantForm({
         ...addApplicantForm,
-        resume: e.target.files[0]
+        resume: e.target.files[0],
       });
     }
   };
@@ -173,7 +188,7 @@ const  ApplicantsList: React.FC = () => {
       expectedSalary: "",
       workingHours: "",
       resume: null,
-      comment: ""
+      comment: "",
     });
   };
 
@@ -182,9 +197,12 @@ const  ApplicantsList: React.FC = () => {
     setSelectedApplicant(null);
   };
 
-  const filteredApplicants = activeTab === "All" 
-    ? applicants 
-    : applicants.filter(applicant => applicant.applicationStatus === activeTab.toUpperCase());
+  const filteredApplicants =
+    activeTab === "All"
+      ? applicants
+      : applicants.filter(
+          (applicant) => applicant.applicationStatus === activeTab.toUpperCase()
+        );
 
   const itemsPerPage = 7;
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
@@ -195,237 +213,220 @@ const  ApplicantsList: React.FC = () => {
   return (
     <div className=" mx-auto">
       <div className="mx-auto">
-  <div className="bg-white shadow-md border border-gray-900 rounded-lg  flex h-[430px] mb-4">
-    <div className="w-full flex flex-col mt-3">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 space-y-3 md:space-y-0 px-4 mt-2">
-        <div className="flex flex-wrap gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-2 py-1 text-sm rounded-md font-semibold ${
-                activeTab === tab
-                  ? "text-white bg-[#012A4A]"
-                  : "text-[#05445E] hover:bg-slate-100"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-600 whitespace-nowrap">
-            Sort by:
-          </span>
-          <select className="px-2 py-1 border rounded-md text-slate-600 bg-white text-xs">
-            <option>Designation</option>
-            <option>Date</option>
-            <option>Status</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="overflow-auto w-full h-[400px] ">
-        <table className="w-full text-xs">
-          <thead className="bg-[#F4F5F7] text-gray-700 sticky top-0 z-10">
-            <tr>
-              <th className="px-2 py-3 whitespace-nowrap">Date</th>
-              <th className="px-2 py-3 whitespace-nowrap">Name</th>
-              <th className="px-2 py-3 whitespace-nowrap">Contact</th>
-              <th className="px-2 py-3 whitespace-nowrap">E-Mail</th>
-              <th className="px-2 py-3 whitespace-nowrap">Position</th>
-              <th className="px-2 py-3 whitespace-nowrap">Resume</th>
-              <th className="px-2 py-3 whitespace-nowrap">Status</th>
-              <th className="px-2 py-3 whitespace-nowrap">Level</th>
-              {/* <th className="px-2 py-3 whitespace-nowrap">Actions</th> */}
-            </tr>
-          </thead>
-          <tbody>
-  {currentApplicants.map((applicant, index) => (
-    <tr 
-      key={applicant._id} 
-      className={`border-b border-gray-300 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
-    >
-      <td className="px-2 py-2 text-[#17243E] whitespace-nowrap text-center align-middle">
-        {formatDate(applicant.applicationDate)}
-      </td>
-      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
-          <span className="font-medium text-slate-800 truncate max-w-[100px]">
-            {applicant.candidateFirstName} {applicant.candidateLastName}
-          </span>
-      </td>
-      <td className="px-2 py-2 text-[#17243E] whitespace-nowrap text-center align-middle">
-        {applicant.candidatePhoneNumber}
-      </td>
-      <td className="px-2 py-2 text-[#17243E] whitespace-nowrap truncate max-w-[120px] text-center align-middle">
-        {applicant.candidateEmail}
-      </td>
-      <td className="px-2 py-2 whitespace-nowrap truncate max-w-[100px] text-center align-middle">
-        {applicant.positionApplied}
-      </td>
-      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
-        <button className="text-[#5482dd] hover:text-[#0b1421] flex items-center justify-center mx-auto">
-          <FileText className="w-3 h-3 mr-1" />
-          <span className="hidden sm:inline ">Resume</span>
-        </button>
-      </td>
-      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
-        <div className="flex justify-center">
-          <span
-            className={`inline-block px-3 py-1 rounded-full text-[9px] w-[100px] text-center ${getStatusColor(
-              applicant.applicationStatus
-            )}`}
-          >
-            {applicant.applicationStatus}
-          </span>
-        </div>
-      </td>
-      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
-        <div className="flex gap-0.5 justify-center">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={`star-${star}`}
-              className={`w-3 h-3 ${
-                (Number(applicant.overallRating) || 0) >= star
-                  ? "text-[#FAAB3C] fill-[#68b806]"
-                  : "text-[#F8D8AB] fill-[#f7f6f5]"
-              }`}
-            />
-          ))}
-        </div>
-      </td>
-      {/* <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
-        <div className="relative flex justify-center">
-          <button
-         
-            className="hover:bg-gray-100 p-1 rounded-md"
-          >
-            <MoreHorizontal className="w-4 h-4 text-slate-600" />
-          </button>
-          {openMenuId === applicant._id && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-10">
-              <button className="block w-full px-3 py-1 text-left text-xs text-[#353232]">
-                Edit
-              </button>
-              <button
-                onClick={() => handleViewDetails(applicant)}
-                className="block w-full px-3 py-1 text-left text-xs text-slate-600"
-              >
-                View Details
-              </button>
-              <button
-                onClick={() => setOpenMenuId(null)}
-                className="block w-full px-3 py-1 text-left text-xs text-red-600 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-        </div>
-      </td> */}
-    </tr>
-  ))}
-</tbody>
-        </table>
-      </div>
-
-      <div className="flex flex-col md:flex-row items-center justify-between px-4 py-2 space-y-2 md:space-y-0 border-t mt-auto">
-        <div className="text-xs text-gray-600">
-          Showing {startIndex + 1} -{" "}
-          {Math.min(endIndex, filteredApplicants.length)} of{" "}
-          {filteredApplicants.length} entries
-        </div>
-        <div className="flex space-x-1">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className={`px-2 py-1 rounded text-xs ${
-              currentPage === 1
-                ? "bg-gray-100 text-gray-400"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            &lt;
-          </button>
-
-          {totalPages > 5 ? (
-            <>
-              <button
-                onClick={() => setCurrentPage(1)}
-                className={`px-2 py-1 rounded text-xs ${
-                  currentPage === 1
-                    ? "bg-[#1B2B65] text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                1
-              </button>
-
-              {currentPage > 3 && <span className="px-1 py-1">...</span>}
-
-              {Array.from({ length: 3 }, (_, i) => currentPage - 1 + i)
-                .filter((page) => page > 1 && page < totalPages)
-                .map((page) => (
+        <div className="flex flex-col h-[430px] mb-4">
+          <div className="w-full flex flex-col mt-3">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 space-y-3 md:space-y-0 px-4 mt-2">
+              <div className="flex flex-wrap gap-1">
+                {tabs.map((tab) => (
                   <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-2 py-1 rounded text-xs ${
-                      currentPage === page
-                        ? "bg-[#1B2B65] text-white"
-                        : "bg-gray-200 hover:bg-gray-300"
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-2 py-1 text-[12px] font-semibold ${
+                      activeTab === tab
+                        ? "border-b border-b-[#012A4A] text-[#012A4A]"
+                        : "text-[#000]"
                     }`}
                   >
-                    {page}
+                    {tab}
                   </button>
                 ))}
+              </div>
+            </div>
 
-              {currentPage < totalPages - 2 && <span className="px-1 py-1">...</span>}
-
-              <button
-                onClick={() => setCurrentPage(totalPages)}
-                className={`px-2 py-1 rounded text-xs ${
-                  currentPage === totalPages
-                    ? "bg-[#1B2B65] text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                {totalPages}
-              </button>
-            </>
-          ) : (
-            [...Array(totalPages)].map((_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`px-2 py-1 rounded text-xs ${
-                  currentPage === index + 1
-                    ? "bg-[#1B2B65] text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))
-          )}
-
-          <button
-            onClick={() =>
-              setCurrentPage((p) => Math.min(totalPages, p + 1))
-            }
-            disabled={currentPage === totalPages}
-            className={`px-2 py-1 rounded text-xs ${
-              currentPage === totalPages
-                ? "bg-gray-100 text-gray-400"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            &gt;
-          </button>
+            <div className="overflow-y-scroll scrollbar-none w-full h-[350px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+              <div className="flex justify-between items-center p-1 px-2 -ml-2">
+                <div className="flex items-center px-4 py-0 rounded-md dark:bg-[#343434] gap-x-2">
+                  <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search here..."
+                    className="bg-transparent outline-none text-[15px] w-52 py-3"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2 text-[13px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer">
+                  <MdTune className="w-4 h-4" />
+                  <span>Filter</span>
+                </div>
+                <div className="flex items-center gap-2 text-[13px] text-gray-400 dark:text-gray-400">
+                  <span className="text-left">
+                    Showing {filteredApplicants.length === 0 ? 0 : 1} to{" "}
+                    {Math.min(itemsPerPage, filteredApplicants.length)} of{" "}
+                    {filteredApplicants.length}
+                  </span>
+                </div>
+              </div>
+              <table className="w-full table-fixed">
+                <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                  <tr>
+                    <th className="px-3 py-2 text-left font-medium border border-[#4C6993] w-[10%]">
+                     Application Date
+                    </th>
+                    <th className="px-3 py-2 text-left font-medium border border-[#4C6993] w-[12%]">
+                     Application Name
+                    </th>
+                    <th className="px-3 py-2 text-left font-medium border border-[#4C6993] w-[10%]">
+                      Contact
+                    </th>
+                    <th className="px-3 py-2 text-left font-medium break-words border border-[#4C6993] w-[14%]">
+                      E-Mail
+                    </th>
+                    <th className="px-3 py-2 text-left font-medium border border-[#4C6993] w-[10%]">
+                      Position Applied
+                    </th>
+                    <th className="px-3 py-2 text-left font-medium border border-[#4C6993] w-[10%]">
+                      Resume
+                    </th>
+                    <th className="px-3 py-2 text-left font-medium border border-[#4C6993] w-[10%]">
+                      Status
+                    </th>
+                    <th className="px-3 py-2 text-left font-medium border border-[#4C6993] w-[10%]">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentApplicants.length > 0 ? (
+                    currentApplicants.map((applicant, index) => (
+                      <tr
+                        key={applicant._id}
+                        className={`text-[12px] ${
+                          index % 2 === 0 ? "bg-[#fff]" : "bg-[#F8F8F8]"
+                        }`}
+                      >
+                        <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%] text-left align-middle">
+                          {formatDate(applicant.applicationDate)}
+                        </td>
+                        <td className="px-3 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%] align-middle">
+                          <span className="font-medium text-slate-800 max-w-[100px]">
+                            {applicant.candidateFirstName}{" "}
+                            {applicant.candidateLastName}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%] text-left align-middle">
+                          {applicant.candidatePhoneNumber}
+                        </td>
+                        <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[14%] text-left align-middle  max-w-[120px]">
+                          {applicant.candidateEmail}
+                        </td>
+                        <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%] text-left align-middle max-w-[100px]">
+                          {applicant.positionApplied}
+                        </td>
+                        <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%] text-left align-middle">
+                          <button className="text-[#5482dd] hover:text-[#0b1421] flex items-left justify-start mx-auto">
+                            <FileText className="w-3 h-3 mr-1" />
+                            <span className="hidden sm:inline ">Resume</span>
+                          </button>
+                        </td>
+                        <td className="px-3 py-2 text-[11px] w-[10%] text-left align-middle">
+                          <span
+                            className={`px-3 text-[10px] text-center py-[3px] rounded-md border ${
+                              applicant.applicationStatus === "NEWAPPLICATION"
+                                ? "bg-blue-500 text-white border-blue-500"
+                                : applicant.applicationStatus === "SHORTLISTED"
+                                ? "bg-[#79D67B] text-white border-[#79D67B]"
+                                : applicant.applicationStatus === "REJECTED"
+                                ? "bg-[#D12B36] text-white border-[#D12B36]"
+                                : applicant.applicationStatus === "WAITING"
+                                ? "bg-yellow-500 text-white border-yellow-500"
+                                : applicant.applicationStatus === "APPROVED"
+                                ? "bg-green-500 text-white border-green-500"
+                                : "bg-gray-300 text-black border-gray-300"
+                            }`}
+                          >
+                            {applicant.applicationStatus}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%] text-left align-middle relative">
+                          <button
+                            id={`action-btn-${applicant._id}`}
+                            className="p-1 rounded hover:bg-gray-50"
+                            onClick={e => {
+                              if (actionDropdown === applicant._id) {
+                                setActionDropdown(null);
+                                setDropdownPos(null);
+                              } else {
+                                const rect = (e.target as HTMLElement).getBoundingClientRect();
+                                setDropdownPos({
+                                  top: rect.bottom + window.scrollY,
+                                  left: rect.left + window.scrollX,
+                                });
+                                setActionDropdown(applicant._id);
+                              }
+                            }}
+                          >
+                            <MoreVertical size={16} />
+                          </button>
+                          {actionDropdown === applicant._id && dropdownPos && typeof window !== "undefined" &&
+                            ReactDOM.createPortal(
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: dropdownPos.top,
+                                  left: dropdownPos.left,
+                                  zIndex: 9999,
+                                  width: "8rem",
+                                }}
+                                className="bg-white rounded-lg shadow-lg"
+                              >
+                                <button
+                                  className="block w-full text-left px-4 py-2 text-[10px] hover:bg-gray-100 border-b"
+                                  onClick={() => {
+                                    // Approve logic placeholder
+                                    setActionDropdown(null);
+                                    setDropdownPos(null);
+                                  }}
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  className="block w-full text-left px-4 py-2 text-[10px] hover:bg-gray-100 border-b text-red-600"
+                                  onClick={() => {
+                                    // Reject logic placeholder
+                                    setActionDropdown(null);
+                                    setDropdownPos(null);
+                                  }}
+                                >
+                                  Reject
+                                </button>
+                                <button
+                                  className="block w-full text-left px-4 py-2 text-[10px] hover:bg-gray-100"
+                                  onClick={() => {
+                                    // Cancel logic placeholder
+                                    setActionDropdown(null);
+                                    setDropdownPos(null);
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              </div>,
+                              document.body
+                            )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="p-4 text-center">
+                        No data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
+      <div className="flex justify-end mt-4">
+        <button
+          className="bg-transparent border border-[#576CBC] text-[#576CBC] text-[11px] px-3 py-1 rounded-md shadow transition"
+          onClick={() => router.push("/admin-main/ui/leavelist")}
+        >
+          View All
+        </button>
+      </div>
 
       {/* Add Applicant Modal */}
       {showAddApplicant && (
@@ -501,7 +502,9 @@ const  ApplicantsList: React.FC = () => {
                     }
                     className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 bg-white"
                   >
-                    <option value="" disabled>Select Gender</option>
+                    <option value="" disabled>
+                      Select Gender
+                    </option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
@@ -732,7 +735,9 @@ const  ApplicantsList: React.FC = () => {
               <div className="w-1/2 border-r relative bg-gray-50">
                 <div className="relative min-h-full">
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-gray-500">Resume preview would appear here</p>
+                    <p className="text-gray-500">
+                      Resume preview would appear here
+                    </p>
                   </div>
                 </div>
               </div>
@@ -775,17 +780,36 @@ const  ApplicantsList: React.FC = () => {
 
                   {/* Language Proficiency Sections */}
                   {[
-                    { field: "Quran Reading", state: quranReading, setState: setQuranReading },
+                    {
+                      field: "Quran Reading",
+                      state: quranReading,
+                      setState: setQuranReading,
+                    },
                     { field: "Tajweed", state: tajweed, setState: setTajweed },
-                    { field: "Arabic Speaking", state: arabicSpeaking, setState: setArabicSpeaking },
-                    { field: "Arabic Writing", state: arabicWriting, setState: setArabicWriting },
-                    { field: "English Speaking", state: englishSpeaking, setState: setEnglishSpeaking },
+                    {
+                      field: "Arabic Speaking",
+                      state: arabicSpeaking,
+                      setState: setArabicSpeaking,
+                    },
+                    {
+                      field: "Arabic Writing",
+                      state: arabicWriting,
+                      setState: setArabicWriting,
+                    },
+                    {
+                      field: "English Speaking",
+                      state: englishSpeaking,
+                      setState: setEnglishSpeaking,
+                    },
                   ].map(({ field, state, setState }) => (
                     <div key={field}>
                       <p className="text-sm text-indigo-600 mb-1">{field}</p>
                       <div className="flex gap-2">
                         {["Basic", "Medium", "Advanced"].map((level) => (
-                          <label key={level} className="flex items-center gap-2">
+                          <label
+                            key={level}
+                            className="flex items-center gap-2"
+                          >
                             <input
                               type="radio"
                               name={field}
@@ -815,8 +839,12 @@ const  ApplicantsList: React.FC = () => {
                         <option value="Monday-Friday">Monday-Friday</option>
                         <option value="Sunday-Thursday">Sunday-Thursday</option>
                         <option value="Sunday-Saturday">Sunday-Saturday</option>
-                        <option value="Tuesday-Saturday">Tuesday-Saturday</option>
-                        <option value="Wednesday-Saturday">Wednesday-Saturday</option>
+                        <option value="Tuesday-Saturday">
+                          Tuesday-Saturday
+                        </option>
+                        <option value="Wednesday-Saturday">
+                          Wednesday-Saturday
+                        </option>
                       </select>
                     </div>
 

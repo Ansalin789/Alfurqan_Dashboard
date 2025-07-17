@@ -292,7 +292,7 @@ const TrailManagement = () => {
                       {/* Class Status */}
                       <td className="px-3 py-2 text-[11px]">
                         <span
-                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.trialClassStatus === "COMPLETED"
                               ? "bg-[#ECFDF3] text-[#377E36] px-2 border border-[#377E36]"
                               : item.trialClassStatus === "INPROGRESS"
@@ -306,7 +306,7 @@ const TrailManagement = () => {
                       {/* Student Status */}
                       <td className="px-3 py-2 text-[11px]">
                         <span
-                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.status === "Active"
                               ? "bg-[#ECFDF3] text-[#377E36] px-3 border border-[#377E36]"
                               : item.status === "PENDING"
@@ -318,9 +318,9 @@ const TrailManagement = () => {
                         </span>
                       </td>
                       {/* Payment Status */}
-                      <td className="px-3 py-2 text-[11px]">
+                      <td className="px-3 py-2 text-[8px]">
                         <span
-                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.paymentStatus === "PAID"
                               ? "bg-[#ECFDF3] text-[#377E36] px-4 border border-[#377E36]"
                               : item.paymentStatus === "PENDING"
