@@ -181,7 +181,7 @@ const TrailSection = () => {
   return (
     <BaseLayout4>
       <AcademicHeader currentSection="Trail Class Request" />
-      <div className="h-full w-full py-2 md:mr-10 scrollbar-none">
+      <div className="h-full w-full md:mr-10 scrollbar-none">
         <div>
           <Dashboard />
         </div>
@@ -241,7 +241,7 @@ const TrailSection = () => {
             </thead>
             <tbody>
               {filteredItems.length > 0 ? (
-                filteredItems.map((item, index) => (
+                filteredItems.slice(-5).reverse().map((item, index) => (
                   <tr
                     key={item._id}
                     className={`text-[12px] ${
