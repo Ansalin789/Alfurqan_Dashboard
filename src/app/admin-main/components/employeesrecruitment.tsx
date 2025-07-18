@@ -392,6 +392,7 @@ const updateApplicationStatus = async (id: string, status: string) => {
                 </tbody>
               </table>
             </div>
+            
           </div>
         </div>
       </div>
