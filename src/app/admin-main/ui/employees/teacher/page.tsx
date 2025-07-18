@@ -16,6 +16,7 @@ import axios from "axios";
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
+import Pagination from "@/components/Pagination";
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),
@@ -253,6 +254,45 @@ const Teacher = () => {
   const [searchWages, setSearchWages] = useState("");
   const [searchWorkingHours, setSearchWorkingHours] = useState("");
   const [searchEarnings, setSearchEarnings] = useState("");
+  // Filtered Earnings (months)
+  const filteredEarningsMonths = Array.from({ length: 12 })
+    .map((_, index) => {
+      const monthNumber = index + 1;
+      const currentYear = new Date().getFullYear();
+      const monthName = new Date(0, index).toLocaleString("default", {
+        month: "short",
+      });
+      const monthly = teacherCounts.monthlyData?.find(
+        (item) => item.month === monthNumber && item.year === currentYear
+      );
+      return {
+        key: `${monthName}-${currentYear}`,
+        monthName,
+        currentYear,
+        monthly,
+      };
+    })
+    .filter((row) => {
+      const searchFields = [row.monthName, row.currentYear];
+      return searchFields.some((field) =>
+        field
+          ? field
+              .toString()
+              .toLowerCase()
+              .includes(searchEarnings.toLowerCase())
+          : false
+      );
+    });
+
+  const [earningsPage, setEarningsPage] = useState(1);
+  const earningsPerPage = 5;
+  const totalEarningsPages = Math.ceil(
+    filteredEarningsMonths.length / earningsPerPage
+  );
+  const paginatedEarnings = filteredEarningsMonths.slice(
+    (earningsPage - 1) * earningsPerPage,
+    earningsPage * earningsPerPage
+  );
 
   const events = [
     {
@@ -553,35 +593,13 @@ const Teacher = () => {
     );
   });
 
-  // Filtered Earnings (months)
-  const filteredEarningsMonths = Array.from({ length: 12 })
-    .map((_, index) => {
-      const monthNumber = index + 1;
-      const currentYear = new Date().getFullYear();
-      const monthName = new Date(0, index).toLocaleString("default", {
-        month: "short",
-      });
-      const monthly = teacherCounts.monthlyData?.find(
-        (item) => item.month === monthNumber && item.year === currentYear
-      );
-      return {
-        key: `${monthName}-${currentYear}`,
-        monthName,
-        currentYear,
-        monthly,
-      };
-    })
-    .filter((row) => {
-      const searchFields = [row.monthName, row.currentYear];
-      return searchFields.some((field) =>
-        field
-          ? field
-              .toString()
-              .toLowerCase()
-              .includes(searchEarnings.toLowerCase())
-          : false
-      );
-    });
+  const [wagesPage, setWagesPage] = useState(1);
+  const wagesPerPage = 5;
+  const totalWagesPages = Math.ceil(filteredWages.length / wagesPerPage);
+  const paginatedWages = filteredWages.slice(
+    (wagesPage - 1) * wagesPerPage,
+    wagesPage * wagesPerPage
+  );
 
   return (
     <BaseLayout4>
@@ -697,7 +715,7 @@ const Teacher = () => {
             ))}
           </div>
 
-          <div className="p-2">
+          <div className="py-2">
             {activeTab === "Studentslist" && (
               <div className="">
                 <div className="rounded-xl overflow-hidden">
@@ -712,12 +730,14 @@ const Teacher = () => {
                         onChange={(e) => handleSearch(e.target.value)}
                       />
                     </div>
-                    <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                      onClick={() => setIsFilterModalOpen(true)}
-                    >
-                      <MdTune className="w-4 h-4" />
-                      <span>Filter</span>
+                    <div className="relative">
+                      <div
+                        className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                        onClick={() => setIsFilterModalOpen(true)}
+                      >
+                        <MdTune className="w-4 h-4" />
+                        <span>Filter</span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
                       <span className="text-left ml-60 ">
@@ -726,7 +746,7 @@ const Teacher = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                  <div className="overflow-x-auto max-h-none">
                     <table
                       className="w-full min-w-[900px] text-sm text-left table-auto"
                       style={{ width: "100%", tableLayout: "fixed" }}
@@ -751,32 +771,35 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
-                        {filteredStudents.length > 0 ? (
-                          filteredStudents.map((item, index) => {
-                            const student = item.studentDetails?.student;
-                            return (
-                              <tr
-                                key={item.studentId || index}
-                                className={`text-center dark:text-white ${
-                                  index % 2 === 0
-                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                }`}
-                              >
-                                <td className="p-3">{item.studentId}</td>
-                                <td className="p-3">
-                                  {student?.studentFirstName}
-                                </td>
-                                <td className="p-3">
-                                  {student?.studentCountry}
-                                </td>
-                                <td className="p-3">
-                                  {student?.learningInterest}
-                                </td>
-                                <td className="p-3">30 min</td>
-                              </tr>
-                            );
-                          })
+                        {filteredStudents.slice(-5).reverse().length > 0 ? (
+                          filteredStudents
+                            .slice(-5)
+                            .reverse()
+                            .map((item, index) => {
+                              const student = item.studentDetails?.student;
+                              return (
+                                <tr
+                                  key={item.studentId || index}
+                                  className={`text-center dark:text-white ${
+                                    index % 2 === 0
+                                      ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                      : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                  }`}
+                                >
+                                  <td className="p-3">{item.studentId}</td>
+                                  <td className="p-3">
+                                    {student?.studentFirstName}
+                                  </td>
+                                  <td className="p-3">
+                                    {student?.studentCountry}
+                                  </td>
+                                  <td className="p-3">
+                                    {student?.learningInterest}
+                                  </td>
+                                  <td className="p-3">30 min</td>
+                                </tr>
+                              );
+                            })
                         ) : (
                           <tr>
                             <td colSpan={6} className="p-4 text-center">
@@ -792,7 +815,9 @@ const Teacher = () => {
                   <button
                     className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
                     onClick={() => {
-                      /* Add your view all logic here, e.g., navigate to a full list page */
+                      router.push(
+                        `/admin-main/ui/employees/teacher/studentlist?teacherId=${employeeId}`
+                      );
                     }}
                   >
                     View All
@@ -802,7 +827,7 @@ const Teacher = () => {
             )}
 
             {activeTab === "ScheduledClass" && (
-              <div className="space-y-2">
+              <div className="space-y-2 -mt-8">
                 <div className="justify-end text-end">
                   <button
                     className={`font-medium text-[14px] ${
@@ -844,7 +869,7 @@ const Teacher = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                  <div className="overflow-x-auto max-h-none">
                     <table
                       className="w-full min-w-[900px] text-sm text-left table-auto"
                       style={{ width: "100%", tableLayout: "fixed" }}
@@ -879,51 +904,56 @@ const Teacher = () => {
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
                         {filteredScheduledClass.length > 0 ? (
-                          filteredScheduledClass.map((event, index) => (
-                            <tr
-                              key={event._id}
-                              className={`text-center dark:text-white ${
-                                index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
-                            >
-                              <td className="p-3">
-                                {event.student.studentFirstName}
-                              </td>
-                              <td className="p-3 text-blue-600 font-medium">
-                                {event.student.studentId}
-                              </td>
-                              <td className="p-3">Quran</td>
-                              <td className="p-3">{event.sessionClassType}</td>
-                              <td className="p-3">30 Min</td>
-                              <td className="p-3">
-                                {new Date(event.startDate).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  }
-                                )}
-                              </td>
-                              <td className="p-3">
-                                {formatTime(event.startTime[0])} –{" "}
-                                {formatTime(event.endTime[0])}
-                              </td>
-                              <td className="p-3">
-                                <span
-                                  className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${
-                                    statusStyle[
-                                      event.scheduleStatus as keyof typeof statusStyle
-                                    ]
-                                  }`}
-                                >
-                                  {event.scheduleStatus}
-                                </span>
-                              </td>
-                            </tr>
-                          ))
+                          filteredScheduledClass
+                            .slice(-5)
+                            .reverse()
+                            .map((event, index) => (
+                              <tr
+                                key={event._id}
+                                className={`text-center dark:text-white ${
+                                  index % 2 === 0
+                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
+                              >
+                                <td className="p-3">
+                                  {event.student.studentFirstName}
+                                </td>
+                                <td className="p-3 text-blue-600 font-medium">
+                                  {event.student.studentId}
+                                </td>
+                                <td className="p-3">Quran</td>
+                                <td className="p-3">
+                                  {event.sessionClassType}
+                                </td>
+                                <td className="p-3">30 Min</td>
+                                <td className="p-3">
+                                  {new Date(event.startDate).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                    }
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  {formatTime(event.startTime[0])} –{" "}
+                                  {formatTime(event.endTime[0])}
+                                </td>
+                                <td className="p-3">
+                                  <span
+                                    className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${
+                                      statusStyle[
+                                        event.scheduleStatus as keyof typeof statusStyle
+                                      ]
+                                    }`}
+                                  >
+                                    {event.scheduleStatus}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
                         ) : (
                           <tr>
                             <td colSpan={8} className="p-4 text-center">
@@ -935,11 +965,11 @@ const Teacher = () => {
                     </table>
                   </div>
                 </div>
-                <div className="flex justify-end mt-4">
+                <div className="flex justify-end">
                   <button
                     className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
                     onClick={() => {
-                      /* Add your view all logic here, e.g., navigate to a full list page */
+                      router.push(`/admin-main/ui/employees/teacher/scheduledclass?teacherId=${employeeId}`);
                     }}
                   >
                     View All
@@ -949,30 +979,7 @@ const Teacher = () => {
             )}
 
             {activeTab === "Earnings" && (
-              <div className="space-y-6">
-                {/* Summary Cards */}
-                <div className="flex gap-5 ">
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Classes</p>
-                    <h2 className="text-2xl font-semibold">
-                      {teacherCounts?.totalclasses ?? 0}
-                    </h2>
-                  </div>
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Hours</p>
-                    <h2 className="text-2xl font-semibold">
-                      {teacherCounts?.totalhours ?? 0}
-                    </h2>
-                  </div>
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Earnings</p>
-                    <h2 className="text-2xl font-semibold ">
-                      {teacherCounts?.totalearnings ?? 0}
-                    </h2>
-                  </div>
-                </div>
-
-                {/* Monthly Breakdown Table */}
+              <div className="space-y-2">
                 <div className="rounded-xl overflow-hidden">
                   <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -994,13 +1001,20 @@ const Teacher = () => {
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
                       <span className="text-left ml-60 ">
-                        Showing {filteredEarningsMonths.length === 0 ? 0 : 1} to{" "}
-                        {filteredEarningsMonths.length} of{" "}
-                        {filteredEarningsMonths.length}
+                        Showing{" "}
+                        {filteredEarningsMonths.length === 0
+                          ? 0
+                          : (earningsPage - 1) * earningsPerPage + 1}{" "}
+                        to{" "}
+                        {Math.min(
+                          earningsPage * earningsPerPage,
+                          filteredEarningsMonths.length
+                        )}{" "}
+                        of {filteredEarningsMonths.length}
                       </span>
                     </div>
                   </div>
-                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                  <div className="overflow-x-auto max-h-none">
                     <table
                       className="w-full min-w-[900px] text-sm text-left table-auto"
                       style={{ width: "100%", tableLayout: "fixed" }}
@@ -1022,41 +1036,48 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
-                        {filteredEarningsMonths.map((row, index) => (
-                          <tr
-                            key={row.key}
-                            className={`text-center dark:text-white ${
-                              index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}
-                          >
-                            <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
-                            <td className="p-3">
-                              {row.monthly?.totalclasses ?? 0}
-                            </td>
-                            <td className="p-3">
-                              {row.monthly?.totalhours ?? 0}
-                            </td>
-                            <td className="p-3">
-                              ${row.monthly?.totalearnings ?? 0}
+                        {paginatedEarnings.length > 0 ? (
+                          paginatedEarnings.map((row, index) => (
+                            <tr
+                              key={row.key}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
+                              <td className="p-3">
+                                {row.monthly?.totalclasses ?? 0}
+                              </td>
+                              <td className="p-3">
+                                {row.monthly?.totalhours ?? 0}
+                              </td>
+                              <td className="p-3">
+                                ${row.monthly?.totalearnings ?? 0}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="p-4 text-center">
+                              No data available
                             </td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </table>
                   </div>
                 </div>
-                <div className="flex justify-end mt-4">
-                  <button
-                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
-                    onClick={() => {
-                      /* Add your view all logic here, e.g., navigate to a full list page */
-                    }}
-                  >
-                    View All
-                  </button>
-                </div>
+                {totalEarningsPages > 1 && (
+                  <div className="flex justify-end mt-2">
+                    <Pagination
+                      currentPage={earningsPage}
+                      totalPages={totalEarningsPages}
+                      onPageChange={setEarningsPage}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -1088,7 +1109,7 @@ const Teacher = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                  <div className="overflow-x-auto max-h-none">
                     <table
                       className="w-full min-w-[900px] text-sm text-left table-auto"
                       style={{ width: "100%", tableLayout: "fixed" }}
@@ -1116,59 +1137,62 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
-                        {filteredPayments.map((item, index) => (
-                          <tr
-                            key={item._id}
-                            className={`text-center dark:text-white ${
-                              index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}
-                          >
-                            <td className="p-3">
-                              {new Date(item.startDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                }
-                              )}
-                            </td>
-                            <td className="p-3">
-                              {item.amount === "0" ? "-" : item.amount}
-                            </td>
-                            <td className="p-3">Monthly Salary</td>
-                            <td className="p-3">Bank Transfer</td>
-                            <td className="p-3">
-                              <span
-                                className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
+                        {filteredPayments
+                          .slice(-5)
+                          .reverse()
+                          .map((item, index) => (
+                            <tr
+                              key={item._id}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">
+                                {new Date(item.startDate).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  }
+                                )}
+                              </td>
+                              <td className="p-3">
+                                {item.amount === "0" ? "-" : item.amount}
+                              </td>
+                              <td className="p-3">Monthly Salary</td>
+                              <td className="p-3">Bank Transfer</td>
+                              <td className="p-3">
+                                <span
+                                  className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
                                   ${
                                     item.amount === "0"
                                       ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
                                       : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
                                   }
                                 `}
-                              >
-                                {item.amount === "0" ? "Pending" : "Paid"}
-                              </span>
-                            </td>
-                            <td className="p-3 text-center">
-                              <button className="text-blue-500 text-[11px]">
-                                Download
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                                >
+                                  {item.amount === "0" ? "Pending" : "Paid"}
+                                </span>
+                              </td>
+                              <td className="p-3 text-center">
+                                <button className="text-blue-500 text-[11px]">
+                                  Download
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
                 </div>
-                <div className="flex justify-end mt-4">
+                <div className="flex justify-end">
                   <button
                     className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
                     onClick={() => {
-                      /* Add your view all logic here, e.g., navigate to a full list page */
+                      router.push(`/admin-main/ui/employees/teacher/payments?teacherId=${employeeId}`);
                     }}
                   >
                     View All
@@ -1200,12 +1224,20 @@ const Teacher = () => {
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
                       <span className="text-left ml-60 ">
-                        Showing {filteredWages.length === 0 ? 0 : 1} to{" "}
-                        {filteredWages.length} of {filteredWages.length}
+                        Showing{" "}
+                        {filteredWages.length === 0
+                          ? 0
+                          : (wagesPage - 1) * wagesPerPage + 1}{" "}
+                        to{" "}
+                        {Math.min(
+                          wagesPage * wagesPerPage,
+                          filteredWages.length
+                        )}{" "}
+                        of {filteredWages.length}
                       </span>
                     </div>
                   </div>
-                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                  <div className="overflow-x-auto max-h-none">
                     <table
                       className="w-full min-w-[900px] text-sm text-left table-auto"
                       style={{ width: "100%", tableLayout: "fixed" }}
@@ -1213,7 +1245,7 @@ const Teacher = () => {
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Class Type
+                            Class Name
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Rate
@@ -1227,45 +1259,52 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
-                        {filteredWages.map((item, index) => (
-                          <tr
-                            key={item._id}
-                            className={`text-center dark:text-white ${
-                              index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}
-                          >
-                            <td className="p-3">
-                              {item.classType?.className || "-"}
-                            </td>
-                            <td className="p-3">
-                              {item.classType?.rate || "-"}
-                            </td>
-                            <td className="p-3">
-                              {item.classType?.currency || "-"}
-                            </td>
-                            <td className="p-3">
-                              {item.classType?.hoursMins
-                                ? `${item.classType.hoursMins} mins`
-                                : "-"}
+                        {paginatedWages.length > 0 ? (
+                          paginatedWages.map((item, index) => (
+                            <tr
+                              key={item._id}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">
+                                {item.classType?.className || "-"}
+                              </td>
+                              <td className="p-3">
+                                {item.classType?.rate || "-"}
+                              </td>
+                              <td className="p-3">
+                                {item.classType?.currency || "-"}
+                              </td>
+                              <td className="p-3">
+                                {item.classType?.hoursMins
+                                  ? `${item.classType.hoursMins} mins`
+                                  : "-"}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="p-4 text-center">
+                              No data available
                             </td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </table>
                   </div>
                 </div>
-                <div className="flex justify-end mt-4">
-                  <button
-                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
-                    onClick={() => {
-                      /* Add your view all logic here, e.g., navigate to a full list page */
-                    }}
-                  >
-                    View All
-                  </button>
-                </div>
+                {totalWagesPages > 1 && (
+                  <div className="flex justify-end mt-4">
+                    <Pagination
+                      currentPage={wagesPage}
+                      totalPages={totalWagesPages}
+                      onPageChange={setWagesPage}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -1298,7 +1337,7 @@ const Teacher = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                  <div className="overflow-x-auto max-h-none">
                     <table
                       className="w-full min-w-[900px] text-sm text-left table-auto"
                       style={{ width: "100%", tableLayout: "fixed" }}
@@ -1320,30 +1359,33 @@ const Teacher = () => {
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
-                        {filteredWorkingHours.map((item, index) => (
-                          <tr
-                            key={index}
-                            className={`text-center dark:text-white ${
-                              index % 2 === 0
-                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                            }`}
-                          >
-                            <td className="p-3">{item.day}</td>
-                            <td className="p-3">{item.date}</td>
-                            <td className="p-3">{`${item.fromTime} - ${item.toTime}`}</td>
-                            <td className="p-3">GMT</td>
-                          </tr>
-                        ))}
+                        {filteredWorkingHours
+                          .slice(-5)
+                          .reverse()
+                          .map((item, index) => (
+                            <tr
+                              key={index}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">{item.day}</td>
+                              <td className="p-3">{item.date}</td>
+                              <td className="p-3">{`${item.fromTime} - ${item.toTime}`}</td>
+                              <td className="p-3">GMT</td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
                 </div>
-                <div className="flex justify-end mt-4">
+                <div className="flex justify-end">
                   <button
                     className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
                     onClick={() => {
-                      /* Add your view all logic here, e.g., navigate to a full list page */
+                      router.push(`/admin-main/ui/employees/teacher/workinghours?teacherId=${employeeId}`);
                     }}
                   >
                     View All
