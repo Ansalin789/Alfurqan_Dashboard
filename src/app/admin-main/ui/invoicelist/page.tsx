@@ -8,6 +8,7 @@ import axios from "axios";
 import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
+import AdminHeader from "../../components/AdminHeader";
 
 interface Student {
   studentId: string;
@@ -192,6 +193,7 @@ const fetchInvoice = (token: string) => {
 
   return (
     <BaseLayout4>
+      <AdminHeader currentSection="Invoice" />
        
         <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg">
       {/* Filter Modal */}
