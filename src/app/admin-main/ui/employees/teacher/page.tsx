@@ -368,30 +368,26 @@ const Teacher = () => {
     fetchCounts();
   }, []);
 
-  const fetchWages = async (token: string) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:5001/empwages/${employeeId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      // If your API returns { wages: [...] }, use response.data.wages
-      // If it returns an array directly, use response.data
-      // This will work for both:
-      // const data = Array.isArray(response.data)
-      //   ? response.data
-      //   : Array.isArray(response.data?.wages)
-      //     ? response.data.wages
-      //     : [];
-      setWages(response.data);
-    } catch (error) {
-      console.error("Error fetching wages:", error);
-    }
-  };
+const fetchWages = async (token: string) => {
+  try {
+    const response = await axios.get(
+      `http://localhost:5001/empwages/${employeeId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = response.data;
+    const wagesArray = Array.isArray(data) ? data : [data];
+    setWages(wagesArray);
+  } catch (error) {
+    console.error("Error fetching wages:", error);
+  }
+};
+
 
   const fetchClasses = async (token: string) => {
     try {
