@@ -368,26 +368,25 @@ const Teacher = () => {
     fetchCounts();
   }, []);
 
-const fetchWages = async (token: string) => {
-  try {
-    const response = await axios.get(
-      `http://localhost:5001/empwages/${employeeId}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+  const fetchWages = async (token: string) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5001/empwages/${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    const data = response.data;
-    const wagesArray = Array.isArray(data) ? data : [data];
-    setWages(wagesArray);
-  } catch (error) {
-    console.error("Error fetching wages:", error);
-  }
-};
-
+      const data = response.data;
+      const wagesArray = Array.isArray(data) ? data : [data];
+      setWages(wagesArray);
+    } catch (error) {
+      console.error("Error fetching wages:", error);
+    }
+  };
 
   const fetchClasses = async (token: string) => {
     try {
@@ -501,7 +500,10 @@ const fetchWages = async (token: string) => {
     ];
     return searchFields.some((field) =>
       field
-        ? field.toString().toLowerCase().includes(searchScheduledClass.toLowerCase())
+        ? field
+            .toString()
+            .toLowerCase()
+            .includes(searchScheduledClass.toLowerCase())
         : false
     );
   });
@@ -525,28 +527,28 @@ const fetchWages = async (token: string) => {
   });
 
   // Filtered Wages
-  const filteredWages = Array.isArray(wages) ? wages.filter((item) => {
-    const searchFields = [
-      item.classType.className,
-      item.classType.rate,
-      item.classType.currency,
-    ];
-    return searchFields.some((field) =>
-      field
-        ? field.toString().toLowerCase().includes(searchWages.toLowerCase())
-        : false
-    );
-  }) : [];
+  const filteredWages = Array.isArray(wages)
+    ? wages.filter((item) => {
+        const searchFields = [
+          item.classType?.className || "",
+          item.classType?.rate || "",
+          item.classType?.currency || "",
+        ];
+        return searchFields.some((field) =>
+          field.toString().toLowerCase().includes(searchWages.toLowerCase())
+        );
+      })
+    : [];
 
   // Filtered Working Hours
   const filteredWorkingHours = schedule.filter((item) => {
-    const searchFields = [
-      item.day,
-      item.date,
-    ];
+    const searchFields = [item.day, item.date];
     return searchFields.some((field) =>
       field
-        ? field.toString().toLowerCase().includes(searchWorkingHours.toLowerCase())
+        ? field
+            .toString()
+            .toLowerCase()
+            .includes(searchWorkingHours.toLowerCase())
         : false
     );
   });
@@ -573,7 +575,10 @@ const fetchWages = async (token: string) => {
       const searchFields = [row.monthName, row.currentYear];
       return searchFields.some((field) =>
         field
-          ? field.toString().toLowerCase().includes(searchEarnings.toLowerCase())
+          ? field
+              .toString()
+              .toLowerCase()
+              .includes(searchEarnings.toLowerCase())
           : false
       );
     });
@@ -798,18 +803,18 @@ const fetchWages = async (token: string) => {
 
             {activeTab === "ScheduledClass" && (
               <div className="space-y-2">
-                  <div className="justify-end text-end">
-                    <button
-                      className={`font-medium text-[14px] ${
-                        view === "month"
-                          ? "text-black"
-                          : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
-                      }`}
-                      onClick={handleclickcalender}
-                    >
-                      <FaCalendarAlt />
-                    </button>
-                  </div>
+                <div className="justify-end text-end">
+                  <button
+                    className={`font-medium text-[14px] ${
+                      view === "month"
+                        ? "text-black"
+                        : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
+                    }`}
+                    onClick={handleclickcalender}
+                  >
+                    <FaCalendarAlt />
+                  </button>
+                </div>
                 <div className="rounded-xl overflow-hidden">
                   <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -819,7 +824,9 @@ const fetchWages = async (token: string) => {
                         placeholder="Search"
                         className="bg-transparent outline-none text-[12px] w-52 py-3"
                         value={searchScheduledClass}
-                        onChange={(e) => setSearchScheduledClass(e.target.value)}
+                        onChange={(e) =>
+                          setSearchScheduledClass(e.target.value)
+                        }
                       />
                     </div>
                     <div
@@ -831,7 +838,9 @@ const fetchWages = async (token: string) => {
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
                       <span className="text-left ml-60 ">
-                        Showing {filteredScheduledClass.length === 0 ? 0 : 1} to {filteredScheduledClass.length} of {filteredScheduledClass.length}
+                        Showing {filteredScheduledClass.length === 0 ? 0 : 1} to{" "}
+                        {filteredScheduledClass.length} of{" "}
+                        {filteredScheduledClass.length}
                       </span>
                     </div>
                   </div>
@@ -842,49 +851,49 @@ const fetchWages = async (token: string) => {
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                                <th className="p-4 font-semibold text-[12px] text-center">
-                                  Student name
-                                </th>
-                                <th className="p-4 font-semibold text-[12px] text-center">
-                                  Student ID
-                                </th>
-                                <th className="p-4 font-semibold text-[12px] text-center">
-                                  Courses
-                                </th>
-                                <th className="p-4 font-semibold text-[12px] text-center">
-                                  Class Type
-                                </th>
-                                <th className="p-4 font-semibold text-[12px] text-center">
-                                  Course Duration
-                                </th>
-                                <th className="p-4 font-semibold text-[12px] text-center">
-                                  Date
-                                </th>
-                                <th className="p-4 font-semibold text-[12px] text-center">
-                                  Time
-                                </th>
-                                <th className="p-4 font-semibold text-[12px] text-center">
-                                  Status
-                                </th>
-                              </tr>
-                            </thead>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Student name
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Student ID
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Courses
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Class Type
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Course Duration
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Date
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Time
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
                         {filteredScheduledClass.length > 0 ? (
                           filteredScheduledClass.map((event, index) => (
-                                <tr
-                                  key={event._id}
+                            <tr
+                              key={event._id}
                               className={`text-center dark:text-white ${
-                                    index % 2 === 0
+                                index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                                  }`}
-                                >
+                              }`}
+                            >
                               <td className="p-3">
-                                    {event.student.studentFirstName}
-                                  </td>
+                                {event.student.studentFirstName}
+                              </td>
                               <td className="p-3 text-blue-600 font-medium">
-                                    {event.student.studentId}
-                                  </td>
+                                {event.student.studentId}
+                              </td>
                               <td className="p-3">Quran</td>
                               <td className="p-3">{event.sessionClassType}</td>
                               <td className="p-3">30 Min</td>
@@ -892,28 +901,28 @@ const fetchWages = async (token: string) => {
                                 {new Date(event.startDate).toLocaleDateString(
                                   "en-US",
                                   {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "numeric",
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
                                   }
                                 )}
-                                  </td>
+                              </td>
                               <td className="p-3">
-                                    {formatTime(event.startTime[0])} –{" "}
-                                    {formatTime(event.endTime[0])}
-                                  </td>
+                                {formatTime(event.startTime[0])} –{" "}
+                                {formatTime(event.endTime[0])}
+                              </td>
                               <td className="p-3">
-                                    <span
+                                <span
                                   className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${
-                                        statusStyle[
-                                          event.scheduleStatus as keyof typeof statusStyle
-                                        ]
-                                      }`}
-                                    >
-                                      {event.scheduleStatus}
-                                    </span>
-                                  </td>
-                                </tr>
+                                    statusStyle[
+                                      event.scheduleStatus as keyof typeof statusStyle
+                                    ]
+                                  }`}
+                                >
+                                  {event.scheduleStatus}
+                                </span>
+                              </td>
+                            </tr>
                           ))
                         ) : (
                           <tr>
@@ -922,10 +931,10 @@ const fetchWages = async (token: string) => {
                             </td>
                           </tr>
                         )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
                 <div className="flex justify-end mt-4">
                   <button
                     className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
@@ -935,7 +944,7 @@ const fetchWages = async (token: string) => {
                   >
                     View All
                   </button>
-                  </div>
+                </div>
               </div>
             )}
 
@@ -943,89 +952,99 @@ const fetchWages = async (token: string) => {
               <div className="space-y-6">
                 {/* Summary Cards */}
                 <div className="flex gap-5 ">
-                  
                   <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
                     <p className="text-md font-medium">Total Classes</p>
                     <h2 className="text-2xl font-semibold">
                       {teacherCounts?.totalclasses ?? 0}
-                      </h2>
-                    </div>
+                    </h2>
+                  </div>
                   <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
                     <p className="text-md font-medium">Total Hours</p>
                     <h2 className="text-2xl font-semibold">
                       {teacherCounts?.totalhours ?? 0}
-                      </h2>
-                    </div>
+                    </h2>
+                  </div>
                   <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
                     <p className="text-md font-medium">Total Earnings</p>
                     <h2 className="text-2xl font-semibold ">
                       {teacherCounts?.totalearnings ?? 0}
-                      </h2>
+                    </h2>
                   </div>
                 </div>
 
                 {/* Monthly Breakdown Table */}
-                  <div className="rounded-xl overflow-hidden">
-                    <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
-                        <input
-                          type="text"
-                          placeholder="Search"
-                          className="bg-transparent outline-none text-[12px] w-52 py-3"
-                          value={searchEarnings}
-                          onChange={(e) => setSearchEarnings(e.target.value)}
-                        />
-                      </div>
-                      <div
-                        className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                        onClick={() => setIsFilterModalOpen(true)}
-                      >
-                        <MdTune className="w-4 h-4" />
-                        <span>Filter</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                        <span className="text-left ml-60 ">
-                          Showing {filteredEarningsMonths.length === 0 ? 0 : 1} to {filteredEarningsMonths.length} of {filteredEarningsMonths.length}
-                        </span>
-                      </div>
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchEarnings}
+                        onChange={(e) => setSearchEarnings(e.target.value)}
+                      />
                     </div>
-                    <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
-                      <table className="w-full min-w-[900px] text-sm text-left table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
-                        <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                          <tr className="font-medium">
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Month
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Classes
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Hours
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Earnings
-                            </th>
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredEarningsMonths.length === 0 ? 0 : 1} to{" "}
+                        {filteredEarningsMonths.length} of{" "}
+                        {filteredEarningsMonths.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Month
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Total Classes
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Total Hours
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Total Earnings
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {filteredEarningsMonths.map((row, index) => (
+                          <tr
+                            key={row.key}
+                            className={`text-center dark:text-white ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                            }`}
+                          >
+                            <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
+                            <td className="p-3">
+                              {row.monthly?.totalclasses ?? 0}
+                            </td>
+                            <td className="p-3">
+                              {row.monthly?.totalhours ?? 0}
+                            </td>
+                            <td className="p-3">
+                              ${row.monthly?.totalearnings ?? 0}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody className="text-[10px] text-[#1D2939]">
-                          {filteredEarningsMonths.map((row, index) => (
-                            <tr
-                              key={row.key}
-                              className={`text-center dark:text-white ${
-                                index % 2 === 0
-                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
-                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
-                            >
-                              <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
-                              <td className="p-3">{row.monthly?.totalclasses ?? 0}</td>
-                              <td className="p-3">{row.monthly?.totalhours ?? 0}</td>
-                              <td className="p-3">${row.monthly?.totalearnings ?? 0}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
                 <div className="flex justify-end mt-4">
@@ -1064,12 +1083,16 @@ const fetchWages = async (token: string) => {
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
                       <span className="text-left ml-60 ">
-                        Showing {filteredPayments.length === 0 ? 0 : 1} to {filteredPayments.length} of {filteredPayments.length}
+                        Showing {filteredPayments.length === 0 ? 0 : 1} to{" "}
+                        {filteredPayments.length} of {filteredPayments.length}
                       </span>
                     </div>
                   </div>
                   <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[900px] text-sm text-left table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
@@ -1120,9 +1143,11 @@ const fetchWages = async (token: string) => {
                             <td className="p-3">
                               <span
                                 className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
-                                  ${item.amount === "0"
-                                    ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
-                                    : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"}
+                                  ${
+                                    item.amount === "0"
+                                      ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
+                                      : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
+                                  }
                                 `}
                               >
                                 {item.amount === "0" ? "Pending" : "Paid"}
@@ -1175,12 +1200,16 @@ const fetchWages = async (token: string) => {
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
                       <span className="text-left ml-60 ">
-                        Showing {filteredWages.length === 0 ? 0 : 1} to {filteredWages.length} of {filteredWages.length}
+                        Showing {filteredWages.length === 0 ? 0 : 1} to{" "}
+                        {filteredWages.length} of {filteredWages.length}
                       </span>
                     </div>
                   </div>
                   <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[900px] text-sm text-left table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
@@ -1207,11 +1236,19 @@ const fetchWages = async (token: string) => {
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
-                            <td className="p-3">{item.classType.className}</td>
-                            <td className="p-3">{item.classType.rate}</td>
-                            <td className="p-3">{item.classType.currency}</td>
                             <td className="p-3">
-                              {item.classType.hoursMins} mins
+                              {item.classType?.className || "-"}
+                            </td>
+                            <td className="p-3">
+                              {item.classType?.rate || "-"}
+                            </td>
+                            <td className="p-3">
+                              {item.classType?.currency || "-"}
+                            </td>
+                            <td className="p-3">
+                              {item.classType?.hoursMins
+                                ? `${item.classType.hoursMins} mins`
+                                : "-"}
                             </td>
                           </tr>
                         ))}
@@ -1255,12 +1292,17 @@ const fetchWages = async (token: string) => {
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
                       <span className="text-left ml-60 ">
-                        Showing {filteredWorkingHours.length === 0 ? 0 : 1} to {filteredWorkingHours.length} of {filteredWorkingHours.length}
+                        Showing {filteredWorkingHours.length === 0 ? 0 : 1} to{" "}
+                        {filteredWorkingHours.length} of{" "}
+                        {filteredWorkingHours.length}
                       </span>
                     </div>
                   </div>
                   <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[900px] text-sm text-left table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
