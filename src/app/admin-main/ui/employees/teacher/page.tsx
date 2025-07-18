@@ -2,9 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import { BsClockHistory } from "react-icons/bs";
-import { MdOutlineCurrencyExchange, MdOutlineCancel } from "react-icons/md";
-import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
+import { dateFnsLocalizer, Views } from "react-big-calendar";
 import format from "date-fns/format";
 import parse from "date-fns/parse";
 import startOfWeek from "date-fns/startOfWeek";
@@ -211,22 +209,6 @@ interface Student {
   studentEmail: string;
 }
 
-interface ClassSchedule {
-  _id: string;
-  startDate: string;
-  amount: string;
-  currency: string;
-  createdDate: string;
-  description?: string;
-  status?: string;
-  classLink: string;
-  teacher: {
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-  };
-}
-
 interface ShiftSchedule {
   date: string;
   day: string;
@@ -267,6 +249,10 @@ const Teacher = () => {
   const itemsPerPage = 10;
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchScheduledClass, setSearchScheduledClass] = useState("");
+  const [searchPayments, setSearchPayments] = useState("");
+  const [searchWages, setSearchWages] = useState("");
+  const [searchWorkingHours, setSearchWorkingHours] = useState("");
+  const [searchEarnings, setSearchEarnings] = useState("");
 
   const events = [
     {
@@ -393,6 +379,14 @@ const Teacher = () => {
           },
         }
       );
+      // If your API returns { wages: [...] }, use response.data.wages
+      // If it returns an array directly, use response.data
+      // This will work for both:
+      // const data = Array.isArray(response.data)
+      //   ? response.data
+      //   : Array.isArray(response.data?.wages)
+      //     ? response.data.wages
+      //     : [];
       setWages(response.data);
     } catch (error) {
       console.error("Error fetching wages:", error);
@@ -515,6 +509,78 @@ const Teacher = () => {
         : false
     );
   });
+
+  // Filtered Payments
+  const filteredPayments = scheduledclass.filter((item) => {
+    const searchFields = [
+      new Date(item.startDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      item.amount,
+      item.amount === "0" ? "Pending" : "Paid",
+    ];
+    return searchFields.some((field) =>
+      field
+        ? field.toString().toLowerCase().includes(searchPayments.toLowerCase())
+        : false
+    );
+  });
+
+  // Filtered Wages
+  const filteredWages = Array.isArray(wages) ? wages.filter((item) => {
+    const searchFields = [
+      item.classType.className,
+      item.classType.rate,
+      item.classType.currency,
+    ];
+    return searchFields.some((field) =>
+      field
+        ? field.toString().toLowerCase().includes(searchWages.toLowerCase())
+        : false
+    );
+  }) : [];
+
+  // Filtered Working Hours
+  const filteredWorkingHours = schedule.filter((item) => {
+    const searchFields = [
+      item.day,
+      item.date,
+    ];
+    return searchFields.some((field) =>
+      field
+        ? field.toString().toLowerCase().includes(searchWorkingHours.toLowerCase())
+        : false
+    );
+  });
+
+  // Filtered Earnings (months)
+  const filteredEarningsMonths = Array.from({ length: 12 })
+    .map((_, index) => {
+      const monthNumber = index + 1;
+      const currentYear = new Date().getFullYear();
+      const monthName = new Date(0, index).toLocaleString("default", {
+        month: "short",
+      });
+      const monthly = teacherCounts.monthlyData?.find(
+        (item) => item.month === monthNumber && item.year === currentYear
+      );
+      return {
+        key: `${monthName}-${currentYear}`,
+        monthName,
+        currentYear,
+        monthly,
+      };
+    })
+    .filter((row) => {
+      const searchFields = [row.monthName, row.currentYear];
+      return searchFields.some((field) =>
+        field
+          ? field.toString().toLowerCase().includes(searchEarnings.toLowerCase())
+          : false
+      );
+    });
 
   return (
     <BaseLayout4>
@@ -681,9 +747,6 @@ const Teacher = () => {
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Duration
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Classes
-                          </th>
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
@@ -710,7 +773,6 @@ const Teacher = () => {
                                   {student?.learningInterest}
                                 </td>
                                 <td className="p-3">30 min</td>
-                                <td className="p-3"></td>
                               </tr>
                             );
                           })
@@ -740,18 +802,18 @@ const Teacher = () => {
 
             {activeTab === "ScheduledClass" && (
               <div className="space-y-2">
-                <div className="justify-end text-end">
-                  <button
-                    className={`font-medium text-[14px] ${
-                      view === "month"
-                        ? "text-black"
-                        : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
-                    }`}
-                    onClick={handleclickcalender}
-                  >
-                    <FaCalendarAlt />
-                  </button>
-                </div>
+                  <div className="justify-end text-end">
+                    <button
+                      className={`font-medium text-[14px] ${
+                        view === "month"
+                          ? "text-black"
+                          : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
+                      }`}
+                      onClick={handleclickcalender}
+                    >
+                      <FaCalendarAlt />
+                    </button>
+                  </div>
                 <div className="rounded-xl overflow-hidden">
                   <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -784,49 +846,49 @@ const Teacher = () => {
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Student name
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Student ID
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Courses
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Class Type
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Course Duration
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Date
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Time
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
+                                <th className="p-4 font-semibold text-[12px] text-center">
+                                  Student name
+                                </th>
+                                <th className="p-4 font-semibold text-[12px] text-center">
+                                  Student ID
+                                </th>
+                                <th className="p-4 font-semibold text-[12px] text-center">
+                                  Courses
+                                </th>
+                                <th className="p-4 font-semibold text-[12px] text-center">
+                                  Class Type
+                                </th>
+                                <th className="p-4 font-semibold text-[12px] text-center">
+                                  Course Duration
+                                </th>
+                                <th className="p-4 font-semibold text-[12px] text-center">
+                                  Date
+                                </th>
+                                <th className="p-4 font-semibold text-[12px] text-center">
+                                  Time
+                                </th>
+                                <th className="p-4 font-semibold text-[12px] text-center">
+                                  Status
+                                </th>
+                              </tr>
+                            </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
                         {filteredScheduledClass.length > 0 ? (
                           filteredScheduledClass.map((event, index) => (
-                            <tr
-                              key={event._id}
+                                <tr
+                                  key={event._id}
                               className={`text-center dark:text-white ${
-                                index % 2 === 0
+                                    index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
-                            >
+                                  }`}
+                                >
                               <td className="p-3">
-                                {event.student.studentFirstName}
-                              </td>
+                                    {event.student.studentFirstName}
+                                  </td>
                               <td className="p-3 text-blue-600 font-medium">
-                                {event.student.studentId}
-                              </td>
+                                    {event.student.studentId}
+                                  </td>
                               <td className="p-3">Quran</td>
                               <td className="p-3">{event.sessionClassType}</td>
                               <td className="p-3">30 Min</td>
@@ -834,28 +896,28 @@ const Teacher = () => {
                                 {new Date(event.startDate).toLocaleDateString(
                                   "en-US",
                                   {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
                                   }
                                 )}
-                              </td>
+                                  </td>
                               <td className="p-3">
-                                {formatTime(event.startTime[0])} –{" "}
-                                {formatTime(event.endTime[0])}
-                              </td>
+                                    {formatTime(event.startTime[0])} –{" "}
+                                    {formatTime(event.endTime[0])}
+                                  </td>
                               <td className="p-3">
-                                <span
-                                  className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${
-                                    statusStyle[
-                                      event.scheduleStatus as keyof typeof statusStyle
-                                    ]
-                                  }`}
-                                >
-                                  {event.scheduleStatus}
-                                </span>
-                              </td>
-                            </tr>
+                                    <span
+                                  className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${
+                                        statusStyle[
+                                          event.scheduleStatus as keyof typeof statusStyle
+                                        ]
+                                      }`}
+                                    >
+                                      {event.scheduleStatus}
+                                    </span>
+                                  </td>
+                                </tr>
                           ))
                         ) : (
                           <tr>
@@ -864,8 +926,110 @@ const Teacher = () => {
                             </td>
                           </tr>
                         )}
-                      </tbody>
-                    </table>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                <div className="flex justify-end mt-4">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={() => {
+                      /* Add your view all logic here, e.g., navigate to a full list page */
+                    }}
+                  >
+                    View All
+                  </button>
+                  </div>
+              </div>
+            )}
+
+            {activeTab === "Earnings" && (
+              <div className="space-y-6">
+                {/* Summary Cards */}
+                <div className="flex gap-5 ">
+                  
+                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
+                    <p className="text-md font-medium">Total Classes</p>
+                    <h2 className="text-2xl font-semibold">
+                      {teacherCounts?.totalclasses ?? 0}
+                      </h2>
+                    </div>
+                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
+                    <p className="text-md font-medium">Total Hours</p>
+                    <h2 className="text-2xl font-semibold">
+                      {teacherCounts?.totalhours ?? 0}
+                      </h2>
+                    </div>
+                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
+                    <p className="text-md font-medium">Total Earnings</p>
+                    <h2 className="text-2xl font-semibold ">
+                      {teacherCounts?.totalearnings ?? 0}
+                      </h2>
+                  </div>
+                </div>
+
+                {/* Monthly Breakdown Table */}
+                  <div className="rounded-xl overflow-hidden">
+                    <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                        <input
+                          type="text"
+                          placeholder="Search"
+                          className="bg-transparent outline-none text-[12px] w-52 py-3"
+                          value={searchEarnings}
+                          onChange={(e) => setSearchEarnings(e.target.value)}
+                        />
+                      </div>
+                      <div
+                        className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                        onClick={() => setIsFilterModalOpen(true)}
+                      >
+                        <MdTune className="w-4 h-4" />
+                        <span>Filter</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                        <span className="text-left ml-60 ">
+                          Showing {filteredEarningsMonths.length === 0 ? 0 : 1} to {filteredEarningsMonths.length} of {filteredEarningsMonths.length}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                      <table className="w-full min-w-[900px] text-sm text-left table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
+                        <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                          <tr className="font-medium">
+                            <th className="p-4 font-semibold text-[12px] text-center">
+                              Month
+                            </th>
+                            <th className="p-4 font-semibold text-[12px] text-center">
+                              Total Classes
+                            </th>
+                            <th className="p-4 font-semibold text-[12px] text-center">
+                              Total Hours
+                            </th>
+                            <th className="p-4 font-semibold text-[12px] text-center">
+                              Total Earnings
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-[10px] text-[#1D2939]">
+                          {filteredEarningsMonths.map((row, index) => (
+                            <tr
+                              key={row.key}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
+                              <td className="p-3">{row.monthly?.totalclasses ?? 0}</td>
+                              <td className="p-3">{row.monthly?.totalhours ?? 0}</td>
+                              <td className="p-3">${row.monthly?.totalearnings ?? 0}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                   </div>
                 </div>
                 <div className="flex justify-end mt-4">
@@ -881,122 +1045,37 @@ const Teacher = () => {
               </div>
             )}
 
-            {activeTab === "Earnings" && (
-              <div className="space-y-6">
-                {/* Summary Cards */}
-                <div className="flex flex-wrap gap-4">
-                  <div className="bg-[#012A4A] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Classes</p>
-                      <h2 className="text-lg font-bold mt-1">
-                        {teacherCounts.totalclasses}
-                      </h2>
-                    </div>
-                    <div className="bg-[#003E6E] p-2 rounded-lg text-sm">
-                      <FaUserGraduate className="text-[#ffffffbd]" />
-                    </div>
-                  </div>
-
-                  <div className="bg-[#2D49AD] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Hours</p>
-                      <h2 className="text-lg font-bold mt-1">
-                        {teacherCounts.totalhours}
-                      </h2>
-                    </div>
-                    <div className="bg-[#8280ffc0] p-2 rounded-lg text-sm">
-                      <BsClockHistory className="text-[#15255f]" />
-                    </div>
-                  </div>
-
-                  <div className="bg-[#667085] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Earnings</p>
-                      <h2 className="text-lg font-bold mt-1">
-                        ${teacherCounts.totalearnings}
-                      </h2>
-                    </div>
-                    <div className="bg-[#979797] p-2 rounded-lg text-sm">
-                      <MdOutlineCurrencyExchange className="text-[#4F5154]" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Monthly Breakdown Table */}
-                <div className="space-y-6">
-                  <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                    <div className="overflow-x-auto max-h-[181px] overflow-y-auto custom-scrollbar scrollbar-none">
-                      <table className="w-full min-w-[900px] text-sm text-left">
-                        <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                          <tr className="border-b-[1px] border-[#1C3557]">
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Month
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Classes
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Hours
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Earnings
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="text-xs text-[#1D2939]">
-                          {Array.from({ length: 12 }).map((_, index) => {
-                            const monthNumber = index + 1;
-                            const currentYear = new Date().getFullYear();
-                            const monthName = new Date(0, index).toLocaleString(
-                              "default",
-                              {
-                                month: "short",
-                              }
-                            );
-
-                            const monthly = teacherCounts.monthlyData?.find(
-                              (item) =>
-                                item.month === monthNumber &&
-                                item.year === currentYear
-                            );
-
-                            return (
-                              <tr
-                                key={`${monthName}-${currentYear}`}
-                                className={`border-t border-gray-100 text-center ${
-                                  index % 2 === 0
-                                    ? "bg-[#faf9f9]"
-                                    : "bg-[#ebebeb]"
-                                }`}
-                              >
-                                <td className="p-3">{`${monthName} ${currentYear}`}</td>
-                                <td className="p-3">
-                                  {monthly?.totalclasses || 0}
-                                </td>
-                                <td className="p-3">
-                                  {monthly?.totalhours || 0}
-                                </td>
-                                <td className="p-3">
-                                  ${monthly?.totalearnings || 0}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {activeTab === "Payments" && (
               <div className="space-y-6">
-                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className="border-b-[1px] border-[#1C3557]">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchPayments}
+                        onChange={(e) => setSearchPayments(e.target.value)}
+                      />
+                    </div>
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredPayments.length === 0 ? 0 : 1} to {filteredPayments.length} of {filteredPayments.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                    <table className="w-full min-w-[900px] text-sm text-left table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Payment Date
                           </th>
@@ -1004,7 +1083,7 @@ const Teacher = () => {
                             Amount
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Paid For
+                            Description
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Payment Method
@@ -1013,19 +1092,18 @@ const Teacher = () => {
                             Status
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Comments for Reference
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
                             Action
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="text-xs text-[#1D2939]">
-                        {scheduledclass.map((item, index) => (
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {filteredPayments.map((item, index) => (
                           <tr
                             key={item._id}
-                            className={`border-t border-gray-100 text-center ${
-                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                            className={`text-center dark:text-white ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
                             <td className="p-3">
@@ -1044,20 +1122,18 @@ const Teacher = () => {
                             <td className="p-3">Monthly Salary</td>
                             <td className="p-3">Bank Transfer</td>
                             <td className="p-3">
-                              <span className="inline-flex items-center justify-center gap-1">
-                                <span className="text-lg">
-                                  {item.amount === "0" ? (
-                                    <MdOutlineCancel className="text-red-600 text-xs" />
-                                  ) : (
-                                    <IoIosCheckmarkCircleOutline className="text-green-600 text-xs" />
-                                  )}
-                                </span>
+                              <span
+                                className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
+                                  ${item.amount === "0"
+                                    ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
+                                    : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"}
+                                `}
+                              >
                                 {item.amount === "0" ? "Pending" : "Paid"}
                               </span>
                             </td>
-                            <td className="p-3">-</td>
                             <td className="p-3 text-center">
-                              <button className="text-blue-500 text-xs">
+                              <button className="text-blue-500 text-[11px]">
                                 Download
                               </button>
                             </td>
@@ -1067,16 +1143,50 @@ const Teacher = () => {
                     </table>
                   </div>
                 </div>
+                <div className="flex justify-end mt-4">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={() => {
+                      /* Add your view all logic here, e.g., navigate to a full list page */
+                    }}
+                  >
+                    View All
+                  </button>
+                </div>
               </div>
             )}
 
             {activeTab === "Wages" && (
               <div className="space-y-6">
-                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className="border-b-[1px] border-[#1C3557]">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchWages}
+                        onChange={(e) => setSearchWages(e.target.value)}
+                      />
+                    </div>
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredWages.length === 0 ? 0 : 1} to {filteredWages.length} of {filteredWages.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                    <table className="w-full min-w-[900px] text-sm text-left table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Class Type
                           </th>
@@ -1091,12 +1201,14 @@ const Teacher = () => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="text-xs text-[#1D2939]">
-                        {wages.map((item, index) => (
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {filteredWages.map((item, index) => (
                           <tr
                             key={item._id}
-                            className={`border-t border-gray-100 text-center ${
-                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                            className={`text-center dark:text-white ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
                             <td className="p-3">{item.classType.className}</td>
@@ -1111,16 +1223,50 @@ const Teacher = () => {
                     </table>
                   </div>
                 </div>
+                <div className="flex justify-end mt-4">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={() => {
+                      /* Add your view all logic here, e.g., navigate to a full list page */
+                    }}
+                  >
+                    View All
+                  </button>
+                </div>
               </div>
             )}
 
             {activeTab === "WorkingHours" && (
               <div className="space-y-6">
-                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className="border-b-[1px] border-[#1C3557]">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchWorkingHours}
+                        onChange={(e) => setSearchWorkingHours(e.target.value)}
+                      />
+                    </div>
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredWorkingHours.length === 0 ? 0 : 1} to {filteredWorkingHours.length} of {filteredWorkingHours.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
+                    <table className="w-full min-w-[900px] text-sm text-left table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Day
                           </th>
@@ -1135,12 +1281,14 @@ const Teacher = () => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="text-xs text-[#1D2939]">
-                        {schedule.map((item, index) => (
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {filteredWorkingHours.map((item, index) => (
                           <tr
                             key={index}
-                            className={`border-t border-gray-100 text-center ${
-                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                            className={`text-center dark:text-white ${
+                              index % 2 === 0
+                                ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
                             }`}
                           >
                             <td className="p-3">{item.day}</td>
@@ -1152,6 +1300,16 @@ const Teacher = () => {
                       </tbody>
                     </table>
                   </div>
+                </div>
+                <div className="flex justify-end mt-4">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={() => {
+                      /* Add your view all logic here, e.g., navigate to a full list page */
+                    }}
+                  >
+                    View All
+                  </button>
                 </div>
               </div>
             )}
