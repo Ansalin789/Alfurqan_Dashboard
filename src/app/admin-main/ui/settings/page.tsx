@@ -5,6 +5,10 @@ import React, { useEffect, useState } from "react";
 import { FaChevronDown, FaFilter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { Search } from "lucide-react";
+import Pagination from "@/components/Pagination";
+import { MdTune } from "react-icons/md";
+import AdminHeader from "../../components/AdminHeader";
 
 export interface TenantUser {
   _id: string;
@@ -22,7 +26,7 @@ export interface TenantUser {
   lastUpdatedDate: string;
   __v: number;
   gender: string;
-  country?: string; // optional since some users have country field
+  country?: string;
 }
 
 interface TenantUsersResponse {
@@ -32,16 +36,20 @@ interface TenantUsersResponse {
 
 const Page: React.FC = () => {
   const [employees, setEmployees] = useState<TenantUser[]>([]);
+  const [filteredEmployees, setFilteredEmployees] = useState<TenantUser[]>([]);
   const [selectedRole, setSelectedRole] = useState("Academic Coach");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedRole(e.target.value);
   };
 
   const router = useRouter();
+  const itemsPerPage = 10;
 
   const [isFilterPopupOpen, setFilterPopupOpen] = useState(false);
-  // const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
     null
   );
@@ -56,8 +64,8 @@ const Page: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('AdminAuthToken');
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("AdminAuthToken");
       if (token) {
         fetchTenantUsers(token);
       } else {
@@ -69,16 +77,16 @@ const Page: React.FC = () => {
   const fetchTenantUsers = async (token: string) => {
     try {
       const res = await axios.get<TenantUsersResponse>(
-        "https://api.blackstoneinfomaticstech.com/users",
+        "http://localhost:5001/users",
         {
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       setEmployees(res.data.users);
-      console.log(res.data);
+      setFilteredEmployees(res.data.users);
       setError(null);
     } catch (error: any) {
       console.error("Error fetching tenant users:", error);
@@ -88,6 +96,37 @@ const Page: React.FC = () => {
     }
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    const filtered = employees.filter((emp) => {
+      const createdDateFormatted = new Date(emp.createdDate).toLocaleDateString(
+        "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }
+      );
+      return (
+        emp.userName.toLowerCase().includes(query.toLowerCase()) ||
+        emp.email.toLowerCase().includes(query.toLowerCase()) ||
+        emp.userId.toLowerCase().includes(query.toLowerCase()) ||
+        emp.role
+          .map((role) => role.toLowerCase())
+          .some((role) => role.includes(query.toLowerCase())) ||
+        createdDateFormatted.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+    setFilteredEmployees(filtered);
+    setCurrentPage(1);
+  };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredEmployees.slice(indexOfFirstItem, indexOfLastItem);
+  
+  
+
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -96,9 +135,8 @@ const Page: React.FC = () => {
   };
 
   const applyFilters = () => {
-    const filteredEmployees = employees.filter((emp) => {
-      const empDate = new Date(emp.createdDate); // Assuming this field exists
-
+    const filtered = employees.filter((emp) => {
+      const empDate = new Date(emp.createdDate);
       const fromDateMatch = filterCriteria.fromDate
         ? empDate >= new Date(filterCriteria.fromDate)
         : true;
@@ -120,7 +158,8 @@ const Page: React.FC = () => {
       );
     });
 
-    setEmployees(filteredEmployees);
+    setFilteredEmployees(filtered);
+    setCurrentPage(1);
     setFilterPopupOpen(false);
   };
 
@@ -131,14 +170,13 @@ const Page: React.FC = () => {
       fromDate: "",
       toDate: "",
     });
+    setFilteredEmployees(employees);
+    setCurrentPage(1);
   };
 
-  const handleChanges = (
-    empId: string,
-    role:string[],
-  ) => {
+  const handleChanges = (empId: string, role: string[]) => {
     let path = "";
-     console.log(role[0])
+    console.log(role[0]);
     switch (role[0]) {
       case "ACADEMICCOACH":
         path = `/admin-main/ui/settings/academic-coach?employeeId=${empId}`;
@@ -159,94 +197,112 @@ const Page: React.FC = () => {
         path = "/";
         break;
     }
-    console.log(empId);
+    router.push(path);
+  };
 
-    router.push(path); // Navigate to correct page
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
   return (
     <BaseLayout4>
-      <div className="p-5 sm:p-6 md:p-8 min-h-screen w-full max-w-8xl mx-auto ">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-6">Role Access</h2>
-
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-          <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
-            <input
-              type="text"
-              placeholder="Search here..."
-              className="border rounded-lg px-4 py-2 text-xs shadow"
-            />
-            <button
-              className="flex items-center bg-white p-2 rounded-lg shadow text-xs border"
+      <AdminHeader currentSection="Role Access" />
+      {/* <div className="p-2 sm:p-2 md:p-2 min-h-screen w-full max-w-8xl mx-auto "> */}
+        <div className="mt-0">
+          <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
+            <div className="flex justify-between items-center px-4 py-0">
+              <Search className="w-3 h-3 text-gray-400 dark:text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by keyword"
+                className="bg-transparent outline-none text-[12px] ml-1 w-52 py-3"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
+            <div
+              className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
               onClick={() => setFilterPopupOpen(true)}
             >
-              <FaFilter className="mr-2" /> Filter
-            </button>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="w-[170px] h-[35px] border bg-[#fff] border-gray-300 rounded-md text-xs flex items-center justify-between px-2 py-2 shadow mx-auto">
-              <select
-                className="w-full h-full bg-transparent text-xs text-center focus:outline-none appearance-none"
-                defaultValue="Duration: Last month"
-              >
-                <option>Duration: Last month</option>
-                <option>Duration: Last week</option>
-                <option>Duration: Last year</option>
-              </select>
-              <FaChevronDown size={10} className="ml-1 mt-[2px]" />
+              <MdTune className="w-4 h-4" />
+              <span>Filter</span>
+            </div>
+            <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+              <span className="text-left -ml-60">
+                Showing {currentItems.length} of {filteredEmployees.length}  
+              </span>
             </div>
           </div>
         </div>
-        <div className="bg-white shadow-md border border-gray-900 rounded-lg overflow-hidden scrollbar-none">
-          <div className="overflow-x-auto">
-            <div className="max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-none">
-              <table className="w-full border-collapse min-w-[800px]">
-                <thead className="sticky top-0 z-10">
-                  <tr className="text-gray-600 text-xs sm:text-xs border-b border-black">
-                    <th className="px-4 py-4 text-center">Employee ID</th>
-                    <th className="px-4 py-4 text-center">Employee Name</th>
-                    <th className="px-4 py-4 text-center">Contact</th>
-                    <th className="px-4 py-4 text-center">Designation</th>
-                    <th className="px-4 py-4 text-center">Date of Joining</th>
-                    <th className="px-4 py-4 text-center">Role Access</th>
-                    <th className="px-4 py-4 text-center">Module Access</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employees.map((emp, index) => (
-                    <tr
-                      key={emp._id}
-                      className="border-t border-gray-200 text-gray-700 text-[10px]"
+
+        <div className="w-full bg-[#FAFAFB] dark:bg-[#343434]">
+        <table className="w-full table-auto">
+          <thead className="text-[12px] bg-[#4C6993] text-white">
+              <tr>
+                <th className="px-3 py-4 text-left break-words w-[14%]">Employee ID</th>
+                <th className="px-3 py-4 text-left">Employee Name</th>
+                <th className="px-3 py-4 text-left break-words w-[14%]">Contact</th>
+                <th className="px-3 py-4 text-left">Designation</th>
+                <th className="px-3 py-4 text-left">Date of Joining</th>
+                <th className="px-3 py-4 text-left">Role Access</th>
+                <th className="px-3 py-4 text-left">Module Access</th>
+              </tr>
+            </thead>
+            <tbody>
+            {currentItems.map((emp, index) => (
+                <tr
+                  key={emp._id}
+                  className="text-[11px] odd:bg-white even:bg-[#F8F8F8] dark:odd:bg-[#2C2C2C] dark:even:bg-[#303030]"
+                >
+                  <td className="px-2 py-5 text-left text-[#17243E] break-words w-[14%] max-w-[120px] dark:text-[#FDFDFD] w-[10%]">
+                    {emp.userId}
+                  </td>
+                  <td className="px-2 py-5 text-left text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
+                    {emp.userName}
+                  </td>
+                  <td className="py-5 px-2 text-left break-words w-[14%] max-w-[120px] text-[#17243E] dark:text-[#FDFDFD]">
+                    {emp.email}
+                  </td>
+                  <td className="py-5 px-2 text-left text-[#17243E] break-words dark:text-[#FDFDFD] w-[10%]">
+                    {emp.role}
+                  </td>
+                  <td className="py-5 px-2 text-left  text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
+                    {new Date(emp.createdDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </td>
+                  <td className="py-4 px-2 text-left text-left text-[#17243E] dark:text-[#FDFDFD] w-[10%]">
+                    {emp.role}
+                  </td>
+                  <td className="py-1 px-2 w-28 w-[10%]">
+                    <button
+                      className="w-full py-[6px] px-[3px] rounded-md bg-[#576CBC] text-[#fff] text-[9px]"
+                      onClick={() => handleChanges(emp._id, emp.role)}
                     >
-                      <td className="py-4 px-4 text-center">{emp.userId}</td>
-                      <td className="py-4 px-4 text-center">{emp.userName}</td>
-                      <td className="py-4 px-4 text-center">{emp.email}</td>
-                      <td className="py-4 px-4 text-center">{emp.role}</td>
-                      <td className="py-4 px-4 text-center">
-                        {new Date(emp.createdDate).toLocaleDateString()}
-                      </td>
-
-                      {/* Uncomment below for Role Dropdown */}
-
-                      <td className="py-1 px-1 text-center align-middle relative">
-                        <div className="px-2 py-[5px] rounded-md border-[1px] border-gray-500 text-[9px]">{emp.role}</div>
-                      </td>
-
-                      <td className="py-1 px-1 text-center align-middle relative">
-                      <button
-                       className="px-3 w-28 py-[5px] rounded-md border-[1px] border-gray-500 text-[9px]"
-                       onClick={()=>handleChanges(emp._id,emp.role)}
-                       >{emp.role}</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                      {emp.role}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
 
+        <Pagination
+  currentPage={currentPage}
+  totalPages={Math.ceil(filteredEmployees.length / itemsPerPage)}
+  onPageChange={setCurrentPage}
+/>
+      {/* </div> */}
+
+      {/* Filter popup remains unchanged */}
       {isFilterPopupOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white w-full max-w-sm p-6 rounded-2xl shadow-lg relative">
@@ -259,7 +315,6 @@ const Page: React.FC = () => {
                 &times;
               </button>
             </div>
-
             <div className="space-y-4">
               <div>
                 <label htmlFor="employeename" className="text-sm text-gray-700">
@@ -274,7 +329,6 @@ const Page: React.FC = () => {
                   className="w-full mt-1 rounded-lg border px-4 py-2 text-sm text-gray-700 focus:outline-none"
                 />
               </div>
-
               <div>
                 <label htmlFor="designation" className="text-sm text-gray-700">
                   Designation
@@ -292,7 +346,6 @@ const Page: React.FC = () => {
                   <option value="ADMIN">ADMIN</option>
                 </select>
               </div>
-
               <div>
                 <label htmlFor="fromdate" className="text-sm text-gray-700">
                   From Date
@@ -305,7 +358,6 @@ const Page: React.FC = () => {
                   className="w-full mt-1 rounded-lg border px-4 py-2 text-sm text-gray-700 focus:outline-none"
                 />
               </div>
-
               <div>
                 <label htmlFor="todate" className="text-sm text-gray-700">
                   To Date
@@ -319,13 +371,12 @@ const Page: React.FC = () => {
                 />
               </div>
             </div>
-
             <div className="flex justify-between items-center mt-6">
               <button
                 onClick={applyFilters}
                 className="bg-[#012A4A] text-white px-4 py-2 text-sm font-medium rounded-xl"
               >
-                Show Results
+                Show{employees.length} Results
               </button>
               <button
                 onClick={resetFilters}
@@ -337,8 +388,6 @@ const Page: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Your Filter Popup here remains unchanged */}
     </BaseLayout4>
   );
 };
