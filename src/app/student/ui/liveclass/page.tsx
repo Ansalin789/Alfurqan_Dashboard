@@ -138,8 +138,7 @@ function LiveClass() {
         token,
         isBeacon: true,
         student: {
-          studnetSessionStart: "00:00", // Use actual start if available
-          studnetSessionEnd: new Date().toTimeString().slice(0, 5), // current time
+          studnetSessionEnd: new Date().toTimeString().slice(0, 5), 
         },
       };
 
@@ -196,7 +195,6 @@ function LiveClass() {
 
     await updateAttendance({
       studnetSessionStart: sessionStartTime,
-      studnetSessionEnd: "00:00",
     });
   };
   const handleEndCall = async () => {
@@ -205,7 +203,6 @@ function LiveClass() {
     console.log("Left at:", sessionEndTime);
 
     const res = await updateAttendance({
-      studnetSessionStart: "00:00",
       studnetSessionEnd: sessionEndTime,
     });
     if (res && res.status === 200) {
