@@ -187,6 +187,7 @@ interface DashboardCounts {
   rejected: number;
   waiting: number;
 }
+type LeaveStatus = "APPROVED" | "WAITINGLIST" | "REJECTED";
 
 // Add interface for leave request list API
 interface LeaveRequest {
@@ -202,6 +203,8 @@ interface LeaveRequest {
   approvedName: string;
   reason: string;
   status: string;
+  approvedDays: string;
+  deductionDays: string;
   createdDate: string;
   createdBy: string;
   updatedDate: string;
@@ -211,7 +214,6 @@ interface LeaveRequestListResponse {
   totalCount: number;
   leaveRequest: LeaveRequest[];
 }
-type LeaveStatus = "APPROVED" | "WAITINGLIST" | "REJECTED";
 
 const Page = () => {
   const [activeTab, setActiveTab] = useState<
@@ -227,14 +229,20 @@ const Page = () => {
   const [filterCourse, setFilterCourse] = useState("");
   const [filterName, setFilterName] = useState("");
   const [selectedLeave, setSelectedLeave] = useState<{
+    employeeId: string;
     id: string;
     name: string;
     designation: string;
+    fromDate: string;
+    toDate: string;
     leaveType: string;
     dateRange: string;
     reason: string;
     status: string;
+    approvedDays: string;
+    deductionDays: string;
   } | null>(null);
+
   const [barData, setBarData] = useState<ChartData[]>([]);
   const [genderData, setGenderData] = useState<GenderChartData[]>([]);
   const [countryData, setCountryData] = useState<CountryStat[]>([]);
@@ -316,6 +324,11 @@ const Page = () => {
     top: number;
     left: number;
   } | null>(null);
+
+  const [approvedDays, setApprovedDays] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [deductionDays, setDeductionDays] = useState(""); // Optional
 
   const filteredEmployees = employees.filter(
     (emp) =>
@@ -763,6 +776,60 @@ const Page = () => {
     } catch (error) {
       console.error(error);
       alert("Error adding employee.");
+    }
+  };
+
+  //update leave
+  const handleApprove = async () => {
+    if (!fromDate || !toDate || !approvedDays) {
+      alert("From Date, To Date, and Approved Days are required");
+      return;
+    }
+
+    const token = localStorage.getItem("AdminAuthToken");
+
+    if (!token) {
+      alert("Admin token not found. Please login again.");
+      return;
+    }
+
+    // ✅ Logging the actual _id
+    console.log("Updating leave for _id:", selectedLeave?.id);
+
+    try {
+      const res = await fetch(
+        `http://localhost:5001/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            fromDate,
+            toDate,
+            approvedDays,
+            leaveStatus: "APPROVED",
+            leaveType: selectedLeave?.leaveType,
+            reason: selectedLeave?.reason,
+            approvedId: "Admin",
+            approvedName: "Admin",
+            status: "active",
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Leave approved successfully");
+        setSelectedLeave(null);
+      } else {
+        alert(data.message || "Failed to approve leave");
+      }
+    } catch (error) {
+      console.error("Error approving leave:", error);
+      alert("Something went wrong");
     }
   };
 
@@ -2036,7 +2103,7 @@ const Page = () => {
                         ].map((header) => (
                           <th
                             key={header}
-                            className={`className="px-4 py-3 font-semibold text-[12px] text-center  break-words`}
+                            className={`className="px-4 py-4 font-semibold text-[12px] text-center  break-words`}
                           >
                             {header}
                           </th>
@@ -2110,10 +2177,10 @@ const Page = () => {
                                   </span>
                                 </td>
 
-                                <td className="px-3 py-2 text-[11px] relative ">
+                                <td className="px-3 py-3 text-center">
                                   <button
                                     id={btnId}
-                                    className=" pl-10 text-[10px] font-semibold dark:text-white "
+                                    className="text-[10px] font-semibold dark:text-white  "
                                     onClick={(e) => {
                                       if (actionDropdown === item._id) {
                                         setActionDropdown(null);
@@ -2140,21 +2207,24 @@ const Page = () => {
                                       <div
                                         style={{
                                           position: "absolute",
-                                          top: dropdownPos.top,
-                                          left: dropdownPos.left,
+                                          top: dropdownPos.top + 4,
+                                          left: dropdownPos.left - 50,
                                           zIndex: 9999,
-                                          width: "7rem",
+                                          width: "7.5rem",
                                         }}
-                                        className="bg-white rounded-lg shadow-lg"
+                                        className="bg-white dark:bg-[#3b3b3b] shadow-md text-center rounded-md"
                                       >
                                         <button
-                                          className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100 border-b"
+                                          className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
                                           onClick={() => {
                                             setSelectedLeave({
-                                              id: item.employeeId,
+                                              id: item._id, // 🟡 use MongoDB document ID
+                                              employeeId: item.employeeId, // ✅ required for backend API
                                               name: item.name,
                                               designation: item.role,
                                               leaveType: item.leaveType,
+                                              fromDate: item.fromDate,
+                                              toDate: item.toDate,
                                               dateRange: `${new Date(
                                                 item.fromDate
                                               ).toLocaleDateString("en-US", {
@@ -2170,6 +2240,8 @@ const Page = () => {
                                               })}`,
                                               reason: item.reason,
                                               status: item.leaveStatus,
+                                              approvedDays: item.approvedDays,
+                                              deductionDays: item.deductionDays,
                                             });
                                             setActionDropdown(null);
                                             setDropdownPos(null);
@@ -2178,7 +2250,7 @@ const Page = () => {
                                           View
                                         </button>
                                         <button
-                                          className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100 text-red-600"
+                                          className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
                                           onClick={() => {
                                             // Implement cancel logic here
                                             setActionDropdown(null);
@@ -2215,15 +2287,15 @@ const Page = () => {
                 </div>
 
                 {selectedLeave && (
-                  <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
-                    <div className="bg-white rounded-xl w-full max-w-4xl p-6 shadow-xl relative">
-                      <h2 className="text-lg font-semibold text-[#0d1b3e] mb-6">
+                  <div className="fixed inset-0 z-50 bg-black bg-opacity-30 shadow-md flex items-center justify-center ">
+                    <div className="bg-white rounded-xl w-full max-w-4xl p-6 shadow-xl relative dark:bg-[#2c2c2c]">
+                      <h2 className="text-lg font-semibold text-[#0d1b3e] mb-6 dark:text-[#fcfcfc]">
                         Leave Request Approval
                       </h2>
 
                       <button
                         onClick={() => setSelectedLeave(null)}
-                        className="absolute top-4 right-4 text-xl text-[#0d1b3e] hover:text-gray-600"
+                        className="absolute top-4 right-4 text-xl text-[#0d1b3e] hover:text-gray-600 dark:text-[#fcfcfc]"
                       >
                         ✕
                       </button>
@@ -2239,7 +2311,7 @@ const Page = () => {
                             Employee ID
                           </label>
                           <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs"
+                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
                             value={selectedLeave.id}
                             disabled
                           />
@@ -2252,7 +2324,7 @@ const Page = () => {
                             Employee Name
                           </label>
                           <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs"
+                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
                             value={selectedLeave.name}
                             disabled
                           />
@@ -2265,7 +2337,7 @@ const Page = () => {
                             Designation
                           </label>
                           <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs"
+                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
                             value={selectedLeave.designation}
                             disabled
                           />
@@ -2278,7 +2350,7 @@ const Page = () => {
                             Leave Type
                           </label>
                           <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs"
+                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]]"
                             value={selectedLeave.leaveType}
                             disabled
                           />
@@ -2291,8 +2363,10 @@ const Page = () => {
                             From Date
                           </label>
                           <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs"
-                            value="11/02/2024"
+                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                            value={new Date(
+                              selectedLeave.fromDate
+                            ).toLocaleDateString("en-GB")}
                             disabled
                           />
 
@@ -2304,8 +2378,10 @@ const Page = () => {
                             To Date
                           </label>
                           <input
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs "
-                            value="16/02/2024"
+                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                            value={new Date(
+                              selectedLeave.toDate
+                            ).toLocaleDateString("en-GB")}
                             disabled
                           />
 
@@ -2317,7 +2393,7 @@ const Page = () => {
                             Reason For Leave
                           </label>
                           <textarea
-                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs"
+                            className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
                             rows={3}
                             value={selectedLeave.reason}
                             disabled
@@ -2325,17 +2401,16 @@ const Page = () => {
                         </div>
 
                         {/* Right Section */}
-                        <div className="space-y-4 text-[#0d1b3e] text-sm">
-                          <h3 className="font-semibold text-[#1e2a50]">
+                        <div className="space-y-4 text-[#0d1b3e] text-sm  dark:text-[#cfcfcf]">
+                          <h3 className="font-semibold text-[#1e2a50] dark:text-[#fcfcfc] ">
                             Leave Records
                           </h3>
 
                           {/* Leave Records Box */}
-                          <div className="border rounded-xl p-4 space-y-3">
+                          <div className="border dark:border-[#8e8d8d] rounded-xl p-4 space-y-3">
                             {[
                               { label: "Sick Leave", value: "2" },
                               { label: "Casual Leave", value: "2" },
-                              { label: "Loss of Pay", value: "1" },
                             ].map((item) => (
                               <div
                                 key={item.label}
@@ -2343,7 +2418,7 @@ const Page = () => {
                               >
                                 <span>{item.label}</span>
                                 <input
-                                  className="w-20 border border-gray-300 rounded-md px-2 py-1 text-center text-[#0d1b3e] shadow-sm focus:outline-none"
+                                  className="w-20 border border-gray-300 rounded-md px-2 py-1 text-center text-[#0d1b3e] shadow-sm focus:outline-none dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
                                   value={item.value}
                                   readOnly
                                 />
@@ -2351,7 +2426,7 @@ const Page = () => {
                             ))}
                           </div>
 
-                          <div className="space-y-4 text-[#0d1b3e] text-sm">
+                          <div className="space-y-4 text-[#0d1b3e] text-sm  dark:text-[#cfcfcf]">
                             {/* Deductions */}
                             <div className="flex items-center gap-3">
                               <label
@@ -2363,25 +2438,38 @@ const Page = () => {
                               <input
                                 type="checkbox"
                                 checked
-                                className="w-5 h-5 border border-gray-400 rounded accent-[#0d1b3e]"
+                                className="w-5 h-5 border border-gray-400 rounded accent-[#576CBC]"
                                 readOnly
                               />
                             </div>
 
                             {/* Approved Days */}
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 dark:bg-[#2c2c2c] ">
                               <label
+                                className="font-medium text-sm dark:bg-[#2c2c2c]"
                                 htmlFor="approveddays"
-                                className="w-32 font-medium"
                               >
                                 Approved Days
                               </label>
                               <div className="relative w-full">
-                                <select className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-[#0d1b3e] shadow-sm  appearance-none pr-10">
-                                  <option value="3">3</option>
-                                  <option value="2">2</option>
-                                  <option value="1">1</option>
-                                </select>
+                                <input
+                                  type="text"
+                                  value={
+                                    selectedLeave?.status === "APPROVED" ||
+                                    selectedLeave?.status === "REJECTED"
+                                      ? selectedLeave?.approvedDays || ""
+                                      : approvedDays
+                                  }
+                                  onChange={(e) =>
+                                    selectedLeave?.status === "WAITINGLIST" &&
+                                    setApprovedDays(e.target.value)
+                                  }
+                                  className="w-full border border-[#bfc6db] rounded-md px-4 py-2 text-[#012A4A] pr-10 shadow-sm 
+    dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d]"
+                                  disabled={
+                                    selectedLeave?.status !== "WAITINGLIST"
+                                  }
+                                />
                               </div>
                             </div>
 
@@ -2395,13 +2483,22 @@ const Page = () => {
                               </label>
                               <div className="relative w-full">
                                 <input
-                                  type="text"
-                                  value="11/02/2024"
-                                  className="w-full border border-[#bfc6db] rounded-md px-4 py-2 text-[#0d1b3e] pr-10 shadow-sm"
-                                  readOnly
+                                  type="date"
+                                  value={
+                                    selectedLeave?.status === "APPROVED" ||
+                                    selectedLeave?.status === "REJECTED"
+                                      ? selectedLeave.fromDate || ""
+                                      : fromDate
+                                  }
+                                  onChange={(e) =>
+                                    selectedLeave?.status === "WAITINGLIST" &&
+                                    setFromDate(e.target.value)
+                                  }
+                                  className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d] "
+                                  disabled={
+                                    selectedLeave?.status !== "WAITINGLIST"
+                                  }
                                 />
-
-                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none"></div>
                               </div>
                             </div>
 
@@ -2415,12 +2512,22 @@ const Page = () => {
                               </label>
                               <div className="relative w-full">
                                 <input
-                                  type="text"
-                                  value="14/02/2024"
-                                  className="w-full border border-[#bfc6db] rounded-md px-4 py-2 text-[#0d1b3e] pr-10 shadow-sm"
-                                  readOnly
+                                  type="date"
+                                  value={
+                                    selectedLeave?.status === "APPROVED" ||
+                                    selectedLeave?.status === "REJECTED"
+                                      ? selectedLeave?.toDate || ""
+                                      : toDate
+                                  }
+                                  onChange={(e) =>
+                                    selectedLeave?.status === "WAITINGLIST" &&
+                                    setToDate(e.target.value)
+                                  }
+                                  className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d] "
+                                  disabled={
+                                    selectedLeave?.status !== "WAITINGLIST"
+                                  }
                                 />
-                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none"></div>
                               </div>
                             </div>
 
@@ -2435,10 +2542,22 @@ const Page = () => {
                               <div className="relative w-full">
                                 <input
                                   type="text"
-                                  value="2"
-                                  className="w-full border border-[#bfc6db] rounded-md px-4 py-2 text-[#0d1b3e] pr-10 shadow-sm"
-                                  readOnly
+                                  value={
+                                    selectedLeave?.status === "APPROVED" ||
+                                    selectedLeave?.status === "REJECTED"
+                                      ? selectedLeave?.deductionDays || ""
+                                      : deductionDays
+                                  }
+                                  onChange={(e) =>
+                                    selectedLeave?.status === "WAITINGLIST" &&
+                                    setDeductionDays(e.target.value)
+                                  }
+                                  className="w-full border border-[#a6b0c3] rounded-md px-4 py-2 text-gray-600 text-xs dark:text-[#cfcfcf] dark:bg-[#2c2c2c] dark:border-[#8e8d8d] "
+                                  disabled={
+                                    selectedLeave?.status !== "WAITINGLIST"
+                                  }
                                 />
+
                                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none"></div>
                               </div>
                             </div>
@@ -2447,26 +2566,44 @@ const Page = () => {
                       </div>
 
                       <div className="flex justify-end gap-4 mt-6">
-                        {selectedLeave.status === "Pending" ? (
+                        {selectedLeave?.status === "WAITINGLIST" ? (
                           <>
                             {/* Decline Button */}
                             <button
                               onClick={() => setSelectedLeave(null)}
-                              className="px-4 py-1 border border-[#0d1b3e] text-[#0d1b3e] rounded-lg hover:bg-gray-100 transition"
+                              className="px-4 py-1 border border-[#576CBC] text-[#576CBC] rounded-lg transition"
                             >
                               Decline
                             </button>
 
                             {/* Approve Button */}
-                            <button className="px-4 py-1 bg-[#0d1b3e] text-white rounded-lg hover:bg-[#1b2e5f] transition">
+                            <button
+                              onClick={handleApprove}
+                              className="px-4 py-1 bg-[#576CBC] text-white rounded-lg hover:bg-[#576CBC] transition"
+                            >
                               Approve
                             </button>
                           </>
-                        ) : (
-                          <button className="px-4 py-1 bg-[#0d1b3e] text-white rounded-lg hover:bg-[#1b2e5f] transition">
-                            View
-                          </button>
-                        )}
+                        ) : selectedLeave?.status === "APPROVED" ||
+                          selectedLeave?.status === "REJECTED" ? (
+                          <>
+                            {/* Disabled Decline Button */}
+                            <button
+                              disabled
+                              className="px-4 py-1 border border-[#576CBC] text-[#576CBC] rounded-lg opacity-50 cursor-not-allowed"
+                            >
+                              Decline
+                            </button>
+
+                            {/* Disabled Approve Button */}
+                            <button
+                              disabled
+                              className="px-4 py-1 bg-[#576CBC] text-white rounded-lg opacity-50 cursor-not-allowed"
+                            >
+                              Approve
+                            </button>
+                          </>
+                        ) : null}
                       </div>
                     </div>
                   </div>

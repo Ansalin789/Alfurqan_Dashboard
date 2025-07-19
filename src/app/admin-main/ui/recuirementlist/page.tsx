@@ -64,11 +64,8 @@ export default function ApplicantsPage() {
   } | null>(null);
   const tabs = ["All", "NewCandidates", "Shortlisted", "Rejected", "Waiting"];
 
-
-
-
   const itemsPerPage = 10;
-    const filteredApplicants =
+  const filteredApplicants =
     activeTab === "All"
       ? applicants
       : applicants.filter(
@@ -308,8 +305,24 @@ export default function ApplicantsPage() {
                             <td className="px-3 py-3 text-center">
                               <button
                                 id={`action-btn-${applicant._id}`}
-                                className="text-[10px] font-semibold dark:text-white"
+                                className={`text-[10px] font-semibold dark:text-white ${
+                                  ["APPROVED", "REJECTED"].includes(
+                                    applicant.applicationStatus
+                                  )
+                                    ? "cursor-not-allowed opacity-40"
+                                    : "cursor-pointer"
+                                }`}
+                                disabled={["APPROVED", "REJECTED"].includes(
+                                  applicant.applicationStatus
+                                )}
                                 onClick={(e) => {
+                                  if (
+                                    ["APPROVED", "REJECTED"].includes(
+                                      applicant.applicationStatus
+                                    )
+                                  )
+                                    return; // prevent dropdown
+
                                   if (actionDropdown === applicant._id) {
                                     setActionDropdown(null);
                                     setDropdownPos(null);
@@ -344,26 +357,32 @@ export default function ApplicantsPage() {
                                   >
                                     <button
                                       className="w-full px-2 py-1 text-[10px] text-[#17243E] rounded-t-xl dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
-                                      onClick={() =>
+                                      onClick={() => {
                                         updateApplicationStatus(
                                           applicant._id,
                                           "APPROVED"
-                                        )
-                                      }
+                                        );
+                                        setActionDropdown(null);
+                                        setDropdownPos(null);
+                                      }}
                                     >
                                       Approve
                                     </button>
+
                                     <button
                                       className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
-                                      onClick={() =>
+                                      onClick={() => {
                                         updateApplicationStatus(
                                           applicant._id,
                                           "REJECTED"
-                                        )
-                                      }
+                                        );
+                                        setActionDropdown(null);
+                                        setDropdownPos(null);
+                                      }}
                                     >
                                       Reject
                                     </button>
+
                                     <button
                                       className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] rounded-b-xl dark:bg-[#3b3b3b]"
                                       onClick={() => {
