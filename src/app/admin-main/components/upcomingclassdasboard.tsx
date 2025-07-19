@@ -87,7 +87,7 @@ const UpcomingClasses: React.FC = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-[#343434] w-full h-[350px] rounded-xl px-4 pt-4 pb-6">
+    <div className="bg-white dark:bg-[#343434] w-full h-[365px] rounded-xl px-4 pt-4 pb-6">
       <div className="flex justify-between items-center mb-4 px-1">
         <h2 className="font-semibold text-[14px] text-[#010e30] dark:text-white">Upcoming Classes</h2>
         <span className="bg-[#EBEFFF] dark:bg-[#576CBC33] text-[#6B73FF] text-xs font-medium px-2 py-1 rounded-md">

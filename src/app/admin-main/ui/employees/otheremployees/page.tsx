@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
 
-import {
-  MdOutlineCancel,
-} from "react-icons/md";
-import { useSearchParams } from 'next/navigation'; 
+import { MdOutlineCancel } from "react-icons/md";
+import { useSearchParams } from "next/navigation";
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import axios from "axios";
+import { user } from "@nextui-org/react";
+import AdminHeader from "@/app/admin-main/components/AdminHeader";
+import Pagination from "@/components/Pagination";
 interface Employee {
   _id: string;
   firstName: string;
@@ -55,203 +56,431 @@ interface ClassType {
   currency: string;
 }
 
+interface MonthlyEarnings {
+  year: number;
+  month: number;
+  totalhours: number;
+}
+
 interface EmployeeWage {
   _id: string;
   employeeId: string;
   employeeName: string;
-  classType: ClassType;
+  classType: {
+    className: string;
+    hoursMins: string;
+    rate: string;
+    currency: string;
+  };
   status: string;
   createdDate: string;
   createdBy: string;
   updatedDate: string;
   updatedBy: string;
+  totalhours?: number;
+  totalearnings?: number;
+  monthlyData?: MonthlyEarnings[];
+}
+
+// interfaces/LeaveRequest.ts
+
+export interface ILeaveRecord {
+  _id: string;
+  name: string;
+  employeeId: string;
+  role: string;
+  fromDate: string;
+  toDate: string;
+  leaveStatus: "WAITINGLIST" | "APPROVED" | "DECLINED";
+  leaveType: string;
+  approvedId: string;
+  approvedName: string;
+  reason: string;
+  status: string;
+  createdDate: string;
+  createdBy: string;
+  updatedDate: string;
+  __v: number;
+}
+
+export interface ILeaveSummary {
+  totalApplied: number;
+  totalApproved: number;
+  totalDeclined: number;
+}
+
+interface ShiftSchedule {
+  date: string;
+  day: string;
+  fromTime: string;
+  toTime: string;
 }
 
 const EmployeePage = () => {
   const [activeTab, setActiveTab] = useState("Wages");
-  const tabs = ["Wages", "Leave Records", "Working Hours"];
+  const tabs = ["Wages", "Earnings", "Leave Requests", "WorkingHours"];
   const [employee, setEmployee] = useState<Employee | null>(null);
-  const [isFetched, setIsFetched] = useState(false);  // Flag to check if data is fetched
-  const searchParams = useSearchParams();  // Get the search params from the URL
-  const [wages, setWages] = useState<EmployeeWage[]>([]);
-  const fetchEmployee = async (employeeId: string) => {
-    const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+  const [isFetched, setIsFetched] = useState(false); // Flag to check if data is fetched
+  const searchParams = useSearchParams(); // Get the search params from the URL
+  const [wages, setWages] = useState<EmployeeWage[]>([]); // was wage (single), now array
+  const [searchWages, setSearchWages] = useState("");
+  const [wagesPage, setWagesPage] = useState(1);
+  const wagesPerPage = 5;
+  const [leaveData, setLeaveData] = useState<ILeaveRecord[]>([]);
+  const [summary, setSummary] = useState<ILeaveSummary>({
+    totalApplied: 0,
+    totalApproved: 0,
+    totalDeclined: 0,
+  });
+  const [schedule, setSchedule] = useState<ShiftSchedule[]>([]);
+  const [earningsPage, setEarningsPage] = useState(1);
+  const earningsPerPage = 5;
+  const [searchEarnings, setSearchEarnings] = useState("");
+  // Paginated months for earnings
+  const monthsArray = Array.from({ length: 12 }).map((_, index) => {
+    const monthNumber = index + 1;
+    const currentYear = new Date().getFullYear();
+    const monthName = new Date(0, index).toLocaleString("default", {
+      month: "short",
+    });
+    const monthly = wages[0]?.monthlyData?.find(
+      (item) => item.month === monthNumber && item.year === currentYear
+    );
+    const rate = parseFloat(wages[0]?.classType?.rate ?? "0");
+    const totalhours = monthly?.totalhours ?? 0;
+    const earnings = totalhours * rate;
+    return {
+      key: `${monthName}-${currentYear}`,
+      monthName,
+      currentYear,
+      totalhours,
+      earnings,
+    };
+  });
+  const filteredEarnings = monthsArray.filter(row =>
+    row.monthName.toLowerCase().includes(searchEarnings.toLowerCase()) ||
+    row.currentYear.toString().includes(searchEarnings)
+  );
+  const totalEarningsPages = Math.ceil(filteredEarnings.length / earningsPerPage);
+  const paginatedEarnings = filteredEarnings.slice(
+    (earningsPage - 1) * earningsPerPage,
+    earningsPage * earningsPerPage
+  );
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-  
-    try {
-      const response = await axios.get<Employee>(
-        `https://api.blackstoneinfomaticstech.com/otheremp/${employeeId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        }
-      );
-  
-      setEmployee(response.data);
-      setIsFetched(true); // Mark the data as fetched
-    } catch (error: any) {
-      console.error("Error fetching employee:", error.response?.data ?? error.message);
-    }
-  };
-  
-  const fetchWages = async (userId: string) => {
-    if (!userId) {
-      console.error("No employee ID provided.");
-      return;
-    }
-  
-    const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+  const [leavePage, setLeavePage] = useState(1);
+  const leavePerPage = 5;
+  const [searchLeave, setSearchLeave] = useState("");
+  const filteredLeave = leaveData.filter(item =>
+    item.name?.toLowerCase().includes(searchLeave.toLowerCase()) ||
+    item.employeeId?.toLowerCase().includes(searchLeave.toLowerCase()) ||
+    item.role?.toLowerCase().includes(searchLeave.toLowerCase()) ||
+    item.leaveType?.toLowerCase().includes(searchLeave.toLowerCase()) ||
+    item.leaveStatus?.toLowerCase().includes(searchLeave.toLowerCase())
+  );
+  const totalLeavePages = Math.ceil(filteredLeave.length / leavePerPage);
+  const paginatedLeave = filteredLeave.slice(
+    (leavePage - 1) * leavePerPage,
+    leavePage * leavePerPage
+  );
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-  
-    try {
-      const response = await axios.get<EmployeeWage[]>(
-        `https://api.blackstoneinfomaticstech.com/empwages/${userId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        }
-      );
-  
-      setWages(response.data);
-    } catch (error: any) {
-      console.error("Error fetching wages:", error.response?.data ?? error.message);
-    }
-  };
-  
+  const [workingPage, setWorkingPage] = useState(1);
+  const workingPerPage = 5;
+  const [searchWorking, setSearchWorking] = useState("");
+  const filteredWorking = schedule.filter(item =>
+    item.day?.toLowerCase().includes(searchWorking.toLowerCase()) ||
+    item.date?.toLowerCase().includes(searchWorking.toLowerCase())
+  );
+  const totalWorkingPages = Math.ceil(filteredWorking.length / workingPerPage);
+  const paginatedWorking = filteredWorking.slice(
+    (workingPage - 1) * workingPerPage,
+    workingPage * workingPerPage
+  );
+
   useEffect(() => {
-    // Retrieve employeeId from search params
-    const employeeId = searchParams.get('employeeId');
-    const userId = searchParams.get('userId');
+    // Retrieve employeeId and userId from search params
+    const employeeId = searchParams.get("employeeId");
+    const userId = searchParams.get("userId");
+
     if (!employeeId) {
-      console.error('No employee ID found in search params');
+      console.error("No employee ID found in search params");
       return;
     }
 
     // Fetch employee data if not already fetched
     if (!isFetched && employee === null) {
-      fetchEmployee(employeeId); 
-      fetchWages(userId ?? ''); // Call the API function with employeeId
+      fetchEmployee(employeeId);
+      fetchWages(employeeId);
+      fetchData(employeeId); // Fetch shift schedule data
+
+      if (userId) {
+        fetchLeaveData(userId); // ✅ Only call if userId is not null
+      } else {
+        console.error("No user ID found in search params");
+      }
     }
-  }, [isFetched, employee, searchParams]); 
+  }, [isFetched, employee, searchParams]);
+
+  const fetchEmployee = async (_id: string) => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
+
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
+
+    try {
+      const response = await axios.get<Employee>(
+        `https://api.blackstoneinfomaticstech.com/otheremp/${_id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setEmployee(response.data);
+      setIsFetched(true); // Mark the data as fetched
+    } catch (error: any) {
+      console.error(
+        "Error fetching employee:",
+        error.response?.data ?? error.message
+      );
+    }
+  };
+
+  const fetchWages = async (employeeId: string) => {
+    if (!employeeId) return;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
+    if (!token) return;
+    try {
+      const response = await axios.get<EmployeeWage[] | EmployeeWage>(
+        `http://localhost:5001/empwages/${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // Accept both array and single object
+      const data = response.data;
+      setWages(Array.isArray(data) ? data : [data]);
+    } catch (error: any) {
+      console.error(
+        "Error fetching wages:",
+        error.response?.data ?? error.message
+      );
+      setWages([]);
+    }
+  };
+
+  const fetchLeaveData = async (userId: string) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5001/leaverequest?employeeId=${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("AdminAuthToken")}`,
+          },
+        }
+      );
+      setLeaveData(res.data.records);
+      setSummary({
+        totalApplied: res.data.totalApplied,
+        totalApproved: res.data.totalApproved,
+        totalDeclined: res.data.totalDeclined,
+      });
+    } catch (error) {
+      console.error("Failed to fetch leave data", error);
+    }
+  };
+
+  const fetchData = async (employeeId: string) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5001/shiftschedule/${employeeId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("AdminAuthToken")}`,
+          },
+        }
+      );
+
+      // 🔧 If the API returns an array directly:
+      setSchedule(res.data);
+
+      // ❌ Avoid this unless API returns { records: [...] }
+      // setSchedule(res.data.records);
+    } catch (error) {
+      console.error("Failed to fetch shift schedule", error);
+      setSchedule([]); // fallback to empty array to prevent `.map()` errors
+    }
+  };
+
+  // Filtered and paginated wages
+  const filteredWages = Array.isArray(wages)
+    ? wages.filter((item) => {
+        const searchFields = [
+          item.classType?.className || "",
+          item.classType?.rate || "",
+          item.classType?.currency || "",
+        ];
+        return searchFields.some((field) =>
+          field.toString().toLowerCase().includes(searchWages.toLowerCase())
+        );
+      })
+    : [];
+  const totalWagesPages = Math.ceil(filteredWages.length / wagesPerPage);
+  const paginatedWages = filteredWages.slice(
+    (wagesPage - 1) * wagesPerPage,
+    wagesPage * wagesPerPage
+  );
+
   return (
     <BaseLayout4>
-      <div className="p-4 min-h-screen w-full">
-        <h2 className="font-semibold pb-2">Other Employees</h2>
+      <AdminHeader currentSection="Other Employees" />
+      <div className="p-2 min-h-screen w-full">
+        <div className="col-span-3 bg-[#5E6578] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row">
+          <div className="flex flex-col items-center w-[30%] pr-4 py-6 border-r border-[#BCBCBC] gap-y-2">
+            <div className="w-[90px] h-[90px] rounded-full overflow-hidden border border-white">
+              <img
+                src="/assets/images/Avatar.png"
+                alt="Avatar"
+                className="object-cover w-full h-full"
+              />
+            </div>
+            <h2 className="text-[12px] font-semibold text-center mt-2">
+              {employee?.firstName} {employee?.lastName}
+            </h2>
+            <p className="text-[11px] text-gray-300 text-center">
+              {employee?.designation}
+            </p>
+            <span className="text-gray-300 text-center text-[10px]">
+              {employee?.email}
+            </span>
+          </div>
 
-        <div className="grid grid-cols-5 gap-4">
-          {/* Profile Card (60%) with Contact Details */}
-          <div className="col-span-3 bg-white p-6 rounded-xl shadow flex flex-col md:flex-row gap-8">
-  {/* Avatar and Basic Info */}
-  <div className="flex flex-col items-center md:items-start text-center md:text-left md:w-1/4 border-r pr-6">
-    <div className="w-20 h-20 rounded-full overflow-hidden mb-4">
-      <img
-        src="/assets/images/Avatar.png"
-        alt="Avatar"
-        width={96}
-        height={96}
-        className="object-cover"
-      />
-    </div>
-    <h2 className="text-sm font-semibold">{employee?.firstName} {employee?.lastName}</h2>
-    <p className="text-xs text-gray-500">{employee?.designation}</p>
-  </div>
-
-  {/* Contact & Details */}
-  <div className="flex flex-col md:w-1/2 gap-4">
-    <h4 className="text-sm font-semibold mb-2">Contact & Details</h4>
-    <div className="text-xs space-y-2">
-      <div><span className="text-gray-800">Email:</span> <span className="text-gray-500">{employee?.email}</span></div>
-      <div><span className="text-gray-800">Phone:</span> <span className="text-gray-500">{employee?.phoneNumber}</span></div>
-      <div><span className="text-gray-800">Date of Birth:</span> <span className="text-gray-500">{employee?.dateOfBirth}</span></div>
-      <div><span className="text-gray-800">Country:</span> <span className="text-gray-500">{employee?.country}</span></div>
-      <div><span className="text-gray-800">Gender:</span> <span className="text-gray-500">{employee?.gender}</span></div>
-    </div>
-  </div>
-
-  {/* Other Details */}
-  <div className="flex flex-col md:w-1/2 gap-4  mt-11">
-    <div className="text-xs space-y-2">
-      <div><span className="text-gray-800">Languages Known:</span> <span className="text-gray-500">{employee?.languagesKnown}</span></div>
-      <div><span className="text-gray-800">City:</span> <span className="text-gray-500">{employee?.city}</span></div>
-      <div><span className="text-gray-800">Residential Address:</span> <span className="text-gray-500">{employee?.address}</span></div>
-      <div><span className="text-gray-800">Nationality:</span> <span className="text-gray-500">{employee?.nationality}</span></div>
-    </div>
-  </div>
-</div>
-
-
-
-          {/* Educational Details Card (20%) */}
-          <div className="col-span-1 bg-white p-6 rounded-lg shadow">
-            <div className="mt-2 text-xs w-full">
-              <h4 className="text-xs py-4 font-medium -mt-10">
-                Educational Information
-              </h4>
-              <p className="text-[12px] text-gray-800">
-                Highest Qualification:{" "}
-              </p>{" "}
-              <span className="text-[10px] text-gray-400">{employee?.higherQualification}</span>
-              <p className="text-[12px] text-gray-800">
-                University/Institute:
-              </p>{" "}
-              <span className="text-[10px] text-gray-400">
-                {" "}
-              {employee?.universityName}
-              </span>
-              <p className="text-[12px] text-gray-800">
-                Previous Job Title:{" "}
-              </p>{" "}
-              <span className="text-[10px] text-gray-400">
-                {employee?.previousJob}
-              </span>
-              <p className="text-[12px] text-gray-800">Experience: </p>
-              <span className="text-[10px] text-gray-400">{employee?.experience}</span>
+          <div className="flex flex-col md:w-1/2 gap-4 px-3 border-r border-[#BCBCBC]">
+            <h4 className="text-[13px] font-semibold mb-2">
+              Contact & Details
+            </h4>
+            <div className="text-xs">
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Phone:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.phoneNumber}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Date of Birth:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.dateOfBirth}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Country:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.country}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">City:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.city}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Residential Address:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.address}
+                </span>
+              </div>
             </div>
           </div>
-          {/* Bank Details Card (20%) */}
-          <div className="col-span-1 bg-white p-6 rounded-lg shadow">
-            <div className="mt-2 text-xs w-full">
-              <h4 className="text-xs py-4 font-medium -mt-10">Bank Details</h4>
-              <p className="text-[12px] text-gray-800">Bank Name:</p>
-              <span className="text-[10px] text-gray-400">
-                {employee?.bankName}
-              </span>{" "}
-              <br />
-              <p className="text-[12px] text-gray-800">Account Number:</p>{" "}
-              <span className="text-[10px] text-gray-400"> {employee?.accountNumber}</span>
-              <p className="text-[12px] text-gray-800">Bank Code:</p>{" "}
-              <span className="text-[10px] text-gray-400">{employee?.bankCode}</span>
-              <p className="text-[12px] text-gray-800">Passport Number:</p>
-              <span className="text-[10px] text-gray-400"> {employee?.passportNumber}</span>
+
+          <div className="flex flex-col md:w-1/2 gap-4 px-3 border-r border-[#BCBCBC]">
+            <h4 className="text-[13px] font-semibold mb-2">
+              Educational Information
+            </h4>
+            <div className="text-xs">
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Highest Qualification:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.higherQualification}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">University/Institute:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.universityName}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Languages Known:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.languagesKnown}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Experience:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.experience}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:w-1/2 gap-4 px-3">
+            <h4 className="text-[13px] font-semibold mb-2">Bank Details </h4>
+            <div className="text-xs">
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Passport Number:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.passportNumber}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Bank Name:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.bankName}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Account Number:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.accountNumber}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Bank Code:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {employee?.bankCode}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Tabs Section */}
-        <div className="mt-6 bg-white p-4 rounded-lg shadow h-min">
+        <div className="mt-4 h-min">
           {/* Tabs */}
           <div className="flex space-x-6">
             {tabs.map((tab) => (
               <button
                 key={tab}
-                className={`px-3 py-[7px] text-xs font-medium rounded-lg focus:outline-none transition-all duration-200 ${
+                className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${
                   activeTab === tab
-                    ? "bg-[#102645] text-white shadow"
-                    : "text-black"
+                  ? "border-b border-b-[#576CBC] text-[#576CBC]"
+                  : "text-[#010E30] dark:text-white"
                 }`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -261,292 +490,440 @@ const EmployeePage = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="p-4">
-          {activeTab === "Wages" && (
-  <div className="overflow-x-auto scrollbar-none bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1255px] h-[270px] mx-auto">
-    <table className="w-full border-gray-200 rounded-md">
-      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-        <tr className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold text-center">
-          <th className="p-4 text-[12px]">
-            <div className="flex justify-center items-center space-x-2">
-              <span>Class Type</span>
-            </div>
-          </th>
-          <th className="p-4 text-[12px]">
-            <div className="flex justify-center items-center space-x-2">
-              <span>Rate</span>
-            </div>
-          </th>
-          <th className="p-4 text-[12px]">
-            <div className="flex justify-center items-center space-x-2">
-              <span>Currency</span>
-            </div>
-          </th>
-          <th className="p-4 text-[12px]">
-            <div className="flex justify-center items-center space-x-2">
-              <span>Duration</span>
-            </div>
-          </th>
-        </tr>
-      </thead>
-      <tbody className="text-[12px] text-gray-900 text-center">
-        {wages.length === 0 ? (
-          <tr>
-            <td colSpan={4} className="p-4">No wage records found.</td>
-          </tr>
-        ) : (
-          wages.map((wage, index) => (
-            <tr
-              key={wage._id}
-              className={`text-[12px] ${
-                index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-              }`}
-            >
-              <td className="p-4">{wage.classType.className}</td>
-              <td className="p-4">{wage.classType.rate}</td>
-              <td className="p-4">
-                {wage.classType.className === "Fixed Salary" ? (
-                  <select className="p-1 focus:outline-none text-[12px] bg-transparent">
-                    <option>Dirhams</option>
-                    <option>USD</option>
-                    <option>INR</option>
-                  </select>
-                ) : (
-                  wage.classType.currency
-                )}
-              </td>
-              <td className="p-4">
-                {wage.classType.className === "Fixed Salary" ? (
-                  <select className="p-1 focus:outline-none bg-transparent">
-                    <option>Monthly</option>
-                    <option>Weekly</option>
-                    <option>Daily</option>
-                  </select>
-                ) : (
-                  wage.classType.hoursMins
-                )}
-              </td>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </table>
-  </div>
-)}
-
-
-            {/* Leave Record Tab */}
-
-            {activeTab === "Leave Records" && (
-              <div className="space-y-2 ">
-                {/* Summary Cards */}
-                <div className="flex flex-wrap gap-4">
-                  <div className="bg-[#11244D] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Applied Leave(Days)</p>
-                      <h2 className="text-lg font-bold mt-1">03</h2>
+          <div className="py-2">
+            {activeTab === "Wages" && (
+              <div className="space-y-6">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchWages}
+                        onChange={(e) => {
+                          setSearchWages(e.target.value);
+                          setWagesPage(1);
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredWages.length === 0 ? 0 : (wagesPage - 1) * wagesPerPage + 1} to {Math.min(wagesPage * wagesPerPage, filteredWages.length)} of {filteredWages.length}
+                      </span>
                     </div>
                   </div>
-                  <div className="bg-[#4F4CD1] text-white rounded-xl p-4 w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Approved</p>
-                      <h2 className="text-lg font-bold mt-1">02</h2>
-                    </div>
-                  </div>
-                  <div className="bg-[#707791] text-white rounded-xl p-4 w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Declined</p>
-                      <h2 className="text-lg font-bold mt-1">01</h2>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Leave Table */}
-                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[180px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[600px] text-sm text-left">
-                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className="text-black border-b border-gray-900">
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Employee Name
+                            Class Name
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Employee ID
+                            Rate
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Designation
+                            Currency
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Leave Type
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Date Range
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Reason For Leave
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Status
+                            Duration
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="text-gray-800 text-xs">
-                        {[
-                          {
-                            id: "#0983867",
-                            name: "Robert james",
-                            designation: "Supervisor",
-                            type: "Sick Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Sickness",
-                            status: "Approved",
-                          },
-                          {
-                            id: "#0983867",
-                            name: "Stefan Salvatore",
-                            designation: "Human Resource",
-                            type: "Casual Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Family Function",
-                            status: "Approved",
-                          },
-                          {
-                            id: "#0983867",
-                            name: "Prasanna Popz",
-                            designation: "Teacher",
-                            type: "Privilege Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Vacation",
-                            status: "Declined",
-                          },
-                          {
-                            id: "#0983867",
-                            name: "Prasanna Popz",
-                            designation: "Teacher",
-                            type: "Privilege Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Vacation",
-                            status: "Declined",
-                          },
-                          {
-                            id: "#0983867",
-                            name: "Prasanna Popz",
-                            designation: "Teacher",
-                            type: "Privilege Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Vacation",
-                            status: "Declined",
-                          },
-                          {
-                            id: "#0983867",
-                            name: "Prasanna Popz",
-                            designation: "Teacher",
-                            type: "Privilege Leave",
-                            range: "11/02/2024 - 16/02/2024",
-                            reason: "Vacation",
-                            status: "Declined",
-                          },
-                        ].map((item, index) => (
-                          <tr
-                            key={item.id}
-                            className={`border-t border-gray-100 text-center ${
-                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                            }`}
-                          >
-                            <td className="p-1 text-center">{item.id}</td>
-                            <td className="p-2 text-center">{item.name}</td>
-                            <td className="p-2 text-center">
-                              {item.designation}
-                            </td>
-                            <td className="p-2 text-center">{item.type}</td>
-                            <td className="p-2 text-center">{item.range}</td>
-                            <td className="p-2 text-center">{item.reason}</td>
-                            <td className="p-2 text-center">
-                              <div className="flex items-center gap-2">
-                                {item.status === "Approved" ? (
-                                  <div>
-                                    <span className="inline-flex items-center justify-center  gap-1">
-                                      <span className="text-lg">
-                                        <IoIosCheckmarkCircleOutline className="text-green-600 text-xs" />
-                                      </span>{" "}
-                                      Approved
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <span className="inline-flex items-center justify-center  gap-1">
-                                      <span className="text-lg">
-                                        <MdOutlineCancel className="text-red-600 text-xs" />
-                                      </span>{" "}
-                                      Declined
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {paginatedWages.length > 0 ? (
+                          paginatedWages.map((item, index) => (
+                            <tr
+                              key={item._id}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">
+                                {item.classType?.className || "-"}
+                              </td>
+                              <td className="p-3">
+                                {item.classType?.rate || "-"}
+                              </td>
+                              <td className="p-3">
+                                {item.classType?.currency || "-"}
+                              </td>
+                              <td className="p-3">
+                                {item.classType?.hoursMins
+                                  ? `${item.classType.hoursMins} mins`
+                                  : "-"}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="p-4 text-center">
+                              No data available
                             </td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </table>
                   </div>
                 </div>
+                {totalWagesPages > 1 && (
+                  <div className="flex justify-end mt-4">
+                    <Pagination
+                      currentPage={wagesPage}
+                      totalPages={totalWagesPages}
+                      onPageChange={setWagesPage}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Earnings tab */}
+
+            {activeTab === "Earnings" && (
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      {
+                        title: "Total Earnings",
+                        count: wages[0]?.totalearnings || 0,
+                        color: "gray",
+                        iconBg: "bg-gray-100",
+                        iconColor: "text-gray-500",
+                        chartColor: "#64748b",
+                      },
+                      {
+                        title: "Total Deductions",
+                        count: wages[0]?.totalearnings || 0,
+                        color: "indigo",
+                        iconBg: "bg-indigo-100",
+                        iconColor: "text-indigo-500",
+                        chartColor: "#6366f1",
+                      },
+                    ].map((card) => (
+                      <div
+                        key={card.title}
+                        className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
+                      >
+                        <div className="flex flex-col justify-between gap-y-4">
+                          <div>
+                            <p className="text-[15px] font-medium dark:text-white text-white">
+                              {card.title}
+                            </p>
+                          </div>
+                          <div>
+                            <h3 className="text-[24px] font-semibold dark:text-white text-white">
+                              ${card.count}
+                            </h3>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                {/* Earnings Table */}
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchEarnings}
+                        onChange={e => {
+                          setSearchEarnings(e.target.value);
+                          setEarningsPage(1);
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredEarnings.length === 0 ? 0 : (earningsPage - 1) * earningsPerPage + 1} to {Math.min(earningsPage * earningsPerPage, filteredEarnings.length)} of {filteredEarnings.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Month
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Total Hours
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Total Earnings
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Total Deductions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {paginatedEarnings.length > 0 ? (
+                          paginatedEarnings.map((row, index) => (
+                            <tr
+                              key={row.key}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
+                              <td className="p-3">{row.totalhours}</td>
+                              <td className="p-3">${row.earnings.toFixed(2)}</td>
+                              <td className="p-3">$0</td>{" "}
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="p-4 text-center">
+                              No data available
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                {totalEarningsPages > 1 && (
+                  <div className="flex justify-end mt-4">
+                    <Pagination
+                      currentPage={earningsPage}
+                      totalPages={totalEarningsPages}
+                      onPageChange={setEarningsPage}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Leave Record Tab */}
+
+            {activeTab === "Leave Requests" && (
+              <div className="space-y-2 ">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      {
+                        title: "Total Applied Leave",
+                        count: summary.totalApplied || 0,
+                        color: "gray",
+                        iconBg: "bg-gray-100",
+                        iconColor: "text-gray-500",
+                        chartColor: "#64748b",
+                      },
+                      {
+                        title: "Total Approved",
+                        count: summary.totalApproved || 0,
+                        color: "indigo",
+                        iconBg: "bg-indigo-100",
+                        iconColor: "text-indigo-500",
+                        chartColor: "#6366f1",
+                      },
+                      {
+                        title: "Total Declined",
+                        count: summary.totalDeclined || 0,
+                        color: "indigo",
+                        iconBg: "bg-indigo-100",
+                        iconColor: "text-indigo-500",
+                        chartColor: "#6366f1",
+                      },
+                    ].map((card) => (
+                      <div
+                        key={card.title}
+                        className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
+                      >
+                        <div className="flex flex-col justify-between gap-y-4">
+                          <div>
+                            <p className="text-[15px] font-medium dark:text-white text-white">
+                              {card.title}
+                            </p>
+                          </div>
+                          <div>
+                            <h3 className="text-[24px] font-semibold dark:text-white text-white">
+                              ${card.count}
+                            </h3>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                {/* Leave Table */}
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchLeave}
+                        onChange={e => {
+                          setSearchLeave(e.target.value);
+                          setLeavePage(1);
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredLeave.length === 0 ? 0 : (leavePage - 1) * leavePerPage + 1} to {Math.min(leavePage * leavePerPage, filteredLeave.length)} of {filteredLeave.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
+                          <th className="p-4 font-semibold text-[12px] text-center">Leave Type</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Date Range</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Reason For Leave</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {paginatedLeave.length > 0 ? (
+                          paginatedLeave.map((item, index) => (
+                            <tr
+                              key={item._id}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3 text-center">{item.leaveType}</td>
+                              <td className="p-3 text-center">
+                                {new Date(item.fromDate).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })} - {new Date(item.toDate).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </td>
+                              <td className="p-3 text-center">{item.reason}</td>
+                              <td className="p-3 text-center">
+                                <div className="flex items-center gap-2 justify-center">
+                                  {item.leaveStatus}
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={7} className="p-4 text-center">
+                              No data available
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                {totalLeavePages > 1 && (
+                  <div className="flex justify-end mt-4">
+                    <Pagination
+                      currentPage={leavePage}
+                      totalPages={totalLeavePages}
+                      onPageChange={setLeavePage}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
             {/* Working Hours Tab */}
-
-            {activeTab === "Working Hours" && employee && (
-  <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-    <div className="overflow-x-auto max-h-[270px] overflow-y-auto custom-scrollbar scrollbar-none">
-      <table className="w-full min-w-[600px] text-sm text-left">
-        <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-          <tr className="text-black border-b border-gray-900">
-            <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
-              <div className="flex items-center justify-center gap-2">
-                <span>Day</span>
+            {activeTab === "WorkingHours" && (
+              <div className="space-y-6">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchWorking}
+                        onChange={e => {
+                          setSearchWorking(e.target.value);
+                          setWorkingPage(1);
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredWorking.length === 0 ? 0 : (workingPage - 1) * workingPerPage + 1} to {Math.min(workingPage * workingPerPage, filteredWorking.length)} of {filteredWorking.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
+                          <th className="p-4 font-semibold text-[12px] text-center">Day</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Preferred Working Hours</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">Working Hours</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">GMT</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {paginatedWorking.length > 0 ? (
+                          paginatedWorking.map((item, index) => (
+                            <tr
+                              key={index}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">{item.day}</td>
+                              <td className="p-3">{item.date}</td>
+                              <td className="p-3">{`${item.fromTime} - ${item.toTime}`}</td>
+                              <td className="p-3">GMT</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="p-4 text-center">
+                              No data available
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                {totalWorkingPages > 1 && (
+                  <div className="flex justify-end mt-4">
+                    <Pagination
+                      currentPage={workingPage}
+                      totalPages={totalWorkingPages}
+                      onPageChange={setWorkingPage}
+                    />
+                  </div>
+                )}
               </div>
-            </th>
-            <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
-              <div className="flex items-center justify-center gap-2">
-                <span>Working Hours</span>
-              </div>
-            </th>
-            <th className="px-4 py-4 font-semibold text-[12px] text-center w-1/3">
-              <div className="flex items-center justify-center gap-2">
-                <span>GMT</span>
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody className="text-gray-800">
-  {employee.preferedWorkingDays &&
-    JSON.parse(
-      employee.preferedWorkingDays.replace(/\b([A-Z]+)\b/g, '"$1"')
-    ).map((day: string, index: number) => (
-      <tr
-        key={day}
-        className={`border-t border-gray-100 text-center ${
-          index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-        }`}
-      >
-        <td className="px-4 py-2 text-[12px] border-r border-gray-200 w-1/3">
-          {day}
-        </td>
-        <td className="px-4 py-2 text-[12px] border-r border-gray-200 w-1/3">
-          {employee.preferedShiftFrom} - {employee.preferedShiftTo}
-        </td>
-        <td className="px-4 py-2 text-[12px] w-1/3">
-          GMT +4
-        </td>
-      </tr>
-    ))}
-</tbody>
-
-      </table>
-    </div>
-  </div>
-)}
-
+            )}
           </div>
         </div>
       </div>

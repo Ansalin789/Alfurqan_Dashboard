@@ -10,6 +10,7 @@ import TeacherHeader from "@/app/teacher/components/TeacherHeader";
 
 import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
+import AdminHeader from "../../components/AdminHeader";
 
 // Define the Expense interface
 interface Expense {
@@ -51,6 +52,49 @@ const Expenses = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState(""); // Example filter
   const [filterCategory, setFilterCategory] = useState(""); // Example filter
+
+  
+  interface ExpenseCardCounts {
+    totalExpense: number;
+    totalPending: number;
+    totalRevenue: number;
+    balance: number;
+  }
+  
+  
+    const [cardData, setCardData] = useState<ExpenseCardCounts>({
+      totalExpense: 0,
+      totalPending: 0,
+      totalRevenue: 0,
+      balance: 0,
+    });
+  
+    useEffect(() => {
+      const token =
+      typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+  
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
+      const fetchCardCounts = async () => {
+        try {
+          const response = await axios.get<ExpenseCardCounts>("http://localhost:5001/expenseCardCounts",{
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+          });
+          setCardData(response.data);
+        } catch (error) {
+          console.error("Failed to fetch expense card data:", error);
+        }
+      };
+  
+      fetchCardCounts();
+    }, []);
+  
+
 
   useEffect(() => {
     const token =
@@ -120,19 +164,19 @@ const Expenses = () => {
 
   return (
     <BaseLayout4>
-      <TeacherHeader currentSection="Assignments" />
+      <AdminHeader currentSection="Expenses" />
 
       <div className="w-full px-2 py-4">
         <div className="flex flex-wrap justify-between items-start gap-6 mb-6">
           {/* Cards Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full"> 
             {/* Card 1 */}
             <div className="w-full h-[125px] flex flex-col  p-4 rounded-xl bg-[#7689BD] text-white shadow-md">
               <h4 className="text-base font-bold">Total Expense</h4>
 
               <div className="mt-8">
-                <h1 className="text-lg font-bold ">$12,000</h1>
-                <p className="text-[12px] opacity-90">
+              <h1 className="text-lg font-bold">${cardData.totalExpense.toLocaleString()}</h1>
+              <p className="text-[12px] opacity-90">
                   60% increase than Last Month
                 </p>
               </div>
@@ -143,8 +187,8 @@ const Expenses = () => {
               <h4 className="text-base font-bold">Pending</h4>
 
               <div className="mt-8">
-                <h1 className="text-lg font-bold ">$12,000</h1>
-                <p className="text-[12px] opacity-90">
+              <h1 className="text-lg font-bold">${cardData.totalPending.toLocaleString()}</h1>
+              <p className="text-[12px] opacity-90">
                   60% increase than Last Month
                 </p>
               </div>
@@ -155,8 +199,8 @@ const Expenses = () => {
               <h4 className="text-base font-bold">Revenue</h4>
 
               <div className="mt-8">
-                <h1 className="text-lg font-bold ">$12,000</h1>
-                <p className="text-[12px] opacity-90">
+              <h1 className="text-lg font-bold">${cardData.totalRevenue.toLocaleString()}</h1>
+              <p className="text-[12px] opacity-90">
                   60% increase than Last Month
                 </p>
               </div>
@@ -167,8 +211,8 @@ const Expenses = () => {
               <h4 className="text-base font-bold">Balance</h4>
 
               <div className="mt-8">
-                <h1 className="text-lg font-bold ">$12,000</h1>
-                <p className="text-[12px] opacity-90">
+              <h1 className="text-lg font-bold">${cardData.balance.toLocaleString()}</h1>
+              <p className="text-[12px] opacity-90">
                   60% increase than Last Month
                 </p>
               </div>

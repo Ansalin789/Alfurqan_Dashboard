@@ -3,16 +3,10 @@
 import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import {
-  FaChevronLeft,
-  FaChevronRight,
-  FaEdit,
-  FaFilter,
-} from "react-icons/fa";
 import { Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
-import AcademicHeader from "@/app/Academic-coach/components/academicHeader";
+import AdminHeader from "../../components/AdminHeader";
 
 export interface TransformedUser {
   _id: string;
@@ -232,34 +226,34 @@ const Trailclasslist = () => {
 
   return (
     <BaseLayout4>
-    <AcademicHeader currentSection="Scheduled Trail Class" />
+    <AdminHeader currentSection="Scheduled Trail Class" />
       <div className="py-2 px-4 mx-auto w-full ">
-        <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434] mt-4">
-          <div className="flex justify-between items-center p-2 -ml-2">
+        <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+          <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
             <div className="flex items-center gap-2 text-sm text-gray-500 px-2">
-              <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
+              <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
               <input
                 type="text"
                 placeholder="Search"
-                className="bg-transparent outline-none text-[15px] w-52 py-3"
+                className="bg-transparent outline-none text-[12px] w-52 py-3"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 ml-48 cursor-pointer">
-              <MdTune className="w-4 h-4" />
+            <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+              <MdTune className="w-3 h-3 -mt-[3px]" />
               <span>Filter</span>
             </div>
-            <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-              <span className="text-left ml-60 ">
+            <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+              <span className="text-left -ml-60 ">
                 Showing {filteredItemsAll.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredItemsAll.length)} of {filteredItemsAll.length}
               </span>
             </div>
           </div>
-          <div className="overflow-x-auto w-full">
-            <table className="w-full table-fixed">
-              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
-                <tr>
+            <table className="table-auto w-full"
+                    style={{ width: "100%", tableLayout: "fixed" }}>
+              <thead className="text-[11px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                <tr className="font-medium">
                   {[
                     { label: "Trial ID", width: "w-[10%]" },
                     { label: "Student Name", width: "w-[12%]" },
@@ -277,7 +271,7 @@ const Trailclasslist = () => {
                   ].map((header, i) => (
                     <th
                       key={header.label}
-                      className={`px-3 py-2 text-left font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
+                      className={`text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
                     >
                       {header.label}
                     </th>
@@ -289,32 +283,33 @@ const Trailclasslist = () => {
                   filteredItems.map((item, index) => (
                     <tr
                       key={item._id}
-                      className={`text-[12px] ${
-                        index % 2 === 0 ? "bg-[#fff]" : "bg-[#F8F8F8]"
+                      className={`text-[10px] text-[#010E30E5]  ${
+                        index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C] "
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white break-words w-[10%]">
                         {item._id}
                       </td>
-                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%]">
+                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left break-words w-[12%]">
                         {item.student.studentFirstName} {item.student.studentLastName}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white break-words w-[10%]">
                         {item.student.studentPhone}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
                         {item.student.studentCountry}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
                         {item.student.learningInterest}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
                         {item.student.preferredTeacher}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
                         {item.assignedTeacher}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
                         {item.classStartDate
                           ? new Date(item.classStartDate).toLocaleDateString("en-US", {
                               year: "numeric",
@@ -323,18 +318,18 @@ const Trailclasslist = () => {
                             })
                           : ""}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] text-[11px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
                         {item.classStartTime}
                       </td>
                       {/* Class Status */}
-                      <td className="px-3 py-2 text-[11px]">
+                      <td className="px-3 py-2">
                         <span
-                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.trialClassStatus === "COMPLETED"
-                              ? "bg-[#ECFDF3] text-[#377E36] px-2 border border-[#377E36]"
+                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-2"
                               : item.trialClassStatus === "INPROGRESS"
-                              ? "bg-[#FDECEC] text-[#D34645] px-3 border border-[#D34645]"
-                              : "bg-[#FDF6EC] text-[#F0AD4E] px-3 border border-[#F0AD4E]"
+                              ? "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645] px-3"
+                              : "bg-[#FDF6EC] dark:bg-[#F0AD4E33] text-[#F0AD4E] px-3"
                           }`}
                         >
                           {item.trialClassStatus}
@@ -342,28 +337,28 @@ const Trailclasslist = () => {
                       </td>
                       
                       {/* Student Status */}
-                      <td className="px-3 py-2 text-[11px]">
+                      <td className="px-3 py-2">
                         <span
-                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.status === "Active"
-                              ? "bg-[#ECFDF3] text-[#377E36] px-3 border border-[#377E36]"
+                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-3"
                               : item.status === "PENDING"
-                              ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 border border-[#F0AD4E]"
-                              : "bg-[#FDECEC] text-[#D34645] px-3 border border-[#D34645]"
+                              ? "bg-[#FDF6EC] dark:bg-[#F0AD4E33] text-[#F0AD4E] px-3"
+                              : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645] px-3"
                           }`}
                         >
                           {item.status}
                         </span>
                       </td>
                       {/* Payment Status */}
-                      <td className="px-3 py-2 text-[11px]">
+                      <td className="px-3 py-2">
                         <span
-                          className={`px-1 text-[10px] text-center py-[3px] rounded-md ${
+                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.paymentStatus === "PAID"
-                              ? "bg-[#ECFDF3] text-[#377E36] px-4 border border-[#377E36]"
+                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-4"
                               : item.paymentStatus === "PENDING"
-                              ? "bg-[#FDF6EC] text-[#F0AD4E] px-3 border border-[#F0AD4E]"
-                              : "bg-[#FDECEC] text-[#D34645] px-3 border border-[#D34645]"
+                              ? "bg-[#FDF6EC] dark:bg-[#F0AD4E33] text-[#F0AD4E] px-3"
+                              : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645] px-3"
                           }`}
                         >
                           {item.paymentStatus}
@@ -380,7 +375,6 @@ const Trailclasslist = () => {
                 )}
               </tbody>
             </table>
-          </div>
         </div>
         <div className="mt-3">
           <Pagination
