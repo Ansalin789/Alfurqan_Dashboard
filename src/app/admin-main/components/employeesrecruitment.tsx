@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {  MoreVertical, Search } from "lucide-react";
+import { MoreVertical, Search } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import axios from "axios";
 import ReactDOM from "react-dom";
@@ -90,8 +90,6 @@ const ApplicantsList: React.FC = () => {
     }
   };
 
-
-
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
@@ -100,48 +98,42 @@ const ApplicantsList: React.FC = () => {
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
-const updateApplicationStatus = async (id: string, status: string) => {
-  try {
-    console.log("Updating applicant...");
-    console.log("ID:", id);
-    console.log("Status:", status);
+  const updateApplicationStatus = async (id: string, status: string) => {
+    try {
+      console.log("Updating applicant...");
+      console.log("ID:", id);
+      console.log("Status:", status);
 
-    const token = localStorage.getItem("AdminAuthToken");
-    if (!token) {
-      console.error("No token found.");
-      return;
-    }
-
-    const response = await axios.put(
-      `http://localhost:5001/admin/${id}`,
-      {
-        applicationStatus: status,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+      const token = localStorage.getItem("AdminAuthToken");
+      if (!token) {
+        console.error("No token found.");
+        return;
       }
-    );
 
-    console.log("Status updated successfully:", response.data);
+      const response = await axios.put(
+        `http://localhost:5001/admin/${id}`,
+        {
+          applicationStatus: status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    // Optional: Refresh the list
-    fetchApplicants(token);
-  } catch (error: any) {
-    console.error("Error updating status:", error.response?.data || error);
-  } finally {
-    setActionDropdown(null);
-    setDropdownPos(null);
-  }
-};
+      console.log("Status updated successfully:", response.data);
 
-
-
-
-
-
+      // Optional: Refresh the list
+      fetchApplicants(token);
+    } catch (error: any) {
+      console.error("Error updating status:", error.response?.data || error);
+    } finally {
+      setActionDropdown(null);
+      setDropdownPos(null);
+    }
+  };
 
   const filteredApplicants =
     activeTab === "All"
@@ -309,8 +301,24 @@ const updateApplicationStatus = async (id: string, status: string) => {
                         <td className="px-3 py-3 text-center">
                           <button
                             id={`action-btn-${applicant._id}`}
-                            className="text-[10px] font-semibold dark:text-white  "
+                            className={`text-[10px] font-semibold dark:text-white ${
+                              ["APPROVED", "REJECTED"].includes(
+                                applicant.applicationStatus
+                              )
+                                ? "cursor-not-allowed opacity-40"
+                                : "cursor-pointer"
+                            }`}
+                            disabled={["APPROVED", "REJECTED"].includes(
+                              applicant.applicationStatus
+                            )}
                             onClick={(e) => {
+                              if (
+                                ["APPROVED", "REJECTED"].includes(
+                                  applicant.applicationStatus
+                                )
+                              )
+                                return; // prevent dropdown
+
                               if (actionDropdown === applicant._id) {
                                 setActionDropdown(null);
                                 setDropdownPos(null);
@@ -328,6 +336,7 @@ const updateApplicationStatus = async (id: string, status: string) => {
                           >
                             <MoreVertical size={16} />
                           </button>
+
                           {actionDropdown === applicant._id &&
                             dropdownPos &&
                             typeof window !== "undefined" &&
@@ -345,11 +354,12 @@ const updateApplicationStatus = async (id: string, status: string) => {
                                 <button
                                   className="w-full px-2 py-1 text-[10px] text-[#17243E] rounded-t-xl dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
                                   onClick={() => {
-                                    console.log("Approving ID:", applicant._id);
                                     updateApplicationStatus(
                                       applicant._id,
                                       "APPROVED"
                                     );
+                                    setActionDropdown(null);
+                                    setDropdownPos(null);
                                   }}
                                 >
                                   Approve
@@ -357,12 +367,14 @@ const updateApplicationStatus = async (id: string, status: string) => {
 
                                 <button
                                   className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
-                                  onClick={() =>
+                                  onClick={() => {
                                     updateApplicationStatus(
                                       applicant._id,
                                       "REJECTED"
-                                    )
-                                  }
+                                    );
+                                    setActionDropdown(null);
+                                    setDropdownPos(null);
+                                  }}
                                 >
                                   Reject
                                 </button>
@@ -392,7 +404,6 @@ const updateApplicationStatus = async (id: string, status: string) => {
                 </tbody>
               </table>
             </div>
-            
           </div>
         </div>
       </div>
@@ -404,7 +415,6 @@ const updateApplicationStatus = async (id: string, status: string) => {
           View All
         </button>
       </div>
-
     </div>
   );
 };
