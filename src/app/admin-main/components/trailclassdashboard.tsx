@@ -71,9 +71,9 @@ export default function TrialRequests() {
   : []
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 h-[227px]">
+    <div className="bg-white rounded-lg shadow-sm p-5 h-[227px] dark:bg-[#343434]">
       <div className="mb-3">
-        <h2 className="text-[15px] ml-1.5 font-semibold text-gray-800"> Trial Class Status</h2>
+        <h2 className="text-[15px] ml-1.5 font-semibold text-gray-800 dark:text-[#fff]"> Trial Class Status</h2>
       </div>
       <div className="space-y-6 mx-2 ">
         {requests.map((request) => (
@@ -84,7 +84,7 @@ export default function TrialRequests() {
             <div className="flex-grow">
               <div className="flex justify-between mb-1">
                 <span className="text-xs font-medium">{request.status}</span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 dark:text-[#7889BB]">
                 {request?.percentage ? `${request.percentage.toFixed(0)}/100%` : '0/100%'}
                 </span>
               </div>
