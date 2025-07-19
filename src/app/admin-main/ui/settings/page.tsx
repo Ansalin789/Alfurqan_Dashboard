@@ -77,7 +77,7 @@ const Page: React.FC = () => {
   const fetchTenantUsers = async (token: string) => {
     try {
       const res = await axios.get<TenantUsersResponse>(
-        "http://localhost:5001/users",
+        "https://api.blackstoneinfomaticstech.com/users",
         {
           headers: {
             "Content-Type": "application/json",

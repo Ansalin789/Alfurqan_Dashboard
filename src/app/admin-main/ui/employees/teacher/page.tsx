@@ -342,7 +342,7 @@ const Teacher = () => {
   const fetchUsers = async (token: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/users/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/users/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -386,7 +386,7 @@ const Teacher = () => {
         );
 
         const res = await axios.get(
-          `http://localhost:5001/dashboard/teacher/counts`,
+          `https://api.blackstoneinfomaticstech.com/dashboard/teacher/counts`,
           {
             params: { teacherId: employeeId },
             headers: {
@@ -411,7 +411,7 @@ const Teacher = () => {
   const fetchWages = async (token: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/empwages/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/empwages/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -458,7 +458,7 @@ const Teacher = () => {
       }
       try {
         const res = await axios.get(
-          `http://localhost:5001/shiftschedule/${employeeId}`,
+          `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -719,32 +719,27 @@ const Teacher = () => {
             {activeTab === "Studentslist" && (
               <div className="">
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-52 py-3"
-                        value={searchQuery}
-                        onChange={(e) => handleSearch(e.target.value)}
-                      />
-                    </div>
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchQuery}
+                      onChange={(e) => handleSearch(e.target.value)}
+                    />
                     <div className="relative">
-                      <div
-                        className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      <button
+                        className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                         onClick={() => setIsFilterModalOpen(true)}
                       >
                         <MdTune className="w-4 h-4" />
                         <span>Filter</span>
-                      </div>
+                      </button>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                      <span className="text-left ml-60 ">
-                        Showing {filteredStudents.length === 0 ? 0 : 1} to{" "}
-                        {filteredStudents.length} of {filteredStudents.length}
-                      </span>
-                    </div>
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+                      Showing {filteredStudents.length === 0 ? 0 : 1} to{" "}
+                      {filteredStudents.length} of {filteredStudents.length}
+                    </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -969,7 +964,9 @@ const Teacher = () => {
                   <button
                     className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
                     onClick={() => {
-                      router.push(`/admin-main/ui/employees/teacher/scheduledclass?teacherId=${employeeId}`);
+                      router.push(
+                        `/admin-main/ui/employees/teacher/scheduledclass?teacherId=${employeeId}`
+                      );
                     }}
                   >
                     View All
@@ -1192,7 +1189,9 @@ const Teacher = () => {
                   <button
                     className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
                     onClick={() => {
-                      router.push(`/admin-main/ui/employees/teacher/payments?teacherId=${employeeId}`);
+                      router.push(
+                        `/admin-main/ui/employees/teacher/payments?teacherId=${employeeId}`
+                      );
                     }}
                   >
                     View All
@@ -1385,7 +1384,9 @@ const Teacher = () => {
                   <button
                     className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
                     onClick={() => {
-                      router.push(`/admin-main/ui/employees/teacher/workinghours?teacherId=${employeeId}`);
+                      router.push(
+                        `/admin-main/ui/employees/teacher/workinghours?teacherId=${employeeId}`
+                      );
                     }}
                   >
                     View All
