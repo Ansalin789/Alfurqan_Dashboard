@@ -47,50 +47,13 @@ interface PieData {
   color: string;
 }
 
-
-
-const lineData = [
-  { month: "Jan", value: 30 },
-  { month: "Feb", value: 45 },
-  { month: "Mar", value: 55 },
-  { month: "Apr", value: 40 },
-  { month: "May", value: 60 },
-  { month: "Jun", value: 50 },
-  { month: "Jul", value: 80 },
-  { month: "Aug", value: 75 },
-  { month: "Sep", value: 65 },
-  { month: "Oct", value: 70 },
-  { month: "Nov", value: 60 },
-  { month: "Dec", value: 55 },
-];
-
-const bardata = [
-  { label: "Total Classes", value: 120, color: "bg-[#16C7F0]" },
-  { label: "Ongoing Classes", value: 90, color: "bg-[#00579B]" },
-  { label: "Upcoming Classes", value: 75, color: "bg-[#4A368F]" },
-  { label: "Completed Classes", value: 60, color: "bg-[#87AFFF]" },
-];
-
-const pieData = [
-  { name: "Trial Classes", value: 10, color: "#29CDFF" },
-  { name: "Regular Classes", value: 40, color: "#993AFF" },
-  { name: "Group Classes", value: 75, color: "#B388EB" },
-];
-
-export default function DashboardClasses() {
+const DashboardClasses = () => {
   const [duration, setDuration] = useState("Last 8 Months");
   const [pieRange, setPieRange] = useState("Today");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  // const maxValue = Math.max(...bardata.map((item) => item.value));
-  // const total = pieData.reduce((acc, item) => acc + item.value, 0);
-  // const [range, setRange] = useState("Today");
-  const [lineData, setLineData] = useState<{ month: string; value: number }[]>(
-    []
-  );
+  const [lineData, setLineData] = useState<{ month: string; value: number }[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [barData, setBarData] = useState<
-    { label: string; value: number; color: string }[]
-  >([]);
+  const [barData, setBarData] = useState<{ label: string; value: number; color: string }[]>([]);
   const [range, setRange] = useState("Today");
   const [pieData, setPieData] = useState<PieData[]>([]);
   const [total, setTotal] = useState(0);
@@ -99,38 +62,36 @@ export default function DashboardClasses() {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('AdminAuthToken');
       if (token) {
-        fetchClassData(token); // pass token into the function
+        fetchClassData(token);
       } else {
         console.log("No auth token found.");
       }
     }
   }, []);
-    const fetchClassData = async (token: string) => {
-      try {
-        const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/classShedule/totalclasses?dateRange=last8months",{
-            method: "GET",
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-          });        
-          const data: ClassScheduleData[] = await response.json();
 
-        // Transform API data to match the AreaChart data format
-        const transformedData = data.map((item) => ({
-          month: item.date,
-          value: item.totalClass,
-        }));
+  const fetchClassData = async (token: string) => {
+    try {
+      const response = await fetch(
+        "https://api.blackstoneinfomaticstech.com/classShedule/totalclasses?dateRange=last8months",{
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });        
+        const data: ClassScheduleData[] = await response.json();
 
-        setLineData(transformedData);
-      } catch (err) {
-        setError("Failed to load total classes data");
-        console.error(err);
-      }
-    };
+      const transformedData = data.map((item) => ({
+        month: item.date,
+        value: item.totalClass,
+      }));
 
-
+      setLineData(transformedData);
+    } catch (err) {
+      setError("Failed to load total classes data");
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     const fetchClassStatus = async () => {
@@ -219,28 +180,25 @@ export default function DashboardClasses() {
   fetchClassWiseCount();
 }, []);
 
-  
-
-  const maxValue = Math.max(...barData.map((item) => item.value), 100); // fallback for empty data
+  const maxValue = Math.max(...barData.map((item) => item.value), 100);
 
   return (
-    <div className="w-full max-w-[1365px] mx-auto ">
+    <div className="w-full max-w-[1365px] mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {" "}
         {/* Line Chart Panel */}
-        <div className="bg-white rounded-xl p-3 shadow-md h-[250px] flex flex-col justify-between min-w-0">
+        <div className="bg-[#FAFAFB] dark:bg-[#343434] rounded-xl p-3 shadow-md h-[250px] flex flex-col justify-between min-w-0">
           <div className="flex justify-between items-center mb-1">
-            <h4 className="font-semibold text-sm text-gray-800">
+            <h4 className="font-semibold text-sm text-[#010E30] dark:text-[#FFFFFF]">
               Total Classes
             </h4>
-            <select className="text-xs bg-gray-100 px-2 py-1 rounded">
-              <option>Last 8 Months</option>
-              <option>Last 6 Months</option>
+            <select className="text-xs bg-gray-100 dark:bg-[#444] dark:text-[#FFFFFF] px-2 py-1 rounded">
+              <option className="dark:text-[#010E30]">Last 8 Months</option>
+              <option className="dark:text-[#010E30]">Last 6 Months</option>
             </select>
           </div>
 
           {error ? (
-            <div className="text-center text-red-500 text-sm">{error}</div>
+            <div className="text-center text-red-500 dark:text-red-400 text-sm">{error}</div>
           ) : (
             <ResponsiveContainer width="100%" height={180}>
               <AreaChart data={lineData}>
@@ -266,9 +224,10 @@ export default function DashboardClasses() {
             </ResponsiveContainer>
           )}
         </div>
+        
         {/* Bar Chart Panel */}
-        <Card className="p-3 rounded-lg shadow-md bg-white h-[250px] flex flex-col justify-between min-w-0">
-          <h2 className="font-semibold text-sm text-gray-900 mb-2">
+        <Card className="p-3 rounded-lg shadow-md bg-[#FAFAFB] dark:bg-[#343434] h-[250px] flex flex-col justify-between min-w-0">
+          <h2 className="font-semibold text-sm text-[#010E30] dark:text-[#FFFFFF]">
             Total Classes Overview
           </h2>
           <div className="space-y-2">
@@ -279,13 +238,13 @@ export default function DashboardClasses() {
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
-                <div className="relative bg-gray-200 h-4 rounded-full w-full">
+                <div className="relative bg-gray-200 dark:bg-[#444] h-4 rounded-full w-full">
                   <div
                     className={`h-4 rounded-full ${item.color} relative transition-all duration-300`}
                     style={{ width: `${(item.value / maxValue) * 100}%` }}
                   >
                     {hoveredIndex === index && (
-                      <div className="absolute -top-6 right-0 bg-gray-900 text-white text-[10px] font-semibold px-2 py-[1px] rounded shadow">
+                      <div className="absolute -top-6 right-0 bg-gray-900 dark:bg-gray-700 text-white text-[10px] font-semibold px-2 py-[1px] rounded shadow">
                         {item.value}%
                       </div>
                     )}
@@ -298,97 +257,96 @@ export default function DashboardClasses() {
             {barData.map((item) => (
               <div key={item.label} className="flex items-center gap-1">
                 <span className={`w-2 h-2 rounded-full ${item.color}`}></span>
-                <span className="text-gray-700 font-medium text-[10px]">
+                <span className="text-[#010E30] dark:text-[#FFFFFF] font-medium text-[10px]">
                   {item.label}
                 </span>
               </div>
             ))}
           </div>
         </Card>
+        
         {/* Donut Chart Panel */}
-        <div className="bg-white rounded-xl shadow-md w-full max-w-[520px] h-[250px] p-4 flex flex-col items-center gap-3">
-      {/* Header */}
-      <div className="w-full flex justify-between items-center">
-        <h3 className="font-semibold text-sm text-gray-900">
-          Total Classes - Class wise
-        </h3>
-        <select
-          value={range}
-          onChange={(e) => setRange(e.target.value)}
-          className="bg-gray-100 text-xs rounded px-2 py-1"
-        >
-          <option>Today</option>
-          <option>This Week</option>
-          <option>This Month</option>
-        </select>
-      </div>
-
-      {/* Donut Chart */}
-      <div className="relative w-[100px] h-[100px] items-center justify-center">
-        <PieChart width={180} height={150}>
-          <Pie
-            data={[{ value: 100 }]}
-            dataKey="value"
-            cx="50%"
-            cy="50%"
-            innerRadius={48}
-            outerRadius={75}
-            startAngle={90}
-            endAngle={-270}
-            fill="#051937"
-          />
-          {pieData.map((item, index) => (
-            <Pie
-              key={index}
-              data={[item, { value: total - item.value }]}
-              dataKey="value"
-              cx="50%"
-              cy="50%"
-              innerRadius={52 + index * 7}
-              outerRadius={57 + index * 7}
-              startAngle={90}
-              endAngle={-270}
-              cornerRadius={6}
-              stroke="none"
-              isAnimationActive={false}
+        <div className="bg-[#FAFAFB] dark:bg-[#343434] rounded-xl shadow-md w-full max-w-[520px] h-[250px] p-4 flex flex-col items-center gap-3">
+          <div className="w-full flex justify-between items-center">
+            <h3 className="font-semibold text-sm text-[#010E30] dark:text-[#FFFFFF]">
+              Total Classes - Class wise
+            </h3>
+            <select
+              value={range}
+              onChange={(e) => setRange(e.target.value)}
+              className="bg-gray-100 dark:bg-[#444] dark:text-[#FFFFFF] text-xs rounded px-2 py-1"
             >
-              <Cell fill={item.color} stroke="none" />
-              <Cell fill="transparent" stroke="none" />
-            </Pie>
-          ))}
-        </PieChart>
-
-        {/* Center Content */}
-        <div className="absolute inset-0 flex flex-col justify-center items-center">
-          <p className="text-[20px] font-bold text-gray-900 ml-20 mt-10">
-            {total}
-          </p>
-          <p className="text-[11px] text-gray-500 ml-20">Classes</p>
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div className="text-xs w-full flex flex-col gap-1 mt-2">
-        {pieData.map((item) => (
-          <div
-            key={item.name}
-            className="flex justify-between items-center"
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: item.color }}
-              ></span>
-              <span className="text-gray-700">{item.name}</span>
-            </div>
-            <span className="font-semibold text-gray-800">
-              {item.value}
-            </span>
+              <option className="dark:text-[#010E30]">Today</option>
+              <option className="dark:text-[#010E30]">This Week</option>
+              <option className="dark:text-[#010E30]">This Month</option>
+            </select>
           </div>
-        ))}
-      </div>
-    </div>
+
+          <div className="relative w-[100px] h-[100px] items-center justify-center">
+            <PieChart width={180} height={150}>
+              <Pie
+                data={[{ value: 100 }]}
+                dataKey="value"
+                cx="50%"
+                cy="50%"
+                innerRadius={48}
+                outerRadius={75}
+                startAngle={90}
+                endAngle={-270}
+                fill="#051937"
+              />
+              {pieData.map((item, index) => (
+                <Pie
+                  key={index}
+                  data={[item, { value: total - item.value }]}
+                  dataKey="value"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={52 + index * 7}
+                  outerRadius={57 + index * 7}
+                  startAngle={90}
+                  endAngle={-270}
+                  cornerRadius={6}
+                  stroke="none"
+                  isAnimationActive={false}
+                >
+                  <Cell fill={item.color} stroke="none" />
+                  <Cell fill="transparent" stroke="none" />
+                </Pie>
+              ))}
+            </PieChart>
+
+            <div className="absolute inset-0 flex flex-col justify-center items-center">
+              <p className="text-[20px] font-bold text-[#010E30] dark:text-[#FFFFFF] ml-20 mt-10">
+                {total}
+              </p>
+              <p className="text-[11px] text-[#010E30] dark:text-[#FFFFFF] ml-20">Classes</p>
+            </div>
+          </div>
+
+          <div className="text-xs w-full flex flex-col gap-1 mt-2">
+            {pieData.map((item) => (
+              <div
+                key={item.name}
+                className="flex justify-between items-center"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  ></span>
+                  <span className="text-[#010E30] dark:text-[#FFFFFF]">{item.name}</span>
+                </div>
+                <span className="font-semibold text-[#010E30] dark:text-[#FFFFFF]">
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default DashboardClasses;
