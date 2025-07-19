@@ -237,7 +237,7 @@ const TrailManagement = () => {
               </thead>
               <tbody>
                 {filteredItems.length > 0 ? (
-                  filteredItems.map((item, index) => (
+                  filteredItems.slice(-5).reverse().map((item, index) => (
                     <tr
                       key={item._id}
                       className={`text-[12px] ${

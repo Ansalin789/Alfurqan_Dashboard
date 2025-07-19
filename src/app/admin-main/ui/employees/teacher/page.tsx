@@ -2,13 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import { BsClockHistory } from "react-icons/bs";
-import { MdOutlineCurrencyExchange, MdOutlineCancel } from "react-icons/md";
-import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar";
-import { format } from "date-fns/format";
-import { parse } from "date-fns/parse";
-import { startOfWeek } from "date-fns/startOfWeek";
-import { getDay } from "date-fns/getDay";
+import { dateFnsLocalizer, Views } from "react-big-calendar";
+import format from "date-fns/format";
+import parse from "date-fns/parse";
+import startOfWeek from "date-fns/startOfWeek";
+import getDay from "date-fns/getDay";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { FaUserGraduate } from "react-icons/fa6";
 import { FaRegEye, FaCalendarAlt } from "react-icons/fa";
@@ -16,6 +14,9 @@ import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
+import { Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
+import Pagination from "@/components/Pagination";
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),
@@ -132,10 +133,9 @@ interface User {
   lastUpdatedDate: string;
   gender: string;
   position: string;
-  contact: string,
-  country: string,
-  city: string
-
+  contact: string;
+  country: string;
+  city: string;
 }
 interface ScheduledClass {
   student: {
@@ -210,22 +210,6 @@ interface Student {
   studentEmail: string;
 }
 
-interface ClassSchedule {
-  _id: string;
-  startDate: string;
-  amount: string;
-  currency: string;
-  createdDate: string;
-  description?: string;
-  status?: string;
-  classLink: string;
-  teacher: {
-    teacherId: string;
-    teacherName: string;
-    teacherEmail: string;
-  };
-}
-
 interface ShiftSchedule {
   date: string;
   day: string;
@@ -260,6 +244,55 @@ const Teacher = () => {
     totalearnings: 0,
   });
   const [schedule, setSchedule] = useState<ShiftSchedule[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [searchScheduledClass, setSearchScheduledClass] = useState("");
+  const [searchPayments, setSearchPayments] = useState("");
+  const [searchWages, setSearchWages] = useState("");
+  const [searchWorkingHours, setSearchWorkingHours] = useState("");
+  const [searchEarnings, setSearchEarnings] = useState("");
+  // Filtered Earnings (months)
+  const filteredEarningsMonths = Array.from({ length: 12 })
+    .map((_, index) => {
+      const monthNumber = index + 1;
+      const currentYear = new Date().getFullYear();
+      const monthName = new Date(0, index).toLocaleString("default", {
+        month: "short",
+      });
+      const monthly = teacherCounts.monthlyData?.find(
+        (item) => item.month === monthNumber && item.year === currentYear
+      );
+      return {
+        key: `${monthName}-${currentYear}`,
+        monthName,
+        currentYear,
+        monthly,
+      };
+    })
+    .filter((row) => {
+      const searchFields = [row.monthName, row.currentYear];
+      return searchFields.some((field) =>
+        field
+          ? field
+              .toString()
+              .toLowerCase()
+              .includes(searchEarnings.toLowerCase())
+          : false
+      );
+    });
+
+  const [earningsPage, setEarningsPage] = useState(1);
+  const earningsPerPage = 5;
+  const totalEarningsPages = Math.ceil(
+    filteredEarningsMonths.length / earningsPerPage
+  );
+  const paginatedEarnings = filteredEarningsMonths.slice(
+    (earningsPage - 1) * earningsPerPage,
+    earningsPage * earningsPerPage
+  );
 
   const events = [
     {
@@ -386,15 +419,16 @@ const Teacher = () => {
           },
         }
       );
-      setWages(response.data);
+
+      const data = response.data;
+      const wagesArray = Array.isArray(data) ? data : [data];
+      setWages(wagesArray);
     } catch (error) {
       console.error("Error fetching wages:", error);
     }
   };
 
   const fetchClasses = async (token: string) => {
-
-    
     try {
       const res = await axios.get<StudentData[]>(
         `https://api.blackstoneinfomaticstech.com/classShedule/teacher/list?teacherId=${employeeId}`,
@@ -412,26 +446,25 @@ const Teacher = () => {
   };
 
   useEffect(() => {
-    const fetchData = async ()  => {
-
+    const fetchData = async () => {
       const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("AdminAuthToken")
-        : null;
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
 
-    if (!token) {
-      console.error("❌ AdminAuthToken not found");
-      return;
-    }
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
       try {
         const res = await axios.get(
           `http://localhost:5001/shiftschedule/${employeeId}`,
           {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         setSchedule(res.data);
       } catch (error) {
@@ -467,15 +500,116 @@ const Teacher = () => {
     });
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setSearchTerm(query);
+    setCurrentPage(1);
+  };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const filteredStudents = students.filter((item) => {
+    const student = item.studentDetails?.student;
+    const searchFields = [
+      item.studentId,
+      student?.studentFirstName,
+      student?.studentLastName,
+      student?.studentCountry,
+      student?.learningInterest,
+      student?.preferredTeacher,
+      student?.status,
+    ];
+    return searchFields.some((field) =>
+      field
+        ? field.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        : false
+    );
+  });
+  const currentItems = filteredStudents.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+
+  // Filtered scheduled classes for search
+  const filteredScheduledClass = scheduledclass.filter((event) => {
+    const searchFields = [
+      event.student.studentFirstName,
+      event.student.studentId,
+      event.sessionClassType,
+      event.startDate,
+    ];
+    return searchFields.some((field) =>
+      field
+        ? field
+            .toString()
+            .toLowerCase()
+            .includes(searchScheduledClass.toLowerCase())
+        : false
+    );
+  });
+
+  // Filtered Payments
+  const filteredPayments = scheduledclass.filter((item) => {
+    const searchFields = [
+      new Date(item.startDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      item.amount,
+      item.amount === "0" ? "Pending" : "Paid",
+    ];
+    return searchFields.some((field) =>
+      field
+        ? field.toString().toLowerCase().includes(searchPayments.toLowerCase())
+        : false
+    );
+  });
+
+  // Filtered Wages
+  const filteredWages = Array.isArray(wages)
+    ? wages.filter((item) => {
+        const searchFields = [
+          item.classType?.className || "",
+          item.classType?.rate || "",
+          item.classType?.currency || "",
+        ];
+        return searchFields.some((field) =>
+          field.toString().toLowerCase().includes(searchWages.toLowerCase())
+        );
+      })
+    : [];
+
+  // Filtered Working Hours
+  const filteredWorkingHours = schedule.filter((item) => {
+    const searchFields = [item.day, item.date];
+    return searchFields.some((field) =>
+      field
+        ? field
+            .toString()
+            .toLowerCase()
+            .includes(searchWorkingHours.toLowerCase())
+        : false
+    );
+  });
+
+  const [wagesPage, setWagesPage] = useState(1);
+  const wagesPerPage = 5;
+  const totalWagesPages = Math.ceil(filteredWages.length / wagesPerPage);
+  const paginatedWages = filteredWages.slice(
+    (wagesPage - 1) * wagesPerPage,
+    wagesPage * wagesPerPage
+  );
+
   return (
     <BaseLayout4>
       <TeacherHeader currentSection="Employees" />
       <div className="p-4 min-h-screen w-full">
         <div className="grid grid-cols-5 gap-2">
           {/* Left Card */}
-          <div className="col-span-3 bg-[#555D75] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row">
+          <div className="col-span-3 bg-[#5E6578] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row">
             {/* Profile Section */}
-            <div className="flex flex-col items-center w-[30%] pr-4 border-r border-gray-500">
+            <div className="flex flex-col items-center w-[30%] pr-4 py-6 border-r border-[#BCBCBC]">
               <div className="w-[90px] h-[90px] rounded-full overflow-hidden border border-white">
                 <img
                   src="/assets/images/Avatar.png"
@@ -483,60 +617,63 @@ const Teacher = () => {
                   className="object-cover w-full h-full"
                 />
               </div>
-              <h2 className="text-sm font-semibold mt-2">
-                {users?.userName}
-              </h2>
-              <p className="text-xs text-gray-300">
-                {users?.email}
-              </p>
+              <h2 className="text-sm font-semibold mt-2">{users?.userName}</h2>
+              <p className="text-[10px] text-gray-300">{users?.email}</p>
             </div>
 
             {/* Info Section */}
-            <div className="flex-1 pl-4">
-              <h2 className="text-sm font-semibold mb-3">Personal Info</h2>
+            <div className="flex-1 px-4">
+              <h2 className="text-sm font-semibold mb-3 pt-5">Personal Info</h2>
               <div className="grid grid-cols-2 gap-y-3 text-xs">
-                <div>
-                  <p className="text-gray-300">Contact</p>
-                  <p>{users?.contact}</p>
-                </div>
-                <div>
-                  <p className="text-gray-300">Country</p>
-                  <p>{users?.country}</p>
-                </div>
+                <div className="gap-y-4">
+                  <div className="py-2 flex flex-row justify-between">
+                    <p className="text-gray-300">Contact</p>
+                    <p className="text-gray-300 px-2 text-[10px]">
+                      {users?.contact}
+                    </p>
+                  </div>
+                  <div className="py-2 flex flex-row justify-between">
+                    <p className="text-gray-300">Country</p>
+                    <p className="text-gray-300 px-2 text-[10px]">
+                      {users?.country}
+                    </p>
+                  </div>
 
-                <div>
-                  <p className="text-gray-300">Gender</p>
-                  <p>{users?.gender || "Male"}</p>
+                  <div className="py-2 flex flex-row justify-between">
+                    <p className="text-gray-300">Gender</p>
+                    <p className="text-gray-300 px-2 text-[10px]">
+                      {users?.gender || "Male"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-gray-300">Nationality</p>
-                  <p>{users?.country}</p>
-                </div>
+                <div className="border-l border-l-white pl-4">
+                  <div className="py-2 flex flex-row justify-between">
+                    <p className="text-gray-300">Nationality</p>
+                    <p className="text-gray-300 px-2 text-[10px]">
+                      {users?.country}
+                    </p>
+                  </div>
 
-                <div>
-                  <p className="text-gray-300">Course</p>
-                  <p>{users?.position}</p>
-                </div>
-                <div>
-                  <p className="text-gray-300">Employment</p>
-                  <p>Full Time</p>
+                  <div className="py-2 flex flex-row justify-between">
+                    <p className="text-gray-300">Course</p>
+                    <p className="text-gray-300 px-2 text-[10px]">
+                      {users?.position}
+                    </p>
+                  </div>
+                  <div className="py-2 flex flex-row justify-between">
+                    <p className="text-gray-300">Employment</p>
+                    <p className="text-gray-300 px-2 text-[10px]">Full Time</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right Analytics Panel */}
-          <div className="col-span-2 bg-[#7A83C1] px-3 py-3 rounded-lg shadow-sm text-white">
-            {/* Dropdown */}
-            <div className="mb-3">
-              <select className="bg-[#ADB5E0] text-[#0F2C59] text-xs px-3 py-[4px] rounded-md w-[90px] outline-none">
-                <option>Quran</option>
-                <option>Arabic</option>
-                <option>Islamic</option>
-              </select>
+          <div className="col-span-2 bg-[#7689BD] px-3 py-3 rounded-lg shadow-sm text-white">
+            <div className="bg-[#ADB5E0] text-[#0F2C59] text-xs px-3 py-[4px] rounded-md w-[90px] outline-none mb-3">
+              <span>Quran</span>
             </div>
-
-            {/* Cards */}
             <div className="grid grid-cols-2 gap-2">
               {[
                 { value: "30", label: "Students" },
@@ -548,7 +685,7 @@ const Teacher = () => {
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className="border border-[#9DA4C4] rounded-lg p-2 bg-[#7A83C1]"
+                  className="border border-[#9DA4C4] rounded-lg p-2 bg-[#7689BD]"
                 >
                   <p className="text-base font-semibold text-white">
                     {item.value}
@@ -561,15 +698,15 @@ const Teacher = () => {
         </div>
 
         {/*Table card */}
-        <div className="mt-4 bg-white p-4 rounded-xl shadow h-min">
+        <div className="mt-4  h-min">
           <div className="flex space-x-6">
             {tabs.map((tab) => (
               <button
                 key={tab}
-                className={`px-3 py-[7px] text-xs font-medium rounded-lg focus:outline-none transition-all duration-200 ${
+                className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${
                   activeTab === tab
-                    ? "bg-[#102645] text-white shadow"
-                    : "text-black"
+                    ? "border-b border-b-[#576CBC] text-[#576CBC]"
+                    : "text-[#010E30] dark:text-white"
                 }`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -578,18 +715,44 @@ const Teacher = () => {
             ))}
           </div>
 
-          <div className="p-4">
+          <div className="py-2">
             {activeTab === "Studentslist" && (
-              <div className="space-y-6">
-                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                  <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">
-                    Total Students
-                  </h2>
-
-                  <div className="overflow-x-auto max-h-[254px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className="border-b-[1px] border-[#1C3557]">
+              <div className="">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchQuery}
+                        onChange={(e) => handleSearch(e.target.value)}
+                      />
+                    </div>
+                    <div className="relative">
+                      <div
+                        className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                        onClick={() => setIsFilterModalOpen(true)}
+                      >
+                        <MdTune className="w-4 h-4" />
+                        <span>Filter</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredStudents.length === 0 ? 0 : 1} to{" "}
+                        {filteredStudents.length} of {filteredStudents.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Student ID
                           </th>
@@ -605,329 +768,354 @@ const Teacher = () => {
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Duration
                           </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
-                            Classes
-                          </th>
                         </tr>
                       </thead>
-                      <tbody className="text-xs text-[#1D2939]">
-                        {students.map((item, index) => {
-                          const student = item.studentDetails?.student;
-                          return (
-                            <tr
-                              key={item.studentId || index}
-                              className={`border-t border-gray-100 text-center ${
-                                index % 2 === 0
-                                  ? "bg-[#faf9f9]"
-                                  : "bg-[#ebebeb]"
-                              }`}
-                            >
-                              <td className="p-3">{item.studentId}</td>
-                              <td className="p-3">
-                                {student?.studentFirstName}
-                              </td>
-                              <td className="p-3">{student?.studentCountry}</td>
-                              <td className="p-3">
-                                {student?.learningInterest}
-                              </td>
-                              <td className="p-3">30 min</td>
-                              <td className="p-3"></td>
-                            </tr>
-                          );
-                        })}
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {filteredStudents.slice(-5).reverse().length > 0 ? (
+                          filteredStudents
+                            .slice(-5)
+                            .reverse()
+                            .map((item, index) => {
+                              const student = item.studentDetails?.student;
+                              return (
+                                <tr
+                                  key={item.studentId || index}
+                                  className={`text-center dark:text-white ${
+                                    index % 2 === 0
+                                      ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                      : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                  }`}
+                                >
+                                  <td className="p-3">{item.studentId}</td>
+                                  <td className="p-3">
+                                    {student?.studentFirstName}
+                                  </td>
+                                  <td className="p-3">
+                                    {student?.studentCountry}
+                                  </td>
+                                  <td className="p-3">
+                                    {student?.learningInterest}
+                                  </td>
+                                  <td className="p-3">30 min</td>
+                                </tr>
+                              );
+                            })
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="p-4 text-center">
+                              No data available
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
+                </div>
+                <div className="flex justify-end mt-4">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={() => {
+                      router.push(
+                        `/admin-main/ui/employees/teacher/studentlist?teacherId=${employeeId}`
+                      );
+                    }}
+                  >
+                    View All
+                  </button>
                 </div>
               </div>
             )}
 
             {activeTab === "ScheduledClass" && (
-              <div className="space-y-6">
-                <div className="bg-white rounded-lg">
-                  <div className="flex justify-between items-center mb-0">
-                    <div className="space-x-4">
-                      <button
-                        className={`font-medium text-[14px] ${
-                          view === "month" ? "text-black" : "text-gray-400"
-                        }`}
-                        onClick={handleclickcalender}
-                      >
-                        <FaCalendarAlt />
-                      </button>
-                      <button
-                        className={`font-medium text-[14px] ${
-                          view === "agenda" ? "text-black" : "text-gray-400"
-                        }`}
-                        onClick={() => setView("agenda")}
-                      >
-                        List View
-                      </button>
-                    </div>
-                    {view === "month" ? (
-                      <div className="space-x-2">
-                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">
-                          + Add Meeting
-                        </button>
-                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">
-                          + Add ToDoList
-                        </button>
-                        <button className="bg-[#012A4A] text-white text-[11px] px-4 py-1 rounded">
-                          + Add Schedule
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center">
-                        <input
-                          type="text"
-                          placeholder="Search here..."
-                          className="border rounded-lg px-2 py-1 text-[10px] shadow"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className="overflow-x-auto overflow-y-auto custom-scrollbar scrollbar-none">
-                    {view === "month" ? (
-                      <Calendar
-                        localizer={localizer}
-                        events={events}
-                        startAccessor="start"
-                        endAccessor="end"
-                        style={{ height: 600, width: "100%" }}
-                        view={view}
-                        onView={(newView) =>
-                          setView(
-                            newView as "month" | "week" | "day" | "agenda"
-                          )
+              <div className="space-y-2 -mt-8">
+                <div className="justify-end text-end">
+                  <button
+                    className={`font-medium text-[14px] ${
+                      view === "month"
+                        ? "text-black"
+                        : "text-white bg-[#576CBC] py-[4px] px-2 rounded"
+                    }`}
+                    onClick={handleclickcalender}
+                  >
+                    <FaCalendarAlt />
+                  </button>
+                </div>
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchScheduledClass}
+                        onChange={(e) =>
+                          setSearchScheduledClass(e.target.value)
                         }
-                        onNavigate={(date) =>
-                          console.log("Navigated to:", date)
-                        }
-                        selectable
-                        popup
-                        components={{ toolbar: CustomToolbar }}
-                        eventPropGetter={(event) => ({
-                          style: {
-                            backgroundColor: event.title.includes("Meeting")
-                              ? "#fcd4d4"
-                              : "#e8fcd8",
-                            color: "#000",
-                            fontSize: "10px",
-                            padding: "2px 4px",
-                          },
-                        })}
                       />
-                    ) : (
-                      <div className="space-y-6 mt-2">
-                        <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                          <h2 className="mt-2 ml-4 font-semibold text-[#333B4C] text-[15px]">
-                            Total Students
-                          </h2>
-                          <div className="overflow-x-auto max-h-[240px] overflow-y-scroll  scrollbar-none">
-                            <table className="w-full min-w-[900px] text-sm text-left">
-                              <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                                <tr className="border-b-[1px] border-[#1C3557]">
-                                  <th className="p-4 font-semibold text-[12px] text-center">
-                                    Student name
-                                  </th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">
-                                    Student ID
-                                  </th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">
-                                    Courses
-                                  </th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">
-                                    Class Type
-                                  </th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">
-                                    Course Duration
-                                  </th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">
-                                    Date
-                                  </th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">
-                                    Time
-                                  </th>
-                                  <th className="p-4 font-semibold text-[12px] text-center">
-                                    Status
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody className="text-xs text-[#1D2939]">
-                                {scheduledclass.map((event, index) => (
-                                  <tr
-                                    key={event._id}
-                                    className={`border-b hover:bg-gray-50 ${
-                                      index % 2 === 0
-                                        ? "bg-[#faf9f9]"
-                                        : "bg-[#ebebeb]"
+                    </div>
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredScheduledClass.length === 0 ? 0 : 1} to{" "}
+                        {filteredScheduledClass.length} of{" "}
+                        {filteredScheduledClass.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Student name
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Student ID
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Courses
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Class Type
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Course Duration
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Date
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Time
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {filteredScheduledClass.length > 0 ? (
+                          filteredScheduledClass
+                            .slice(-5)
+                            .reverse()
+                            .map((event, index) => (
+                              <tr
+                                key={event._id}
+                                className={`text-center dark:text-white ${
+                                  index % 2 === 0
+                                    ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                    : "bg-[#F8F8F8] dark:bg-[#303030]"
+                                }`}
+                              >
+                                <td className="p-3">
+                                  {event.student.studentFirstName}
+                                </td>
+                                <td className="p-3 text-blue-600 font-medium">
+                                  {event.student.studentId}
+                                </td>
+                                <td className="p-3">Quran</td>
+                                <td className="p-3">
+                                  {event.sessionClassType}
+                                </td>
+                                <td className="p-3">30 Min</td>
+                                <td className="p-3">
+                                  {new Date(event.startDate).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                    }
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  {formatTime(event.startTime[0])} –{" "}
+                                  {formatTime(event.endTime[0])}
+                                </td>
+                                <td className="p-3">
+                                  <span
+                                    className={`text-[9px] dark:bg-[#2E3C2E] dark:text-[#377E36] font-semibold px-3 py-[2px] rounded-md inline-block ${
+                                      statusStyle[
+                                        event.scheduleStatus as keyof typeof statusStyle
+                                      ]
                                     }`}
                                   >
-                                    <td className="p-2 text-center">
-                                      {event.student.studentFirstName}
-                                    </td>
-                                    <td className="p-2 text-center text-blue-600 font-medium">
-                                      {event.student.studentId}
-                                    </td>
-                                    <td className="p-2 text-center">Quran</td>
-                                    <td className="p-2 text-center">
-                                      {event.sessionClassType}
-                                    </td>
-                                    <td className="p-2 text-center">30 Min</td>
-                                    <td className="p-2 text-center">
-                                      {new Date(
-                                        event.startDate
-                                      ).toLocaleDateString("en-US", {
-                                        year: "numeric",
-                                        month: "long",
-                                        day: "numeric",
-                                      })}
-                                    </td>
-                                    <td className="p-2 text-center">
-                                      {formatTime(event.startTime[0])} –{" "}
-                                      {formatTime(event.endTime[0])}
-                                    </td>
-
-                                    <td className="p-2 text-center">
-                                      <span
-                                        className={`text-xs font-semibold px-3 py-1 rounded-full inline-block ${
-                                          statusStyle[
-                                            event.scheduleStatus as keyof typeof statusStyle
-                                          ]
-                                        }`}
-                                      >
-                                        {event.scheduleStatus}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                                    {event.scheduleStatus}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                        ) : (
+                          <tr>
+                            <td colSpan={8} className="p-4 text-center">
+                              No data available
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={() => {
+                      router.push(`/admin-main/ui/employees/teacher/scheduledclass?teacherId=${employeeId}`);
+                    }}
+                  >
+                    View All
+                  </button>
                 </div>
               </div>
             )}
 
             {activeTab === "Earnings" && (
-              <div className="space-y-6">
-                {/* Summary Cards */}
-                <div className="flex flex-wrap gap-4">
-                  <div className="bg-[#012A4A] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Classes</p>
-                      <h2 className="text-lg font-bold mt-1">
-                        {teacherCounts.totalclasses}
-                      </h2>
+              <div className="space-y-2">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchEarnings}
+                        onChange={(e) => setSearchEarnings(e.target.value)}
+                      />
                     </div>
-                    <div className="bg-[#003E6E] p-2 rounded-lg text-sm">
-                      <FaUserGraduate className="text-[#ffffffbd]" />
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
                     </div>
-                  </div>
-
-                  <div className="bg-[#2D49AD] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Hours</p>
-                      <h2 className="text-lg font-bold mt-1">
-                        {teacherCounts.totalhours}
-                      </h2>
-                    </div>
-                    <div className="bg-[#8280ffc0] p-2 rounded-lg text-sm">
-                      <BsClockHistory className="text-[#15255f]" />
-                    </div>
-                  </div>
-
-                  <div className="bg-[#667085] text-white rounded-xl p-4 flex items-center justify-between w-56 shadow-md">
-                    <div>
-                      <p className="text-xs">Total Earnings</p>
-                      <h2 className="text-lg font-bold mt-1">
-                        ${teacherCounts.totalearnings}
-                      </h2>
-                    </div>
-                    <div className="bg-[#979797] p-2 rounded-lg text-sm">
-                      <MdOutlineCurrencyExchange className="text-[#4F5154]" />
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing{" "}
+                        {filteredEarningsMonths.length === 0
+                          ? 0
+                          : (earningsPage - 1) * earningsPerPage + 1}{" "}
+                        to{" "}
+                        {Math.min(
+                          earningsPage * earningsPerPage,
+                          filteredEarningsMonths.length
+                        )}{" "}
+                        of {filteredEarningsMonths.length}
+                      </span>
                     </div>
                   </div>
-                </div>
-
-                {/* Monthly Breakdown Table */}
-                <div className="space-y-6">
-                  <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                    <div className="overflow-x-auto max-h-[181px] overflow-y-auto custom-scrollbar scrollbar-none">
-                      <table className="w-full min-w-[900px] text-sm text-left">
-                        <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                          <tr className="border-b-[1px] border-[#1C3557]">
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Month
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Classes
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Hours
-                            </th>
-                            <th className="p-4 font-semibold text-[12px] text-center">
-                              Total Earnings
-                            </th>
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Month
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Total Classes
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Total Hours
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Total Earnings
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {paginatedEarnings.length > 0 ? (
+                          paginatedEarnings.map((row, index) => (
+                            <tr
+                              key={row.key}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
+                              <td className="p-3">
+                                {row.monthly?.totalclasses ?? 0}
+                              </td>
+                              <td className="p-3">
+                                {row.monthly?.totalhours ?? 0}
+                              </td>
+                              <td className="p-3">
+                                ${row.monthly?.totalearnings ?? 0}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="p-4 text-center">
+                              No data available
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody className="text-xs text-[#1D2939]">
-                          {Array.from({ length: 12 }).map((_, index) => {
-                            const monthNumber = index + 1;
-                            const currentYear = new Date().getFullYear();
-                            const monthName = new Date(0, index).toLocaleString(
-                              "default",
-                              {
-                                month: "short",
-                              }
-                            );
-
-                            const monthly = teacherCounts.monthlyData?.find(
-                              (item) =>
-                                item.month === monthNumber &&
-                                item.year === currentYear
-                            );
-
-                            return (
-                              <tr
-                                key={`${monthName}-${currentYear}`}
-                                className={`border-t border-gray-100 text-center ${
-                                  index % 2 === 0
-                                    ? "bg-[#faf9f9]"
-                                    : "bg-[#ebebeb]"
-                                }`}
-                              >
-                                <td className="p-3">{`${monthName} ${currentYear}`}</td>
-                                <td className="p-3">
-                                  {monthly?.totalclasses || 0}
-                                </td>
-                                <td className="p-3">
-                                  {monthly?.totalhours || 0}
-                                </td>
-                                <td className="p-3">
-                                  ${monthly?.totalearnings || 0}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
+                {totalEarningsPages > 1 && (
+                  <div className="flex justify-end mt-2">
+                    <Pagination
+                      currentPage={earningsPage}
+                      totalPages={totalEarningsPages}
+                      onPageChange={setEarningsPage}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
             {activeTab === "Payments" && (
               <div className="space-y-6">
-                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className="border-b-[1px] border-[#1C3557]">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchPayments}
+                        onChange={(e) => setSearchPayments(e.target.value)}
+                      />
+                    </div>
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredPayments.length === 0 ? 0 : 1} to{" "}
+                        {filteredPayments.length} of {filteredPayments.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Payment Date
                           </th>
@@ -935,7 +1123,7 @@ const Teacher = () => {
                             Amount
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Paid For
+                            Description
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Payment Method
@@ -944,72 +1132,120 @@ const Teacher = () => {
                             Status
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Comments for Reference
-                          </th>
-                          <th className="p-4 font-semibold text-[12px] text-center">
                             Action
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="text-xs text-[#1D2939]">
-                        {scheduledclass.map((item, index) => (
-                          <tr
-                            key={item._id}
-                            className={`border-t border-gray-100 text-center ${
-                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                            }`}
-                          >
-                            <td className="p-3">
-                              {new Date(item.startDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                }
-                              )}
-                            </td>
-                            <td className="p-3">
-                              {item.amount === "0" ? "-" : item.amount}
-                            </td>
-                            <td className="p-3">Monthly Salary</td>
-                            <td className="p-3">Bank Transfer</td>
-                            <td className="p-3">
-                              <span className="inline-flex items-center justify-center gap-1">
-                                <span className="text-lg">
-                                  {item.amount === "0" ? (
-                                    <MdOutlineCancel className="text-red-600 text-xs" />
-                                  ) : (
-                                    <IoIosCheckmarkCircleOutline className="text-green-600 text-xs" />
-                                  )}
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {filteredPayments
+                          .slice(-5)
+                          .reverse()
+                          .map((item, index) => (
+                            <tr
+                              key={item._id}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">
+                                {new Date(item.startDate).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  }
+                                )}
+                              </td>
+                              <td className="p-3">
+                                {item.amount === "0" ? "-" : item.amount}
+                              </td>
+                              <td className="p-3">Monthly Salary</td>
+                              <td className="p-3">Bank Transfer</td>
+                              <td className="p-3">
+                                <span
+                                  className={`inline-flex items-center justify-center gap-1 px-3 py-[1px] rounded-md text-[10px] font-semibold
+                                  ${
+                                    item.amount === "0"
+                                      ? "bg-red-100 text-[#D34645] dark:bg-[#D3464533] dark:bg-opacity-20 dark:text-[#D34645]"
+                                      : "bg-green-100 text-green-700 dark:bg-[#2E3C2E] dark:text-[#377E36] px-6"
+                                  }
+                                `}
+                                >
+                                  {item.amount === "0" ? "Pending" : "Paid"}
                                 </span>
-                                {item.amount === "0" ? "Pending" : "Paid"}
-                              </span>
-                            </td>
-                            <td className="p-3">-</td>
-                            <td className="p-3 text-center">
-                              <button className="text-blue-500 text-xs">
-                                Download
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                              <td className="p-3 text-center">
+                                <button className="text-blue-500 text-[11px]">
+                                  Download
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={() => {
+                      router.push(`/admin-main/ui/employees/teacher/payments?teacherId=${employeeId}`);
+                    }}
+                  >
+                    View All
+                  </button>
                 </div>
               </div>
             )}
 
             {activeTab === "Wages" && (
               <div className="space-y-6">
-                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className="border-b-[1px] border-[#1C3557]">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchWages}
+                        onChange={(e) => setSearchWages(e.target.value)}
+                      />
+                    </div>
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing{" "}
+                        {filteredWages.length === 0
+                          ? 0
+                          : (wagesPage - 1) * wagesPerPage + 1}{" "}
+                        to{" "}
+                        {Math.min(
+                          wagesPage * wagesPerPage,
+                          filteredWages.length
+                        )}{" "}
+                        of {filteredWages.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
-                            Class Type
+                            Class Name
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Rate
@@ -1022,36 +1258,92 @@ const Teacher = () => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="text-xs text-[#1D2939]">
-                        {wages.map((item, index) => (
-                          <tr
-                            key={item._id}
-                            className={`border-t border-gray-100 text-center ${
-                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                            }`}
-                          >
-                            <td className="p-3">{item.classType.className}</td>
-                            <td className="p-3">{item.classType.rate}</td>
-                            <td className="p-3">{item.classType.currency}</td>
-                            <td className="p-3">
-                              {item.classType.hoursMins} mins
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {paginatedWages.length > 0 ? (
+                          paginatedWages.map((item, index) => (
+                            <tr
+                              key={item._id}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">
+                                {item.classType?.className || "-"}
+                              </td>
+                              <td className="p-3">
+                                {item.classType?.rate || "-"}
+                              </td>
+                              <td className="p-3">
+                                {item.classType?.currency || "-"}
+                              </td>
+                              <td className="p-3">
+                                {item.classType?.hoursMins
+                                  ? `${item.classType.hoursMins} mins`
+                                  : "-"}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="p-4 text-center">
+                              No data available
                             </td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </table>
                   </div>
                 </div>
+                {totalWagesPages > 1 && (
+                  <div className="flex justify-end mt-4">
+                    <Pagination
+                      currentPage={wagesPage}
+                      totalPages={totalWagesPages}
+                      onPageChange={setWagesPage}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
             {activeTab === "WorkingHours" && (
               <div className="space-y-6">
-                <div className="rounded-xl border border-[#000] shadow overflow-hidden">
-                  <div className="overflow-x-auto max-h-[285px] overflow-y-auto custom-scrollbar scrollbar-none">
-                    <table className="w-full min-w-[900px] text-sm text-left">
-                      <thead className="text-black border-b border-[#D5D5D5] sticky top-0 bg-white z-10 text-xs font-medium">
-                        <tr className="border-b-[1px] border-[#1C3557]">
+                <div className="rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                      <input
+                        type="text"
+                        placeholder="Search"
+                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        value={searchWorkingHours}
+                        onChange={(e) => setSearchWorkingHours(e.target.value)}
+                      />
+                    </div>
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+                      <span className="text-left ml-60 ">
+                        Showing {filteredWorkingHours.length === 0 ? 0 : 1} to{" "}
+                        {filteredWorkingHours.length} of{" "}
+                        {filteredWorkingHours.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto max-h-none">
+                    <table
+                      className="w-full min-w-[900px] text-sm text-left table-auto"
+                      style={{ width: "100%", tableLayout: "fixed" }}
+                    >
+                      <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                        <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Day
                           </th>
@@ -1066,23 +1358,38 @@ const Teacher = () => {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="text-xs text-[#1D2939]">
-                        {schedule.map((item, index) => (
-                          <tr
-                            key={index}
-                            className={`border-t border-gray-100 text-center ${
-                              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                            }`}
-                          >
-                            <td className="p-3">{item.day}</td>
-                            <td className="p-3">{item.date}</td>
-                            <td className="p-3">{`${item.fromTime} - ${item.toTime}`}</td>
-                            <td className="p-3">GMT</td>
-                          </tr>
-                        ))}
+                      <tbody className="text-[10px] text-[#1D2939]">
+                        {filteredWorkingHours
+                          .slice(-5)
+                          .reverse()
+                          .map((item, index) => (
+                            <tr
+                              key={index}
+                              className={`text-center dark:text-white ${
+                                index % 2 === 0
+                                  ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                                  : "bg-[#F8F8F8] dark:bg-[#303030]"
+                              }`}
+                            >
+                              <td className="p-3">{item.day}</td>
+                              <td className="p-3">{item.date}</td>
+                              <td className="p-3">{`${item.fromTime} - ${item.toTime}`}</td>
+                              <td className="p-3">GMT</td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    className="bg-transparent border border-[#576CBC] text-[#576CBC] dark:bg-[#2e3343] text-[11px] px-3 py-1 rounded-md shadow transition"
+                    onClick={() => {
+                      router.push(`/admin-main/ui/employees/teacher/workinghours?teacherId=${employeeId}`);
+                    }}
+                  >
+                    View All
+                  </button>
                 </div>
               </div>
             )}

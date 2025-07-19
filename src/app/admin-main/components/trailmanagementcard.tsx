@@ -429,16 +429,14 @@ const PreferredTeachersCard = () => {
 //Trail by Teachers
 
 
-const TeachersStudents = () => {
-  const [teachers, setTeachers] = useState<TeacherAPI[]>([]);
-  const colors = ["bg-red-800", "bg-yellow-800", "bg-red-500", "bg-green-700", "bg-purple-600", "bg-blue-500"];
+const TrialByTeachers = () => {
+  const [teachers, setTeachers] = useState<{ teacherName: string; trials: number; joined: number; _id: string }[]>([]);
 
- useEffect(() => {
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('AdminAuthToken');
-
       if (token) {
-        fetchData(token); // call the fetch function with token
+        fetchData(token);
       } else {
         console.log("No auth token found.");
       }
@@ -465,32 +463,27 @@ const TeachersStudents = () => {
   };
 
   return (
-    <div>
-      <h2 className="text-[13px] font-semibold text-[#010E30] dark:text-[#fff] mb-3">
-        Teachers - Students
-      </h2>
-      <div className="flex justify-between text-[10px] mb-2 border-b pb-2">
-        <span>Teachers</span>
-        <span>Students</span>
-      </div>
-
-      {/* Scrollable List */}
-      <div className="h-48 p-4 overflow-y-scroll scrollbar-none pr-2 scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-        {teachers.map((teacher, index) => (
-          <div key={teacher._id} className="flex items-center py-2 border-b">
-            <div className="w-5 flex-shrink-0">
-              <div className={`w-3 h-3 rounded-full ${colors[index % colors.length]}`}></div>
-              </div>
-            {/* Name */}
-            <div className="flex-grow truncate">
-              <span className="text-[12px] text-gray-900">{teacher.teacherName}</span>
-            </div>
-            {/* Students Count */}
-            <div className="text-sm font-medium text-gray-900">
-              {teacher.studentCount}
-            </div>
-          </div>
-        ))}
+    <div className="p-2 w-full max-w-xs">
+              <h2 className="text-[13px] font-semibold text-[#010E30] dark:text-[#fff]">Trial By Teachers</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-left mt-5">
+          <thead>
+            <tr className="text-[11px] font-normal">
+              <th className="bg-[#4C6993] text-white px-3 py-2 rounded-l-md">Teacher Name</th>
+              <th className="bg-[#4C6993] text-white px-3 py-2">Trials</th>
+              <th className="bg-[#4C6993] text-white px-3 py-2 rounded-r-md">Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {teachers.map((teacher, idx) => (
+              <tr key={teacher._id} className="border-b dark:border-b-[#343434]">
+                <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">{teacher.teacherName}</td>
+                <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">{teacher.trials ?? 0}</td>
+                <td className="px-4 py-2 text-[#010E30] dark:text-[#fff] text-[10px]">{teacher.joined ?? 0}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -508,8 +501,8 @@ export default function Dashboard() {
       <div className="bg-white dark:bg-[#343434] p-4 rounded-lg shadow-md h-full w-full">
         <PreferredTeachersCard />
       </div>
-      <div className="bg-white dark:bg-[#343434] p-4 rounded-lg shadow-md h-full w-full">
-        <TeachersStudents />
+      <div className="bg-white dark:bg-[#343434] p-2 rounded-lg shadow-md h-full w-full">
+        <TrialByTeachers />
       </div>
     </div>
   );
