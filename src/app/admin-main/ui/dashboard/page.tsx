@@ -15,6 +15,8 @@ import StudentTeacherStaff from "../../components/StudentTeacherStaff";
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
 import { json } from "stream/consumers";
+import AdminHeader from "../../components/AdminHeader";
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 
@@ -23,14 +25,8 @@ const Page = () => {
   return (
     <div>
       <BaseLayout4>
+      <AdminHeader currentSection="Dashboard"/>
   <div className="py-2 px-4 w-full mx-auto">
-    {/* Header */}
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-      <div className="sm:w-1/2">
-        <h3 className="text-black text-xl sm:text-2xl font-semibold ml-2 mt-1">Dashboard</h3>
-      </div>
-    </div>
-
     {/* Main Dashboard Content */}
     <div className="flex flex-col lg:flex-row mt-4 gap-4">
       <div className="flex-1">
