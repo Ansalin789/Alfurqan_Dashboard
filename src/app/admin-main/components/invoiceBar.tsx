@@ -60,24 +60,30 @@ const ApplicationChart = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="w-full relative">
-      <div className="bg-white  dark:bg-[#343434] ">
+    <div className="w-full relative ">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-[#181A20] text-base font-bold">Total Invoice</h3>
+          <h3 className="text-[#181A20] dark:text-white text-base font-semibold">Total Invoice</h3>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <span className="w-3 h-3 rounded-full bg-[#a6c1ff]" />
-              <span className="text-xs text-[#181A20]">Total Invoices</span>
+              <span className="text-xs text-[#181A20] dark:text-white">Total Invoices</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="w-3 h-3 rounded-full bg-[#d5e0ff]" />
-              <span className="text-xs text-[#181A20]">Paid Invoices</span>
+              <span className="text-xs text-[#181A20] dark:text-white">Paid Invoices</span>
             </div>
-            {/* Year Box */}
-            <div className="bg-white text-gray-500 text-xs px-3 py-1 rounded shadow-sm ml-2">
-              {currentYear}
-            </div>
+            {/* Year Box - styled as per image, with dropdown */}
+            <select
+              className="bg-[#E5E5E5] border border-gray-300 text-gray-600 text-xs px-8 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-200 appearance-none shadow-sm ml-2 dark:bg-[#2C2C2C] dark:border-[#444] dark:text-white"
+              style={{ minWidth: 90, cursor: 'pointer' }}
+              value={currentYear}
+              onChange={() => {}}
+              disabled
+              title="Currently only the latest year is available."
+            >
+              <option>{currentYear}</option>
+            </select>
             {/* If you want a dropdown for year selection, use: */}
             {/* 
             <select className="bg-white text-gray-500 text-xs px-2 py-1 rounded shadow-sm ml-2">
@@ -111,7 +117,7 @@ const ApplicationChart = () => {
                         y={0}
                         dy={16}
                         textAnchor="middle"
-                        fill="#181A20"
+                        className="fill-[#181A20] dark:fill-white"
                         fontSize={10}
                       >
                         {month}
@@ -125,7 +131,7 @@ const ApplicationChart = () => {
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 8, fill: "currentColor" }}
+                tick={{ fontSize: 8, fill: "currentColor", className: "dark:fill-white" }}
               />
               <Tooltip
                 cursor={{ fill: "transparent" }}
@@ -147,7 +153,6 @@ const ApplicationChart = () => {
           </ResponsiveContainer>
         </div>
       </div>
-    </div>
   );
 };
 

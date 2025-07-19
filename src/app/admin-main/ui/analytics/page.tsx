@@ -19,6 +19,8 @@ import axios from "axios";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
 import { io, Socket } from "socket.io-client";
+import AdminHeader from "../../components/AdminHeader";
+import { TooltipProps } from "recharts";
 
 interface CountryStat {
   revenue: number;
@@ -57,221 +59,114 @@ interface ApiResponse {
   invoice: StudentInvoice[];
 }
 
-const visitorData = [
-  {
-    name: "Jan",
-    Friend: 420,
-    SocialMedia: 300,
-    EMail: 280,
-    Google: 210,
-    Other: 190,
-  },
-  {
-    name: "Feb",
-    Friend: 380,
-    SocialMedia: 270,
-    EMail: 250,
-    Google: 190,
-    Other: 170,
-  },
-  {
-    name: "Mar",
-    Friend: 460,
-    SocialMedia: 310,
-    EMail: 290,
-    Google: 220,
-    Other: 200,
-  },
-  {
-    name: "Apr",
-    Friend: 400,
-    SocialMedia: 260,
-    EMail: 275,
-    Google: 215,
-    Other: 180,
-  },
-  {
-    name: "May",
-    Friend: 440,
-    SocialMedia: 280,
-    EMail: 300,
-    Google: 240,
-    Other: 210,
-  },
-  {
-    name: "Jun",
-    Friend: 410,
-    SocialMedia: 290,
-    EMail: 310,
-    Google: 230,
-    Other: 195,
-  },
-  {
-    name: "Jul",
-    Friend: 430,
-    SocialMedia: 320,
-    EMail: 295,
-    Google: 225,
-    Other: 185,
-  },
-  {
-    name: "Aug",
-    Friend: 450,
-    SocialMedia: 330,
-    EMail: 315,
-    Google: 235,
-    Other: 205,
-  },
-  {
-    name: "Sep",
-    Friend: 470,
-    SocialMedia: 340,
-    EMail: 320,
-    Google: 245,
-    Other: 215,
-  },
-  {
-    name: "Oct",
-    Friend: 490,
-    SocialMedia: 350,
-    EMail: 330,
-    Google: 250,
-    Other: 220,
-  },
-  {
-    name: "Nov",
-    Friend: 460,
-    SocialMedia: 300,
-    EMail: 310,
-    Google: 230,
-    Other: 200,
-  },
-  {
-    name: "Dec",
-    Friend: 440,
-    SocialMedia: 250,
-    EMail: 306,
-    Google: 200,
-    Other: 233,
-  },
+const visitorDataStatic = [
+  { date: "Jan", Friend: 320, SocialMedia: 280, Email: 120, Google: 150, Other: 200 },
+  { date: "Feb", Friend: 300, SocialMedia: 270, Email: 140, Google: 130, Other: 190 },
+  { date: "Mar", Friend: 330, SocialMedia: 260, Email: 130, Google: 140, Other: 180 },
+  { date: "Apr", Friend: 310, SocialMedia: 250, Email: 150, Google: 145, Other: 170 },
+  { date: "May", Friend: 340, SocialMedia: 240, Email: 160, Google: 155, Other: 175 },
+  { date: "Jun", Friend: 370, SocialMedia: 245, Email: 170, Google: 180, Other: 165 },
+  { date: "Jul", Friend: 420, SocialMedia: 260, Email: 180, Google: 210, Other: 170 },
+  { date: "Aug", Friend: 410, SocialMedia: 270, Email: 175, Google: 200, Other: 160 },
+  { date: "Sep", Friend: 390, SocialMedia: 265, Email: 160, Google: 190, Other: 150 },
+  { date: "Oct", Friend: 350, SocialMedia: 255, Email: 145, Google: 170, Other: 140 },
+  { date: "Nov", Friend: 330, SocialMedia: 240, Email: 135, Google: 160, Other: 130 },
+  { date: "Dec", Friend: 310, SocialMedia: 230, Email: 120, Google: 150, Other: 120 },
 ];
+
+const CustomDot = (props: DotProps & { payload?: any }) => {
+  const { cx, cy, payload } = props;
+  if (payload?.date === "Jul" && cx !== undefined && cy !== undefined) {
+    return (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={5}
+        fill="#0F172A"
+        stroke="#fff"
+        strokeWidth={1.5}
+      />
+    );
+  }
+  return null;
+};
+
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
+  if (active && payload?.length) {
+    return (
+      <div className="rounded-md p-2 text-xs border shadow-sm
+        bg-black text-white dark:bg-white dark:text-black
+        border-gray-300 dark:border-gray-700">
+        <p className="font-semibold mb-1">{label}</p>
+        {payload.map((entry, index) => (
+          <p key={index} style={{ color: entry.stroke }}>
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+
 
 const CountriesCard = () => {
   const [countryData, setCountryData] = useState<CountryStat[]>([]);
-  const [totalRevenue, setTotalRevenue] = useState(0);
 
- useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('AdminAuthToken');
-      if (token) {
-        fetchData(token);
-      
-      } else {
-        alert("No auth token found.");
-      }
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("AdminAuthToken");
+      if (token) fetchData(token);
     }
-  }, []);    
-  const fetchData = async (token:string) => {
-      try {
-        const response = await fetch(
-          "https://api.blackstoneinfomaticstech.com/amountbycountry",
-{
-            method: "GET",
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-          });        const result = await response.json();
+  }, []);
 
-        if (Array.isArray(result) && result.length > 0) {
-          // Assuming the expected structure is an array of objects
-          setCountryData(result);
-          // Calculate total revenue after setting country data
-          const total = result.reduce(
-            (acc, country) => acc + country.revenue,
-            0
-          );
-          setTotalRevenue(total);
-        } else {
-          throw new Error("Data structure is missing or incorrect!");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
+  const fetchData = async (token: string) => {
+    try {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/amountbycountry", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const result = await response.json();
+      if (Array.isArray(result)) {
+        const filtered = result.filter((c) => c.country !== "TotalAllCountries");
+        setCountryData(filtered);
       }
-    };
-
-
+    } catch (err) {
+      console.error("Error fetching countries", err);
+    }
+  };
 
   return (
-    <div className="bg-white p-5 rounded-xl shadow-md w-full border border-gray-200">
-      <h2 className="text-base font-semibold mb-3 text-gray-700">Countries</h2>
-      <div className="space-y-5 h-[240px]">
-        {countryData && countryData.length > 0 ? (
-          <>
-            {(() => {
-              const totalAllCountriesRevenue =
-                countryData?.find(
-                  (country) => country.country === "TotalAllCountries"
-                )?.revenue || 0;
-              return countryData
-                .filter((country) => country.country !== "TotalAllCountries")
-                .map((country, i) => {
-                  const percentage =
-                    totalAllCountriesRevenue > 0
-                      ? (country.revenue / totalAllCountriesRevenue) * 100
-                      : 0;
-                  const countryCode = countries.getAlpha2Code(
-                    country.country,
-                    "en"
-                  );
-                  const flagUrl = countryCode
-                    ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`
-                    : "/assets/images/flags/default.png";
+    <div className="bg-white dark:bg-[#343434] rounded-xl shadow-sm p-4 w-full h-full border border-gray-200 dark:border-[#555555]">
+      <h2 className="text-sm font-semibold dark:text-white text-gray-800 mb-3">Countries</h2>
 
-                  return (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 group relative"
-                    >
-                      {/* Flag */}
-                      <img
-                        src={flagUrl}
-                        alt={country.country}
-                        className="w-5 h-5 rounded-full"
-                      />
+      <div className="max-h-[260px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-[#555555] pr-1">
+        {countryData.length > 0 ? (
+          countryData.map((country, index) => {
+            const code = countries.getAlpha2Code(country.country, "en");
+            const flagUrl = code
+              ? `https://flagcdn.com/w40/${code.toLowerCase()}.png`
+              : "/assets/images/flags/default.png";
 
-                      <div className="w-full">
-                        {/* Country name and value */}
-                        <div className="flex justify-between text-[13px] font-medium text-gray-800">
-                          <span>{country.country}</span>
-                          <span className="text-[#809FB8]">
-                            ${country.revenue.toLocaleString()}
-                          </span>
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                          <div
-                            className="h-2 bg-[#012A4A] rounded-full"
-                            style={{
-                              width: `${percentage}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      {/* Tooltip for revenue */}
-                      <div className="absolute top-[-30px] left-0 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                        Revenue: ${country.revenue} / Total: $
-                        {totalAllCountriesRevenue}
-                      </div>
-                    </div>
-                  );
-                });
-            })()}
-          </>
+            return (
+              <div
+                key={index}
+                className="flex justify-between items-center border-b dark:border-[#555555] last:border-none py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <img src={flagUrl} alt={country.country} className="w-6 h-4 object-cover rounded-sm" />
+                  <span className="text-sm font-medium dark:text-white text-gray-700">{country.country}</span>
+                </div>
+                <span className="text-sm font-semibold dark:text-white text-gray-800">{country.count}</span>
+              </div>
+            );
+          })
         ) : (
-          <p>Loading country data...</p>
+          <p className="text-xs text-gray-500 dark:text-white">Loading country data...</p>
         )}
       </div>
     </div>
@@ -281,93 +176,91 @@ const CountriesCard = () => {
 const CoursesChart = () => {
   const [barData, setBarData] = useState<ChartDataItem[]>([]);
 
- useEffect(() => {
-  const fetchData = async (token: string) => {
-    try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/amountbycourse", {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+  useEffect(() => {
+    const fetchData = async (token: string) => {
+      try {
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/amountbycourse", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      const allCourses = response.data;
+        const allCourses = response.data;
 
-      const filteredCourses = allCourses.filter((course: any) =>
-        ["Quran Studies", "Islamic Studies", "Arabic Studies"].includes(course.courseName)
-      );
+        const filteredCourses = allCourses.filter((course: any) =>
+          ["Quran Studies", "Islamic Studies", "Arabic Studies"].includes(course.courseName)
+        );
 
-      const colorMap: Record<string, string> = {
-        "Quran Studies": "#7f9cb6",
-        "Islamic Studies": "#4a90e2",
-        "Arabic Studies": "#001d3d",
-      };
+        const colorMap: Record<string, string> = {
+          "Quran Studies": "#9FD0FF",
+          "Islamic Studies": "#AFC0FF",
+          "Arabic Studies": "#78A1DB",
+        };
 
-      const chartData: ChartDataItem[] = filteredCourses.map(
-        (course: { courseName: string; revenue: any }) => ({
-          courseName: course.courseName.replace(" Studies", ""),
-          revenue: course.revenue,
-          color: colorMap[course.courseName] || "#ccc",
-        })
-      );
+        const chartData: ChartDataItem[] = filteredCourses.map(
+          (course: { courseName: string; revenue: number }) => ({
+            courseName: course.courseName.replace(" Studies", ""),
+            revenue: course.revenue,
+            color: colorMap[course.courseName] || "#ccc",
+          })
+        );
 
-      setBarData(chartData);
-    } catch (error) {
-      console.error("Error fetching course revenue data:", error);
-    }
-  };
+        setBarData(chartData);
+      } catch (error) {
+        console.error("Error fetching course revenue data:", error);
+      }
+    };
 
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('AdminAuthToken');
+    const token = localStorage.getItem("AdminAuthToken");
     if (token) {
       fetchData(token);
-    } else {
-      console.log("No auth token found.");
     }
-  }
-}, []);
-
+  }, []);
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md w-full border border-gray-200">
-      <h2 className="text-base font-semibold mb-3 text-gray-700">Courses</h2>
+    <div className="bg-white dark:bg-[#343434] p-4 rounded-xl shadow-sm w-full h-full border border-gray-200 dark:border-[#555555]">
+      <h2 className="text-sm font-semibold mb-4 dark:text-white text-gray-800">Courses</h2>
+      <div className="w-full max-w-full overflow-x-auto h-[220px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={barData} barCategoryGap={25}>
+            <XAxis hide />
+            <Tooltip
+              cursor={{ fill: "transparent" }}
+              content={({ active, payload }) =>
+                active && payload?.length ? (
+                  <div
+                    className={`
+                      text-xs px-2 py-[2px] rounded shadow
+                      border border-gray-300 dark:border-[#666666]
+                      bg-white text-[#0F172A] 
+                      dark:bg-[#222222] dark:text-white
+                    `}
+                    style={{
+                      fontWeight: 600,
+                      minWidth: "30px",
+                      textAlign: "center",
+                    }}
+                  >
+                    ${payload[0]?.value}
+                  </div>
+                ) : null
+              }
+            />
+            <Bar dataKey="revenue" radius={[10, 10, 10, 10]} barSize={50}>
+              {barData.map((entry) => (
+                <Cell key={entry.courseName} fill={entry.color} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
-      <ResponsiveContainer width="100%" height={195}>
-        <BarChart data={barData} barCategoryGap={30}>
-          <XAxis hide />
-          <Tooltip
-            content={({ active, payload }) =>
-              active && payload?.length ? (
-                <div className="bg-white text-gray-800 text-sm px-2 py-1 rounded shadow border border-gray-200">
-                  ${payload[0]?.value}
-                </div>
-              ) : null
-            }
-            cursor={{ fill: "transparent" }}
-          />
-          <Bar
-            dataKey="revenue"
-            radius={[15, 15, 15, 15]}
-            barSize={35}
-            activeBar={false}
-          >
-            {barData.map((entry) => (
-              <Cell key={entry.courseName} fill={entry.color} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-
-      <div className="flex justify-center mt-4 space-x-6">
+      <div className="flex flex-wrap justify-center mt-4 gap-x-4 gap-y-2 text-xs font-medium dark:text-white text-gray-700">
         {barData.map((entry) => (
-          <div key={entry.courseName} className="flex items-center space-x-2">
-            <div
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            ></div>
-            <span className="text-[12px] text-gray-700">
-              {entry.courseName}
-            </span>
+          <div key={entry.courseName} className="flex items-center gap-2">
+            <span className="w-2 h-2 " style={{ backgroundColor: entry.color }}></span>
+            <span>{entry.courseName}</span>
           </div>
         ))}
       </div>
@@ -375,66 +268,12 @@ const CoursesChart = () => {
   );
 };
 
-const CustomDot = (props: DotProps & { payload?: any }) => {
-  const { cx, cy, payload } = props;
-  // This assumes July is the 7th item (index 6) and you're plotting 'Instagram'
-  if (payload?.name === "Jul" && cx !== undefined && cy !== undefined) {
-    return (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={6}
-        fill="#0F172A"
-        stroke="#fff"
-        strokeWidth={2}
-      />
-    );
-  }
-  return null;
-};
 
-const CustomLegend = () => (
-  <div className="flex justify-center mt-4 space-x-8 text-sm font-medium text-slate-700">
-    {[
-      { label: "Friend", color: "#0F172A" },
-      { label: "SocialMedia", color: "#94A3B8" },
-      { label: "Email", color: "#3B82F6" },
-      { label: "Google", color: "#66b16c" },
-      { label: "Other", color: "#848e56" },
-    ].map((item) => (
-      <div key={item.label} className="flex items-center space-x-2">
-        <span
-          className="w-3 h-3 rounded-full"
-          style={{ backgroundColor: item.color }}
-        ></span>
-        <span>{item.label}</span>
-      </div>
-    ))}
-  </div>
-);
 
-const revenueDatas = [
-  { month: "Jan", amount: 15 },
-  { month: "Feb", amount: 19 },
-  { month: "Mar", amount: 13 },
-  { month: "Apr", amount: 12 },
-  { month: "May", amount: 15 },
-  { month: "Jun", amount: 19 },
-  { month: "Jul", amount: 28 },
-  { month: "Aug", amount: 21 },
-  { month: "Sep", amount: 16 },
-  { month: "Oct", amount: 10 },
-  { month: "Nov", amount: 13 },
-  { month: "Dec", amount: 15 },
-];
-
-const getBarColor: (
+const getBarColor = (
   value: number,
   maxValue: number
-) => "#0ea5e9" | "#38bdf8" | "#7dd3fc" | "#bae6fd" | "#e0f2fe" = (
-  value,
-  maxValue
-) => {
+): "#0ea5e9" | "#38bdf8" | "#7dd3fc" | "#bae6fd" | "#e0f2fe" => {
   const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
 
   if (percentage >= 90) return "#0ea5e9";
@@ -445,173 +284,158 @@ const getBarColor: (
 };
 
 export default function Home() {
-   const socketRef = useRef<Socket | null>(null);
-    const userId = "6805da8c06542aa33858b889";
+  const socketRef = useRef<Socket | null>(null);
+  const userId = "6805da8c06542aa33858b889";
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [barData, setBarData] = useState<ChartDataItem[]>([]);
   const [data, setData] = useState<StudentInvoice[]>([]);
+  const [visitorData, setVisitorData] = useState<any[]>([]);
+const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [revenueDatas, setRevenueDatas] = useState<any[]>([]);
+  const [selectedRevenueYear, setSelectedRevenueYear] = useState(new Date().getFullYear());
+const [selectedVisitorYear, setSelectedVisitorYear] = useState(new Date().getFullYear());
 
-  
+
   useEffect(() => {
     if (!socketRef.current) {
-          socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
-            transports: ["websocket"],
-            withCredentials: true,
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-          });
-  
+      socketRef.current = io("https://api.blackstoneinfomaticstech.com", {
+        transports: ["websocket"],
+        withCredentials: true,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
+
       socketRef.current.on("connect", () => {
         console.log("Connected to Socket.IO:", socketRef.current?.id);
         socketRef.current?.emit("subscribe", userId);
       });
-  
+
       socketRef.current.on("disconnect", () => {
         console.log("Disconnected from Socket.IO");
       });
-  
+
       socketRef.current.on("connect_error", (err: any) => {
         console.error("Socket.IO connection error:", err);
       });
     }
-  
+
     const handleRevenueUpdate = (updatedRevenue: any) => {
       console.log("💸 Live revenue update:", updatedRevenue);
-    
-      // Extracting the 'TotalAllCourses' value from the updatedRevenue array
       const totalAllCourses = updatedRevenue.find((item: any) => item.courseName === 'TotalAllCourses');
-      
-      // If the 'TotalAllCourses' exists, set the totalRevenue
       if (totalAllCourses) {
         setTotalRevenue(totalAllCourses.revenue);
       }
     };
-    
-  
+
     socketRef.current.on("revenueUpdated", handleRevenueUpdate);
-  
+
     return () => {
       socketRef.current?.off("revenueUpdate", handleRevenueUpdate);
     };
   }, [userId]);
   
-useEffect(() => {
-  const fetchMeetings = async (token: string) => {
+  useEffect(() => {
+    const fetchMeetings = async (token: string) => {
+      try {
+        const response = await axios.get("https://api.blackstoneinfomaticstech.com/amountbycourse", {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const allCourses = response.data;
+        const totalCourse = allCourses.find(
+          (course: any) => course.courseName === "TotalAllCourses"
+        );
+        if (totalCourse) setTotalRevenue(totalCourse.revenue);
+
+        const filteredCourses = allCourses.filter((course: any) =>
+          ["Quran Studies", "Islamic Studies", "Arabic Studies"].includes(course.courseName)
+        );
+
+        const colorMap: Record<string, string> = {
+          "Quran Studies": "#7f9cb6",
+          "Islamic Studies": "#4a90e2",
+          "Arabic Studies": "#001d3d",
+        };
+
+        const chartData: ChartDataItem[] = filteredCourses.map(
+          (course: { courseName: string; revenue: any }) => ({
+            courseName: course.courseName.replace(" Studies", ""),
+            revenue: course.revenue,
+            color: colorMap[course.courseName] || "#ccc",
+          })
+        );
+
+        setBarData(chartData);
+      } catch (error) {
+        console.error("Error fetching course revenue data:", error);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchMeetings(token);
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchInvoices = async (token: string) => {
+      try {
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/studentinvoice", {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const data: ApiResponse = await response.json();
+        const filteredData = data.invoice
+          .filter((invoice) => invoice.invoiceStatus === "Paid")
+          .sort(
+            (a, b) =>
+              new Date(b.createdDate).getTime() -
+              new Date(a.createdDate).getTime()
+          )
+          .slice(0, 3);
+
+        setData(filteredData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchInvoices(token);
+      } else {
+        alert("No auth token found.");
+      }
+    }
+  }, []);
+
+  const fetchVisitorData = async (token: string) => {
     try {
-      const response = await axios.get("https://api.blackstoneinfomaticstech.com/amountbycourse", {
+      const res = await fetch("https://api.blackstoneinfomaticstech.com/studentvisitor", {
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
-
-      const allCourses = response.data;
-
-      // Set total revenue from TotalAllCourses entry
-      const totalCourse = allCourses.find(
-        (course: any) => course.courseName === "TotalAllCourses"
-      );
-      if (totalCourse) setTotalRevenue(totalCourse.revenue);
-
-      // Filter and map for chart
-      const filteredCourses = allCourses.filter((course: any) =>
-        ["Quran Studies", "Islamic Studies", "Arabic Studies"].includes(
-          course.courseName
-        )
-      );
-
-      const colorMap: Record<string, string> = {
-        "Quran Studies": "#7f9cb6",
-        "Islamic Studies": "#4a90e2",
-        "Arabic Studies": "#001d3d",
-      };
-
-      const chartData: ChartDataItem[] = filteredCourses.map(
-        (course: { courseName: string; revenue: any }) => ({
-          courseName: course.courseName.replace(" Studies", ""),
-          revenue: course.revenue,
-          color: colorMap[course.courseName] || "#ccc",
-        })
-      );
-
-      setBarData(chartData);
+      const data = await res.json();
+      setVisitorData(data);
     } catch (error) {
-      console.error("Error fetching course revenue data:", error);
+      console.error("Error fetching visitor data:", error);
     }
   };
-
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('AdminAuthToken');
-    if (token) {
-      fetchMeetings(token);
-    } else {
-      alert("No auth token found.");
-    }
-  }
-}, []);
-
-useEffect(() => {
-  const fetchInvoices = async (token: string) => {
-    try {
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/studentinvoice", {
-        method: "GET",
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const data: ApiResponse = await response.json();
-
-      const filteredData = data.invoice
-        .filter((invoice) => invoice.invoiceStatus === "Paid")
-        .sort(
-          (a, b) =>
-            new Date(b.createdDate).getTime() -
-            new Date(a.createdDate).getTime()
-        )
-        .slice(0, 3);
-
-      setData(filteredData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('AdminAuthToken');
-    if (token) {
-      fetchInvoices(token);
-    } else {
-      alert("No auth token found.");
-    }
-  }
-}, []);
-
-
-  type VisitorDataPoint = {
-    date: string; // e.g., "2025-04-25"
-    Friend: number;
-    SocialMedia: number;
-    Email: number;
-    Google: number;
-    Other: number;
-  };
-  const [visitorData, setVisitorData] = useState<VisitorDataPoint[]>([]);
-
-  type RevenueDataPoint = {
-    date: string; // "Jan-2025"
-    label: string; // "Jan-2025"
-    revenue: number; // 14500
-  };
-
-  const [selectedYear, setSelectedYear] = useState<number>(
-    new Date().getFullYear()
-  );
-  const [revenueDatas, setRevenueDatas] = useState<RevenueDataPoint[]>([]);
-
-  const maxRevenue = Math.max(...revenueDatas.map((d) => d.revenue), 0); // Place this before render
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -623,237 +447,328 @@ useEffect(() => {
       }
     }
   }, []);
-    const fetchVisitorData = async (token: string) => {
-      try {
-        const res = await fetch("https://api.blackstoneinfomaticstech.com/studentvisitor", {
+
+  const fetchRevenueData = async (year: number, token: string) => {
+    try {
+      const res = await fetch(
+        `https://api.blackstoneinfomaticstech.com/studentrevenue?year=${year}`,
+        {
+          method: "GET",
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
-        });
-        const data = await res.json();
-  
-        console.log("API raw response:", data);
-  
-        data.forEach((item: VisitorDataPoint, index: number) => {
-          console.log(`Item ${index + 1}:`, item);
-          console.log("Date:", item.date);
-          console.log("Friend:", item.Friend);
-          console.log("SocialMedia:", item.SocialMedia);
-          console.log("Email:", item.Email);
-          console.log("Google:", item.Google);
-          console.log("Other:", item.Other);
-        });
-  
-        setVisitorData(data);
-      } catch (error) {
-        console.error("Error fetching visitor data:", error);
-      }
-    };
-  
-    useEffect(() => {
-      if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('AdminAuthToken');
-        if (token) {
-          fetchRevenueData(selectedYear, token); // ✅ pass both year and token
-        } else {
-          alert("No auth token found.");
         }
+      );
+      const result = await res.json();
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+      const formatted = result.data.map((item: any, index: number) => ({
+        ...item,
+        label: monthNames[index % 12]
+      }));
+
+      setRevenueDatas(formatted);
+    } catch (error) {
+      console.error("Error fetching revenue:", error);
+    }
+  };
+
+  useEffect(() => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('AdminAuthToken');
+    if (token) {
+      fetchRevenueData(selectedYear, token);
+    }
+  }
+}, [selectedYear]);
+
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('AdminAuthToken');
+      if (token) {
+        fetchRevenueData(selectedYear, token);
+      } else {
+        alert("No auth token found.");
       }
-    }, [selectedYear]); // ✅ fetch whenever year changes
-    
-    const fetchRevenueData = async (year: number, token: string) => {
-      try {
-        const res = await fetch(
-          `https://api.blackstoneinfomaticstech.com/studentrevenue?year=${year}`,
-          {
-            method: "GET",
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-          }
-        );
-        const data = await res.json();
-        console.log(`Revenue for ${year}:`, data);
-        setRevenueDatas(data.data);
-      } catch (error) {
-        console.error("Error fetching revenue:", error);
-      }
-    };
-    
+    }
+  }, [selectedYear]);
+
+  const maxRevenue = Math.max(...revenueDatas.map((d) => d.revenue), 0);
 
   return (
     <BaseLayout4>
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto scrollbar-hide">
-        <div className="py-2 px-5">
-          <div className="mb-3">
-            <h1 className="text-lg font-bold mb-4">Analytics</h1>
-          </div>
+      <AdminHeader currentSection="Analytics"/>
+      <div className="flex-1  overflow-auto">
+        <div className="py-1 px-3 w-full h-full space-y-2">
           {/* Revenue Section */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-3">
-            {/* Total Income Card */}
-            <div className="bg-[#203e7b] text-white rounded-2xl p-3 relative overflow-hidden flex flex-col justify-left items-center h-40 w-full">
-              <h3 className="text-sm font-medium mb-1">Total Income</h3>
-              <div className="text-2xl md:text-3xl font-bold mb-1">
-                ${totalRevenue.toLocaleString()}
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+<div className="relative bg-[#5C70C5] rounded-2xl p-4 text-white overflow-hidden shadow-lg h-full w-full">
+  {/* Content */}
+  <div className="relative z-10">
+    <h3 className="text-base font-medium opacity-90 mb-1">Total Income</h3>
+    <div className="text-4xl font-bold mb-4">$8954.57</div>
+    <div className="flex items-center gap-2">
+      <div className="w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">
+        <svg
+          className="w-3.5 h-3.5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 19V5" />
+          <path d="M5 12l7-7 7 7" />
+        </svg>
+      </div>
+      <span className="text-sm font-semibold">15%</span>
+    </div>
+  </div>
 
-              <div className="flex items-center text-sm text-white gap-1">
-                <div className="rounded-full border border-white p-1">
-                  <svg
-                    className="h-3 w-3"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 5l5 5H5l5-5z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <span>15%</span>
-              </div>
+  {/* Decorative Wave Background + Stroke */}
+  <svg
+    className="absolute bottom-0 left-0 w-full h-[300px] z-0"
+    viewBox="0 0 320 100"
+    preserveAspectRatio="none"
+  >
+    {/* Light fill below wave */}
+    <path
+      d="M0,96 C40,80 80,60 120,70 C160,80 200,90 240,75 C280,60 300,65 320,80 L320,100 L0,100 Z"
+      fill="#6F83D8"  // lighter shade of the card
+      opacity="0.8"
+    />
+    {/* White stroke on top of wave */}
+    <path
+      d="M0,96 C40,80 80,60 120,70 C160,80 200,90 240,75 C280,60 300,65 320,80"
+      fill="none"
+      stroke="white"
+      strokeWidth="1"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      opacity="0.9"
+    />
+  </svg>
+</div>
 
-              {/* Decorative Wave Background */}
-              <div className="absolute bottom-0 left-0 w-full">
-                <svg
-                  viewBox="0 0 500 150"
-                  preserveAspectRatio="none"
-                  className="w-full h-16"
-                >
-                  <path
-                    d="M0.00,49.98 C150.00,150.00 350.00,-50.00 500.00,49.98 L500.00,150.00 L0.00,150.00 Z"
-                    fill="rgba(255,255,255,0.1)"
-                  />
-                  <path
-                    d="M0.00,49.98 C150.00,150.00 350.00,-50.00 500.00,49.98"
-                    stroke="white"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                </svg>
-              </div>
-            </div>
 
-            {/* Table Section */}
-            <div className="col-span-3">
-              <div className="bg-white rounded-xl shadow-lg overflow-x-auto w-full">
-                <table className="w-full min-w-[500px] text-xs">
-                  <thead className="bg-[#203e7b] text-white">
-                    <tr>
-                      <th className="py-3 px-4 text-center font-semibold">
-                        Clients
-                      </th>
-                      <th className="py-3 px-4 text-center font-semibold">
-                        Course
-                      </th>
-                      <th className="py-3 px-4 text-center font-semibold">
-                        Amount
-                      </th>
-                      <th className="py-3 px-4 text-center font-semibold">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-black">
-                    {data.map((row) => (
-                      <tr key={row._id} className="border-b last:border-none">
-                        <td className="py-3 px-4 text-center">
-                          {row.student.studentName}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          {row.courseName}
-                        </td>
-                        <td className="py-3 px-4 text-center">{row.amount}</td>
-                        <td className="py-3 px-4 text-center">
-                          {row.invoiceStatus}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+         
+            {/* Revenue Chart */}
+<div className="col-span-3 bg-white dark:bg-[#343434] rounded-xl p-4 shadow-sm border border-gray-200 dark:border-[#555555]">
+  <div className="flex justify-between items-center mb-3">
+    <h3 className="text-[15px] font-semibold dark:text-[#FFFFFF] text-slate-800">Total Invoice Revenue</h3>
+
+    {/* Select + Arrow */}
+    <div className="relative inline-block w-fit">
+      <select
+        value={selectedRevenueYear}
+        onChange={async (e) => {
+          const year = Number(e.target.value);
+          setSelectedRevenueYear(year);
+          const token = localStorage.getItem("AdminAuthToken");
+          if (token) {
+            await fetchRevenueData(year, token);
+          }
+        }}
+        className="appearance-none bg-[#EFEFEF] dark:bg-[#DEDEDE] dark:text-[#666666] border border-gray-300 dark:border-[#666666] rounded text-sm h-[26px] px-2 pr-6 text-gray-700 focus:outline-none"
+      >
+        {Array.from({ length: 5 }, (_, i) => {
+          const year = new Date().getFullYear() - i;
+          return (
+            <option key={year} value={year}>
+              {year === new Date().getFullYear() ? "This Year" : "Last Year"}
+            </option>
+          );
+        })}
+      </select>
+
+      <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-[11px]">
+        ▼
+      </div>
+    </div>
+  </div>
+
+  <div className="h-[220px]  pt-1">
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart
+        data={revenueDatas}
+        margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+      >
+        <XAxis
+          dataKey="label"
+          axisLine={false}
+          tickLine={false}
+          interval={0}
+          tick={{
+            fill: "#0f172a",
+            fontSize: 16,
+            fontWeight: 500,
+          }}
+          className="dark:[&_text]:fill-[#FFFFFF]  "
+        />
+        <YAxis hide />
+        <Bar
+          dataKey="revenue"
+          radius={[20, 20, 20, 20]}
+          barSize={50}
+          label={{
+            position: "top",
+            formatter: (value: number) => `$${value}`,
+            fill: "#0f172a",
+            fontSize: 16,
+            fontWeight: 600,
+          }}
+          className="dark:[&_text]:fill-[#FFFFFF]"
+        >
+          {revenueDatas.map((entry) => (
+            <Cell key={`cell-${entry.label}`} fill="#8CB3F4" />
+          ))}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+</div>
+
+
           </div>
 
-          {/* Visitor Insights & Countries/Courses */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
-            {/* Visitor Insights spans 2 columns on lg+ */}
-            <div className="lg:col-span-2 bg-white p-5 rounded-xl shadow-lg">
-              <h3 className="text-base font-semibold text-slate-800 mb-4">
-                Visitor Insights
-              </h3>
-              <ResponsiveContainer width="100%" height={200}>
-                <LineChart
-                  data={visitorData}
-                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                  <XAxis
-                    dataKey="date"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#64748b", fontSize: 12 }}
-                  />
-                  <YAxis
-                    domain={[0, "dataMax + 2"]}
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#64748b", fontSize: 12 }}
-                  />
+          {/* Middle Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
+{/* Visitor Insights */}
+<div className="lg:col-span-2 bg-white dark:bg-[#343434] rounded-xl shadow-sm p-4 border border-gray-200 dark:border-[#555555]">
+  <div className="flex justify-between items-center mb-4">
+    <h3 className="text-sm font-semibold dark:text-[#FFFFFF] text-gray-800">Visitor Insights</h3>
+<div className="relative inline-block w-fit">
+  <select
+    value={selectedVisitorYear}
+    onChange={async (e) => {
+      const year = Number(e.target.value);
+      setSelectedVisitorYear(year);
+      const token = localStorage.getItem("AdminAuthToken");
+      if (token) {
+        await fetchVisitorData(token); // reuse the function
+      }
+    }}
+    className="appearance-none bg-[#EFEFEF] dark:bg-[#DEDEDE] dark:text-[#666666] text-xs border border-gray-300 dark:border-[#666666] rounded px-2 py-1 pr-6 focus:outline-none"
+  >
+    {Array.from({ length: 5 }, (_, i) => {
+      const year = new Date().getFullYear() - i;
+      const label =
+        year === new Date().getFullYear()
+          ? "This Year"
+          : year === new Date().getFullYear() - 1
+          ? "Last Year"
+          : year;
+      return (
+        <option key={year} value={year}>
+          {label}
+        </option>
+      );
+    })}
+  </select>
 
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "10px",
-                      padding: "10px",
-                      fontSize: "13px",
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Friend"
-                    stroke="#0F172A"
-                    strokeWidth={3.5}
-                    dot={<CustomDot />}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="SocialMedia"
-                    stroke="#94A3B8"
-                    strokeWidth={3.5}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Email" // 👈 corrected here
-                    stroke="#3B82F6"
-                    strokeWidth={3.5}
-                    dot={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Google"
-                    stroke="#66b16c"
-                    strokeWidth={3.5}
-                    dot={<CustomDot />}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Other"
-                    stroke="#848e56"
-                    strokeWidth={3.5}
-                    dot={<CustomDot />}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+  {/* Custom arrow */}
+  <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-[9px]">
+    ▼
+  </div>
+</div>
 
-              <CustomLegend />
-            </div>
+  </div>
+  <div className="h-[220px]">
+    <ResponsiveContainer width="100%" height="100%">
+<LineChart
+  data={visitorDataStatic}
+  margin={{ top: 30, right: 20, left: -20, bottom: 20 }}
+>
+
+        <XAxis
+  dataKey="date"
+  axisLine={false}
+  tickLine={false}
+  interval={0} // Shows all months
+  tick={{
+    fill: "#64748b",
+    fontSize: 11,
+    fontWeight: 600,
+    dy: 6, // push ticks downward
+  }}
+  padding={{ left: 10, right: 10 }}
+  className="dark:[&_text]:fill-[#FFFFFF]"
+/>
+
+        <YAxis
+          axisLine={false}
+          tickLine={false}
+          tick={{
+            fill: "#64748b",
+            fontSize: 10,
+            fontWeight: 600,
+          }}
+          className="dark:[&_text]:fill-[#FFFFFF] "
+        />
+        <Tooltip content={<CustomTooltip />} />
+
+        <Line
+          type="monotone"
+          dataKey="Friend"
+          stroke="#99f6e4"
+          strokeWidth={4}
+          dot={<CustomDot />}
+        />
+        <Line
+          type="monotone"
+          dataKey="SocialMedia"
+          stroke="#bfdbfe"
+          strokeWidth={4}
+          dot={false}
+        />
+        <Line
+          type="monotone"
+          dataKey="Email"
+          stroke="#86efac"
+          strokeWidth={4}
+          dot={false}
+        />
+        <Line
+          type="monotone"
+          dataKey="Google"
+          stroke="#c4b5fd"
+          strokeWidth={4}
+          dot={false}
+        />
+        <Line
+          type="monotone"
+          dataKey="Other"
+          stroke="#93c5fd"
+          strokeWidth={4}
+          dot={false}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
+
+  <div className="flex flex-wrap justify-center mt-4 gap-x-8 gap-y-2 text-xs font-medium dark:text-[#FFFFFF] text-gray-700">
+    <div className="flex items-center gap-1">
+      <span className="w-2 h-2  bg-[#99f6e4]"></span> Friends
+    </div>
+    <div className="flex items-center gap-1">
+      <span className="w-2 h-2  bg-[#bfdbfe]"></span> Social Media
+    </div>
+    <div className="flex items-center gap-1">
+      <span className="w-2 h-2  bg-[#86efac]"></span> E-Mail
+    </div>
+    <div className="flex items-center gap-1">
+      <span className="w-2 h-2 bg-[#c4b5fd]"></span> Google
+    </div>
+    <div className="flex items-center gap-1">
+      <span className="w-2 h-2 bg-[#93c5fd]"></span> Other
+    </div>
+  </div>
+</div>
+
 
             {/* Countries */}
             <div className="lg:col-span-1">
@@ -866,81 +781,38 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Recent Transactions & Trials */}
-          <div className="col-span-3 bg-white p-4 rounded-xl shadow-sm">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-base font-semibold text-slate-700">
-                Revenue
-              </h3>
-              <select
-                className="bg-transparent border rounded-lg px-2 py-1 text-xs text-slate-500"
-                value={selectedYear}
-                onChange={async (e) => {
-                  const year = Number(e.target.value);
-                  setSelectedYear(year); // Update selected year
-                  const token = localStorage.getItem("AdminAuthToken");
-                  if (token) {
-                    await fetchRevenueData(year, token);
-                  } else {
-                    alert("No auth token found.");
-                  }
-                }}              
-              >
-                {Array.from({ length: 5 }, (_, i) => {
-                  const year = new Date().getFullYear() - i;
-                  return (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  );
-                })}
-              </select>
+          {/* Transactions Table */}
+          <div className="bg-white dark:bg-[#343434] rounded-xl overflow-hidden border border-slate-200 dark:border-[#555555]">
+            <div className="bg-white dark:bg-[#343434] dark:text-[#FFFFFF] text-[#0f172a] text-sm font-semibold px-4 py-3">
+              Recent Transactions
             </div>
-
-            <ResponsiveContainer width="100%" height={170}>
-              <BarChart
-                data={revenueDatas}
-                margin={{ top: 15, right: 10, left: 10, bottom: 0 }}
-              >
-                <XAxis
-                  dataKey="label" // <-- updated
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 12 }}
-                />
-                <YAxis hide />
-                <CartesianGrid vertical={false} horizontal={false} />
-                <Tooltip
-                  cursor={{ fill: "transparent" }}
-                  contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #E5E7EB",
-                    borderRadius: "10px",
-                    padding: "10px",
-                    fontSize: "13px",
-                  }}
-                  formatter={(value: number) => [`$${value}`, "Revenue"]}
-                />
-                <Bar
-                  dataKey="revenue" // <-- updated
-                  radius={[15, 15, 15, 15]}
-                  barSize={32}
-                  label={{
-                    position: "top",
-                    formatter: (value: number) => `$${value}`,
-                    fill: "#0f172a",
-                    fontSize: 10,
-                  }}
-                >
-                  {revenueDatas.map((entry) => (
-                    <Cell
-                      key={`cell-${entry.label}`}
-                      fill={getBarColor(entry.revenue, maxRevenue)} // ✅ now passing both args
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-[#4C6993] text-white h-[46px] text-left">
+                  <th className="px-4 font-medium">Client</th>
+                  <th className="px-4 font-medium">Service</th>
+                  <th className="px-4 font-medium">Amount</th>
+                  <th className="px-4 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="text-slate-800 dark:bg-[#343434]">
+                {data.map((row, index) => (
+                  <tr
+                    key={row._id}
+                    className={`h-[46px] ${index % 2 === 0 ? "bg-white dark:bg-[#444444]" : "bg-[#f8fafc] dark:bg-[#555555]"}`}
+                  >
+                    <td className="px-4 text-left dark:text-[#FFFFFF]">{row.student.studentName}</td>
+                    <td className="px-4 text-left dark:text-[#FFFFFF]">{row.courseName}</td>
+                    <td className="px-4 text-left dark:text-[#FFFFFF]">${row.amount}</td>
+                    <td className="px-4 text-left">
+                      <span className="bg-green-100 dark:bg-green-900 dark:text-green-200 text-green-700 text-[12px] px-2 py-1 font-medium">
+                        {row.invoiceStatus}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
+import type { TooltipItem } from 'chart.js';
 
 const InvoicesDueByDays = () => {
   const STATUS_COLORS = [
@@ -10,7 +11,7 @@ const InvoicesDueByDays = () => {
     { name: "No Response", color: "#A7D3F5" },
     { name: "Cancelled", color: "#C6E2F9" },
   ];
-  const COLORS = ["#6CA8F7", "#B6C6F5", "#A7D3F5", "#C6E2F9"];
+  const COLORS = ["#AFC0FF", "#78A1DB", "#9FD0FF", "#B9DDFF"];
   const [dueData, setDueData] = useState({
     range_0_10: 0,
     range_11_20: 0,
@@ -29,6 +30,7 @@ const InvoicesDueByDays = () => {
         ],
         backgroundColor: COLORS,
         borderWidth: 0,
+        borderRadius: 8,
       },
     ],
   };
@@ -37,7 +39,17 @@ const InvoicesDueByDays = () => {
     cutout: "75%",
     plugins: {
       legend: { display: false },
-      tooltip: { enabled: false },
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          label: function(context: TooltipItem<'doughnut'>) {
+            // Show label and value
+            const label = context.label || '';
+            const value = context.raw || 0;
+            return `${label}: ${value}`;
+          }
+        }
+      },
     },
     maintainAspectRatio: false,
   };
@@ -79,25 +91,30 @@ const InvoicesDueByDays = () => {
   return (
     <div className="flex flex-col items-center w-full">
   {/* Title aligned left */}
-  <h3 className="text-[#181A20] text-base font-bold mb-4 self-start">Invoice Due by Days</h3>
+  <h3 className="text-[#181A20] text-base font-bold mb-4 self-start dark:text-white">Invoice Due by Days</h3>
   
   {/* Chart and legend centered */}
   <div className="flex flex-col items-center w-full">
-    <div className="relative w-32 h-32 mb-6">
-      <Doughnut data={doughnutData} options={doughnutOptions} />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-5xl font-extrabold text-[#181A20]">
+    <div className="relative w-36 h-32 mb-6">
+      <div title="">
+        <Doughnut data={doughnutData} options={doughnutOptions} />
+      </div>
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-full h-full pointer-events-none">
+        <span
+          className="text-3xl font-extrabold text-[#181A20] dark:text-white"
+          title="Total number of invoices due."
+        >
           {Object.values(dueData).reduce((sum, v) => sum + (typeof v === 'number' ? v : 0), 0)}
         </span>
       </div>
     </div>
-    <div className="flex flex-col items-start gap-2">
+    <div className="flex flex-col items-start gap-2 max-h-24 overflow-y-auto mb-10">
       {legendLabels.map(({ label, color }) => (
         <div key={label} className="flex items-center gap-2">
           <span className="w-4 h-4 rounded  flex items-center justify-center">
             <span className="w-3 h-3 rounded " style={{ backgroundColor: color }} />
           </span>
-          <span className="text-[#181A20] font-semibold text-xs">{label}</span>
+          <span className="text-[#181A20] font-semibold text-xs dark:text-white break-words whitespace-normal">{label}</span>
         </div>
       ))}
     </div>

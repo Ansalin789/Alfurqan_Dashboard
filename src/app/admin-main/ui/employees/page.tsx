@@ -34,6 +34,8 @@ import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import ReactDOM from "react-dom";
 import AdminHeader from "../../components/AdminHeader";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // Register chart.js modules
 ChartJS.register(
@@ -345,6 +347,17 @@ const Page = () => {
     startEmployeeIndex,
     endEmployeeIndex
   );
+
+  const [isLeaveFilterModalOpen, setIsLeaveFilterModalOpen] = useState(false);
+  const [leaveFilterName, setLeaveFilterName] = useState("");
+  const [leaveFilterRole, setLeaveFilterRole] = useState("");
+  const [leaveFilterStatus, setLeaveFilterStatus] = useState("");
+  const [leaveFilterDateFrom, setLeaveFilterDateFrom] = useState<Date | null>(null);
+  const [leaveFilterDateTo, setLeaveFilterDateTo] = useState<Date | null>(null);
+
+  // Get unique roles and statuses from leaveRequests
+  const leaveRoles = Array.from(new Set(leaveRequests.map(l => l.role).filter(Boolean)));
+  const leaveStatuses = Array.from(new Set(leaveRequests.map(l => l.leaveStatus).filter(Boolean)));
 
   useEffect(() => {
     const token =
@@ -875,6 +888,16 @@ const Page = () => {
       leaveStatusStyles[status as LeaveStatus] || leaveStatusStyles.DEFAULT
     );
   }
+
+  // Filtering logic for leaveRequests
+  const filteredLeaveRequests = leaveRequests.filter(item => {
+    const nameMatch = leaveFilterName === "" || item.name.toLowerCase().includes(leaveFilterName.toLowerCase());
+    const roleMatch = leaveFilterRole === "" || item.role === leaveFilterRole;
+    const statusMatch = leaveFilterStatus === "" || item.leaveStatus === leaveFilterStatus;
+    const fromDateMatch = !leaveFilterDateFrom || new Date(item.fromDate) >= leaveFilterDateFrom;
+    const toDateMatch = !leaveFilterDateTo || new Date(item.toDate) <= leaveFilterDateTo;
+    return nameMatch && roleMatch && statusMatch && fromDateMatch && toDateMatch;
+  });
 
   return (
     <BaseLayout4>
@@ -2039,24 +2062,36 @@ const Page = () => {
             {activeTab === "leave" && (
               <div className="space-y-4 overflow-y-auto scrollbar-none">
                 {/* Summary Cards */}
-                <div className="flex gap-5 ">
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Leave Requests</p>
-                    <h2 className="text-2xl font-semibold ">
-                      {leaveCard.totalApplication}
-                    </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full">
+                    <div className="flex flex-col justify-between gap-y-8">
+                      <div>
+                        <p className="text-[16px] font-medium dark:text-white text-white">Total Leave Requests</p>
+                      </div>
+                      <div>
+                        <h3 className="text-[28px] font-semibold dark:text-white text-white">{leaveCard.totalApplication}</h3>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Approved</p>
-                    <h2 className="text-2xl font-semibold">
-                      {leaveCard.approved}
-                    </h2>
+                  <div className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full">
+                    <div className="flex flex-col justify-between gap-y-8">
+                      <div>
+                        <p className="text-[16px] font-medium dark:text-white text-white">Total Approved</p>
+                      </div>
+                      <div>
+                        <h3 className="text-[28px] font-semibold dark:text-white text-white">{leaveCard.approved}</h3>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Declined</p>
-                    <h2 className="text-2xl font-semibold">
-                      {leaveCard.rejected}
-                    </h2>
+                  <div className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full">
+                    <div className="flex flex-col justify-between gap-y-8">
+                      <div>
+                        <p className="text-[16px] font-medium dark:text-white text-white">Total Declined</p>
+                      </div>
+                      <div>
+                        <h3 className="text-[28px] font-semibold dark:text-white text-white">{leaveCard.rejected}</h3>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -2073,20 +2108,118 @@ const Page = () => {
                       />
                     </div>
                     <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48  cursor-pointer"
-                      // onClick={() => setIsFilterModalOpen(true)}
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsLeaveFilterModalOpen(true)}
                     >
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400 mr-20">
                       <span className="text-left">
-                        Showing {leaveRequests.length === 0 ? 0 : 1} to{" "}
-                        {leaveRequests.length} of {leaveRequests.length}
+                        Showing {filteredLeaveRequests.length === 0 ? 0 : 1} to {filteredLeaveRequests.length} of {leaveRequests.length}
                       </span>
                     </div>
                   </div>
-
+                  {/* Filter Modal */}
+                  {isLeaveFilterModalOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
+                      <div className="w-full max-w-md bg-white dark:bg-[#252525] rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                        <button
+                          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+                          onClick={() => setIsLeaveFilterModalOpen(false)}
+                          aria-label="Close"
+                        >
+                          ×
+                        </button>
+                        <div className="p-6 space-y-4">
+                          <h2 className="text-lg font-semibold mb-2 dark:text-[#fff]">Filter by</h2>
+                          <div className="flex flex-col gap-3">
+                            <label className="text-sm font-medium text-gray-700 dark:text-[#fff] mt-2">Employee Name</label>
+                            <input
+                              type="text"
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                              placeholder="Enter name"
+                              value={leaveFilterName}
+                              onChange={e => setLeaveFilterName(e.target.value)}
+                            />
+                            <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">Role</label>
+                            <select
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                              value={leaveFilterRole}
+                              onChange={e => setLeaveFilterRole(e.target.value)}
+                            >
+                              <option value="">All Roles</option>
+                              {leaveRoles.map(role => (
+                                <option key={role} value={role}>{role}</option>
+                              ))}
+                            </select>
+                            <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">Status</label>
+                            <select
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                              value={leaveFilterStatus}
+                              onChange={e => setLeaveFilterStatus(e.target.value)}
+                            >
+                              <option value="">All Statuses</option>
+                              {leaveStatuses.map(status => (
+                                <option key={status} value={status}>{status}</option>
+                              ))}
+                            </select>
+                            <div className="flex gap-2">
+                              <div className="flex-1">
+                                <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">From Date</label>
+                                <DatePicker
+                                  selected={leaveFilterDateFrom}
+                                  onChange={date => setLeaveFilterDateFrom(date)}
+                                  selectsStart
+                                  startDate={leaveFilterDateFrom}
+                                  endDate={leaveFilterDateTo}
+                                  maxDate={leaveFilterDateTo || undefined}
+                                  className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                                  placeholderText="From"
+                                  dateFormat="yyyy-MM-dd"
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">To Date</label>
+                                <DatePicker
+                                  selected={leaveFilterDateTo}
+                                  onChange={date => setLeaveFilterDateTo(date)}
+                                  selectsEnd
+                                  startDate={leaveFilterDateFrom}
+                                  endDate={leaveFilterDateTo}
+                                  minDate={leaveFilterDateFrom || undefined}
+                                  className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                                  placeholderText="To"
+                                  dateFormat="yyyy-MM-dd"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-3 mt-6">
+                            <button
+                              className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                              onClick={() => {
+                                setLeaveFilterName("");
+                                setLeaveFilterRole("");
+                                setLeaveFilterStatus("");
+                                setLeaveFilterDateFrom(null);
+                                setLeaveFilterDateTo(null);
+                              }}
+                            >
+                              Reset
+                            </button>
+                            <button
+                              className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                              onClick={() => setIsLeaveFilterModalOpen(false)}
+                            >
+                              Show {filteredLeaveRequests.length} results
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* Table ... */}
                   <table
                     className="w-full min-w-[900px] text-sm text-left table-auto"
                     style={{ width: "100%", tableLayout: "fixed" }}
@@ -2113,8 +2246,8 @@ const Page = () => {
                       </tr>
                     </thead>
                     <tbody className="text-[10px] text-[#1D2939]">
-                      {leaveRequests.length > 0 ? (
-                        leaveRequests
+                      {filteredLeaveRequests.length > 0 ? (
+                        filteredLeaveRequests
                           .filter((item) => {
                             const search = searchQuery1.toLowerCase();
                             return (
@@ -2128,6 +2261,7 @@ const Page = () => {
                               item.leaveStatus.toLowerCase().includes(search)
                             );
                           })
+                          .slice(0, 8)
                           .map((item, index) => {
                             const btnId = `action-btn-${item._id}`;
                             return (

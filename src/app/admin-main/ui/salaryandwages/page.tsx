@@ -237,8 +237,8 @@ const SalaryCard = () => {
               </span>
             </div>
           </div>
-          <table className="table-fixed w-full border-separate border-spacing-y-2">
-            <thead className="text-[13px] bg-[#4C6993] text-white">
+          <table className="table-fixed w-full border-separate border-spacing-y-2 ">
+            <thead className="text-[13px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
               <tr>
                 {[
                   "Employee ID",
@@ -264,8 +264,10 @@ const SalaryCard = () => {
               {(salaryWages ?? []).map((row, index) => (
                 <tr
                   key={row.employeeId}
-                  className={`text-[9px] text-center mt-0 ${
-                    index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                  className={`text-[9px] text-center mt-0 dark:text-white ${
+                    index % 2 === 0
+                      ? "bg-[#faf9f9] dark:bg-[#2C2C2C]"
+                      : "bg-[#ebebeb] dark:bg-[#303030]"
                   }`}
                 >
                   <td className="px-3 py-3 text-[12px] text-left break-all">
