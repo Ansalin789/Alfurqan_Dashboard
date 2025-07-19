@@ -251,7 +251,7 @@ const StudentModuleAccess = () => {
     return;
   }
       const response = await axios.put(
-        `http://localhost:5001/update-access/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
         { roleAccess },{
           headers:{
             'Content-Type':"application/json",

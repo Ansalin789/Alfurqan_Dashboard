@@ -371,7 +371,7 @@ const Page = () => {
 
     // Fetch teacher status count
     axios
-      .get("http://localhost:5001/teacher/statuscount", {
+      .get("https://api.blackstoneinfomaticstech.com/teacher/statuscount", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -418,7 +418,7 @@ const Page = () => {
 
     // Fetch teacher gender count
     axios
-      .get<GenderResponse>("http://localhost:5001/teacher/gendercount", {
+      .get<GenderResponse>("https://api.blackstoneinfomaticstech.com/teacher/gendercount", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -462,7 +462,7 @@ const Page = () => {
     const fetchTeachers = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5001/users?role=TEACHER",
+          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -568,7 +568,7 @@ const Page = () => {
     const fetchCounts = async () => {
       try {
         const response = await axios.get<DashboardCounts>(
-          "http://localhost:5001/dashboard/supervisor/counts",
+          "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -602,7 +602,7 @@ const Page = () => {
           : null;
       if (!token) return;
       try {
-        const res = await axios.get("http://localhost:5001/leaverequest/card", {
+        const res = await axios.get("https://api.blackstoneinfomaticstech.com/leaverequest/card", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLeaveCard(res.data);
@@ -621,7 +621,7 @@ const Page = () => {
       if (!token) return;
       try {
         const res = await axios.get<LeaveRequestListResponse>(
-          "http://localhost:5001/leaverequest/list",
+          "https://api.blackstoneinfomaticstech.com/leaverequest/list",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setLeaveRequests(res.data.leaveRequest);
@@ -798,7 +798,7 @@ const Page = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5001/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
+        `https://api.blackstoneinfomaticstech.com/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
         {
           method: "PUT",
           headers: {
@@ -1240,7 +1240,7 @@ const Page = () => {
                         {/* Filter Popup */}
                         {showTeacherfilterForm && (
                           <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
-                            <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                            <div className="w-full max-w-sm bg-white dark:bg-[#252525] rounded-2xl shadow-lg overflow-hidden m-4 relative">
                               <button
                                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
                                 onClick={() => setshowTeacherfilterForm(false)}
@@ -1249,38 +1249,38 @@ const Page = () => {
                                 ×
                               </button>
                               <div className="p-6 space-y-4">
-                                <h2 className="text-lg font-semibold mb-2">
+                                <h2 className="text-lg font-semibold mb-2 dark:text-[#fff]">
                                   Filter by
                                 </h2>
                                 <div className="flex flex-col gap-3">
-                                  <label className="text-sm font-medium text-gray-700">
-                                    Course
-                                  </label>
-                                  <select
-                                    className="border rounded px-3 py-2 text-sm"
-                                    value={filterCourse}
-                                    onChange={(e) =>
-                                      setFilterCourse(e.target.value)
-                                    }
-                                  >
-                                    <option value="">Select Course</option>
-                                    <option value="Arabic">Arabic</option>
-                                    <option value="Math">Math</option>
-                                    <option value="Science">Science</option>
-                                    {/* Add more courses as needed */}
-                                  </select>
-                                  <label className="text-sm font-medium text-gray-700 mt-2">
+                                  
+                                  <label className="text-sm font-medium text-gray-700 dark:text-[#fff] mt-2">
                                     Name
                                   </label>
                                   <input
                                     type="text"
-                                    className="border rounded px-3 py-2 text-sm"
+                                    className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
                                     placeholder="Enter name"
                                     value={filterName}
                                     onChange={(e) =>
                                       setFilterName(e.target.value)
                                     }
                                   />
+                                  <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">
+                                    Role
+                                  </label>
+                                  <select
+                                    className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                                    value={filterCourse}
+                                    onChange={(e) =>
+                                      setFilterCourse(e.target.value)
+                                    }
+                                  >
+                                    <option value="">Select Course</option>
+                                    <option value="Quran Teacher">Quran Teacher</option>
+                                    <option value="Arabic Teacher">Arabic Teacher</option>
+                                    <option value="Islamic Teacher">Islamic Teacher</option>
+                                  </select>
                                 </div>
                                 <div className="flex gap-3 mt-6">
                                   <button
@@ -1355,7 +1355,6 @@ const Page = () => {
                       </div>
                     </div>
 
-                    {/* Teacher Cards - manage teacher style, with Portal Access */}
                     <div className="bg-white dark:bg-[#3b3b3b] grid grid-cols-1 xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
                       {paginatedTeachers.map((teacher) => (
                         <div
@@ -1766,15 +1765,15 @@ const Page = () => {
                         <div className="relative ">
                           {/* Filter Button (opens your filter popup) */}
                           <button
-                            className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                            onClick={() => setshowTeacherfilterForm(true)}
+                          className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                          onClick={() => setshowTeacherfilterForm(true)}
                           >
                             <MdTune className="w-4 h-4" />
                             <span>Filter</span>
                           </button>
                           {showTeacherfilterForm && (
-                            <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
-                              <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                            <div className="fixed inset-0 bg-black bg-opacity-10 z-50 flex justify-center items-center overflow-auto">
+                              <div className="w-full max-w-sm bg-white dark:bg-[#252525] rounded-2xl shadow-lg overflow-hidden m-4 relative">
                                 <button
                                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
                                   onClick={() =>
@@ -1789,11 +1788,24 @@ const Page = () => {
                                     Filter by
                                   </h2>
                                   <div className="flex flex-col gap-3">
-                                    <label className="text-sm font-medium text-gray-700">
+                                    
+                                    <label className="text-sm font-medium text-gray-700 dark:text-white mt-2">
+                                      Name
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                                      placeholder="Enter name"
+                                      value={filterName}
+                                      onChange={(e) =>
+                                        setFilterName(e.target.value)
+                                      }
+                                    />
+                                    <label className="text-sm font-medium text-gray-700 dark:text-white">
                                       Role
                                     </label>
                                     <select
-                                      className="border rounded px-3 py-2 text-sm"
+                                      className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
                                       value={filterCourse}
                                       onChange={(e) =>
                                         setFilterCourse(e.target.value)
@@ -1809,22 +1821,10 @@ const Page = () => {
                                       </option>
                                       <option value="OTHERS">Others</option>
                                     </select>
-                                    <label className="text-sm font-medium text-gray-700 mt-2">
-                                      Name
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="border rounded px-3 py-2 text-sm"
-                                      placeholder="Enter name"
-                                      value={filterName}
-                                      onChange={(e) =>
-                                        setFilterName(e.target.value)
-                                      }
-                                    />
                                   </div>
                                   <div className="flex gap-3 mt-6">
                                     <button
-                                      className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                                      className="flex-1 text-[15px] border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
                                       onClick={() => {
                                         setFilterCourse("");
                                         setFilterName("");
@@ -1833,7 +1833,7 @@ const Page = () => {
                                       Reset
                                     </button>
                                     <button
-                                      className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                                      className="flex-1 text-[15px] bg-[#576CBC] text-white rounded-lg py-2 font-medium"
                                       onClick={() =>
                                         setshowTeacherfilterForm(false)
                                       }
@@ -1872,7 +1872,8 @@ const Page = () => {
                             </div>
                           )}
                         </div>
-                        <span className="text-left gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+                        <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                        <span className="text-left -ml-60">
                           Showing{" "}
                           {
                             filteredEmployees.filter(
@@ -1893,6 +1894,7 @@ const Page = () => {
                           }{" "}
                           Of {employees.length}
                         </span>
+                      </div>
                       </div>
                       {/* Employee Cards - match Teachers card grid */}
                       <div className="grid grid-cols-1 bg-white dark:bg-[#3b3b3b] xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">

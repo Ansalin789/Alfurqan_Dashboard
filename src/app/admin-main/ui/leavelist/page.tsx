@@ -93,7 +93,7 @@ export default function ApplicantsPage() {
   const fetchLeaveRequests = async (token: string) => {
     try {
       const res = await axios.get<LeaveRequestListResponse>(
-        "http://localhost:5001/leaverequest/list",
+        "https://api.blackstoneinfomaticstech.com/leaverequest/list",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setLeaveRequests(res.data.leaveRequest);
@@ -120,7 +120,7 @@ export default function ApplicantsPage() {
 
     try {
       const res = await fetch(
-        `http://localhost:5001/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
+        `https://api.blackstoneinfomaticstech.com/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
         {
           method: "PUT",
           headers: {

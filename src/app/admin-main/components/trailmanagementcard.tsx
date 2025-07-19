@@ -178,7 +178,7 @@ const CoursesChart = () => {
   }, []);    
   
   const fetchData = async (token: string) => {
-      const response = await fetch("http://localhost:5001/totaltrialclass",{
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/totaltrialclass",{
           method: "GET",
           headers: {
             'Content-Type': 'application/json',
@@ -290,7 +290,7 @@ const PreferredTeachersCard = () => {
   }, []);
   const fetchData = async (token: string) => {
     try {
-      const res = await fetch("http://localhost:5001/teacherstatus",{
+      const res = await fetch("https://api.blackstoneinfomaticstech.com/teacherstatus",{
         method: "GET",
         headers: {
           'Content-Type': 'application/json',
@@ -444,7 +444,7 @@ const TrialByTeachers = () => {
   }, []);
 
   const fetchData = (token: string) => {
-    fetch("http://localhost:5001/teacher-student-count", {
+    fetch("https://api.blackstoneinfomaticstech.com/teacher-student-count", {
       method: "GET",
       headers: {
         'Content-Type': 'application/json',

@@ -111,7 +111,7 @@ const ApplicantsList: React.FC = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:5001/admin/${id}`,
+        `https://api.blackstoneinfomaticstech.com/admin/${id}`,
         {
           applicationStatus: status,
         },

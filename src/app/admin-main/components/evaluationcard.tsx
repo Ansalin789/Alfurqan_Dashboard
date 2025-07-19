@@ -494,7 +494,7 @@ const CoursesChart = () => {
   const fetchCourseData = async (token: string) => {
     try {
       const res = await fetch(
-        "http://localhost:5001/studentcourse",
+        "https://api.blackstoneinfomaticstech.com/studentcourse",
         {
           method: "GET",
           headers: {
