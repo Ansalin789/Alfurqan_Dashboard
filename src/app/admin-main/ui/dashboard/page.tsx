@@ -16,6 +16,7 @@ import axios from "axios";
 import { io, Socket } from "socket.io-client";
 import { json } from "stream/consumers";
 import AdminHeader from "../../components/AdminHeader";
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 
@@ -24,9 +25,8 @@ const Page = () => {
   return (
     <div>
       <BaseLayout4>
-      <AdminHeader currentSection="Dashboard" />
+      <AdminHeader currentSection="Dashboard"/>
   <div className="py-2 px-4 w-full mx-auto">
-
     {/* Main Dashboard Content */}
     <div className="flex flex-col lg:flex-row mt-4 gap-4">
       <div className="flex-1">
