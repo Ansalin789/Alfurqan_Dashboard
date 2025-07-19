@@ -200,7 +200,7 @@ const SalaryCard = () => {
 
   return (
     <BaseLayout4>
-      {" "}
+     
       <div className="md:p-0 mt-4 mx-auto">
         <div className="h-full w-full flex flex-col justify-between">
           <div className="p-0 justify-between flex flex-col">
@@ -288,7 +288,7 @@ const SalaryCard = () => {
                       <td className="px-3 py-3 text-[11px] text-left break-words whitespace-normal">
                         {row._id}
                       </td>
-                      <td className=" text-[#3D8FDE] px-3 py-2 text-left  break-words whitespace-normal">
+                      <td className=" text-[#3D8FDE] px-3 py-3 text-left  break-words whitespace-normal">
                         {row.student?.studentFirstName}{" "}
                         {row.student?.studentLastName}
                       </td>
