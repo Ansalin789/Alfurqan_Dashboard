@@ -303,7 +303,7 @@ const page = () => {
   const fetchUsers = async (token: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:5001/users/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/users/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -364,7 +364,7 @@ const page = () => {
       }
       try {
         const res = await axios.get(
-          `http://localhost:5001/shiftschedule/${employeeId}`,
+          `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
           {
             headers: {
               "Content-Type": "application/json",

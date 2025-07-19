@@ -73,7 +73,7 @@ const SalaryCard = () => {
     const fetchSalaryCardCounts = async () => {
       try {
         const response = await axios.get<SalaryCardCounts>(
-          "http://localhost:5001/salarywagesCardCount",
+          "https://api.blackstoneinfomaticstech.com/salarywagesCardCount",
           {
             headers: {
               "Content-Type": "application/json",
@@ -101,7 +101,7 @@ const SalaryCard = () => {
     }
     const fetchSalaryWages = async () => {
       try {
-        const response = await fetch("http://localhost:5001/salarywages", {
+        const response = await fetch("https://api.blackstoneinfomaticstech.com/salarywages", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

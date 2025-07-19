@@ -79,7 +79,7 @@ const Expenses = () => {
     }
       const fetchCardCounts = async () => {
         try {
-          const response = await axios.get<ExpenseCardCounts>("http://localhost:5001/expenseCardCounts",{
+          const response = await axios.get<ExpenseCardCounts>("https://api.blackstoneinfomaticstech.com/expenseCardCounts",{
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${token}`,

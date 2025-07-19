@@ -10,6 +10,8 @@ import axios from "axios";
 import { user } from "@nextui-org/react";
 import AdminHeader from "@/app/admin-main/components/AdminHeader";
 import Pagination from "@/components/Pagination";
+import { MdTune } from "react-icons/md";
+import { Search } from "lucide-react";
 interface Employee {
   _id: string;
   firstName: string;
@@ -157,11 +159,14 @@ const EmployeePage = () => {
       earnings,
     };
   });
-  const filteredEarnings = monthsArray.filter(row =>
-    row.monthName.toLowerCase().includes(searchEarnings.toLowerCase()) ||
-    row.currentYear.toString().includes(searchEarnings)
+  const filteredEarnings = monthsArray.filter(
+    (row) =>
+      row.monthName.toLowerCase().includes(searchEarnings.toLowerCase()) ||
+      row.currentYear.toString().includes(searchEarnings)
   );
-  const totalEarningsPages = Math.ceil(filteredEarnings.length / earningsPerPage);
+  const totalEarningsPages = Math.ceil(
+    filteredEarnings.length / earningsPerPage
+  );
   const paginatedEarnings = filteredEarnings.slice(
     (earningsPage - 1) * earningsPerPage,
     earningsPage * earningsPerPage
@@ -170,12 +175,13 @@ const EmployeePage = () => {
   const [leavePage, setLeavePage] = useState(1);
   const leavePerPage = 5;
   const [searchLeave, setSearchLeave] = useState("");
-  const filteredLeave = leaveData.filter(item =>
-    item.name?.toLowerCase().includes(searchLeave.toLowerCase()) ||
-    item.employeeId?.toLowerCase().includes(searchLeave.toLowerCase()) ||
-    item.role?.toLowerCase().includes(searchLeave.toLowerCase()) ||
-    item.leaveType?.toLowerCase().includes(searchLeave.toLowerCase()) ||
-    item.leaveStatus?.toLowerCase().includes(searchLeave.toLowerCase())
+  const filteredLeave = leaveData.filter(
+    (item) =>
+      item.name?.toLowerCase().includes(searchLeave.toLowerCase()) ||
+      item.employeeId?.toLowerCase().includes(searchLeave.toLowerCase()) ||
+      item.role?.toLowerCase().includes(searchLeave.toLowerCase()) ||
+      item.leaveType?.toLowerCase().includes(searchLeave.toLowerCase()) ||
+      item.leaveStatus?.toLowerCase().includes(searchLeave.toLowerCase())
   );
   const totalLeavePages = Math.ceil(filteredLeave.length / leavePerPage);
   const paginatedLeave = filteredLeave.slice(
@@ -186,15 +192,18 @@ const EmployeePage = () => {
   const [workingPage, setWorkingPage] = useState(1);
   const workingPerPage = 5;
   const [searchWorking, setSearchWorking] = useState("");
-  const filteredWorking = schedule.filter(item =>
-    item.day?.toLowerCase().includes(searchWorking.toLowerCase()) ||
-    item.date?.toLowerCase().includes(searchWorking.toLowerCase())
+  const filteredWorking = schedule.filter(
+    (item) =>
+      item.day?.toLowerCase().includes(searchWorking.toLowerCase()) ||
+      item.date?.toLowerCase().includes(searchWorking.toLowerCase())
   );
   const totalWorkingPages = Math.ceil(filteredWorking.length / workingPerPage);
   const paginatedWorking = filteredWorking.slice(
     (workingPage - 1) * workingPerPage,
     workingPage * workingPerPage
   );
+
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   useEffect(() => {
     // Retrieve employeeId and userId from search params
@@ -261,7 +270,7 @@ const EmployeePage = () => {
     if (!token) return;
     try {
       const response = await axios.get<EmployeeWage[] | EmployeeWage>(
-        `http://localhost:5001/empwages/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/empwages/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -284,7 +293,7 @@ const EmployeePage = () => {
   const fetchLeaveData = async (userId: string) => {
     try {
       const res = await axios.get(
-        `http://localhost:5001/leaverequest?employeeId=${userId}`,
+        `https://api.blackstoneinfomaticstech.com/leaverequest?employeeId=${userId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -306,7 +315,7 @@ const EmployeePage = () => {
   const fetchData = async (employeeId: string) => {
     try {
       const res = await axios.get(
-        `http://localhost:5001/shiftschedule/${employeeId}`,
+        `https://api.blackstoneinfomaticstech.com/shiftschedule/${employeeId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -479,8 +488,8 @@ const EmployeePage = () => {
                 key={tab}
                 className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${
                   activeTab === tab
-                  ? "border-b border-b-[#576CBC] text-[#576CBC]"
-                  : "text-[#010E30] dark:text-white"
+                    ? "border-b border-b-[#576CBC] text-[#576CBC]"
+                    : "text-[#010E30] dark:text-white"
                 }`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -494,24 +503,33 @@ const EmployeePage = () => {
             {activeTab === "Wages" && (
               <div className="space-y-6">
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-52 py-3"
-                        value={searchWages}
-                        onChange={(e) => {
-                          setSearchWages(e.target.value);
-                          setWagesPage(1);
-                        }}
-                      />
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchWages}
+                      onChange={(e) => {
+                        setSearchWages(e.target.value);
+                        setWagesPage(1);
+                      }}
+                    />
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                      <span className="text-left ml-60 ">
-                        Showing {filteredWages.length === 0 ? 0 : (wagesPage - 1) * wagesPerPage + 1} to {Math.min(wagesPage * wagesPerPage, filteredWages.length)} of {filteredWages.length}
-                      </span>
-                    </div>
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+                      Showing{" "}
+                      {filteredWages.length === 0
+                        ? 0
+                        : (wagesPage - 1) * wagesPerPage + 1}{" "}
+                      to{" "}
+                      {Math.min(wagesPage * wagesPerPage, filteredWages.length)}{" "}
+                      of {filteredWages.length}
+                    </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -589,64 +607,76 @@ const EmployeePage = () => {
             {activeTab === "Earnings" && (
               <div className="space-y-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[
-                      {
-                        title: "Total Earnings",
-                        count: wages[0]?.totalearnings || 0,
-                        color: "gray",
-                        iconBg: "bg-gray-100",
-                        iconColor: "text-gray-500",
-                        chartColor: "#64748b",
-                      },
-                      {
-                        title: "Total Deductions",
-                        count: wages[0]?.totalearnings || 0,
-                        color: "indigo",
-                        iconBg: "bg-indigo-100",
-                        iconColor: "text-indigo-500",
-                        chartColor: "#6366f1",
-                      },
-                    ].map((card) => (
-                      <div
-                        key={card.title}
-                        className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
-                      >
-                        <div className="flex flex-col justify-between gap-y-4">
-                          <div>
-                            <p className="text-[15px] font-medium dark:text-white text-white">
-                              {card.title}
-                            </p>
-                          </div>
-                          <div>
-                            <h3 className="text-[24px] font-semibold dark:text-white text-white">
-                              ${card.count}
-                            </h3>
-                          </div>
+                  {[
+                    {
+                      title: "Total Earnings",
+                      count: wages[0]?.totalearnings || 0,
+                      color: "gray",
+                      iconBg: "bg-gray-100",
+                      iconColor: "text-gray-500",
+                      chartColor: "#64748b",
+                    },
+                    {
+                      title: "Total Deductions",
+                      count: 0,
+                      color: "indigo",
+                      iconBg: "bg-indigo-100",
+                      iconColor: "text-indigo-500",
+                      chartColor: "#6366f1",
+                    },
+                  ].map((card) => (
+                    <div
+                      key={card.title}
+                      className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
+                    >
+                      <div className="flex flex-col justify-between gap-y-4">
+                        <div>
+                          <p className="text-[15px] font-medium dark:text-white text-white">
+                            {card.title}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-[24px] font-semibold dark:text-white text-white">
+                            ${card.count}
+                          </h3>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
+                </div>
 
                 {/* Earnings Table */}
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-52 py-3"
-                        value={searchEarnings}
-                        onChange={e => {
-                          setSearchEarnings(e.target.value);
-                          setEarningsPage(1);
-                        }}
-                      />
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchEarnings}
+                      onChange={(e) => {
+                        setSearchEarnings(e.target.value);
+                        setEarningsPage(1);
+                      }}
+                    />
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                      <span className="text-left ml-60 ">
-                        Showing {filteredEarnings.length === 0 ? 0 : (earningsPage - 1) * earningsPerPage + 1} to {Math.min(earningsPage * earningsPerPage, filteredEarnings.length)} of {filteredEarnings.length}
-                      </span>
-                    </div>
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+                      Showing{" "}
+                      {filteredEarnings.length === 0
+                        ? 0
+                        : (earningsPage - 1) * earningsPerPage + 1}{" "}
+                      to{" "}
+                      {Math.min(
+                        earningsPage * earningsPerPage,
+                        filteredEarnings.length
+                      )}{" "}
+                      of {filteredEarnings.length}
+                    </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -682,7 +712,9 @@ const EmployeePage = () => {
                             >
                               <td className="p-3">{`${row.monthName} ${row.currentYear}`}</td>
                               <td className="p-3">{row.totalhours}</td>
-                              <td className="p-3">${row.earnings.toFixed(2)}</td>
+                              <td className="p-3">
+                                ${row.earnings.toFixed(2)}
+                              </td>
                               <td className="p-3">$0</td>{" "}
                             </tr>
                           ))
@@ -715,72 +747,81 @@ const EmployeePage = () => {
               <div className="space-y-2 ">
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[
-                      {
-                        title: "Total Applied Leave",
-                        count: summary.totalApplied || 0,
-                        color: "gray",
-                        iconBg: "bg-gray-100",
-                        iconColor: "text-gray-500",
-                        chartColor: "#64748b",
-                      },
-                      {
-                        title: "Total Approved",
-                        count: summary.totalApproved || 0,
-                        color: "indigo",
-                        iconBg: "bg-indigo-100",
-                        iconColor: "text-indigo-500",
-                        chartColor: "#6366f1",
-                      },
-                      {
-                        title: "Total Declined",
-                        count: summary.totalDeclined || 0,
-                        color: "indigo",
-                        iconBg: "bg-indigo-100",
-                        iconColor: "text-indigo-500",
-                        chartColor: "#6366f1",
-                      },
-                    ].map((card) => (
-                      <div
-                        key={card.title}
-                        className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
-                      >
-                        <div className="flex flex-col justify-between gap-y-4">
-                          <div>
-                            <p className="text-[15px] font-medium dark:text-white text-white">
-                              {card.title}
-                            </p>
-                          </div>
-                          <div>
-                            <h3 className="text-[24px] font-semibold dark:text-white text-white">
-                              ${card.count}
-                            </h3>
-                          </div>
+                  {[
+                    {
+                      title: "Total Applied Leave",
+                      count: summary.totalApplied || 0,
+                      color: "gray",
+                      iconBg: "bg-gray-100",
+                      iconColor: "text-gray-500",
+                      chartColor: "#64748b",
+                    },
+                    {
+                      title: "Total Approved",
+                      count: summary.totalApproved || 0,
+                      color: "indigo",
+                      iconBg: "bg-indigo-100",
+                      iconColor: "text-indigo-500",
+                      chartColor: "#6366f1",
+                    },
+                    {
+                      title: "Total Declined",
+                      count: summary.totalDeclined || 0,
+                      color: "indigo",
+                      iconBg: "bg-indigo-100",
+                      iconColor: "text-indigo-500",
+                      chartColor: "#6366f1",
+                    },
+                  ].map((card) => (
+                    <div
+                      key={card.title}
+                      className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
+                    >
+                      <div className="flex flex-col justify-between gap-y-4">
+                        <div>
+                          <p className="text-[15px] font-medium dark:text-white text-white">
+                            {card.title}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-[24px] font-semibold dark:text-white text-white">
+                            ${card.count}
+                          </h3>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
+                </div>
 
                 {/* Leave Table */}
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-52 py-3"
-                        value={searchLeave}
-                        onChange={e => {
-                          setSearchLeave(e.target.value);
-                          setLeavePage(1);
-                        }}
-                      />
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchLeave}
+                      onChange={(e) => {
+                        setSearchLeave(e.target.value);
+                        setLeavePage(1);
+                      }}
+                    />
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                      <span className="text-left ml-60 ">
-                        Showing {filteredLeave.length === 0 ? 0 : (leavePage - 1) * leavePerPage + 1} to {Math.min(leavePage * leavePerPage, filteredLeave.length)} of {filteredLeave.length}
-                      </span>
-                    </div>
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+                      Showing{" "}
+                      {filteredLeave.length === 0
+                        ? 0
+                        : (leavePage - 1) * leavePerPage + 1}{" "}
+                      to{" "}
+                      {Math.min(leavePage * leavePerPage, filteredLeave.length)}{" "}
+                      of {filteredLeave.length}
+                    </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -789,10 +830,18 @@ const EmployeePage = () => {
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">Leave Type</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Date Range</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Reason For Leave</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Status</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Leave Type
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Date Range
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Reason For Leave
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Status
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
@@ -806,17 +855,27 @@ const EmployeePage = () => {
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
                               }`}
                             >
-                              <td className="p-3 text-center">{item.leaveType}</td>
                               <td className="p-3 text-center">
-                                {new Date(item.fromDate).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })} - {new Date(item.toDate).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
+                                {item.leaveType}
+                              </td>
+                              <td className="p-3 text-center">
+                                {new Date(item.fromDate).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  }
+                                )}{" "}
+                                -{" "}
+                                {new Date(item.toDate).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  }
+                                )}
                               </td>
                               <td className="p-3 text-center">{item.reason}</td>
                               <td className="p-3 text-center">
@@ -851,26 +910,38 @@ const EmployeePage = () => {
 
             {/* Working Hours Tab */}
             {activeTab === "WorkingHours" && (
-              <div className="space-y-6">
+              <div className="">
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-52 py-3"
-                        value={searchWorking}
-                        onChange={e => {
-                          setSearchWorking(e.target.value);
-                          setWorkingPage(1);
-                        }}
-                      />
+                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      className="bg-transparent outline-none text-[12px] w-32 py-3"
+                      value={searchWorking}
+                      onChange={(e) => {
+                        setSearchWorking(e.target.value);
+                        setWorkingPage(1);
+                      }}
+                    />
+                    <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
+                    >
+                      <MdTune className="w-4 h-4" />
+                      <span>Filter</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                      <span className="text-left ml-60 ">
-                        Showing {filteredWorking.length === 0 ? 0 : (workingPage - 1) * workingPerPage + 1} to {Math.min(workingPage * workingPerPage, filteredWorking.length)} of {filteredWorking.length}
-                      </span>
-                    </div>
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+                      Showing{" "}
+                      {filteredWorking.length === 0
+                        ? 0
+                        : (workingPage - 1) * workingPerPage + 1}{" "}
+                      to{" "}
+                      {Math.min(
+                        workingPage * workingPerPage,
+                        filteredWorking.length
+                      )}{" "}
+                      of {filteredWorking.length}
+                    </span>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -879,10 +950,18 @@ const EmployeePage = () => {
                     >
                       <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                         <tr className="font-medium">
-                          <th className="p-4 font-semibold text-[12px] text-center">Day</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Preferred Working Hours</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">Working Hours</th>
-                          <th className="p-4 font-semibold text-[12px] text-center">GMT</th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Day
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Preferred Working Hours
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            Working Hours
+                          </th>
+                          <th className="p-4 font-semibold text-[12px] text-center">
+                            GMT
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
@@ -914,7 +993,7 @@ const EmployeePage = () => {
                   </div>
                 </div>
                 {totalWorkingPages > 1 && (
-                  <div className="flex justify-end mt-4">
+                  <div className="flex justify-end">
                     <Pagination
                       currentPage={workingPage}
                       totalPages={totalWorkingPages}
