@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight, FaEdit, FaFilter } from "react-icons/fa";
 import axios from "axios";
+import { Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
+import Pagination from "@/components/Pagination";
+import AdminHeader from "../../components/AdminHeader";
 
 interface Student {
   studentId: string;
@@ -47,6 +51,11 @@ const [filters, setFilters] = useState({
   paidDate: "",
   status: "",
 });
+
+const [searchText, setSearchText] = useState("");
+const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+const [filterStatus, setFilterStatus] = useState("");
+const [filterRange, setFilterRange] = useState("");
 
 
 useEffect(() => {
@@ -100,20 +109,11 @@ const fetchInvoice = (token: string) => {
     setCurrentPage(1);
   };
 
-  const calculateDueDays = (dueDate?: string) => {
-    if (!dueDate) return "-";
-    const due = new Date(dueDate);
-    const today = new Date();
-    const diffTime = due.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return `${diffDays} days`;
-  };
+ 
 
-  const handleclicksend = () => {
-    router.push("/admin-main/ui/send-invoice");
-  };
-
-  const filteredInvoices = invoices.filter((invoice) => {
+  // Combine filter modal and search text logic
+  const filterAndSearchInvoices = invoices.filter((invoice) => {
+    // Modal filters
     const matchesInvoiceId = filters.invoiceId
       ? invoice._id.toLowerCase().includes(filters.invoiceId.toLowerCase())
       : true;
@@ -138,7 +138,28 @@ const fetchInvoice = (token: string) => {
     const matchesStatus = filters.status
       ? invoice.invoiceStatus === filters.status
       : true;
-  
+    // Modal filter modal (status/range)
+    const matchesFilterStatus = filterStatus ? invoice.invoiceStatus === filterStatus : true;
+    const matchesFilterRange = filterRange
+      ? (invoice.dueDate ? (() => {
+          const due = new Date(invoice.dueDate!);
+          const today = new Date();
+          const diffTime = due.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (filterRange === "0 to 10") return diffDays >= 0 && diffDays <= 10;
+          if (filterRange === "10 to 20") return diffDays > 10 && diffDays <= 20;
+          if (filterRange === "20 to 30") return diffDays > 20 && diffDays <= 30;
+          if (filterRange === "More than 30 Days") return diffDays > 30;
+          return true;
+        })() : false)
+      : true;
+    // Search text
+    const keyword = searchText.toLowerCase();
+    const matchesSearch =
+      invoice._id.toLowerCase().includes(keyword) ||
+      invoice.student?.studentName?.toLowerCase().includes(keyword) ||
+      invoice.student?.studentId?.toLowerCase().includes(keyword) ||
+      invoice.courseName?.toLowerCase().includes(keyword);
     return (
       matchesInvoiceId &&
       matchesDate &&
@@ -147,315 +168,251 @@ const fetchInvoice = (token: string) => {
       matchesCourse &&
       matchesDueByDays &&
       matchesPaidDate &&
-      matchesStatus
+      matchesStatus &&
+      matchesFilterStatus &&
+      matchesFilterRange &&
+      matchesSearch
     );
   });
-  
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredInvoices.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+  const currentItems = filterAndSearchInvoices.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filterAndSearchInvoices.length / itemsPerPage);
 
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+  // Only one definition of calculateDueDays should exist, before its first use
+  const calculateDueDays = (dueDate?: string) => {
+    if (!dueDate) return "-";
+    const due = new Date(dueDate);
+    const today = new Date();
+    const diffTime = due.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return `${diffDays} days`;
   };
 
-  const goToPrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const goToPage = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
-
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-    const maxVisiblePages = 5;
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      const leftBound = Math.max(1, currentPage - 1);
-      const rightBound = Math.min(totalPages, currentPage + 1);
-
-      if (leftBound > 1) {
-        pageNumbers.push(1);
-        if (leftBound > 2) pageNumbers.push(-1);
-      }
-
-      for (let i = leftBound; i <= rightBound; i++) {
-        pageNumbers.push(i);
-      }
-
-      if (rightBound < totalPages) {
-        if (rightBound < totalPages - 1) pageNumbers.push(-1);
-        pageNumbers.push(totalPages);
-      }
-    }
-    return pageNumbers;
-  };
 
   return (
     <BaseLayout4>
-      <div className="p-8 mx-auto w-[1250px] pr-16">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-[20px] font-semibold">Invoice</h2>
-        </div>
-
-        <div className="flex justify-between items-center py-4">
-          {/* Left Section: Search + Filter */}
-          <div className="flex items-center space-x-3">
-            <input
-              type="text"
-              placeholder="Search here..."
-              className="border rounded-sm px-4 py-2 text-[12px] shadow outline-none"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-            <button
-  className="flex items-center bg-white border p-2 px-4 rounded-sm shadow text-[12px]"
-  onClick={() => setFilterOpen((prev) => !prev)}
->
-  <FaFilter className="mr-2 text-gray-600" />
-  Filter
-</button>
-
-
-          </div>
-
-          {/* Right Section: Add Invoice + Duration */}
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleclicksend}
-              disabled={!dashboardRead}
-              className="flex items-center bg-[#002244] text-white px-4 py-2 rounded-sm text-[12px] font-medium shadow"
-            >
-              + New Invoice
-            </button>
-            <select className="border rounded-sm px-4 py-2 shadow text-[12px] outline-none">
-              <option>Duration: Last month</option>
-              <option>Duration: Last week</option>
-              <option>Duration: Last year</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[500px] overflow-y-scroll scrollbar-none flex flex-col justify-between mt-4">
-          <div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full rounded-lg shadow bg-[#fff]">
-                <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
-                  <tr>
-                    <th className="p-3 py-5 text-center">Invoice ID</th>
-                    <th className="p-3 py-5 text-center">Date</th>
-                    <th className="p-3 py-5 text-center">Student Name</th>
-                    <th className="p-3 py-5 text-center">Student ID</th>
-                    <th className="p-3 py-5 text-center">Course</th>
-                    <th className="p-3 py-5 text-center">Due By Days</th>
-                    <th className="p-3 py-5 text-center">Paid Date</th>
-                    <th className="p-3 py-5 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentItems.length > 0 ? (
-                    currentItems.map((invoice, index) => (
-                      <tr
-                        key={invoice._id}
-                        className={`text-[9px] font-medium ${
-                          index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                        }`}
-                      >
-                        <td className="p-2 text-center">#{invoice._id.slice(-6)}</td>
-                        <td className="p-2 text-center">
-                          {new Date(invoice.createdDate).toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </td>
-                        <td className="p-2 text-center">{invoice.student?.studentName || "-"}</td>
-                        <td className="p-2 text-center">{invoice.student?.studentId || "-"}</td>
-                        <td className="p-2 text-center">{invoice.courseName}</td>
-                        <td className="p-2 text-center">{calculateDueDays(invoice.dueDate)}</td>
-                        <td className="p-2 text-center">
-                          {invoice.invoiceStatus === "Paid"
-                            ? new Date(invoice.lastUpdatedDate).toLocaleDateString(undefined, {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              })
-                            : "-"}
-                        </td>
-                        <td className="p-2 text-center">
-                          <span
-                            className={`inline-flex items-center justify-center w-12 h-4.5 px-3 py-1 rounded-md ${
-                              invoice.invoiceStatus === "Paid"
-                                ? "bg-green-100 text-green-800 border border-green-900"
-                                : "bg-yellow-100 text-yellow-800 border border-yellow-900"
-                            } text-[7px]`}
-                          >
-                            {invoice.invoiceStatus}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={8} className="p-4 text-center">
-                        No data available
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+      <AdminHeader currentSection="Invoice" />
+       
+        <div className="w-full bg-[#FAFAFB] dark:bg-[#343434] rounded-lg">
+      {/* Filter Modal */}
+      {isFilterModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 dark:bg-opacity-70">
+          <div className="bg-white dark:bg-zinc-900 text-black dark:text-white rounded-2xl shadow-lg p-5 w-[400px]">
+            <h2 className="text-base font-semibold mb-3">Filter by</h2>
+            {/* Student Name */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium mb-1">Student Name</label>
+              <input
+                type="text"
+                placeholder="Student Name"
+                className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+                value={filters.studentName}
+                onChange={e => setFilters(f => ({ ...f, studentName: e.target.value }))}
+              />
             </div>
-          </div>
-
-          {/* Pagination */}
-          <div className="flex items-center justify-between p-4">
-            <p className="text-[11px] text-gray-600">
-              Showing {(currentPage - 1) * itemsPerPage + 1}–
-              {Math.min(currentPage * itemsPerPage, filteredInvoices.length)} of{" "}
-              {filteredInvoices.length} entries
-            </p>
-
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={goToPrevPage}
-                disabled={currentPage === 1}
-                className={`p-1 rounded-lg shadow text-[10px] ${
-                  currentPage === 1
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 text-white hover:bg-gray-900"
-                }`}
+            {/* Student ID */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium mb-1">Student ID</label>
+              <input
+                type="text"
+                placeholder="Student ID"
+                className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+                value={filters.studentId}
+                onChange={e => setFilters(f => ({ ...f, studentId: e.target.value }))}
+              />
+            </div>
+            {/* Due By Days */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium mb-1">Due By Days</label>
+              <input
+                type="text"
+                placeholder="Due By Days"
+                className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+                value={filters.dueByDays}
+                onChange={e => setFilters(f => ({ ...f, dueByDays: e.target.value }))}
+              />
+            </div>
+            {/* Course */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium mb-1">Course</label>
+              <input
+                type="text"
+                placeholder="Course"
+                className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+                value={filters.course}
+                onChange={e => setFilters(f => ({ ...f, course: e.target.value }))}
+              />
+            </div>
+            {/* Paid Date */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium mb-1">Paid Date</label>
+              <input
+                type="date"
+                className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+                value={filters.paidDate}
+                onChange={e => setFilters(f => ({ ...f, paidDate: e.target.value }))}
+              />
+            </div>
+           
+            {/* Status */}
+            <div className="mb-5">
+              <label className="block text-sm font-medium mb-1">Status</label>
+              <select
+                className="w-full border rounded-md px-2 py-1.5 bg-white dark:bg-zinc-800 dark:text-white border-gray-300 dark:border-zinc-700 text-sm"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
               >
-                <FaChevronLeft size={8} />
+                <option value="">Select Status</option>
+                <option value="Paid">Paid</option>
+                <option value="Unpaid">Unpaid</option>
+              </select>
+            </div>
+            {/* Buttons */}
+            <div className="flex justify-between">
+              <button
+                className="px-4 py-1.5 text-sm rounded-md border bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-zinc-700"
+                onClick={() => {
+                  setFilters({
+                    invoiceId: "",
+                    date: "",
+                    studentName: "",
+                    studentId: "",
+                    course: "",
+                    dueByDays: "",
+                    paidDate: "",
+                    status: "",
+                  });
+                  setFilterRange("");
+                  setFilterStatus("");
+                  setIsFilterModalOpen(false);
+                }}
+              >
+                Reset
               </button>
-
-              {getPageNumbers().map((pageNumber, index) =>
-                pageNumber === -1 ? (
-                  <span key={index} className="px-2">
-                    ...
-                  </span>
-                ) : (
-                  <button
-                    key={index}
-                    onClick={() => goToPage(pageNumber)}
-                    className={`w-5 h-5 rounded-lg shadow text-[11px] ${
-                      currentPage === pageNumber
-                        ? "bg-gray-800 text-white"
-                        : "bg-gray-200 hover:bg-gray-300"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                )
-              )}
-
               <button
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className={`p-1 rounded-lg shadow text-[10px] ${
-                  currentPage === totalPages
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 text-white hover:bg-gray-900"
-                }`}
+                className="px-4 py-1.5 text-sm rounded-md bg-[#002244] text-white hover:bg-blue-700"
+                onClick={() => setIsFilterModalOpen(false)}
               >
-                <FaChevronRight size={8} />
+                Show {filterAndSearchInvoices.length} results
               </button>
             </div>
           </div>
-          
         </div>
-        {filterOpen && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-    <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl relative">
-      {/* Close button */}
-      <button
-        className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"
-        onClick={() => setFilterOpen(false)}
-        aria-label="Close"
-      >
-        &times;
-      </button>
-      <h3 className="text-lg font-semibold mb-4 text-center">Filter Invoice</h3>
-      <form
-        className="grid grid-cols-2 gap-4"
-        onSubmit={e => { e.preventDefault(); setCurrentPage(1); setFilterOpen(false); }}
-      >
+      )}
+    <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+      {/* Left: Search */}
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
         <input
-          className="border p-2 rounded text-xs"
-          placeholder="Invoice ID"
-          value={filters.invoiceId}
-          onChange={e => setFilters(f => ({ ...f, invoiceId: e.target.value }))}
+          type="text"
+          placeholder="Search by keyword"
+          className="bg-transparent outline-none text-[15px] w-52 py-3"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
         />
-        <input
-          type="date"
-          className="border p-2 rounded text-xs"
-          placeholder="Date"
-          value={filters.date}
-          onChange={e => setFilters(f => ({ ...f, date: e.target.value }))}
-        />
-        <input
-          className="border p-2 rounded text-xs"
-          placeholder="Student Name"
-          value={filters.studentName}
-          onChange={e => setFilters(f => ({ ...f, studentName: e.target.value }))}
-        />
-        <input
-          className="border p-2 rounded text-xs"
-          placeholder="Student ID"
-          value={filters.studentId}
-          onChange={e => setFilters(f => ({ ...f, studentId: e.target.value }))}
-        />
-        <input
-          className="border p-2 rounded text-xs"
-          placeholder="Course"
-          value={filters.course}
-          onChange={e => setFilters(f => ({ ...f, course: e.target.value }))}
-        />
-        <input
-          className="border p-2 rounded text-xs"
-          placeholder="Due By Days"
-          value={filters.dueByDays}
-          onChange={e => setFilters(f => ({ ...f, dueByDays: e.target.value }))}
-        />
-        <input
-          type="date"
-          className="border p-2 rounded text-xs"
-          placeholder="Paid Date"
-          value={filters.paidDate}
-          onChange={e => setFilters(f => ({ ...f, paidDate: e.target.value }))}
-        />
-        <select
-          className="border p-2 rounded text-xs"
-          value={filters.status}
-          onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}
-        >
-          <option value="">All Statuses</option>
-          <option value="Paid">Paid</option>
-          <option value="Unpaid">Unpaid</option>
-        </select>
-        <button
-          type="submit"
-          className="col-span-2 bg-[#002244] text-white rounded p-2 text-xs mt-2 w-44 ml-56 text-center justify-end"
-        >
-          Apply Filters
-        </button>
-      </form>
-    </div>
-  </div>
-)}
-
       </div>
-    </BaseLayout4>
+
+      {/* Center: Filter */}
+      <div
+        className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+        onClick={() => setIsFilterModalOpen(true)}
+      >
+        <MdTune className="w-4 h-4" />
+        <span>Filter</span>
+      </div>
+
+      {/* Right: Showing X of Y */}
+      <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+        <span className="text-left -ml-60">
+          Showing {currentItems.length} of {filterAndSearchInvoices.length}
+        </span>
+      </div>
+    </div>
+    <table className="table-fixed w-full">
+      <thead className="text-[13px] bg-[#4C6993] text-white">
+        <tr>
+          {["Invoice ID", "Date", "Student Name", "Student ID", "Course", "Due By Days", "Paid Date", "Status"].map((header, idx) => (
+            <th
+              key={idx}
+              className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+            >
+              {header}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {currentItems.map((row: Invoice, index: number) => (
+          <tr
+            key={row._id}
+            className={`text-[9px] text-center  mt-0 ${
+              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+            }`}
+          >
+            <td className="px-3 py-3 break-words text-[12px] text-left">
+              #{row._id.slice(-6)}
+            </td>
+            <td className="px-3 py-3 break-words text-[12px] text-left">
+              {new Date(row.createdDate).toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </td>
+            <td className="px-3 py-3 break-words text-[12px] text-left">
+              {row.student?.studentName || "-"}
+            </td>
+            <td className="px-3 py-3 break-words text-[12px] text-left">
+              {row.student?.studentId || "-"}
+            </td>
+            <td className="px-3 py-3 break-words text-[12px] text-left">
+              {row.courseName}
+            </td>
+            <td className="px-3 py-3 break-words text-[12px] text-left">
+              {calculateDueDays(row.dueDate)}
+            </td>
+            <td className="px-3 py-3 break-words text-[12px] text-left">
+              {row.invoiceStatus === "Paid"
+                ? new Date(row.lastUpdatedDate).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "-"}
+            </td>
+            <td className="px-3 py-3 break-words text-[12px] text-left">
+            <span
+                      className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-md
+                        ${
+                          row.invoiceStatus === "Paid"
+                            ? "bg-[#ECFDF3] text-[#377E36]"
+                            : row.invoiceStatus === "Pending"
+                            ? "bg-[#F0AD4E33] text-[#F0AD4E]"
+                            : "bg-gray-200 text-gray-700"
+                        }
+                      `}
+                    >
+                      {row.invoiceStatus}
+                    </span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    {/* END Filter Modal */}
+    {/* Pagination */}
+  
+  {/* Close the main content div for w-full bg-[#FAFAFB] ... */}
+  </div>
+    <Pagination
+      currentPage={currentPage}
+      totalPages={totalPages}
+      onPageChange={setCurrentPage}
+    />
+</BaseLayout4>
   );
 };
 

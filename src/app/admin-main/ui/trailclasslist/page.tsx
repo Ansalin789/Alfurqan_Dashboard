@@ -1,13 +1,16 @@
 "use client";
 
-import BaseLayout4 from "@/components/BaseLayout4";
-import React, { useState, useEffect } from "react";
-import {
-  FaChevronLeft,
-  FaChevronRight,
-  FaFilter,
+import { useState, useEffect } from "react";
+import Modal from "react-modal";
+import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
+import Pagination from "@/components/Pagination";
 
-} from "react-icons/fa";
+import Dashboard from "../../components/evaluationcard";
+import BaseLayout4 from "@/components/BaseLayout4";
+import { MdTune } from "react-icons/md";
+import axios from "axios";
+import AdminHeader from "../../components/AdminHeader";
 
 export interface TransformedUser {
   _id: string;
@@ -85,23 +88,28 @@ export interface TransformedUser {
   __v: number;
 }
 
-const Trailclasslist = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+const TrailSection = () => {
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState<TransformedUser[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const itemsPerPage = 11;
+  const router = useRouter();
   useEffect(() => {
- const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+    Modal.setAppElement("body");
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
+    if (!token) {
+      console.error("❌ AdminAuthToken not found");
+      return;
+    }
     if (token) {
       getAllUsers(token); // call your function with token
     } else {
@@ -111,25 +119,29 @@ const Trailclasslist = () => {
   // Fetch API Data
   const getAllUsers = async (token: string) => {
     try {
-      setIsLoading(true);
-      const response = await fetch("https://api.blackstoneinfomaticstech.com/alltrialclass",
+      if (!token) {
+        setErrorMessage("Authentication token missing. Please log in again.");
+        setIsLoading(false);
+        return;
+      }
+      const adminId = localStorage.getItem("AdminPortalId");
+      // setIsLoading(true);
+      const response = await axios.get(
+        `https://api.blackstoneinfomaticstech.com/alltrialclass`,
         {
+          params: { adminId: adminId },
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
-      
       );
-      if (!response.ok) {
+      console.log("Raw API Response:", JSON.stringify(response.data, null, 2));
+      if (!response) {
         throw new Error("Failed to fetch users");
       }
-      const data = await response.json();
-      const pendingClasses = data.evaluation.filter(
-        (item: { trialClassStatus: string }) =>
-          item.trialClassStatus === "PENDING"
-      );
-      setFilteredUsers(pendingClasses); // Only pending data
+      const data = await response.data;
+      setFilteredUsers(data.evaluation); // Show all data
       setErrorMessage(null);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -139,16 +151,14 @@ const Trailclasslist = () => {
     }
   };
 
-
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1);
+    setSearchTerm(query);
   };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
   const filteredItems = currentItems.filter((item) => {
     const searchFields = [
@@ -171,254 +181,135 @@ const Trailclasslist = () => {
     );
   });
 
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const goToPrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const goToPage = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
-
-  // Calculate page numbers to display
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-    const maxVisiblePages = 5; // Maximum number of page buttons to show
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      // Show first page, current page, and last page with ellipses
-      const leftBound = Math.max(1, currentPage - 1);
-      const rightBound = Math.min(totalPages, currentPage + 1);
-
-      if (leftBound > 1) {
-        pageNumbers.push(1);
-        if (leftBound > 2) {
-          pageNumbers.push(-1); // -1 represents ellipsis
-        }
-      }
-
-      for (let i = leftBound; i <= rightBound; i++) {
-        pageNumbers.push(i);
-      }
-
-      if (rightBound < totalPages) {
-        if (rightBound < totalPages - 1) {
-          pageNumbers.push(-1); // -1 represents ellipsis
-        }
-        pageNumbers.push(totalPages);
-      }
-    }
-
-    return pageNumbers;
-  };
-
   return (
     <BaseLayout4>
-      <div className="py-2 px-4 mx-auto w-full ">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-[18px] font-semibold ">Trial Class Request</h2>
-        </div>
-        <div className="flex flex-1 mt-8 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none ">
-          <div className="flex">
-            <input
-              type="text"
-              placeholder="Search here..."
-              className="border rounded-lg px-2 text-[12px] mr-4 shadow"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-            <button className="flex items-center bg-gray-200 p-2 rounded-lg shadow text-[12px]">
-              <FaFilter className="mr-2" /> Filter
-            </button>
-          </div>
-          <div className="flex">
-            <select className="border rounded-lg p-2 shadow text-[12px]">
-              <option>Duration: Last month</option>
-              <option>Duration: Last week</option>
-              <option>Duration: Last year</option>
-            </select>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[580px] overflow-y-scroll scrollbar-none flex flex-col justify-between mt-4">
-          <div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full rounded-lg shadow bg-[#fff]">
-                <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
-                  <tr>
-                    {[
-                      "Trial ID",
-                      "Student Name",
-                      "Mobile",
-                      "Country",
-                      "Course",
-                      "Preferred Teacher",
-                      "Assigned Teacher",
-                      "Time",
-                      "Class Status",
-                      "Payment Status",
-                      "Student Status",
-                    ].map((header, i) => (
-                      <th
-                        key={i}
-                        className="p-3 text-center w-[120px] break-words"
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="text-[9px] font-medium">
-                  {filteredItems.length > 0 ? (
-                    filteredItems.slice(0, 5).map((item, index) => (
-                      <tr
-                        key={item._id}
-                        className={
-                          index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                        }
-                      >
-                        <td className="p-3 text-center break-words">
-                          {item._id}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.student.studentFirstName}{" "}
-                          {item.student.studentLastName}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.student.studentPhone}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.student.studentCountry}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.student.learningInterest}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.student.preferredTeacher}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.assignedTeacher}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.classStartTime}
-                        </td>
-                        {/* Trial Class Status */}
-                        <td className="p-3 text-center break-words">
-                          <span
-                            className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                              item.trialClassStatus === "COMPLETED"
-                                ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                : "bg-green-100 text-green-800 border border-green-900 px-2"
-                            }`}
-                          >
-                            {item.trialClassStatus}
-                          </span>
-                        </td>
-                        {/* Payment Status */}
-                        <td className="p-3 text-center break-words">
-                          <span
-                            className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                              item.paymentStatus === "PAID"
-                                ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                : "bg-green-100 text-green-800 border border-green-900 px-2"
-                            }`}
-                          >
-                            {item.paymentStatus}
-                          </span>
-                        </td>
-                        {/* Account Status */}
-                        <td className="p-3 text-center break-words">
-                          <span
-                            className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                              item.status === "Active"
-                                ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                : "bg-green-100 text-green-800 border border-green-900 px-2"
-                            }`}
-                          >
-                            {item.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={11} className="p-4 text-center">
-                        No data available
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+      <AdminHeader currentSection="Trail Management" />
+      <div className="h-full w-full py-2 md:mr-10 scrollbar-none">
+        <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+          <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+            <div className="flex items-center gap-2 text-sm text-gray-500 px-2">
+              <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+              <input
+                type="text"
+                placeholder="Search"
+                className="bg-transparent outline-none text-[12px] w-52 py-3"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
+            <div
+              className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+              onClick={() => setIsFilterModalOpen(true)}
+            >
+              <MdTune className="w-4 h-4" />
+              <span>Filter</span>
+            </div>
+            <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+              <span className="text-left -ml-60 ">
+                Showing {filteredUsers.length === 0 ? 0 : indexOfFirstItem + 1}{" "}
+                to {Math.min(indexOfLastItem, filteredUsers.length)} of{" "}
+                {filteredUsers.length}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4">
-            <p className="text-[11px] text-gray-600">
-              Showing {(currentPage - 1) * itemsPerPage + 1}–
-              {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of{" "}
-              {filteredUsers.length} data
-            </p>
-
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={goToPrevPage}
-                disabled={currentPage === 1}
-                className={`p-1 rounded-lg shadow text-[10px] ${
-                  currentPage === 1
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 text-white hover:bg-gray-900"
-                }`}
-              >
-                <FaChevronLeft size={8} />
-              </button>
-
-              {getPageNumbers().map((pageNumber, index) =>
-                pageNumber === -1 ? (
-                  <span key={index} className="px-2">
-                    ...
-                  </span>
-                ) : (
-                  <button
-                    key={index}
-                    onClick={() => goToPage(pageNumber)}
-                    className={`w-5 h-5 rounded-lg shadow text-[11px] ${
-                      currentPage === pageNumber
-                        ? "bg-gray-800 text-white"
-                        : "bg-gray-200 hover:bg-gray-300"
+          {/* Table Section */}
+          <table
+            className="table-auto w-full"
+            style={{ width: "100%", tableLayout: "fixed" }}
+          >
+              <thead className="text-[11px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+              <tr className="font-medium">
+              {[
+                  { label: "Trial ID", width: "w-[10%]" },
+                  { label: "Student Name", width: "w-[12%]" },
+                  { label: "Contact", width: "w-[10%]" },
+                  { label: "Country", width: "w-[8%]" },
+                  { label: "Course", width: "w-[10%]" },
+                  { label: "Preferred Teacher", width: "w-[10%]" },
+                  { label: "Assigned Teacher", width: "w-[10%]" },
+                  { label: "Date", width: "w-[10%]" },
+                  { label: "Time", width: "w-[10%]" },
+                ].map((header, i) => (
+                  <th
+                    key={header.label}
+                    className={`text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
+                    >
+                    {header.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredItems.length > 0 ? (
+                filteredItems.map((item, index) => (
+                  <tr
+                    key={item._id}
+                    className={`text-[12px] ${
+                      index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C] "
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    {pageNumber}
-                  </button>
-                )
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] break-words w-[10%]">
+                      {item._id}
+                    </td>
+                    <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%]">
+                      {item.student.studentFirstName}{" "}
+                      {item.student.studentLastName}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] break-words w-[10%]">
+                      {item.student.studentPhone}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[8%]">
+                      {item.student.studentCountry}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[10%]">
+                      {item.student.learningInterest}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[10%]">
+                      {item.student.preferredTeacher}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[10%]">
+                      {item.assignedTeacher}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[8%]">
+                      {item.classStartDate
+                        ? new Date(item.classStartDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
+                          )
+                        : ""}
+                    </td>
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[8%]">
+                      {item.classStartTime}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={12} className="p-4 text-center">
+                    No data available
+                  </td>
+                </tr>
               )}
-
-              <button
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className={`p-1 rounded-lg shadow text-[10px] ${
-                  currentPage === totalPages
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 text-white hover:bg-gray-900"
-                }`}
-              >
-                <FaChevronRight size={8} />
-              </button>
-            </div>
-          </div>
+            </tbody>
+          </table>
+        </div>
+        {/* Pagination */}
+        <div className="mt-3">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(filteredUsers.length / itemsPerPage)}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </BaseLayout4>
   );
 };
 
-export default Trailclasslist;
+export default TrailSection;

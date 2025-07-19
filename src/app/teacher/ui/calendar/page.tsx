@@ -341,7 +341,7 @@ const TeacherSchedulePage = () => {
     const dayEvents = getEventsForDate(currentDate);
 
     return (
-      <div className="space-y-4 h-[600px] overflow-y-scroll scrollbar-none">
+      <div className="space-y-4 h-[540px] overflow-y-scroll scrollbar-none">
         {dayEvents.map((event, idx) => (
           <div
             key={idx}

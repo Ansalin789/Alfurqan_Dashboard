@@ -1,8 +1,12 @@
+// Updated SalaryCard with search, filter, and pagination logic
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import { Bell, Sun, X } from "lucide-react";
+import { Bell, Sun, X, Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
+import Modal from "react-modal";
+import Pagination from "@/components/Pagination";
 
 export interface StudentClassData {
   _id: string;
@@ -32,6 +36,7 @@ export interface StudentClassData {
   scheduleStatus: string;
   classLink: string;
   status: string;
+
   createdBy: string;
   sessionClassType: string;
   sessionStarttime: string;
@@ -48,335 +53,394 @@ export interface StudentClassApiResponse {
 const SalaryCard = () => {
   const [classData, setClassData] = useState<StudentClassData[]>([]);
   const [activeTab, setActiveTab] = useState("Upcoming");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredClasses, setFilteredClasses] = useState<StudentClassData[]>(
+    []
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 11;
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(5);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      message: "New student registration pending approval",
-      seen: false,
-      time: "2 mins ago",
-      type: "urgent",
-    },
-    {
-      id: 2,
-      message: "Class rescheduled for tomorrow",
-      seen: false,
-      time: "1 hour ago",
-      type: "important",
-    },
-    {
-      id: 3,
-      message: "Payment received from student",
-      seen: false,
-      time: "3 hours ago",
-      type: "payment",
-    },
-    {
-      id: 4,
-      message: "System maintenance scheduled",
-      seen: true,
-      time: "Yesterday",
-      type: "system",
-    },
-    {
-      id: 5,
-      message: "New message from teacher",
-      seen: true,
-      time: "2 days ago",
-      type: "message",
-    },
-  ]);
-
-  const notificationRef = useRef<HTMLDivElement>(null);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    studentName: "",
+    courseName: "",
+    teacherName: "",
+    sessionClassType: "",
+    fromDate: "",
+    toDate: "",
+    scheduleStatus: "",
+  });
 
   useEffect(() => {
-       const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("AdminAuthToken")
+        : null;
+    if (!token) return;
+    fetchClassData(token);
+  }, []);
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
-        if (token) {
-          fetchClassData(token); // Or call the function that performs the GET request
-        } else {
-          console.log("No auth token found.");
-        }
-      }, []);
-    const fetchClassData = async (token: string) => {
-      try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/classShedule", {
+  const fetchClassData = async (token: string) => {
+    try {
+      const response = await fetch(
+        "https://api.blackstoneinfomaticstech.com/classShedule",
+        {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-        });
-        const data: StudentClassApiResponse = await response.json();
-        setClassData(data.students || []);
-      } catch (error) {
-        console.error("Error fetching class data:", error);
-      }
-    };
-
-
-  // Close notifications when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target as Node)
-      ) {
-        setShowNotifications(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const toggleNotifications = () => {
-    if (!showNotifications) {
-      // Mark all as seen when opening
-      const updatedNotifications = notifications.map((notif) => ({
-        ...notif,
-        seen: true,
-      }));
-      setNotifications(updatedNotifications);
-      setNotificationCount(0);
-    }
-    setShowNotifications(!showNotifications);
-  };
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "urgent":
-        return "🔴";
-      case "important":
-        return "🟡";
-      case "payment":
-        return "💰";
-      case "system":
-        return "⚙️";
-      case "message":
-        return "✉️";
-      default:
-        return "🔵";
+        }
+      );
+      const data: StudentClassApiResponse = await response.json();
+      setClassData(data.students || []);
+    } catch (error) {
+      console.error("Error fetching class data:", error);
     }
   };
 
   const upcomingData = classData.filter((item) => item.status !== "Completed");
   const completedData = classData.filter((item) => item.status === "Completed");
+  const baseData = activeTab === "Upcoming" ? upcomingData : completedData;
 
-  const filteredData = activeTab === "Upcoming" ? upcomingData : completedData;
-  const paginatedCourseData = filteredData.slice(
+  const studentNames = Array.from(
+    new Set(
+      classData.map(
+        (c) => `${c.student.studentFirstName} ${c.student.studentLastName}`
+      )
+    )
+  );
+  const courseNames = Array.from(
+    new Set(classData.map((c) => c.course.courseName))
+  );
+  const teacherNames = Array.from(
+    new Set(classData.map((c) => c.teacher?.teacherName).filter(Boolean))
+  );
+  const classTypes = Array.from(
+    new Set(classData.map((c) => c.sessionClassType).filter(Boolean))
+  );
+
+  useEffect(() => {
+    setFilteredClasses(baseData);
+  }, [classData, activeTab]);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    const lowerQuery = query.toLowerCase();
+
+    const filtered = baseData.filter((item) => {
+      const combined = [
+        item._id,
+        item.student.studentFirstName,
+        item.student.studentLastName,
+        item.student.studentEmail,
+        item.course.courseName,
+        item.teacher.teacherName,
+        item.package,
+        item.status,
+        item.scheduleStatus,
+        item.startDate,
+        item.endDate,
+        ...(item.startTime || []),
+        ...(item.endTime || []),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return combined.includes(lowerQuery);
+    });
+    setFilteredClasses(filtered);
+    setCurrentPage(1);
+  };
+
+  const handleApplyFilters = () => {
+    const from = filters.fromDate ? new Date(filters.fromDate) : null;
+    const to = filters.toDate ? new Date(filters.toDate) : null;
+    const filtered = baseData.filter((item) => {
+      const fullName = `${item.student.studentFirstName} ${item.student.studentLastName}`;
+      const start = new Date(item.startDate);
+      return (
+        (!filters.studentName || fullName === filters.studentName) &&
+        (!filters.courseName ||
+          item.course.courseName === filters.courseName) &&
+        (!filters.teacherName ||
+          item.teacher?.teacherName === filters.teacherName) &&
+        (!filters.sessionClassType ||
+          item.sessionClassType === filters.sessionClassType) &&
+        (!filters.scheduleStatus ||
+          item.scheduleStatus === filters.scheduleStatus) &&
+        (!from || start >= from) &&
+        (!to || start <= to)
+      );
+    });
+
+    setFilteredClasses(filtered);
+    setIsFilterModalOpen(false);
+    setCurrentPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      studentName: "",
+      courseName: "",
+      teacherName: "",
+      sessionClassType: "",
+      fromDate: "",
+      toDate: "",
+      scheduleStatus: "",
+    });
+
+    setFilteredClasses(baseData);
+    setCurrentPage(1);
+  };
+
+  const paginatedCourseData = filteredClasses.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
 
   return (
     <BaseLayout4>
-      <div className="w-full h-screen bg-[#e9e9e9] px-4 py-6 mr-6">
-        <div className="flex justify-between items-start mb-1.5">
-          {/* Left Side - Expenses Heading */}
-          <div className="text-start">
-            <h2 className="text-black text-[22px] font-semibold">
-              All Classes
-            </h2>
-          </div>
-
-          {/* Right Side - Icons and Duration */}
-          <div className="flex items-center gap-4">
-            {/* Icons */}
-            <div className="flex items-center gap-4 relative">
-              <button className="p-2 bg-[#CED4DC] rounded-lg shadow hover:bg-gray-200">
-                <Sun size={16} className="text-black" />
-              </button>
-
+     
+      <div className="md:p-0 mt-4 mx-auto">
+        <div className="h-full w-full flex flex-col justify-between">
+          <div className="p-0 justify-between flex flex-col">
+            <div className="flex space-x-6 px-4 py-2 rounded-md">
               <button
-                className="p-2 bg-[#CED4DC] rounded-lg shadow hover:bg-gray-200 relative transition-all duration-200 hover:scale-105"
-                onClick={toggleNotifications}
+                onClick={() => setActiveTab("Upcoming")}
+                className={`relative text-[14px] transition font-medium ${
+                  activeTab === "Upcoming"
+                    ? "text-[#576CBC] font-semibold"
+                    : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+                }`}
               >
-                <Bell size={16} className="text-black" />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                    {notificationCount}
-                  </span>
+                Scheduled ({upcomingData.length})
+                {activeTab === "Upcoming" && (
+                  <span className="absolute left-0 ml-5 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC]" />
                 )}
               </button>
-
-              {/* Notification Panel */}
-              {showNotifications && (
-                <div
-                  ref={notificationRef}
-                  className="absolute right-0 top-14 w-80 backdrop-blur-xl bg-white/40 border border-white/20 rounded-xl shadow-2xl z-50 
-                    transform transition-all duration-300 ease-out origin-top-right animate-fade-in-up scale-100"
-                  style={{ boxShadow: "0 15px 35px rgba(0, 0, 0, 0.2)" }}
-                >
-                  <div className="p-4 border-b border-white/20 flex justify-between items-center bg-white/40 backdrop-blur-lg rounded-t-xl">
-                    <h4 className="font-semibold text-gray-900">
-                      Notifications
-                    </h4>
-                    <button
-                      onClick={() => setShowNotifications(false)}
-                      className="text-gray-600 hover:text-gray-800 transition-colors"
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
-
-                  <div className="h-60 overflow-y-auto scrollbar-hide p-1">
-                    {notifications.length > 0 ? (
-                      notifications.map((notification) => (
-                        <div
-                          key={notification.id}
-                          className={`p-2 border-b border-white/20 transition-colors duration-200 rounded-lg
-                              ${
-                                notification.seen
-                                  ? "bg-white/50 text-gray-700 hover:bg-white/60"
-                                  : "bg-blue-100 text-gray-900 font-semibold hover:bg-blue-200"
-                              } 
-                              backdrop-blur-md`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <span className="text-sm mt-0.5">
-                              {getNotificationIcon(notification.type)}
-                            </span>
-                            <div className="flex-1">
-                              <p className="text-xs">{notification.message}</p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {notification.time}
-                              </p>
-                            </div>
-                            {!notification.seen && (
-                              <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5"></span>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-6 text-center">
-                        <div className="text-gray-400 mb-2">
-                          <Bell size={40} className="mx-auto" />
-                        </div>
-                        <p className="text-gray-600">No new notifications</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+              <button
+                onClick={() => setActiveTab("completed")}
+                className={`relative text-[14px] transition font-medium ${
+                  activeTab === "completed"
+                    ? "text-[#576CBC] font-semibold"
+                    : "text-[#0A0A12] dark:text-[#fff] opacity-80"
+                }`}
+              >
+                Completed ({completedData.length})
+                {activeTab === "completed" && (
+                  <span className="absolute left-0 ml-5 -bottom-1 w-[60px] h-[2px] rounded-full bg-[#576CBC]" />
+                )}
+              </button>
             </div>
-          </div>
-        </div>
-        <br />
-        <div className="flex justify-between items-start  flex-wrap"></div>
-
-        <div className="overflow-x-auto bg-white rounded-lg border-2 border-[#1C3557] w-full max-w-[1355px] mx-auto ">
-          {/* Tabs */}
-          <div className=" flex gap-4 ">
-            <button
-              onClick={() => {
-                setActiveTab("Upcoming");
-                setCurrentPage(1);
-              }}
-              className={`px-4 py-2 text-sm font-semibold border-b-2 transition duration-200 ${
-                activeTab === "Upcoming"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-700 hover:text-black"
-              }`}
-            >
-              Upcoming
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("Completed");
-                setCurrentPage(1);
-              }}
-              className={`px-4 py-2 text-sm font-semibold border-b-2 transition duration-200 ${
-                activeTab === "Completed"
-                  ? "border-black text-black"
-                  : "border-transparent text-gray-700 hover:text-black"
-              }`}
-            >
-              Completed
-            </button>
-          </div>
-
-          <table className="w-full table-auto bg-white rounded-lg shadow text-xs">
-            <thead className="border-b border-[#1C3557] text-[11px] font-semibold">
-              <tr className="bg-gray-100">
-                <th className="p-3 text-center">ID</th>
-                <th className="p-3 text-center">Student Name</th>
-                <th className="p-3 text-center">Teacher Name</th>
-                <th className="p-3 text-center">Courses</th>
-                <th className="p-3 text-center">Class</th>
-                <th className="p-3 text-center">Date</th>
-                <th className="p-3 text-center">Scheduled</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedCourseData.map((row, index) => (
-                <tr
-                  key={row._id}
-                  className={`text-[9px] text-center font-medium ${
-                    index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                  }`}
+            <div className="mt-2">
+              {/* Search + Filter Header */}
+              <div className="w-full h-11 bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-gray-400  dark:text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by keyword"
+                    className="bg-transparent outline-none text-sm w-52"
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                  />
+                </div>
+                <div
+                  className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer"
+                  onClick={() => setIsFilterModalOpen(true)}
                 >
-                  <td className="p-2">{row._id}</td>
-                  <td className="p-2">
-                    {row.student.studentFirstName} {row.student.studentLastName}
-                  </td>
-                  <td className="p-2">{row.teacher.teacherName}</td>
-                  <td className="p-2">{row.course?.courseName || "-"}</td>
-                  <td className="p-2">{row.sessionClassType}</td>
-                  <td className="p-2">
-                    {new Date(row.startDate).toLocaleDateString()}
-                  </td>
-                  <td className="p-2">
-                    {activeTab === "Completed" ? (
-                      <span className="inline-flex items-center justify-center w-32 h-6 px-3 py-1 rounded-2xl bg-green-600 text-white">
-                        Completed
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center justify-center w-32 h-6 px-3 py-1 rounded-2xl bg-[#1C3557] text-white">
-                         {row.startTime?.[0]} - {row.endTime?.[0]}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {/* Pagination */}
-          <div className="flex justify-between items-center mt-4 p-2 text-sm text-gray-600">
-            <p className="text-[11px]">
-              Showing {paginatedCourseData.length} of {filteredData.length}{" "}
-              classes
-            </p>
-            <div className="flex gap-2">
-              {Array.from(
-                { length: Math.ceil(filteredData.length / itemsPerPage) },
-                (_, i) => (
-                  <button
-                    key={i}
-                    className={`w-5 h-5 text-[11px] flex items-center justify-center rounded ${
-                      currentPage === i + 1
-                        ? "bg-[#1C3557] text-white"
-                        : "text-[#1C3557] border border-[#1C3557]"
-                    }`}
-                    onClick={() => setCurrentPage(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                )
-              )}
+                  <MdTune className="w-4 h-4" />
+                  <span>Filter</span>
+                </div>
+                <div className="text-sm text-gray-500">
+                  Showing {paginatedCourseData.length} of{" "}
+                  {filteredClasses.length}
+                </div>
+              </div>
+            </div>
+            {/* Table */}
+            <div className="overflow-x-auto scrollbar-none">
+              <table
+                className="w-full table-auto border-collapse text-[13px]"
+                style={{ tableLayout: "fixed" }}
+              >
+                <thead className="text-[12px] bg-[#4C6993] text-white">
+                  <tr>
+                    <th className="text-left px-4 py-3 w-[190px]">ID</th>
+                    <th className="text-left px-4 py-3 w-[180px]">
+                      Student Name
+                    </th>
+                    <th className="text-left px-4 py-3 w-[150px]">
+                      Teacher Name
+                    </th>
+                    <th className="text-left px-4 py-3  w-[150px]">Course</th>
+                    <th className="text-left px-4 py-3 w-[150px]">Class</th>
+                    <th className="text-left px-4 py-3 w-[150px]">Date</th>
+                    <th className="text-left px-4 py-3 w-[150px]">Scheduled</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedCourseData.map((row) => (
+                    <tr
+                      key={row._id}
+                      className="even:bg-gray-50 odd:bg-gray-100"
+                    >
+                      <td className="px-3 py-3 text-[11px] text-left break-words whitespace-normal">
+                        {row._id}
+                      </td>
+                      <td className=" text-[#3D8FDE] px-3 py-3 text-left  break-words whitespace-normal">
+                        {row.student?.studentFirstName}{" "}
+                        {row.student?.studentLastName}
+                      </td>
+                      <td className="px-3 py-3 text-left w-[180px] break-words whitespace-normal">
+                        {row.teacher?.teacherName || "N/A"}
+                      </td>
+
+                      <td className="px-3 py-3 text-left w-[180px] break-words whitespace-normal">
+                        {row.course?.courseName || "N/A"}
+                      </td>
+                      <td className="px-3 py-3 text-left w-[180px] break-words whitespace-normal">
+                        {row.sessionClassType}
+                      </td>
+                      <td className="px-3 py-3 text-left w-[180px] break-words whitespace-normal">
+                        {new Date(row.startDate).toLocaleDateString()}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
+                        <span
+                          className={`px-3 py-2 font-semibold text-[11px] text-center  rounded-md ${
+                            row.scheduleStatus === "Scheduled"
+                              ? "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
+                              : row.scheduleStatus === "Rescheduled"
+                              ? "bg-[#E4E4E4] text-[#343E59] dark:bg-[#DEDEDE]/20 dark:text-[#DEDEDE]"
+                              : "bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633]"
+                          }`}
+                        >
+                          {row.scheduleStatus || "UNKNOWN"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-4">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
           </div>
         </div>
       </div>
+      {/* Filter Modal */}
+      <Modal
+        isOpen={isFilterModalOpen}
+        onRequestClose={() => setIsFilterModalOpen(false)}
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white w-[650px]"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
+      >
+        <h2 className="text-lg font-semibold mb-4">Filter by</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <select
+            value={filters.studentName}
+            onChange={(e) =>
+              setFilters({ ...filters, studentName: e.target.value })
+            }
+            className="p-2 border rounded"
+          >
+            <option value="">Select Student</option>
+            {studentNames.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <select
+            value={filters.courseName}
+            onChange={(e) =>
+              setFilters({ ...filters, courseName: e.target.value })
+            }
+            className="p-2 border rounded"
+          >
+            <option value="">Select Course</option>
+            {courseNames.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <select
+            value={filters.teacherName}
+            onChange={(e) =>
+              setFilters({ ...filters, teacherName: e.target.value })
+            }
+            className="p-2 border rounded"
+          >
+            <option value="">Select Teacher</option>
+            {teacherNames.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={filters.sessionClassType}
+            onChange={(e) =>
+              setFilters({ ...filters, sessionClassType: e.target.value })
+            }
+            className="p-2 border rounded"
+          >
+            <option value="">Select Class Type</option>
+            {classTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            value={filters.fromDate}
+            onChange={(e) =>
+              setFilters({ ...filters, fromDate: e.target.value })
+            }
+            className="p-2 border rounded"
+          />
+          <input
+            type="date"
+            value={filters.toDate}
+            onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
+            className="p-2 border rounded"
+          />
+          <select
+            value={filters.scheduleStatus}
+            onChange={(e) =>
+              setFilters({ ...filters, scheduleStatus: e.target.value })
+            }
+            className="p-2 border rounded"
+          >
+            <option value="">Select Status</option>
+            <option value="Scheduled">Scheduled</option>
+            <option value="Rescheduled">Rescheduled</option>
+          </select>
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <button
+            onClick={handleResetFilters}
+            className="px-4 py-2 border text-[#576CBC] border-[#576CBC] rounded"
+          >
+            Reset
+          </button>
+          <button
+            onClick={handleApplyFilters}
+            className="px-4 py-2 bg-[#576CBC] text-white rounded"
+          >
+            Show {filteredClasses.length} results
+          </button>
+        </div>
+      </Modal>
     </BaseLayout4>
   );
 };

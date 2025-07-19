@@ -1,13 +1,17 @@
 "use client";
 
+import AdminHeader from "@/app/admin-main/components/AdminHeader";
 import BaseLayout4 from "@/components/BaseLayout4";
 import axios from "axios";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FaRegSquare, FaRegCheckSquare } from "react-icons/fa";
+import { FaRegMinusSquare } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 type PermissionType = "read" | "write" | "delete";
+
 interface EmployeeAccessData {
   _id: string;
   employeeId: string;
@@ -166,21 +170,20 @@ const AcademiccoachModuleAccess = () => {
       const selected: Record<string, boolean> = {};
       const modulePermissions: ModuleAccess = {};
 
-  modules.forEach((module) => {
-  const key = getModuleKey(module);
-  const perms = academicModules[key] ?? {
-    read: false,
-    write: false,
-    delete: false,
-  };
+      modules.forEach((module) => {
+        const key = getModuleKey(module);
+        const perms = academicModules[key] ?? {
+          read: false,
+          write: false,
+          delete: false,
+        };
 
-  // ✅ Corrected: Mark as selected if any permission is true
-  selected[key] = perms.read || perms.write || perms.delete;
+        // ✅ Corrected: Mark as selected if any permission is true
+        selected[key] = perms.read || perms.write || perms.delete;
 
-  // ✅ Store permissions under normalized key
-  modulePermissions[key] = perms;
-});
-
+        // ✅ Store permissions under normalized key
+        modulePermissions[key] = perms;
+      });
 
       setSelectedModules(selected);
       setPermissions((prev) => ({
@@ -199,97 +202,97 @@ const AcademiccoachModuleAccess = () => {
     }
   }, [isRedirecting, router]);
 
-const toggleModule = (module: string, permission?: PermissionType) => {
-  const key = getModuleKey(module);
+  const toggleModule = (module: string, permission?: PermissionType) => {
+    const key = getModuleKey(module);
 
-  if (!permission) {
-    setSelectedModules((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    if (!permission) {
+      setSelectedModules((prev) => ({
+        ...prev,
+        [key]: !prev[key],
+      }));
 
-    setPermissions((prev) => ({
-      ...prev,
-      academicmodules: {
-        ...prev.academicmodules,
-        [key]: {
-          read: !prev.academicmodules[key]?.read,
-          write: !prev.academicmodules[key]?.write,
-          delete: !prev.academicmodules[key]?.delete,
+      setPermissions((prev) => ({
+        ...prev,
+        academicmodules: {
+          ...prev.academicmodules,
+          [key]: {
+            read: !prev.academicmodules[key]?.read,
+            write: !prev.academicmodules[key]?.write,
+            delete: !prev.academicmodules[key]?.delete,
+          },
         },
-      },
-    }));
-  } else {
-    setPermissions((prev) => ({
-      ...prev,
-      academicmodules: {
-        ...prev.academicmodules,
-        [key]: {
-          ...prev.academicmodules[key],
-          [permission]: !prev.academicmodules[key]?.[permission],
+      }));
+    } else {
+      setPermissions((prev) => ({
+        ...prev,
+        academicmodules: {
+          ...prev.academicmodules,
+          [key]: {
+            ...prev.academicmodules[key],
+            [permission]: !prev.academicmodules[key]?.[permission],
+          },
         },
-      },
-    }));
-  }
-};
-
+      }));
+    }
+  };
 
   const handleUpdateAccess = async () => {
     const roleAccess = {
-      academicCoach:true,
+      academicCoach: true,
       academicmodules: permissions.academicmodules,
     };
 
     try {
-     const token =
-    typeof window !== "undefined" ? localStorage.getItem("AdminAuthToken") : null;
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("AdminAuthToken")
+          : null;
 
-  if (!token) {
-    console.error("❌ AdminAuthToken not found");
-    return;
-  }
+      if (!token) {
+        console.error("❌ AdminAuthToken not found");
+        return;
+      }
       const response = await axios.put(
         `https://api.blackstoneinfomaticstech.com/update-access/${employeeId}`,
         { roleAccess },
-         {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
-            },
-          }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      console.log('Access updated successfully:', response.data);
-      toast.success('Access updated successfully!'); // ✅ Show success toast
+      console.log("Access updated successfully:", response.data);
+      toast.success("Access updated successfully!"); // ✅ Show success toast
       setTimeout(() => {
-        router.push('/admin-main/ui/settings'); 
+        router.push("/admin-main/ui/settings");
       }, 2000);
     } catch (error) {
-      console.error('Failed to update access:', error);
-      toast.error('Failed to update access'); // ✅ Show error toast
+      console.error("Failed to update access:", error);
+      toast.error("Failed to update access"); // ✅ Show error toast
     }
   };
 
-
   return (
     <BaseLayout4>
+      <AdminHeader currentSection="Academic Module Access" />
       <ToastContainer
         position="top-right"
         autoClose={2000}
         hideProgressBar={false}
       />
-      <div className="w-full min-h-screen p-5 flex flex-col items-center">
-        <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
-          Academic Module Access
-        </h1>
-
-        <div className="bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
-          <table className="w-full text-left min-w-[900px]">
-            <thead>
-              <tr className="border-b text-[#101828] font-medium text-sm">
-                <th className="p-3">Modules</th>
-                <th className="p-3 text-center">Read</th>
-                <th className="p-3 text-center">Write</th>
-                <th className="p-3 text-center">Delete</th>
+      <div className="mt-4">
+        <div className="w-full bg-[#FAFAFB] dark:bg-[#343434]">
+          <table className="w-full table-auto">
+            <thead className="text-[12px] bg-[#4C6993] text-white">
+              <tr>
+                <th className="p-3 text-[13px] text-left flex ml-1 flex-row gap-3 ">
+                  <FaRegMinusSquare className="rounded mt-1 text-[13px]" />
+                  Modules
+                </th>
+                <th className="p-3 text-center w-[20%]"></th>
+                <th className="p-3 text-center w-[20%]"></th>
+                <th className="p-3 text-center w-[20%]"></th>
               </tr>
             </thead>
             <tbody>
@@ -297,23 +300,15 @@ const toggleModule = (module: string, permission?: PermissionType) => {
                 const moduleKey = module.toLowerCase();
 
                 return (
-                  <tr
-                    key={module}
-                    className="border-t hover:bg-gray-50 transition"
-                  >
-                    <td className="p-4 flex items-center space-x-3">
-                      <button
-                        type="button"
-                        onClick={() => toggleModule(module)}
-                      >
-                        {selectedModules[getModuleKey(module)] ? (
-                          <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
-                        ) : (
-                          <FaRegSquare className="text-gray-400 text-sm" />
-                        )}
-                      </button>
+                  <tr key={module} className="border-t ">
+                    <td className="p-4 flex items-center w-[74%] space-x-3 ">
+                      <input
+                        type="checkbox"
+                        checked={selectedModules[getModuleKey(module)] || false}
+                        onChange={() => toggleModule(module)}
+                      />
 
-                      <span className="text-[12px] text-[#344054]">
+                      <span className="text-[12px] text-[#344054] dark:text-[#fff]">
                         {module}
                       </span>
                     </td>
@@ -331,6 +326,9 @@ const toggleModule = (module: string, permission?: PermissionType) => {
                           }
                           className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
                         />
+                        <span className="ml-2 text-[12px] text-[#344054] dark:text-[#fff]">
+                          {perm.charAt(0).toUpperCase() + perm.slice(1)}
+                        </span>
                       </td>
                     ))}
                   </tr>
@@ -338,15 +336,20 @@ const toggleModule = (module: string, permission?: PermissionType) => {
               })}
             </tbody>
           </table>
-
-          <div className="flex justify-center mt-4">
-            <button
-              onClick={handleUpdateAccess}
-              className="bg-[#012A4A] hover:bg-[#011d33] text-white font-sm px-4 py-1 rounded-lg shadow-md transition"
-            >
-              Submit
-            </button>
-          </div>
+        </div>
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={() => setSelectedModules({})} // Resetting selected modules
+            className="bg-[#e4e7f4] border border-[#576CBC] text-[#576CBC] text-[13px] px-6 py-1 rounded-lg shadow-md transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleUpdateAccess}
+            className="bg-[#576CBC] text-white text-[13px] px-6 py-1 rounded-lg shadow-md transition ml-2"
+          >
+            Submit
+          </button>
         </div>
       </div>
     </BaseLayout4>

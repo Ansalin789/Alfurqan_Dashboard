@@ -156,17 +156,17 @@ export default function DashboardClasses() {
           {
             label: "Pending",
             value: parseFloat(data.pendingPercentage),
-            color: "bg-[#16C7F0]",
+            color: "bg-[#8B93D2]",
           },
           {
             label: "Rescheduled",
             value: parseFloat(data.reschedulePercentage),
-            color: "bg-[#00579B]",
+            color: "bg-[#9AD7D5]",
           },
           {
             label: "Completed",
             value: parseFloat(data.completePercentage),
-            color: "bg-[#4A368F]",
+            color: "bg-[#B48BD2]",
           },
           {
             label: "total",
@@ -207,8 +207,8 @@ export default function DashboardClasses() {
       const totalCount = regular + trial;
 
       setPieData([
-        { name: "Regular", value: regular, color: "#29CDFF" },
-        { name: "Trial", value: trial, color: "#993AFF" },
+        { name: "Regular", value: regular, color: "#74E7AA" },
+        { name: "Trial", value: trial, color: "#A9B1FF" },
       ]);
       setTotal(totalCount);
     } catch (error) {

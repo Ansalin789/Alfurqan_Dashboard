@@ -1,7 +1,12 @@
-// components/ApplicantsList.tsx
+"use client";
+
 import React, { useEffect, useState } from "react";
-import {  FileText, Star, Upload, X } from "lucide-react";
+import { MoreVertical, Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
 import axios from "axios";
+import ReactDOM from "react-dom";
+import { useRouter } from "next/navigation";
+import { TiAttachment } from "react-icons/ti";
 
 interface Supervisor {
   supervisorId: string;
@@ -41,50 +46,24 @@ interface Applicant {
   supervisor?: Supervisor;
 }
 
-
-const  ApplicantsList: React.FC = () => {
-  // Static data for demonstration
-   const [applicants, setApplicants] = useState<Applicant[]>([]);
+const ApplicantsList: React.FC = () => {
+  const router = useRouter();
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
 
   const [activeTab, setActiveTab] = React.useState("All");
   const [currentPage, setCurrentPage] = React.useState(1);
-  const [openMenuId, setOpenMenuId] = React.useState<string | null>(null);
-  const [showAddApplicant, setShowAddApplicant] = React.useState(false);
-  const [selectedApplicant, setSelectedApplicant] = React.useState<Applicant | null>(null);
-  // Static form state
-  const [addApplicantForm, setAddApplicantForm] = React.useState({
-    applicationDate: "",
-    firstName: "",
-    lastName: "",
-    gender: "",
-    email: "",
-    phone: "",
-    country: "",
-    city: "",
-    position: "Arabic Teacher",
-    expectedSalary: "",
-    workingHours: "",
-    resume: null as File | null,
-    comment: ""
-  });
 
-  // Static view state
-  const [quranReading, setQuranReading] = React.useState("Basic");
-  const [tajweed, setTajweed] = React.useState("Medium");
-  const [arabicSpeaking, setArabicSpeaking] = React.useState("Advanced");
-  const [arabicWriting, setArabicWriting] = React.useState("Medium");
-  const [englishSpeaking, setEnglishSpeaking] = React.useState("Advanced");
-  const [workingDays, setWorkingDays] = React.useState("Monday-Friday");
-  const [rating, setRating] = React.useState(4);
-  const [comments, setComments] = React.useState("");
-  const [applicationStatus, setApplicationStatus] = React.useState("");
+  const [actionDropdown, setActionDropdown] = useState<string | null>(null);
+  const [dropdownPos, setDropdownPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const tabs = ["All", "NewApplication", "Shortlisted", "Rejected", "Waiting"];
+  const tabs = ["All", "NewCandidates", "Shortlisted", "Rejected", "Waiting"];
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('AdminAuthToken');
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("AdminAuthToken");
       if (token) {
         fetchApplicants(token);
       } else {
@@ -92,832 +71,350 @@ const  ApplicantsList: React.FC = () => {
       }
     }
   }, []);
-  
+
   const fetchApplicants = async (token: string) => {
     try {
-      const response = await axios.get('https://api.blackstoneinfomaticstech.com/applicants', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-      });
-  
+      const response = await axios.get(
+        "https://api.blackstoneinfomaticstech.com/applicants",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       setApplicants(response.data.applicants);
     } catch (error) {
-      console.error('Error fetching applicants:', error);
+      console.error("Error fetching applicants:", error);
     }
   };
-  
-
-  const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
-      case "NEWAPPLICATION":
-        return "bg-blue-500 text-white px-2 text-[9px]";
-      case "SHORTLISTED":
-        return "bg-[#79D67B] text-white px-3 text-[9px]";
-      case "REJECTED":
-        return "bg-[#D12B36] text-white px-2 text-[9px]";
-      case "WAITING":
-        return "bg-yellow-500 text-white px-2 text-[9px]";
-      case "APPROVED":
-        return "bg-green-500 text-white px-7 text-[9px]";
-      default:
-        return "bg-gray-300 text-black px-2 text-[9px]";
-    }
-  };
-  
 
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+  const updateApplicationStatus = async (id: string, status: string) => {
+    try {
+      console.log("Updating applicant...");
+      console.log("ID:", id);
+      console.log("Status:", status);
 
-  const handleMenuClick = (id: string) => {
-    setOpenMenuId(openMenuId === id ? null : id);
-  };
+      const token = localStorage.getItem("AdminAuthToken");
+      if (!token) {
+        console.error("No token found.");
+        return;
+      }
 
-  const handleViewDetails = (applicant: Applicant) => {
-    setSelectedApplicant(applicant);
-    setOpenMenuId(null);
-  };
+      const response = await axios.put(
+        `https://api.blackstoneinfomaticstech.com/admin/${id}`,
+        {
+          applicationStatus: status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-  const handleviewclose = () => {
-    setSelectedApplicant(null);
-  };
+      console.log("Status updated successfully:", response.data);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setAddApplicantForm({
-        ...addApplicantForm,
-        resume: e.target.files[0]
-      });
+      // Optional: Refresh the list
+      fetchApplicants(token);
+    } catch (error: any) {
+      console.error("Error updating status:", error.response?.data || error);
+    } finally {
+      setActionDropdown(null);
+      setDropdownPos(null);
     }
   };
 
-  const handleAddApplicantSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would submit the form data here
-    console.log("Form submitted:", addApplicantForm);
-    setShowAddApplicant(false);
-    // Reset form
-    setAddApplicantForm({
-      applicationDate: "",
-      firstName: "",
-      lastName: "",
-      gender: "",
-      email: "",
-      phone: "",
-      country: "",
-      city: "",
-      position: "Arabic Teacher",
-      expectedSalary: "",
-      workingHours: "",
-      resume: null,
-      comment: ""
-    });
-  };
+  const filteredApplicants =
+    activeTab === "All"
+      ? applicants
+      : applicants.filter(
+          (applicant) => applicant.applicationStatus === activeTab.toUpperCase()
+        );
 
-  const handlesendupdate = (id: string) => {
-    console.log(`Status updated for applicant ${id} to ${applicationStatus}`);
-    setSelectedApplicant(null);
-  };
-
-  const filteredApplicants = activeTab === "All" 
-    ? applicants 
-    : applicants.filter(applicant => applicant.applicationStatus === activeTab.toUpperCase());
-
-  const itemsPerPage = 7;
+  const itemsPerPage = 5;
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentApplicants = filteredApplicants.slice(startIndex, endIndex);
 
+  //colour
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "NEWAPPLICATION":
+        return "bg-[#F9E7FF] text-[#BE36D5] dark:bg-[#4C3151] dark:text-[#BE36D5] rounded-md px-2 text-[10px]";
+      case "SHORTLISTED":
+        return "bg-[#ECFDF3] dark:bg-[#374336] dark:text-[#377E36] text-[#377E36] rounded-md px-6 text-[10px]";
+      case "REJECTED":
+        return "bg-[#FDECEC] dark:bg-[#503434] dark:text-[#D34645] text-[#D34645] rounded-md px-8 text-[10px]";
+      case "WAITING":
+        return "bg-[#FDF6EC] dark:bg-[#534634] dark:text-[#F0AD4E] text-[#F0AD4E] rounded-md px-8 text-[10px]";
+      case "APPROVED":
+        return "bg-[#EEEEFF] text-[#38619A] dark:bg-[#2F3642] dark:text-[#225BAA] rounded-md px-8 text-[10px]";
+    }
+  };
+
   return (
     <div className=" mx-auto">
       <div className="mx-auto">
-  <div className="bg-white shadow-md border border-gray-900 rounded-lg  flex h-[430px] mb-4">
-    <div className="w-full flex flex-col mt-3">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 space-y-3 md:space-y-0 px-4 mt-2">
-        <div className="flex flex-wrap gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-2 py-1 text-sm rounded-md font-semibold ${
-                activeTab === tab
-                  ? "text-white bg-[#012A4A]"
-                  : "text-[#05445E] hover:bg-slate-100"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-600 whitespace-nowrap">
-            Sort by:
-          </span>
-          <select className="px-2 py-1 border rounded-md text-slate-600 bg-white text-xs">
-            <option>Designation</option>
-            <option>Date</option>
-            <option>Status</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="overflow-auto w-full h-[400px] ">
-        <table className="w-full text-xs">
-          <thead className="bg-[#F4F5F7] text-gray-700 sticky top-0 z-10">
-            <tr>
-              <th className="px-2 py-3 whitespace-nowrap">Date</th>
-              <th className="px-2 py-3 whitespace-nowrap">Name</th>
-              <th className="px-2 py-3 whitespace-nowrap">Contact</th>
-              <th className="px-2 py-3 whitespace-nowrap">E-Mail</th>
-              <th className="px-2 py-3 whitespace-nowrap">Position</th>
-              <th className="px-2 py-3 whitespace-nowrap">Resume</th>
-              <th className="px-2 py-3 whitespace-nowrap">Status</th>
-              <th className="px-2 py-3 whitespace-nowrap">Level</th>
-              {/* <th className="px-2 py-3 whitespace-nowrap">Actions</th> */}
-            </tr>
-          </thead>
-          <tbody>
-  {currentApplicants.map((applicant, index) => (
-    <tr 
-      key={applicant._id} 
-      className={`border-b border-gray-300 ${index % 2 === 0 ? 'bg-[#faf9f9]' : 'bg-[#ebebeb]'}`}
-    >
-      <td className="px-2 py-2 text-[#17243E] whitespace-nowrap text-center align-middle">
-        {formatDate(applicant.applicationDate)}
-      </td>
-      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
-          <span className="font-medium text-slate-800 truncate max-w-[100px]">
-            {applicant.candidateFirstName} {applicant.candidateLastName}
-          </span>
-      </td>
-      <td className="px-2 py-2 text-[#17243E] whitespace-nowrap text-center align-middle">
-        {applicant.candidatePhoneNumber}
-      </td>
-      <td className="px-2 py-2 text-[#17243E] whitespace-nowrap truncate max-w-[120px] text-center align-middle">
-        {applicant.candidateEmail}
-      </td>
-      <td className="px-2 py-2 whitespace-nowrap truncate max-w-[100px] text-center align-middle">
-        {applicant.positionApplied}
-      </td>
-      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
-        <button className="text-[#5482dd] hover:text-[#0b1421] flex items-center justify-center mx-auto">
-          <FileText className="w-3 h-3 mr-1" />
-          <span className="hidden sm:inline ">Resume</span>
-        </button>
-      </td>
-      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
-        <div className="flex justify-center">
-          <span
-            className={`inline-block px-3 py-1 rounded-full text-[9px] w-[100px] text-center ${getStatusColor(
-              applicant.applicationStatus
-            )}`}
-          >
-            {applicant.applicationStatus}
-          </span>
-        </div>
-      </td>
-      <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
-        <div className="flex gap-0.5 justify-center">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={`star-${star}`}
-              className={`w-3 h-3 ${
-                (Number(applicant.overallRating) || 0) >= star
-                  ? "text-[#FAAB3C] fill-[#68b806]"
-                  : "text-[#F8D8AB] fill-[#f7f6f5]"
-              }`}
-            />
-          ))}
-        </div>
-      </td>
-      {/* <td className="px-2 py-2 whitespace-nowrap text-center align-middle">
-        <div className="relative flex justify-center">
-          <button
-         
-            className="hover:bg-gray-100 p-1 rounded-md"
-          >
-            <MoreHorizontal className="w-4 h-4 text-slate-600" />
-          </button>
-          {openMenuId === applicant._id && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-10">
-              <button className="block w-full px-3 py-1 text-left text-xs text-[#353232]">
-                Edit
-              </button>
-              <button
-                onClick={() => handleViewDetails(applicant)}
-                className="block w-full px-3 py-1 text-left text-xs text-slate-600"
-              >
-                View Details
-              </button>
-              <button
-                onClick={() => setOpenMenuId(null)}
-                className="block w-full px-3 py-1 text-left text-xs text-red-600 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-        </div>
-      </td> */}
-    </tr>
-  ))}
-</tbody>
-        </table>
-      </div>
-
-      <div className="flex flex-col md:flex-row items-center justify-between px-4 py-2 space-y-2 md:space-y-0 border-t mt-auto">
-        <div className="text-xs text-gray-600">
-          Showing {startIndex + 1} -{" "}
-          {Math.min(endIndex, filteredApplicants.length)} of{" "}
-          {filteredApplicants.length} entries
-        </div>
-        <div className="flex space-x-1">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            className={`px-2 py-1 rounded text-xs ${
-              currentPage === 1
-                ? "bg-gray-100 text-gray-400"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            &lt;
-          </button>
-
-          {totalPages > 5 ? (
-            <>
-              <button
-                onClick={() => setCurrentPage(1)}
-                className={`px-2 py-1 rounded text-xs ${
-                  currentPage === 1
-                    ? "bg-[#1B2B65] text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                1
-              </button>
-
-              {currentPage > 3 && <span className="px-1 py-1">...</span>}
-
-              {Array.from({ length: 3 }, (_, i) => currentPage - 1 + i)
-                .filter((page) => page > 1 && page < totalPages)
-                .map((page) => (
+        <div className="flex flex-col h-[430px] mb-4">
+          <div className="w-full flex flex-col mt-3">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 space-y-3 md:space-y-0 px-4 mt-2">
+              <div className="flex flex-wrap gap-1">
+                {tabs.map((tab) => (
                   <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-2 py-1 rounded text-xs ${
-                      currentPage === page
-                        ? "bg-[#1B2B65] text-white"
-                        : "bg-gray-200 hover:bg-gray-300"
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-2 py-1 text-[15px] font-semibold ${
+                      activeTab === tab
+                        ? "text-[#576CBC] border-b-2 border-b-[#576CBC]"
+                        : ""
                     }`}
                   >
-                    {page}
+                    {tab}
                   </button>
                 ))}
+              </div>
+            </div>
 
-              {currentPage < totalPages - 2 && <span className="px-1 py-1">...</span>}
-
-              <button
-                onClick={() => setCurrentPage(totalPages)}
-                className={`px-2 py-1 rounded text-xs ${
-                  currentPage === totalPages
-                    ? "bg-[#1B2B65] text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                {totalPages}
-              </button>
-            </>
-          ) : (
-            [...Array(totalPages)].map((_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`px-2 py-1 rounded text-xs ${
-                  currentPage === index + 1
-                    ? "bg-[#1B2B65] text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))
-          )}
-
-          <button
-            onClick={() =>
-              setCurrentPage((p) => Math.min(totalPages, p + 1))
-            }
-            disabled={currentPage === totalPages}
-            className={`px-2 py-1 rounded text-xs ${
-              currentPage === totalPages
-                ? "bg-gray-100 text-gray-400"
-                : "bg-gray-200 hover:bg-gray-300"
-            }`}
-          >
-            &gt;
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-      {/* Add Applicant Modal */}
-      {showAddApplicant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-4 w-[500px]">
-            <h2 className="text-[16px] font-semibold text-gray-800 mb-4 text-center">
-              Add Applicant
-            </h2>
-            <form onSubmit={handleAddApplicantSubmit} className="space-y-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-gray-700 text-[12px] font-medium mb-2">
-                    Application Date
-                  </label>
-                  <input
-                    type="date"
-                    value={addApplicantForm.applicationDate}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        applicationDate: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 text-[11px] rounded-lg border border-gray-300"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                    First Name
-                  </label>
+            <div className="overflow-y-scroll scrollbar-none w-full h-[350px] bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+              <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
                   <input
                     type="text"
-                    value={addApplicantForm.firstName}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        firstName: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300"
+                    placeholder="Search"
+                    className="bg-transparent outline-none text-[12px] w-52 py-3"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    value={addApplicantForm.lastName}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        lastName: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                    Gender
-                  </label>
-                  <select
-                    value={addApplicantForm.gender}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        gender: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg border text-[11px] border-gray-300 bg-white"
-                  >
-                    <option value="" disabled>Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={addApplicantForm.email}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        email: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="number"
-                    value={addApplicantForm.phone}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        phone: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 text-[11px]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                    Country
-                  </label>
-                  <select
-                    value={addApplicantForm.country}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        country: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300"
-                  >
-                    <option value="">Select Country</option>
-                    <option value="USA">United States</option>
-                    <option value="UK">United Kingdom</option>
-                    <option value="UAE">United Arab Emirates</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                    City
-                  </label>
-                  <select
-                    value={addApplicantForm.city}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        city: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300"
-                  >
-                    <option value="">Select a city</option>
-                    <option value="New York">New York</option>
-                    <option value="London">London</option>
-                    <option value="Dubai">Dubai</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                    Position Applied
-                  </label>
-                  <select
-                    value={addApplicantForm.position}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        position: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300"
-                  >
-                    <option value="Arabic Teacher">Arabic Teacher</option>
-                    <option value="Quran Teacher">Quran Teacher</option>
-                    <option value="Islamic Studies Teacher">
-                      Islamic Studies Teacher
-                    </option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                    Expected Salary per Hour
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={addApplicantForm.expectedSalary}
-                      onChange={(e) =>
-                        setAddApplicantForm({
-                          ...addApplicantForm,
-                          expectedSalary: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-2 text-[11px] rounded-lg border border-gray-300"
-                    />
-                    <button className="absolute inset-y-0 right-0 px-3 text-[11px] text-[#1C3557] hover:underline">
-                      Edit
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                    Preferred Working Hours
-                  </label>
-                  <input
-                    type="text"
-                    value={addApplicantForm.workingHours}
-                    onChange={(e) =>
-                      setAddApplicantForm({
-                        ...addApplicantForm,
-                        workingHours: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 text-[11px]"
-                  />
-                </div>
-                <div>
-                  <label className="text-gray-600 text-[12px] font-medium mb-2 flex items-center">
-                    Upload Resume
-                  </label>
-                  <div className="relative">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      className="absolute opacity-0 w-full h-full cursor-pointer"
-                      onChange={handleFileChange}
-                    />
-                    <div className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300 bg-white">
-                      {addApplicantForm.resume
-                        ? addApplicantForm.resume.name
-                        : "No file selected"}
-                    </div>
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 text-[11px] bg-[#1C3557] text-white rounded-lg hover:bg-[#0e1a2c] flex items-center"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Upload className="h-4 w-4 mr-1" />
-                      Upload
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-gray-600 text-[12px] font-medium mb-2">
-                  Comment
-                </label>
-                <textarea
-                  value={addApplicantForm.comment}
-                  onChange={(e) =>
-                    setAddApplicantForm({
-                      ...addApplicantForm,
-                      comment: e.target.value,
-                    })
-                  }
-                  rows={4}
-                  placeholder="Write your comment here..."
-                  className="w-full px-4 py-2 rounded-lg text-[11px] border border-gray-300"
-                ></textarea>
-              </div>
-
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowAddApplicant(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-[12px] hover:bg-gray-200"
+                <div
+                  className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48  cursor-pointer"
+                  // onClick={() => setIsFilterModalOpen(true)}
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#1C3557] text-white rounded-lg text-[12px] hover:bg-[#0e1a2c]"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Application Details Popup */}
-      {selectedApplicant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex max-h-[90vh] items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl relative overflow-hidden">
-            <button
-              onClick={handleviewclose}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 z-50"
-            >
-              <X className="w-6 h-6" />
-            </button>
-
-            <div className="flex h-full">
-              {/* Left Side - Resume */}
-              <div className="w-1/2 border-r relative bg-gray-50">
-                <div className="relative min-h-full">
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-gray-500">Resume preview would appear here</p>
-                  </div>
+                  <MdTune className="w-4 h-4" />
+                  <span>Filter</span>
+                </div>
+                <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400 mr-20">
+                  <span className="text-left">
+                    Showing {filteredApplicants.length === 0 ? 0 : 1} to{" "}
+                    {Math.min(itemsPerPage, filteredApplicants.length)} of{" "}
+                    {filteredApplicants.length}
+                  </span>
                 </div>
               </div>
 
-              {/* Right Side - Questions and Details */}
-              <div className="w-1/2 flex flex-col h-full">
-                {/* Header Section */}
-                <div className="flex items-start p-4 border-b">
-                  <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-                    <span className="text-purple-600 text-xl font-medium">
-                      {selectedApplicant.candidateFirstName.charAt(0)}
-                    </span>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold">
-                      {selectedApplicant.candidateFirstName}{" "}
-                      {selectedApplicant.candidateLastName}
-                    </h2>
-                    <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-medium">
-                        {selectedApplicant.positionApplied}
-                      </span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600 mt-1">
-                      <FileText className="w-4 h-4 mr-1" /> CV.pdf
-                    </div>
-                  </div>
-                  <div className="ml-auto mt-8">
-                    <div className="text-sm font-medium">
-                      {selectedApplicant.applicationStatus}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Questions Section - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  <h3 className="text-lg font-semibold mb-2">
-                    Language Proficiency
-                  </h3>
-
-                  {/* Language Proficiency Sections */}
-                  {[
-                    { field: "Quran Reading", state: quranReading, setState: setQuranReading },
-                    { field: "Tajweed", state: tajweed, setState: setTajweed },
-                    { field: "Arabic Speaking", state: arabicSpeaking, setState: setArabicSpeaking },
-                    { field: "Arabic Writing", state: arabicWriting, setState: setArabicWriting },
-                    { field: "English Speaking", state: englishSpeaking, setState: setEnglishSpeaking },
-                  ].map(({ field, state, setState }) => (
-                    <div key={field}>
-                      <p className="text-sm text-indigo-600 mb-1">{field}</p>
-                      <div className="flex gap-2">
-                        {["Basic", "Medium", "Advanced"].map((level) => (
-                          <label key={level} className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              name={field}
-                              value={level}
-                              checked={state === level}
-                              onChange={() => setState(level)}
-                            />
-                            {level}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Preferred Working Days */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
-                        Preferred Working Days
-                      </h3>
-                      <select
-                        className="border rounded px-2 py-1 w-full"
-                        value={workingDays}
-                        onChange={(e) => setWorkingDays(e.target.value)}
+              <table
+                className="w-full min-w-[900px] text-sm text-left table-auto"
+                style={{ width: "100%", tableLayout: "fixed" }}
+              >
+                <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                  <tr className="font-medium">
+                    <th className="p-4 font-semibold text-[12px] text-center">
+                      Application Date
+                    </th>
+                    <th className="p-4 font-semibold text-[12px] text-center ">
+                      Application Name
+                    </th>
+                    <th className="p-4 font-semibold text-[12px] text-center ">
+                      Contact
+                    </th>
+                    <th className="p-4 font-semibold text-[12px] text-center ">
+                      E-Mail
+                    </th>
+                    <th className="p-4 font-semibold text-[12px] text-center ">
+                      Position Applied
+                    </th>
+                    <th className="p-4 font-semibold text-[12px] text-center ">
+                      Resume
+                    </th>
+                    <th className="p-4 font-semibold text-[12px] text-center ">
+                      Status
+                    </th>
+                    <th className="p-4 font-semibold text-[12px] text-center">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-[10px] text-[#1D2939]">
+                  {currentApplicants.length > 0 ? (
+                    currentApplicants.map((applicant, index) => (
+                      <tr
+                        key={applicant._id}
+                        className={`text-[12px] ${
+                          index % 2 === 0
+                            ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                            : "bg-[#F8F8F8] dark:bg-[#303030]"
+                        }`}
                       >
-                        <option value="Monday-Saturday">Monday-Saturday</option>
-                        <option value="Monday-Friday">Monday-Friday</option>
-                        <option value="Sunday-Thursday">Sunday-Thursday</option>
-                        <option value="Sunday-Saturday">Sunday-Saturday</option>
-                        <option value="Tuesday-Saturday">Tuesday-Saturday</option>
-                        <option value="Wednesday-Saturday">Wednesday-Saturday</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
-                        Preferred Working Hours
-                      </h3>
-                      <input
-                        type="text"
-                        className="border rounded px-2 py-1 w-full"
-                        value="9:00 AM - 5:00 PM"
-                        disabled
-                      />
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
-                        Expected Salary per Hour
-                      </h3>
-                      <input
-                        type="text"
-                        className="border rounded px-2 py-1 w-full"
-                        value="$20"
-                        disabled
-                      />
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm text-indigo-600 mb-1">
-                        Overall Rating
-                      </h3>
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            className={`text-xl cursor-pointer ${
-                              rating >= star
-                                ? "text-yellow-500"
-                                : "text-gray-300"
-                            }`}
-                            onClick={() => setRating(star)}
+                        <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                          {formatDate(applicant.applicationDate)}
+                        </td>
+                        <td className="px-4 py-3 text-center overflow-hidden text-ellipsis whitespace-nowrap w-[12%] align-middle">
+                          <span className="px-3 py-3 text-[#3D8FDE] font-medium text-left">
+                            {applicant.candidateFirstName}{" "}
+                            {applicant.candidateLastName}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                          {applicant.candidatePhoneNumber}
+                        </td>
+                        <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                          {applicant.candidateEmail}
+                        </td>
+                        <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                          {applicant.positionApplied}
+                        </td>
+                        <td className="px-3 py-3 text-[#17243E] dark:text-[#FDFDFD] text-left overflow-hidden text-ellipsis whitespace-nowrap">
+                          <a
+                            href="/path-to-resume.pdf"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs  text-[#17243E] dark:text-[#FDFDFD] ml-8"
                           >
-                            ★
+                            <TiAttachment className="w-4 h-4" />
+                            <span className="text-xs text-center">Resume</span>
+                          </a>
+                        </td>
+
+                        <td className="px-4 py-3 whitespace-nowrap align-middle">
+                          <span
+                            className={`text-[10px] font-semibold py-1 px-2 rounded-lg inline-block w-[120px] text-center leading-tight break-words ${getStatusClass(
+                              applicant.applicationStatus
+                            )}`}
+                          >
+                            {applicant.applicationStatus}
+                          </span>
+                        </td>
+
+                        <td className="px-3 py-3 text-center">
+                          <button
+                            id={`action-btn-${applicant._id}`}
+                            className={`text-[10px] font-semibold dark:text-white ${
+                              ["APPROVED", "REJECTED"].includes(
+                                applicant.applicationStatus
+                              )
+                                ? "cursor-not-allowed opacity-40"
+                                : "cursor-pointer"
+                            }`}
+                            disabled={["APPROVED", "REJECTED"].includes(
+                              applicant.applicationStatus
+                            )}
+                            onClick={(e) => {
+                              if (
+                                ["APPROVED", "REJECTED"].includes(
+                                  applicant.applicationStatus
+                                )
+                              )
+                                return; // prevent dropdown
+
+                              if (actionDropdown === applicant._id) {
+                                setActionDropdown(null);
+                                setDropdownPos(null);
+                              } else {
+                                const rect = (
+                                  e.target as HTMLElement
+                                ).getBoundingClientRect();
+                                setDropdownPos({
+                                  top: rect.bottom + window.scrollY,
+                                  left: rect.left + window.scrollX,
+                                });
+                                setActionDropdown(applicant._id);
+                              }
+                            }}
+                          >
+                            <MoreVertical size={16} />
                           </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Comments */}
-                  <div>
-                    <h3 className="text-sm text-indigo-600 mb-1">Comments</h3>
-                    <textarea
-                      className="w-full p-2 border rounded h-15 resize-none"
-                      placeholder="Add your comments here..."
-                      value={comments}
-                      onChange={(e) => setComments(e.target.value)}
-                    ></textarea>
-                  </div>
-                </div>
+                          {actionDropdown === applicant._id &&
+                            dropdownPos &&
+                            typeof window !== "undefined" &&
+                            ReactDOM.createPortal(
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: dropdownPos.top + 4,
+                                  left: dropdownPos.left - 50,
+                                  zIndex: 9999,
+                                  width: "7.5rem",
+                                }}
+                                className="bg-white dark:bg-[#3b3b3b] shadow-md text-center rounded-sm"
+                              >
+                                <button
+                                  className="w-full px-2 py-1 text-[10px] text-[#17243E] rounded-t-xl dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
+                                  onClick={() => {
+                                    updateApplicationStatus(
+                                      applicant._id,
+                                      "APPROVED"
+                                    );
+                                    setActionDropdown(null);
+                                    setDropdownPos(null);
+                                  }}
+                                >
+                                  Approve
+                                </button>
 
-                {/* Action Buttons */}
-                <div className="p-3 border-t bg-white flex justify-end gap-2">
-                  <button
-                    onClick={() => {
-                      setApplicationStatus("REJECTED");
-                    }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded"
-                  >
-                    Reject
-                  </button>
-                  <button
-                    onClick={() => {
-                      setApplicationStatus("WAITING");
-                    }}
-                    className="px-3 py-1.5 text-sm font-semibold text-white bg-yellow-500 hover:bg-yellow-600 rounded"
-                  >
-                    Waiting
-                  </button>
-                  <button
-                    onClick={() => {
-                      setApplicationStatus("SHORTLISTED");
-                    }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded"
-                  >
-                    Shortlist
-                  </button>
-                  <button
-                    onClick={() => {
-                      handlesendupdate(selectedApplicant._id);
-                    }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded"
-                  >
-                    Send
-                  </button>
-                </div>
-              </div>
+                                <button
+                                  className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] dark:bg-[#3b3b3b] border-b border-b-gray-200 dark:border-b-gray-600"
+                                  onClick={() => {
+                                    updateApplicationStatus(
+                                      applicant._id,
+                                      "REJECTED"
+                                    );
+                                    setActionDropdown(null);
+                                    setDropdownPos(null);
+                                  }}
+                                >
+                                  Reject
+                                </button>
+
+                                <button
+                                  className="w-full px-2 py-1 text-[10px] text-[#17243E] dark:text-[#FDFDFD] rounded-b-xl dark:bg-[#3b3b3b]"
+                                  onClick={() => {
+                                    setActionDropdown(null);
+                                    setDropdownPos(null);
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              </div>,
+                              document.body
+                            )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="p-4 text-center">
+                        No data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
-      )}
+      </div>
+      <div className="flex justify-end mt-4">
+        <button
+          className="bg-transparent border border-[#576CBC] text-[#576CBC] text-[11px] px-3 py-1 rounded-md shadow transition"
+          onClick={() => router.push("/admin-main/ui/recuirementlist")}
+        >
+          View All
+        </button>
+      </div>
     </div>
   );
 };

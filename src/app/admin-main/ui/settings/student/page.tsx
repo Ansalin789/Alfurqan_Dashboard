@@ -1,5 +1,6 @@
 'use client';
 
+import AdminHeader from '@/app/admin-main/components/AdminHeader';
 import BaseLayout4 from '@/components/BaseLayout4';
 import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -7,7 +8,10 @@ import { useState, useEffect } from 'react';
 import { FaRegSquare, FaRegCheckSquare } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaRegMinusSquare } from "react-icons/fa";
+
 type PermissionType = 'read' | 'write' | 'delete';
+
 interface EmployeeAccessData {
   _id: string;
   employeeId: string;
@@ -269,20 +273,19 @@ const StudentModuleAccess = () => {
 
   return (
     <BaseLayout4>
-      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} />
-      <div className="w-full min-h-screen p-5 flex flex-col items-center">
-        <h1 className="text-xl font-semibold text-[#012A4A] mb-5 text-left w-full max-w-6xl">
-        Student Module Access
-        </h1>
+          <AdminHeader currentSection=" Student Module Access" />
 
-        <div className="bg-white border border-gray-800 rounded-lg w-full max-w-6xl p-2 shadow-sm overflow-x-auto">
-          <table className="w-full text-left min-w-[900px]">
-            <thead>
-              <tr className="border-b text-[#101828] font-medium text-sm">
-                <th className="p-3">Modules</th>
-                <th className="p-3 text-center">Read</th>
-                <th className="p-3 text-center">Write</th>
-                <th className="p-3 text-center">Delete</th>
+      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} />
+      <div className="mt-4">
+
+      <div className="w-full bg-[#FAFAFB] dark:bg-[#343434]">
+      <table className="w-full table-auto">
+      <thead className="text-[12px] bg-[#4C6993] text-white">
+      <tr>
+      <th  className="p-3 text-[13px] text-left flex ml-1 flex-row gap-3 "><FaRegMinusSquare className='rounded mt-1 text-[13px]'/>Modules</th>
+                <th className="p-3 text-center w-[20%]"></th>
+                <th className="p-3 text-center w-[20%]"></th>
+                <th className="p-3 text-center w-[20%]"></th>
               </tr>
             </thead>
             <tbody>
@@ -290,25 +293,28 @@ const StudentModuleAccess = () => {
                 const moduleKey = module.toLowerCase();
 
                 return (
-                  <tr key={module} className="border-t hover:bg-gray-50 transition">
-                    <td className="p-4 flex items-center space-x-3">
-                      <button type="button" onClick={() => toggleModule(moduleKey)}>
-                        {selectedModules[moduleKey] ? (
-                          <FaRegCheckSquare className="text-white bg-[#012A4A] text-sm rounded-sm" />
-                        ) : (
-                          <FaRegSquare className="text-gray-400 text-sm" />
-                        )}
-                      </button>
+                  <tr key={module} className="border-t ">
+                    <td className="p-4 flex items-center w-[74%] space-x-3">
+                      <input
+                       type="checkbox" 
+                       checked={selectedModules[moduleKey] || false}
+                       onChange={() => toggleModule(moduleKey)}
+                       className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A] ]"
+/>
                       <span className="text-[12px] text-[#344054]">{module}</span>
                     </td>
                     {['read', 'write', 'delete'].map((perm) => (
                       <td key={perm} className="p-2 text-center">
+                                                <label className="flex items-center">
+
                         <input
                           type="checkbox"
                           checked={permissions.studentmodules[moduleKey]?.[perm as PermissionType] || false}
                           onChange={() => toggleModule(moduleKey, perm as PermissionType)}
                           className="h-3 w-3 text-[#012A4A] border-gray-300 rounded focus:ring-[#012A4A]"
                         />
+                                                  <span className="ml-2 text-[12px] text-[#344054] dark:text-[#fff]">{perm.charAt(0).toUpperCase() + perm.slice(1)}</span>
+                                                  </label>
                       </td>
                     ))}
                   </tr>
@@ -316,16 +322,21 @@ const StudentModuleAccess = () => {
               })}
             </tbody>
           </table>
-
-          <div className="flex justify-center mt-4">
+        </div>
+        <div className="flex justify-end mt-4">     
+            <button
+              onClick={() => setSelectedModules({})} // Resetting selected modules
+              className="bg-[#e4e7f4] border border-[#576CBC] text-[#576CBC] text-[13px] px-6 py-1 rounded-lg shadow-md transition"
+            >
+              Cancel
+              </button>
             <button
               onClick={handleUpdateAccess}
-              className="bg-[#012A4A] hover:bg-[#011d33] text-white font-sm px-4 py-1 rounded-lg shadow-md transition"
+              className="bg-[#576CBC] text-white text-[13px] px-6 py-1 rounded-lg shadow-md transition ml-2"
             >
               Submit
             </button>
           </div>
-        </div>
       </div>
     </BaseLayout4>
   );

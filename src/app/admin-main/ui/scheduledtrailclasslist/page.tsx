@@ -3,12 +3,10 @@
 import BaseLayout4 from "@/components/BaseLayout4";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import {
-  FaChevronLeft,
-  FaChevronRight,
-  FaEdit,
-  FaFilter,
-} from "react-icons/fa";
+import { Search } from "lucide-react";
+import { MdTune } from "react-icons/md";
+import Pagination from "@/components/Pagination";
+import AdminHeader from "../../components/AdminHeader";
 
 export interface TransformedUser {
   _id: string;
@@ -92,10 +90,9 @@ const Trailclasslist = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredUsers, setFilteredUsers] = useState<TransformedUser[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-
-  const itemsPerPage = 11;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const token =
@@ -141,31 +138,32 @@ const Trailclasslist = () => {
   const router = useRouter();
 
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredUsers.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  
-    const filteredItems = currentItems.filter((item) => {
-      const searchFields = [
-        item._id,
-        `${item.student.studentFirstName} ${item.student.studentLastName}`,
-        item.student.studentPhone,
-        item.student.studentCountry,
-        item.student.learningInterest,
-        item.student.preferredTeacher,
-        item.assignedTeacher,
-        item.classStartTime,
-        item.classStatus,
-        item.paymentStatus,
-        item.status,
-      ];
-      return searchFields.some((field) =>
-        field
-          ? field.toString().toLowerCase().includes(searchTerm.toLowerCase())
-          : false
-      );
-    });
+  // Filtering logic
+  const filteredItemsAll = filteredUsers.filter((item) => {
+    const searchFields = [
+      item._id,
+      `${item.student.studentFirstName} ${item.student.studentLastName}`,
+      item.student.studentPhone,
+      item.student.studentCountry,
+      item.student.learningInterest,
+      item.student.preferredTeacher,
+      item.assignedTeacher,
+      item.classStartTime,
+      item.classStatus,
+      item.paymentStatus,
+      item.status,
+    ];
+    return searchFields.some((field) =>
+      field
+        ? field.toString().toLowerCase().includes(searchQuery.toLowerCase())
+        : false
+    );
+  });
+
+  const totalPages = Math.ceil(filteredItemsAll.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const filteredItems = filteredItemsAll.slice(indexOfFirstItem, indexOfLastItem);
   
     const handleSearch = (query: string) => {
       setSearchQuery(query);
@@ -228,195 +226,162 @@ const Trailclasslist = () => {
 
   return (
     <BaseLayout4>
+    <AdminHeader currentSection="Scheduled Trail Class" />
       <div className="py-2 px-4 mx-auto w-full ">
-        <div className="flex items-center space-x-2">
-          <h2 className="text-[18px] font-semibold ">Scheduled Trial Class</h2>
-        </div>
-        <div className="flex flex-1 mt-8 space-x-4 items-center justify-between overflow-y-scroll scrollbar-none ">
-          <div className="flex">
-            <input
-              type="text"
-              placeholder="Search here..."
-              className="border rounded-lg px-2 text-[12px] mr-4 shadow"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-            <button className="flex items-center bg-gray-200 p-2 rounded-lg shadow text-[12px]">
-              <FaFilter className="mr-2" /> Filter
-            </button>
+        <div className="w-full bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
+          <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
+            <div className="flex items-center gap-2 text-sm text-gray-500 px-2">
+              <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+              <input
+                type="text"
+                placeholder="Search"
+                className="bg-transparent outline-none text-[12px] w-52 py-3"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+              <MdTune className="w-3 h-3 -mt-[3px]" />
+              <span>Filter</span>
+            </div>
+            <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
+              <span className="text-left -ml-60 ">
+                Showing {filteredItemsAll.length === 0 ? 0 : indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredItemsAll.length)} of {filteredItemsAll.length}
+              </span>
+            </div>
           </div>
-          <div className="flex">
-            <select className="border rounded-lg p-2 shadow text-[12px]">
-              <option>Duration: Last month</option>
-              <option>Duration: Last week</option>
-              <option>Duration: Last year</option>
-            </select>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border-2 border-[#1C3557] h-[580px] overflow-y-scroll scrollbar-none flex flex-col justify-between mt-4">
-          <div>
-            <div className="overflow-x-auto">
-               <table className="min-w-full rounded-lg shadow bg-[#fff]">
-                <thead className="border-b-[1px] border-[#1C3557] text-[11px] font-semibold">
-                  <tr>
-                    {[
-                      "Trial ID",
-                      "Student Name",
-                      "Mobile",
-                      "Country",
-                      "Course",
-                      "Preferred Teacher",
-                      "Assigned Teacher",
-                      "Time",
-                      "Class Status",
-                      "Payment Status",
-                      "Student Status",
-                    ].map((header, i) => (
-                      <th
-                        key={i}
-                        className="p-3 text-center w-[120px] break-words"
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="text-[9px] font-medium">
-                  {filteredItems.length > 0 ? (
-                    filteredItems.slice(0, 5).map((item, index) => (
-                      <tr
-                        key={item._id}
-                        className={
-                          index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
-                        }
-                      >
-                        <td className="p-3 text-center break-words">
-                          {item._id}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.student.studentFirstName}{" "}
-                          {item.student.studentLastName}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.student.studentPhone}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.student.studentCountry}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.student.learningInterest}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.student.preferredTeacher}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.assignedTeacher}
-                        </td>
-                        <td className="p-3 text-center break-words">
-                          {item.classStartTime}
-                        </td>
-                        {/* Trial Class Status */}
-                        <td className="p-3 text-center break-words">
-                          <span
-                            className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                              item.trialClassStatus === "COMPLETED"
-                                ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                : "bg-green-100 text-green-800 border border-green-900 px-2"
-                            }`}
-                          >
-                            {item.trialClassStatus}
-                          </span>
-                        </td>
-                        {/* Payment Status */}
-                        <td className="p-3 text-center break-words">
-                          <span
-                            className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                              item.paymentStatus === "PAID"
-                                ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                : "bg-green-100 text-green-800 border border-green-900 px-2"
-                            }`}
-                          >
-                            {item.paymentStatus}
-                          </span>
-                        </td>
-                        {/* Account Status */}
-                        <td className="p-3 text-center break-words">
-                          <span
-                            className={`min-w-[60px] inline-block text-[7px] text-center py-[3px] rounded-md ${
-                              item.status === "Active"
-                                ? "bg-yellow-100 text-yellow-800 border border-yellow-900 px-3"
-                                : "bg-green-100 text-green-800 border border-green-900 px-2"
-                            }`}
-                          >
-                            {item.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={11} className="p-4 text-center">
-                        No data available
+            <table className="table-auto w-full"
+                    style={{ width: "100%", tableLayout: "fixed" }}>
+              <thead className="text-[11px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+                <tr className="font-medium">
+                  {[
+                    { label: "Trial ID", width: "w-[10%]" },
+                    { label: "Student Name", width: "w-[12%]" },
+                    { label: "Mobile", width: "w-[10%]" },
+                    { label: "Country", width: "w-[8%]" },
+                    { label: "Course", width: "w-[10%]" },
+                    { label: "Preferred Teacher", width: "w-[10%]" },
+                    { label: "Assigned Teacher", width: "w-[10%]" },
+                    { label: "Date", width: "w-[10%]" },
+                    { label: "Time", width: "w-[10%]" },
+                    { label: "Class Status", width: "w-[8%]" },
+                    { label: "Student Status", width: "w-[10%]" },
+                    { label: "Payment Status", width: "w-[8%]" },
+
+                  ].map((header, i) => (
+                    <th
+                      key={header.label}
+                      className={`text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] break-words ${header.width}`}
+                    >
+                      {header.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredItems.length > 0 ? (
+                  filteredItems.map((item, index) => (
+                    <tr
+                      key={item._id}
+                      className={`text-[10px] text-[#010E30E5]  ${
+                        index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C] "
+                                : "bg-[#F8F8F8] dark:bg-[#303030]"
+                      }`}
+                    >
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white break-words w-[10%]">
+                        {item._id}
+                      </td>
+                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left break-words w-[12%]">
+                        {item.student.studentFirstName} {item.student.studentLastName}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white break-words w-[10%]">
+                        {item.student.studentPhone}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
+                        {item.student.studentCountry}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
+                        {item.student.learningInterest}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
+                        {item.student.preferredTeacher}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[10%]">
+                        {item.assignedTeacher}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
+                        {item.classStartDate
+                          ? new Date(item.classStartDate).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : ""}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white w-[8%]">
+                        {item.classStartTime}
+                      </td>
+                      {/* Class Status */}
+                      <td className="px-3 py-2">
+                        <span
+                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                            item.trialClassStatus === "COMPLETED"
+                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-2"
+                              : item.trialClassStatus === "INPROGRESS"
+                              ? "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645] px-3"
+                              : "bg-[#FDF6EC] dark:bg-[#F0AD4E33] text-[#F0AD4E] px-3"
+                          }`}
+                        >
+                          {item.trialClassStatus}
+                        </span>
+                      </td>
+                      
+                      {/* Student Status */}
+                      <td className="px-3 py-2">
+                        <span
+                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                            item.status === "Active"
+                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-3"
+                              : item.status === "PENDING"
+                              ? "bg-[#FDF6EC] dark:bg-[#F0AD4E33] text-[#F0AD4E] px-3"
+                              : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645] px-3"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      {/* Payment Status */}
+                      <td className="px-3 py-2">
+                        <span
+                          className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
+                            item.paymentStatus === "PAID"
+                              ? "bg-[#ECFDF3] dark:bg-[#2E3C2E] text-[#377E36] px-4"
+                              : item.paymentStatus === "PENDING"
+                              ? "bg-[#FDF6EC] dark:bg-[#F0AD4E33] text-[#F0AD4E] px-3"
+                              : "bg-[#FDECEC] dark:bg-[#D3464533] text-[#D34645] px-3"
+                          }`}
+                        >
+                          {item.paymentStatus}
+                        </span>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="flex items-center justify-between p-4">
-            <p className="text-[11px] text-gray-600">
-              Showing {(currentPage - 1) * itemsPerPage + 1}–
-              {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of{" "}
-              {filteredUsers.length} data
-            </p>
-
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={goToPrevPage}
-                disabled={currentPage === 1}
-                className={`p-1 rounded-lg shadow text-[10px] ${
-                  currentPage === 1
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 text-white hover:bg-gray-900"
-                }`}
-              >
-                <FaChevronLeft size={8} />
-              </button>
-
-              {getPageNumbers().map((pageNumber, index) =>
-                pageNumber === -1 ? (
-                  <span key={index} className="px-2">
-                    ...
-                  </span>
+                  ))
                 ) : (
-                  <button
-                    key={index}
-                    onClick={() => goToPage(pageNumber)}
-                    className={`w-5 h-5 rounded-lg shadow text-[11px] ${
-                      currentPage === pageNumber
-                        ? "bg-gray-800 text-white"
-                        : "bg-gray-200 hover:bg-gray-300"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                )
-              )}
-
-              <button
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className={`p-1 rounded-lg shadow text-[10px] ${
-                  currentPage === totalPages
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-800 text-white hover:bg-gray-900"
-                }`}
-              >
-                <FaChevronRight size={8} />
-              </button>
-            </div>
-          </div>
+                  <tr>
+                    <td colSpan={12} className="p-4 text-center">
+                      No data available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+        </div>
+        <div className="mt-3">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 
