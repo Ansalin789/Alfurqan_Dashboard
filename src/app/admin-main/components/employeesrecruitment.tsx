@@ -7,6 +7,8 @@ import axios from "axios";
 import ReactDOM from "react-dom";
 import { useRouter } from "next/navigation";
 import { TiAttachment } from "react-icons/ti";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface Supervisor {
   supervisorId: string;
@@ -59,6 +61,13 @@ const ApplicantsList: React.FC = () => {
     left: number;
   } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filterPosition, setFilterPosition] = useState("");
+  const [filterName, setFilterName] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterDateFrom, setFilterDateFrom] = useState<Date | null>(null);
+  const [filterDateTo, setFilterDateTo] = useState<Date | null>(null);
 
   const tabs = ["All", "NewCandidates", "Shortlisted", "Rejected", "Waiting"];
   useEffect(() => {
@@ -135,14 +144,32 @@ const ApplicantsList: React.FC = () => {
     }
   };
 
-  const filteredApplicants =
-    activeTab === "All"
-      ? applicants
-      : applicants.filter(
-          (applicant) => applicant.applicationStatus === activeTab.toUpperCase()
-        );
+  // Get unique positions and statuses from applicants
+  const positions = Array.from(new Set(applicants.map(a => a.positionApplied).filter(Boolean)));
+  const statuses = Array.from(new Set(applicants.map(a => a.applicationStatus).filter(Boolean)));
 
-  const itemsPerPage = 5;
+  // Filtering logic for applicants
+  const filteredApplicants = applicants.filter(applicant => {
+    const nameMatch = filterName === "" ||
+      applicant.candidateFirstName.toLowerCase().includes(filterName.toLowerCase()) ||
+      applicant.candidateLastName.toLowerCase().includes(filterName.toLowerCase());
+    const positionMatch = filterPosition === "" || applicant.positionApplied === filterPosition;
+    const statusMatch = filterStatus === "" || applicant.applicationStatus === filterStatus;
+    const fromDateMatch = !filterDateFrom || new Date(applicant.applicationDate) >= filterDateFrom;
+    const toDateMatch = !filterDateTo || new Date(applicant.applicationDate) <= filterDateTo;
+    // Search bar keyword filter
+    const search = searchQuery.trim().toLowerCase();
+    const keywordMatch =
+      search === "" ||
+      applicant.candidateFirstName.toLowerCase().includes(search) ||
+      applicant.candidateLastName.toLowerCase().includes(search) ||
+      applicant.candidateEmail.toLowerCase().includes(search) ||
+      (applicant.positionApplied || "").toLowerCase().includes(search) ||
+      (applicant.applicationStatus || "").toLowerCase().includes(search);
+    return nameMatch && positionMatch && statusMatch && fromDateMatch && toDateMatch && keywordMatch;
+  });
+
+  const itemsPerPage = 6;
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -201,7 +228,7 @@ const ApplicantsList: React.FC = () => {
                 </div>
                 <div
                   className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48  cursor-pointer"
-                  // onClick={() => setIsFilterModalOpen(true)}
+                  onClick={() => setIsFilterModalOpen(true)}
                 >
                   <MdTune className="w-4 h-4" />
                   <span>Filter</span>
@@ -214,6 +241,106 @@ const ApplicantsList: React.FC = () => {
                   </span>
                 </div>
               </div>
+
+              {/* Filter Modal */}
+              {isFilterModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
+                  <div className="w-full max-w-md bg-white dark:bg-[#252525] rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                    <button
+                      className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+                      onClick={() => setIsFilterModalOpen(false)}
+                      aria-label="Close"
+                    >
+                      ×
+                    </button>
+                    <div className="p-6 space-y-4">
+                      <h2 className="text-lg font-semibold mb-2 dark:text-[#fff]">Filter by</h2>
+                      <div className="flex flex-col gap-3">
+                        <label className="text-sm font-medium text-gray-700 dark:text-[#fff] mt-2">Application Name</label>
+                        <input
+                          type="text"
+                          className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                          placeholder="Enter name"
+                          value={filterName}
+                          onChange={e => setFilterName(e.target.value)}
+                        />
+                        <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">Position Applied</label>
+                        <select
+                          className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                          value={filterPosition}
+                          onChange={e => setFilterPosition(e.target.value)}
+                        >
+                          <option value="">All Positions</option>
+                          {positions.map(position => (
+                            <option key={position} value={position}>{position}</option>
+                          ))}
+                        </select>
+                        <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">Status</label>
+                        <select
+                          className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                          value={filterStatus}
+                          onChange={e => setFilterStatus(e.target.value)}
+                        >
+                          <option value="">All Statuses</option>
+                          {statuses.map(status => (
+                            <option key={status} value={status}>{status}</option>
+                          ))}
+                        </select>
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">From Date</label>
+                            <DatePicker
+                              selected={filterDateFrom}
+                              onChange={date => setFilterDateFrom(date)}
+                              selectsStart
+                              startDate={filterDateFrom}
+                              endDate={filterDateTo}
+                              maxDate={filterDateTo || undefined}
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                              placeholderText="From"
+                              dateFormat="yyyy-MM-dd"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">To Date</label>
+                            <DatePicker
+                              selected={filterDateTo}
+                              onChange={date => setFilterDateTo(date)}
+                              selectsEnd
+                              startDate={filterDateFrom}
+                              endDate={filterDateTo}
+                              minDate={filterDateFrom || undefined}
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                              placeholderText="To"
+                              dateFormat="yyyy-MM-dd"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-3 mt-6">
+                        <button
+                          className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                          onClick={() => {
+                            setFilterName("");
+                            setFilterPosition("");
+                            setFilterStatus("");
+                            setFilterDateFrom(null);
+                            setFilterDateTo(null);
+                          }}
+                        >
+                          Reset
+                        </button>
+                        <button
+                          className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                          onClick={() => setIsFilterModalOpen(false)}
+                        >
+                          Show {filteredApplicants.length} results
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <table
                 className="w-full min-w-[900px] text-sm text-left table-auto"
