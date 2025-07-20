@@ -93,6 +93,7 @@ interface Teacher {
   _id: string;
   userId: string;
   userName: string;
+  password: string;
   email: string;
   profileImage: string | null;
   level?: string;
@@ -115,6 +116,7 @@ interface OtherEmployee {
   createdDate: string;
   lastUpdatedDate: string;
   lastLoginDate: string;
+  password: string;
 }
 
 interface OtherEmployeesResponse {
@@ -474,6 +476,7 @@ const Page = () => {
           _id: user._id,
           userId: user.userId,
           userName: user.userName,
+          password: user.password,
           email: user.email,
           profileImage: user.profileImage ?? "/assets/images/proff.jpg",
           position: user.position ?? "General",
@@ -709,18 +712,16 @@ const Page = () => {
       );
   };
 
-  function handlePortalAccess(teacherId: string) {
-    const username = encodeURIComponent("David");
-    const password = encodeURIComponent("David@123");
-
-    const portalURL = `https://blackstoneinfomaticstech.com/teacher/ui/sign?username=${username}&password=${password}`;
+  function handlePortalAccess(username: string, password: string) {
+    const encodedUsername = encodeURIComponent(username);
+    const encodedPassword = encodeURIComponent(password);
+    const portalURL = `https://blackstoneinfomaticstech.com/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     window.location.href = portalURL;
   }
-  function handlePortalAccessforemployee(employeeID: string) {
-    const username = encodeURIComponent("Arthi");
-    const password = encodeURIComponent("Supervisor@123");
-
-    const portalURL = `https://blackstoneinfomaticstech.com/supervisor/ui/sign?username=${username}&password=${password}`;
+  function handlePortalAccessforemployee(username: string, password: string) {
+    const encodedUsername = encodeURIComponent(username);
+    const encodedPassword = encodeURIComponent(password);
+    const portalURL = `https://blackstoneinfomaticstech.com/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     window.location.href = portalURL;
   }
   const handleChange = (
@@ -1466,7 +1467,7 @@ const Page = () => {
                             <div className="flex flex-col justify-center gap-2 px-5 mt-2">
                               <button
                                 className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
-                                onClick={() => handlePortalAccess(teacher._id)}
+                                onClick={() => handlePortalAccess(teacher.userName, teacher.password)}
                                 disabled={!dashboardRead}
                               >
                                 Portal Access
@@ -1965,9 +1966,7 @@ const Page = () => {
                               <div className="flex flex-col justify-center gap-2 px-5 mt-2">
                                 <button
                                   className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
-                                  onClick={() =>
-                                    handlePortalAccessforemployee(employee._id)
-                                  }
+                                  onClick={() => handlePortalAccessforemployee(employee.userName, employee.password)}
                                   disabled={!dashboardRead}
                                 >
                                   Portal Access
