@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import BaseLayout4 from "@/components/BaseLayout4";
 import Link from "next/link";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import { AxiosError } from "axios";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
-
+import AdminHeader from "@/app/admin-main/components/AdminHeader";
 
 interface CourseInfo {
   courseId: string;
@@ -52,7 +51,7 @@ interface Course {
   courseTitle: string;
   courseDescription: string;
   courseDuration: string;
-   level:string;
+  level: string;
   createdDate: string;
   createdBy: string;
 }
@@ -60,9 +59,9 @@ interface Course {
 const Page = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [showForm, setShowForm] = useState(false);
-   const [success, setSuccess] = useState(false);
-    const [failed, setFailed] = useState(false);
-    const [failedMessage, setFailedMessage] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [failedMessage, setFailedMessage] = useState("");
   const [dashboardRead, setdashboardRead] = useState(false);
   // Load courses from localStorage on component mount
 
@@ -139,7 +138,7 @@ const Page = () => {
             courseTitle: courseItem.course.courseTitle,
             courseDescription: courseItem.course.courseDescription,
             courseDuration: courseItem.course.courseDuration,
-            level:courseItem.level,
+            level: courseItem.level,
             createdDate: new Date(courseItem.createdDate).toLocaleDateString(),
             createdBy: courseItem.createdBy,
             status: courseItem.status,
@@ -151,7 +150,7 @@ const Page = () => {
       setCourses(transformedCourses);
     } catch (err) {
       console.error("❌ Error in fetchCourses:", err);
-    } 
+    }
   };
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -167,10 +166,9 @@ const Page = () => {
 
   const handleSubmit = async () => {
     try {
-
       // Convert numberOfLevels to number and validate
       const numLevels = parseInt(form.level);
-      if ( numLevels < 1) {
+      if (numLevels < 1) {
         setFailedMessage("Number of Levels must be a positive number");
       }
 
@@ -184,7 +182,7 @@ const Page = () => {
           courseLevel: "Beginner",
         },
         courseName: form.courseTitle,
-        level:form.level,
+        level: form.level,
         status: "Active",
         createdDate: new Date().toISOString(),
         createdBy: form.createdBy,
@@ -221,57 +219,60 @@ const Page = () => {
       if (!response.ok) {
         throw new Error("Failed to create course");
       }
- if ([200, 201].includes(response.status)) {
+      if ([200, 201].includes(response.status)) {
         setSuccess(true);
         setTimeout(() => {
-         setForm({
-        courseId: "",
-        courseTitle: "",
-        courseDescription: "",
-        courseDuration: "",
-        level:"",
-        createdDate: new Date().toISOString().split("T")[0],
-        createdBy: "Admin",
-      });
-        setShowForm(false);
+          setForm({
+            courseId: "",
+            courseTitle: "",
+            courseDescription: "",
+            courseDuration: "",
+            level: "",
+            createdDate: new Date().toISOString().split("T")[0],
+            createdBy: "Admin",
+          });
+          setShowForm(false);
         }, 2000);
-       fetchCourses(token);
-    } }catch (err) {
-          const error = err as AxiosError;
-          const status = error.response?.status;
-           setShowForm(false);
-          if (Number(status === 400)) {
-            const message =
-              (error.response?.data as any)?.message ?? "Please check the form inputs.";
-            setFailedMessage(message);
-            setFailed(true);
-          } else if (status === 401) {
-            setFailedMessage("Please login again.");
-            setFailed(true);
-          } else if (status === 403) {
-            setFailedMessage("You don't have permission to perform this action.");
-            setFailed(true);
-          } else if (status === 500) {
-            setFailedMessage("Server error");
-            setFailed(true);
-          } else {
-            setFailed(true);
-            console.error(`Unexpected error: ${status}`);
-          }
-        }
+        fetchCourses(token);
+      }
+    } catch (err) {
+      const error = err as AxiosError;
+      const status = error.response?.status;
+      setShowForm(false);
+      if (Number(status === 400)) {
+        const message =
+          (error.response?.data as any)?.message ??
+          "Please check the form inputs.";
+        setFailedMessage(message);
+        setFailed(true);
+      } else if (status === 401) {
+        setFailedMessage("Please login again.");
+        setFailed(true);
+      } else if (status === 403) {
+        setFailedMessage("You don't have permission to perform this action.");
+        setFailed(true);
+      } else if (status === 500) {
+        setFailedMessage("Server error");
+        setFailed(true);
+      } else {
+        setFailed(true);
+        console.error(`Unexpected error: ${status}`);
+      }
+    }
   };
   const itemsPerPage = 4;
 
-  const paginatedCourses = courses.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const offset = currentPage === 1 ? 0 : 3 + (currentPage - 2) * itemsPerPage;
+  const limit = currentPage === 1 ? 3 : offset + itemsPerPage;
+
+  const paginatedCourses = courses.slice(offset, limit);
+
   const totalItems = courses.length;
-  const totalPages = Math.ceil(courses.length / itemsPerPage);
+  const totalPages = Math.ceil(Math.max(0, totalItems - 3) / itemsPerPage + 1);
 
   return (
     <BaseLayout4>
-      <SupervisorHeader currentSection="course" />
+      <AdminHeader currentSection="course" showBackButton={true} showBackPath="/admin-main/ui/courses" />
       <div className=" sm:px-1 lg:px-2 bg-[#f5f5f5] dark:bg-[#3B3B3B] py-2 rounded-xl">
         {/* Grid of Cards */}
 
@@ -289,10 +290,7 @@ const Page = () => {
           )}
 
           {/* Course Cards */}
-          {(currentPage === 1
-            ? paginatedCourses.slice(0, 2)
-            : paginatedCourses
-          ).map((course,index) => (
+          {paginatedCourses.map((course, index) => (
             <Link
               key={course.courseId || `course ${index}`}
               href={{
@@ -301,7 +299,7 @@ const Page = () => {
                   title: course.courseTitle,
                   courseId: course.courseId,
                   maxLevels: course.level.toString(),
-                  d:course.courseDuration,
+                  d: course.courseDuration,
                 },
               }}
               className="w-full max-w-xs"
@@ -312,61 +310,66 @@ const Page = () => {
         </div>
       </div>
       {/* Pagination */}
-     <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-3 px-4">
-  {/* Showing entries info */}
-  <div className="text-sm text-gray-600 dark:text-gray-300">
-    Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} entries
-  </div>
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-3 px-4">
+        {/* Showing entries info */}
+        <div className="text-sm text-gray-600 dark:text-gray-300">
+          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+          {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}{" "}
+          entries
+        </div>
 
-  {/* Pagination Controls */}
-<div className="flex flex-wrap justify-center items-center gap-2 mt-3">
-  {/* Prev Button */}
-  <button
-    onClick={() => setCurrentPage(currentPage - 1)}
-    disabled={currentPage === 1}
-    className="w-8 h-8 rounded-md border flex items-center justify-center bg-[#F5F5F2] text-sm disabled:opacity-50 hover:bg-gray-300 dark:bg-[#565656] dark:hover:bg-[#939393]"
-  >
-    &lt;
-  </button>
-
-  {/* Page Numbers with Ellipsis */}
-  {Array.from({ length: totalPages }, (_, i) => i + 1)
-    .filter((page) => (
-      page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)
-    ))
-    .map((page, idx, arr) => {
-      const prevPage = arr[idx - 1];
-      return (
-        <>
-          {Boolean(prevPage && page - prevPage > 1) && (
-            <span className="px-2 text-sm text-gray-500 dark:text-gray-400">…</span>
-          )}
+        {/* Pagination Controls */}
+        <div className="flex flex-wrap justify-center items-center gap-2 mt-3">
+          {/* Prev Button */}
           <button
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 rounded-md border flex items-center justify-center text-sm transition ${
-              page === currentPage
-                ? "bg-[#FAFAFB] text-[#203F78] border-[#203F78] dark:bg-[#939393]"
-                : "bg-white dark:bg-[#565656] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#939393]"
-            }`}
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="w-8 h-8 rounded-md border flex items-center justify-center bg-[#F5F5F2] text-sm disabled:opacity-50 hover:bg-gray-300 dark:bg-[#565656] dark:hover:bg-[#939393]"
           >
-            {page}
+            &lt;
           </button>
-        </>
-      );
-    })}
 
-  {/* Next Button */}
-  <button
-    onClick={() => setCurrentPage(currentPage + 1)}
-    disabled={currentPage === totalPages}
-    className="w-8 h-8 rounded-md border flex items-center justify-center text-sm bg-[#F5F5F2]  disabled:opacity-50 hover:bg-gray-300 dark:bg-[#565656] dark:hover:bg-[#939393]"
-  >
-    &gt;
-  </button>
-</div>
+          {/* Page Numbers with Ellipsis */}
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter(
+              (page) =>
+                page === 1 ||
+                page === totalPages ||
+                (page >= currentPage - 1 && page <= currentPage + 1)
+            )
+            .map((page, idx, arr) => {
+              const prevPage = arr[idx - 1];
+              return (
+                <>
+                  {Boolean(prevPage && page - prevPage > 1) && (
+                    <span className="px-2 text-sm text-gray-500 dark:text-gray-400">
+                      …
+                    </span>
+                  )}
+                  <button
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 rounded-md border flex items-center justify-center text-sm transition ${
+                      page === currentPage
+                        ? "bg-[#FAFAFB] text-[#203F78] border-[#203F78] dark:bg-[#939393]"
+                        : "bg-white dark:bg-[#565656] text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-[#939393]"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                </>
+              );
+            })}
 
-
-</div>
+          {/* Next Button */}
+          <button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="w-8 h-8 rounded-md border flex items-center justify-center text-sm bg-[#F5F5F2]  disabled:opacity-50 hover:bg-gray-300 dark:bg-[#565656] dark:hover:bg-[#939393]"
+          >
+            &gt;
+          </button>
+        </div>
+      </div>
 
       {/* Modal Form */}
       {showForm && (
@@ -401,9 +404,7 @@ const Page = () => {
             <CourseFormInput
               label="Number of Levels"
               value={form.level}
-              onChange={(e) =>
-                setForm({ ...form, level: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, level: e.target.value })}
             />
             <CourseFormInput
               label="Creation Date"
@@ -419,16 +420,16 @@ const Page = () => {
               onChange={(e) => setForm({ ...form, createdBy: e.target.value })}
             />
 
-           <div className="border-t pt-4 mt-4 flex justify-end gap-2">
+            <div className="border-t pt-4 mt-4 flex justify-end gap-2">
               <button
                 onClick={() => setShowForm(false)}
-            className="px-3 py-1 border border-[#576CBC] text-[#576CBC] hover:border-[#4459A9] rounded hover:bg-[#E6E9F5] dark:hover:bg-[#333]"
+                className="px-3 py-1 border border-[#576CBC] text-[#576CBC] hover:border-[#4459A9] rounded hover:bg-[#E6E9F5] dark:hover:bg-[#333]"
               >
                 Cancel
               </button>
               <button
-                onClick={()=>handleSubmit()}
-            className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-[#4459A9]"
+                onClick={() => handleSubmit()}
+                className="px-3 py-1 bg-[#576CBC] text-white rounded hover:bg-[#4459A9]"
               >
                 Save
               </button>
@@ -436,11 +437,8 @@ const Page = () => {
           </div>
         </div>
       )}
-       {success && (
-        <SuccessPopup
-          onClose={() => setSuccess(false)}
-          title="Course Added"
-        />
+      {success && (
+        <SuccessPopup onClose={() => setSuccess(false)} title="Course Added" />
       )}
       {failed && (
         <FailedPopup onClose={() => setFailed(false)} title={failedMessage} />
@@ -454,7 +452,7 @@ const CourseCard = ({
   courseId,
   courseDescription,
   courseDuration,
- level,
+  level,
   createdDate,
   createdBy,
 }: Course) => {
@@ -478,26 +476,44 @@ const CourseCard = ({
       {/* Info */}
       <div className="text-[11px] sm:text-xs  font-normal space-y-1 ">
         <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">Course ID</span>
-          <span className="text-right text-[#322121cc] dark:text-[#DADADACC]">{courseId}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">Duration</span>
-          <span className="text-[#322121cc] dark:text-[#DADADACC]">{courseDuration}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">Levels</span>
-          <span className="text-[#322121cc] dark:text-[#DADADACC]">
-          {level}
+          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
+            Course ID
+          </span>
+          <span className="text-right text-[#322121cc] dark:text-[#DADADACC]">
+            {courseId}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">Date</span>
-          <span className="text-[#322121cc] dark:text-[#DADADACC]">{createdDate.toString()}</span>
+          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
+            Duration
+          </span>
+          <span className="text-[#322121cc] dark:text-[#DADADACC]">
+            {courseDuration}
+          </span>
         </div>
         <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">By</span>
-              <span className="text-[#322121cc] dark:text-[#DADADACC]">{createdBy}</span>
+          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
+            Levels
+          </span>
+          <span className="text-[#322121cc] dark:text-[#DADADACC]">
+            {level}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
+            Date
+          </span>
+          <span className="text-[#322121cc] dark:text-[#DADADACC]">
+            {createdDate.toString()}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
+            By
+          </span>
+          <span className="text-[#322121cc] dark:text-[#DADADACC]">
+            {createdBy}
+          </span>
         </div>
       </div>
     </div>

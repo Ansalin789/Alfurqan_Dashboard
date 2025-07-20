@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Edit2 } from "lucide-react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
+import AdminHeader from "../../components/AdminHeader";
 
 // Type Definitions
 
@@ -79,7 +79,7 @@ export default function PackagesPage() {
 
   return (
     <BaseLayout4>
-      <SupervisorHeader currentSection="package" />
+      <AdminHeader currentSection="package" showBackButton={true} showBackPath="courses"/>
       <div className="flex-1 overflow-auto scrollbar-none">
         <div className="flex justify-between mb-3 items-center">
           {showPackageModal && (
@@ -239,10 +239,10 @@ export default function PackagesPage() {
         />
 
         <div className="flex justify-end space-x-3 mt-5 text-xs">
-          <button className="px-3 py-1 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition ">
+          <button className="px-3 py-2 border border-[#576CBC] rounded text-[#576CBC] hover:bg-gray-100 transition ">
             Cancel
           </button>
-          <button className="px-4 py-1 bg-[#576CBC] text-white rounded hover:bg-blue-700 transition">
+          <button className="px-4 py-2 bg-[#576CBC] text-white rounded hover:bg-blue-700 transition">
             Save
           </button>
         </div>

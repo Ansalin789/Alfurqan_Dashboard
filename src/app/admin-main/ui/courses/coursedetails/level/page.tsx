@@ -6,17 +6,10 @@ import BaseLayout4 from "@/components/BaseLayout4";
 import { useSearchParams } from "next/navigation";
 import SuccessPopup from "@/app/supervisor/components/successPopup";
 import FailedPopup from "@/app/supervisor/components/failedPopup";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { AxiosError } from "axios";
-
-interface Level {
-  levelId: string;
-  contentLevel: string;
-  descriptions: string;
-  duration: string;
-}
+import AdminHeader from "@/app/admin-main/components/AdminHeader";
 
 interface Course {
   courseId: string;
@@ -130,23 +123,29 @@ const Page = () => {
     duration: "",
     level: "",
     createdBy: "Admin",
-    createdDate:"",
+    createdDate: "",
   });
 
   const handleSubmit = async () => {
     if (currentLevelCount >= maxLevels) {
-  toast.error(`Cannot add more levels. Maximum ${maxLevels} levels allowed for this course.`);
-  return;
-}
- const newLevelDuration = parseInt(form.duration || "0");
-  const existingDurationSum = courses.reduce((acc, level) => acc + parseInt(level.duration), 0);
-  const totalWithNew = existingDurationSum + newLevelDuration;
+      toast.error(
+        `Cannot add more levels. Maximum ${maxLevels} levels allowed for this course.`
+      );
+      return;
+    }
+    const newLevelDuration = parseInt(form.duration || "0");
+    const existingDurationSum = courses.reduce(
+      (acc, level) => acc + parseInt(level.duration),
+      0
+    );
+    const totalWithNew = existingDurationSum + newLevelDuration;
 
-  if (totalWithNew > parseInt(courseTotalHours || '0')) {
-    toast.error(`Total duration exceeded. Course limit: ${courseTotalHours} hrs, current used: ${existingDurationSum} hrs`);
-    return;
-  }
-
+    if (totalWithNew > parseInt(courseTotalHours || "0")) {
+      toast.error(
+        `Total duration exceeded. Course limit: ${courseTotalHours} hrs, current used: ${existingDurationSum} hrs`
+      );
+      return;
+    }
 
     const newLevelNumber = currentLevelCount + 1;
     const payload: CoursePayload = {
@@ -227,16 +226,17 @@ const Page = () => {
 
   const itemsPerPage = 4;
 
-  const paginatedCourses = courses.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const offset = currentPage === 1 ? 0 : 3 + (currentPage - 2) * itemsPerPage;
+  const limit = currentPage === 1 ? 3 : offset + itemsPerPage;
+
+  const paginatedCourses = courses.slice(offset, limit);
+
   const totalItems = courses.length;
-  const totalPages = Math.ceil(courses.length / itemsPerPage);
+  const totalPages = Math.ceil(Math.max(0, totalItems - 3) / itemsPerPage + 1);
 
   return (
     <BaseLayout4>
-      <SupervisorHeader currentSection={courseTitle || ""} />
+      <AdminHeader currentSection={courseTitle || ""} showBackButton={true} showBackPath="/admin-main/ui/courses/coursedetails"/>
       <div className=" sm:px-1 lg:px-2 bg-[#f5f5f5] dark:bg-[#3B3B3B] py-2 rounded-xl">
         {/* Grid of Cards */}
 
@@ -253,11 +253,11 @@ const Page = () => {
             </button>
           )}
 
-          {(currentPage === 1
-            ? paginatedCourses.slice(0, 2)
-            : paginatedCourses
-          ).map((course,index) => (
-            <div key={course.level || `level ${index}`} className="w-full max-w-xs">
+          {paginatedCourses.map((course, index) => (
+            <div
+              key={course.level || `level-${index}`}
+              className="w-full max-w-xs"
+            >
               <CourseCard {...course} />
             </div>
           ))}
@@ -360,7 +360,9 @@ const Page = () => {
               label="Creation Date"
               type="date"
               value={form.createdDate}
-              onChange={(e) => setForm({ ...form, createdDate: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, createdDate: e.target.value })
+              }
             />
             <CourseFormInput
               label="Created By"
@@ -423,14 +425,13 @@ const CourseCard = ({
       {/* Image + Description */}
       <div className="flex flex-col items-center gap-2 flex-grow mb-2 ">
         <div className="w-20 h-20 bg-gray-200 dark:bg-[#C4C4C4] rounded-md" />
-       <p className="text-[11px] text-gray-600 dark:text-gray-300 text-center truncate w-full px-2">
-  {description
-    ? description.length > 100
-      ? `${description.slice(0, 100)}...`
-      : description
-    : "No description"}
-</p>
-
+        <p className="text-[11px] text-gray-600 dark:text-gray-300 text-center truncate w-full px-2">
+          {description
+            ? description.length > 100
+              ? `${description.slice(0, 100)}...`
+              : description
+            : "No description"}
+        </p>
       </div>
 
       {/* Info */}
@@ -456,12 +457,12 @@ const CourseCard = ({
             Date
           </span>
           <span className="text-[#322121cc] dark:text-[#DADADACC]">
-          {new Date(createdDate).toLocaleDateString()}
+            {new Date(createdDate).toLocaleDateString()}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
-           Created By
+            Created By
           </span>
           <span className="text-[#322121cc] dark:text-[#DADADACC]">
             {createdBy}

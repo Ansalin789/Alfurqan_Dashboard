@@ -63,14 +63,14 @@ const SalaryCard = () => {
 
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState({
-      studentName: "",
-      courseName: "",
-      teacherName: "",
-      sessionClassType: "",
-      fromDate: "",
-      toDate: "",
-      scheduleStatus: "",
-    });
+    studentName: "",
+    courseName: "",
+    teacherName: "",
+    sessionClassType: "",
+    fromDate: "",
+    toDate: "",
+    scheduleStatus: "",
+  });
   const handleView = () => {
     router.push("/admin-main/ui/schedulelistviewall");
   };
@@ -90,7 +90,8 @@ const SalaryCard = () => {
   );
   const courseNames = Array.from(
     new Set(classData.map((c) => c.course.courseName))
-  );  const teacherNames = Array.from(
+  );
+  const teacherNames = Array.from(
     new Set(classData.map((c) => c.teacher?.teacherName).filter(Boolean))
   );
   const classTypes = Array.from(
@@ -134,7 +135,7 @@ const SalaryCard = () => {
     setSearchQuery(query);
     const lowerQuery = query.toLowerCase();
 
-   const filtered = baseTabData.filter((item) => {
+    const filtered = baseTabData.filter((item) => {
       const combined = [
         item._id,
         item.student.studentFirstName,
@@ -158,7 +159,6 @@ const SalaryCard = () => {
     setCurrentPage(1);
   };
 
- 
   const handleApplyFilters = () => {
     const from = filters.fromDate ? new Date(filters.fromDate) : null;
     const to = filters.toDate ? new Date(filters.toDate) : null;
@@ -185,7 +185,6 @@ const SalaryCard = () => {
     setCurrentPage(1);
   };
 
-
   const handleResetFilters = () => {
     setFilters({
       studentName: "",
@@ -208,10 +207,10 @@ const SalaryCard = () => {
   const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
 
   return (
-     <div className="md:p-0 mt-4 mx-auto">
-        <div className="h-full w-full flex flex-col justify-between">
-          <div className="p-0 justify-between flex flex-col">
-            <div className="flex space-x-6 px-4 py-2 rounded-md">
+    <div className="md:p-0 mt-4 mx-auto">
+      <div className="h-full w-full flex flex-col justify-between">
+        <div className="p-0 justify-between flex flex-col">
+          <div className="flex space-x-6 px-4 py-2 rounded-md">
             <button
               onClick={() => setActiveTab("Upcoming")}
               className={`relative text-[14px] transition font-medium ${
@@ -240,9 +239,8 @@ const SalaryCard = () => {
             </button>
           </div>
           <div className="mt-2">
-          
-              <div className="w-full h-11 bg-[#FAFAFB] dark:bg-[#343434] rounded-t-lg flex justify-between items-center px-4 py-0">
-           <div className="flex items-center gap-2">
+            <div className="w-full h-11 bg-[#FAFAFB] dark:bg-[#343434]  dark:text-[#fff] rounded-t-lg flex justify-between items-center px-4 py-0">
+              <div className="flex items-center gap-2">
                 <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                 <input
                   type="text"
@@ -262,15 +260,16 @@ const SalaryCard = () => {
               </div>
 
               <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
-                 <span className="text-left -ml-60">
-                  Showing {paginatedCourseData.length} Of {filteredClasses.length}
+                <span className="text-left -ml-60">
+                  Showing {paginatedCourseData.length} Of{" "}
+                  {filteredClasses.length}
                 </span>
               </div>
             </div>
             {/* Table */}
-            <div className="overflow-x-auto scrollbar-none">
+            <div className="overflow-x-auto scrollbar-none bg-[#FAFAFB] dark:bg-[#343434]">
               <table
-                className="w-full table-auto border-collapse text-[13px]"
+                className="w-full table-auto border-collapse bg-[#FAFAFB] dark:bg-[#343434] dark:text-[#fff] text-black text-[13px]"
                 style={{ tableLayout: "fixed" }}
               >
                 <thead className="text-[12px] bg-[#4C6993] text-white">
@@ -279,7 +278,9 @@ const SalaryCard = () => {
                     <th className="text-left px-4 py-3 w-[180px]">
                       Student Name
                     </th>
-                    <th className="text-left px-4 py-3 w-[150px]">Teacher Name</th>
+                    <th className="text-left px-4 py-3 w-[150px]">
+                      Teacher Name
+                    </th>
                     <th className="text-left px-4 py-3 w-[150px]">Courses</th>
                     <th className="text-left px-4 py-3 w-[150px]">Class</th>
                     <th className="text-left px-4 py-3 w-[150px]">Date</th>
@@ -287,12 +288,18 @@ const SalaryCard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedCourseData.map((row) => (
+                  {paginatedCourseData.map((row, index) => (
                     <tr
                       key={row._id}
-                      className="even:bg-gray-50 odd:bg-gray-100"
+                      className={`text-[12px] ${
+                        index % 2 === 0
+                          ? "bg-[#fff] dark:bg-[#2C2C2C]"
+                          : "bg-[#F8F8F8] dark:bg-[#303030]"
+                      }`}
                     >
-                      <td className="px-3 py-3 text-[11px]  text-left break-words whitespace-normal">{row._id}</td>
+                      <td className="px-3 py-3 text-[11px]  text-left break-words whitespace-normal">
+                        {row._id}
+                      </td>
                       <td className="  px-3 py-2 text-left  break-words whitespace-normal">
                         {row.student.studentFirstName}{" "}
                         {row.student.studentLastName}
@@ -309,7 +316,7 @@ const SalaryCard = () => {
                       <td className="px-3 py-3 text-left  break-words whitespace-normal">
                         {new Date(row.startDate).toLocaleDateString()}
                       </td>
-                          <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#FDFDFD] text-[11px] w-[180px] break-words whitespace-normal">
                         <span
                           className={`px-3 py-2 font-semibold text-[11px] text-center  rounded-md ${
                             row.scheduleStatus === "Scheduled"
@@ -341,113 +348,116 @@ const SalaryCard = () => {
       </div>
 
       {/* Filter Modal */}
-      <Modal
-            isOpen={isFilterModalOpen}
-            onRequestClose={() => setIsFilterModalOpen(false)}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white w-[650px]"
-            overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
-          >
-            <h2 className="text-lg font-semibold mb-4">Filter by</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <select
-                value={filters.studentName}
-                onChange={(e) =>
-                  setFilters({ ...filters, studentName: e.target.value })
-                }
-                className="p-2 border rounded"
-              >
-                <option value="">Select Student</option>
-                {studentNames.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={filters.courseName}
-                onChange={(e) =>
-                  setFilters({ ...filters, courseName: e.target.value })
-                }
-                className="p-2 border rounded"
-              >
-                <option value="">Select Course</option>
-                {courseNames.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={filters.teacherName}
-                onChange={(e) =>
-                  setFilters({ ...filters, teacherName: e.target.value })
-                }
-                className="p-2 border rounded"
-              >
-                <option value="">Select Teacher</option>
-                {teacherNames.map((name) => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-    
-              <select
-                value={filters.sessionClassType}
-                onChange={(e) =>
-                  setFilters({ ...filters, sessionClassType: e.target.value })
-                }
-                className="p-2 border rounded"
-              >
-                <option value="">Select Class Type</option>
-                {classTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-    
-              <input
-                type="date"
-                value={filters.fromDate}
-                onChange={(e) =>
-                  setFilters({ ...filters, fromDate: e.target.value })
-                }
-                className="p-2 border rounded"
-              />
-              <input
-                type="date"
-                value={filters.toDate}
-                onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
-                className="p-2 border rounded"
-              />
-              <select
-                value={filters.scheduleStatus}
-                onChange={(e) =>
-                  setFilters({ ...filters, scheduleStatus: e.target.value })
-                }
-                className="p-2 border rounded"
-              >
-                <option value="">Select Status</option>
-                <option value="Scheduled">Scheduled</option>
-                <option value="Rescheduled">Rescheduled</option>
-              </select>
-            </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <button
-                onClick={handleResetFilters}
-                className="px-4 py-2 border text-[#576CBC] border-[#576CBC] rounded"
-              >
-                Reset
-              </button>
-              <button
-                onClick={handleApplyFilters}
-                className="px-4 py-2 bg-[#576CBC] text-white rounded"
-              >
-                Show {filteredClasses.length} results
-              </button>
-            </div>
-          </Modal>
+  <Modal
+  isOpen={isFilterModalOpen}
+  onRequestClose={() => setIsFilterModalOpen(false)}
+  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-xl bg-white dark:bg-[#343434] w-[650px]"
+  overlayClassName="fixed inset-0 bg-black bg-opacity-40 z-40"
+>
+  <h2 className="text-lg font-semibold mb-4 text-[#2D2D2D] dark:text-white">Filter by</h2>
+  
+  <div className="space-y-4 mb-6">
+    {/* Student Section */}
+    <div>
+      <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Select Student</h3>
+      <select
+        value={filters.studentName}
+        onChange={(e) => setFilters({ ...filters, studentName: e.target.value })}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+      >
+        <option value="">Select Student</option>
+        {studentNames.map((s) => (
+          <option key={s} value={s}>{s}</option>
+        ))}
+      </select>
+    </div>
+
+    {/* Course Section */}
+    <div>
+      <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Select Course</h3>
+      <select
+        value={filters.courseName}
+        onChange={(e) => setFilters({ ...filters, courseName: e.target.value })}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+      >
+        <option value="">Select Course</option>
+        {courseNames.map((c) => (
+          <option key={c} value={c}>{c}</option>
+        ))}
+      </select>
+    </div>
+
+    {/* Files by Student Section */}
+    <div>
+      <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Files by Student</h3>
+      <select
+        value={filters.teacherName}
+        onChange={(e) => setFilters({ ...filters, teacherName: e.target.value })}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+      >
+        <option value="">Select Student</option>
+        {teacherNames.map((name) => (
+          <option key={name} value={name}>{name}</option>
+        ))}
+      </select>
+    </div>
+
+    {/* From Date Section */}
+    <div>
+      <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">From Date</h3>
+      <div className="grid grid-cols-2 gap-4">
+        <input
+          type="date"
+          value={filters.fromDate}
+          onChange={(e) => setFilters({ ...filters, fromDate: e.target.value })}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+          placeholder="dd-mm-yyyy"
+        />
+        <input
+          type="date"
+          value={filters.toDate}
+          onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+          placeholder="dd-mm-yyyy"
+        />
+      </div>
+    </div>
+
+    {/* Status Section */}
+    <div>
+      <h3 className="text-sm font-medium text-[#444] dark:text-white mb-2">Status</h3>
+      <select
+        value={filters.scheduleStatus}
+        onChange={(e) => setFilters({ ...filters, scheduleStatus: e.target.value })}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm dark:bg-[#343434] dark:text-white text-[#5C5C5C] dark:border-[#5C5C5C]"
+      >
+        <option value="">Select Status</option>
+        <option value="Scheduled">Scheduled</option>
+        <option value="Rescheduled">Rescheduled</option>
+      </select>
+    </div>
+  </div>
+
+  <div className="flex justify-between items-center mt-6">
+    <div className="text-sm text-[#5C5C5C] dark:text-[#FDFDFD]">
+      Showing {filteredClasses.length} results
+    </div>
+    <div className="flex gap-2">
+      <button
+        onClick={handleResetFilters}
+        className="px-4 py-2 border text-[#576CBC] border-[#576CBC] rounded"
+      >
+        Reset
+      </button>
+      <button
+        onClick={handleApplyFilters}
+        className="px-4 py-2 bg-[#576CBC] text-white rounded"
+      >
+        Show results
+      </button>
+    </div>
+  </div>
+</Modal>
     </div>
   );
 };

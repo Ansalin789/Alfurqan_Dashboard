@@ -17,6 +17,7 @@ import {
   Cell,
   PieChart,
   Pie,
+  TooltipProps,
 } from "recharts";
 import {
   Chart as ChartJS,
@@ -92,6 +93,7 @@ interface Teacher {
   _id: string;
   userId: string;
   userName: string;
+  password: string;
   email: string;
   profileImage: string | null;
   level?: string;
@@ -114,6 +116,7 @@ interface OtherEmployee {
   createdDate: string;
   lastUpdatedDate: string;
   lastLoginDate: string;
+  password: string;
 }
 
 interface OtherEmployeesResponse {
@@ -473,6 +476,7 @@ const Page = () => {
           _id: user._id,
           userId: user.userId,
           userName: user.userName,
+          password: user.password,
           email: user.email,
           profileImage: user.profileImage ?? "/assets/images/proff.jpg",
           position: user.position ?? "General",
@@ -708,18 +712,16 @@ const Page = () => {
       );
   };
 
-  function handlePortalAccess(teacherId: string) {
-    const username = encodeURIComponent("David");
-    const password = encodeURIComponent("David@123");
-
-    const portalURL = `https://blackstoneinfomaticstech.com/teacher/ui/sign?username=${username}&password=${password}`;
+  function handlePortalAccess(username: string, password: string) {
+    const encodedUsername = encodeURIComponent(username);
+    const encodedPassword = encodeURIComponent(password);
+    const portalURL = `https://blackstoneinfomaticstech.com/teacher/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     window.location.href = portalURL;
   }
-  function handlePortalAccessforemployee(employeeID: string) {
-    const username = encodeURIComponent("Arthi");
-    const password = encodeURIComponent("Supervisor@123");
-
-    const portalURL = `https://blackstoneinfomaticstech.com/supervisor/ui/sign?username=${username}&password=${password}`;
+  function handlePortalAccessforemployee(username: string, password: string) {
+    const encodedUsername = encodeURIComponent(username);
+    const encodedPassword = encodeURIComponent(password);
+    const portalURL = `https://blackstoneinfomaticstech.com/supervisor/ui/sign?username=${encodedUsername}&password=${encodedPassword}`;
     window.location.href = portalURL;
   }
   const handleChange = (
@@ -876,6 +878,44 @@ const Page = () => {
     );
   }
 
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
+    const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
+    if (active && payload && payload.length) {
+      return (
+        <div
+          className={`p-2 rounded shadow-md text-[12px] border ${
+            isDark
+              ? "bg-[#22223b] text-white border-[#444]"
+              : "bg-white text-[#22223b] border-gray-200"
+          }`}
+        >
+          <div className={`font-normal ${isDark ? 'text-white' : 'text-[#22223b]'}`}>{label}</div>
+          <div>
+            {payload.map((entry: any, idx: number) => (
+              <div key={idx} className={isDark ? 'text-white text-[10px]' : 'text-[#22223b] text-[10px]'}>
+                {entry.value} Teachers
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Find the maximum value for Teachers Record
+  const maxTeacherValue = Math.max(...barData.map((d) => d.value));
+  const normalizedBarData = barData.map((d) => ({
+    ...d,
+    scaledValue: maxTeacherValue ? (d.value / maxTeacherValue) * 100 : 0,
+  }));
+  // Find the maximum value for Employees Record
+  const maxEmployeeValue = Math.max(...chartData.map((d) => d.value));
+  const normalizedChartData = chartData.map((d) => ({
+    ...d,
+    scaledValue: maxEmployeeValue ? (d.value / maxEmployeeValue) * 100 : 0,
+  }));
+
   return (
     <BaseLayout4>
       <AdminHeader currentSection="Employees" />
@@ -960,29 +1000,23 @@ const Page = () => {
                         {/* Bar Chart Section */}
                         <div className="flex-1 h-[220px] pt-2">
                           <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={barData} barSize={40}>
+                            <BarChart data={normalizedBarData} barSize={40}>
                               <XAxis
                                 dataKey="name"
                                 axisLine={false}
                                 tick={false}
                               />
-                              <YAxis hide />
-                              <Tooltip
-                                cursor={{ fill: "transparent" }}
-                                formatter={(value, name, props) => {
-                                  // Show actual count in tooltip
-                                  return [
-                                    `${props.payload.value} Teachers`,
-                                    "Count",
-                                  ];
-                                }}
-                              />
+                              <YAxis hide domain={[0, 100]} />
+                              <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
                               <Bar
                                 dataKey="scaledValue"
                                 radius={[10, 10, 10, 10]}
                               >
-                                {barData.map((entry) => (
-                                  <Cell key={entry.name} fill={entry.color} />
+                                {normalizedBarData.map((entry) => (
+                                  <Cell
+                                    key={entry.name}
+                                    fill={entry.color}
+                                  />
                                 ))}
                               </Bar>
                             </BarChart>
@@ -1433,7 +1467,7 @@ const Page = () => {
                             <div className="flex flex-col justify-center gap-2 px-5 mt-2">
                               <button
                                 className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
-                                onClick={() => handlePortalAccess(teacher._id)}
+                                onClick={() => handlePortalAccess(teacher.userName, teacher.password)}
                                 disabled={!dashboardRead}
                               >
                                 Portal Access
@@ -1498,18 +1532,20 @@ const Page = () => {
                         {/* Bar Chart Section */}
                         <div className="flex-1 h-[220px] pt-2">
                           <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData} barSize={40}>
+                            <BarChart data={normalizedChartData} barSize={40}>
                               <XAxis
                                 dataKey="name"
                                 axisLine={false}
                                 tick={false}
                               />
-                              <YAxis hide domain={[0, 100]} />{" "}
-                              {/* Set Y-axis as percentage */}
-                              <Tooltip cursor={{ fill: "transparent" }} />
-                              <Bar dataKey="value" radius={[10, 10, 10, 10]}>
-                                {chartData.map((entry) => (
-                                  <Cell key={entry.name} fill={entry.color} />
+                              <YAxis hide domain={[0, 100]} />
+                              <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+                              <Bar dataKey="scaledValue" radius={[10, 10, 10, 10]}>
+                                {normalizedChartData.map((entry) => (
+                                  <Cell
+                                    key={entry.name}
+                                    fill={entry.color}
+                                  />
                                 ))}
                               </Bar>
                             </BarChart>
@@ -1930,9 +1966,7 @@ const Page = () => {
                               <div className="flex flex-col justify-center gap-2 px-5 mt-2">
                                 <button
                                   className="text-[12px] border border-[#576CBC] text-[#576CBC] dark:text-[#fff] px-2 py-1 rounded-lg"
-                                  onClick={() =>
-                                    handlePortalAccessforemployee(employee._id)
-                                  }
+                                  onClick={() => handlePortalAccessforemployee(employee.userName, employee.password)}
                                   disabled={!dashboardRead}
                                 >
                                   Portal Access

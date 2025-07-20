@@ -184,33 +184,29 @@ const TrailManagement = () => {
           <Dashboard />
         </div>
         <div className="w-full h-[350px] overflow-y-scroll scrollbar-none bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
-            <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
-                <input
+        <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+        <input
                   type="text"
                   placeholder="Search"
                   className="bg-transparent outline-none text-[12px] w-52 py-3"
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                 />
-              </div>
-              <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                onClick={() => setIsFilterModalOpen(true)}
+              <div 
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
               >
                 <MdTune className="w-4 h-4" />
                 <span>Filter</span>
               </div>
-              <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-              <span className="text-left ml-60 ">
-                  Showing {filteredUsers.length === 0 ? 0 : 1} to{" "}
+              <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+              Showing {filteredUsers.length === 0 ? 0 : 1} to{" "}
                   {Math.min(5, filteredUsers.length)} of {filteredUsers.length}
                 </span>
-              </div>
             </div>
 
             <table className="w-full table-auto" style={{ width: "100%", tableLayout: "fixed" }}>
-              <thead className="text-[12px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
+              <thead className="text-[11px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
                 <tr className="font-medium">
                   {[
                     { label: "Trial ID", width: "w-[10%]" },
@@ -244,29 +240,29 @@ const TrailManagement = () => {
                         index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C]" : "bg-[#F8F8F8] dark:bg-[#303030]"
                       }`}
                     >
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[10px] break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] break-words w-[10%]">
                         {item._id}
                       </td>
-                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%]">
+                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[9px] break-words w-[12%]">
                         {item.student.studentFirstName}{" "}
                         {item.student.studentLastName}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] break-words w-[10%]">
                         {item.student.studentPhone}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] w-[8%]">
                         {item.student.studentCountry}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] w-[10%]">
                         {item.student.learningInterest}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] break-words w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] break-words w-[10%]">
                         {item.student.preferredTeacher}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] w-[10%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] w-[10%]">
                         {item.assignedTeacher}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] w-[8%]">
                         {item.classStartDate
                           ? new Date(item.classStartDate).toLocaleDateString(
                               "en-US",
@@ -278,11 +274,11 @@ const TrailManagement = () => {
                             )
                           : ""}
                       </td>
-                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[11px] w-[8%]">
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-[#fff] text-[9px] w-[8%]">
                         {item.classStartTime}
                       </td>
                       {/* Class Status */}
-                      <td className="px-3 py-2 text-[11px] w-[20%]">
+                      <td className="px-3 py-2 text-[9px] w-[20%]">
                         <span
                           className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.trialClassStatus === "COMPLETED"
@@ -296,7 +292,7 @@ const TrailManagement = () => {
                         </span>
                       </td>
                       {/* Student Status */}
-                      <td className="px-3 py-2 text-[11px]">
+                      <td className="px-3 py-2 text-[9px]">
                         <span
                           className={`px-1 text-[8px] text-center py-[3px] rounded-md ${
                             item.status === "Active"

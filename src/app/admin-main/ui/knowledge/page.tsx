@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Video, Search } from "lucide-react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
 import { MdTune } from "react-icons/md";
+import AdminHeader from "../../components/AdminHeader";
 const tabs = ["Quran", "Arabic", "Islamic Studies"] as const;
 type TabType = (typeof tabs)[number];
 type PDF = { title: string; type: string };
@@ -409,7 +409,7 @@ export default function KnowledgeBase() {
 
   return (
     <BaseLayout4>
-      <SupervisorHeader currentSection="knowledge base" />
+      <AdminHeader currentSection="knowledge base" showBackButton={true} showBackPath="courses" />
       <div className="w-full min-h-100vh mx-auto  sm:px-1 lg:px-2">
         <div className="relative w-full bg-[#F5F5F5] dark:bg-[#3B3B3B] rounded-xl">
           {/* Search + Filter + Count Bar */}
