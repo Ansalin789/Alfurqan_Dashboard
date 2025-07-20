@@ -330,13 +330,13 @@ const fetchInvoice = (token: string) => {
         </span>
       </div>
     </div>
-    <table className="table-fixed w-full">
-      <thead className="text-[13px] bg-[#4C6993] text-white">
+    <table className="table-fixed w-full dark:bg-[#3f3f3f]">
+      <thead className="text-[13px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
         <tr>
           {["Invoice ID", "Date", "Student Name", "Student ID", "Course", "Due By Days", "Paid Date", "Status"].map((header, idx) => (
             <th
               key={idx}
-              className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
+              className="px-3 py-2 border border-[#4C6993] text-left text-wrap break-words"
             >
               {header}
             </th>
@@ -347,8 +347,10 @@ const fetchInvoice = (token: string) => {
         {currentItems.map((row: Invoice, index: number) => (
           <tr
             key={row._id}
-            className={`text-[9px] text-center  mt-0 ${
-              index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+            className={`text-[9px] text-center mt-0 dark:text-white ${
+              index % 2 === 0
+                ? "bg-[#faf9f9] dark:bg-[#2C2C2C]"
+                : "bg-[#ebebeb] dark:bg-[#303030]"
             }`}
           >
             <td className="px-3 py-3 break-words text-[12px] text-left">

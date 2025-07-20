@@ -34,6 +34,8 @@ import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 import ReactDOM from "react-dom";
 import AdminHeader from "../../components/AdminHeader";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // Register chart.js modules
 ChartJS.register(
@@ -346,6 +348,17 @@ const Page = () => {
     endEmployeeIndex
   );
 
+  const [isLeaveFilterModalOpen, setIsLeaveFilterModalOpen] = useState(false);
+  const [leaveFilterName, setLeaveFilterName] = useState("");
+  const [leaveFilterRole, setLeaveFilterRole] = useState("");
+  const [leaveFilterStatus, setLeaveFilterStatus] = useState("");
+  const [leaveFilterDateFrom, setLeaveFilterDateFrom] = useState<Date | null>(null);
+  const [leaveFilterDateTo, setLeaveFilterDateTo] = useState<Date | null>(null);
+
+  // Get unique roles and statuses from leaveRequests
+  const leaveRoles = Array.from(new Set(leaveRequests.map(l => l.role).filter(Boolean)));
+  const leaveStatuses = Array.from(new Set(leaveRequests.map(l => l.leaveStatus).filter(Boolean)));
+
   useEffect(() => {
     const token =
       typeof window !== "undefined"
@@ -371,7 +384,7 @@ const Page = () => {
 
     // Fetch teacher status count
     axios
-      .get("http://localhost:5001/teacher/statuscount", {
+      .get("https://api.blackstoneinfomaticstech.com/teacher/statuscount", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -418,7 +431,7 @@ const Page = () => {
 
     // Fetch teacher gender count
     axios
-      .get<GenderResponse>("http://localhost:5001/teacher/gendercount", {
+      .get<GenderResponse>("https://api.blackstoneinfomaticstech.com/teacher/gendercount", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -462,7 +475,7 @@ const Page = () => {
     const fetchTeachers = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5001/users?role=TEACHER",
+          "https://api.blackstoneinfomaticstech.com/users?role=TEACHER",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -568,7 +581,7 @@ const Page = () => {
     const fetchCounts = async () => {
       try {
         const response = await axios.get<DashboardCounts>(
-          "http://localhost:5001/dashboard/supervisor/counts",
+          "https://api.blackstoneinfomaticstech.com/dashboard/supervisor/counts",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -602,7 +615,7 @@ const Page = () => {
           : null;
       if (!token) return;
       try {
-        const res = await axios.get("http://localhost:5001/leaverequest/card", {
+        const res = await axios.get("https://api.blackstoneinfomaticstech.com/leaverequest/card", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLeaveCard(res.data);
@@ -621,7 +634,7 @@ const Page = () => {
       if (!token) return;
       try {
         const res = await axios.get<LeaveRequestListResponse>(
-          "http://localhost:5001/leaverequest/list",
+          "https://api.blackstoneinfomaticstech.com/leaverequest/list",
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setLeaveRequests(res.data.leaveRequest);
@@ -798,7 +811,7 @@ const Page = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5001/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
+        `https://api.blackstoneinfomaticstech.com/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
         {
           method: "PUT",
           headers: {
@@ -875,6 +888,16 @@ const Page = () => {
       leaveStatusStyles[status as LeaveStatus] || leaveStatusStyles.DEFAULT
     );
   }
+
+  // Filtering logic for leaveRequests
+  const filteredLeaveRequests = leaveRequests.filter(item => {
+    const nameMatch = leaveFilterName === "" || item.name.toLowerCase().includes(leaveFilterName.toLowerCase());
+    const roleMatch = leaveFilterRole === "" || item.role === leaveFilterRole;
+    const statusMatch = leaveFilterStatus === "" || item.leaveStatus === leaveFilterStatus;
+    const fromDateMatch = !leaveFilterDateFrom || new Date(item.fromDate) >= leaveFilterDateFrom;
+    const toDateMatch = !leaveFilterDateTo || new Date(item.toDate) <= leaveFilterDateTo;
+    return nameMatch && roleMatch && statusMatch && fromDateMatch && toDateMatch;
+  });
 
   return (
     <BaseLayout4>
@@ -1240,7 +1263,7 @@ const Page = () => {
                         {/* Filter Popup */}
                         {showTeacherfilterForm && (
                           <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
-                            <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                            <div className="w-full max-w-sm bg-white dark:bg-[#252525] rounded-2xl shadow-lg overflow-hidden m-4 relative">
                               <button
                                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
                                 onClick={() => setshowTeacherfilterForm(false)}
@@ -1249,38 +1272,38 @@ const Page = () => {
                                 ×
                               </button>
                               <div className="p-6 space-y-4">
-                                <h2 className="text-lg font-semibold mb-2">
+                                <h2 className="text-lg font-semibold mb-2 dark:text-[#fff]">
                                   Filter by
                                 </h2>
                                 <div className="flex flex-col gap-3">
-                                  <label className="text-sm font-medium text-gray-700">
-                                    Course
-                                  </label>
-                                  <select
-                                    className="border rounded px-3 py-2 text-sm"
-                                    value={filterCourse}
-                                    onChange={(e) =>
-                                      setFilterCourse(e.target.value)
-                                    }
-                                  >
-                                    <option value="">Select Course</option>
-                                    <option value="Arabic">Arabic</option>
-                                    <option value="Math">Math</option>
-                                    <option value="Science">Science</option>
-                                    {/* Add more courses as needed */}
-                                  </select>
-                                  <label className="text-sm font-medium text-gray-700 mt-2">
+                                  
+                                  <label className="text-sm font-medium text-gray-700 dark:text-[#fff] mt-2">
                                     Name
                                   </label>
                                   <input
                                     type="text"
-                                    className="border rounded px-3 py-2 text-sm"
+                                    className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
                                     placeholder="Enter name"
                                     value={filterName}
                                     onChange={(e) =>
                                       setFilterName(e.target.value)
                                     }
                                   />
+                                  <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">
+                                    Role
+                                  </label>
+                                  <select
+                                    className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                                    value={filterCourse}
+                                    onChange={(e) =>
+                                      setFilterCourse(e.target.value)
+                                    }
+                                  >
+                                    <option value="">Select Course</option>
+                                    <option value="Quran Teacher">Quran Teacher</option>
+                                    <option value="Arabic Teacher">Arabic Teacher</option>
+                                    <option value="Islamic Teacher">Islamic Teacher</option>
+                                  </select>
                                 </div>
                                 <div className="flex gap-3 mt-6">
                                   <button
@@ -1355,7 +1378,6 @@ const Page = () => {
                       </div>
                     </div>
 
-                    {/* Teacher Cards - manage teacher style, with Portal Access */}
                     <div className="bg-white dark:bg-[#3b3b3b] grid grid-cols-1 xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
                       {paginatedTeachers.map((teacher) => (
                         <div
@@ -1766,15 +1788,15 @@ const Page = () => {
                         <div className="relative ">
                           {/* Filter Button (opens your filter popup) */}
                           <button
-                            className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                            onClick={() => setshowTeacherfilterForm(true)}
+                          className="flex items-center gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                          onClick={() => setshowTeacherfilterForm(true)}
                           >
                             <MdTune className="w-4 h-4" />
                             <span>Filter</span>
                           </button>
                           {showTeacherfilterForm && (
-                            <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
-                              <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                            <div className="fixed inset-0 bg-black bg-opacity-10 z-50 flex justify-center items-center overflow-auto">
+                              <div className="w-full max-w-sm bg-white dark:bg-[#252525] rounded-2xl shadow-lg overflow-hidden m-4 relative">
                                 <button
                                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
                                   onClick={() =>
@@ -1789,11 +1811,24 @@ const Page = () => {
                                     Filter by
                                   </h2>
                                   <div className="flex flex-col gap-3">
-                                    <label className="text-sm font-medium text-gray-700">
+                                    
+                                    <label className="text-sm font-medium text-gray-700 dark:text-white mt-2">
+                                      Name
+                                    </label>
+                                    <input
+                                      type="text"
+                                      className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                                      placeholder="Enter name"
+                                      value={filterName}
+                                      onChange={(e) =>
+                                        setFilterName(e.target.value)
+                                      }
+                                    />
+                                    <label className="text-sm font-medium text-gray-700 dark:text-white">
                                       Role
                                     </label>
                                     <select
-                                      className="border rounded px-3 py-2 text-sm"
+                                      className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
                                       value={filterCourse}
                                       onChange={(e) =>
                                         setFilterCourse(e.target.value)
@@ -1809,22 +1844,10 @@ const Page = () => {
                                       </option>
                                       <option value="OTHERS">Others</option>
                                     </select>
-                                    <label className="text-sm font-medium text-gray-700 mt-2">
-                                      Name
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="border rounded px-3 py-2 text-sm"
-                                      placeholder="Enter name"
-                                      value={filterName}
-                                      onChange={(e) =>
-                                        setFilterName(e.target.value)
-                                      }
-                                    />
                                   </div>
                                   <div className="flex gap-3 mt-6">
                                     <button
-                                      className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                                      className="flex-1 text-[15px] border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
                                       onClick={() => {
                                         setFilterCourse("");
                                         setFilterName("");
@@ -1833,7 +1856,7 @@ const Page = () => {
                                       Reset
                                     </button>
                                     <button
-                                      className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                                      className="flex-1 text-[15px] bg-[#576CBC] text-white rounded-lg py-2 font-medium"
                                       onClick={() =>
                                         setshowTeacherfilterForm(false)
                                       }
@@ -1872,7 +1895,8 @@ const Page = () => {
                             </div>
                           )}
                         </div>
-                        <span className="text-left gap-2 text-sm text-gray-400 border-[#f5f5f5] dark:border-[#3b3b3b] mt-2 py-[13px] border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+                        <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
+                        <span className="text-left -ml-60">
                           Showing{" "}
                           {
                             filteredEmployees.filter(
@@ -1893,6 +1917,7 @@ const Page = () => {
                           }{" "}
                           Of {employees.length}
                         </span>
+                      </div>
                       </div>
                       {/* Employee Cards - match Teachers card grid */}
                       <div className="grid grid-cols-1 bg-white dark:bg-[#3b3b3b] xs:grid-cols-2 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-7 overflow-y-auto">
@@ -2037,24 +2062,36 @@ const Page = () => {
             {activeTab === "leave" && (
               <div className="space-y-4 overflow-y-auto scrollbar-none">
                 {/* Summary Cards */}
-                <div className="flex gap-5 ">
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Leave Requests</p>
-                    <h2 className="text-2xl font-semibold ">
-                      {leaveCard.totalApplication}
-                    </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full">
+                    <div className="flex flex-col justify-between gap-y-8">
+                      <div>
+                        <p className="text-[16px] font-medium dark:text-white text-white">Total Leave Requests</p>
+                      </div>
+                      <div>
+                        <h3 className="text-[28px] font-semibold dark:text-white text-white">{leaveCard.totalApplication}</h3>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Approved</p>
-                    <h2 className="text-2xl font-semibold">
-                      {leaveCard.approved}
-                    </h2>
+                  <div className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full">
+                    <div className="flex flex-col justify-between gap-y-8">
+                      <div>
+                        <p className="text-[16px] font-medium dark:text-white text-white">Total Approved</p>
+                      </div>
+                      <div>
+                        <h3 className="text-[28px] font-semibold dark:text-white text-white">{leaveCard.approved}</h3>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-[#7689BD] text-white rounded-xl flex flex-col justify-between shadow p-3 w-[230px] h-[100px]">
-                    <p className="text-md font-medium">Total Declined</p>
-                    <h2 className="text-2xl font-semibold">
-                      {leaveCard.rejected}
-                    </h2>
+                  <div className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col w-full p-3 h-full">
+                    <div className="flex flex-col justify-between gap-y-8">
+                      <div>
+                        <p className="text-[16px] font-medium dark:text-white text-white">Total Declined</p>
+                      </div>
+                      <div>
+                        <h3 className="text-[28px] font-semibold dark:text-white text-white">{leaveCard.rejected}</h3>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -2071,20 +2108,118 @@ const Page = () => {
                       />
                     </div>
                     <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48  cursor-pointer"
-                      // onClick={() => setIsFilterModalOpen(true)}
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsLeaveFilterModalOpen(true)}
                     >
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400 mr-20">
                       <span className="text-left">
-                        Showing {leaveRequests.length === 0 ? 0 : 1} to{" "}
-                        {leaveRequests.length} of {leaveRequests.length}
+                        Showing {filteredLeaveRequests.length === 0 ? 0 : 1} to {filteredLeaveRequests.length} of {leaveRequests.length}
                       </span>
                     </div>
                   </div>
-
+                  {/* Filter Modal */}
+                  {isLeaveFilterModalOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center overflow-auto">
+                      <div className="w-full max-w-md bg-white dark:bg-[#252525] rounded-2xl shadow-lg overflow-hidden m-4 relative">
+                        <button
+                          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+                          onClick={() => setIsLeaveFilterModalOpen(false)}
+                          aria-label="Close"
+                        >
+                          ×
+                        </button>
+                        <div className="p-6 space-y-4">
+                          <h2 className="text-lg font-semibold mb-2 dark:text-[#fff]">Filter by</h2>
+                          <div className="flex flex-col gap-3">
+                            <label className="text-sm font-medium text-gray-700 dark:text-[#fff] mt-2">Employee Name</label>
+                            <input
+                              type="text"
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                              placeholder="Enter name"
+                              value={leaveFilterName}
+                              onChange={e => setLeaveFilterName(e.target.value)}
+                            />
+                            <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">Role</label>
+                            <select
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                              value={leaveFilterRole}
+                              onChange={e => setLeaveFilterRole(e.target.value)}
+                            >
+                              <option value="">All Roles</option>
+                              {leaveRoles.map(role => (
+                                <option key={role} value={role}>{role}</option>
+                              ))}
+                            </select>
+                            <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">Status</label>
+                            <select
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                              value={leaveFilterStatus}
+                              onChange={e => setLeaveFilterStatus(e.target.value)}
+                            >
+                              <option value="">All Statuses</option>
+                              {leaveStatuses.map(status => (
+                                <option key={status} value={status}>{status}</option>
+                              ))}
+                            </select>
+                            <div className="flex gap-2">
+                              <div className="flex-1">
+                                <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">From Date</label>
+                                <DatePicker
+                                  selected={leaveFilterDateFrom}
+                                  onChange={date => setLeaveFilterDateFrom(date)}
+                                  selectsStart
+                                  startDate={leaveFilterDateFrom}
+                                  endDate={leaveFilterDateTo}
+                                  maxDate={leaveFilterDateTo || undefined}
+                                  className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                                  placeholderText="From"
+                                  dateFormat="yyyy-MM-dd"
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <label className="text-sm font-medium text-gray-700 dark:text-[#fff]">To Date</label>
+                                <DatePicker
+                                  selected={leaveFilterDateTo}
+                                  onChange={date => setLeaveFilterDateTo(date)}
+                                  selectsEnd
+                                  startDate={leaveFilterDateFrom}
+                                  endDate={leaveFilterDateTo}
+                                  minDate={leaveFilterDateFrom || undefined}
+                                  className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                                  placeholderText="To"
+                                  dateFormat="yyyy-MM-dd"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-3 mt-6">
+                            <button
+                              className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                              onClick={() => {
+                                setLeaveFilterName("");
+                                setLeaveFilterRole("");
+                                setLeaveFilterStatus("");
+                                setLeaveFilterDateFrom(null);
+                                setLeaveFilterDateTo(null);
+                              }}
+                            >
+                              Reset
+                            </button>
+                            <button
+                              className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                              onClick={() => setIsLeaveFilterModalOpen(false)}
+                            >
+                              Show {filteredLeaveRequests.length} results
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* Table ... */}
                   <table
                     className="w-full min-w-[900px] text-sm text-left table-auto"
                     style={{ width: "100%", tableLayout: "fixed" }}
@@ -2111,8 +2246,8 @@ const Page = () => {
                       </tr>
                     </thead>
                     <tbody className="text-[10px] text-[#1D2939]">
-                      {leaveRequests.length > 0 ? (
-                        leaveRequests
+                      {filteredLeaveRequests.length > 0 ? (
+                        filteredLeaveRequests
                           .filter((item) => {
                             const search = searchQuery1.toLowerCase();
                             return (
@@ -2126,6 +2261,7 @@ const Page = () => {
                               item.leaveStatus.toLowerCase().includes(search)
                             );
                           })
+                          .slice(0, 8)
                           .map((item, index) => {
                             const btnId = `action-btn-${item._id}`;
                             return (

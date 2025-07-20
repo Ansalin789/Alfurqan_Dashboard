@@ -19,6 +19,8 @@ import { Search, User } from "lucide-react";
 import { button } from "@nextui-org/react";
 import AdminHeader from "../../components/AdminHeader";
 import Pagination from "@/components/Pagination";
+import { IoPersonOutline } from "react-icons/io5";
+import { AiOutlineMenuUnfold } from "react-icons/ai";
 
 // Define interfaces for data structure
 interface Teacher {
@@ -26,6 +28,7 @@ interface Teacher {
   teacherName: string;
   teacherEmail: string;
   _id: string;
+  attendee?: string;
 }
 
 interface Meeting {
@@ -116,6 +119,15 @@ const Meeting = () => {
   const [filteredMeetings, setFilteredMeetings] = useState<Meeting[]>([]);
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [meetingMinutes, setMeetingMinutes] = useState<string>("");
+  const [openTeacherDropdownId, setOpenTeacherDropdownId] = useState<
+    string | null
+  >(null);
+  const toggleTeacherDropdown = (id: string) => {
+    setOpenTeacherDropdownId((prev) => (prev === id ? null : id));
+  };
+  const [rescheduleDate, setRescheduleDate] = useState<string>("");
+  const [rescheduleStartTime, setRescheduleStartTime] = useState<string>("");
+  const [rescheduleEndTime, setRescheduleEndTime] = useState<string>("");
 
   const getDuration = (startTime?: string, endTime?: string): string => {
     if (!startTime || !endTime) return "-";
@@ -215,7 +227,13 @@ const Meeting = () => {
       meetingName,
       startTime,
       endTime,
-      teacher: selectedTeachers,
+      teacher: selectedTeachers.map((teacher) => ({
+        _id: teacher._id,
+        teacherId: teacher.teacherId,
+        teacherName: teacher.teacherName,
+        teacherEmail: teacher.teacherEmail,
+      })),
+
       description,
       status: "Active",
       meetingStatus: "Scheduled",
@@ -331,14 +349,19 @@ const Meeting = () => {
   };
 
   const handleRescheduleSubmit = async () => {
-    if (!rescheduleReason.trim() || !selectedItemId) return;
+    if (
+      !rescheduleReason.trim() ||
+      !rescheduleDate ||
+      !rescheduleStartTime ||
+      !rescheduleEndTime ||
+      !selectedItemId
+    ) {
+      alert("Please fill all fields");
+      return;
+    }
 
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("AdminAuthToken")
-          : null;
-
+      const token = localStorage.getItem("AdminAuthToken");
       if (!token) {
         console.error("❌ AdminAuthToken not found");
         return;
@@ -353,9 +376,10 @@ const Meeting = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            selectedDate: "2025-05-01T10:00:00.000Z", // Replace with dynamic value if needed
-            startTime: "10:00", // Replace with dynamic input if needed
-            endTime: "11:00", // Replace with dynamic input if needed
+            selectedDate: new Date(rescheduleDate).toISOString(),
+            startTime: rescheduleStartTime,
+            endTime: rescheduleEndTime,
+            description: rescheduleReason,
             meetingStatus: "rescheduled",
             updatedBy: "Admin",
           }),
@@ -368,13 +392,15 @@ const Meeting = () => {
           setShowSuccess(false);
           setIsRescheduleModalOpen(false);
           setRescheduleReason("");
-          setSelectedItemId(null);
+          setRescheduleDate("");
+          setRescheduleStartTime("");
+          setRescheduleEndTime("");
         }, 2000);
       } else {
-        console.error("Failed to update meeting");
+        alert("Failed to reschedule meeting.");
       }
     } catch (error) {
-      console.error("Error updating meeting:", error);
+      console.error("Error during rescheduling:", error);
     }
   };
 
@@ -574,9 +600,23 @@ const Meeting = () => {
   useEffect(() => {
     setFilteredMeetings(baseData);
   }, [activeTab, meetingsData]);
-useEffect(() => {
-  console.log("Teachers Loaded:", teachers);
-}, [teachers]);
+  useEffect(() => {
+    console.log("Teachers Loaded:", teachers);
+  }, [teachers]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".teacher-dropdown")) {
+        setOpenTeacherDropdownId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <BaseLayout4>
@@ -698,14 +738,32 @@ useEffect(() => {
                           {meeting.meetingName}
                         </td>
                         <td className="px-3 py-3 text-[11px] text-left break-words whitespace-normal">
-                          <select className=" bg-transparent">
-                            <option disabled selected>
+                          <div className="relative">
+                            <button
+                              onClick={() => toggleTeacherDropdown(meeting._id)}
+                              className="flex items-center gap-2 font-medium hover:text-[#5c5c5c]"
+                            >
+                              <AiOutlineMenuUnfold />
                               View List
-                            </option>
-                            {meeting.teachers.flat().map((t) => (
-                              <option key={t._id}>{t.teacherName}</option>
-                            ))}
-                          </select>
+                            </button>
+                            {openTeacherDropdownId === meeting._id && (
+                              <div className="absolute z-10 mt-2 w-48 bg-white rounded shadow-lg p-2 dark:bg-[#343434]">
+                                {meeting.teachers.map((t, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="py-1 text-[#17243E] dark:text-[#FDFDFD]"
+                                  >
+                                    <span className="flex items-center gap-2">
+                                      <IoPersonOutline />
+                                      {t.teacherName?.trim()
+                                        ? t.teacherName
+                                        : "Unknown"}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-3 py-3 text-[11px] text-left break-words whitespace-normal">
                           {new Date(meeting.selectedDate).toLocaleDateString()}
@@ -719,13 +777,13 @@ useEffect(() => {
                               onClick={() =>
                                 router.push(`/admin-main/ui/meeting/liveclass/`)
                               }
-                              className={`px-3 py-3 text-[11px] text-left break-words  whitespace-normal ${statusClass}`}
+                              className="px-3 py-1 text-[11px] rounded bg-[#576CBC] text-white"
                             >
-                              {label}
+                              Start Meeting
                             </button>
                           ) : (
                             <span
-                              className={` font-semibold text-[11px] text-center  rounded-md bg-[#ECFDF3] text-[#377E36] dark:bg-[#377E3633] px-3 py-2 ${statusClass}`}
+                              className={`text-[11px] px-3 py-1 rounded ${statusClass}`}
                             >
                               {label}
                             </span>
@@ -842,106 +900,106 @@ useEffect(() => {
                 <User className="w-6 h-4 text-gray-600" /> Add Teacher
               </button>
 
-               {/* Teacher Modal */}
-                {isTeacherModalOpen && (
-                  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-                    <div className="bg-white rounded-lg shadow-lg p-4 w-[300px] relative">
-                      {/* Close Button */}
+              {/* Teacher Modal */}
+              {isTeacherModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+                  <div className="bg-white rounded-lg shadow-lg p-4 w-[300px] relative">
+                    {/* Close Button */}
+                    <button
+                      onClick={() => setIsTeacherModalOpen(false)}
+                      className="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
+                    >
+                      <IoMdClose size={20} />
+                    </button>
+
+                    {/* Filter Buttons */}
+                    <div className="flex space-x-4 mb-4">
                       <button
-                        onClick={() => setIsTeacherModalOpen(false)}
-                        className="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
+                        className={`px-4 py-1 rounded-lg ${
+                          selectedFilter === "Quran Teacher"
+                            ? "bg-gray-500 text-white"
+                            : "border"
+                        }`}
+                        onClick={() => setSelectedFilter("Quran Teacher")}
                       >
-                        <IoMdClose size={20} />
+                        Quran
                       </button>
-
-                      {/* Filter Buttons */}
-                      <div className="flex space-x-4 mb-4">
-                        <button
-                          className={`px-4 py-1 rounded-lg ${
-                            selectedFilter === "Quran Teacher"
-                              ? "bg-gray-500 text-white"
-                              : "border"
-                          }`}
-                          onClick={() => setSelectedFilter("Quran Teacher")}
-                        >
-                          Quran
-                        </button>
-                        <button
-                          className={`px-4 py-1 rounded-lg ${
-                            selectedFilter === "Arabic Teacher"
-                              ? "bg-gray-500 text-white"
-                              : "border"
-                          }`}
-                          onClick={() => setSelectedFilter("Arabic Teacher")}
-                        >
-                          Arabic
-                        </button>
-                        <button
-                          className={`px-4 py-1 rounded-lg ${
-                            selectedFilter === "all"
-                              ? "bg-gray-500 text-white"
-                              : "border"
-                          }`}
-                          onClick={() => setSelectedFilter("all")}
-                        >
-                          All
-                        </button>
-                      </div>
-
-                      {/* Teacher List */}
-                      <div className="border p-2 rounded-md max-h-[250px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
-                        {teachers.map((teacher, index) => (
-                          <div
-                            key={`${teacher._id}`}
-                            className="flex items-center justify-between p-2 border-b last:border-none"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <FaUserCircle
-                                className="text-[#1C3557]"
-                                size={20}
-                              />
-                              <span className="text-gray-700 text-sm">
-                                {teacher.teacherName}
-                              </span>
-                            </div>
-                            <input
-                              type="checkbox"
-                              className="h-5 w-5 text-[#1C3557] border-gray-300 rounded focus:ring-[#1C3557]"
-                            checked={selectedTeachers.some((t) => t.teacherId === teacher.teacherId)}
-
-                              onChange={() => toggleSelections(teacher)}
-                            />
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Done Button */}
                       <button
-                        onClick={() => setIsTeacherModalOpen(false)}
-                        className="w-full mt-4 bg-[#1C3557] text-white py-2 rounded-lg hover:bg-[#15294a]"
+                        className={`px-4 py-1 rounded-lg ${
+                          selectedFilter === "Arabic Teacher"
+                            ? "bg-gray-500 text-white"
+                            : "border"
+                        }`}
+                        onClick={() => setSelectedFilter("Arabic Teacher")}
                       >
-                        Done
+                        Arabic
+                      </button>
+                      <button
+                        className={`px-4 py-1 rounded-lg ${
+                          selectedFilter === "all"
+                            ? "bg-gray-500 text-white"
+                            : "border"
+                        }`}
+                        onClick={() => setSelectedFilter("all")}
+                      >
+                        All
                       </button>
                     </div>
-                  </div>
-                )}
 
-                {/* Selected Teachers */}
-                <div className="flex mt-2 space-x-2">
-                  {selectedTeachers.map((teacher) => (
-                    <span
-                      key={teacher._id}
-                      className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm"
+                    {/* Teacher List */}
+                    <div className="border p-2 rounded-md max-h-[250px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
+                      {teachers.map((teacher, index) => (
+                        <div
+                          key={`${teacher._id}`}
+                          className="flex items-center justify-between p-2 border-b last:border-none"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <FaUserCircle
+                              className="text-[#1C3557]"
+                              size={20}
+                            />
+                            <span className="text-gray-700 text-sm">
+                              {teacher.teacherName}
+                            </span>
+                          </div>
+                          <input
+                            type="checkbox"
+                            className="h-5 w-5 text-[#1C3557] border-gray-300 rounded focus:ring-[#1C3557]"
+                            checked={selectedTeachers.some(
+                              (t) => t.teacherId === teacher.teacherId
+                            )}
+                            onChange={() => toggleSelections(teacher)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Done Button */}
+                    <button
+                      onClick={() => setIsTeacherModalOpen(false)}
+                      className="w-full mt-4 bg-[#1C3557] text-white py-2 rounded-lg hover:bg-[#15294a]"
                     >
-                      {teacher.teacherName}
-                    </span>
-                  ))}
-                  {/* <button className="text-[#1C3557] border border-[#1C3557] rounded-full p-1">
+                      Done
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Selected Teachers */}
+              <div className="flex mt-2 space-x-2">
+                {selectedTeachers.map((teacher) => (
+                  <span
+                    key={teacher._id}
+                    className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm"
+                  >
+                    {teacher.teacherName}
+                  </span>
+                ))}
+                {/* <button className="text-[#1C3557] border border-[#1C3557] rounded-full p-1">
                  <FaPlus size={12} />
                </button> */}
-                </div>
               </div>
-
+            </div>
 
             {/* Description */}
             <div className="mb-6">
@@ -982,6 +1040,42 @@ useEffect(() => {
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black bg-opacity-50" />
           <div className="bg-gray-100 rounded-3xl p-6 w-96 relative z-50">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Reschedule Date
+              </label>
+              <input
+                type="date"
+                value={rescheduleDate}
+                onChange={(e) => setRescheduleDate(e.target.value)}
+                className="w-full p-2 border rounded-lg bg-white"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Start Time
+              </label>
+              <input
+                type="time"
+                value={rescheduleStartTime}
+                onChange={(e) => setRescheduleStartTime(e.target.value)}
+                className="w-full p-2 border rounded-lg bg-white"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                End Time
+              </label>
+              <input
+                type="time"
+                value={rescheduleEndTime}
+                onChange={(e) => setRescheduleEndTime(e.target.value)}
+                className="w-full p-2 border rounded-lg bg-white"
+              />
+            </div>
+
             <h2 className="text-xl mb-4 text-gray-700">
               Reason for Re-Schedule
             </h2>
@@ -1109,23 +1203,27 @@ useEffect(() => {
                     <th className="px-4 py-2 font-medium">Attendance</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {selectedMeeting.teachers.flat().map((teacher, index) => (
-                    <tr
-                      key={teacher._id || index}
-                      className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                <div className="divide-y max-h-40 overflow-y-auto text-sm">
+                  {selectedMeeting.teachers.map((teacher, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center px-4 py-2"
                     >
-                      <td className="px-4 py-2 text-[#3065B5] hover:underline cursor-pointer">
-                        {teacher.teacherName}
-                      </td>
-                      <td className="px-4 py-2">
-                        <span className="inline-block w-5 h-5 text-white text-xs leading-5 text-center rounded-full bg-green-500">
-                          ✔
-                        </span>
-                      </td>
-                    </tr>
+                      <span className="text-[#4F46E5]">
+                        {teacher.teacherName?.trim() || "Unknown"}
+                      </span>
+                      <span
+                        className={`text-lg ${
+                          teacher.attendee === "present"
+                            ? "text-green-500"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {teacher.attendee ?? "absent"}
+                      </span>
+                    </div>
                   ))}
-                </tbody>
+                </div>
               </table>
             </div>
 

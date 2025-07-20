@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { TiAttachment } from "react-icons/ti";
 import ReactDOM from "react-dom";
+import DatePicker from "react-datepicker";
 
 interface Supervisor {
   supervisorId: string;
@@ -54,23 +55,46 @@ interface Applicant {
 export default function ApplicantsPage() {
   const router = useRouter();
   const [applicants, setApplicants] = useState<Applicant[]>([]);
-
   const [activeTab, setActiveTab] = React.useState("All");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [actionDropdown, setActionDropdown] = useState<string | null>(null);
-  const [dropdownPos, setDropdownPos] = useState<{
-    top: number;
-    left: number;
-  } | null>(null);
-  const tabs = ["All", "NewCandidates", "Shortlisted", "Rejected", "Waiting"];
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filterPosition, setFilterPosition] = useState("");
+  const [filterName, setFilterName] = useState("");
+  const [filterDateFrom, setFilterDateFrom] = useState<Date | null>(null);
+  const [filterDateTo, setFilterDateTo] = useState<Date | null>(null);
+  const [filterStatus, setFilterStatus] = useState("");
+  const [searchText, setSearchText] = useState("");
 
+  // Get unique positions and statuses for dropdowns
+  const uniquePositions = Array.from(new Set(applicants.map(a => a.positionApplied).filter(Boolean)));
+  const uniqueStatuses = Array.from(new Set(applicants.map(a => a.applicationStatus)));
+
+  const tabs = ["All", "NewCandidates", "Shortlisted", "Rejected", "Waiting"];
   const itemsPerPage = 10;
-  const filteredApplicants =
-    activeTab === "All"
-      ? applicants
-      : applicants.filter(
-          (applicant) => applicant.applicationStatus === activeTab.toUpperCase()
-        );
+
+  // Filtering logic
+  const filteredApplicants = applicants.filter(applicant => {
+    // Tab filter
+    if (activeTab !== "All" && applicant.applicationStatus !== activeTab.toUpperCase()) return false;
+    // Position filter
+    if (filterPosition && applicant.positionApplied !== filterPosition) return false;
+    // Name filter (first or last name, case-insensitive)
+    if (filterName && !(`${applicant.candidateFirstName} ${applicant.candidateLastName}`.toLowerCase().includes(filterName.toLowerCase()))) return false;
+    // Date filter
+    if (filterDateFrom && new Date(applicant.applicationDate) < filterDateFrom) return false;
+    if (filterDateTo && new Date(applicant.applicationDate) > filterDateTo) return false;
+    // Status filter
+    if (filterStatus && applicant.applicationStatus !== filterStatus) return false;
+    // Main search bar (name or email)
+    if (searchText && !(
+      `${applicant.candidateFirstName} ${applicant.candidateLastName}`.toLowerCase().includes(searchText.toLowerCase()) ||
+      applicant.candidateEmail.toLowerCase().includes(searchText.toLowerCase())
+    )) return false;
+    return true;
+  });
+
   const totalPages = Math.ceil(filteredApplicants.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -192,29 +216,124 @@ export default function ApplicantsPage() {
                       <Search className="w-4 h-4 text-gray-400 dark:text-gray-400" />
                       <input
                         type="text"
-                        placeholder="Search"
+                        placeholder="Search by name or email"
                         className="bg-transparent outline-none text-[15px] w-52 py-3"
-                        // value={searchText}
-                        // onChange={(e) => setSearchText(e.target.value)}
+                        value={searchText}
+                        onChange={e => setSearchText(e.target.value)}
                       />
                     </div>
 
                     <div
                       className="flex items-center gap-2 text-sm text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                      //   onClick={() => setShowModal(true)}
+                      onClick={() => setShowFilterModal(true)}
                     >
-                      {/* <BsFilterLeft /> */}
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-[14px] text-gray-400 dark:text-gray-400">
                       <span className="text-left -ml-60 ">
-                        Showing {currentApplicants.length} of{" "}
-                        {applicants.length}
+                        Showing {currentApplicants.length} of {filteredApplicants.length}
                       </span>
                     </div>
                   </div>
+
+                  {/* Filter Modal */}
+                  {showFilterModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+                      <div className="w-full max-w-md bg-white dark:bg-[#232323] rounded-2xl shadow-lg overflow-hidden m-4 relative animate-fade-in">
+                        <button
+                          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+                          onClick={() => setShowFilterModal(false)}
+                          aria-label="Close"
+                        >
+                          ×
+                        </button>
+                        <div className="p-6 space-y-4">
+                          <h2 className="text-lg font-semibold mb-2 dark:text-white">Filter by</h2>
+                          <div className="flex flex-col gap-3">
+                            {/* Position Applied */}
+                            <label className="text-sm font-medium text-gray-700 dark:text-white">Position Applied</label>
+                            <select
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                              value={filterPosition}
+                              onChange={e => setFilterPosition(e.target.value)}
+                            >
+                              <option value="">Select Position</option>
+                              {uniquePositions.map(pos => (
+                                <option key={pos} value={pos}>{pos}</option>
+                              ))}
+                            </select>
+                            {/* Application Name */}
+                            <label className="text-sm font-medium text-gray-700 dark:text-white">Application Name</label>
+                            <input
+                              type="text"
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                              placeholder="Enter name"
+                              value={filterName}
+                              onChange={e => setFilterName(e.target.value)}
+                            />
+                            {/* Date Range */}
+                            <label className="text-sm font-medium text-gray-700 dark:text-white">Applied Date</label>
+                            <div className="flex gap-2">
+                              <DatePicker
+                                selected={filterDateFrom}
+                                onChange={date => setFilterDateFrom(date)}
+                                selectsStart
+                                startDate={filterDateFrom}
+                                endDate={filterDateTo}
+                                className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                                placeholderText="From"
+                                dateFormat="MMM dd, yyyy"
+                              />
+                              <DatePicker
+                                selected={filterDateTo}
+                                onChange={date => setFilterDateTo(date)}
+                                selectsEnd
+                                startDate={filterDateFrom}
+                                endDate={filterDateTo}
+                                className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                                placeholderText="To"
+                                dateFormat="MMM dd, yyyy"
+                              />
+                            </div>
+                            {/* Status */}
+                            <label className="text-sm font-medium text-gray-700 dark:text-white">Status</label>
+                            <select
+                              className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                              value={filterStatus}
+                              onChange={e => setFilterStatus(e.target.value)}
+                            >
+                              <option value="">Select Status</option>
+                              {uniqueStatuses.map(status => (
+                                <option key={status} value={status}>{status}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex gap-3 mt-6">
+                            <button
+                              className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                              onClick={() => {
+                                setFilterPosition("");
+                                setFilterName("");
+                                setFilterDateFrom(null);
+                                setFilterDateTo(null);
+                                setFilterStatus("");
+                              }}
+                            >
+                              Reset
+                            </button>
+                            <button
+                              className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                              onClick={() => setShowFilterModal(false)}
+                            >
+                              Show {filteredApplicants.length} results
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Table */}
                   <table

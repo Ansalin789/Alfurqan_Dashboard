@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import BaseLayout4 from "@/components/BaseLayout4";
 import { TiAttachment } from "react-icons/ti";
 import ReactDOM from "react-dom";
+import DatePicker from "react-datepicker";
 
 interface LeaveRequest {
   _id: string;
@@ -62,8 +63,13 @@ export default function ApplicantsPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [actionDropdown, setActionDropdown] = useState<string | null>(null);
-  const [searchQuery1, setSearchQuery1] = useState<string>("");
-
+  const [searchText, setSearchText] = useState("");
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filterName, setFilterName] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [filterDateFrom, setFilterDateFrom] = useState<Date | null>(null);
+  const [filterDateTo, setFilterDateTo] = useState<Date | null>(null);
+  const [filterStatus, setFilterStatus] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [approvedDays, setApprovedDays] = useState("");
@@ -71,12 +77,33 @@ export default function ApplicantsPage() {
 
   const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
 
+  // Get unique roles and statuses for dropdowns
+  const uniqueRoles = Array.from(new Set(leaveRequests.map(l => l.role).filter(Boolean)));
+  const uniqueStatuses = Array.from(new Set(leaveRequests.map(l => l.leaveStatus)));
 
   const itemsPerPage = 10;
 
-  const filteredLeaveRequests = activeTab === "All"
-    ? leaveRequests
-    : leaveRequests.filter((request) => request.leaveStatus === activeTab.toUpperCase());
+  // Filtering logic
+  const filteredLeaveRequests = leaveRequests.filter(request => {
+    // Tab filter
+    if (activeTab !== "All" && request.leaveStatus !== activeTab.toUpperCase()) return false;
+    // Name filter
+    if (filterName && !request.name.toLowerCase().includes(filterName.toLowerCase())) return false;
+    // Role filter
+    if (filterRole && request.role !== filterRole) return false;
+    // Date filter
+    if (filterDateFrom && new Date(request.fromDate) < filterDateFrom) return false;
+    if (filterDateTo && new Date(request.toDate) > filterDateTo) return false;
+    // Status filter
+    if (filterStatus && request.leaveStatus !== filterStatus) return false;
+    // Main search bar (name, role, or status)
+    if (searchText && !(
+      request.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      request.role.toLowerCase().includes(searchText.toLowerCase()) ||
+      request.leaveStatus.toLowerCase().includes(searchText.toLowerCase())
+    )) return false;
+    return true;
+  });
 
   const totalPages = Math.ceil(filteredLeaveRequests.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -93,7 +120,7 @@ export default function ApplicantsPage() {
   const fetchLeaveRequests = async (token: string) => {
     try {
       const res = await axios.get<LeaveRequestListResponse>(
-        "http://localhost:5001/leaverequest/list",
+        "https://api.blackstoneinfomaticstech.com/leaverequest/list",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setLeaveRequests(res.data.leaveRequest);
@@ -120,7 +147,7 @@ export default function ApplicantsPage() {
 
     try {
       const res = await fetch(
-        `http://localhost:5001/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
+        `https://api.blackstoneinfomaticstech.com/leaverequest/${selectedLeave?.id}`, // ✅ use id instead of employeeId
         {
           method: "PUT",
           headers: {
@@ -188,14 +215,14 @@ export default function ApplicantsPage() {
                     <Search className="w-4 h-4 text-gray-400" />
                     <input
                       type="text"
-                      placeholder="Search"
+                      placeholder="Search by name, role, or status"
                       className="bg-transparent outline-none text-[15px] w-52 py-3"
-                      value={searchQuery1}
-                      onChange={(e) => setSearchQuery1(e.target.value)}
+                      value={searchText}
+                      onChange={e => setSearchText(e.target.value)}
                     />
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm text-gray-400 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer">
+                  <div className="flex items-center gap-2 text-sm text-gray-400 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer" onClick={() => setShowFilterModal(true)}>
                     <MdTune className="w-4 h-4" />
                     <span>Filter</span>
                   </div>
@@ -232,7 +259,7 @@ export default function ApplicantsPage() {
                     {currentLeaveRequests.length > 0 ? (
                       currentLeaveRequests
                         .filter((item) => {
-                          const search = searchQuery1.toLowerCase();
+                          const search = searchText.toLowerCase();
                           return (
                             item.employeeId.toLowerCase().includes(search) ||
                             item.name.toLowerCase().includes(search) ||
@@ -707,6 +734,103 @@ export default function ApplicantsPage() {
           </div>
         </div>
       </div>
+      {/* Filter Modal */}
+      {showFilterModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="w-full max-w-md bg-white dark:bg-[#232323] rounded-2xl shadow-lg overflow-hidden m-4 relative animate-fade-in">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+              onClick={() => setShowFilterModal(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <div className="p-6 space-y-4">
+              <h2 className="text-lg font-semibold mb-2 dark:text-white">Filter by</h2>
+              <div className="flex flex-col gap-3">
+                {/* Employee Name */}
+                <label className="text-sm font-medium text-gray-700 dark:text-white">Employee Name</label>
+                <input
+                  type="text"
+                  className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                  placeholder="Enter name"
+                  value={filterName}
+                  onChange={e => setFilterName(e.target.value)}
+                />
+                {/* Role */}
+                <label className="text-sm font-medium text-gray-700 dark:text-white">Role</label>
+                <select
+                  className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                  value={filterRole}
+                  onChange={e => setFilterRole(e.target.value)}
+                >
+                  <option value="">Select Role</option>
+                  {uniqueRoles.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+                {/* Date Range */}
+                <label className="text-sm font-medium text-gray-700 dark:text-white">Date Range</label>
+                <div className="flex gap-2">
+                  <DatePicker
+                    selected={filterDateFrom}
+                    onChange={date => setFilterDateFrom(date)}
+                    selectsStart
+                    startDate={filterDateFrom}
+                    endDate={filterDateTo}
+                    className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                    placeholderText="From"
+                    dateFormat="MMM dd, yyyy"
+                  />
+                  <DatePicker
+                    selected={filterDateTo}
+                    onChange={date => setFilterDateTo(date)}
+                    selectsEnd
+                    startDate={filterDateFrom}
+                    endDate={filterDateTo}
+                    minDate={filterDateFrom || undefined}
+                    className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm w-full"
+                    placeholderText="To"
+                    dateFormat="MMM dd, yyyy"
+                  />
+                </div>
+                {/* Status */}
+                <label className="text-sm font-medium text-gray-700 dark:text-white">Status</label>
+                <select
+                  className="border dark:border-[#5C5C5C] dark:bg-[#343434] rounded px-3 py-2 text-sm"
+                  value={filterStatus}
+                  onChange={e => setFilterStatus(e.target.value)}
+                >
+                  <option value="">Select Status</option>
+                  {uniqueStatuses.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  className="flex-1 border border-[#576CBC] text-[#576CBC] rounded-lg py-2 font-medium"
+                  onClick={() => {
+                    setFilterName("");
+                    setFilterRole("");
+                    setFilterDateFrom(null);
+                    setFilterDateTo(null);
+                    setFilterStatus("");
+                  }}
+                >
+                  Reset
+                </button>
+                <button
+                  className="flex-1 bg-[#576CBC] text-white rounded-lg py-2 font-medium"
+                  onClick={() => setShowFilterModal(false)}
+                >
+                  Show {filteredLeaveRequests.length} results
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </BaseLayout4>
   );
 }

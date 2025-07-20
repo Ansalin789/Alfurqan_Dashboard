@@ -9,6 +9,7 @@ import { FiSearch } from "react-icons/fi";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { Bell } from "lucide-react";
+import AdminHeader from "../../components/AdminHeader";
 
 // Define your interfaces
 interface IMessage {
@@ -458,70 +459,70 @@ const Message = () => {
     }
   };
 
-  return (
+ return (
     <BaseLayout4>
-      <div className="py-3 px-5">
-        <h1 className="text-[20px] mt-3 font-semibold mb-3">Messages</h1>
+      <AdminHeader currentSection={"Messages"} />
+
+      <div className="py-3 px-5 dark:bg-[#343434]">
         <div className="flex flex-col md:flex-row gap-4 h-[85vh]">
           {/* Left Panel */}
-         <motion.div
-                   initial={{ x: -20, opacity: 0 }}
-                   animate={{ x: 0, opacity: 1 }}
-                   transition={{ duration: 0.3 }}
-                   className="w-full md:w-[350px] bg-white p-4 rounded-lg shadow-md flex flex-col border border-gray-100"
-                 >
-                   <div className="flex items-center space-x-3 p-2">
-                     <motion.div whileHover={{ scale: 1.05 }}>
-                       <img
-                         src="/assets/images/account.png"
-                         alt="Student Avatar"
-                         className="w-12 h-12 rounded-lg border border-[#dbdbdb]"
-                       />
-                     </motion.div>
-                     <div>
-                       <div className="flex">
-                         <h3 className="text-sm font-semibold text-[#374557]">
-                           {userName}
-                         </h3>
-                         <button className="ml-[1px] text-gray-500">
-                           <Bell size={16} className="text-white" />
-                           {messageCount > 0 && (
-                             <span className=" -mt-7 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
-                               {messageCount}
-                             </span>
-                           )}
-                         </button>
-                       </div>
-       
-                       <p className="text-[12px] text-[#010e30a7] font-semibold dark:text-[#fff] dark:opacity-[60%]">
-                         {/* {IUser.role} */}
-                       </p>
-                     </div>
-                   </div>
-       
-                   {/* Search Bar */}
-                   <motion.div
-                     whileHover={{ scale: 1.01 }}
-                     className="relative mt-2 mb-3"
-                   >
-                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                       <FiSearch className="text-gray-400 text-xs" />
-                     </div>
-                     <input
-                       type="text"
-                       placeholder="Search messages..."
-                       className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#4CBC9A]"
-                       value={searchQuery}
-                       onChange={(e) => setSearchQuery(e.target.value)}
-                     />
-                   </motion.div>
-       
-                   {/* Tabs */}
-                    <div className="flex border-b">
+          <motion.div
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="w-full md:w-[350px] bg-[#FAFAFB] dark:bg-[#343434] p-4 rounded-lg shadow-md flex flex-col border border-gray-100 dark:border-[#505050]"
+          >
+            <div className="flex items-center space-x-3 p-2">
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <img
+                  src="/assets/images/account.png"
+                  alt="Student Avatar"
+                  className="w-12 h-12 rounded-lg border border-[#dbdbdb] dark:border-[#505050]"
+                />
+              </motion.div>
+              <div>
+                <div className="flex">
+                  <h3 className="text-sm font-semibold text-[#010E30] dark:text-[#FFFFFF]">
+                    {userName}
+                  </h3>
+                  <button className="ml-[1px] text-gray-500">
+                    <Bell size={16} className="text-[#010E30] dark:text-[#FFFFFF]" />
+                    {messageCount > 0 && (
+                      <span className="-mt-7 bg-red-600 text-white text-[8px] rounded-full h-3 w-3 flex items-center justify-center animate-pulse">
+                        {messageCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+                <p className="text-[12px] text-[#010E30] dark:text-[#FFFFFF] opacity-60 font-semibold">
+                  {/* {IUser.role} */}
+                </p>
+              </div>
+            </div>
+
+            {/* Search Bar */}
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              className="relative mt-2 mb-3"
+            >
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400 text-xs" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search messages..."
+                className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-[#505050] dark:bg-[#444] dark:text-[#FFFFFF] rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[#4CBC9A]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </motion.div>
+
+            {/* Tabs */}
+            <div className="flex border-b dark:border-[#505050]">
               <button
                 className={`px-2 py-1.5 text-[13px] ${
                   activeTab === "all"
-                    ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium"
+                    ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium dark:text-[#576CBC]"
                     : "text-[#777777] dark:text-[#7C7C7C] font-normal"
                 }`}
                 onClick={() => setActiveTab("all")}
@@ -529,265 +530,263 @@ const Message = () => {
                 All
               </button>
               <button
-                className={`px-3 py-1.5 text-xs font-medium ${
+                className={`px-3 py-1.5 text-xs ${
                   activeTab === "supervisors"
-                    ? "text-[#002B4D] border-b-2 border-[#002B4D]"
-                    : "text-gray-500"
+                    ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium dark:text-[#576CBC]"
+                    : "text-[#777777] dark:text-[#7C7C7C] font-normal"
                 }`}
                 onClick={() => setActiveTab("supervisors")}
               >
                 Supervisors
               </button>
               <button
-                className={`px-3 py-1.5 text-xs font-medium ${
+                className={`px-3 py-1.5 text-xs ${
                   activeTab === "academicCoaches"
-                    ? "text-[#002B4D] border-b-2 border-[#002B4D]"
-                    : "text-gray-500"
+                    ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium dark:text-[#576CBC]"
+                    : "text-[#777777] dark:text-[#7C7C7C] font-normal"
                 }`}
                 onClick={() => setActiveTab("academicCoaches")}
               >
                 Academic Coaches
               </button>
               <button
-                className={`px-3 py-1.5 text-xs font-medium ${
+                className={`px-3 py-1.5 text-xs ${
                   activeTab === "teachers"
-                    ? "text-[#002B4D] border-b-2 border-[#002B4D]"
-                    : "text-gray-500"
+                    ? "text-[#576CBC] border-b-2 border-[#576CBC] font-medium dark:text-[#576CBC]"
+                    : "text-[#777777] dark:text-[#7C7C7C] font-normal"
                 }`}
                 onClick={() => setActiveTab("teachers")}
               >
                 Teachers
               </button>
             </div>
-       
-                   {/* User List */}
-                   <div className="mt-2 overflow-y-auto flex-1">
-                     <AnimatePresence>
-                       {filteredUsers.map((user) => (
-                         <motion.button
-                           key={user._id}
-                           initial={{ opacity: 0, y: 5 }}
-                           animate={{ opacity: 1, y: 0 }}
-                           exit={{ opacity: 0 }}
-                           transition={{ duration: 0.2 }}
-                           className={`flex items-center border-b-2 dark:border-b-[#504c4c]  justify-between w-full p-2  cursor-pointer ${
-                             selectedUser?._id === user._id
-                               ? "bg-[#f0efef] dark:bg-[#3c3c3c] rounded"
-                               : "hover:bg-[#f0efef] dark:hover:bg-[#3c3c3c] hover:rounded"
-                           }`}
-                           onClick={() => handleUserClick(user)}
-                         >
-                           <div className="flex space-x-2 items-center">
-                             <div className="relative">
-                               <motion.div
-                                 whileHover={{ scale: 1.05 }}
-                                 className="w-9 h-9 bg-[#D0D0D0] dark:bg-[#D0D0D0] rounded-lg flex items-center justify-center"
-                               >
-                                 <span className="text-[#959595] dark:text-[#959595] font-medium text-[14px]">
-                                   {user.userName.charAt(0)}
-                                 </span>
-                               </motion.div>
-                               <div
-                                 className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border bg-green-600 ${getStatusColor(
-                                   user.status ?? "offline"
-                                 )}`}
-                               ></div>
-                             </div>
-                             <div className="text-left">
-                               <h5 className="font-medium  text-[11px] text-[#010E30] dark:text-[#fff]">
-                                 {user.userName}
-                               </h5>
-                               <p className="text-[10px] text-gray-500 dark:text-[#fff] dark:text-opacity-[60%] truncate max-w-[180px]">
-                                 {user.email}
-                               </p>
-                             </div>
-                           </div>
-                           <span className="text-[9px] text-gray-400">
-                             {user.lastSeen}
-                           </span>
-                         </motion.button>
-                       ))}
-                     </AnimatePresence>
-                   </div>
-                 </motion.div>
-       
+
+            {/* User List */}
+            <div className="mt-2 overflow-y-auto flex-1">
+              <AnimatePresence>
+                {filteredUsers.map((user) => (
+                  <motion.button
+                    key={user._id}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex items-center border-b dark:border-b-[#505050] justify-between w-full p-2 cursor-pointer ${
+                      selectedUser?._id === user._id
+                        ? "bg-[#f0efef] dark:bg-[#444] rounded"
+                        : "hover:bg-[#f0efef] dark:hover:bg-[#444] hover:rounded"
+                    }`}
+                    onClick={() => handleUserClick(user)}
+                  >
+                    <div className="flex space-x-2 items-center">
+                      <div className="relative">
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          className="w-9 h-9 bg-[#D0D0D0] dark:bg-[#444] rounded-lg flex items-center justify-center"
+                        >
+                          <span className="text-[#959595] dark:text-[#FFFFFF] font-medium text-[14px]">
+                            {user.userName.charAt(0)}
+                          </span>
+                        </motion.div>
+                        <div
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
+                            user.status ?? "offline"
+                          )}`}
+                        ></div>
+                      </div>
+                      <div className="text-left">
+                        <h5 className="font-medium text-[11px] text-[#010E30] dark:text-[#FFFFFF]">
+                          {user.userName}
+                        </h5>
+                        <p className="text-[10px] text-[#010E30] dark:text-[#FFFFFF] opacity-60 truncate max-w-[180px]">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[9px] text-[#010E30] dark:text-[#FFFFFF] opacity-60">
+                      {user.lastSeen}
+                    </span>
+                  </motion.button>
+                ))}
+              </AnimatePresence>
+            </div>
+          </motion.div>
 
           {/* Chat Panel */}
-           <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="w-full md:flex-1 bg-white rounded-lg shadow-md flex flex-col border border-gray-100 overflow-hidden"
-                  >
-                    {selectedUser ? (
-                      <>
-                        <div className="border-b border-gray-200 p-3">
-                          <div className="flex items-center space-x-2">
-                            <motion.div
-                              whileHover={{ scale: 1.05 }}
-                              className="relative"
-                            >
-                              <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                                <span className="text-gray-600 text-sm">
-                                  {selectedUser.userName.charAt(0)}
-                                </span>
-                              </div>
-                              <div
-                                className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white bg-green-500 ${getStatusColor(
-                                  selectedUser.status ?? "offline"
-                                )}`}
-                              ></div>
-                            </motion.div>
-                            <div>
-                              <h3 className="text-xs font-medium">
-                                {selectedUser.userName}
-                              </h3>
-                              <div className="flex items-center">
-                                <p className="text-[10px] text-gray-400 capitalize">
-                                  {selectedUser.status} • {selectedUser.role}
-                                </p>
-                              </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="w-full md:flex-1 bg-[#FAFAFB] dark:bg-[#343434] rounded-lg shadow-md flex flex-col border border-gray-100 dark:border-[#505050] overflow-hidden"
+          >
+            {selectedUser ? (
+              <>
+                <div className="border-b border-gray-200 dark:border-[#505050] p-3 bg-[#FAFAFB] dark:bg-[#343434]">
+                  <div className="flex items-center space-x-2">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      className="relative"
+                    >
+                      <div className="w-10 h-10 bg-gray-200 dark:bg-[#444] rounded-lg flex items-center justify-center">
+                        <span className="text-[#010E30] dark:text-[#FFFFFF] text-sm">
+                          {selectedUser.userName.charAt(0)}
+                        </span>
+                      </div>
+                      <div
+                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white ${getStatusColor(
+                          selectedUser.status ?? "offline"
+                        )}`}
+                      ></div>
+                    </motion.div>
+                    <div>
+                      <h3 className="text-xs font-medium text-[#010E30] dark:text-[#FFFFFF]">
+                        {selectedUser.userName}
+                      </h3>
+                      <div className="flex items-center">
+                        <p className="text-[10px] text-[#010E30] dark:text-[#FFFFFF] opacity-60 capitalize">
+                          {selectedUser.status} • {selectedUser.role}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative flex-1 h-[calc(85vh-100px)]">
+                  <div className="absolute inset-0 overflow-y-auto p-3 flex flex-col bg-gray-50 dark:bg-[#2C2C2C] chat-scroll-container">
+                    <AnimatePresence>
+                      {Object.entries(groupedMessages)
+                        .sort(
+                          (a, b) =>
+                            new Date(a[0]).getTime() - new Date(b[0]).getTime()
+                        )
+                        .map(([date, msgs]) => (
+                          <div key={date}>
+                            <div className="text-center text-[#010E30] dark:text-[#FFFFFF] opacity-60 text-xs my-2 font-medium">
+                              {formatDateLabel(date)}
                             </div>
-                          </div>
-                        </div>
-        
-                        <div className="relative flex-1 h-[calc(85vh-100px)]">
-                          {/* Adjust as needed */}
-                          <div className="absolute inset-0 overflow-y-auto p-3 flex flex-col bg-gray-50 chat-scroll-container">
-                            <AnimatePresence>
-                              {Object.entries(groupedMessages)
-                                .sort(
-                                  (a, b) =>
-                                    new Date(a[0]).getTime() - new Date(b[0]).getTime()
-                                )
-                                .map(([date, msgs]) => (
-                                  <div key={date}>
-                                    <div className="text-center text-gray-500  text-xs my-2 font-medium">
-                                      {formatDateLabel(date)}
+                            {msgs
+                              .toSorted(
+                                (a, b) =>
+                                  new Date(a.createdDate).getTime() -
+                                  new Date(b.createdDate).getTime()
+                              )
+                              .map((msg) => (
+                                <motion.div
+                                  key={msg._id}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className={`flex flex-col mb-3 ${
+                                    msg.senderId === userId
+                                      ? "items-end"
+                                      : "items-start"
+                                  }`}
+                                >
+                                  <motion.div
+                                    whileHover={{ scale: 1.01 }}
+                                    className={`p-2 rounded-lg max-w-[80%] ${
+                                      msg.senderId === userId
+                                        ? "bg-[#576CBC] text-[#FFFFFF]"
+                                        : "bg-[#F1F1F1] dark:bg-[#444] text-[#010E30] dark:text-[#FFFFFF]"
+                                    }`}
+                                  >
+                                    <p className="text-xs">{msg.messages}</p>
+                                    <div className="flex items-center justify-end mt-1 space-x-1">
+                                      <span className="text-[9px] opacity-70">
+                                        {new Date(
+                                          msg.createdDate
+                                        ).toLocaleTimeString([], {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })}
+                                      </span>
+                                      {msg.senderId === userId && (
+                                        <span className="text-[9px]">
+                                          {msg.isRead ? "✓✓" : "✓"}
+                                        </span>
+                                      )}
                                     </div>
-                                    {msgs
-                                      .toSorted(
-                                        (a, b) =>
-                                          new Date(a.createdDate).getTime() -
-                                          new Date(b.createdDate).getTime()
-                                      )
-                                      .map((msg) => (
-                                        <motion.div
-                                          key={msg._id}
-                                          initial={{ opacity: 0, y: 10 }}
-                                          animate={{ opacity: 1, y: 0 }}
-                                          transition={{ duration: 0.2 }}
-                                          className={`flex flex-col mb-3 ${
-                                            msg.senderId === userId
-                                              ? "items-end"
-                                              : "items-start"
-                                          }`}
-                                        >
-                                          <motion.div
-                                            whileHover={{ scale: 1.01 }}
-                                            className={`p-2 rounded-lg max-w-[80%] ${
-                                              msg.senderId === userId
-                                                ? "bg-[#576CBC] text-[#fff]  rounded-lg"
-                                                : "bg-[#F1F1F1] rounded-lg dark:bg-[#2c2c2c]"
-                                            }`}
-                                          >
-                                            <p className="text-xs">{msg.messages}</p>
-                                            <div className="flex items-center justify-end mt-1 space-x-1">
-                                              <span className="text-[9px] opacity-70">
-                                                {new Date(
-                                                  msg.createdDate
-                                                ).toLocaleTimeString([], {
-                                                  hour: "2-digit",
-                                                  minute: "2-digit",
-                                                })}
-                                              </span>
-                                              {msg.senderId === userId && (
-                                                <span className="text-[9px]">
-                                                  {msg.isRead ? "✓✓" : "✓"}
-                                                </span>
-                                              )}
-                                            </div>
-                                          </motion.div>
-                                        </motion.div>
-                                      ))}
-                                  </div>
-                                ))}
-                            </AnimatePresence>
-                            <div ref={messagesEndRef} />
+                                  </motion.div>
+                                </motion.div>
+                              ))}
                           </div>
-                        </div>
-        
-                        <motion.div
-                          initial={{ y: 10, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          className="border-t border-gray-200 p-3 bg-white"
-                        >
-                          <div className="flex items-center rounded-lg bg-gray-50 p-1">
-                            <button className="p-1 text-gray-500 hover:text-gray-700 ml-1">
-                              <GrAttachment size={14} />
-                            </button>
-                            <input
-                              type="text"
-                              placeholder="Type a message..."
-                              className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none"
-                              value={messageText}
-                              onChange={(e) => setMessageText(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (
-                                  e.key === "Enter" &&
-                                  selectedUser &&
-                                  messageText.trim()
-                                ) {
-                                  handleSendMessage();
-                                }
-                              }}
-                            />
-                            <motion.button
-                              type="button"
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={handleSendMessage}
-                              disabled={!messageText.trim()}
-                              className={`p-1 rounded-lg flex items-center ${
-                                messageText.trim()
-                                  ? "bg-[#4CBC9A] text-white"
-                                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                              }`}
-                            >
-                              <FaTelegramPlane size={14} />
-                            </motion.button>
-                          </div>
-                        </motion.div>
-                      </>
-                    ) : (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex items-center justify-center h-full bg-gray-50"
-                      >
-                        <div className="text-center">
-                          <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full mb-3 flex items-center justify-center">
-                            <svg
-                              className="w-8 h-8 text-gray-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="1.5"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                              ></path>
-                            </svg>
-                          </div>
-                          <p className="text-xs text-gray-500">
-                            Select a conversation to start chatting
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </motion.div>
+                        ))}
+                    </AnimatePresence>
+                    <div ref={messagesEndRef} />
+                  </div>
+                </div>
+
+                <motion.div
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="border-t border-gray-200 dark:border-[#505050] p-3 bg-[#FAFAFB] dark:bg-[#343434]"
+                >
+                  <div className="flex items-center rounded-lg bg-gray-50 dark:bg-[#444] p-1">
+                    <button className="p-1 text-[#010E30] dark:text-[#FFFFFF] hover:text-gray-700 ml-1">
+                      <GrAttachment size={14} />
+                    </button>
+                    <input
+                      type="text"
+                      placeholder="Type a message..."
+                      className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none text-[#010E30] dark:text-[#FFFFFF]"
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (
+                          e.key === "Enter" &&
+                          selectedUser &&
+                          messageText.trim()
+                        ) {
+                          handleSendMessage();
+                        }
+                      }}
+                    />
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleSendMessage}
+                      disabled={!messageText.trim()}
+                      className={`p-1 rounded-lg flex items-center ${
+                        messageText.trim()
+                          ? "bg-[#576CBC] text-white"
+                          : "bg-gray-200 dark:bg-[#505050] text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      <FaTelegramPlane size={14} />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center justify-center h-full bg-gray-50 dark:bg-[#2C2C2C]"
+              >
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto bg-gray-200 dark:bg-[#444] rounded-full mb-3 flex items-center justify-center">
+                    <svg
+                      className="w-8 h-8 text-gray-400 dark:text-[#FFFFFF]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <p className="text-xs text-[#010E30] dark:text-[#FFFFFF] opacity-60">
+                    Select a conversation to start chatting
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
         </div>
       </div>
     </BaseLayout4>

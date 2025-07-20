@@ -79,7 +79,7 @@ const Expenses = () => {
     }
       const fetchCardCounts = async () => {
         try {
-          const response = await axios.get<ExpenseCardCounts>("http://localhost:5001/expenseCardCounts",{
+          const response = await axios.get<ExpenseCardCounts>("https://api.blackstoneinfomaticstech.com/expenseCardCounts",{
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${token}`,
@@ -250,8 +250,8 @@ const Expenses = () => {
               </span>
             </div>
           </div>
-          <table className="table-fixed w-full">
-            <thead className="text-[13px] bg-[#4C6993] text-white">
+          <table className="table-fixed w-full dark:bg-[#3f3f3f]">
+            <thead className="text-[13px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
               <tr>
                 {[
                   "Payment Date",
@@ -274,25 +274,17 @@ const Expenses = () => {
               {filteredData.map((row, index) => (
                 <tr
                   key={row.paymentDate}
-                  className={`text-[9px] text-center  mt-0 ${
-                    index % 2 === 0 ? "bg-[#faf9f9]" : "bg-[#ebebeb]"
+                  className={`text-[9px] text-center mt-0 dark:text-white ${
+                    index % 2 === 0
+                      ? "bg-[#faf9f9] dark:bg-[#2C2C2C]"
+                      : "bg-[#ebebeb] dark:bg-[#303030]"
                   }`}
                 >
-                  <td className="px-3 py-3 break-words text-[12px] text-left">
-                    {row.paymentDate}
-                  </td>
-                  <td className="px-3 py-3 break-words text-[12px] text-left">
-                    {row.expenseType}
-                  </td>
-                  <td className="px-3 py-3 break-words text-[12px] text-left">
-                    {row.amount}
-                  </td>
-                  <td className="px-3 py-3 break-words text-[12px] text-left">
-                    {row.category}
-                  </td>
-                  <td className="px-3 py-3 break-words text-[12px] text-left">
-                    {row.paymentMethod}
-                  </td>
+                  <td className="px-3 py-3 break-words text-[12px] text-left">{row.paymentDate}</td>
+                  <td className="px-3 py-3 break-words text-[12px] text-left">{row.expenseType}</td>
+                  <td className="px-3 py-3 break-words text-[12px] text-left">{row.amount}</td>
+                  <td className="px-3 py-3 break-words text-[12px] text-left">{row.category}</td>
+                  <td className="px-3 py-3 break-words text-[12px] text-left">{row.paymentMethod}</td>
                   <td className="px-3 py-3 break-words text-[12px] text-left">
                     <span
                       className={`inline-flex items-center justify-center w-24 h-6 px-3 py-1 rounded-md

@@ -125,7 +125,7 @@ export default function KnowledgeBase() {
   const fetchCourses = async (token: string) => {
     console.log("📥 Fetching courses...");
     try {
-      const response = await fetch("http://localhost:5001/courses", {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/courses", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -271,7 +271,7 @@ export default function KnowledgeBase() {
         console.error("❌ AdminAuthToken not found");
         return;
       }
-      const response = await fetch("http://localhost:5001/knowledgebase", {
+      const response = await fetch("https://api.blackstoneinfomaticstech.com/knowledgebase", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

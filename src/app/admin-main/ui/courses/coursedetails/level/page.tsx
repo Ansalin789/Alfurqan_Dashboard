@@ -92,7 +92,7 @@ const Page = () => {
   const fetchLevels = async (token: string) => {
     try {
       const response = await fetch(
-        `http://localhost:5001/levels/${courseId}`,
+        `https://api.blackstoneinfomaticstech.com/levels/${courseId}`,
         {
           method: "GET",
           headers: {
@@ -169,7 +169,7 @@ const Page = () => {
         return;
       }
       const res = await fetch(
-        `http://localhost:5001/levels`,
+        `https://api.blackstoneinfomaticstech.com/levels`,
         {
           method: "POST",
           headers: {
