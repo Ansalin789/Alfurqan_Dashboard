@@ -52,6 +52,7 @@
     "react-phone-number-input": "^3.4.9",
     "react-time-picker": "^7.0.0",
     "react-timezone-select": "^3.2.8",
+    "react-toastify": "^11.0.5",
     "recharts": "^2.13.0",
     "rsuite": "^5.74.2",
     "socket.io-client": "^4.8.1",
@@ -59,7 +60,8 @@
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss-animate": "^1.0.7",
     "tw-elements-react": "^1.0.0-alpha-end",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "whisper-node": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^20",
