@@ -98,7 +98,7 @@ const TotalRequestChart = () => {
   return (
     <div className="rounded-3xl w-full p-2 h-[270px]">
       <div className="w-full flex justify-between items-center px-3 py-2">
-        <h3 className="text-[#010E30] text-[15px] font-semibold dark:text-white">
+        <h3 className="text-[#010E30] text-[14px] font-semibold dark:text-white">
           Total Requests
         </h3>
       </div>
@@ -148,7 +148,7 @@ const TotalRequestChart = () => {
                 className="w-[12px] h-[12px] rounded-[2px]"
                 style={{ backgroundColor: item.color }}
               ></div>
-              <span className="text-[10px] font-semibold text-[#010E30] dark:text-white">
+              <span className="text-[10px] font-medium text-[#010E30] dark:text-white">
                 {item.name.charAt(0).toUpperCase() +
                   item.name.slice(1).toLowerCase()}
               </span>
@@ -201,7 +201,7 @@ const CountriesCard = () => {
   const maxCount = Math.max(...(data?.map?.((c) => c.count) || []), 1);
   return (
     <div>
-      <h3 className="text-[#010E30] text-[15px] font-semibold dark:text-white">
+      <h3 className="text-[#010E30] text-[14px] font-semibold dark:text-white">
         Countries
       </h3>
 
@@ -229,15 +229,15 @@ const CountriesCard = () => {
                       }}
                     />
                   ) : (
-                    <div className="w-6 h-6 bg-gray-300" />
+                    <div className="w-5  h-5 bg-gray-300" />
                   )}
-                  <span className="text-[12px] text-gray-700 dark:text-white">
+                  <span className="text-[11px] text-gray-700 dark:text-white">
                     {countryInfo.country}
                   </span>
                 </div>
 
                 {/* Count */}
-                <span className="text-[12px] font-medium text-gray-900 dark:text-white">
+                <span className="text-[11px] font-medium text-gray-900 dark:text-white">
                   {countryInfo.count}
                 </span>
               </div>
@@ -332,7 +332,7 @@ const PreferredTeachersCard = () => {
   return (
     <div>
       <div>
-        <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-[14px] font-semibold text-gray-900 dark:text-white">
           Preferred Teachers
         </h2>
         <div className="relative flex items-center justify-center -ml-2 mt-2">
@@ -441,14 +441,14 @@ const PreferredTeachersCard = () => {
           <div className="flex flex-col items-center text-start">
             <div className="flex items-center gap-[3px]">
               <div className="w-[12px] h-[12px] rounded-[2px]" style={{ backgroundColor: COLORS[0] }}></div>
-              <span className="text-[10px] font-semibold text-[#010E30] dark:text-white">Male</span>
+              <span className="text-[10px] font-medium text-[#010E30] dark:text-white">Male</span>
             </div>
             <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">{male}</div>
           </div>
           <div className="flex flex-col items-center text-start">
             <div className="flex items-center gap-[3px]">
               <div className="w-[12px] h-[12px] rounded-[2px]" style={{ backgroundColor: COLORS[1] }}></div>
-              <span className="text-[10px] font-semibold text-[#010E30] dark:text-white">Female</span>
+              <span className="text-[10px] font-medium text-[#010E30] dark:text-white">Female</span>
             </div>
             <div className="text-[10px] font-medium mt-[2px] text-[#010E30] dark:text-white/70">{female}</div>
           </div>
@@ -529,7 +529,7 @@ const CoursesChart = () => {
 
   return (
     <div>
-      <h2 className="text-[15px] font-semibold text-gray-900 dark:text-white">Courses</h2>
+      <h2 className="text-[14px] font-semibold text-gray-900 dark:text-white">Courses</h2>
 
       <ResponsiveContainer width="100%" height={198}>
         <BarChart data={courseData} barCategoryGap={30}>
@@ -558,7 +558,7 @@ const CoursesChart = () => {
               className="w-[10px] h-[10px] rounded-[2px]"
               style={{ backgroundColor: entry.color }}
             ></div>
-            <span className="text-[10px] text-[#010E30] dark:text-white font-semibold">{entry.name}</span>
+            <span className="text-[10px] text-[#010E30] dark:text-white font-medium">{entry.name}</span>
           </div>
         ))}
       </div>
@@ -569,16 +569,16 @@ const CoursesChart = () => {
 export default function Dashboard() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full w-full py-4 md:mr-10 scrollbar-none">
-      <div className="bg-[#FFFFFF] dark:bg-[#343434] p-0 rounded-xl shadow-md  h-full w-full">
+      <div className="bg-[#FFFFFF] dark:bg-[#343434] p-0 rounded-2xl shadow-md  h-full w-full">
         <TotalRequestChart />
       </div>
-      <div className="bg-white dark:bg-[#343434] p-4 rounded-lg shadow-md  h-full w-full">
+      <div className="bg-white dark:bg-[#343434] p-4 rounded-2xl shadow-md  h-full w-full">
         <CountriesCard />
       </div>
-      <div className="bg-white dark:bg-[#343434] p-4 rounded-lg shadow-md  h-full w-full">
+      <div className="bg-white dark:bg-[#343434] p-4 rounded-2xl shadow-md  h-full w-full">
         <PreferredTeachersCard />
       </div>
-      <div className="bg-white dark:bg-[#343434] p-4 rounded-lg shadow-md  h-full w-full">
+      <div className="bg-white dark:bg-[#343434] p-4 rounded-2xl shadow-md  h-full w-full">
         <CoursesChart />
       </div>
     </div>

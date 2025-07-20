@@ -12,6 +12,7 @@ import AdminHeader from "@/app/admin-main/components/AdminHeader";
 import Pagination from "@/components/Pagination";
 import { MdTune } from "react-icons/md";
 import { Search } from "lucide-react";
+import { TooltipProps } from "recharts";
 interface Employee {
   _id: string;
   firstName: string;
@@ -117,6 +118,32 @@ interface ShiftSchedule {
   fromTime: string;
   toTime: string;
 }
+
+// CustomTooltip for dark mode
+const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
+  const isDark = typeof window !== "undefined" && document.documentElement.classList.contains("dark");
+  if (active && payload && payload.length) {
+    return (
+      <div
+        className={`p-2 rounded shadow-md text-[12px] border ${
+          isDark
+            ? "bg-[#22223b] text-white border-[#444]"
+            : "bg-white text-[#22223b] border-gray-200"
+        }`}
+      >
+        <div className={`font-normal ${isDark ? 'text-white' : 'text-[#22223b]'}`}>{label}</div>
+        <div>
+          {payload.map((entry: any, idx: number) => (
+            <div key={idx} className={isDark ? 'text-white text-[10px]' : 'text-[#22223b] text-[10px]'}>
+              {entry.value} Employees
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 const EmployeePage = () => {
   const [activeTab, setActiveTab] = useState("Wages");
@@ -488,8 +515,8 @@ const EmployeePage = () => {
                 key={tab}
                 className={`px-3 py-[7px] text-xs font-medium focus:outline-none transition-all duration-200 ${
                   activeTab === tab
-                    ? "border-b border-b-[#576CBC] text-[#576CBC]"
-                    : "text-[#010E30] dark:text-white"
+                  ? "border-b border-b-[#576CBC] text-[#576CBC]"
+                  : "text-[#010E30] dark:text-white"
                 }`}
                 onClick={() => setActiveTab(tab)}
               >
@@ -501,7 +528,7 @@ const EmployeePage = () => {
           {/* Tab Content */}
           <div className="py-2">
             {activeTab === "Wages" && (
-              <div className="space-y-6">
+              <div className="">
                 <div className="rounded-xl overflow-hidden">
                   <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
                     <input
@@ -520,7 +547,7 @@ const EmployeePage = () => {
                     >
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
-                    </div>
+                        </div>
                     <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
                       Showing{" "}
                       {filteredWages.length === 0
@@ -530,7 +557,7 @@ const EmployeePage = () => {
                       {Math.min(wagesPage * wagesPerPage, filteredWages.length)}{" "}
                       of {filteredWages.length}
                     </span>
-                  </div>
+                        </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
                       className="w-full min-w-[900px] text-sm text-left table-auto"
@@ -540,18 +567,18 @@ const EmployeePage = () => {
                         <tr className="font-medium">
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Class Name
-                          </th>
+                      </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Rate
-                          </th>
+                      </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Currency
                           </th>
                           <th className="p-4 font-semibold text-[12px] text-center">
                             Duration
-                          </th>
-                        </tr>
-                      </thead>
+                      </th>
+                    </tr>
+                  </thead>
                       <tbody className="text-[10px] text-[#1D2939]">
                         {paginatedWages.length > 0 ? (
                           paginatedWages.map((item, index) => (
@@ -565,7 +592,7 @@ const EmployeePage = () => {
                             >
                               <td className="p-3">
                                 {item.classType?.className || "-"}
-                              </td>
+                        </td>
                               <td className="p-3">
                                 {item.classType?.rate || "-"}
                               </td>
@@ -576,18 +603,18 @@ const EmployeePage = () => {
                                 {item.classType?.hoursMins
                                   ? `${item.classType.hoursMins} mins`
                                   : "-"}
-                              </td>
-                            </tr>
+                        </td>
+                      </tr>
                           ))
-                        ) : (
-                          <tr>
-                            <td colSpan={4} className="p-4 text-center">
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="p-4 text-center">
                               No data available
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
                   </div>
                 </div>
                 {totalWagesPages > 1 && (
@@ -630,17 +657,17 @@ const EmployeePage = () => {
                       className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
                     >
                       <div className="flex flex-col justify-between gap-y-4">
-                        <div>
+                    <div>
                           <p className="text-[15px] font-medium dark:text-white text-white">
                             {card.title}
                           </p>
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                           <h3 className="text-[24px] font-semibold dark:text-white text-white">
                             ${card.count}
                           </h3>
-                        </div>
-                      </div>
+                    </div>
+                  </div>
                     </div>
                   ))}
                 </div>
@@ -778,17 +805,17 @@ const EmployeePage = () => {
                       className="bg-[#7689BD] text-white shadow-md rounded-xl flex flex-col  w-full p-3 h-full"
                     >
                       <div className="flex flex-col justify-between gap-y-4">
-                        <div>
+                    <div>
                           <p className="text-[15px] font-medium dark:text-white text-white">
                             {card.title}
                           </p>
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                           <h3 className="text-[24px] font-semibold dark:text-white text-white">
                             ${card.count}
                           </h3>
-                        </div>
-                      </div>
+                    </div>
+                  </div>
                     </div>
                   ))}
                 </div>
@@ -847,43 +874,43 @@ const EmployeePage = () => {
                       <tbody className="text-[10px] text-[#1D2939]">
                         {paginatedLeave.length > 0 ? (
                           paginatedLeave.map((item, index) => (
-                            <tr
-                              key={item._id}
+                          <tr
+                            key={item._id}
                               className={`text-center dark:text-white ${
                                 index % 2 === 0
                                   ? "bg-[#fff] dark:bg-[#2C2C2C]"
                                   : "bg-[#F8F8F8] dark:bg-[#303030]"
-                              }`}
-                            >
+                            }`}
+                          >
                               <td className="p-3 text-center">
-                                {item.leaveType}
-                              </td>
+                              {item.leaveType}
+                            </td>
                               <td className="p-3 text-center">
-                                {new Date(item.fromDate).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  }
-                                )}{" "}
-                                -{" "}
-                                {new Date(item.toDate).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  }
-                                )}
-                              </td>
+                              {new Date(item.fromDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                }
+                              )}{" "}
+                              -{" "}
+                              {new Date(item.toDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                }
+                              )}
+                            </td>
                               <td className="p-3 text-center">{item.reason}</td>
                               <td className="p-3 text-center">
-                                <div className="flex items-center gap-2 justify-center">
-                                  {item.leaveStatus}
-                                </div>
-                              </td>
-                            </tr>
+                              <div className="flex items-center gap-2 justify-center">
+                                {item.leaveStatus}
+                              </div>
+                            </td>
+                          </tr>
                           ))
                         ) : (
                           <tr>
