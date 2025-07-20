@@ -2,7 +2,7 @@
 import BaseLayout4 from "@/components/BaseLayout4";
 import React from "react";
 import Link from "next/link";
-import SupervisorHeader from "@/app/supervisor/components/supervisorHeader";
+import AdminHeader from "../../components/AdminHeader";
 
 const cardData = [
   {
@@ -68,7 +68,7 @@ const cardData = [
 const Page = () => {
   return (
     <BaseLayout4>
-      <SupervisorHeader currentSection="Course" />
+      <AdminHeader currentSection="Course" />
       <div className="min-h-100vh w-full px-4 sm:px-6 lg:px-10 py-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
           {cardData.map((item) => (
@@ -92,15 +92,15 @@ const Page = () => {
                     <span className="font-medium break-words">
                       {item.idLabel || "ID"}
                     </span>
-                    <span className="text-right break-words font-normal">{item.id}</span>
+                    <span className="text-right break-words font-normal">
+                      {item.id}
+                    </span>
                   </div>
                 )}
 
                 {item.duration && (
                   <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
-                    <span className="font-medium break-words">
-                     Duration
-                    </span>
+                    <span className="font-medium break-words">Duration</span>
                     <span className="text-right break-words font-normal">
                       {item.duration}
                     </span>
@@ -112,13 +112,17 @@ const Page = () => {
                     <span className="font-medium break-words">
                       {item.totalLabel || "Total"}
                     </span>
-                    <span className="text-right break-words font-normal">{item.total}</span>
+                    <span className="text-right break-words font-normal">
+                      {item.total}
+                    </span>
                   </div>
                 )}
 
                 <div className="grid grid-cols-[auto_1fr] gap-2 w-full">
                   <span className="font-medium break-words">Creation Date</span>
-                  <span className="text-right break-words font-normal">{item.date}</span>
+                  <span className="text-right break-words font-normal">
+                    {item.date}
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-[auto_1fr] gap-2 w-full">

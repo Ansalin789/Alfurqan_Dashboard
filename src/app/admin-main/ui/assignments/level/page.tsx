@@ -2,50 +2,36 @@
 
 import { useState, useEffect } from "react";
 import BaseLayout4 from "@/components/BaseLayout4";
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import AdminHeader from "@/app/admin-main/components/AdminHeader";
-
-interface CourseInfo {
-  courseId: string;
-  courseTitle: string;
-  courseDuration: string;
-  courseDescription: string;
-  courseLevel: string;
-}
-
-interface CourseAPIResponseItem {
-  _id: string;
-  course: CourseInfo;
-  courseName: string;
-  level: string;
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  lastUpdatedDate: string;
-  lastUpdatedBy: string;
-  __v: number;
-}
-
-interface CoursesListResponse {
-  totalCount: number;
-  courses: CourseAPIResponseItem[];
-}
+import Link from "next/link";
 
 interface Course {
   courseId: string;
-  courseTitle: string;
-  courseDescription: string;
-  courseDuration: string;
   level: string;
+  description: string;
+  duration: string;
   createdDate: string;
   createdBy: string;
 }
 
-const Page = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [dashboardRead, setdashboardRead] = useState(false);
-  // Load courses from localStorage on component mount
+interface CourseData {
+  id: string;
+  courseId: string;
+  description: string;
+  level: string;
+  duration: string;
+  createdBy: string;
+  createdDate: string;
+}
 
+const Page = () => {
+  const [courses, setCourses] = useState<CourseData[]>([]);
+  const searchParams = useSearchParams();
+  const courseTitle = searchParams.get("title");
+  const courseId = searchParams.get("courseId");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dashboardRead, setdashboardRead] = useState(false);
   useEffect(() => {
     const token =
       typeof window !== "undefined"
@@ -57,9 +43,9 @@ const Page = () => {
       return;
     }
     if (token) {
-      fetchCourses(token); // call your function with token
+      fetchLevels(token); // call your function with token
     } else {
-      console.error("❌ AdminAuthToken not found");
+      console.log("No auth token found.");
     }
     if (typeof window !== "undefined") {
       const roleAccessRaw = localStorage.getItem("AdminRolePermission");
@@ -76,62 +62,37 @@ const Page = () => {
       }
     }
   }, []);
-
-  const fetchCourses = async (token: string) => {
-    console.log("📥 Fetching courses...");
+  const fetchLevels = async (token: string) => {
     try {
-      const response = await fetch("http://localhost:5001/courses", {
+      const response = await fetch(`http://localhost:5001/levels/${courseId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("✅ Response received:", response);
+      if (!response.ok) throw new Error("Failed to fetch course details");
 
-      if (!response.ok) {
-        throw new Error(
-          `❌ Failed to fetch courses — Status: ${response.status}`
-        );
+      const data = await response.json();
+      console.log(data);
+      // Because response is not an array, update accordingly
+      if (Array.isArray(data.data)) {
+        const levels = data.data.map((level: any) => ({
+          id: level._id,
+          courseId: level.courseId,
+          description: level.description,
+          level: level.level,
+          duration: level.duration,
+          createdBy: level.createdBy,
+          createdDate: level.createdDate,
+        }));
+
+        setCourses(levels);
       }
-
-      const data: CoursesListResponse = await response.json();
-      console.log("📦 Parsed JSON:", data);
-
-      if (!data.courses || !Array.isArray(data.courses)) {
-        throw new Error(
-          "❌ Invalid data format: `courses` field missing or not an array"
-        );
-      }
-
-      const transformedCourses: Course[] = data.courses
-        .map((courseItem) => {
-          if (!courseItem.course) {
-            console.warn("⚠️ Missing `course` object in item:", courseItem);
-            return null;
-          }
-
-          return {
-            courseId: courseItem.course.courseId,
-            courseTitle: courseItem.course.courseTitle,
-            courseDescription: courseItem.course.courseDescription,
-            courseDuration: courseItem.course.courseDuration,
-            level: courseItem.level,
-            createdDate: new Date(courseItem.createdDate).toLocaleDateString(),
-            createdBy: courseItem.createdBy,
-            status: courseItem.status,
-          };
-        })
-        .filter(Boolean) as Course[];
-
-      console.log("✅ Transformed Courses:", transformedCourses);
-      setCourses(transformedCourses);
-    } catch (err) {
-      console.error("❌ Error in fetchCourses:", err);
+    } catch (error) {
+      console.error("Error fetching levels:", error);
     }
   };
-
-  const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 4;
 
@@ -144,20 +105,21 @@ const Page = () => {
 
   return (
     <BaseLayout4>
-      <AdminHeader currentSection="Assignment" showBackButton={true} showBackPath="courses" />
+      <AdminHeader currentSection={courseTitle || ""} showBackButton={true} showBackPath="/admin-main/ui/assignments"/>
       <div className=" sm:px-1 lg:px-2 bg-[#f5f5f5] dark:bg-[#3B3B3B] py-2 rounded-xl">
         {/* Grid of Cards */}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center p-4 bg-gray-100 dark:bg-[#3B3B3B]">
-          {/* Course Cards */}
           {paginatedCourses.map((course, index) => (
             <Link
               key={course.courseId || `course ${index}`}
               href={{
-                pathname: `/admin-main/ui/assignments/level`,
+                pathname: `/admin-main/ui/assignments/level/levelDetail`,
                 query: {
-                  title: course.courseTitle,
+                  levelId: course.id,
                   courseId: course.courseId,
+                  level: course.level,
+                  course: courseTitle,
                 },
               }}
               className="w-full max-w-xs"
@@ -233,28 +195,29 @@ const Page = () => {
 };
 
 const CourseCard = ({
-  courseTitle,
   courseId,
-  courseDescription,
-  courseDuration,
   level,
+  description,
+  duration,
   createdDate,
   createdBy,
 }: Course) => {
   return (
-    <div className="w-full bg-white dark:bg-[#343434] rounded-xl border hover:border-[#576CBC] hover:border-[2px] border-gray-300 dark:border-[#444] shadow hover:shadow-md transition flex flex-col justify-between p-4 aspect-[4.8/5]">
+    <div className="w-full bg-white dark:bg-[#343434] rounded-xl hover:border-[#576CBC] hover:border-[2px] border border-gray-300 dark:border-[#444] shadow hover:shadow-md transition flex flex-col justify-between p-4 aspect-[4.8/5]">
       {/* Title */}
       <h2 className="text-sm sm:text-base font-bold text-[#0b2447] dark:text-white mb-2 text-center">
-        {courseTitle}
+        Level {level}
       </h2>
 
       {/* Image + Description */}
       <div className="flex flex-col items-center gap-2 flex-grow mb-2 ">
         <div className="w-20 h-20 bg-gray-200 dark:bg-[#C4C4C4] rounded-md" />
         <p className="text-[11px] text-gray-600 dark:text-gray-300 text-center truncate w-full px-2">
-          {courseDescription.length > 100
-            ? `${courseDescription.slice(0, 100)}...`
-            : courseDescription}
+          {description
+            ? description.length > 100
+              ? `${description.slice(0, 100)}...`
+              : description
+            : "No description"}
         </p>
       </div>
 
@@ -273,15 +236,7 @@ const CourseCard = ({
             Duration
           </span>
           <span className="text-[#322121cc] dark:text-[#DADADACC]">
-            {courseDuration}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
-            Levels
-          </span>
-          <span className="text-[#322121cc] dark:text-[#DADADACC]">
-            {level}
+            {duration}
           </span>
         </div>
         <div className="flex justify-between">
@@ -289,12 +244,12 @@ const CourseCard = ({
             Date
           </span>
           <span className="text-[#322121cc] dark:text-[#DADADACC]">
-            {createdDate.toString()}
+            {new Date(createdDate).toLocaleDateString()}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="font-medium text-[#000000] dark:text-[#FFFFFFE5]">
-            By
+            Created By
           </span>
           <span className="text-[#322121cc] dark:text-[#DADADACC]">
             {createdBy}
