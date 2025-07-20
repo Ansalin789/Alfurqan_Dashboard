@@ -187,29 +187,25 @@ const TrailSection = () => {
         </div>
 
         <div className="w-full h-[350px] overflow-y-scroll scrollbar-none bg-[#FAFAFB] rounded-lg dark:bg-[#343434]">
-          <div className="flex justify-between items-center px-4 py-0 rounded-md dark:bg-[#343434]">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+          <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
             <input
-                type="text"
-                placeholder="Search"
-                className="bg-transparent outline-none text-[12px] w-52 py-3"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
-                onClick={() => setIsFilterModalOpen(true)}
+              type="text"
+              placeholder="Search"
+              className="bg-transparent outline-none text-[12px] w-52 py-3"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+            <div
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
             >
               <MdTune className="w-4 h-4" />
               <span>Filter</span>
             </div>
-            <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-              <span className="text-left ml-60 ">
-                Showing {filteredUsers.length === 0 ? 0 : 1} to{" "}
+            <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
+            Showing {filteredUsers.length === 0 ? 0 : 1} to{" "}
                 {Math.min(5, filteredUsers.length)} of {filteredUsers.length}
               </span>
-            </div>
           </div>
 
           {/* Table Section */}
@@ -233,7 +229,7 @@ const TrailSection = () => {
                   <th
                     key={header.label}
                     className={`text-left px-3 py-3 font-medium border border-[#4C6993] dark:border-[#6087C0] ${header.width}`}
-                    >
+                  >
                     {header.label}
                   </th>
                 ))}
@@ -241,53 +237,57 @@ const TrailSection = () => {
             </thead>
             <tbody>
               {filteredItems.length > 0 ? (
-                filteredItems.slice(-5).reverse().map((item, index) => (
-                  <tr
-                    key={item._id}
-                    className={`text-[12px] ${
-                      index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C] "
-                                : "bg-[#F8F8F8] dark:bg-[#303030]"
-                    }`}
-                  >
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] break-words w-[10%]">
-                      {item._id}
-                    </td>
-                    <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%]">
-                      {item.student.studentFirstName}{" "}
-                      {item.student.studentLastName}
-                    </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] break-words w-[10%]">
-                      {item.student.studentPhone}
-                    </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[8%]">
-                      {item.student.studentCountry}
-                    </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[10%]">
-                      {item.student.learningInterest}
-                    </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[10%]">
-                      {item.student.preferredTeacher}
-                    </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[10%]">
-                      {item.assignedTeacher}
-                    </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[8%]">
-                      {item.classStartDate
-                        ? new Date(item.classStartDate).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            }
-                          )
-                        : ""}
-                    </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[8%]">
-                      {item.classStartTime}
-                    </td>
-                  </tr>
-                ))
+                filteredItems
+                  .slice(-5)
+                  .reverse()
+                  .map((item, index) => (
+                    <tr
+                      key={item._id}
+                      className={`text-[11px] ${
+                        index % 2 === 0
+                          ? "bg-[#fff] dark:bg-[#2C2C2C] "
+                          : "bg-[#F8F8F8] dark:bg-[#303030]"
+                      }`}
+                    >
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] break-words w-[10%]">
+                        {item._id}
+                      </td>
+                      <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[9px] break-words w-[12%]">
+                        {item.student.studentFirstName}{" "}
+                        {item.student.studentLastName}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] break-words w-[10%]">
+                        {item.student.studentPhone}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[8%]">
+                        {item.student.studentCountry}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[10%]">
+                        {item.student.learningInterest}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[10%]">
+                        {item.student.preferredTeacher}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[10%]">
+                        {item.assignedTeacher}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[8%]">
+                        {item.classStartDate
+                          ? new Date(item.classStartDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )
+                          : ""}
+                      </td>
+                      <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[9px] w-[8%]">
+                        {item.classStartTime}
+                      </td>
+                    </tr>
+                  ))
               ) : (
                 <tr>
                   <td colSpan={12} className="p-4 text-center">

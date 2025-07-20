@@ -245,34 +245,34 @@ const TrailSection = () => {
                 filteredItems.map((item, index) => (
                   <tr
                     key={item._id}
-                    className={`text-[12px] ${
+                    className={`text-[11px] ${
                       index % 2 === 0 ? "bg-[#fff] dark:bg-[#2C2C2C] "
                                 : "bg-[#F8F8F8] dark:bg-[#303030]"
                     }`}
                   >
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] break-words w-[10%]">
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[10px] break-words w-[10%]">
                       {item._id}
                     </td>
-                    <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[11px] break-words w-[12%]">
+                    <td className="px-5 py-2 text-[#3D8FDE] font-medium text-left text-[10px] break-words w-[12%]">
                       {item.student.studentFirstName}{" "}
                       {item.student.studentLastName}
                     </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] break-words w-[10%]">
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[10px] break-words w-[10%]">
                       {item.student.studentPhone}
                     </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[8%]">
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[10px] w-[8%]">
                       {item.student.studentCountry}
                     </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[10%]">
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[10px] w-[10%]">
                       {item.student.learningInterest}
                     </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[10%]">
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[10px] w-[10%]">
                       {item.student.preferredTeacher}
                     </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[10%]">
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[10px] w-[10%]">
                       {item.assignedTeacher}
                     </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[8%]">
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[10px] w-[8%]">
                       {item.classStartDate
                         ? new Date(item.classStartDate).toLocaleDateString(
                             "en-US",
@@ -284,7 +284,7 @@ const TrailSection = () => {
                           )
                         : ""}
                     </td>
-                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[11px] w-[8%]">
+                    <td className="px-3 py-2 text-[#010E30E5] dark:text-white text-[10px] w-[8%]">
                       {item.classStartTime}
                     </td>
                   </tr>
@@ -300,7 +300,7 @@ const TrailSection = () => {
           </table>
         </div>
         {/* Pagination */}
-        <div className="mt-3">
+        <div className="">
           <Pagination
             currentPage={currentPage}
             totalPages={Math.ceil(filteredUsers.length / itemsPerPage)}

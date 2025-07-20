@@ -719,8 +719,8 @@ const Teacher = () => {
             {activeTab === "Studentslist" && (
               <div className="">
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <input
+                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
+                <input
                       type="text"
                       placeholder="Search"
                       className="bg-transparent outline-none text-[12px] w-32 py-3"
@@ -729,8 +729,8 @@ const Teacher = () => {
                     />
                     <div className="relative">
                       <button
-                        className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
-                        onClick={() => setIsFilterModalOpen(true)}
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      onClick={() => setIsFilterModalOpen(true)}
                       >
                         <MdTune className="w-4 h-4" />
                         <span>Filter</span>
