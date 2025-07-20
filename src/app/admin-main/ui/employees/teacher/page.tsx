@@ -14,7 +14,7 @@ import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import TeacherHeader from "@/app/teacher/components/TeacherHeader";
-import { Search } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { MdTune } from "react-icons/md";
 import Pagination from "@/components/Pagination";
 
@@ -608,66 +608,77 @@ const Teacher = () => {
         <div className="grid grid-cols-5 gap-2">
           {/* Left Card */}
           <div className="col-span-3 bg-[#5E6578] text-white px-4 py-3 rounded-lg shadow-sm flex flex-row">
-            {/* Profile Section */}
-            <div className="flex flex-col items-center w-[30%] pr-4 py-6 border-r border-[#BCBCBC]">
-              <div className="w-[90px] h-[90px] rounded-full overflow-hidden border border-white">
-                <img
-                  src="/assets/images/Avatar.png"
-                  alt="Avatar"
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <h2 className="text-sm font-semibold mt-2">{users?.userName}</h2>
-              <p className="text-[10px] text-gray-300">{users?.email}</p>
+          <div className="flex flex-col items-center w-[30%] pr-4 py-6 border-r border-[#BCBCBC] gap-y-2">
+            <div className="w-[90px] h-[90px] rounded-full overflow-hidden border border-white">
+              <img
+                src="/assets/images/Avatar.png"
+                alt="Avatar"
+                className="object-cover w-full h-full"
+              />
             </div>
+            <h2 className="text-[12px] font-semibold text-center mt-2">
+              {users?.userName}
+            </h2>
+            <span className="text-gray-300 text-center text-[10px]">
+              {users?.email}
+            </span>
+          </div>
 
-            {/* Info Section */}
-            <div className="flex-1 px-4">
-              <h2 className="text-sm font-semibold mb-3 pt-5">Personal Info</h2>
-              <div className="grid grid-cols-2 gap-y-3 text-xs">
-                <div className="gap-y-4">
-                  <div className="py-2 flex flex-row justify-between">
-                    <p className="text-gray-300">Contact</p>
-                    <p className="text-gray-300 px-2 text-[10px]">
-                      {users?.contact}
-                    </p>
-                  </div>
-                  <div className="py-2 flex flex-row justify-between">
-                    <p className="text-gray-300">Country</p>
-                    <p className="text-gray-300 px-2 text-[10px]">
-                      {users?.country}
-                    </p>
-                  </div>
+          <div className="flex flex-col md:w-1/2 gap-4 px-3 border-r border-[#BCBCBC]">
+            <h4 className="text-[13px] font-semibold mb-2 py-2">
+            Personal Info
+            </h4>
+            <div className="text-xs">
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Contact:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {users?.contact}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Country:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {users?.country}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Gender:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {users?.gender}
+                </span>
+              </div>
+              
+              
+              
+            </div>
+          </div>
 
-                  <div className="py-2 flex flex-row justify-between">
-                    <p className="text-gray-300">Gender</p>
-                    <p className="text-gray-300 px-2 text-[10px]">
-                      {users?.gender || "Male"}
-                    </p>
-                  </div>
-                </div>
-                <div className="border-l border-l-white pl-4">
-                  <div className="py-2 flex flex-row justify-between">
-                    <p className="text-gray-300">Nationality</p>
-                    <p className="text-gray-300 px-2 text-[10px]">
-                      {users?.country}
-                    </p>
-                  </div>
-
-                  <div className="py-2 flex flex-row justify-between">
-                    <p className="text-gray-300">Course</p>
-                    <p className="text-gray-300 px-2 text-[10px]">
-                      {users?.position}
-                    </p>
-                  </div>
-                  <div className="py-2 flex flex-row justify-between">
-                    <p className="text-gray-300">Employment</p>
-                    <p className="text-gray-300 px-2 text-[10px]">Full Time</p>
-                  </div>
-                </div>
+          <div className="flex flex-col md:w-1/2 gap-4 px-3">
+            <h4 className="text-[13px] font-semibold mb-2 py-4">
+              {/* Educational Information */}
+            </h4>
+            <div className="text-xs">
+            <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Nationality:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {users?.country}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Course:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                  {users?.position}
+                </span>
+              </div>
+              <div className="py-2 flex flex-row justify-between">
+                <span className="text-gray-200">Employment:</span>{" "}
+                <span className="text-gray-200 px-2 text-[10px]">
+                Full Time
+                </span>
               </div>
             </div>
           </div>
+        </div>
 
           {/* Right Analytics Panel */}
           <div className="col-span-2 bg-[#7689BD] px-3 py-3 rounded-lg shadow-sm text-white">
@@ -696,6 +707,7 @@ const Teacher = () => {
             </div>
           </div>
         </div>
+        
 
         {/*Table card */}
         <div className="mt-4  h-min">
@@ -729,7 +741,7 @@ const Teacher = () => {
                     />
                     <div className="relative">
                       <button
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
                       >
                         <MdTune className="w-4 h-4" />
@@ -836,33 +848,28 @@ const Teacher = () => {
                   </button>
                 </div>
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
                       <input
                         type="text"
                         placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        className="bg-transparent outline-none text-[12px] w-32 py-3"
                         value={searchScheduledClass}
                         onChange={(e) =>
                           setSearchScheduledClass(e.target.value)
                         }
                       />
-                    </div>
                     <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-3 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
                     >
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                      <span className="text-left ml-60 ">
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
                         Showing {filteredScheduledClass.length === 0 ? 0 : 1} to{" "}
                         {filteredScheduledClass.length} of{" "}
                         {filteredScheduledClass.length}
                       </span>
-                    </div>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -978,26 +985,22 @@ const Teacher = () => {
             {activeTab === "Earnings" && (
               <div className="space-y-2">
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
                       <input
                         type="text"
                         placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        className="bg-transparent outline-none text-[12px] w-32 py-3"
                         value={searchEarnings}
                         onChange={(e) => setSearchEarnings(e.target.value)}
                       />
-                    </div>
                     <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
                     >
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                      <span className="text-left ml-60 ">
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
                         Showing{" "}
                         {filteredEarningsMonths.length === 0
                           ? 0
@@ -1009,7 +1012,6 @@ const Teacher = () => {
                         )}{" "}
                         of {filteredEarningsMonths.length}
                       </span>
-                    </div>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -1081,30 +1083,25 @@ const Teacher = () => {
             {activeTab === "Payments" && (
               <div className="space-y-6">
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
                       <input
                         type="text"
                         placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        className="bg-transparent outline-none text-[12px] w-32 py-3"
                         value={searchPayments}
                         onChange={(e) => setSearchPayments(e.target.value)}
                       />
-                    </div>
                     <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
                     >
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                      <span className="text-left ml-60 ">
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
                         Showing {filteredPayments.length === 0 ? 0 : 1} to{" "}
                         {filteredPayments.length} of {filteredPayments.length}
                       </span>
-                    </div>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -1203,26 +1200,22 @@ const Teacher = () => {
             {activeTab === "Wages" && (
               <div className="space-y-6">
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
                       <input
                         type="text"
                         placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        className="bg-transparent outline-none text-[12px] w-32 py-3"
                         value={searchWages}
                         onChange={(e) => setSearchWages(e.target.value)}
                       />
-                    </div>
                     <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
                     >
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                      <span className="text-left ml-60 ">
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
                         Showing{" "}
                         {filteredWages.length === 0
                           ? 0
@@ -1234,7 +1227,6 @@ const Teacher = () => {
                         )}{" "}
                         of {filteredWages.length}
                       </span>
-                    </div>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
@@ -1310,31 +1302,26 @@ const Teacher = () => {
             {activeTab === "WorkingHours" && (
               <div className="space-y-6">
                 <div className="rounded-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Search className="w-3 h-3 text-gray-400 dark:text-gray-400 -mt-[1px]" />
+                <div className="flex flex-row sm:flex-row justify-between items-stretch px-16 gap-4 py-0 bg-[#FAFAFB] dark:bg-[#343434]">
                       <input
                         type="text"
                         placeholder="Search"
-                        className="bg-transparent outline-none text-[12px] w-52 py-3"
+                        className="bg-transparent outline-none text-[12px] w-32 py-3"
                         value={searchWorkingHours}
                         onChange={(e) => setSearchWorkingHours(e.target.value)}
                       />
-                    </div>
                     <div
-                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 -ml-60 cursor-pointer"
+                      className="flex items-center gap-2 text-[12px] text-gray-400 dark:border-[#606060] py-2 border-r-2 border-l-2 px-48 cursor-pointer"
                       onClick={() => setIsFilterModalOpen(true)}
                     >
                       <MdTune className="w-4 h-4" />
                       <span>Filter</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[12px] text-gray-400 dark:text-gray-400">
-                      <span className="text-left ml-60 ">
+                    <span className="text-[12px] text-gray-400 dark:text-gray-400 py-3">
                         Showing {filteredWorkingHours.length === 0 ? 0 : 1} to{" "}
                         {filteredWorkingHours.length} of{" "}
                         {filteredWorkingHours.length}
                       </span>
-                    </div>
                   </div>
                   <div className="overflow-x-auto max-h-none">
                     <table
