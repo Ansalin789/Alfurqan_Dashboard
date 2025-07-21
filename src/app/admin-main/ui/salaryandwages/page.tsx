@@ -11,23 +11,21 @@ import AdminHeader from "../../components/AdminHeader";
 import axios from "axios";
 
 export interface ISalaryWage {
+  _id?: string;
   employeeId: string;
   employeeName: string;
   designation: string;
   salaryAmount: string;
-  currency: string;
+  deductionAmount: string;
+  balanceAmount: string;
+  paymentMethod: string;
   paymentDate: string;
   paymentStatus: "Paid" | "Pending";
-  status: string;
-  createdDate: string;
-  createdBy: string;
-  updatedDate: string;
-  updatedBy: string;
 }
 
 export interface ISalaryWageResponse {
   totalCount: number;
-  salarywages: ISalaryWage[];
+  expenses: ISalaryWage[];
 }
 
 const SalaryCard = () => {
@@ -45,8 +43,18 @@ const SalaryCard = () => {
     null
   );
   const [showPopup, setShowPopup] = useState(false);
+  const [selectedSalarys, setSelectedSalarys] = useState<ISalaryWage | null>(
+    null
+  );
+  const [showPopups, setShowPopups] = useState(false);
   const [actionOpenId, setActionOpenId] = useState<string | null>(null);
   const [salaryWages, setSalaryWages] = useState<ISalaryWage[]>([]);
+  const [editForm, setEditForm] = useState({
+    salaryAmount: "",
+    deductionAmount: "",
+    paymentStatus: "",
+    paymentDate: "",
+  });
 
   interface SalaryCardCounts {
     totalSalaryPaid: number;
@@ -91,6 +99,7 @@ const SalaryCard = () => {
   }, []);
 
   useEffect(() => {
+    console.log("useEffect running");
     const token =
       typeof window !== "undefined"
         ? localStorage.getItem("AdminAuthToken")
@@ -101,7 +110,7 @@ const SalaryCard = () => {
     }
     const fetchSalaryWages = async () => {
       try {
-        const response = await fetch("https://api.blackstoneinfomaticstech.com/salarywages", {
+        const response = await fetch("http://localhost:5001/salarywages", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -109,7 +118,8 @@ const SalaryCard = () => {
           },
         });
         const data: ISalaryWageResponse = await response.json();
-        setSalaryWages(data.salarywages);
+        console.log("Fetched salary wages data:", data); // Debug log
+        setSalaryWages(data.expenses);
       } catch (err) {
         console.error("Error fetching salary data", err);
       }
@@ -119,7 +129,7 @@ const SalaryCard = () => {
   }, []);
 
   const handleActionClick = (id: string) => {
-    setActionOpenId((prev) => (prev === id ? null : id));
+    setActionOpenId((prevId) => (prevId === id ? null : id));
   };
 
   const handleViewDetails = (row: ISalaryWage) => {
@@ -127,17 +137,31 @@ const SalaryCard = () => {
     setShowPopup(true);
   };
 
-  const handleCancel = (id: string) => {
+  const handleCancel = (_id: string) => {
     setActionOpenId(null);
   };
 
   const handlePayNow = (id: string) => {
-    setActionOpenId(null);
+    const selected = salaryWages.find((s) => s._id === id);
+    if (selected) {
+      setSelectedSalarys(selected);
+      setEditForm({
+        salaryAmount: selected.salaryAmount,
+        deductionAmount: selected.deductionAmount,
+        paymentStatus: selected.paymentStatus,
+        paymentDate: selected.paymentDate.split("T")[0], // YYYY-MM-DD
+      });
+      setActionOpenId(null); // Close the action dropdown
+
+      setShowPopups(true);
+    }
   };
 
   // Filter logic: filter salaryData before pagination
   const filteredData = (salaryWages ?? []).filter((row: ISalaryWage) => {
-    const statusMatch = filterStatus ? row.status === filterStatus : true;
+    const statusMatch = filterStatus
+      ? row.paymentStatus === filterStatus
+      : true;
     const categoryMatch = filterCategory
       ? row.designation === filterCategory
       : true;
@@ -237,103 +261,127 @@ const SalaryCard = () => {
               </span>
             </div>
           </div>
-          <table className="table-fixed w-full border-separate border-spacing-y-2 ">
+          <table className="table-fixed w-full dark:bg-[#3f3f3f]">
             <thead className="text-[13px] bg-[#4C6993] text-white dark:bg-[#6087C0]">
               <tr>
-                {[
-                  "Employee ID",
-                  "Employee Name",
-                  "Designation",
-                  "Salary Amount",
-                  "Payment Method",
-                  "Payment Type",
-                  "Payment Date",
-                  "Status",
-                  "Action",
-                ].map((header, idx) => (
-                  <th
-                    key={idx}
-                    className="px-2 py-1 border border-[#4C6993] text-left text-wrap break-words"
-                  >
-                    {header}
-                  </th>
-                ))}
+                <th className="px-2 py-1 border border-[#4C6993] text-left w-[13%] break-words">
+                  Employee
+                  <br />
+                  ID
+                </th>
+                <th className="px-2 py-1 border border-[#4C6993] text-left w-[12%] break-words">
+                  Employee
+                  <br />
+                  Name
+                </th>
+                <th className="px-2 py-1 border border-[#4C6993] text-left w-[12%] break-words">
+                  Designation
+                </th>
+                <th className="px-2 py-1 border border-[#4C6993] text-left w-[10%] break-words">
+                  Salary
+                  <br />
+                  Amount
+                </th>
+                <th className="px-2 py-1 border border-[#4C6993] text-left w-[10%] break-words">
+                  Deduction
+                </th>
+                <th className="px-2 py-1 border border-[#4C6993] text-left w-[10%] break-words">
+                  Balance
+                </th>
+                <th className="px-2 py-1 border border-[#4C6993] text-left w-[13%] break-words">
+                  Payment
+                  <br />
+                  Method
+                </th>
+                <th className="px-2 py-1 border border-[#4C6993] text-left w-[12%] break-words">
+                  Payment
+                  <br />
+                  Date
+                </th>
+                <th className="px-2 py-1 border border-[#4C6993] text-left w-[10%] break-words">
+                  Status
+                </th>
+                <th className="px-2 py-1 border border-[#4C6993] text-left w-[10%] break-words">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
-              {(salaryWages ?? []).map((row, index) => (
+              {filteredPaginatedData.map((row, index) => (
                 <tr
-                  key={row.employeeId}
+                  key={row._id}
                   className={`text-[9px] text-center mt-0 dark:text-white ${
                     index % 2 === 0
                       ? "bg-[#faf9f9] dark:bg-[#2C2C2C]"
                       : "bg-[#ebebeb] dark:bg-[#303030]"
                   }`}
                 >
-                  <td className="px-3 py-3 text-[12px] text-left break-all">
-                    {row.employeeId.length > 12 ? (
-                      <>
-                        {row.employeeId.slice(0, 12)}
-                        <br />
-                        {row.employeeId.slice(12)}
-                      </>
-                    ) : (
-                      row.employeeId
-                    )}
+                  <td className="px-3 py-3 break-words text-[12px] text-left">
+                    {row.employeeId}
                   </td>
-                  <td className="px-3 py-3 text-[12px] text-left">
+                  <td className="px-3 py-3 break-words text-[12px] text-left">
                     {row.employeeName}
                   </td>
-                  <td className="px-3 py-3 text-[12px] text-left">
+                  <td className="px-3 py-3 break-words text-[12px] text-left">
                     {row.designation}
                   </td>
-                  <td className="px-3 py-3 text-[12px] text-left">
-                    {row.currency}{" "}
-                    {isNaN(Number(row.salaryAmount)) ? "0" : row.salaryAmount}
+                  <td className="px-3 py-3 break-words text-[12px] text-left">
+                    {Number(row.salaryAmount).toLocaleString()}
                   </td>
-                  <td className="px-3 py-3 text-[12px] text-left">
-                    Bank Transfer
+                  <td className="px-3 py-3 break-words text-[12px] text-left">
+                    {Number(row.deductionAmount).toLocaleString()}
                   </td>
-                  <td className="px-3 py-3 text-[12px] text-left">Monthly</td>
-                  <td className="px-3 py-3 text-[12px] text-left">
+                  <td className="px-3 py-3 break-words text-[12px] text-left">
+                    {Number(row.balanceAmount).toLocaleString()}
+                  </td>
+                  <td className="px-3 py-3 break-words text-[12px] text-left">
+                    {row.paymentMethod}
+                  </td>
+                  <td className="px-3 py-3 break-words text-[12px] text-left">
                     {new Date(row.paymentDate).toLocaleDateString()}
                   </td>
-                  <td className="px-3 py-3 text-[12px] text-left">
+                  <td className="px-3 py-3 break-words text-[12px] text-left">
                     <span
                       className={`inline-flex items-center justify-center w-20 h-5 px-3 py-1 rounded-md
-            ${
-              row.paymentStatus === "Paid"
-                ? "bg-[#ECFDF3] text-[#377E36]"
-                : row.paymentStatus === "Pending"
-                ? "bg-[#F0AD4E33] text-[#F0AD4E]"
-                : "bg-gray-200 text-gray-700"
-            }`}
+                        ${
+                          row.paymentStatus === "Paid"
+                            ? "bg-[#ECFDF3] text-[#377E36]"
+                            : row.paymentStatus === "Pending"
+                            ? "bg-[#F0AD4E33] text-[#F0AD4E]"
+                            : "bg-gray-200 text-gray-700"
+                        }
+                      `}
                     >
                       {row.paymentStatus}
                     </span>
                   </td>
-                  <td className="relative px-3 py-3 break-words text-[12px] text-left">
+                  <td className="relative px-3 py-3 break-words text-[12px] text-center">
                     <div className="relative inline-block text-left">
                       <button
-                        onClick={() => handleActionClick(row.employeeId)}
-                        className="px-2 text-gray-600 hover:text-gray-800"
+                        onClick={() => handleActionClick(row._id || "")}
+                        className="px-2 text-gray-600 hover:text-gray-800 dark:text-white"
                       >
                         ⋮
                       </button>
-
-                      {actionOpenId === row.employeeId && (
-                        <div className="absolute left-0 translate-x-[-10px] w-32 bg-white border rounded-md shadow-md z-50">
+                      {actionOpenId === row._id && (
+                        <div className="absolute right-0 top-full mt-1 w-32 bg-white border rounded-md shadow-md z-50 dark:bg-[#3f3f3f] dark:border-zinc-600">
                           {row.paymentStatus === "Paid" ? (
                             <>
                               <button
-                                onClick={() => handleViewDetails(row)}
-                                className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100"
+                                onClick={() => {
+                                  handleViewDetails(row);
+                                  setActionOpenId(null);
+                                }}
+                                className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100 dark:hover:bg-zinc-700"
                               >
                                 View Details
                               </button>
                               <button
-                                onClick={() => handleCancel(row.employeeId)}
-                                className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100"
+                                onClick={() => {
+                                  handleCancel(row._id || "");
+                                  setActionOpenId(null);
+                                }}
+                                className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100 dark:hover:bg-zinc-700"
                               >
                                 Cancel
                               </button>
@@ -341,14 +389,21 @@ const SalaryCard = () => {
                           ) : (
                             <>
                               <button
-                                onClick={() => handlePayNow(row.employeeId)}
-                                className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100"
+                                onClick={() => {
+                                  setSelectedSalarys(row);
+                                  setShowPopups(true);
+                                  setActionOpenId(null);
+                                }}
+                                className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100 dark:hover:bg-zinc-700"
                               >
                                 Pay Now
                               </button>
                               <button
-                                onClick={() => handleCancel(row.employeeId)}
-                                className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100"
+                                onClick={() => {
+                                  handleCancel(row._id || "");
+                                  setActionOpenId(null);
+                                }}
+                                className="block w-full text-left px-4 py-2 text-xs hover:bg-gray-100 dark:hover:bg-zinc-700"
                               >
                                 Cancel
                               </button>
@@ -365,7 +420,7 @@ const SalaryCard = () => {
         </div>
         {showPopup && selectedSalary && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white rounded-xl shadow-lg w-full max-w-5xl p-6 relative">
+            <div className="bg-white rounded-xl shadow-lg w-full max-w-5xl p-6 relative dark:bg-[#3f3f3f]">
               <button
                 className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
                 onClick={() => setShowPopup(false)}
@@ -381,7 +436,7 @@ const SalaryCard = () => {
                   <input
                     value={selectedSalary.employeeId}
                     readOnly
-                    className="w-full p-2 border rounded text-[13px]"
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
                 </div>
 
@@ -392,7 +447,7 @@ const SalaryCard = () => {
                   <input
                     value={selectedSalary.employeeName}
                     readOnly
-                    className="w-full p-2 border rounded text-[13px]"
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
                 </div>
 
@@ -401,7 +456,7 @@ const SalaryCard = () => {
                   <input
                     value={selectedSalary.designation}
                     readOnly
-                    className="w-full p-2 border rounded text-[13px]"
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
                 </div>
 
@@ -410,9 +465,9 @@ const SalaryCard = () => {
                     Salary Amount
                   </label>
                   <input
-                    value={`$${selectedSalary.salaryAmount}`}
+                    value={`$${selectedSalary.balanceAmount}`}
                     readOnly
-                    className="w-full p-2 border rounded text-[13px]"
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
                 </div>
 
@@ -421,7 +476,7 @@ const SalaryCard = () => {
                   <input
                     value={"March 10, 2024"} // Replace with dynamic if available
                     readOnly
-                    className="w-full p-2 border rounded text-[13px]"
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
                 </div>
 
@@ -432,7 +487,7 @@ const SalaryCard = () => {
                   <input
                     value={"March 15, 2024"} // Replace with dynamic if available
                     readOnly
-                    className="w-full p-2 border rounded text-[13px]"
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
                 </div>
 
@@ -441,9 +496,9 @@ const SalaryCard = () => {
                     Payment Status
                   </label>
                   <input
-                    value={selectedSalary.status}
+                    value={selectedSalary.paymentStatus}
                     readOnly
-                    className="w-full p-2 border rounded text-[13px]"
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
                 </div>
 
@@ -452,16 +507,16 @@ const SalaryCard = () => {
                   <input
                     value={`$${selectedSalary.salaryAmount}`}
                     readOnly
-                    className="w-full p-2 border rounded text-[13px]"
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
                 </div>
 
                 <div>
                   <label className="font-medium mb-1 block">Deductions</label>
                   <input
-                    value={"$200"} // Replace with dynamic if needed
+                    value={`$${selectedSalary.deductionAmount}`}
                     readOnly
-                    className="w-full p-2 border rounded text-[13px]"
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
                   />
                 </div>
 
@@ -469,7 +524,7 @@ const SalaryCard = () => {
                   <label className="font-medium mb-1 block">Description</label>
                   <textarea
                     placeholder="Write your comment here..."
-                    className="w-full p-2 border rounded text-[13px] h-[80px] resize-none"
+                    className="w-full p-2 border rounded text-[13px] h-[80px] resize-none  dark:bg-[#343434] dark:text-white"
                     readOnly
                   />
                 </div>
@@ -478,9 +533,193 @@ const SalaryCard = () => {
           </div>
         )}
 
+        {showPopups && selectedSalarys && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-xl shadow-lg w-full max-w-5xl p-6 relative dark:bg-[#3f3f3f]">
+              <button
+                className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl"
+                onClick={() => setShowPopups(false)}
+              >
+                &times;
+              </button>
+
+              <h2 className="text-lg font-semibold mb-6">Payment Details</h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                <div>
+                  <label className="font-medium mb-1 block">Employee ID</label>
+                  <input
+                    value={selectedSalarys.employeeId}
+                    readOnly
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium mb-1 block">
+                    Employee Name
+                  </label>
+                  <input
+                    value={selectedSalarys.employeeName}
+                    readOnly
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium mb-1 block">Designation</label>
+                  <input
+                    value={selectedSalarys.designation}
+                    readOnly
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium mb-1 block">
+                    Salary Amount (Earnings - Deductions)
+                  </label>
+                  <input
+                    value={
+                      editForm.salaryAmount && editForm.deductionAmount
+                        ? String(
+                            Number(editForm.salaryAmount) -
+                              Number(editForm.deductionAmount)
+                          )
+                        : ""
+                    }
+                    readOnly
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white bg-gray-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium mb-1 block">Payment Date</label>
+                  <input
+                    value={editForm.paymentDate}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, paymentDate: e.target.value })
+                    }
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium mb-1 block">
+                    Payment Received Date
+                  </label>
+                  <input className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white" />
+                </div>
+
+                <div>
+                  <label className="font-medium mb-1 block">
+                    Payment Status
+                  </label>
+                  <select
+                    value={editForm.paymentStatus}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        paymentStatus: e.target.value,
+                      })
+                    }
+                    className="w-full p-2 border rounded text-[13px] dark:bg-[#343434] dark:text-white"
+                  >
+                    <option value="Paid">Paid</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-medium mb-1 block">Earnings</label>
+                  <input
+                    value={editForm.salaryAmount}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, salaryAmount: e.target.value })
+                    }
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium mb-1 block">Deductions</label>
+                  <input
+                    value={editForm.deductionAmount}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        deductionAmount: e.target.value,
+                      })
+                    }
+                    className="w-full p-2 border rounded text-[13px]  dark:bg-[#343434] dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-medium mb-1 block">Description</label>
+                  <textarea
+                    placeholder="Write your comment here..."
+                    className="w-full p-2 border rounded text-[13px] h-[80px] resize-none  dark:bg-[#343434] dark:text-white"
+                    readOnly
+                  />
+                </div>
+                <button
+                  className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  onClick={async () => {
+                    try {
+                      const token = localStorage.getItem("AdminAuthToken");
+                      const computedSalaryAmount = editForm.salaryAmount && editForm.deductionAmount
+                        ? Number(editForm.salaryAmount) - Number(editForm.deductionAmount)
+                        : 0;
+                      const payload = {
+                        amount: Number(editForm.salaryAmount), // This is the earning
+                        deduction: Number(editForm.deductionAmount),
+                        balanceAmount: computedSalaryAmount,
+                        paymentStatus: editForm.paymentStatus,
+                        paymentDate: editForm.paymentDate,
+                      };
+                      const url = `http://localhost:5001/salarywages/${selectedSalarys.employeeId}`;
+                      console.log("PUT request to:", url);
+                      console.log("Payload:", payload);
+                      const response = await axios.put(url, payload, {
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                        },
+                      });
+                      console.log("PUT response:", response);
+                      if (response.data && response.data.success) {
+                        setEditForm({
+                          salaryAmount: response.data.amount ? String(response.data.amount) : "",
+                          deductionAmount: response.data.deduction ? String(response.data.deduction) : "",
+                          paymentStatus: response.data.paymentStatus || editForm.paymentStatus,
+                          paymentDate: response.data.paymentDate ? response.data.paymentDate.split("T")[0] : editForm.paymentDate,
+                        });
+                        setSelectedSalarys((prev) => prev ? {
+                          ...prev,
+                          salaryAmount: response.data.amount ? String(response.data.amount) : prev.salaryAmount,
+                          deductionAmount: response.data.deduction ? String(response.data.deduction) : prev.deductionAmount,
+                          balanceAmount: response.data.balance ? String(response.data.balance) : prev.balanceAmount,
+                          paymentStatus: response.data.paymentStatus || prev.paymentStatus,
+                          paymentDate: response.data.paymentDate || prev.paymentDate,
+                        } : prev);
+                      }
+                      setShowPopups(false);
+                    } catch (err) {
+                      console.error("Failed to update salary:", err);
+                    }
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {isFilterModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 dark:bg-opacity-70">
-            <div className="bg-white dark:bg-zinc-900 text-black dark:text-white rounded-2xl shadow-lg p-5 w-[400px]">
+            <div className="bg-white dark:bg-zinc-900 text-black dark:text-white rounded-2xl shadow-lg p-5 w-[400px] dark:bg-[#3f3f3f]">
               <h2 className="text-base font-semibold mb-3">Filter by</h2>
 
               {/* Expense Type */}
