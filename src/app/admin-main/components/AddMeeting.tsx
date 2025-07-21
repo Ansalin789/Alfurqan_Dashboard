@@ -43,8 +43,8 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
   const [formData, setFormData] = useState<MeetingData>({
     meetingName: meetingToEdit?.meetingName || "",
     selectedDate: meetingToEdit?.selectedDate || new Date().toISOString().split('T')[0],
-    startTime: meetingToEdit?.startTime || "", // 24-hour format
-    endTime: meetingToEdit?.endTime || "",    // 24-hour format
+    startTime: meetingToEdit?.startTime || "",
+    endTime: meetingToEdit?.endTime || "",
     description: meetingToEdit?.description || "",
     teachers: meetingToEdit?.teachers || [],
     meetingminutes: meetingToEdit?.meetingminutes || "Default meeting minutes",
@@ -100,14 +100,14 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // Ensure proper 24-hour format (HH:MM)
     const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (timeRegex.test(value) || value === "") {
       setFormData({ ...formData, [name]: value });
     }
   };
-    const formatTimeValue = (time: string) => {
-    if (!time) return "00:00";
+
+  const formatTimeValue = (time: string) => {
+    if (!time) return "";
     const [hours, minutes] = time.split(':');
     return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
   };
@@ -180,12 +180,13 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
         return;
       }
 
-      const requestData = {
+      // Prepare payload according to backend requirements
+      const payload = {
         meetingName: formData.meetingName,
-        selectedDate: new Date(formData.selectedDate).toISOString(),
+        selectedDate: formData.selectedDate,
         startTime: formData.startTime,
         endTime: formData.endTime,
-        teacher: formData.teachers,
+        teacher: formData.teachers, // Match backend expectation
         description: formData.description,
         meetingminutes: formData.description || "Meeting minutes",
         status: "Active",
@@ -196,24 +197,27 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
         duration: calculateDuration(formData.startTime, formData.endTime)
       };
 
+      console.log("Submitting meeting data:", payload);
+
       const url = meetingToEdit?._id 
-        ? `https://api.blackstoneinfomaticstech.com/meeting/${meetingToEdit._id}`
-        : "https://api.blackstoneinfomaticstech.com/addMeeting";
+        ? `https://api.blackstoneinfomaticstech.com/allAdminMeeting/${meetingToEdit._id}`
+        : "https://api.blackstoneinfomaticstech.com/addadminMeeting";
 
       const method = meetingToEdit?._id ? "PUT" : "POST";
 
       const response = await axios({
         method,
         url,
-        data: requestData,
+        data: payload,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         }
       });
 
+      console.log("Backend response:", response.data);
+
       if ([200, 201].includes(response.status)) {
-        console.log("Meeting successfully saved:", response.data);
         setSuccess(true);
         setTimeout(() => {
           onMeetingCreated();
@@ -222,6 +226,8 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
       }
     } catch (err: any) {
       console.error("API Error:", err);
+      console.error("Error details:", err.response?.data);
+      
       let errorMessage = "An error occurred while saving the meeting.";
       
       if (err.response?.data?.issues) {
@@ -272,41 +278,40 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
             </div>
           )}
           
-{success && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-    <div className="bg-white rounded-xl shadow-lg max-w-sm w-full text-center px-6 py-8 relative">
-      <div className="flex justify-center mb-4">
-        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-          <svg
-            className="w-6 h-6 text-green-600"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-      </div>
-      <h2 className="text-lg font-semibold text-gray-800">Scheduled successfully</h2>
-      <p className="text-sm text-gray-500 mt-1 mb-4">
-        You have successfully sent the schedule
-      </p>
-      <div className="h-1 bg-green-500 rounded-full w-20 mx-auto my-4"></div>
-      <button
-        onClick={() => {
-          setSuccess(false);
-          onMeetingCreated();
-          onClose();
-        }}
-        className="bg-[#5B6AC7] text-white text-sm font-medium px-6 py-2 rounded-lg hover:bg-[#4b5ab3] transition"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-)}
-
+          {success && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="bg-white rounded-xl shadow-lg max-w-sm w-full text-center px-6 py-8 relative">
+                <div className="flex justify-center mb-4">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <h2 className="text-lg font-semibold text-gray-800">Scheduled successfully</h2>
+                <p className="text-sm text-gray-500 mt-1 mb-4">
+                  You have successfully sent the schedule
+                </p>
+                <div className="h-1 bg-green-500 rounded-full w-20 mx-auto my-4"></div>
+                <button
+                  onClick={() => {
+                    setSuccess(false);
+                    onMeetingCreated();
+                    onClose();
+                  }}
+                  className="bg-[#5B6AC7] text-white text-sm font-medium px-6 py-2 rounded-lg hover:bg-[#4b5ab3] transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -345,8 +350,8 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
                 onChange={handleTimeChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 required
-                step="300" // 5 minute increments
-                pattern="[0-9]{2}:[0-9]{2}" // Ensures HH:MM format
+                step="300"
+                pattern="[0-9]{2}:[0-9]{2}"
               />
             </div>
             <div>
@@ -358,8 +363,8 @@ const AddMeeting = ({ onClose, onMeetingCreated, meetingToEdit }: AddMeetingProp
                 onChange={handleTimeChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 required
-                step="300" // 5 minute increments
-                pattern="[0-9]{2}:[0-9]{2}" // Ensures HH:MM format
+                step="300"
+                pattern="[0-9]{2}:[0-9]{2}"
               />
             </div>
           </div>
